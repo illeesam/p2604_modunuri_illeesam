@@ -120,12 +120,11 @@ _doc/ddl_pgsql/
 |---|---|---|
 | `*_id` (PK 자체 ID) | `VARCHAR(21)` | `YYMMDDhhmmss(12) + rand4(4)` + prefix(1~5) |
 | `category_id_1~5` (참조 ID) | `VARCHAR(21)` | 모든 참조 컬럼은 PK 와 동일 길이 |
-| `opt_item_id_1~2` (옵션 참조) | `VARCHAR(21)` | 동일 |
+| `prod_opt_id_1~2` (옵션값 참조) | `VARCHAR(21)` | 동일 |
 | `bundle_group_id` | `VARCHAR(36)` | UUID 호환 |
 | `login_id` | `VARCHAR(50)` | 사용자 입력 로그인 식별자 |
 | `sns_user_id` | `VARCHAR(200)` | 외부 SNS 시스템 ID |
 | `pg_transaction_id`, `pg_refund_id`, `refund_pg_tid` | `VARCHAR(100)` | PG 외부 거래 ID |
-| `opt_item_val_code_id` | `VARCHAR(50)` | 옵션 값 코드 |
 
 ### 감사/로그 컬럼
 

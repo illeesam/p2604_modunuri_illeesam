@@ -1180,7 +1180,7 @@ const refreshList = () => {
 ### 7.1 배경
 
 시뮬레이터(`pages/bo/zd/ZdSimul*.js`)는 백엔드 API를 실제 호출하기 전에 **부모-자식 관계가 연결된 body를 미리 구성**해야 한다.
-예: 상품 옵션항목 ID → SKU `optItemId1/2` + 이미지 `optItemId1` 에서 동시 참조.
+예: 상품 옵션값 ID → SKU `prodOptId1/2` + 이미지 `prodOptId1` 에서 동시 참조.
 
 백엔드가 항목 INSERT 후 생성한 ID를 후속 항목에 다시 써주는 구조라면 프론트 사전 할당이 불필요하지만,
 **단일 요청 body** 안에서 ID 참조가 교차하는 경우 프론트에서 ID를 미리 만들어 보내는 것이 더 명확하다.
@@ -1208,12 +1208,12 @@ const _makeSimulId = (prefix) => {
 프론트가 임시 ID를 body에 포함해 전송하는 경우, **백엔드 Service의 `create()` 메서드는 제공된 ID를 우선 사용**하고 없을 때만 자동 생성한다.
 
 ```java
-// PdProdOptItemService.create() — 표준 패턴
+// PdProdOptService.create() — 표준 패턴
 @Transactional
-public PdProdOptItem create(PdProdOptItem body) {
+public PdProdOpt create(PdProdOpt body) {
     // 프론트 제공 ID 우선(tmp_ 포함), 없으면 자동생성
-    if (body.getOptItemId() == null || body.getOptItemId().isBlank())
-        body.setOptItemId(CmUtil.generateId("pd_prod_opt_item"));
+    if (body.getProdOptId() == null || body.getProdOptId().isBlank())
+        body.setProdOptId(CmUtil.generateId("pd_prod_opt"));
     ...
 }
 ```
@@ -1229,32 +1229,32 @@ public PdProdOptItem create(PdProdOptItem body) {
 | 대상 | 임시 ID 예시 | 규칙 |
 |---|---|---|
 | 상품 | `prod-01` | 고정값, body.tmpProdId 로 전달 |
-| 옵션 1레벨 항목 | `optItemId1-01`, `optItemId1-02`... | `'optItemId1-' + _pad2(i)` |
-| 옵션 2레벨 항목 | `optItemId2-01`, `optItemId2-02`... | `'optItemId2-' + _pad2(i)` |
+| 옵션 1유형 값 | `tmp-opt1-01`, `tmp-opt1-02`... | `'tmp-opt1-' + _pad2(i)` |
+| 옵션 2유형 값 | `tmp-opt2-01`, `tmp-opt2-02`... | `'tmp-opt2-' + _pad2(i)` |
 
 ```js
 const _pad2 = (n) => String(n + 1).padStart(2, '0');
 
-// 상품: prod-01 (고정, 시뮬 1회 실행에 상품 1개)
-body.tmpProdId = 'prod-01';
+// 상품: tmp-prod-01 (고정, 시뮬 1회 실행에 상품 1개)
+body.prodId = 'tmp-prod-01';
 
-// 1레벨: optItemId1-01, optItemId1-02 ...
-opt1Items = opt1List.map((nm, i) => ({ tmpOptItemId: 'optItemId1-' + _pad2(i), ... }));
+// 1유형 옵션값: tmp-opt1-01, tmp-opt1-02 ...
+opt1Items = opt1List.map((nm, i) => ({ prodOptId: 'tmp-opt1-' + _pad2(i), ... }));
 
-// 2레벨: optItemId2-01, optItemId2-02 ...
-opt2Items = opt2List.map((nm, i) => ({ tmpOptItemId: 'optItemId2-' + _pad2(i), ... }));
+// 2유형 옵션값: tmp-opt2-01, tmp-opt2-02 ...
+opt2Items = opt2List.map((nm, i) => ({ prodOptId: 'tmp-opt2-' + _pad2(i), ... }));
 ```
 
-- 어떤 레벨인지 ID 값 자체에서 보임: `optItemId1-01` (1단 1번째), `optItemId2-03` (2단 3번째)
+- 어떤 유형인지 ID 값 자체에서 보임: `tmp-opt1-01` (1유형 1번째), `tmp-opt2-03` (2유형 3번째)
 - 충돌 없음: 동일 요청 body 안에서만 유효한 식별자이므로 유일성 보장
 - 필드명(key)도 `tmp` 접두로 통일하여 실제 DB ID 컬럼과 즉시 구별
 
 | 필드명 | 용도 |
 |---|---|
-| `tmpProdId` | 상품 임시 ID (body에 포함, 백엔드 prodId로 그대로 INSERT) |
-| `tmpOptItemId` | 옵션항목 임시 ID (items[] 배열 내) |
-| `tmpOptItemId1` | SKU/이미지에서 옵션1 참조 |
-| `tmpOptItemId2` | SKU에서 옵션2 참조 |
+| `prodId` | 상품 임시 ID (body에 포함, 백엔드 prodId로 그대로 INSERT) |
+| `prodOptId` | 옵션값 임시 ID (pd_prod_opt의 PK, prodOpts[] 배열 내) |
+| `prodOptId1` | SKU/이미지에서 1유형 옵션값 참조 |
+| `prodOptId2` | SKU에서 2유형 옵션값 참조 |
 
 ```java
 // 백엔드 ZdSimulController: tmpOptItemId 로 읽음

@@ -27,14 +27,14 @@ public class PdProdOptTypeDto {
         private String prodId;
         private String prodOptTypeNm;
         private Integer prodOptTypeLevel;
-        private String prodOptInputTypeCd;
+        private String prodOptTypeLevel1Cd;
+        private String prodOptTypeLevel2Cd;
         private Integer sortOrd;
         private String regBy;
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
         private String siteNm;
-        private String optInputTypeCdNm;
     }
 
     @Getter @Setter @NoArgsConstructor

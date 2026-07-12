@@ -201,9 +201,9 @@ public class BoPdProdTabController {
      * 옵션설정 저장 (전체 교체).
      * body 예: {
      *   "optTypes": [{
-     *     "_id": 1, "optTypeNm": "색상", "optInputTypeCd": "SELECT", "level": 1,
-     *     "opts": [{ "_id": 11, "optNm": "블랙", "optVal": "VAL_OCOL_BLACK", "optValCodeId": "CD000963",
-     *               "parentOptId": "", "sortOrd": 1, "useYn": "Y" }, ...]
+     *     "_id": 1, "optTypeNm": "색상", "optInputTypeCd": "SELECT", "optTypeLevel": 1,
+     *     "optVals": [{ "_id": 11, "nm": "블랙", "val": "VAL_OCOL_BLACK", "valCodeId": "CD000963",
+     *                   "parentOptId": "", "sortOrd": 1, "useYn": "Y" }, ...]
      *   }, ...]
      * }
      * 처리 순서: 기존 opt(값) 전체 삭제 → 기존 optType(유형) 전체 삭제 → optType INSERT → opt(값) INSERT.
@@ -232,9 +232,10 @@ public class BoPdProdTabController {
 
         int gIdx = 0;
         for (PdProdOptUpdateDto.OptType g : groups) {
-            String typeCd = nullIfEmpty(g.getOptInputTypeCd());
             String typeNm = nullIfEmpty(g.getOptTypeNm());
-            if (typeNm == null) typeNm = (typeCd != null ? typeCd : "옵션" + (gIdx + 1));
+            String level1Cd = nullIfEmpty(g.getLevel1Cd());
+            String level2Cd = nullIfEmpty(g.getLevel2Cd());
+            if (typeNm == null) typeNm = (level1Cd != null ? level1Cd : "옵션" + (gIdx + 1));
             int level = g.getOptTypeLevel() != null ? g.getOptTypeLevel() : (gIdx + 1);
 
             String optTypeId = "OT" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + gIdx;
@@ -245,7 +246,8 @@ public class BoPdProdTabController {
             optType.setSiteId(siteId);
             optType.setProdId(prodId);
             optType.setProdOptTypeNm(typeNm);
-            optType.setProdOptInputTypeCd(typeCd);
+            optType.setProdOptTypeLevel1Cd(level1Cd);
+            optType.setProdOptTypeLevel2Cd(level2Cd);
             optType.setProdOptTypeLevel(level);
             optType.setSortOrd(gIdx + 1);
             optType.setRegBy(authId);
@@ -266,9 +268,12 @@ public class BoPdProdTabController {
                 opt.setProdOptId(optId);
                 opt.setProdOptTypeId(optTypeId);
                 opt.setProdId(prodId);
+                opt.setSiteId(siteId);
                 opt.setProdOptNm(it.getNm() != null ? it.getNm() : "");
                 opt.setProdOptVal(it.getVal() != null ? it.getVal() : "");
-                opt.setProdOptValCodeId(nullIfEmpty(it.getValCodeId()));
+                opt.setProdOptTypeLevel1Cd(level1Cd);
+                opt.setProdOptTypeLevel2Cd(level2Cd);
+                opt.setProdOptStyle(nullIfEmpty(it.getProdOptStyle()));
                 opt.setSortOrd(it.getSortOrd() != null ? it.getSortOrd() : (iIdx + 1));
                 opt.setUseYn(it.getUseYn() != null && !it.getUseYn().isEmpty() ? it.getUseYn() : "Y");
                 opt.setRegBy(authId);

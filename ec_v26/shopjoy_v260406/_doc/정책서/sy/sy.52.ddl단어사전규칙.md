@@ -129,14 +129,14 @@ JPA 스키마 검증(`sy.56`) 통과 기준. 신규 DDL 작성 시 반드시 따
 | `*_id` (PK 자체) | `VARCHAR(21)` | `prefix(1~5) + YYMMDDhhmmss(12) + rand4(4)` |
 | `*_id` (FK 참조) | `VARCHAR(21)` | PK 와 동일 길이로 통일 |
 | `category_id_1~5` | `VARCHAR(21)` | 정산 등 5단계 카테고리 참조 |
-| `opt_item_id_1~2` | `VARCHAR(21)` | 1/2단 옵션 참조 |
+| `prod_opt_id_1~2` | `VARCHAR(21)` | 1/2단 옵션값 참조 (pd_prod_opt.prod_opt_id) |
 | `bundle_group_id` | `VARCHAR(36)` | UUID 호환 (예외) |
 | `login_id` | `VARCHAR(50)` | 사용자 입력 로그인 식별자 |
 | `sns_user_id` | `VARCHAR(200)` | 외부 SNS 시스템 ID |
 | `pg_transaction_id`, `pg_refund_id`, `refund_pg_tid` | `VARCHAR(100)` | PG 외부 거래 ID |
-| `opt_item_val_code_id` | `VARCHAR(50)` | 옵션 값 코드 |
+| `prod_opt_val_code_id` | `VARCHAR(50)` | 옵션값 코드 (pd_prod_opt.prod_opt_val_code_id) |
 
-> **❌ 금지**: 같은 의미의 ID 컬럼이 테이블마다 다른 길이를 가지면 안 된다. (`opt_item_id` 가 어떤 테이블은 20, 어떤 테이블은 21 → 검증 실패)
+> **❌ 금지**: 같은 의미의 ID 컬럼이 테이블마다 다른 길이를 가지면 안 된다. (`prod_opt_id` 가 어떤 테이블은 20, 어떤 테이블은 21 → 검증 실패)
 
 #### 13-2. 감사/로그 컬럼 길이
 

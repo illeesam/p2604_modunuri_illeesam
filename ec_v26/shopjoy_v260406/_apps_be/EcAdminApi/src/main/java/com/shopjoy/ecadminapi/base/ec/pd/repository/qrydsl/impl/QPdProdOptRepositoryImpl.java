@@ -41,9 +41,10 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                         pdProdOpt.prodId,
                         pdProdOpt.prodOptNm,
                         pdProdOpt.prodOptVal,
-                        pdProdOpt.prodOptValCodeId,
+                        pdProdOpt.prodOptTypeLevel1Cd,
+                        pdProdOpt.prodOptTypeLevel2Cd,
                         pdProdOpt.parentProdOptId,
-                        pdProdOpt.optStyle,
+                        pdProdOpt.prodOptStyle,
                         pdProdOpt.sortOrd,
                         pdProdOpt.useYn,
                         pdProdOpt.regBy,
@@ -182,7 +183,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         or = orLike(or, all, types, ",prodId,", pdProdOpt.prodId, pattern);
         or = orLike(or, all, types, ",prodOptNm,", pdProdOpt.prodOptNm, pattern);
         or = orLike(or, all, types, ",prodOptVal,", pdProdOpt.prodOptVal, pattern);
-        or = orLike(or, all, types, ",prodOptValCodeId,", pdProdOpt.prodOptValCodeId, pattern);
         or = orLike(or, all, types, ",parentProdOptId,", pdProdOpt.parentProdOptId, pattern);
         or = orLike(or, all, types, ",siteId,", pdProdOpt.siteId, pattern);
         or = orLike(or, all, types, ",useYn,", pdProdOpt.useYn, pattern);
@@ -244,10 +244,11 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         if (entity.getProdOptTypeId()     != null) { update.set(pdProdOpt.prodOptTypeId,     entity.getProdOptTypeId());     hasAny = true; }
         if (entity.getProdId()            != null) { update.set(pdProdOpt.prodId,            entity.getProdId());            hasAny = true; }
         if (entity.getProdOptNm()         != null) { update.set(pdProdOpt.prodOptNm,         entity.getProdOptNm());         hasAny = true; }
-        if (entity.getProdOptVal()        != null) { update.set(pdProdOpt.prodOptVal,        entity.getProdOptVal());        hasAny = true; }
-        if (entity.getProdOptValCodeId()  != null) { update.set(pdProdOpt.prodOptValCodeId,  entity.getProdOptValCodeId());  hasAny = true; }
-        if (entity.getParentProdOptId()   != null) { update.set(pdProdOpt.parentProdOptId,   entity.getParentProdOptId());   hasAny = true; }
-        if (entity.getOptStyle()          != null) { update.set(pdProdOpt.optStyle,          entity.getOptStyle());          hasAny = true; }
+        if (entity.getProdOptVal()            != null) { update.set(pdProdOpt.prodOptVal,            entity.getProdOptVal());            hasAny = true; }
+        if (entity.getProdOptTypeLevel1Cd()   != null) { update.set(pdProdOpt.prodOptTypeLevel1Cd,   entity.getProdOptTypeLevel1Cd());   hasAny = true; }
+        if (entity.getProdOptTypeLevel2Cd()   != null) { update.set(pdProdOpt.prodOptTypeLevel2Cd,   entity.getProdOptTypeLevel2Cd());   hasAny = true; }
+        if (entity.getParentProdOptId()       != null) { update.set(pdProdOpt.parentProdOptId,       entity.getParentProdOptId());       hasAny = true; }
+        if (entity.getProdOptStyle()          != null) { update.set(pdProdOpt.prodOptStyle,          entity.getProdOptStyle());          hasAny = true; }
         if (entity.getSortOrd()           != null) { update.set(pdProdOpt.sortOrd,           entity.getSortOrd());           hasAny = true; }
         if (entity.getUseYn()             != null) { update.set(pdProdOpt.useYn,             entity.getUseYn());             hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(pdProdOpt.updBy,             entity.getUpdBy());             hasAny = true; }

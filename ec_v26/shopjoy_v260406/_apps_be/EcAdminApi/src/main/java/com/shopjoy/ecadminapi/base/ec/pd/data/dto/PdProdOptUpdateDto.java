@@ -23,7 +23,8 @@ public class PdProdOptUpdateDto {
     public static class OptType {
         private Object _id;
         private String optTypeNm;
-        private String optInputTypeCd;
+        private String level1Cd;
+        private String level2Cd;
         private Integer optTypeLevel;
         private List<OptVal> optVals;
     }
@@ -33,7 +34,7 @@ public class PdProdOptUpdateDto {
         private Object _id;
         private String nm;
         private String val;
-        private String valCodeId;
+        private String prodOptStyle;
         /** 부모 _id 또는 부모 optId */
         private Object parentOptId;
         private Integer sortOrd;

@@ -46,8 +46,8 @@ GET /api/bo/ec/pd/prod/{prodId}/images
 | `cdnImgUrl` | 원본 URL |
 | `cdnThumbUrl` | 썸네일 URL |
 | `isThumb` | 대표 이미지 여부 |
-| `optItemId1` | 1단 옵션 연결 (NULL=공통) |
-| `optItemId2` | 2단 옵션 연결 (NULL=공통) |
+| `prodOptId1` | 1단 옵션 연결 (NULL=공통) |
+| `prodOptId2` | 2단 옵션 연결 (NULL=공통) |
 | `imgAltText` | ALT 텍스트 |
 | `sortOrd` | 정렬 순서 |
 
@@ -59,17 +59,17 @@ GET /api/bo/ec/pd/prod/{prodId}/images
 GET /api/bo/ec/pd/prod/{prodId}/opts
 ```
 
-- 테이블: `pd_prod_opt` (그룹) + `pd_prod_opt_item` (값)
+- 테이블: `pd_prod_opt_type` (옵션 유형) + `pd_prod_opt` (옵션 값)
 - 응답 구조:
 
 ```json
 {
-  "groups": [ { "optId": "...", "optNm": "색상", "optLevel": 1, "optTypeCd": "COLOR", ... } ],
-  "items":  [ { "optItemId": "...", "optId": "...", "optNm": "빨강", "optItemVal": "RED", ... } ]
+  "optTypes": [ { "prodOptTypeId": "...", "prodOptTypeNm": "색상", "prodOptTypeLevel": 1, "prodOptInputTypeCd": "SELECT", ... } ],
+  "opts":     [ { "prodOptId": "...", "prodOptTypeId": "...", "prodOptNm": "빨강", "prodOptVal": "RED", ... } ]
 }
 ```
 
-- `items`는 `optId` 기준으로 프론트에서 그룹핑
+- `opts`는 `prodOptTypeId` 기준으로 프론트에서 그룹핑
 - 최대 2단 옵션 (1단·2단)
 
 ---
@@ -86,10 +86,10 @@ GET /api/bo/ec/pd/prod/{prodId}/skus
 
 | 필드 | 설명 |
 |---|---|
-| `skuId` | SKU ID |
-| `skuCode` | SKU 코드 |
-| `optItemId1` / `optItemId2` | 연결 옵션값 ID |
-| `optItemNm1` / `optItemNm2` | 연결 옵션값명 (JOIN) |
+| `prodSkuId` | SKU ID |
+| `prodSkuCode` | SKU 코드 |
+| `prodOptId1` / `prodOptId2` | 연결 옵션값 ID |
+| `prodOptNm1` / `prodOptNm2` | 연결 옵션값명 (JOIN) |
 | `addPrice` | 옵션 추가금액 |
 | `prodOptStock` | 재고 수량 |
 | `useYn` | 사용 여부 |

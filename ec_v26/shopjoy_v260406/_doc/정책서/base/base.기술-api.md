@@ -513,7 +513,7 @@ private List<OdOrderDiscntDto.Item> discnts;
 | `OdOrderDto` | `orderItems` / `orderPays` / `orderDlivs` / `orderDiscnts` | `OdOrderItemDto` / `OdPayDto` / `OdDlivDto` / `OdOrderDiscntDto` |
 | `OdClaimDto` | `claimItems` | `OdClaimItemDto` |
 | `OdDlivDto` | `dlivItems` | `OdDlivItemDto` |
-| `PdProdDto` | `prodOptItems` | `PdProdOptItemDto` |
+| `PdProdDto` | `prodOpts` | `PdProdOptDto.Item` (pd_prod_opt 옵션값) |
 | `PmEventDto` | `eventItems` | `PmEventItemDto` |
 | `DpPanelDto` | `panelItems` | `DpPanelItemDto` |
 

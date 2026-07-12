@@ -39,21 +39,25 @@ public class PdProdOpt extends BaseEntity {
     @Column(name = "prod_opt_nm", length = 100, nullable = false)
     private String prodOptNm;
 
-    @Comment("실제 저장값 — prod_opt_val_code_id 선택 시 codeValue 자동 채움, 직접입력도 허용")
+    @Comment("실제 저장값 — 직접입력 또는 prod_opt_type_level2_cd 유형의 코드값 자동 채움")
     @Column(name = "prod_opt_val", length = 50)
     private String prodOptVal;
 
-    @Comment("공통코드 참조ID (sy_code.code_id) — NULL이면 prod_opt_val 직접입력")
-    @Column(name = "prod_opt_val_code_id", length = 50)
-    private String prodOptValCodeId;
+    @Comment("1단 분류 코드 — pd_prod.prod_opt_type_level1_cd 비정규화 (COLOR/SIZE 등)")
+    @Column(name = "prod_opt_type_level1_cd", length = 20)
+    private String prodOptTypeLevel1Cd;
+
+    @Comment("2단 분류 코드 — pd_prod_opt_type.prod_opt_type_level2_cd 비정규화 (NULL 가능)")
+    @Column(name = "prod_opt_type_level2_cd", length = 20)
+    private String prodOptTypeLevel2Cd;
 
     @Comment("상위 옵션ID — 2단 옵션에서 상위 1단 옵션값 참조 (pd_prod_opt.prod_opt_id), NULL이면 독립값")
     @Column(name = "parent_prod_opt_id", length = 21)
     private String parentProdOptId;
 
     @Comment("옵션 스타일 (컬러 hex 값, 아이콘 클래스 등 자유 문자열)")
-    @Column(name = "opt_style", length = 200)
-    private String optStyle;
+    @Column(name = "prod_opt_style", length = 200)
+    private String prodOptStyle;
 
     @Comment("정렬순서")
     @Column(name = "sort_ord")

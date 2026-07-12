@@ -48,7 +48,7 @@ CREATE TABLE shopjoy_2604.pd_prod (
     upd_date              TIMESTAMP    ,
     platform_fee_rate     NUMERIC(5,2) ,
     platform_fee_amount   BIGINT       ,
-    opt_type_cd           VARCHAR(20)
+    prod_opt_type_level1_cd VARCHAR(20)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod IS '상품';
@@ -98,6 +98,6 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.upd_by IS '수정자 (sy_user.user_id, mb
 COMMENT ON COLUMN shopjoy_2604.pd_prod.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_rate IS '플랫폼수수료 율 (%) — 내부 관리용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_amount IS '플랫폼수수료 금액 (원) — 내부 관리용. rate 와 amount 중 입력된 값을 우선 사용';
-COMMENT ON COLUMN shopjoy_2604.pd_prod.opt_type_cd IS '옵션 카테고리 코드 (코드: PROD_OPT_CATEGORY level=1) — 옵션형 상품에서 옵션 그룹들이 속하는 카테고리';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_opt_type_level1_cd IS '옵션 1단 분류 코드 (코드: PROD_OPT_CATEGORY level=1) — 옵션형 상품에서 옵션 그룹들이 속하는 1단 분류 (COLOR/SIZE 등)';
 
 CREATE INDEX idx_pd_prod_site ON shopjoy_2604.pd_prod USING btree (site_id);

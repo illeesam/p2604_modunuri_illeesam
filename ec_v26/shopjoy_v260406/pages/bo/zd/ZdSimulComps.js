@@ -489,13 +489,14 @@
     prodStock: '재고수량', prodTypeCd: '상품유형', prodStatusCd: '판매상태',
     advrtStmt: '홍보문구', categoryId: '카테고리ID', siteId: '사이트ID',
     dlivTmpltId: '배송템플릿ID', simulYn: '시뮬여부', prodId: '상품ID',
-    optTypeCd: '옵션카테고리코드',
+    prodOptTypeLevel1Cd: '옵션1단분류코드',
     /* prodOpts[].optTypes — pd_prod_opt_type Entity 컬럼명 기준 */
     prodOptTypeId: '옵션유형ID', prodOptTypeNm: '옵션유형명', prodOptTypeLevel: '옵션단계',
-    prodOptInputTypeCd: '입력유형', sortOrd: '정렬순서',
-    /* prodOpts[].prodOpts — pd_prod_opt Entity 컬럼명 기준 (구 pd_prod_opt_item) */
+    level1Cd: '1단분류코드', level2Cd: '2단분류코드', sortOrd: '정렬순서',
+    /* prodOpts[].prodOpts — pd_prod_opt Entity 컬럼명 기준 */
     prodOptId: '옵션값ID', prodOptNm: '옵션항목명', prodOptVal: '옵션값',
-    optValCodeId: '코드참조ID', parentProdOptId: '상위옵션값ID', optStyle: '항목스타일',
+    parentProdOptId: '상위옵션값ID', prodOptStyle: '항목스타일',
+    prodOptTypeLevel1Cd: '1단분류코드', prodOptTypeLevel2Cd: '2단분류코드',
     useYn: '사용여부',
     /* SKU (백엔드 자동생성 참고용) — pd_prod_sku */
     prodSkuId: 'SKU ID', skuNm: 'SKU명',
@@ -602,7 +603,7 @@
     'prodNm', 'salePrice', 'purchasePrice', 'prodStock',
     'prodTypeCd', 'prodStatusCd', 'advrtStmt',
     'categoryId', 'siteId', 'dlivTmpltId', 'simulYn',
-    'optTypeCd', 'prodOpts', '_preview_[prodOpts]', 'prodSkus', 'prodImages',
+    'prodOptTypeLevel1Cd', 'prodOpts', '_preview_[prodOpts]', 'prodSkus', 'prodImages',
     'prodId',
     /* 회원 */
     'memberNm', 'loginId', 'memberEmail', 'memberPhone',
@@ -673,10 +674,10 @@
     /* 혼합 */
     'claimItems', 'dlivItems', 'payMethods', 'members', 'prods',
   ]);
-  /* prodOpts[].prodOpts 의 실제 전송 필드명 — pd_prod_opt Entity 기준 (구 pd_prod_opt_item) */
-  const _REAL_OPT_ITEM_FIELDS = new Set(['prodOptId', 'prodOptNm', 'prodOptVal', 'optValCodeId', 'parentProdOptId', 'optStyle', 'sortOrd', 'useYn']);
-  /* prodOpts[] 의 실제 전송 필드명 — pd_prod_opt_type Entity 기준 (구 pd_prod_opt) */
-  const _REAL_OPT_GRP_FIELDS  = new Set(['prodOptTypeNm', 'prodOptTypeLevel', 'prodOptInputTypeCd', 'sortOrd', 'prodOpts']);
+  /* prodOpts[].prodOpts 의 실제 전송 필드명 — pd_prod_opt Entity 기준 */
+  const _REAL_OPT_ITEM_FIELDS = new Set(['prodOptId', 'prodOptNm', 'prodOptVal', 'parentProdOptId', 'prodOptStyle', 'prodOptTypeLevel1Cd', 'prodOptTypeLevel2Cd', 'sortOrd', 'useYn']);
+  /* prodOpts[] 의 실제 전송 필드명 — pd_prod_opt_type Entity 기준 */
+  const _REAL_OPT_GRP_FIELDS  = new Set(['prodOptTypeNm', 'prodOptTypeLevel', 'level1Cd', 'level2Cd', 'sortOrd', 'prodOpts']);
   const _parsePreviewKey = (k) => {
     if (!k.startsWith('_preview_')) return null;
     const rest = k.slice('_preview_'.length); // e.g. "[prodOpts](6건)" or "optCategory"

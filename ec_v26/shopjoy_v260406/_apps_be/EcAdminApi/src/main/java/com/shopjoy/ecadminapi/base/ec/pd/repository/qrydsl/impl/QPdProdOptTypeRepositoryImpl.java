@@ -40,7 +40,8 @@ public class QPdProdOptTypeRepositoryImpl implements QPdProdOptTypeRepository {
                         pdProdOptType.prodId,
                         pdProdOptType.prodOptTypeNm,
                         pdProdOptType.prodOptTypeLevel,
-                        pdProdOptType.prodOptInputTypeCd,
+                        pdProdOptType.prodOptTypeLevel1Cd,
+                        pdProdOptType.prodOptTypeLevel2Cd,
                         pdProdOptType.sortOrd,
                         pdProdOptType.regBy,
                         pdProdOptType.regDate,
@@ -170,7 +171,6 @@ public class QPdProdOptTypeRepositoryImpl implements QPdProdOptTypeRepository {
         or = orLike(or, all, types, ",prodId,", pdProdOptType.prodId, pattern);
         or = orLike(or, all, types, ",siteId,", pdProdOptType.siteId, pattern);
         or = orLike(or, all, types, ",prodOptTypeNm,", pdProdOptType.prodOptTypeNm, pattern);
-        or = orLike(or, all, types, ",prodOptInputTypeCd,", pdProdOptType.prodOptInputTypeCd, pattern);
         return or;
     }
 
@@ -225,9 +225,10 @@ public class QPdProdOptTypeRepositoryImpl implements QPdProdOptTypeRepository {
         if (entity.getSiteId()           != null) { update.set(pdProdOptType.siteId,            entity.getSiteId());            hasAny = true; }
         if (entity.getProdId()           != null) { update.set(pdProdOptType.prodId,            entity.getProdId());            hasAny = true; }
         if (entity.getProdOptTypeNm()    != null) { update.set(pdProdOptType.prodOptTypeNm,     entity.getProdOptTypeNm());     hasAny = true; }
-        if (entity.getProdOptTypeLevel() != null) { update.set(pdProdOptType.prodOptTypeLevel,  entity.getProdOptTypeLevel());  hasAny = true; }
-        if (entity.getProdOptInputTypeCd() != null) { update.set(pdProdOptType.prodOptInputTypeCd, entity.getProdOptInputTypeCd()); hasAny = true; }
-        if (entity.getSortOrd()          != null) { update.set(pdProdOptType.sortOrd,           entity.getSortOrd());           hasAny = true; }
+        if (entity.getProdOptTypeLevel()    != null) { update.set(pdProdOptType.prodOptTypeLevel,    entity.getProdOptTypeLevel());    hasAny = true; }
+        if (entity.getProdOptTypeLevel1Cd() != null) { update.set(pdProdOptType.prodOptTypeLevel1Cd, entity.getProdOptTypeLevel1Cd()); hasAny = true; }
+        if (entity.getProdOptTypeLevel2Cd() != null) { update.set(pdProdOptType.prodOptTypeLevel2Cd, entity.getProdOptTypeLevel2Cd()); hasAny = true; }
+        if (entity.getSortOrd()             != null) { update.set(pdProdOptType.sortOrd,             entity.getSortOrd());             hasAny = true; }
         if (entity.getUpdBy()            != null) { update.set(pdProdOptType.updBy,             entity.getUpdBy());             hasAny = true; }
         update.set(pdProdOptType.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 

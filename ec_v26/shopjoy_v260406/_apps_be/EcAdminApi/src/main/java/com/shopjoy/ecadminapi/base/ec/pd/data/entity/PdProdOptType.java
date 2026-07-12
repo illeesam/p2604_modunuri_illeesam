@@ -39,9 +39,13 @@ public class PdProdOptType extends BaseEntity {
     @Column(name = "prod_opt_type_level", nullable = false)
     private Integer prodOptTypeLevel;
 
-    @Comment("옵션입력방식 코드 (OPT_INPUT_TYPE — SELECT/SELECT_INPUT/MULTI_SELECT 등)")
-    @Column(name = "prod_opt_input_type_cd", length = 20)
-    private String prodOptInputTypeCd;
+    @Comment("이 차원이 속한 1단 분류 코드 (코드: PROD_OPT_CATEGORY level=1 — COLOR/SIZE 등)")
+    @Column(name = "prod_opt_type_level1_cd", length = 20)
+    private String prodOptTypeLevel1Cd;
+
+    @Comment("이 차원이 속한 2단 분류 코드 (NULL 가능)")
+    @Column(name = "prod_opt_type_level2_cd", length = 20)
+    private String prodOptTypeLevel2Cd;
 
     @Comment("정렬순서")
     @Column(name = "sort_ord")

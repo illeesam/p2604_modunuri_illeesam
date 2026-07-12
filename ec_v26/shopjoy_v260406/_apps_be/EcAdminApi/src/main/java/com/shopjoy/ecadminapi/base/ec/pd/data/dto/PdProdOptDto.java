@@ -30,9 +30,10 @@ public class PdProdOptDto {
         private String prodId;
         private String prodOptNm;
         private String prodOptVal;
-        private String prodOptValCodeId;
+        private String prodOptTypeLevel1Cd;
+        private String prodOptTypeLevel2Cd;
         private String parentProdOptId;
-        private String optStyle;
+        private String prodOptStyle;
         private Integer sortOrd;
         private String useYn;
         private String regBy;

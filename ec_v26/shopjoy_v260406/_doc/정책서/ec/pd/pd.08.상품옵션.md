@@ -6,12 +6,12 @@
 
 ---
 
-## 테이블 구조
+## 테이블 구조 (2026-07-13 기준)
 
 ```
 pd_prod (상품)
-└─ pd_prod_opt (옵션 차원 — 예: "색상", "사이즈")
-     └─ pd_prod_opt_item (옵션 값 — 예: 블랙, M)
+└─ pd_prod_opt_type (옵션 유형 — 예: "색상", "사이즈")
+     └─ pd_prod_opt (옵션 값 — 예: 블랙, M)
           └─ pd_prod_sku (SKU — 옵션 조합별 재고/가격 단위)
 ```
 
@@ -19,73 +19,72 @@ pd_prod (상품)
 
 ## 옵션 단계
 
-| 단계 | pd_prod_opt 행 수 | 예시 | SKU 생성 방식 |
+| 단계 | pd_prod_opt_type 행 수 | 예시 | SKU 생성 방식 |
 |---|---|---|---|
-| 옵션 없음 | 0 | 단일 상품 | SKU 1개 (opt_item_id_1=NULL) |
-| 1단 옵션 | 1 | 용량만 | opt_level=1 값 수만큼 SKU |
-| 2단 옵션 | 2 | 색상 + 사이즈 | opt_level=1 × opt_level=2 조합만큼 SKU |
+| 옵션 없음 | 0 | 단일 상품 | SKU 1개 (prod_opt_id_1=NULL) |
+| 1단 옵션 | 1 | 용량만 | prod_opt_type_level=1 값 수만큼 SKU |
+| 2단 옵션 | 2 | 색상 + 사이즈 | prod_opt_type_level=1 × prod_opt_type_level=2 조합만큼 SKU |
 
-> 현재 DDL 기준 최대 2단 (pd_prod_sku.opt_item_id_1, opt_item_id_2)
+> 현재 DDL 기준 최대 2단 (pd_prod_sku.prod_opt_id_1, prod_opt_id_2)
 
 ---
 
 ## 주요 필드
 
-### pd_prod_opt — 옵션 차원(그룹)
+### pd_prod — 상품 (옵션 관련)
 | 필드 | 설명 |
 |---|---|
-| `opt_id` | 옵션 차원ID (PK) |
+| `prod_opt_type_level1_cd` | 옵션 1단 분류 코드 (OPT_TYPE Level 1 — CLOTHING/SHOES/BAG/CUSTOM_GRP) |
+
+### pd_prod_opt_type — 옵션 유형(차원)
+| 필드 | 설명 |
+|---|---|
+| `prod_opt_type_id` | 옵션 유형ID (PK) |
 | `prod_id` | 상품ID |
-| `opt_nm` | 차원명 (예: 색상, 사이즈) |
-| `opt_level` | 차원 순서 (1=첫 번째, 2=두 번째) |
-| `opt_type_cd` | 옵션 유형 — OPT_TYPE Level 2 { COLOR:색상, SIZE:사이즈, MATERIAL:소재, CUSTOM:직접입력 } |
-| `opt_input_type_cd` | UI 입력 방식 — OPT_INPUT_TYPE { SELECT:선택, SELECT_INPUT:선택+직접입력, MULTI_SELECT:복수선택 } |
+| `prod_opt_type_nm` | 유형명 (예: 색상, 사이즈) |
+| `prod_opt_type_level` | 유형 순서 (1=첫 번째, 2=두 번째) |
+| `prod_opt_type_level1_cd` | 이 차원의 1단 분류 코드 (OPT_TYPE Level 1) |
+| `prod_opt_type_level2_cd` | 이 차원의 2단 분류 코드 (OPT_TYPE Level 2, NULL 가능) |
 | `sort_ord` | 정렬순서 |
 
-### pd_prod_opt_item — 옵션 값
+### pd_prod_opt — 옵션 값
 | 필드 | 설명 |
 |---|---|
-| `opt_item_id` | 옵션값ID (PK) |
-| `opt_id` | 소속 옵션 차원 ID (FK: pd_prod_opt.opt_id) |
-| `opt_type_cd` | 옵션 유형 (부모 pd_prod_opt과 동일) |
-| `opt_nm` | 옵션값 표시명 (예: 블랙, M) |
-| `opt_item_val` | 실제 저장값 — `opt_item_val_code_id` 선택 시 codeValue 자동 채움, 직접입력도 허용 |
-| `opt_item_val_code_id` | OPT_VAL 공통코드 참조ID (sy_code.code_id) — NULL이면 `opt_item_val` 직접입력 |
-| `parent_opt_item_id` | 상위 옵션값ID — 2단 항목에서 연결할 1단 항목 지정 (NULL=전체 공통) |
+| `prod_opt_id` | 옵션값ID (PK) |
+| `prod_opt_type_id` | 소속 옵션 유형 ID (FK: pd_prod_opt_type.prod_opt_type_id) |
+| `prod_id` | 상품ID |
+| `prod_opt_nm` | 옵션값 표시명 (예: 블랙, M) |
+| `prod_opt_val` | 실제 저장값 (직접 입력 또는 프리셋 codeValue) |
+| `prod_opt_type_level1_cd` | 비정규화 — pd_prod_opt_type.prod_opt_type_level1_cd 복사 |
+| `prod_opt_type_level2_cd` | 비정규화 — pd_prod_opt_type.prod_opt_type_level2_cd 복사 (NULL 가능) |
+| `parent_prod_opt_id` | 상위 옵션값ID — 2단 항목에서 연결할 1단 항목 지정 (NULL=전체 공통) |
+| `prod_opt_style` | 옵션 표시 스타일 — 색상코드(#FF0000) 또는 빈 문자열 |
 | `sort_ord` | 정렬순서 |
 | `use_yn` | 사용여부 Y/N |
 
-#### 값 결정 규칙
-```
-opt_item_val_code_id 선택 시 → opt_item_val = 해당 코드의 codeValue (UI에서 자동 채움)
-opt_item_val_code_id = NULL  → opt_item_val = 직접입력값 (CUSTOM 등 임의 문자열)
-유효저장값 = opt_item_val  (항상 opt_val이 실제 사용값)
-opt_item_val = NULL 는 앱에서 허용하지 않음
-```
+#### parent_prod_opt_id — 2단 옵션 연동 규칙
+2단 옵션 항목에서 `parent_prod_opt_id`를 지정하면, 구매자가 해당 1단 값을 선택했을 때만 이 2단 값이 노출된다.
 
-#### parent_opt_item_id — 2단 옵션 연동 규칙
-2단 옵션 항목에서 `parent_opt_item_id`를 지정하면, 구매자가 해당 1단 값을 선택했을 때만 이 2단 값이 노출된다.
-
-| parent_opt_item_id | 의미 |
+| parent_prod_opt_id | 의미 |
 |---|---|
 | NULL | 모든 1단 값과 조합 가능 (전체 공통) |
-| 특정 opt_item_id | 해당 1단 값 선택 시에만 이 2단 값 노출 |
+| 특정 prod_opt_id | 해당 1단 값 선택 시에만 이 2단 값 노출 |
 
-예시: 블랙(ITEM001) 색상에서는 S/M/L 전부, 화이트(ITEM002)에서는 S/M만 제공하고 싶을 때:
+예시: 블랙(OPT001) 색상에서는 S/M/L 전부, 화이트(OPT002)에서는 S/M만 제공하고 싶을 때:
 ```
-ITEM004 (S, parent=NULL)       → 블랙·화이트 모두 선택 가능
-ITEM005 (M, parent=NULL)       → 블랙·화이트 모두 선택 가능
-ITEM006 (L, parent=ITEM001)    → 블랙 선택 시에만 노출
+OPT004 (S, parent=NULL)       → 블랙·화이트 모두 선택 가능
+OPT005 (M, parent=NULL)       → 블랙·화이트 모두 선택 가능
+OPT006 (L, parent=OPT001)    → 블랙 선택 시에만 노출
 ```
 
 ### pd_prod_sku — SKU
 | 필드 | 설명 |
 |---|---|
-| `sku_id` | SKU ID |
+| `prod_sku_id` | SKU ID (PK) |
 | `prod_id` | 상품ID |
-| `opt_item_id_1` | 옵션1 값ID (pd_prod_opt_item.opt_item_id, NULL=옵션없음) |
-| `opt_item_id_2` | 옵션2 값ID (pd_prod_opt_item.opt_item_id, NULL=1단 옵션) |
-| `sku_code` | 자체 SKU 코드 (바코드·ERP 연동용) |
+| `prod_opt_id_1` | 옵션1 값ID (pd_prod_opt.prod_opt_id, NULL=옵션없음) |
+| `prod_opt_id_2` | 옵션2 값ID (pd_prod_opt.prod_opt_id, NULL=1단 옵션) |
+| `prod_sku_code` | 자체 SKU 코드 (바코드·ERP 연동용) |
 | `add_price` | 옵션 추가금액 (기본 0원) |
 | `prod_opt_stock` | 해당 조합 재고수량 |
 | `use_yn` | 사용여부 Y/N |
@@ -96,44 +95,50 @@ ITEM006 (L, parent=ITEM001)    → 블랙 선택 시에만 노출
 
 ### 1단 옵션 (용량)
 ```
-pd_prod_opt
-  opt_id='OPT001', opt_level=1, opt_type_cd='CUSTOM', opt_nm='용량'
+pd_prod_opt_type
+  prod_opt_type_id='OPTT001', prod_opt_type_level=1, prod_opt_type_nm='용량'
+  prod_opt_type_level1_cd='CUSTOM_GRP', prod_opt_type_level2_cd=NULL
 
-pd_prod_opt_item (opt_id='OPT001')
-  opt_item_id='ITEM001'  opt_nm='100ml'  opt_item_val='V_100ML'  opt_item_val_code_id=NULL
-  opt_item_id='ITEM002'  opt_nm='200ml'  opt_item_val='V_200ML'  opt_item_val_code_id=NULL
-  opt_item_id='ITEM003'  opt_nm='500ml'  opt_item_val='V_500ML'  opt_item_val_code_id=NULL
+pd_prod_opt (prod_opt_type_id='OPTT001')
+  prod_opt_id='OPT001'  prod_opt_nm='100ml'  prod_opt_val='V_100ML'
+  prod_opt_id='OPT002'  prod_opt_nm='200ml'  prod_opt_val='V_200ML'
+  prod_opt_id='OPT003'  prod_opt_nm='500ml'  prod_opt_val='V_500ML'
 
 pd_prod_sku (SKU 3개)
-  SKU001  opt_item_id_1='ITEM001'  add_price=0      stock=20
-  SKU002  opt_item_id_1='ITEM002'  add_price=3,000  stock=15
-  SKU003  opt_item_id_1='ITEM003'  add_price=8,000  stock=10
+  SKU001  prod_opt_id_1='OPT001'  add_price=0      stock=20
+  SKU002  prod_opt_id_1='OPT002'  add_price=3,000  stock=15
+  SKU003  prod_opt_id_1='OPT003'  add_price=8,000  stock=10
 ```
 
 ### 2단 옵션 (색상 + 사이즈)
 ```
-pd_prod_opt
-  opt_id='OPT001', opt_level=1, opt_type_cd='COLOR', opt_nm='색상'
-  opt_id='OPT002', opt_level=2, opt_type_cd='SIZE',  opt_nm='사이즈'
+pd_prod (상품)
+  prod_opt_type_level1_cd='CLOTHING'
 
-pd_prod_opt_item (opt_id='OPT001' — 색상)
-  opt_item_id='ITEM001'  opt_nm='블랙'     opt_item_val='BLACK'  opt_item_val_code_id=NULL         → 저장값: BLACK
-  opt_item_id='ITEM002'  opt_nm='화이트'   opt_item_val='WHITE'  opt_item_val_code_id=NULL         → 저장값: WHITE
-  opt_item_id='ITEM003'  opt_nm='딥네이비' opt_item_val='NAVY'   opt_item_val_code_id='DEEP_NAVY'  → 저장값: NAVY
+pd_prod_opt_type
+  prod_opt_type_id='OPTT001', prod_opt_type_level=1, prod_opt_type_nm='색상'
+    prod_opt_type_level1_cd='CLOTHING', prod_opt_type_level2_cd='COLOR'
+  prod_opt_type_id='OPTT002', prod_opt_type_level=2, prod_opt_type_nm='사이즈'
+    prod_opt_type_level1_cd='CLOTHING', prod_opt_type_level2_cd='SIZE'
 
-pd_prod_opt_item (opt_id='OPT002' — 사이즈)
-  opt_item_id='ITEM004'  opt_nm='S'  opt_item_val='S'  opt_item_val_code_id=NULL
-  opt_item_id='ITEM005'  opt_nm='M'  opt_item_val='M'  opt_item_val_code_id=NULL
-  opt_item_id='ITEM006'  opt_nm='L'  opt_item_val='L'  opt_item_val_code_id=NULL
+pd_prod_opt (prod_opt_type_id='OPTT001' — 색상)
+  prod_opt_id='OPT001'  prod_opt_nm='블랙'     prod_opt_val='BLACK'  prod_opt_style='#000000'
+  prod_opt_id='OPT002'  prod_opt_nm='화이트'   prod_opt_val='WHITE'  prod_opt_style='#FFFFFF'
+  prod_opt_id='OPT003'  prod_opt_nm='딥네이비' prod_opt_val='NAVY'   prod_opt_style='#1B2A4A'
+
+pd_prod_opt (prod_opt_type_id='OPTT002' — 사이즈)
+  prod_opt_id='OPT004'  prod_opt_nm='S'  prod_opt_val='S'
+  prod_opt_id='OPT005'  prod_opt_nm='M'  prod_opt_val='M'
+  prod_opt_id='OPT006'  prod_opt_nm='L'  prod_opt_val='L'
 
 pd_prod_sku (SKU 9개 = 3색상 × 3사이즈)
-  SKU001  opt_item_id_1='ITEM001'(블랙)     opt_item_id_2='ITEM004'(S)  stock=20  add_price=0
-  SKU002  opt_item_id_1='ITEM001'(블랙)     opt_item_id_2='ITEM005'(M)  stock=30  add_price=0
-  SKU003  opt_item_id_1='ITEM001'(블랙)     opt_item_id_2='ITEM006'(L)  stock=15  add_price=0
+  SKU001  prod_opt_id_1='OPT001'(블랙)     prod_opt_id_2='OPT004'(S)  stock=20  add_price=0
+  SKU002  prod_opt_id_1='OPT001'(블랙)     prod_opt_id_2='OPT005'(M)  stock=30  add_price=0
+  SKU003  prod_opt_id_1='OPT001'(블랙)     prod_opt_id_2='OPT006'(L)  stock=15  add_price=0
   ...
-  SKU007  opt_item_id_1='ITEM003'(딥네이비) opt_item_id_2='ITEM004'(S)  stock=5   add_price=2,000
-  SKU008  opt_item_id_1='ITEM003'(딥네이비) opt_item_id_2='ITEM005'(M)  stock=12  add_price=2,000
-  SKU009  opt_item_id_1='ITEM003'(딥네이비) opt_item_id_2='ITEM006'(L)  stock=0   add_price=2,000  ← 품절
+  SKU007  prod_opt_id_1='OPT003'(딥네이비) prod_opt_id_2='OPT004'(S)  stock=5   add_price=2,000
+  SKU008  prod_opt_id_1='OPT003'(딥네이비) prod_opt_id_2='OPT005'(M)  stock=12  add_price=2,000
+  SKU009  prod_opt_id_1='OPT003'(딥네이비) prod_opt_id_2='OPT006'(L)  stock=0   add_price=2,000  ← 품절
 ```
 
 ---
@@ -143,7 +148,7 @@ pd_prod_sku (SKU 9개 = 3색상 × 3사이즈)
 ### 구매자 선택 → SKU 조회
 ```
 1. 구매자: 색상="블랙", 사이즈="M" 선택
-2. 조회: opt_item_id_1='ITEM001' AND opt_item_id_2='ITEM005' → SKU002 조회
+2. 조회: prod_opt_id_1='OPT001' AND prod_opt_id_2='OPT005' → SKU002 조회
 3. 재고 확인: prod_opt_stock = 30 → 구매 가능
 4. 판매가 계산: pd_prod.sale_price + SKU002.add_price
 ```
@@ -151,9 +156,9 @@ pd_prod_sku (SKU 9개 = 3색상 × 3사이즈)
 ### od_order_item 생성 시 스냅샷
 ```
 od_order_item
-  sku_id          : SKU002           ← SKU 참조
-  opt_item_id_1   : ITEM001          ← 옵션1 값 ID 스냅샷
-  opt_item_id_2   : ITEM005          ← 옵션2 값 ID 스냅샷
+  prod_sku_id     : SKU002           ← SKU 참조
+  prod_opt_id_1   : OPT001          ← 옵션1 값 ID 스냅샷
+  prod_opt_id_2   : OPT005          ← 옵션2 값 ID 스냅샷
   unit_price      : 25,000원         ← sale_price + add_price 스냅샷
   qty             : 1
 ```
@@ -162,15 +167,15 @@ od_order_item
 
 ## 옵션 이미지 연동
 
-`pd_prod_img.opt_item_id_1` / `opt_item_id_2`로 옵션에 따른 이미지 자동 전환:
+`pd_prod_img.prod_opt_id_1` / `prod_opt_id_2`로 옵션에 따른 이미지 자동 전환:
 
-| opt_item_id_1 | opt_item_id_2 | 이미지 적용 범위 |
+| prod_opt_id_1 | prod_opt_id_2 | 이미지 적용 범위 |
 |---|---|---|
 | NULL | NULL | 상품 공통 대표이미지 |
 | 색상값 | NULL | 해당 색상의 모든 사이즈 공통 |
 | 색상값 | 사이즈값 | 특정 색상+사이즈 전용 이미지 |
 
-> 구매자가 색상을 선택하면 해당 opt_item_id_1에 연결된 이미지로 자동 교체
+> 구매자가 색상을 선택하면 해당 prod_opt_id_1에 연결된 이미지로 자동 교체
 
 ---
 
@@ -178,7 +183,7 @@ od_order_item
 
 | 상태 | 처리 |
 |---|---|
-| `use_yn = 'N'` (pd_prod_opt_item) | 옵션 값 비활성화 → 선택 불가 |
+| `use_yn = 'N'` (pd_prod_opt) | 옵션 값 비활성화 → 선택 불가 |
 | `prod_opt_stock = 0` (SKU) | 해당 조합 품절 → UI에 "품절" 표시, 선택 불가 |
 | `use_yn = 'N'` (pd_prod_sku) | SKU 비활성화 (옵션 폐기) |
 
@@ -196,7 +201,7 @@ od_order_item
 | 상황 | 정책 |
 |---|---|
 | 옵션값 추가 | 신규 SKU 생성. 기존 주문에 영향 없음 |
-| 옵션값 삭제 | 주문이 있는 opt_item_id는 `use_yn='N'` 처리 (물리 삭제 불가) |
+| 옵션값 삭제 | 주문이 있는 prod_opt_id는 `use_yn='N'` 처리 (물리 삭제 불가) |
 | SKU 가격 변경 | `pdh_prod_sku_price_hist`에 변경 전/후 add_price 기록 |
 | SKU 재고 변경 | `pdh_prod_sku_stock_hist`에 기록 (chg_reason_cd: SKU_STOCK_CHG) |
 | SKU 상태 변경 | `pdh_prod_sku_chg_hist`에 use_yn 변경 기록 |
@@ -209,7 +214,7 @@ od_order_item
 | 필드 | 설명 |
 |---|---|
 | `hist_id` | 이력ID |
-| `sku_id` | 대상 SKU |
+| `prod_sku_id` | 대상 SKU |
 | `prod_id` | 상품ID (조회 편의) |
 | `add_price_before` | 변경 전 추가금액 |
 | `add_price_after` | 변경 후 추가금액 |
@@ -221,7 +226,7 @@ od_order_item
 | 필드 | 설명 |
 |---|---|
 | `hist_id` | 이력ID |
-| `sku_id` | 대상 SKU |
+| `prod_sku_id` | 대상 SKU |
 | `stock_before` | 변경 전 재고 |
 | `stock_after` | 변경 후 재고 |
 | `chg_qty` | 변경수량 (양수=입고, 음수=출고) |
@@ -236,8 +241,8 @@ SKU의 `use_yn` 활성/비활성 변경만 기록.
 ## 공통코드 OPT_TYPE 트리 구조
 
 `OPT_TYPE`은 **2레벨 트리** 구조로 구성된다.
-- **Level 1 (옵션 카테고리)**: 상품 종류별 카테고리 — 관리자가 먼저 선택
-- **Level 2 (옵션 유형)**: 해당 카테고리에서 사용 가능한 유형 — Level 1 선택 후 표시
+- **Level 1 (옵션 카테고리)**: 상품 종류별 카테고리 — 관리자가 먼저 선택 → `pd_prod.prod_opt_type_level1_cd` 에 저장
+- **Level 2 (옵션 유형)**: 해당 카테고리에서 사용 가능한 유형 — Level 1 선택 후 표시 → `pd_prod_opt_type.prod_opt_type_level2_cd` 에 저장
 
 `OPT_VAL` 코드그룹은 OPT_TYPE Level 2의 `codeValue`를 `parentCodeValue`로 참조하는 **크로스-그룹 트리**로 연결된다.
 
@@ -271,17 +276,17 @@ codeGrp: OPT_TYPE  (Level 1 — 옵션 카테고리, parentCodeValue=NULL)
 └─ CUSTOM_GRP │커스텀│
       └─ OPT_TYPE Level 2 (parentCodeValue='CUSTOM_GRP')
             └─ CUSTOM │직접입력│
-                  └─ OPT_VAL 프리셋 없음 — opt_nm · opt_item_val 직접 입력
+                  └─ OPT_VAL 프리셋 없음 — prod_opt_type_nm · prod_opt_val 직접 입력
 ```
 
 ### 컬럼 매핑
 
 | 컬럼 | 입력 방식 | 설명 |
 |---|---|---|
-| (관리자 UI) 옵션 카테고리 | OPT_TYPE Level 1 `<select>` | 의류/신발/가방/커스텀 — 1레벨 먼저 선택 |
-| `pd_prod_opt.opt_type_cd` | OPT_TYPE Level 2 `<select>` | 차원 유형 — COLOR / SIZE / MATERIAL / CUSTOM |
-| `pd_prod_opt_item.opt_item_val_code_id` | OPT_VAL `<select>` | 공통코드 참조ID — 선택 시 opt_val에 codeValue 자동 반영 |
-| `pd_prod_opt_item.opt_item_val` | `<input>` (자동채움 또는 직접입력) | 실제 저장값 — opt_item_val_code_id 선택 시 자동 채움 |
+| `pd_prod.prod_opt_type_level1_cd` | OPT_TYPE Level 1 `<select>` | 의류/신발/가방/커스텀 — 1레벨 먼저 선택 |
+| `pd_prod_opt_type.prod_opt_type_level2_cd` | OPT_TYPE Level 2 `<select>` | 해당 카테고리의 세부 유형(색상/사이즈/소재 등) |
+| `pd_prod_opt.prod_opt_val` | `<input>` (프리셋 선택 또는 직접입력) | 실제 저장값 |
+| `pd_prod_opt.prod_opt_style` | `<input>` | 색상 코드(#FF0000) 등 표시 스타일 |
 
 ### 관리자 UI 선택 흐름
 
@@ -289,41 +294,87 @@ codeGrp: OPT_TYPE  (Level 1 — 옵션 카테고리, parentCodeValue=NULL)
 [Step 1] 옵션 카테고리 선택 (OPT_TYPE Level 1)
   ☑ 옵션 사용   옵션 카테고리: [의류 (색상+사이즈) ▼]
                                       ↓ 선택 시 차원 자동 추가
-[Step 2] 1단·2단 유형 확인/변경 (OPT_TYPE Level 2)
-  1단 유형: [색상 (COLOR) ▼] 13개 프리셋   2단 유형: [사이즈 (SIZE) ▼] 7개 프리셋
 
-[Step 3] 옵션 값 입력 (pd_prod_opt_item)
-  1단 색상 차원:
-    # | 표시명(opt_nm) | 공통코드ID(opt_item_val_code_id) | 저장값(opt_item_val)
-    1 | 블랙           | [검정 (BLACK) ▼]            | BLACK  (자동채움)
-    2 | 화이트         | [흰색 (WHITE) ▼]            | WHITE  (자동채움)
-    3 | 딥네이비       | [-- 선택 --]                | NAVY   (직접입력)
+[Step 2] 1단·2단 유형 선택 (OPT_TYPE Level 2)
+  1단 유형: [색상 ▼]   2단 유형: [사이즈 ▼]
 
-  2단 사이즈 차원:
-    # | 상위옵션값(parent_opt_item_id) | 표시명 | 공통코드ID | 저장값
-    1 | [-- 전체 공통 --]              | S      | [S ▼]      | S
-    2 | [-- 전체 공통 --]              | M      | [M ▼]      | M
-    3 | [블랙]                         | L      | [L ▼]      | L  (블랙만)
+[Step 3] 옵션 값 입력 (pd_prod_opt)
+  1단 색상 유형:
+    # | 표시명(prod_opt_nm) | 저장값(prod_opt_val) | 스타일(prod_opt_style)
+    1 | 블랙                | BLACK                | #000000
+    2 | 화이트              | WHITE                | #FFFFFF
+    3 | 딥네이비            | NAVY                 | #1B2A4A
+
+  2단 사이즈 유형:
+    # | 상위옵션값(parent_prod_opt_id) | 표시명 | 저장값
+    1 | [-- 전체 공통 --]              | S      | S
+    2 | [-- 전체 공통 --]              | M      | M
+    3 | [블랙]                         | L      | L  (블랙만)
+```
+
+---
+
+## 시뮬레이터 연동 body key 규칙 (2026-07-13 기준)
+
+### 전송 body 구조
+
+```
+body (pd_prod)
+├─ prodNm, salePrice, purchasePrice, prodStock
+├─ prodTypeCd, prodStatusCd, advrtStmt
+├─ prodOptTypeLevel1Cd    ← pd_prod.prod_opt_type_level1_cd
+├─ prodOpts[]            ← pd_prod_opt_type (옵션 유형 배열)
+│   ├─ prodOptTypeNm     ← pd_prod_opt_type.prod_opt_type_nm
+│   ├─ prodOptTypeLevel  ← pd_prod_opt_type.prod_opt_type_level
+│   ├─ level1Cd          ← pd_prod_opt_type.prod_opt_type_level1_cd
+│   ├─ level2Cd          ← pd_prod_opt_type.prod_opt_type_level2_cd
+│   ├─ sortOrd
+│   └─ prodOpts[]        ← pd_prod_opt (옵션 값 배열, 같은 키 이름 재사용)
+│       ├─ prodOptId, prodOptNm, prodOptVal
+│       ├─ prodOptStyle, parentProdOptId
+│       └─ sortOrd, useYn
+└─ prodImages[]          ← pd_prod_img (항상 포함, 미전송 시 빈 배열)
+```
+
+※ `prodSkus`는 백엔드가 `prodOpts` 조합에서 자동 생성 (별도 전송 불필요)
+※ `prodOpts`, `prodImages` 는 **값 없어도 항상 포함** (빈 값=null/[])
+
+### 임시 ID 사전 할당
+
+```
+body.prodId = 'tmp-prod-01'              ← 상품 임시 ID (프론트 생성)
+
+prodOpts[0] (유형: 색상)
+  prodOpts[0].prodOptId = 'tmp-opt1-01' ← 1유형 1번째 옵션값
+  prodOpts[1].prodOptId = 'tmp-opt1-02' ← 1유형 2번째 옵션값
+
+prodOpts[1] (유형: 사이즈)
+  prodOpts[0].prodOptId = 'tmp-opt2-01' ← 2유형 1번째 옵션값
+  prodOpts[1].prodOptId = 'tmp-opt2-02' ← 2유형 2번째 옵션값
+  ↓ 참조
+_preview_[prodSkus][*].prodOptId1 = 'tmp-opt1-01'
+_preview_[prodSkus][*].prodOptId2 = 'tmp-opt2-01'
+prodImages[0].prodOptId1 = 'tmp-opt1-01'
 ```
 
 ---
 
 ## 관련 코드
 - `OPT_TYPE` Level 1: CLOTHING / SHOES / BAG / CUSTOM_GRP (옵션 카테고리 — 관리자 화면 1단계 선택)
-- `OPT_TYPE` Level 2: COLOR / SIZE / MATERIAL / CUSTOM (옵션 유형 — pd_prod_opt.opt_type_cd)
+- `OPT_TYPE` Level 2: COLOR / SIZE / MATERIAL / CUSTOM (옵션 유형 분류)
 - `OPT_VAL`: OPT_TYPE Level 2 하위 프리셋값 (parentCodeValue = OPT_TYPE Level 2 codeValue)
-- `OPT_INPUT_TYPE`: SELECT / SELECT_INPUT / MULTI_SELECT (UI 입력 방식)
 - `SKU_STOCK_CHG`: SALE / PURCHASE / RETURN / EXCHANGE / ADJUST / CLAIM / ADMIN (재고 변경 사유)
 
 ## 관련 테이블
-- `pd_prod_opt` — 옵션 차원 (opt_id PK, opt_level, opt_type_cd)
-- `pd_prod_opt_item` — 옵션 값 (opt_item_id PK, opt_id FK, opt_item_val_code_id, parent_opt_item_id)
-- `pd_prod_sku` — SKU (opt_item_id_1/2 참조)
-- `pd_prod_img` — 상품 이미지 (opt_item_id_1/2 연동)
+- `pd_prod` — `prod_opt_type_level1_cd` (옵션 1단 분류)
+- `pd_prod_opt_type` — 옵션 유형 (prod_opt_type_id PK, prod_opt_type_level, prod_opt_type_level1_cd, prod_opt_type_level2_cd)
+- `pd_prod_opt` — 옵션 값 (prod_opt_id PK, prod_opt_type_id FK, prod_opt_val, prod_opt_style, prod_opt_type_level1_cd, prod_opt_type_level2_cd, parent_prod_opt_id)
+- `pd_prod_sku` — SKU (prod_sku_id PK, prod_opt_id_1/2 참조)
+- `pd_prod_img` — 상품 이미지 (prod_opt_id_1/2 연동)
 - `pdh_prod_sku_price_hist` — SKU 가격 변경 이력
 - `pdh_prod_sku_stock_hist` — SKU 재고 변경 이력
 - `pdh_prod_sku_chg_hist` — SKU 상태 변경 이력
-- `od_order_item` — 주문 시 sku_id + opt_item_id_1/2 스냅샷
+- `od_order_item` — 주문 시 prod_sku_id + prod_opt_id_1/2 스냅샷
 
 ## 관련 화면
 | pageId | 라벨 |
@@ -334,68 +385,15 @@ codeGrp: OPT_TYPE  (Level 1 — 옵션 카테고리, parentCodeValue=NULL)
 - `pd.03.상품.md` — 상품 기본 정보
 - `pd.09.상품가격-재고.md` — 가격·재고 상세 정책
 
-## 시뮬레이터 연동 body key 규칙 (2026-07-12 기준)
-
-### 시뮬레이터 전송 key 명명 원칙
-
-| 기준 | 원칙 |
-|---|---|
-| 배열 key | 테이블명 기반 (`prodOpts`, `prodSkus`, `prodImages`) |
-| 코드+Nm 필드 | `코드필드명 + Nm` → 예: `optTypeCd` → `optTypeCdNm` |
-| 일반 Entity 필드 | Entity camelCase 그대로 (`optTypeCd`, `optLevel`, `optNm`, ...) |
-
-### 전송 body 구조
-
-```
-body (pd_prod)
-├─ prodNm, salePrice, purchasePrice, prodStock
-├─ prodTypeCd, prodStatusCd, advrtStmt
-├─ optTypeCd      ← 상품 레벨 옵션 카테고리 (pd_prod.opt_type_cd)
-├─ prodOpts[]     ← pd_prod_opt (옵션 차원 배열)
-│   ├─ optTypeCdNm  ← pd_prod_opt.opt_nm 에 저장 (옵션유형 이름)
-│   ├─ optTypeCd    ← pd_prod_opt.opt_type_cd
-│   ├─ optLevel, optInputTypeCd, sortOrd
-│   └─ prodOptItems[]  ← pd_prod_opt_item (옵션값 배열)
-│       ├─ optItemId, optNm, optItemVal, optTypeCd
-│       └─ sortOrd, useYn
-└─ prodImages[]  ← pd_prod_img (항상 포함, 미전송 시 빈 배열)
-```
-
-※ `prodSkus`는 백엔드가 `prodOpts` 조합에서 자동 생성 (별도 전송 불필요, 미리보기용 참고 표시)
-※ `optTypeCd`, `prodOpts`, `prodSkus`, `prodImages` 는 **값 없어도 항상 포함** (빈 값=null/[])
-
-### 임시 ID 사전 할당
-
-단일 요청 body에서 `optItemId`가 SKU와 이미지에 동시 참조되므로,
-시뮬레이터(`ZdSimulProdMng`)는 **계층이 보이는 짧은 시퀀셜 ID**를 생성해 `optItems[].optItemId`에 미리 할당한다.
-
-```
-body.prodId = 'tmp-prod-01'                       ← 상품 임시 ID (프론트 생성)
-
-prodOpts[0].prodOptItems[0].optItemId = 'tmp-opt1-01' ← 1레벨 1번째
-prodOpts[0].prodOptItems[1].optItemId = 'tmp-opt1-02' ← 1레벨 2번째
-prodOpts[1].prodOptItems[0].optItemId = 'tmp-opt2-01' ← 2레벨 1번째
-prodOpts[1].prodOptItems[1].optItemId = 'tmp-opt2-02' ← 2레벨 2번째
-  ↓ 참조
-_preview_[prodSkus][*].optItemId1 = 'tmp-opt1-01'
-_preview_[prodSkus][*].optItemId2 = 'tmp-opt2-01'
-prodImages[0].optItemId1 = 'tmp-opt1-01'
-```
-
-백엔드(`ZdSimulController`)는:
-- `str(body, "prodId")` → `prod.setProdId()` → `PdProdService.create()` 제공 ID 우선 INSERT
-- `str(it, "optItemId")` → `optItem.setOptItemId()` → `PdProdOptItemService.create()` 제공 ID 우선 INSERT
-
-`tmp-` prefix는 시뮬 데이터(`simul_yn = 'Y'`)에만 실질적으로 부여되며 별도 정제는 하지 않는다.
-
-상세 규칙 → `sy.51.프로그램설계정책.md` §7
-
 ## 변경이력
-- 2026-07-12: `prodOpts[].optItems` → `prodOptItems` 변경 (DB 테이블명 룰 — pd_prod_opt_item), `prodImgs`/`images` → `prodImages` 통일, 항상 포함 키 정책 추가 (`optTypeCd`/`prodOpts`/`prodSkus`/`prodImages` 값 없어도 전송)
-- 2026-07-12: body key 명명 원칙 정립 — `optGroups` → `prodOpts`, `optNm` → `optTypeCdNm`, `skus` → `prodSkus` (코드+Nm 패턴 / 테이블명 기반 배열명 통일)
-- 2026-07-11: 필드명 변경 — `optItemId` → `tmpOptItemId`, `optItemId1/2` → `tmpOptItemId1/2`, `prodId` → `tmpProdId` (key rename, 백엔드 ZdSimulController 동기화)
-- 2026-07-11: 시뮬레이터 임시 ID 사전 할당 정책 추가 (tmp_OI prefix, PdProdOptItemService 우선사용 로직)
-- 2026-04-19: 스키마 변경 전면 반영 (opt_grp_id→opt_id, opt_id→opt_item_id, opt_item_id_1/2, opt_level, opt_type_cd, opt_input_type_cd, opt_item_val/opt_cd, 이력테이블 분리)
-- 2026-04-19: opt_cd → opt_item_code_id 리네임 (공통코드 참조ID 의미 명확화)
-- 2026-04-19: opt_item_code_id → opt_item_val_code_id 리네임
-- 2026-04-19: OPT_TYPE 2레벨 트리 구조 도입 (Level 1: 카테고리, Level 2: 유형), parent_opt_item_id 추가
+- 2026-07-13: 옵션 컬럼 체계 개편
+  - `pd_prod.opt_grp_cd` → `pd_prod.prod_opt_type_level1_cd` (rename)
+  - `pd_prod_opt_type.prod_opt_input_type_cd` 제거 (OPT_INPUT_TYPE 코드그룹 폐기)
+  - `pd_prod_opt_type.prod_opt_type_level1_cd` / `prod_opt_type_level2_cd` 신규 추가
+  - `pd_prod_opt.prod_opt_val_code_id` 제거 → `prod_opt_type_level2_cd` 로 대체
+  - `pd_prod_opt.opt_style` → `pd_prod_opt.prod_opt_style` (rename)
+  - `pd_prod_opt.prod_opt_type_level1_cd` / `prod_opt_type_level2_cd` 신규 추가 (비정규화)
+- 2026-07-12: DDL 테이블 리네임 반영
+  - `pd_prod_opt` (옵션 유형) → `pd_prod_opt_type` / PK `prod_opt_type_id`
+  - `pd_prod_opt_item` (옵션 값) → `pd_prod_opt` / PK `prod_opt_id`
+- 2026-04-19: 스키마 변경 전면 반영

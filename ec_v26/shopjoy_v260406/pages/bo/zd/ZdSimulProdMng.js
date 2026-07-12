@@ -202,7 +202,7 @@
               dlivTmpltId: defaults.value.dlivTmpltId || null,
               simulYn: simulYn || 'Y',
               /* 항상 포함 — 값 없으면 null/[] */
-              optTypeCd:   null,    /* pd_prod.opt_type_cd */
+              prodOptTypeLevel1Cd: null, /* pd_prod.prod_opt_type_level1_cd */
               prodOpts:    [],      /* pd_prod_opt[] */
               prodSkus:    [],      /* pd_prod_sku[] (참고) */
               prodImages:  [],      /* pd_prod_img[] */
@@ -229,8 +229,8 @@
               opt2List = pool2.slice(0, o2cnt);
               const grp1Nm = preset.opt1LabelType === 'color' ? '색상' : preset.opt1LabelType === 'size' ? '사이즈' : '옵션1';
               const grp2Nm = preset.opt2LabelType === 'size' ? '사이즈' : preset.opt2LabelType === 'color' ? '색상' : '옵션2';
-              /* 상품 레벨 옵션 카테고리 코드 (pd_prod.opt_type_cd) */
-              body.optTypeCd = preset.cd;
+              /* 상품 레벨 옵션 1단 분류 코드 (pd_prod.prod_opt_type_level1_cd) */
+              body.prodOptTypeLevel1Cd = preset.cd;
               /* 옵션항목 임시 ID: 본 ID(prodOptId)에 tmp-opt1-/tmp-opt2- 접두어 */
               const _pad2 = (n) => String(n + 1).padStart(2, '0');
               const opt1Items = opt1List.map((nm, i) => ({
@@ -245,8 +245,8 @@
               }));
               /* 실제 전송 body: prodOpts — pd_prod_opt_type/pd_prod_opt Entity 컬럼명 기준 */
               body.prodOpts = [
-                { prodOptTypeNm: grp1Nm, prodOptTypeLevel: 1, prodOptInputTypeCd: 'SELECT', sortOrd: 1, prodOpts: opt1Items },
-                { prodOptTypeNm: grp2Nm, prodOptTypeLevel: 2, prodOptInputTypeCd: 'SELECT', sortOrd: 2, prodOpts: opt2Items },
+                { prodOptTypeNm: grp1Nm, prodOptTypeLevel: 1, level1Cd: preset.cd, level2Cd: preset.cd + '_1', sortOrd: 1, prodOpts: opt1Items },
+                { prodOptTypeNm: grp2Nm, prodOptTypeLevel: 2, level1Cd: preset.cd, level2Cd: preset.cd + '_2', sortOrd: 2, prodOpts: opt2Items },
               ];
               if (previewOnly) {
                 /* prodOpts: 실제 전송 key. pd_prod_opt_type / pd_prod_opt Entity 컬럼명 기준 표시 */
@@ -254,7 +254,8 @@
                   prodOptTypeId: 'tmp-opt-type-' + grp.prodOptTypeLevel,
                   prodOptTypeNm: grp.prodOptTypeNm,
                   prodOptTypeLevel: grp.prodOptTypeLevel,
-                  prodOptInputTypeCd: grp.prodOptInputTypeCd,
+                  level1Cd: grp.level1Cd,
+                  level2Cd: grp.level2Cd,
                   sortOrd: grp.sortOrd,
                   prodOpts: grp.prodOpts.map(it => ({
                     prodOptId: it.prodOptId,

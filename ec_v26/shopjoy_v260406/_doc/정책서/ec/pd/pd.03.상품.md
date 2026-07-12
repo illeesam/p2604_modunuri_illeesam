@@ -163,8 +163,8 @@
 |---|---|
 | `prod_img_id` | 이미지ID |
 | `prod_id` | 상품ID |
-| `opt_item_id_1` | 옵션1 값ID (pd_prod_opt_item.opt_item_id, NULL=공통) |
-| `opt_item_id_2` | 옵션2 값ID (pd_prod_opt_item.opt_item_id, NULL=옵션1 전체 공통) |
+| `prod_opt_id_1` | 옵션1 값ID (pd_prod_opt.prod_opt_id, NULL=공통) |
+| `prod_opt_id_2` | 옵션2 값ID (pd_prod_opt.prod_opt_id, NULL=옵션1 전체 공통) |
 | `attach_id` | 원본 파일 ID (sy_attach 연계) |
 | `cdn_img_url` | CDN 원본 이미지 URL (상세 페이지용) |
 | `cdn_thumb_url` | CDN 썸네일 URL (목록·검색용) |
@@ -173,7 +173,7 @@
 | `is_thumb` | 대표이미지 여부 (Y=1개만) |
 
 #### 이미지 범위 규칙
-| opt_item_id_1 | opt_item_id_2 | 적용 범위 |
+| prod_opt_id_1 | prod_opt_id_2 | 적용 범위 |
 |---|---|---|
 | NULL | NULL | 상품 전체 공통 대표이미지 |
 | 색상값 | NULL | 해당 색상의 모든 사이즈 공통 |
@@ -318,7 +318,7 @@ HTML 에디터로 관리하는 다중 컨텐츠 탭. `content_type_cd`로 구분
 - pd_prod: 상품 기본 정보
 - pd_prod_sku: 상품 옵션/SKU (statusCd: PREPARING/ON_SALE/SOLD_OUT/SUSPENDED, saleCnt 포함)
 - pd_prod_content: 상품 상세 콘텐츠 (PROD_CONTENT_TYPE: DETAIL/NOTICE/GUIDE/SIZE_GUIDE)
-- pd_prod_img: 상품 이미지 (opt_item_id_1/2로 옵션 연동)
+- pd_prod_img: 상품 이미지 (prod_opt_id_1/2로 옵션 연동)
 - **pd_prod_rel**: 연관상품·코디상품 (PROD_REL_TYPE: REL_PROD/CODY_PROD)
 - pd_prod_qna: 상품문의
 - pd_dliv_tmplt: 배송템플릿
@@ -338,6 +338,7 @@ HTML 에디터로 관리하는 다중 컨텐츠 탭. `content_type_cd`로 구분
 
 ## 변경이력
 - 2026-04-19: 연관상품·코디상품(pd_prod_rel) 섹션 추가, PROD_REL_TYPE 코드 정의 (REL_PROD/CODY_PROD), pd_prod_sku statusCd/saleCnt 필드 반영, 담당MD(md_user_id) 정책 추가
+- 2026-07-12: pd_prod_img opt_item_id_1/2 → prod_opt_id_1/2 컬럼명 업데이트
 - 2026-04-19: 리뷰(pd_review/attach/comment) 섹션 추가, opt_item_id_1/2 반영, content_type_cd DETAIL/NOTICE/GUIDE/SIZE_GUIDE 코드 정리, 배송템플릿·문의유형 코드 레이블 추가
 - 2026-04-18: 상품문의, 배송템플릿, 재입고알림 정책 추가
 - 2026-04-18: 판매기간, 구매제한, 혜택적용여부, 홍보문구, 매입가, 마진율 필드 추가

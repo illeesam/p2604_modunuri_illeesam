@@ -188,9 +188,9 @@ window.PdProdDtl = {
           })));
 
           // 옵션그룹+아이템 [4]
-          //   백엔드 키:  pd_prod_opt_type → prodOptTypeId / prodOptTypeNm / prodOptInputTypeCd / prodOptTypeLevel / sortOrd
-          //              pd_prod_opt      → prodOptId / prodOptTypeId / prodOptNm / prodOptVal / prodOptValCodeId / parentProdOptId / sortOrd / useYn
-          //   화면 키:    {_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptId, sortOrd, useYn}]}
+          //   백엔드 키:  pd_prod_opt_type → prodOptTypeId / prodOptTypeNm / prodOptTypeLevel1Cd / prodOptTypeLevel2Cd / prodOptTypeLevel / sortOrd
+          //              pd_prod_opt      → prodOptId / prodOptTypeId / prodOptNm / prodOptVal / prodOptTypeLevel1Cd / prodOptTypeLevel2Cd / prodOptStyle / parentProdOptId / sortOrd / useYn
+          //   화면 키:    {_id, grpNm, level1Cd, level2Cd, level, items:[{_id, nm, val, prodOptStyle, parentOptId, sortOrd, useYn}]}
           //   getById 응답에 embedded (PdProdDto.Item: prodOptTypes=옵션유형배열, prodOpts=옵션값배열)
           const prodOptTypes_ = p.prodOptTypes || [];
           const prodOpts_     = p.prodOpts     || [];
@@ -205,12 +205,12 @@ window.PdProdDtl = {
               return {
                 _id,
                 _origOptTypeId: g.prodOptTypeId,
-                grpNm:       g.prodOptTypeNm || g.grpNm || '',
-                typeCd:      g.prodOptInputTypeCd || g.typeCd || '',
-                inputTypeCd: g.prodOptInputTypeCd || 'SELECT',
-                level:       g.prodOptTypeLevel != null ? Number(g.prodOptTypeLevel) : (g.level || 1),
-                sortOrd:     Number(g.sortOrd || 0),
-                items:       [],
+                grpNm:   g.prodOptTypeNm || g.grpNm || '',
+                level1Cd: g.prodOptTypeLevel1Cd || g.level1Cd || '',
+                level2Cd: g.prodOptTypeLevel2Cd || g.level2Cd || '',
+                level:   g.prodOptTypeLevel != null ? Number(g.prodOptTypeLevel) : (g.level || 1),
+                sortOrd: Number(g.sortOrd || 0),
+                items:   [],
               };
             });
             // 2) 옵션값: prodOptId → 임시 _id 매핑 (자기 자신용)
@@ -222,13 +222,12 @@ window.PdProdDtl = {
                 const parentClient = i.parentProdOptId ? itemClientId[i.parentProdOptId] : '';
                 return {
                   _id: itemClientId[i.prodOptId],
-                  nm:        i.prodOptNm || '',
-                  val:       i.prodOptVal || '',
-                  valCodeId: i.prodOptValCodeId || '',
-                  optStyle:  i.optStyle || '',
-                  parentOptId: parentClient ? String(parentClient) : '',
-                  sortOrd:   Number(i.sortOrd || 0),
-                  useYn:     i.useYn || 'Y',
+                  nm:           i.prodOptNm || '',
+                  val:          i.prodOptVal || '',
+                  prodOptStyle: i.prodOptStyle || '',
+                  parentOptId:  parentClient ? String(parentClient) : '',
+                  sortOrd:      Number(i.sortOrd || 0),
+                  useYn:        i.useYn || 'Y',
                 };
               });
               grpOpts.sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
@@ -318,7 +317,7 @@ window.PdProdDtl = {
 
     // -- 옵션 설정
         let _optSeq = 1, _itemSeq = 100;
-    const optGroups = reactive([]); // [{_id, grpNm, typeCd, inputTypeCd, level, items:[{_id, nm, val, valCodeId, parentOptId, sortOrd, useYn}]}]
+    const optGroups = reactive([]); // [{_id, grpNm, level1Cd, level2Cd, level, items:[{_id, nm, val, prodOptStyle, parentOptId, sortOrd, useYn}]}]
     const skus = reactive([]);      // [{_id, _optKey, _nm1, _nm2, skuCode, addPrice, stock, useYn}]
     // -- 옵션 공통코드 (DB: PROD_OPT_CATEGORY 3단 트리 — sy_code.code_level + parent_code_value)
     //    level=1 : 옵션 카테고리        (parent=NULL)            — 옵션 카테고리 select
@@ -368,18 +367,18 @@ window.PdProdDtl = {
     };
     // 현재 화면에서 자주 쓰는 형태 — 선택된 카테고리 하위 2레벨 (computed)
     const cfOptTypeCodes = computed(() => getOptTypeCodes(uiState.prodOptCategoryTypeCd));
-    // 3레벨 — 공통코드ID(opt_item_val_code_id) 드롭다운: 선택된 N단 유형(typeCd)의 자식
+    // 3레벨 — level2Cd 기반 프리셋 값 목록 조회
     /* getOptValCodes — 조회 */
-    const getOptValCodes = (typeCd) => {
-      if (!typeCd) { return []; }
+    const getOptValCodes = (level2Cd) => {
+      if (!level2Cd) { return []; }
       return (codes||[])
         .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y'
                   && Number(c.codeLevel||0) === 3
-                  && c.parentCodeValue === typeCd)
+                  && c.parentCodeValue === level2Cd)
         .map(fnNorm)
         .sort(fnSortByOrd);
     };
-    // (호환용) typeCd 라벨 lookup — 모든 카테고리 하위 2레벨 합집합
+    // level2Cd 라벨 lookup — 모든 카테고리 하위 2레벨 합집합
     const cfOptTypeAllCodes = computed(() =>
       (codes||[])
         .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y' && Number(c.codeLevel||0) === 2)
@@ -387,36 +386,26 @@ window.PdProdDtl = {
         .sort(fnSortByOrd)
     );
 
-    const cfOptInputTypeCodes = computed(() =>
-      (codes||[])
-        .filter(c => c.codeGrp==='OPT_INPUT_TYPE' && c.useYn==='Y')
-        .map(fnNorm)
-        .sort(fnSortByOrd)
-    );
 
 
-    // 단일 프리셋 → 옵션 행 객체
-    //   valCodeId 는 sy_code.code_id (예: CD000963) — select v-model 매칭용
-    //   preset.codeId 가 비어있으면 codeValue 로 fallback
+    // 단일 프리셋 → 옵션 행 객체 (sy_code level=3 프리셋 기반)
     /* fnPresetToItem — 유틸 */
     const fnPresetToItem = (preset, sortOrd, parentOptId) => {
-      const codeId = preset ? (preset.codeId || preset.codeValue || '') : '';
       return {
         _id: _itemSeq++,
-        nm:        preset ? (preset.codeLabel || preset.codeValue || '') : '',
-        val:       preset ? (preset.codeValue || '') : '',
-        valCodeId: codeId,
-        optStyle:  preset ? (preset.codeOpt1 || '') : '',
-        parentOptId: parentOptId || '',
-        sortOrd:   sortOrd,
-        useYn:     'Y',
+        nm:           preset ? (preset.codeLabel || preset.codeValue || '') : '',
+        val:          preset ? (preset.codeValue || '') : '',
+        prodOptStyle: preset ? (preset.codeOpt1 || '') : '',
+        parentOptId:  parentOptId || '',
+        sortOrd:      sortOrd,
+        useYn:        'Y',
       };
     };
 
-    // 1단 옵션 행: 해당 typeCd 프리셋 전체를 정렬 순서대로 행으로 만듦
+    // 1단 옵션 행: 해당 level2Cd 프리셋 전체를 정렬 순서대로 행으로 만듦
     /* fnBuildLevel1Items — 유틸 */
-    const fnBuildLevel1Items = (typeCd) => {
-      const presets = typeCd ? getOptValCodes(typeCd) : [];
+    const fnBuildLevel1Items = (level2Cd) => {
+      const presets = level2Cd ? getOptValCodes(level2Cd) : [];
       if (presets.length && !presets[0].codeId) {
         console.warn('[PdProdDtl] 프리셋에 codeId 가 없습니다 — 백엔드 재기동/재로그인 필요', presets[0]);
       }
@@ -426,8 +415,8 @@ window.PdProdDtl = {
 
     // 2단 옵션 행: 1단 행 N × 2단 프리셋 M 카르테시안 곱 — 각 행의 상위옵션값은 1단 행의 _id 로 연결
     /* fnBuildLevel2Items — 유틸 */
-    const fnBuildLevel2Items = (typeCd, level1Items) => {
-      const presets = typeCd ? getOptValCodes(typeCd) : [];
+    const fnBuildLevel2Items = (level2Cd, level1Items) => {
+      const presets = level2Cd ? getOptValCodes(level2Cd) : [];
       const items = [];
       let ord = 1;
       const parents = (level1Items && level1Items.length) ? level1Items : [null];
@@ -466,9 +455,9 @@ window.PdProdDtl = {
         if (level === 1) { level1Items = items; }
         optGroups.push({
           _id: _optSeq++,
-          grpNm: t.codeLabel || t.codeValue,
-          typeCd: t.codeValue,
-          inputTypeCd: 'SELECT',
+          grpNm:    t.codeLabel || t.codeValue,
+          level1Cd: uiState.prodOptCategoryTypeCd || '',
+          level2Cd: t.codeValue,
           level,
           items,
         });
@@ -510,7 +499,7 @@ window.PdProdDtl = {
       if (!uiState.prodOptCategoryTypeCd) { showToast('옵션 카테고리를 먼저 선택해주세요.', 'error'); return; }
       if (optGroups.length >= 2) { showToast('옵션은 최대 2단까지 가능합니다.', 'error'); return; }
       const types = getOptTypeCodes(uiState.prodOptCategoryTypeCd);
-      const used = new Set(optGroups.map(g => g.typeCd).filter(Boolean));
+      const used = new Set(optGroups.map(g => g.level2Cd).filter(Boolean));
       const next = types.find(t => !used.has(t.codeValue)) || types[optGroups.length] || null;
       const level = optGroups.length + 1;
       const items = level === 1
@@ -518,9 +507,9 @@ window.PdProdDtl = {
         : fnBuildLevel2Items(next ? next.codeValue : '', optGroups[0]?.items || []);
       optGroups.push({
         _id: _optSeq++,
-        grpNm: next ? (next.codeLabel || next.codeValue) : '옵션',
-        typeCd: next ? next.codeValue : '',
-        inputTypeCd: 'SELECT',
+        grpNm:    next ? (next.codeLabel || next.codeValue) : '옵션',
+        level1Cd: uiState.prodOptCategoryTypeCd || '',
+        level2Cd: next ? next.codeValue : '',
         level,
         items,
       });
@@ -536,7 +525,7 @@ window.PdProdDtl = {
 
     /* addOptItem — 추가 */
     const addOptItem = (grp) => {
-      grp.items.push({ _id: _itemSeq++, nm: '', val: '', valCodeId: '', optStyle: '', parentOptId: '', sortOrd: grp.items.length + 1, useYn: 'Y' });
+      grp.items.push({ _id: _itemSeq++, nm: '', val: '', prodOptStyle: '', parentOptId: '', sortOrd: grp.items.length + 1, useYn: 'Y' });
     };
 
     /* removeOptItem — 제거 */
@@ -996,17 +985,10 @@ window.PdProdDtl = {
           if (p.useOptYn !== undefined) { uiState.useOpt = p.useOptYn === 'Y'; }
           else { uiState.useOpt = true; }
 
-          // 옵션 카테고리 복원 — optGroups 의 typeCd(=2레벨 code_value)의 parent_code_value 로 역추적
-          //   svCodes row 원본 키(codeVal / codeLevel / parentCodeValue) 기준으로 비교
+          // 옵션 카테고리 복원 — optGroups 의 level1Cd(=1레벨 code_value) 로 직접 복원
           if (optGroups.length && !uiState.prodOptCategoryTypeCd) {
-            const typeCds = optGroups.map(g => g.typeCd || g.optInputTypeCd || '').filter(Boolean);
-            const lvl2 = (codes||[]).filter(c => c.codeGrp === PROD_OPT_GRP && Number(c.codeLevel||0) === 2);
-            const parentSet = new Set(typeCds.map(tc => {
-              const found = lvl2.find(c => (c.codeVal || c.codeValue) === tc);
-              return found ? found.parentCodeValue : null;
-            }).filter(Boolean));
-            // 모든 typeCd 가 동일한 부모(카테고리)에 속할 때만 자동 복원
-            if (parentSet.size === 1) { uiState.prodOptCategoryTypeCd = [...parentSet][0]; }
+            const level1Cds = optGroups.map(g => g.level1Cd || '').filter(Boolean);
+            if (level1Cds.length) { uiState.prodOptCategoryTypeCd = level1Cds[0]; }
           }
           // 변경 confirm 비교용 — 현재 카테고리를 baseline 으로 기록
           _prevCategoryCd = uiState.prodOptCategoryTypeCd || '';
@@ -1150,7 +1132,7 @@ window.PdProdDtl = {
           // 옵션명 누락 자동 보정 (DB pd_prod_opt.prod_opt_nm 은 NOT NULL)
           optGroups.forEach((g, i) => {
             if (!g.grpNm || !String(g.grpNm).trim()) {
-              g.grpNm = g.typeCd || ('옵션' + (i + 1));
+              g.grpNm = g.level2Cd || g.level1Cd || ('옵션' + (i + 1));
             }
           });
           payload = { optGroups };
@@ -1387,7 +1369,7 @@ window.PdProdDtl = {
       uiState, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
       optGroups, skus, cfTotalStock, generateSkus, moveSku,
       cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
-      cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
+      cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, getOptValCodes,
       onCategoryChange, addOptGroup, removeOptGroup, addOptItem, removeOptItem,
       onOptItemDragStart, onOptItemDragOver, onOptItemDrop,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput, fnOptItem2Label,
@@ -1626,21 +1608,21 @@ window.PdProdDtl = {
         <!-- ===== ■.■.■.■. STEP 2: 옵션 차원별 유형 선택 — 1레벨 선택 후 활성화 =============== -->
         <template v-if="prodOptCategoryTypeCd ? (optGroups.length>0) : false">
           <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
-          <div v-for="(grp, gi) in optGroups" :key="'typeCd-'+grp._id"
+          <div v-for="(grp, gi) in optGroups" :key="'level2Cd-'+grp._id"
             style="display:flex;align-items:flex-start;gap:6px;">
             <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;margin-top:4px;">{{ gi+1 }}단 유형</span>
             <div style="display:flex;flex-direction:column;gap:2px;">
-              <select class="form-control" v-model="grp.typeCd" style="width:140px;font-size:12px;"
-                @change="grp.items.forEach(i=>{i.val='';i.valCodeId='';i.optStyle='';})"
+              <select class="form-control" v-model="grp.level2Cd" style="width:140px;font-size:12px;"
+                @change="grp.items.forEach(i=>{i.val='';i.prodOptStyle='';})"
                 >
                 <option value="">-- 유형선택 --</option>
                 <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
-              <code v-if="grp.typeCd" style="font-size:10px;color:#1565c0;background:#f5f5f7;padding:1px 4px;border-radius:3px;font-family:monospace;align-self:flex-start;">
-                {{ grp.typeCd }}
+              <code v-if="grp.level2Cd" style="font-size:10px;color:#1565c0;background:#f5f5f7;padding:1px 4px;border-radius:3px;font-family:monospace;align-self:flex-start;">
+                {{ grp.level2Cd }}
               </code>
             </div>
-            <span v-if="grp.typeCd" style="font-size:11px;color:#1677ff;margin-top:6px;">{{ getOptValCodes(grp.typeCd).length }}개 프리셋</span>
+            <span v-if="grp.level2Cd" style="font-size:11px;color:#1677ff;margin-top:6px;">{{ getOptValCodes(grp.level2Cd).length }}개 프리셋</span>
           </div>
         </template>
         <span v-if="!prodOptCategoryTypeCd" style="font-size:12px;color:#f5a623;">← 옵션 카테고리를 먼저 선택하세요</span>
@@ -1665,29 +1647,26 @@ window.PdProdDtl = {
         <!-- ===== ■.■.■.■. 차원별 블록 ============================================ -->
         <div v-for="(grp, gi) in optGroups" :key="grp?._id"
           style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;margin-bottom:16px;background:#fafafa;">
-          <!-- ===== ■.■.■.■.■. 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) =============== -->
+          <!-- ===== ■.■.■.■.■. 차원 설정 행 ======================================== -->
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
             <span class="badge badge-blue" style="flex-shrink:0;font-size:12px;">{{ grp.level }}단</span>
-            <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">
-              {{ safeFind(cfOptTypeAllCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}
+            <span v-if="grp.level2Cd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">
+              {{ safeFind(cfOptTypeAllCodes, c=>c.codeValue===grp.level2Cd)?.codeLabel||grp.level2Cd }}
             </span>
             <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
               style="flex:1;min-width:100px;font-size:13px;" />
-            <select class="form-control" v-model="grp.inputTypeCd" style="width:160px;font-size:12px;">
-              <option v-for="c in cfOptInputTypeCodes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-            </select>
             <button class="btn btn-xs btn-danger" @click="removeOptGroup(gi)">삭제</button>
           </div>
           <!-- ===== ■.■.■.■.■. 옵션 값 테이블 (pd_prod_opt_item) ===================== -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
             <div style="font-size:11px;color:#888;">
-              옵션 값 목록 (pd_prod_opt_item)
-              <span v-if="grp.typeCd ? (getOptValCodes(grp.typeCd).length>0) : false" style="color:#1677ff;margin-left:6px;">
-                공통코드 opt_item_val:
-                <strong>{{ getOptValCodes(grp.typeCd).length }}</strong>
-                개 프리셋 사용 가능
+              옵션 값 목록 (pd_prod_opt)
+              <span v-if="grp.level2Cd ? (getOptValCodes(grp.level2Cd).length>0) : false" style="color:#1677ff;margin-left:6px;">
+                공통코드 프리셋:
+                <strong>{{ getOptValCodes(grp.level2Cd).length }}</strong>
+                개 사용 가능
               </span>
-              <span v-else-if="grp.typeCd==='CUSTOM'||!grp.typeCd" style="color:#888;margin-left:6px;">직접 입력 모드 — 프리셋 없음</span>
+              <span v-else-if="!grp.level2Cd" style="color:#888;margin-left:6px;">직접 입력 모드</span>
             </div>
             <button class="btn btn-xs btn-secondary" @click="addOptItem(grp)" style="flex-shrink:0;">+ 값 추가</button>
           </div>
@@ -1703,11 +1682,8 @@ window.PdProdDtl = {
                     상위옵션값
                   </th>
                   <th style="padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">표시명 (prod_opt_nm)</th>
-                  <th style="width:234px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">저장값 (opt_item_val)</th>
-                  <th style="width:170px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">스타일 (opt_style)</th>
-                  <th style="width:221px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">
-                    공통코드ID (opt_item_val_code_id)
-                  </th>
+                  <th style="width:234px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">저장값 (prod_opt_val)</th>
+                  <th style="width:170px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">스타일 (prod_opt_style)</th>
                   <th style="width:36px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">사용</th>
                   <th style="width:30px;padding:4px 4px;text-align:center;"></th>
                 </tr>
@@ -1736,29 +1712,18 @@ window.PdProdDtl = {
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 저장값 ===================================== -->
                   <td style="padding:2px 4px;">
                     <input v-model="item.val"
-                      :placeholder="item.valCodeId ? '자동입력' : 'MY_VAL'"
+                      placeholder="MY_VAL"
                       style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;"
                       @blur="generateSkus" />
                   </td>
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 스타일 (opt_style = 컬러 hex / 아이콘 클래스 등) ===== -->
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. 스타일 (prod_opt_style = 컬러 hex / 아이콘 클래스 등) ===== -->
                   <td style="padding:2px 4px;">
                     <div style="display:flex;gap:4px;align-items:center;">
-                      <span v-if="item.optStyle ? (item.optStyle.startsWith('#')) : false" :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+item.optStyle+';'"></span>
-                      <input v-model="item.optStyle"
+                      <span v-if="item.prodOptStyle ? (item.prodOptStyle.startsWith('#')) : false" :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+item.prodOptStyle+';'"></span>
+                      <input v-model="item.prodOptStyle"
                         placeholder="#000000 / fa-icon"
                         style="flex:1;min-width:0;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;font-family:monospace;" />
                     </div>
-                  </td>
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 공통코드ID (opt_item_val_code_id = sy_code.code_id) ===== -->
-                  <td style="padding:2px 4px;">
-                    <select v-model="item.valCodeId"
-                      style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;"
-                      @change="() => { const found = getOptValCodes(grp.typeCd).find(c => c.codeId === item.valCodeId); if (found) { item.val = found.codeValue; if (!item.nm) item.nm = found.codeLabel; if (found.codeOpt1) item.optStyle = found.codeOpt1; generateSkus(); } else { item.val = ''; } }">
-                      <option value="">-- 직접입력 --</option>
-                      <option v-for="c in getOptValCodes(grp.typeCd)" :key="c?.codeId" :value="c.codeId">
-                        {{ c.codeLabel }} ({{ c.codeValue }})
-                      </option>
-                    </select>
                   </td>
                   <td style="padding:2px 4px;text-align:center;">
                     <input type="checkbox" :checked="item.useYn==='Y'"
@@ -1773,7 +1738,7 @@ window.PdProdDtl = {
                   </td>
                 </tr>
                 <tr v-if="grp.items.length===0">
-                  <td :colspan="(grp.level===2 ? safeFirst(optGroups)?.items.length>0 : false)?9:8" style="text-align:center;color:#bbb;padding:10px;font-size:12px;border-bottom:1px solid #f0f0f0;">
+                  <td :colspan="(grp.level===2 ? safeFirst(optGroups)?.items.length>0 : false)?8:7" style="text-align:center;color:#bbb;padding:10px;font-size:12px;border-bottom:1px solid #f0f0f0;">
                     값을 추가해주세요.
                   </td>
                 </tr>

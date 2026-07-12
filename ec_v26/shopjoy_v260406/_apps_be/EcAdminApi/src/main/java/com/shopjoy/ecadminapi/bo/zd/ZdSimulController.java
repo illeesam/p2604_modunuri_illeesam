@@ -212,7 +212,7 @@ public class ZdSimulController {
         PdProd saved = pdProdService.create(prod);
         String prodId = saved.getProdId();
 
-        /* 옵션형: prodOpts 처리 (optTypeCdNm → pd_prod_opt.opt_nm 저장) */
+        /* 옵션형: prodOpts 처리 — pd_prod_opt_type + pd_prod_opt Entity 컬럼명 기준 */
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> optGroups = body.get("prodOpts") instanceof List
             ? (List<Map<String, Object>>) body.get("prodOpts") : null;
@@ -225,25 +225,29 @@ public class ZdSimulController {
                 PdProdOptType optType = new PdProdOptType();
                 optType.setSiteId(siteId);
                 optType.setProdId(prodId);
-                optType.setProdOptTypeNm(str(grp, "optTypeCdNm")); /* optTypeCdNm → opt_type_nm */
-                optType.setProdOptTypeLevel(intVal(grp, "optLevel", 1));
-                optType.setProdOptInputTypeCd(str(grp, "optInputTypeCd", "SELECT"));
+                optType.setProdOptTypeNm(str(grp, "prodOptTypeNm"));
+                optType.setProdOptTypeLevel(intVal(grp, "prodOptTypeLevel", 1));
+                optType.setProdOptTypeLevel1Cd(str(grp, "level1Cd"));
+                optType.setProdOptTypeLevel2Cd(str(grp, "level2Cd"));
                 optType.setSortOrd(intVal(grp, "sortOrd", 1));
                 PdProdOptType savedOptType = pdProdOptTypeService.create(optType);
                 String optTypeId = savedOptType.getProdOptTypeId();
 
                 @SuppressWarnings("unchecked")
-                List<Map<String, Object>> optItems = grp.get("prodOptItems") instanceof List
-                    ? (List<Map<String, Object>>) grp.get("prodOptItems") : List.of();
+                List<Map<String, Object>> optItems = grp.get("prodOpts") instanceof List
+                    ? (List<Map<String, Object>>) grp.get("prodOpts") : List.of();
 
-                int level = intVal(grp, "optLevel", 1);
+                int level = intVal(grp, "prodOptTypeLevel", 1);
                 for (Map<String, Object> it : optItems) {
                     PdProdOpt optVal = new PdProdOpt();
                     optVal.setSiteId(siteId);
                     optVal.setProdOptTypeId(optTypeId);
                     optVal.setProdId(prodId);
-                    optVal.setProdOptNm(str(it, "optItemNm"));
-                    optVal.setProdOptVal(str(it, "optItemVal"));
+                    optVal.setProdOptNm(str(it, "prodOptNm"));
+                    optVal.setProdOptVal(str(it, "prodOptVal"));
+                    optVal.setProdOptStyle(str(it, "prodOptStyle"));
+                    optVal.setProdOptTypeLevel1Cd(str(grp, "level1Cd"));
+                    optVal.setProdOptTypeLevel2Cd(str(grp, "level2Cd"));
                     optVal.setSortOrd(intVal(it, "sortOrd", 1));
                     optVal.setUseYn(str(it, "useYn", "Y"));
                     PdProdOpt savedOptVal = pdProdOptService.create(optVal);

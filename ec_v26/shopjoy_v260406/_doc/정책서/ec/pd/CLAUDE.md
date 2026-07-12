@@ -18,7 +18,7 @@
 | `pd.10.상품상세-API설계.md` | BO 탭별 API 분리 설계 표준 (FO 통합/BO 분리, 페이징, count 숨김 정책) |
 
 ## 관련 테이블
-`pd_category`, `pd_prod`, `pd_prod_opt_grp`, `pd_prod_opt_item`, `pd_prod_sku`, `pd_prod_bundle`, `pd_prod_set`, `pd_prod_gift`, `pd_dliv_tmpl`
+`pd_category`, `pd_prod`, `pd_prod_opt_type`, `pd_prod_opt`, `pd_prod_sku`, `pd_prod_bundle`, `pd_prod_set`, `pd_prod_gift`, `pd_dliv_tmpl`
 
 ## 관련 화면
 | pageId | 라벨 |

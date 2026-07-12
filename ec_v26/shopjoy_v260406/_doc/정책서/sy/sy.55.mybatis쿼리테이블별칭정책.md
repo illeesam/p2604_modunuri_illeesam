@@ -159,8 +159,8 @@ MyBatis XML 매퍼의 SQL 쿼리에서 JOIN 조건과 WHERE 절의 컬럼 참조
 |---|---|---|
 | `pd_category` | `cat` | 상품 카테고리 |
 | `pd_prod_sku` | `sk` | 상품 SKU / 기본값: `a` |
-| `pd_prod_opt` | `opt` / `a` | 상품 옵션 |
-| `pd_prod_opt_item` | `oi1`, `oi2` | 상품 옵션 아이템 (다중 조인 시 번호 붙임) |
+| `pd_prod_opt_type` | `ot` | 상품 옵션 유형 |
+| `pd_prod_opt` | `opt` / `oi1`, `oi2` | 상품 옵션값 (다중 조인 시 번호 붙임) |
 | `od_order_item` | `oi` | 주문 상품 |
 | `ec_dliv_item` | `di` | 배송 상품 |
 | `sy_code` | `cd_os`, `cd_pm`, `cd_ps` | 공통코드 (code_grp별 suffix) |
@@ -184,11 +184,11 @@ MyBatis XML 매퍼의 SQL 쿼리에서 JOIN 조건과 WHERE 절의 컬럼 참조
 <!-- ✅ 올바른 예1: 기존 별칭 유지 -->
 <select id="selectSkusByProdId">
     SELECT  sk.*
-          , oi1.opt_item_nm AS opt_item_nm_1
-          , oi2.opt_item_nm AS opt_item_nm_2
+          , oi1.prod_opt_nm AS prod_opt_nm_1
+          , oi2.prod_opt_nm AS prod_opt_nm_2
     FROM pd_prod_sku sk
-        LEFT JOIN pd_prod_opt_item oi1 ON oi1.opt_item_id = sk.opt_item_id_1
-        LEFT JOIN pd_prod_opt_item oi2 ON oi2.opt_item_id = sk.opt_item_id_2
+        LEFT JOIN pd_prod_opt oi1 ON oi1.prod_opt_id = sk.prod_opt_id_1
+        LEFT JOIN pd_prod_opt oi2 ON oi2.prod_opt_id = sk.prod_opt_id_2
     WHERE sk.prod_id = #{prodId}
 </select>
 
