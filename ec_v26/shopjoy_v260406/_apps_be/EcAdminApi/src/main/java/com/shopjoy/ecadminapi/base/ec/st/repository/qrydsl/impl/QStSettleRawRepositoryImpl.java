@@ -76,7 +76,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                         stSettleRaw.memberId, stSettleRaw.claimId, stSettleRaw.claimItemId, stSettleRaw.vendorId, stSettleRaw.vendorTypeCd,
                         stSettleRaw.prodId, stSettleRaw.prodNm, stSettleRaw.brandId, stSettleRaw.brandNm,
                         stSettleRaw.categoryId1, stSettleRaw.categoryId2, stSettleRaw.categoryId3, stSettleRaw.categoryId4, stSettleRaw.categoryId5,
-                        stSettleRaw.skuId, stSettleRaw.optItemId1, stSettleRaw.optItemId2, stSettleRaw.mdUserId,
+                        stSettleRaw.prodSkuId, stSettleRaw.prodOptId1, stSettleRaw.prodOptId2, stSettleRaw.mdUserId,
                         stSettleRaw.normalPrice, stSettleRaw.unitPrice, stSettleRaw.orderQty, stSettleRaw.itemPrice, stSettleRaw.discntAmt,
                         stSettleRaw.couponDiscntAmt, stSettleRaw.promoDiscntAmt, stSettleRaw.promoId, stSettleRaw.couponId, stSettleRaw.couponIssueId,
                         stSettleRaw.discntId, stSettleRaw.voucherId, stSettleRaw.voucherIssueId, stSettleRaw.voucherUseAmt,
@@ -386,8 +386,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         or = orLike(or, all, types, ",giftId,", stSettleRaw.giftId, pattern);
         or = orLike(or, all, types, ",mdUserId,", stSettleRaw.mdUserId, pattern);
         or = orLike(or, all, types, ",memberId,", stSettleRaw.memberId, pattern);
-        or = orLike(or, all, types, ",optItemId1,", stSettleRaw.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", stSettleRaw.optItemId2, pattern);
+        or = orLike(or, all, types, ",prodOptId1,", stSettleRaw.prodOptId1, pattern);
+        or = orLike(or, all, types, ",prodOptId2,", stSettleRaw.prodOptId2, pattern);
         or = orLike(or, all, types, ",orderId,", stSettleRaw.orderId, pattern);
         or = orLike(or, all, types, ",orderItemId,", stSettleRaw.orderItemId, pattern);
         or = orLike(or, all, types, ",orderItemStatusCd,", stSettleRaw.orderItemStatusCd, pattern);
@@ -404,7 +404,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         or = orLike(or, all, types, ",settlePeriod,", stSettleRaw.settlePeriod, pattern);
         or = orLike(or, all, types, ",settleRawId,", stSettleRaw.settleRawId, pattern);
         or = orLike(or, all, types, ",siteId,", stSettleRaw.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", stSettleRaw.skuId, pattern);
+        or = orLike(or, all, types, ",prodSkuId,", stSettleRaw.prodSkuId, pattern);
         or = orLike(or, all, types, ",vendorId,", stSettleRaw.vendorId, pattern);
         or = orLike(or, all, types, ",vendorTypeCd,", stSettleRaw.vendorTypeCd, pattern);
         or = orLike(or, all, types, ",voucherId,", stSettleRaw.voucherId, pattern);
@@ -489,9 +489,9 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         if (entity.getCategoryId3()         != null) { update.set(stSettleRaw.categoryId3,         entity.getCategoryId3());         hasAny = true; }
         if (entity.getCategoryId4()         != null) { update.set(stSettleRaw.categoryId4,         entity.getCategoryId4());         hasAny = true; }
         if (entity.getCategoryId5()         != null) { update.set(stSettleRaw.categoryId5,         entity.getCategoryId5());         hasAny = true; }
-        if (entity.getSkuId()               != null) { update.set(stSettleRaw.skuId,               entity.getSkuId());               hasAny = true; }
-        if (entity.getOptItemId1()          != null) { update.set(stSettleRaw.optItemId1,          entity.getOptItemId1());          hasAny = true; }
-        if (entity.getOptItemId2()          != null) { update.set(stSettleRaw.optItemId2,          entity.getOptItemId2());          hasAny = true; }
+        if (entity.getProdSkuId()            != null) { update.set(stSettleRaw.prodSkuId,            entity.getProdSkuId());            hasAny = true; }
+        if (entity.getProdOptId1()              != null) { update.set(stSettleRaw.prodOptId1,              entity.getProdOptId1());              hasAny = true; }
+        if (entity.getProdOptId2()              != null) { update.set(stSettleRaw.prodOptId2,              entity.getProdOptId2());              hasAny = true; }
         if (entity.getMdUserId()            != null) { update.set(stSettleRaw.mdUserId,            entity.getMdUserId());            hasAny = true; }
         if (entity.getNormalPrice()         != null) { update.set(stSettleRaw.normalPrice,         entity.getNormalPrice());         hasAny = true; }
         if (entity.getUnitPrice()           != null) { update.set(stSettleRaw.unitPrice,           entity.getUnitPrice());           hasAny = true; }

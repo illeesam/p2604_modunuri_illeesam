@@ -40,7 +40,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     private JPAQuery<PdRestockNotiDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdRestockNotiDto.Item.class,
-                        pdRestockNoti.restockNotiId, pdRestockNoti.siteId, pdRestockNoti.prodId, pdRestockNoti.skuId, pdRestockNoti.memberId,
+                        pdRestockNoti.restockNotiId, pdRestockNoti.siteId, pdRestockNoti.prodId, pdRestockNoti.prodSkuId, pdRestockNoti.memberId,
                         pdRestockNoti.notiYn, pdRestockNoti.notiDate,
                         pdRestockNoti.regBy, pdRestockNoti.regDate, pdRestockNoti.updBy, pdRestockNoti.updDate
                 ))
@@ -184,7 +184,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         or = orLike(or, all, types, ",prodId,", pdRestockNoti.prodId, pattern);
         or = orLike(or, all, types, ",restockNotiId,", pdRestockNoti.restockNotiId, pattern);
         or = orLike(or, all, types, ",siteId,", pdRestockNoti.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", pdRestockNoti.skuId, pattern);
+        or = orLike(or, all, types, ",skuId,", pdRestockNoti.prodSkuId, pattern);
         return or;
     }
 
@@ -244,7 +244,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
 
         if (entity.getSiteId()   != null) { update.set(pdRestockNoti.siteId,   entity.getSiteId());   hasAny = true; }
         if (entity.getProdId()   != null) { update.set(pdRestockNoti.prodId,   entity.getProdId());   hasAny = true; }
-        if (entity.getSkuId()    != null) { update.set(pdRestockNoti.skuId,    entity.getSkuId());    hasAny = true; }
+        if (entity.getProdSkuId() != null) { update.set(pdRestockNoti.prodSkuId, entity.getProdSkuId()); hasAny = true; }
         if (entity.getMemberId() != null) { update.set(pdRestockNoti.memberId, entity.getMemberId()); hasAny = true; }
         if (entity.getNotiYn()   != null) { update.set(pdRestockNoti.notiYn,   entity.getNotiYn());   hasAny = true; }
         if (entity.getNotiDate() != null) { update.set(pdRestockNoti.notiDate, entity.getNotiDate()); hasAny = true; }

@@ -38,17 +38,17 @@ public class OdOrderItem extends BaseEntity {
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Comment("SKU ID (pd_prod_sku., 무옵션 시 NULL)")
-    @Column(name = "sku_id", length = 21)
-    private String skuId;
+    @Comment("SKU ID (pd_prod_sku.prod_sku_id, 무옵션 시 NULL)")
+    @Column(name = "prod_sku_id", length = 21)
+    private String prodSkuId;
 
-    @Comment("옵션1 값ID (pd_prod_opt_item.opt_item_id)")
-    @Column(name = "opt_item_id_1", length = 21)
-    private String optItemId1;
+    @Comment("옵션1 값ID (pd_prod_opt.opt_id)")
+    @Column(name = "prod_opt_id_1", length = 21)
+    private String prodOptId1;
 
-    @Comment("옵션2 값ID (pd_prod_opt_item.opt_item_id)")
-    @Column(name = "opt_item_id_2", length = 21)
-    private String optItemId2;
+    @Comment("옵션2 값ID (pd_prod_opt.opt_id)")
+    @Column(name = "prod_opt_id_2", length = 21)
+    private String prodOptId2;
 
     @Comment("상품명 (주문 시점 스냅샷)")
     @Column(name = "prod_nm", length = 200)

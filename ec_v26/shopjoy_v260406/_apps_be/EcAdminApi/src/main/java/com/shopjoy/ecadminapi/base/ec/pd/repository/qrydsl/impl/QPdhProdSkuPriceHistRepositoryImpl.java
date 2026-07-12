@@ -36,7 +36,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
                 .select(Projections.bean(PdhProdSkuPriceHistDto.Item.class,
                         pdhProdSkuPriceHist.histId,
                         pdhProdSkuPriceHist.siteId,
-                        pdhProdSkuPriceHist.skuId,
+                        pdhProdSkuPriceHist.prodSkuId,
                         pdhProdSkuPriceHist.prodId,
                         pdhProdSkuPriceHist.addPriceBefore,
                         pdhProdSkuPriceHist.addPriceAfter,
@@ -152,7 +152,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         or = orLike(or, all, types, ",histId,", pdhProdSkuPriceHist.histId, pattern);
         or = orLike(or, all, types, ",prodId,", pdhProdSkuPriceHist.prodId, pattern);
         or = orLike(or, all, types, ",siteId,", pdhProdSkuPriceHist.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", pdhProdSkuPriceHist.skuId, pattern);
+        or = orLike(or, all, types, ",skuId,", pdhProdSkuPriceHist.prodSkuId, pattern);
         return or;
     }
 
@@ -209,7 +209,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         boolean hasAny = false;
 
         if (entity.getSiteId()         != null) { update.set(pdhProdSkuPriceHist.siteId,         entity.getSiteId());         hasAny = true; }
-        if (entity.getSkuId()          != null) { update.set(pdhProdSkuPriceHist.skuId,          entity.getSkuId());          hasAny = true; }
+        if (entity.getProdSkuId()      != null) { update.set(pdhProdSkuPriceHist.prodSkuId,      entity.getProdSkuId());      hasAny = true; }
         if (entity.getProdId()         != null) { update.set(pdhProdSkuPriceHist.prodId,         entity.getProdId());         hasAny = true; }
         if (entity.getAddPriceBefore() != null) { update.set(pdhProdSkuPriceHist.addPriceBefore, entity.getAddPriceBefore()); hasAny = true; }
         if (entity.getAddPriceAfter()  != null) { update.set(pdhProdSkuPriceHist.addPriceAfter,  entity.getAddPriceAfter());  hasAny = true; }

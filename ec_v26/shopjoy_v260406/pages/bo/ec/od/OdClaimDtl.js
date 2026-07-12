@@ -202,6 +202,15 @@ window.OdClaimDtl = {
           price: x.itemAmt || 0,
           discAmount: x.discAmount || 0,
           discInfo: x.discInfo || '',
+          // 교환 대상 필드 (new_* 컬럼)
+          newProdId: x.newProdId || null,
+          newProdSkuId: x.newProdSkuId || null,
+          newProdOptId1: x.newProdOptId1 || null,
+          newProdOptId2: x.newProdOptId2 || null,
+          newProdNm: x.newProdNm || null,
+          newProdOption: x.newProdOption || null,
+          newQty: x.newQty || null,
+          newUnitPrice: x.newUnitPrice || null,
         }))));
         uiState.error = null;
       } catch (err) {
@@ -273,17 +282,20 @@ window.OdClaimDtl = {
 
     watch(claimItems, (list) => { expandedItems.clear(); list.forEach((_,i) => expandedItems.add(i)); });
 
-    /* getExchangedItem — 조회 */
+    /* getExchangedItem — 교환 요청 대상 정보 반환 (new_* 실데이터 기반) */
     const getExchangedItem = (it) => {
-      if (form.claimTypeCd !== '교환') { return null; }
-      const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리','차콜':'블랙' };
-
+      if (form.claimTypeCd !== '교환') { return {}; }
       return {
-        prodNm: it.prodNm + ' (교환품)',
-        color: swapColor[it.color] || '네이비',
-        size: it.size, qty: it.qty, price: it.price,
-        courier: form.exchangeCourierCd,
-        trackingNo: form.exchangeTrackingNo,
+        prodNm: it.newProdNm || '-',
+        prodOption: it.newProdOption || '-',
+        qty: it.newQty != null ? it.newQty : '-',
+        unitPrice: it.newUnitPrice != null ? it.newUnitPrice : null,
+        prodId: it.newProdId || null,
+        prodSkuId: it.newProdSkuId || null,
+        prodOptId1: it.newProdOptId1 || null,
+        prodOptId2: it.newProdOptId2 || null,
+        courier: form.exchangeCourierCd || null,
+        trackingNo: form.exchangeTrackingNo || null,
       };
     };
 
@@ -493,12 +505,26 @@ window.OdClaimDtl = {
 
     /* claimItemGridRowDetail — 클레임항목 행 펼침 BoFormArea 컬럼 (교환품 정보) */
     columns.claimItemGridRowDetail = [
-      { key: '_exchLabel', label: '교환품',  type: 'readonly', html: true, fmt: () => `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3b82f6;color:#fff;font-weight:800;">↔ 교환</span>` },
-      { key: '_exchProd',  label: '상품명',  type: 'readonly', html: true, fmt: (v, row) => `<b style="color:#1e40af;">${getExchangedItem(row).prodNm || '-'}</b>` },
-      { key: '_exchColor', label: '색상',    type: 'readonly', html: true, fmt: (v, row) => `<b>${row.color || '-'}</b> → <b style="color:#1e40af;">${getExchangedItem(row).color || '-'}</b>` },
-      { key: '_exchSize',  label: '사이즈',  type: 'readonly', fmt: (v, row) => getExchangedItem(row).size || '-' },
-      { key: '_exchQty',   label: '수량',    type: 'readonly', fmt: (v, row) => getExchangedItem(row).qty || '-' },
-      { key: '_tracking',  label: '발송추적', type: 'slot', name: 'tracking', visible: (row) => !!getExchangedItem(row).courier },
+      { key: '_exchLabel',  label: '교환품',   type: 'readonly', html: true,
+        fmt: () => `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3b82f6;color:#fff;font-weight:800;">↔ 교환 요청</span>` },
+      { key: '_exchProd',   label: '교환 상품명', type: 'readonly', html: true,
+        fmt: (v, row) => `<b style="color:#1e40af;">${getExchangedItem(row).prodNm || '-'}</b>` },
+      { key: '_exchOption', label: '교환 옵션',   type: 'readonly',
+        fmt: (v, row) => getExchangedItem(row).prodOption || '-' },
+      { key: '_exchQty',    label: '교환 수량',   type: 'readonly',
+        fmt: (v, row) => getExchangedItem(row).qty != null ? getExchangedItem(row).qty : '-' },
+      { key: '_exchPrice',  label: '교환 단가',   type: 'readonly',
+        fmt: (v, row) => getExchangedItem(row).unitPrice != null ? fmt(getExchangedItem(row).unitPrice) : '-' },
+      { key: '_priceDiff',  label: '정산 차액',   type: 'readonly', html: true,
+        fmt: (v, row) => {
+          const ex = getExchangedItem(row);
+          if (ex.unitPrice == null || ex.qty == null) { return '<span style="color:#bbb;">-</span>'; }
+          const diff = (ex.unitPrice * ex.qty) - ((row.unitPrice || 0) * (row.qty || 1));
+          const color = diff > 0 ? '#d84315' : diff < 0 ? '#059669' : '#555';
+          return `<b style="color:${color};">${diff >= 0 ? '+' : ''}${fmt(diff)}</b>`;
+        } },
+      { key: '_tracking',   label: '발송추적',    type: 'slot', name: 'tracking',
+        visible: (row) => !!getExchangedItem(row).courier },
     ];
 
     return {
@@ -628,7 +654,7 @@ window.OdClaimDtl = {
           <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
             <bo-form-area :columns="columns.claimItemGridRowDetail" :form="row" :cols="3" compact readonly label-left :show-actions="false">
               <template #tracking>
-                <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
+                <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;cursor:pointer;">
                   {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍
                 </div>
               </template>

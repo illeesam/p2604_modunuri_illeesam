@@ -76,7 +76,7 @@ public class PdProdOptService {
     /* 상품 옵션 등록 */
     @Transactional
     public PdProdOpt create(PdProdOpt body) {
-        body.setOptId(CmUtil.generateId("pd_prod_opt"));
+        body.setProdOptId(CmUtil.generateId("pd_prod_opt"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -94,7 +94,7 @@ public class PdProdOptService {
     public PdProdOpt update(String id, PdProdOpt body) {
         CmUtil.requireId(id, "id", this);
         PdProdOpt entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "optId^regBy^regDate");
+        VoUtil.voCopyExclude(body, entity, "prodOptId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdOpt saved = pdProdOptRepository.save(entity);
@@ -106,9 +106,9 @@ public class PdProdOptService {
     /* 상품 옵션 수정 */
     @Transactional
     public PdProdOpt updateSelective(PdProdOpt entity) {
-        if (entity.getOptId() == null) throw new CmBizException("optId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getOptId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOptId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getProdOptId() == null) throw new CmBizException("prodOptId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getProdOptId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdOptId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = pdProdOptRepository.updateSelective(entity);
@@ -139,32 +139,32 @@ public class PdProdOptService {
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
         if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getOptId() == null || entity.getOptId().isBlank()) ? "I" : "U";
+            rowStatus = (entity.getProdOptId() == null || entity.getProdOptId().isBlank()) ? "I" : "U";
         }
 
         if ("D".equals(rowStatus)) {
-            if (entity.getOptId() == null)
-                throw new CmBizException("삭제 대상 optId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!pdProdOptRepository.existsById(entity.getOptId()))
-                throw new CmBizException("존재하지 않는 PdProdOpt입니다: " + entity.getOptId() + "::" + CmUtil.svcCallerInfo(this));
-            pdProdOptRepository.deleteById(entity.getOptId());
+            if (entity.getProdOptId() == null)
+                throw new CmBizException("삭제 대상 prodOptId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!pdProdOptRepository.existsById(entity.getProdOptId()))
+                throw new CmBizException("존재하지 않는 PdProdOpt입니다: " + entity.getProdOptId() + "::" + CmUtil.svcCallerInfo(this));
+            pdProdOptRepository.deleteById(entity.getProdOptId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setOptId(CmUtil.generateId("pd_prod_opt"));
+            entity.setProdOptId(CmUtil.generateId("pd_prod_opt"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             PdProdOpt saved = pdProdOptRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getOptId() == null)
-                throw new CmBizException("수정 대상 optId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (entity.getProdOptId() == null)
+                throw new CmBizException("수정 대상 prodOptId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = pdProdOptRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 PdProdOpt입니다: " + entity.getOptId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 PdProdOpt입니다: " + entity.getProdOptId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getOptId());
+            return findById(entity.getProdOptId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -178,20 +178,20 @@ public class PdProdOptService {
         for (PdProdOpt row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getOptId() == null || row.getOptId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getProdOptId() == null || row.getProdOptId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, PdProdOpt::getOptId, "U", "optId", this);
-        CmUtil.requireRowIds(rows, PdProdOpt::getOptId, "D", "optId", this);
+        CmUtil.requireRowIds(rows, PdProdOpt::getProdOptId, "U", "prodOptId", this);
+        CmUtil.requireRowIds(rows, PdProdOpt::getProdOptId, "D", "prodOptId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(PdProdOpt::getOptId)
+            .map(PdProdOpt::getProdOptId)
             .toList();
         if (!deleteIds.isEmpty()) {
             pdProdOptRepository.deleteAllById(deleteIds);
@@ -204,7 +204,7 @@ public class PdProdOptService {
         for (PdProdOpt row : updateRows) {
             row.setUpdBy(authId);
             int affected = pdProdOptRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getOptId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdOptId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -212,7 +212,7 @@ public class PdProdOptService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (PdProdOpt row : insertRows) {
-            row.setOptId(CmUtil.generateId("pd_prod_opt"));
+            row.setProdOptId(CmUtil.generateId("pd_prod_opt"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdOptRepository.save(row);

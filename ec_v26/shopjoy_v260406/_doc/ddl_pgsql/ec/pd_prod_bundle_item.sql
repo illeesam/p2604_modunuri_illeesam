@@ -22,7 +22,7 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.bundle_item_id IS '묶음구�
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.bundle_prod_id IS '묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.item_prod_id IS '구성품 상품ID (pd_prod.prod_id) — 독립 판매 상품';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.item_sku_id IS '구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU 미지정)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.item_sku_id IS '구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.item_qty IS '구성 수량 (기본 1)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.price_rate IS '가격 안분율 (%) — 구성품 합계 100% 필수, 부분클레임 환불 계산 기준';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.sort_ord IS '노출 정렬 순서';

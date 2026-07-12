@@ -24,7 +24,7 @@ public class PdRestockNotiDto {
         private String restockNotiId;
         private String siteId;
         private String prodId;
-        private String skuId;
+        private String prodSkuId;
         private String memberId;
         private String notiYn;
         private LocalDateTime notiDate;

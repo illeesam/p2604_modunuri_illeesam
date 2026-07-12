@@ -20,8 +20,8 @@ public class PdProdImgUpdateDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Row {
-        private String optItemId1;
-        private String optItemId2;
+        private String prodOptId1;
+        private String prodOptId2;
         /** 새 업로드 이미지 URL (또는 Base64) */
         private String previewUrl;
         private String cdnThumbUrl;

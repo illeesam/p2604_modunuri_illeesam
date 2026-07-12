@@ -27,9 +27,9 @@ public class OdCartDto {
         private String memberId;
         private String sessionKey;
         private String prodId;
-        private String skuId;
-        private String optItemId1;
-        private String optItemId2;
+        private String prodSkuId;
+        private String prodOptId1;
+        private String prodOptId2;
         private Long unitPrice;
         private Integer orderQty;
         private Long itemPrice;
@@ -41,8 +41,8 @@ public class OdCartDto {
         private String siteNm;
         private String memberNm;
         private String prodNm;
-        private String optNm1;
-        private String optNm2;
+        private String prodOptNm1;
+        private String prodOptNm2;
         // ── 연관정보 (목록 시 채움) ──
         private PdProdDto.Item    prod;   // 상품 단건
         private PdProdSkuDto.Item sku;    // SKU 단건

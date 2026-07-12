@@ -38,7 +38,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
                 .select(Projections.bean(PdhProdSkuChgHistDto.Item.class,
                         pdhProdSkuChgHist.histId,
                         pdhProdSkuChgHist.siteId,
-                        pdhProdSkuChgHist.skuId,
+                        pdhProdSkuChgHist.prodSkuId,
                         pdhProdSkuChgHist.prodId,
                         pdhProdSkuChgHist.chgTypeCd,
                         pdhProdSkuChgHist.beforeVal,
@@ -159,7 +159,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         or = orLike(or, all, types, ",histId,", pdhProdSkuChgHist.histId, pattern);
         or = orLike(or, all, types, ",prodId,", pdhProdSkuChgHist.prodId, pattern);
         or = orLike(or, all, types, ",siteId,", pdhProdSkuChgHist.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", pdhProdSkuChgHist.skuId, pattern);
+        or = orLike(or, all, types, ",skuId,", pdhProdSkuChgHist.prodSkuId, pattern);
         return or;
     }
 
@@ -216,7 +216,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         boolean hasAny = false;
 
         if (entity.getSiteId()    != null) { update.set(pdhProdSkuChgHist.siteId,    entity.getSiteId());    hasAny = true; }
-        if (entity.getSkuId()     != null) { update.set(pdhProdSkuChgHist.skuId,     entity.getSkuId());     hasAny = true; }
+        if (entity.getProdSkuId() != null) { update.set(pdhProdSkuChgHist.prodSkuId, entity.getProdSkuId()); hasAny = true; }
         if (entity.getProdId()    != null) { update.set(pdhProdSkuChgHist.prodId,    entity.getProdId());    hasAny = true; }
         if (entity.getChgTypeCd() != null) { update.set(pdhProdSkuChgHist.chgTypeCd, entity.getChgTypeCd()); hasAny = true; }
         if (entity.getBeforeVal() != null) { update.set(pdhProdSkuChgHist.beforeVal, entity.getBeforeVal()); hasAny = true; }

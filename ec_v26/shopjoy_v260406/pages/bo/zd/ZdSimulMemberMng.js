@@ -180,7 +180,7 @@
         uiNm: '회원 시뮬레이터',
         label: '시뮬회원',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, simulYn, previewOnly, suffix, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, pick }) => {
           const ln = pick(LAST_NAMES);
           const fn = pick(FIRST_NAMES);
           if (mode === 'create') {

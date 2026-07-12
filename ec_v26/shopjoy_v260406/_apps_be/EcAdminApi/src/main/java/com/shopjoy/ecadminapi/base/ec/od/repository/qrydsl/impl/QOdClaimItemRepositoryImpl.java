@@ -37,7 +37,12 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         return queryFactory
                 .select(Projections.bean(OdClaimItemDto.Item.class,
                         odClaimItem.claimItemId, odClaimItem.siteId, odClaimItem.claimId, odClaimItem.orderItemId,
-                        odClaimItem.prodId, odClaimItem.prodNm, odClaimItem.prodOption,
+                        odClaimItem.prodId, odClaimItem.prodNm,
+                        odClaimItem.prodSkuId, odClaimItem.prodOptId1, odClaimItem.prodOptId2, odClaimItem.prodOption,
+                        odClaimItem.newProdId, odClaimItem.newProdSkuId,
+                        odClaimItem.newProdOptId1, odClaimItem.newProdOptId2,
+                        odClaimItem.newProdNm, odClaimItem.newProdOption,
+                        odClaimItem.newQty, odClaimItem.newUnitPrice,
                         odClaimItem.unitPrice, odClaimItem.claimQty, odClaimItem.itemAmt, odClaimItem.refundAmt,
                         odClaimItem.claimItemStatusCd, odClaimItem.claimItemStatusCdBefore,
                         odClaimItem.returnShippingFee, odClaimItem.inboundShippingFee, odClaimItem.exchangeShippingFee,
@@ -249,7 +254,18 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         if (entity.getOrderItemId()             != null) { update.set(odClaimItem.orderItemId,             entity.getOrderItemId());             hasAny = true; }
         if (entity.getProdId()                  != null) { update.set(odClaimItem.prodId,                  entity.getProdId());                  hasAny = true; }
         if (entity.getProdNm()                  != null) { update.set(odClaimItem.prodNm,                  entity.getProdNm());                  hasAny = true; }
+        if (entity.getProdSkuId()               != null) { update.set(odClaimItem.prodSkuId,               entity.getProdSkuId());               hasAny = true; }
+        if (entity.getProdOptId1()              != null) { update.set(odClaimItem.prodOptId1,              entity.getProdOptId1());              hasAny = true; }
+        if (entity.getProdOptId2()              != null) { update.set(odClaimItem.prodOptId2,              entity.getProdOptId2());              hasAny = true; }
         if (entity.getProdOption()              != null) { update.set(odClaimItem.prodOption,              entity.getProdOption());              hasAny = true; }
+        if (entity.getNewProdId()               != null) { update.set(odClaimItem.newProdId,               entity.getNewProdId());               hasAny = true; }
+        if (entity.getNewProdSkuId()            != null) { update.set(odClaimItem.newProdSkuId,            entity.getNewProdSkuId());            hasAny = true; }
+        if (entity.getNewProdOptId1()           != null) { update.set(odClaimItem.newProdOptId1,           entity.getNewProdOptId1());           hasAny = true; }
+        if (entity.getNewProdOptId2()           != null) { update.set(odClaimItem.newProdOptId2,           entity.getNewProdOptId2());           hasAny = true; }
+        if (entity.getNewProdNm()               != null) { update.set(odClaimItem.newProdNm,               entity.getNewProdNm());               hasAny = true; }
+        if (entity.getNewProdOption()           != null) { update.set(odClaimItem.newProdOption,           entity.getNewProdOption());           hasAny = true; }
+        if (entity.getNewQty()                  != null) { update.set(odClaimItem.newQty,                  entity.getNewQty());                  hasAny = true; }
+        if (entity.getNewUnitPrice()            != null) { update.set(odClaimItem.newUnitPrice,            entity.getNewUnitPrice());            hasAny = true; }
         if (entity.getUnitPrice()               != null) { update.set(odClaimItem.unitPrice,               entity.getUnitPrice());               hasAny = true; }
         if (entity.getClaimQty()                != null) { update.set(odClaimItem.claimQty,                entity.getClaimQty());                hasAny = true; }
         if (entity.getItemAmt()                 != null) { update.set(odClaimItem.itemAmt,                 entity.getItemAmt());                 hasAny = true; }

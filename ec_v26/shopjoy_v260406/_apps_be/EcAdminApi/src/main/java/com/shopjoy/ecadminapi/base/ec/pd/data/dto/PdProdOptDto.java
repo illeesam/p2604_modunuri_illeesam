@@ -15,28 +15,30 @@ public class PdProdOptDto {
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
-        @Size(max = 21) private String optId;
+        @Size(max = 1) private String useYn;
+        @Size(max = 21) private String prodOptId;
+        @Size(max = 21) private String prodOptTypeId;
         @Size(max = 21) private String prodId;
         private List<String> prodIds;                  // PK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String optId;
+        private String prodOptId;
         private String siteId;
+        private String prodOptTypeId;
         private String prodId;
-        private String optGrpNm;
-        private Integer optLevel;
-        private String optTypeCd;
-        private String optInputTypeCd;
+        private String prodOptNm;
+        private String prodOptVal;
+        private String prodOptValCodeId;
+        private String parentProdOptId;
+        private String optStyle;
         private Integer sortOrd;
+        private String useYn;
         private String regBy;
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
-        private String siteNm;
-        private String optTypeCdNm;
-        private String optInputTypeCdNm;
     }
 
     @Getter @Setter @NoArgsConstructor

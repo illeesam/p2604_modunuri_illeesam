@@ -490,20 +490,19 @@
     advrtStmt: '홍보문구', categoryId: '카테고리ID', siteId: '사이트ID',
     dlivTmpltId: '배송템플릿ID', simulYn: '시뮬여부', prodId: '상품ID',
     optTypeCd: '옵션카테고리코드',
-    /* prodOpts — pd_prod_opt Entity 컬럼명 기준 */
-    optTypeCdNm: '옵션그룹명(opt_grp_nm)', optTypeCd: '옵션유형코드', optLevel: '옵션단계',
-    optInputTypeCd: '입력유형', sortOrd: '정렬순서',
-    prodOptItems: '옵션항목목록(prodOptItems)',
-    /* prodOptItems — pd_prod_opt_item Entity 컬럼명 기준 */
-    optNm: '항목명(전송)', optVal: '항목값(전송)', optItemId: '옵션항목ID(전송)',
-    optValCodeId: '코드참조ID', parentOptItemId: '상위항목ID', optStyle: '항목스타일',
+    /* prodOpts[].optTypes — pd_prod_opt_type Entity 컬럼명 기준 */
+    prodOptTypeId: '옵션유형ID', prodOptTypeNm: '옵션유형명', prodOptTypeLevel: '옵션단계',
+    prodOptInputTypeCd: '입력유형', sortOrd: '정렬순서',
+    /* prodOpts[].prodOpts — pd_prod_opt Entity 컬럼명 기준 (구 pd_prod_opt_item) */
+    prodOptId: '옵션값ID', prodOptNm: '옵션항목명', prodOptVal: '옵션값',
+    optValCodeId: '코드참조ID', parentProdOptId: '상위옵션값ID', optStyle: '항목스타일',
     useYn: '사용여부',
-    /* SKU (백엔드 자동생성 참고용) */
-    skuId: 'SKU ID', skuNm: 'SKU명',
-    optItemId1: '옵션1 ID', optItemId2: '옵션2 ID',
+    /* SKU (백엔드 자동생성 참고용) — pd_prod_sku */
+    prodSkuId: 'SKU ID', skuNm: 'SKU명',
+    prodOptId1: '옵션1 값ID', prodOptId2: '옵션2 값ID',
     addPrice: '추가금액', prodOptStock: '재고수량',
-    /* prodImages (실제 전송 key의 필드명) */
-    prodImgId: '이미지ID', cdnImgUrl: '이미지URL',
+    /* prodImages — pd_prod_img */
+    prodImgId: '이미지ID', cdnImgUrl: '이미지URL', prodOptNm: '옵션항목명',
     isThumb: '대표이미지', isMain: '대표이미지',
     skuStatusCd: 'SKU상태',
     /* 공통 */
@@ -597,6 +596,53 @@
     VOUCHER_UNUSED: '미사용', VOUCHER_USED: '사용완료', VOUCHER_EXPIRE: '만료',
   };
 
+  /* 미리보기 테이블 키 고정 표시 순서 — 배열에 없는 키는 맨 뒤에 삽입 순서대로 */
+  const _DISPLAY_KEY_ORDER = [
+    /* 상품 */
+    'prodNm', 'salePrice', 'purchasePrice', 'prodStock',
+    'prodTypeCd', 'prodStatusCd', 'advrtStmt',
+    'categoryId', 'siteId', 'dlivTmpltId', 'simulYn',
+    'optTypeCd', 'prodOpts', '_preview_[prodOpts]', 'prodSkus', 'prodImages',
+    'prodId',
+    /* 회원 */
+    'memberNm', 'loginId', 'memberEmail', 'memberPhone',
+    'gradeCd', 'memberGender', 'empTypeCd', 'memberStatusCd',
+    'snsProvider', 'emailVerifiedYn', 'snsLinkYn',
+    'memberGradeId',
+    /* 사용자 */
+    'userNm', 'loginId', 'userEmail', 'userPhone', 'userStatusCd',
+    'deptId', 'roleIds',
+    /* 업체 */
+    'vendorNm', 'ceoNm', 'vendorType',
+    'vendorPhone', 'vendorEmail', 'corpNo',
+    'vendorStatusCd', 'openDate', 'contractDate',
+    /* 주문 */
+    'memberId', 'orderStatusCd', 'payMethodCd',
+    'orderAmt', 'dlivFee', 'totalPayAmt',
+    'receiverNm', 'zipCode', 'addr1', 'addr2',
+    '_preview_[orderItems]',
+    /* 클레임 */
+    'orderId', 'claimTypeCd', 'reasonCd', 'claimStatusCd',
+    'partialClaim', 'refundRate',
+    /* 기획전 */
+    'planNm', 'planStatusCd', 'planThemeCd', 'startDate', 'endDate',
+    '_preview_[items]',
+    /* 이벤트 */
+    'eventNm', 'eventTypeCd', 'eventStatusCd', 'benefitTypeCd', 'benefitAmt', 'winnerCount',
+    /* 쿠폰 */
+    'couponNm', 'couponCd', 'couponTypeCd', 'couponDiscTypeCd', 'discVal',
+    'issueCount', 'scopeCd', 'prodIds', 'minOrderAmt', 'maxDiscAmt',
+    /* 할인 */
+    'discntNm', 'discntTypeCd', 'discntValTypeCd',
+    /* 적립금 */
+    'saveNm', 'savePurposeCd', 'saveRatePct', 'saveAmt',
+    'saveDurationDays',
+    /* 바우처 */
+    'erpVoucherTypeCd', 'erpVoucherStatusCd', 'erpVoucherDesc',
+    'voucherDate', 'totalDebitAmt', 'totalCreditAmt', 'settleYm', 'vendorId',
+  ];
+  const _KEY_ORDER_MAP = new Map(_DISPLAY_KEY_ORDER.map((k, i) => [k, i]));
+
   /* 코드값 → 코드명 조회 (필드키 + 값 조합으로 우선, 없으면 값만으로) */
   const _getCodeLabel = (fieldKey, val) => {
     if (val === null || val === undefined || typeof val === 'boolean') return '';
@@ -627,10 +673,10 @@
     /* 혼합 */
     'claimItems', 'dlivItems', 'payMethods', 'members', 'prods',
   ]);
-  /* prodOpts[].optItems 의 실제 전송 필드명 — pd_prod_opt_item Entity 기준 */
-  const _REAL_OPT_ITEM_FIELDS = new Set(['optItemId', 'optNm', 'optVal', 'optTypeCd', 'optValCodeId', 'parentOptItemId', 'optStyle', 'sortOrd', 'useYn']);
-  /* prodOpts[] 의 실제 전송 필드명 — pd_prod_opt Entity 기준 (optTypeCdNm → opt_grp_nm 저장) */
-  const _REAL_OPT_GRP_FIELDS  = new Set(['optTypeCdNm', 'optTypeCd', 'optLevel', 'optInputTypeCd', 'sortOrd', 'prodOptItems']);
+  /* prodOpts[].prodOpts 의 실제 전송 필드명 — pd_prod_opt Entity 기준 (구 pd_prod_opt_item) */
+  const _REAL_OPT_ITEM_FIELDS = new Set(['prodOptId', 'prodOptNm', 'prodOptVal', 'optValCodeId', 'parentProdOptId', 'optStyle', 'sortOrd', 'useYn']);
+  /* prodOpts[] 의 실제 전송 필드명 — pd_prod_opt_type Entity 기준 (구 pd_prod_opt) */
+  const _REAL_OPT_GRP_FIELDS  = new Set(['prodOptTypeNm', 'prodOptTypeLevel', 'prodOptInputTypeCd', 'sortOrd', 'prodOpts']);
   const _parsePreviewKey = (k) => {
     if (!k.startsWith('_preview_')) return null;
     const rest = k.slice('_preview_'.length); // e.g. "[prodOpts](6건)" or "optCategory"
@@ -654,8 +700,21 @@
       isPrim()   { return !this.isArray && !this.isObject; },
       objEntries() {
         if (!this.isObject) return [];
+        const MAX_ORDER = _DISPLAY_KEY_ORDER.length;
+        /* _preview_[xxx]... 키의 정렬 기준: 내부 xxx 키의 순서를 따름 */
+        const _sortKey = (k) => {
+          if (k.startsWith('_preview_')) {
+            const m = k.match(/^\[([^\]]+)\]/);
+            const inner = m ? m[1] : k;
+            const idx = _KEY_ORDER_MAP.get(inner);
+            return idx !== undefined ? idx + 0.5 : MAX_ORDER + 0.5;
+          }
+          const idx = _KEY_ORDER_MAP.get(k);
+          return idx !== undefined ? idx : MAX_ORDER;
+        };
         return Object.entries(this.data)
           .filter(([k]) => !k.startsWith('_hide_'))
+          .sort(([a], [b]) => _sortKey(a) - _sortKey(b))
           .map(([k, v]) => {
             const isPreview = k.startsWith('_preview_');
             const parsed = isPreview ? _parsePreviewKey(k) : null;
@@ -732,8 +791,8 @@
                   <template v-if="row !== null && typeof row === 'object' && !Array.isArray(row)">
                     <td v-for="k in Object.keys(row)" :key="k"
                       :style="(row[k] !== null && typeof row[k] === 'object') ? 'padding:2px 4px;border:1px solid #ddd6fe;vertical-align:top;' : 'padding:2px 6px;border:1px solid #ddd6fe;font-family:monospace;color:#1e1b4b;line-height:1.4;white-space:nowrap;'">
-                      <!-- prodOptItems 배열: 인라인 그리드로 펼침 (pd_prod_opt_item) -->
-                      <template v-if="k === 'prodOptItems' && Array.isArray(row[k]) && row[k].length">
+                      <!-- prodOpts 배열: 인라인 그리드로 펼침 (pd_prod_opt, 구 pd_prod_opt_item) -->
+                      <template v-if="k === 'prodOpts' && Array.isArray(row[k]) && row[k].length">
                         <table style="border-collapse:collapse;font-size:10px;min-width:320px;">
                           <thead>
                             <tr style="background:#d1fae5;">

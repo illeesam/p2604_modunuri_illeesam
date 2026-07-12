@@ -46,14 +46,14 @@ public class PdProdSkuController {
     /* 상품 SKU 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdSku>> save(@PathVariable("id") String id, @RequestBody PdProdSku entity) {
-        entity.setSkuId(id);
+        entity.setProdSkuId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 상품 SKU 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdSku>> updateSelective(@PathVariable("id") String id, @RequestBody PdProdSku entity) {
-        entity.setSkuId(id);
+        entity.setProdSkuId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

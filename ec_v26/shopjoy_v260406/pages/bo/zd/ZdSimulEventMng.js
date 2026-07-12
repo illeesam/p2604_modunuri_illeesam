@@ -98,7 +98,7 @@
         uiNm: '이벤트 시뮬레이터',
         label: '시뮬이벤트',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, simulYn, previewOnly, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, randInt, pick }) => {
           if (mode === 'create') {
             const type    = _pickType();
             const offset  = randInt(domCfg.startOffsetMin, domCfg.startOffsetMax);
@@ -115,15 +115,6 @@
               winnerCount: randInt(domCfg.winnerCountMin, domCfg.winnerCountMax),
               simulYn: simulYn || 'Y',
             };
-            if (previewOnly) {
-              body['_preview_[eventBody]'] = {
-                eventNm: body.eventNm, eventTypeCd: body.eventTypeCd,
-                eventStatusCd: body.eventStatusCd,
-                startDate: body.startDate, endDate: body.endDate,
-                benefitTypeCd: body.benefitTypeCd, benefitAmt: body.benefitAmt,
-                winnerCount: body.winnerCount,
-              };
-            }
             const res = await boApi.post('/bo/zd/simul/event/create', body, coUtil.cofApiHdr('이벤트시뮬', '생성'));
             const id  = res?.data?.data?.eventId || '-';
             return {

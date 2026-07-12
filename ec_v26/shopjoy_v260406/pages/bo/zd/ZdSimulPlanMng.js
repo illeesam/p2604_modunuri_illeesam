@@ -88,7 +88,7 @@
         uiNm: '기획전 시뮬레이터',
         label: '시뮬기획전',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, simulYn, previewOnly, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, randInt, pick }) => {
           if (mode === 'create') {
             const prods = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 100, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
             if (prods.length < 3) return { ok: false, reason: '판매중 상품 부족 (최소 3개 필요)' };
@@ -107,11 +107,9 @@
               items,
               simulYn: simulYn || 'Y',
             };
-            if (previewOnly) {
-              body['_preview_[items](' + items.length + '개)'] = items.map(it => ({
-                prodId: it.prodId, sortOrd: it.sortOrd,
-              }));
-            }
+            body['_preview_[items](' + items.length + '개)'] = items.map(it => ({
+              prodId: it.prodId, sortOrd: it.sortOrd,
+            }));
             const res = await boApi.post('/bo/zd/simul/plan/create', body, coUtil.cofApiHdr('기획전시뮬', '생성'));
             const id  = res?.data?.data?.planId || '-';
             return {

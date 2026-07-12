@@ -21,7 +21,7 @@ public class PdhProdSkuPriceHistDto {
     public static class Item {
         private String histId;
         private String siteId;
-        private String skuId;
+        private String prodSkuId;
         private String prodId;
         private Long addPriceBefore;
         private Long addPriceAfter;

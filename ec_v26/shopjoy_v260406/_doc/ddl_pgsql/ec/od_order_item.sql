@@ -6,9 +6,9 @@ CREATE TABLE shopjoy_2604.od_order_item (
     site_id                     VARCHAR(21)  NOT NULL,
     order_id                    VARCHAR(21)  NOT NULL,
     prod_id                     VARCHAR(21)  NOT NULL,
-    sku_id                      VARCHAR(21) ,
-    opt_item_id_1               VARCHAR(21) ,
-    opt_item_id_2               VARCHAR(21) ,
+    prod_sku_id                 VARCHAR(21) ,
+    prod_opt_id_1               VARCHAR(21) ,
+    prod_opt_id_2               VARCHAR(21) ,
     prod_nm                     VARCHAR(200),
     brand_nm                    VARCHAR(100),
     dliv_tmplt_id               VARCHAR(21) ,
@@ -55,9 +55,9 @@ COMMENT ON COLUMN shopjoy_2604.od_order_item.order_item_id IS '주문상품ID (Y
 COMMENT ON COLUMN shopjoy_2604.od_order_item.site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.order_id IS '주문ID (od_order.)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.prod_id IS '상품ID (pd_prod.)';
-COMMENT ON COLUMN shopjoy_2604.od_order_item.sku_id IS 'SKU ID (pd_prod_sku., 무옵션 시 NULL)';
-COMMENT ON COLUMN shopjoy_2604.od_order_item.opt_item_id_1 IS '옵션1 값ID (pd_prod_opt_item.opt_item_id)';
-COMMENT ON COLUMN shopjoy_2604.od_order_item.opt_item_id_2 IS '옵션2 값ID (pd_prod_opt_item.opt_item_id)';
+COMMENT ON COLUMN shopjoy_2604.od_order_item.prod_sku_id IS 'SKU ID (pd_prod_sku.prod_sku_id, 무옵션 시 NULL)';
+COMMENT ON COLUMN shopjoy_2604.od_order_item.prod_opt_id_1 IS '옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN shopjoy_2604.od_order_item.prod_opt_id_2 IS '옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.prod_nm IS '상품명 (주문 시점 스냅샷)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.brand_nm IS '브랜드명 (주문 시점 스냅샷)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.dliv_tmplt_id IS '배송비 템플릿ID 스냅샷';

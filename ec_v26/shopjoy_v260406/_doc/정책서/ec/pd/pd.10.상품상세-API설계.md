@@ -64,8 +64,8 @@ GET /api/bo/ec/pd/prod/{prodId}/opts
 
 ```json
 {
-  "groups": [ { "optId": "...", "optGrpNm": "색상", "optLevel": 1, "optTypeCd": "COLOR", ... } ],
-  "items":  [ { "optItemId": "...", "optId": "...", "optNm": "빨강", "optVal": "RED", ... } ]
+  "groups": [ { "optId": "...", "optNm": "색상", "optLevel": 1, "optTypeCd": "COLOR", ... } ],
+  "items":  [ { "optItemId": "...", "optId": "...", "optNm": "빨강", "optItemVal": "RED", ... } ]
 }
 ```
 

@@ -7,8 +7,8 @@ CREATE TABLE shopjoy_2604.od_dliv_item (
     dliv_id                    VARCHAR(21) NOT NULL,
     order_item_id              VARCHAR(21) NOT NULL,
     prod_id                    VARCHAR(21),
-    opt_item_id_1              VARCHAR(21),
-    opt_item_id_2              VARCHAR(21),
+    prod_opt_id_1                   VARCHAR(21),
+    prod_opt_id_2                   VARCHAR(21),
     dliv_type_cd               VARCHAR(20) DEFAULT 'OUT'::character varying,
     unit_price                 BIGINT      DEFAULT 0,
     dliv_qty                   INTEGER     DEFAULT 1,
@@ -26,8 +26,8 @@ COMMENT ON COLUMN shopjoy_2604.od_dliv_item.site_id IS '사이트ID (sy_site.sit
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.dliv_id IS '배송ID (od_dliv.)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.order_item_id IS '주문상품ID (od_order_item.)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.prod_id IS '상품ID';
-COMMENT ON COLUMN shopjoy_2604.od_dliv_item.opt_item_id_1 IS '옵션1 값ID (pd_prod_opt_item.opt_item_id)';
-COMMENT ON COLUMN shopjoy_2604.od_dliv_item.opt_item_id_2 IS '옵션2 값ID (pd_prod_opt_item.opt_item_id)';
+COMMENT ON COLUMN shopjoy_2604.od_dliv_item.prod_opt_id_1 IS '옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN shopjoy_2604.od_dliv_item.prod_opt_id_2 IS '옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.dliv_type_cd IS '입출고구분 (OUT:출고 / IN:입고반품)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.unit_price IS '단가 (주문시점 스냅샷)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.dliv_qty IS '출고수량 (부분출고 시 주문수량보다 적을 수 있음)';

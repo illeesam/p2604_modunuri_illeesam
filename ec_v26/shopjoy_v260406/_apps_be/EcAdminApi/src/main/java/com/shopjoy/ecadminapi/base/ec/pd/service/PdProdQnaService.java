@@ -75,7 +75,7 @@ public class PdProdQnaService {
     /* 상품 문의 등록 */
     @Transactional
     public PdProdQna create(PdProdQna body) {
-        body.setQnaId(CmUtil.generateId("pd_prod_qna"));
+        body.setProdQnaId(CmUtil.generateId("pd_prod_qna"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -93,7 +93,7 @@ public class PdProdQnaService {
     public PdProdQna update(String id, PdProdQna body) {
         CmUtil.requireId(id, "id", this);
         PdProdQna entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "qnaId^regBy^regDate");
+        VoUtil.voCopyExclude(body, entity, "prodQnaId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdQna saved = pdProdQnaRepository.save(entity);
@@ -105,9 +105,9 @@ public class PdProdQnaService {
     /* 상품 문의 수정 */
     @Transactional
     public PdProdQna updateSelective(PdProdQna entity) {
-        if (entity.getQnaId() == null) throw new CmBizException("qnaId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getQnaId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getQnaId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getProdQnaId() == null) throw new CmBizException("prodQnaId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getProdQnaId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdQnaId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = pdProdQnaRepository.updateSelective(entity);
@@ -138,32 +138,32 @@ public class PdProdQnaService {
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
         if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getQnaId() == null || entity.getQnaId().isBlank()) ? "I" : "U";
+            rowStatus = (entity.getProdQnaId() == null || entity.getProdQnaId().isBlank()) ? "I" : "U";
         }
 
         if ("D".equals(rowStatus)) {
-            if (entity.getQnaId() == null)
-                throw new CmBizException("삭제 대상 qnaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!pdProdQnaRepository.existsById(entity.getQnaId()))
-                throw new CmBizException("존재하지 않는 PdProdQna입니다: " + entity.getQnaId() + "::" + CmUtil.svcCallerInfo(this));
-            pdProdQnaRepository.deleteById(entity.getQnaId());
+            if (entity.getProdQnaId() == null)
+                throw new CmBizException("삭제 대상 prodQnaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!pdProdQnaRepository.existsById(entity.getProdQnaId()))
+                throw new CmBizException("존재하지 않는 PdProdQna입니다: " + entity.getProdQnaId() + "::" + CmUtil.svcCallerInfo(this));
+            pdProdQnaRepository.deleteById(entity.getProdQnaId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setQnaId(CmUtil.generateId("pd_prod_qna"));
+            entity.setProdQnaId(CmUtil.generateId("pd_prod_qna"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             PdProdQna saved = pdProdQnaRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getQnaId() == null)
-                throw new CmBizException("수정 대상 qnaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (entity.getProdQnaId() == null)
+                throw new CmBizException("수정 대상 prodQnaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = pdProdQnaRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 PdProdQna입니다: " + entity.getQnaId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 PdProdQna입니다: " + entity.getProdQnaId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getQnaId());
+            return findById(entity.getProdQnaId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -177,20 +177,20 @@ public class PdProdQnaService {
         for (PdProdQna row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getQnaId() == null || row.getQnaId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getProdQnaId() == null || row.getProdQnaId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, PdProdQna::getQnaId, "U", "qnaId", this);
-        CmUtil.requireRowIds(rows, PdProdQna::getQnaId, "D", "qnaId", this);
+        CmUtil.requireRowIds(rows, PdProdQna::getProdQnaId, "U", "prodQnaId", this);
+        CmUtil.requireRowIds(rows, PdProdQna::getProdQnaId, "D", "prodQnaId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(PdProdQna::getQnaId)
+            .map(PdProdQna::getProdQnaId)
             .toList();
         if (!deleteIds.isEmpty()) {
             pdProdQnaRepository.deleteAllById(deleteIds);
@@ -203,7 +203,7 @@ public class PdProdQnaService {
         for (PdProdQna row : updateRows) {
             row.setUpdBy(authId);
             int affected = pdProdQnaRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getQnaId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdQnaId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -211,7 +211,7 @@ public class PdProdQnaService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (PdProdQna row : insertRows) {
-            row.setQnaId(CmUtil.generateId("pd_prod_qna"));
+            row.setProdQnaId(CmUtil.generateId("pd_prod_qna"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdQnaRepository.save(row);

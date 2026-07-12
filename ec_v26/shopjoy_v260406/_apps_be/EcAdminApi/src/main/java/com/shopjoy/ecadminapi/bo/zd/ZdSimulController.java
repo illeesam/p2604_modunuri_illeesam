@@ -15,12 +15,12 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOptItem;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOptType;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdDlivTmpltService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdImgService;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdOptItemService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdOptService;
+import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdOptTypeService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdSkuService;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
@@ -81,8 +81,8 @@ import java.util.Map;
 public class ZdSimulController {
 
     private final PdProdService        pdProdService;
+    private final PdProdOptTypeService pdProdOptTypeService;
     private final PdProdOptService     pdProdOptService;
-    private final PdProdOptItemService pdProdOptItemService;
     private final PdProdSkuService     pdProdSkuService;
     private final PdProdImgService     pdProdImgService;
     private final PdDlivTmpltService   pdDlivTmpltService;
@@ -212,7 +212,7 @@ public class ZdSimulController {
         PdProd saved = pdProdService.create(prod);
         String prodId = saved.getProdId();
 
-        /* 옵션형: prodOpts 처리 (optTypeCdNm → pd_prod_opt.opt_grp_nm 저장) */
+        /* 옵션형: prodOpts 처리 (optTypeCdNm → pd_prod_opt.opt_nm 저장) */
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> optGroups = body.get("prodOpts") instanceof List
             ? (List<Map<String, Object>>) body.get("prodOpts") : null;
@@ -222,16 +222,15 @@ public class ZdSimulController {
             List<String> grp2ItemIds = new ArrayList<>();
 
             for (Map<String, Object> grp : optGroups) {
-                PdProdOpt opt = new PdProdOpt();
-                opt.setSiteId(siteId);
-                opt.setProdId(prodId);
-                opt.setOptGrpNm(str(grp, "optTypeCdNm")); /* optTypeCdNm → opt_grp_nm */
-                opt.setOptLevel(intVal(grp, "optLevel", 1));
-                opt.setOptTypeCd(str(grp, "optTypeCd"));
-                opt.setOptInputTypeCd(str(grp, "optInputTypeCd", "SELECT"));
-                opt.setSortOrd(intVal(grp, "sortOrd", 1));
-                PdProdOpt savedOpt = pdProdOptService.create(opt);
-                String optId = savedOpt.getOptId();
+                PdProdOptType optType = new PdProdOptType();
+                optType.setSiteId(siteId);
+                optType.setProdId(prodId);
+                optType.setProdOptTypeNm(str(grp, "optTypeCdNm")); /* optTypeCdNm → opt_type_nm */
+                optType.setProdOptTypeLevel(intVal(grp, "optLevel", 1));
+                optType.setProdOptInputTypeCd(str(grp, "optInputTypeCd", "SELECT"));
+                optType.setSortOrd(intVal(grp, "sortOrd", 1));
+                PdProdOptType savedOptType = pdProdOptTypeService.create(optType);
+                String optTypeId = savedOptType.getProdOptTypeId();
 
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> optItems = grp.get("prodOptItems") instanceof List
@@ -239,18 +238,17 @@ public class ZdSimulController {
 
                 int level = intVal(grp, "optLevel", 1);
                 for (Map<String, Object> it : optItems) {
-                    PdProdOptItem optItem = new PdProdOptItem();
-                    optItem.setSiteId(siteId);
-                    optItem.setOptId(optId);
-                    optItem.setOptItemId(str(it, "optItemId")); // 프론트 임시ID(tmp-opt1-01 등) 우선, null이면 서비스에서 자동생성
-                    optItem.setOptNm(str(it, "optNm"));
-                    optItem.setOptVal(str(it, "optVal"));
-                    optItem.setOptTypeCd(str(it, "optTypeCd"));
-                    optItem.setSortOrd(intVal(it, "sortOrd", 1));
-                    optItem.setUseYn(str(it, "useYn", "Y"));
-                    PdProdOptItem savedItem = pdProdOptItemService.create(optItem);
-                    if (level == 1) grp1ItemIds.add(savedItem.getOptItemId());
-                    else grp2ItemIds.add(savedItem.getOptItemId());
+                    PdProdOpt optVal = new PdProdOpt();
+                    optVal.setSiteId(siteId);
+                    optVal.setProdOptTypeId(optTypeId);
+                    optVal.setProdId(prodId);
+                    optVal.setProdOptNm(str(it, "optItemNm"));
+                    optVal.setProdOptVal(str(it, "optItemVal"));
+                    optVal.setSortOrd(intVal(it, "sortOrd", 1));
+                    optVal.setUseYn(str(it, "useYn", "Y"));
+                    PdProdOpt savedOptVal = pdProdOptService.create(optVal);
+                    if (level == 1) grp1ItemIds.add(savedOptVal.getProdOptId());
+                    else grp2ItemIds.add(savedOptVal.getProdOptId());
                 }
             }
 
@@ -260,10 +258,10 @@ public class ZdSimulController {
                 if (grp2ItemIds.isEmpty()) {
                     for (int i = 0; i < grp1ItemIds.size(); i++) {
                         PdProdSku sku = new PdProdSku();
-                        sku.setSkuId("tmp-sku-" + pad2(skuIdx++));
+                        sku.setProdSkuId("tmp-sku-" + pad2(skuIdx++));
                         sku.setSiteId(siteId);
                         sku.setProdId(prodId);
-                        sku.setOptItemId1(grp1ItemIds.get(i));
+                        sku.setProdOptId1(grp1ItemIds.get(i));
                         sku.setAddPrice((long) (i * 1000));
                         sku.setProdOptStock(10);
                         sku.setUseYn("Y");
@@ -273,11 +271,11 @@ public class ZdSimulController {
                     for (int i = 0; i < grp1ItemIds.size(); i++) {
                         for (int j = 0; j < grp2ItemIds.size(); j++) {
                             PdProdSku sku = new PdProdSku();
-                            sku.setSkuId("tmp-sku-" + pad2(skuIdx++));
+                            sku.setProdSkuId("tmp-sku-" + pad2(skuIdx++));
                             sku.setSiteId(siteId);
                             sku.setProdId(prodId);
-                            sku.setOptItemId1(grp1ItemIds.get(i));
-                            sku.setOptItemId2(grp2ItemIds.get(j));
+                            sku.setProdOptId1(grp1ItemIds.get(i));
+                            sku.setProdOptId2(grp2ItemIds.get(j));
                             sku.setAddPrice((long) (i * 1000));
                             sku.setProdOptStock(10);
                             sku.setUseYn("Y");
@@ -293,7 +291,7 @@ public class ZdSimulController {
                 img.setProdImgId("tmp-img-" + pad2(i));
                 img.setSiteId(siteId);
                 img.setProdId(prodId);
-                img.setOptItemId1(grp1ItemIds.get(i));
+                img.setProdOptId1(grp1ItemIds.get(i));
                 img.setCdnImgUrl("https://picsum.photos/seed/" + (200 + i * 37) + "/400/400");
                 img.setIsThumb(i == 0 ? "Y" : "N");
                 img.setSortOrd(i + 1);

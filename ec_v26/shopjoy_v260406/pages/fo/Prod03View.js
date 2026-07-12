@@ -210,7 +210,7 @@ window.Prod03View = {
         const data = fnPickData(res) || {};
         const prod = data.prod || data;
         if (prod && prod.prodId) {
-          const merged = fnMergeProdOpts(prod, { groups: data.prodOpts || [], items: data.prodOptItems || [] }, data.prodSkus || [], data.prodImgs || []);
+          const merged = fnMergeProdOpts(prod, { groups: data.prodOptTypes || [], items: data.prodOpts || [] }, data.prodSkus || [], data.prodImgs || []);
           fnApplySvProduct(merged);
         }
         uiState.prodApiLoaded = true;
@@ -352,26 +352,26 @@ window.Prod03View = {
         const sel = uiState.selectedColor || null;
         const colorKeys = new Set();
         if (sel) {
-          if (sel.optItemId) { colorKeys.add(String(sel.optItemId)); }
+          if (sel.optId) { colorKeys.add(String(sel.optId)); }
           if (sel.val) { colorKeys.add(String(sel.val)); }
           if (sel.name) { colorKeys.add(String(sel.name)); }
         }
         const opt1ById = new Map();
         (p.opt1s || []).forEach(c => {
-          if (c.optItemId) { opt1ById.set(String(c.optItemId), c); }
+          if (c.optId) { opt1ById.set(String(c.optId), c); }
           if (c.val) { opt1ById.set(String(c.val), c); }
           if (c.name) { opt1ById.set(String(c.name), c); }
         });
         const opt2ById = new Map();
         (p.opt2sAll || []).forEach(c => {
-          if (c.optItemId) { opt2ById.set(String(c.optItemId), c); }
+          if (c.optId) { opt2ById.set(String(c.optId), c); }
           if (c.val) { opt2ById.set(String(c.val), c); }
           if (c.name) { opt2ById.set(String(c.name), c); }
         });
-        // 색상 무관 공통 이미지(optItemId1 빈값)는 어떤 색상이든 항상 표시.
+        // 색상 무관 공통 이미지(prodOptId1 빈값)는 어떤 색상이든 항상 표시.
         // 선택 색상 전용 이미지가 있을 때만 다른 색상 전용을 제외한다.
-        const isCommon = (im) => !im.optItemId1 || String(im.optItemId1).trim() === '';
-        const matchesColor = (im) => colorKeys.has(String(im.optItemId1));
+        const isCommon = (im) => !im.prodOptId1 || String(im.prodOptId1).trim() === '';
+        const matchesColor = (im) => colorKeys.has(String(im.prodOptId1));
         const filtered = colorKeys.size
           ? (real.some(matchesColor)
               ? real.filter(im => isCommon(im) || matchesColor(im))
@@ -381,8 +381,8 @@ window.Prod03View = {
           ((b.isThumb === 'Y') - (a.isThumb === 'Y')) || ((a.sortOrd||0) - (b.sortOrd||0))
         );
         return list.map((im, i) => {
-          const c1 = im.optItemId1 != null ? opt1ById.get(String(im.optItemId1)) : null;
-          const c2 = im.optItemId2 != null ? opt2ById.get(String(im.optItemId2)) : null;
+          const c1 = im.prodOptId1 != null ? opt1ById.get(String(im.prodOptId1)) : null;
+          const c2 = im.prodOptId2 != null ? opt2ById.get(String(im.prodOptId2)) : null;
           const parts = [];
           if (c1) { parts.push((p.opt1Nm || '색상') + ': ' + c1.name); }
           if (c2) { parts.push((p.opt2Nm || '사이즈') + ': ' + c2.name); }
@@ -416,8 +416,8 @@ window.Prod03View = {
         maskedName: masked,
         rating,
         date:       dateStr,
-        sizeInfo:   r.optNm2 || r.sizeInfo || '',
-        colorInfo:  r.optNm1 || r.colorInfo || '',
+        sizeInfo:   r.prodOptNm2 || r.sizeInfo || '',
+        colorInfo:  r.prodOptNm1 || r.colorInfo || '',
         text:       r.reviewContent || r.reviewTitle || '',
         hasPhoto:   imgs.length > 0,
         photoImg:   coUtil.cofImgSrc(imgs[0]?.thumbUrl || imgs[0]?.cdnImgUrl || ''),

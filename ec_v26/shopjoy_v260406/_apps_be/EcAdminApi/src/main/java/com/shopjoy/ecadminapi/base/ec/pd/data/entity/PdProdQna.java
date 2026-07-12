@@ -21,8 +21,8 @@ public class PdProdQna extends BaseEntity {
 
     @Id
     @Comment("문의ID (YYMMDDhhmmss+rand4)")
-    @Column(name = "qna_id", length = 21, nullable = false)
-    private String qnaId;
+    @Column(name = "prod_qna_id", length = 21, nullable = false)
+    private String prodQnaId;
 
     @Comment("사이트ID (sy_site.site_id)")
     @Column(name = "site_id", length = 21, nullable = false)
@@ -32,9 +32,9 @@ public class PdProdQna extends BaseEntity {
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Comment("SKUID (pd_prod_sku.sku_id)")
-    @Column(name = "sku_id", length = 21)
-    private String skuId;
+    @Comment("SKUID (pd_prod_sku.prod_sku_id)")
+    @Column(name = "prod_sku_id", length = 21)
+    private String prodSkuId;
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21)
@@ -45,16 +45,16 @@ public class PdProdQna extends BaseEntity {
     private String orderId;
 
     @Comment("문의유형코드 (코드: PROD_QNA_TYPE)")
-    @Column(name = "qna_type_cd", length = 20)
-    private String qnaTypeCd;
+    @Column(name = "prod_qna_type_cd", length = 20)
+    private String prodQnaTypeCd;
 
     @Comment("문의제목")
-    @Column(name = "qna_title", length = 200, nullable = false)
-    private String qnaTitle;
+    @Column(name = "prod_qna_title", length = 200, nullable = false)
+    private String prodQnaTitle;
 
     @Comment("문의내용")
-    @Column(name = "qna_content", columnDefinition = "TEXT")
-    private String qnaContent;
+    @Column(name = "prod_qna_content", columnDefinition = "TEXT")
+    private String prodQnaContent;
 
     @Comment("비밀글여부 Y/N")
     @Column(name = "scrt_yn", length = 1)

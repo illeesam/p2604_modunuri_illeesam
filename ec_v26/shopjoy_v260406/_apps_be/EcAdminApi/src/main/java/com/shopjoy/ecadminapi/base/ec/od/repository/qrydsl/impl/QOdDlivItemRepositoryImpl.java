@@ -36,7 +36,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         return queryFactory
                 .select(Projections.bean(OdDlivItemDto.Item.class,
                         odDlivItem.dlivItemId, odDlivItem.siteId, odDlivItem.dlivId, odDlivItem.orderItemId,
-                        odDlivItem.prodId, odDlivItem.optItemId1, odDlivItem.optItemId2,
+                        odDlivItem.prodId, odDlivItem.prodOptId1, odDlivItem.prodOptId2,
                         odDlivItem.dlivTypeCd, odDlivItem.unitPrice, odDlivItem.dlivQty,
                         odDlivItem.dlivItemStatusCd, odDlivItem.dlivItemStatusCdBefore,
                         odDlivItem.regBy, odDlivItem.regDate, odDlivItem.updBy, odDlivItem.updDate
@@ -178,8 +178,8 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         or = orLike(or, all, types, ",dlivItemStatusCd,", odDlivItem.dlivItemStatusCd, pattern);
         or = orLike(or, all, types, ",dlivItemStatusCdBefore,", odDlivItem.dlivItemStatusCdBefore, pattern);
         or = orLike(or, all, types, ",dlivTypeCd,", odDlivItem.dlivTypeCd, pattern);
-        or = orLike(or, all, types, ",optItemId1,", odDlivItem.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", odDlivItem.optItemId2, pattern);
+        or = orLike(or, all, types, ",prodOptId1,", odDlivItem.prodOptId1, pattern);
+        or = orLike(or, all, types, ",prodOptId2,", odDlivItem.prodOptId2, pattern);
         or = orLike(or, all, types, ",orderItemId,", odDlivItem.orderItemId, pattern);
         or = orLike(or, all, types, ",prodId,", odDlivItem.prodId, pattern);
         or = orLike(or, all, types, ",siteId,", odDlivItem.siteId, pattern);
@@ -244,8 +244,8 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         if (entity.getDlivId()                 != null) { update.set(odDlivItem.dlivId,                 entity.getDlivId());                 hasAny = true; }
         if (entity.getOrderItemId()            != null) { update.set(odDlivItem.orderItemId,            entity.getOrderItemId());            hasAny = true; }
         if (entity.getProdId()                 != null) { update.set(odDlivItem.prodId,                 entity.getProdId());                 hasAny = true; }
-        if (entity.getOptItemId1()             != null) { update.set(odDlivItem.optItemId1,             entity.getOptItemId1());             hasAny = true; }
-        if (entity.getOptItemId2()             != null) { update.set(odDlivItem.optItemId2,             entity.getOptItemId2());             hasAny = true; }
+        if (entity.getProdOptId1()             != null) { update.set(odDlivItem.prodOptId1,             entity.getProdOptId1());             hasAny = true; }
+        if (entity.getProdOptId2()             != null) { update.set(odDlivItem.prodOptId2,             entity.getProdOptId2());             hasAny = true; }
         if (entity.getDlivTypeCd()             != null) { update.set(odDlivItem.dlivTypeCd,             entity.getDlivTypeCd());             hasAny = true; }
         if (entity.getUnitPrice()              != null) { update.set(odDlivItem.unitPrice,              entity.getUnitPrice());              hasAny = true; }
         if (entity.getDlivQty()                != null) { update.set(odDlivItem.dlivQty,                entity.getDlivQty());                hasAny = true; }

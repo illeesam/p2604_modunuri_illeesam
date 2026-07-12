@@ -225,7 +225,7 @@ public class BoOdOrderService {
                 item.setSiteId(siteId);
                 item.setOrderId(orderId);
                 item.setProdId(si.getProdId());
-                item.setSkuId(si.getSkuId());
+                item.setProdSkuId(si.getProdSkuId());
                 item.setProdNm(si.getProdNm());
                 item.setUnitPrice(si.getUnitPrice());
                 item.setOrderQty(si.getOrderQty() != null ? si.getOrderQty() : 1);

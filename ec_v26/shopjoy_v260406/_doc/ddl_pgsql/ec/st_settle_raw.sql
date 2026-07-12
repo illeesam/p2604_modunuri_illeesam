@@ -26,9 +26,9 @@ CREATE TABLE shopjoy_2604.st_settle_raw (
     category_id_3        VARCHAR(21) ,
     category_id_4        VARCHAR(21) ,
     category_id_5        VARCHAR(21) ,
-    sku_id               VARCHAR(21) ,
-    opt_item_id_1        VARCHAR(21) ,
-    opt_item_id_2        VARCHAR(21) ,
+    prod_sku_id          VARCHAR(21) ,
+    prod_opt_id_1             VARCHAR(21) ,
+    prod_opt_id_2             VARCHAR(21) ,
     md_user_id           VARCHAR(21) ,
     normal_price         BIGINT       DEFAULT 0,
     unit_price           BIGINT       DEFAULT 0,
@@ -97,9 +97,9 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_raw.category_id_2 IS '카테고리 2단
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.category_id_3 IS '카테고리 3단계(소분류) ID 스냅샷 (pd_category.category_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.category_id_4 IS '카테고리 4단계 ID 스냅샷 (pd_category.category_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.category_id_5 IS '카테고리 5단계 ID 스냅샷 (pd_category.category_id)';
-COMMENT ON COLUMN shopjoy_2604.st_settle_raw.sku_id IS 'SKU ID 스냅샷 (pd_prod_sku.sku_id)';
-COMMENT ON COLUMN shopjoy_2604.st_settle_raw.opt_item_id_1 IS '옵션1 값ID 스냅샷 (pd_prod_opt_item.opt_item_id)';
-COMMENT ON COLUMN shopjoy_2604.st_settle_raw.opt_item_id_2 IS '옵션2 값ID 스냅샷 (pd_prod_opt_item.opt_item_id)';
+COMMENT ON COLUMN shopjoy_2604.st_settle_raw.prod_sku_id IS 'SKU ID 스냅샷 (pd_prod_sku.prod_sku_id)';
+COMMENT ON COLUMN shopjoy_2604.st_settle_raw.prod_opt_id_1 IS '옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN shopjoy_2604.st_settle_raw.prod_opt_id_2 IS '옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.md_user_id IS '담당MD (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.normal_price IS '정상가 스냅샷 (할인 전 1ea 가격)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.unit_price IS '단가 (옵션 추가금액 포함)';
@@ -165,6 +165,6 @@ CREATE INDEX idx_st_settle_raw_prod ON shopjoy_2604.st_settle_raw USING btree (p
 CREATE INDEX idx_st_settle_raw_promo ON shopjoy_2604.st_settle_raw USING btree (promo_id);
 CREATE INDEX idx_st_settle_raw_settle ON shopjoy_2604.st_settle_raw USING btree (settle_id);
 CREATE INDEX idx_st_settle_raw_site ON shopjoy_2604.st_settle_raw USING btree (site_id);
-CREATE INDEX idx_st_settle_raw_sku ON shopjoy_2604.st_settle_raw USING btree (sku_id);
+CREATE INDEX idx_st_settle_raw_sku ON shopjoy_2604.st_settle_raw USING btree (prod_sku_id);
 CREATE INDEX idx_st_settle_raw_status ON shopjoy_2604.st_settle_raw USING btree (raw_status_cd);
 CREATE INDEX idx_st_settle_raw_vendor ON shopjoy_2604.st_settle_raw USING btree (site_id, vendor_id);

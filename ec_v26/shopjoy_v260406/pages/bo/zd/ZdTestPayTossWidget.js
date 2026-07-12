@@ -569,7 +569,7 @@ window.ZdTestPayTossWidget = {
                 <div><span style="color:#f59e0b;font-weight:700">PK</span> order_item_id VARCHAR</div>
                 <div><span style="color:#3b82f6;font-weight:700">FK</span> order_id → od_order</div>
                 <div style="color:#64748b">item_status_cd <span style="color:#5b21b6">ORDER_ITEM_STATUS</span></div>
-                <div style="color:#64748b">prod_id / sku_id / prod_nm</div>
+                <div style="color:#64748b">prod_id / prod_sku_id / prod_nm</div>
                 <div style="color:#64748b">qty / unit_price / item_amt</div>
                 <div style="color:#64748b">dliv_tmplt_id / dliv_fee</div>
               </div>

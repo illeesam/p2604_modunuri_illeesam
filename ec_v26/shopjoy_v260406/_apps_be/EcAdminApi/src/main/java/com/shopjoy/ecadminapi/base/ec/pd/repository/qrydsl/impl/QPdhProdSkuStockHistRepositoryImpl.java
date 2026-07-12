@@ -38,7 +38,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
                 .select(Projections.bean(PdhProdSkuStockHistDto.Item.class,
                         pdhProdSkuStockHist.histId,
                         pdhProdSkuStockHist.siteId,
-                        pdhProdSkuStockHist.skuId,
+                        pdhProdSkuStockHist.prodSkuId,
                         pdhProdSkuStockHist.prodId,
                         pdhProdSkuStockHist.stockBefore,
                         pdhProdSkuStockHist.stockAfter,
@@ -160,7 +160,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         or = orLike(or, all, types, ",orderItemId,", pdhProdSkuStockHist.orderItemId, pattern);
         or = orLike(or, all, types, ",prodId,", pdhProdSkuStockHist.prodId, pattern);
         or = orLike(or, all, types, ",siteId,", pdhProdSkuStockHist.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", pdhProdSkuStockHist.skuId, pattern);
+        or = orLike(or, all, types, ",skuId,", pdhProdSkuStockHist.prodSkuId, pattern);
         return or;
     }
 
@@ -217,7 +217,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         boolean hasAny = false;
 
         if (entity.getSiteId()      != null) { update.set(pdhProdSkuStockHist.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getSkuId()       != null) { update.set(pdhProdSkuStockHist.skuId,       entity.getSkuId());       hasAny = true; }
+        if (entity.getProdSkuId()   != null) { update.set(pdhProdSkuStockHist.prodSkuId,   entity.getProdSkuId());   hasAny = true; }
         if (entity.getProdId()      != null) { update.set(pdhProdSkuStockHist.prodId,      entity.getProdId());      hasAny = true; }
         if (entity.getStockBefore() != null) { update.set(pdhProdSkuStockHist.stockBefore, entity.getStockBefore()); hasAny = true; }
         if (entity.getStockAfter()  != null) { update.set(pdhProdSkuStockHist.stockAfter,  entity.getStockAfter());  hasAny = true; }

@@ -15,7 +15,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdCart;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdCartRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOptItem;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOpt;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -37,28 +37,28 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     private static final QSySite        sySite = QSySite.sySite;
     private static final QMbMember      mbMember = QMbMember.mbMember;
     private static final QPdProd        pdProd = QPdProd.pdProd;
-    private static final QPdProdOptItem oi1 = new QPdProdOptItem("oi1");
-    private static final QPdProdOptItem oi2 = new QPdProdOptItem("oi2");
+    private static final QPdProdOpt oi1 = new QPdProdOpt("oi1");
+    private static final QPdProdOpt oi2 = new QPdProdOpt("oi2");
 
     /* 장바구니 baseListQuery */
     private JPAQuery<OdCartDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdCartDto.Item.class,
-                        odCart.cartId, odCart.siteId, odCart.memberId, odCart.sessionKey, odCart.prodId, odCart.skuId,
-                        odCart.optItemId1, odCart.optItemId2, odCart.unitPrice, odCart.orderQty, odCart.itemPrice, odCart.isChecked,
+                        odCart.cartId, odCart.siteId, odCart.memberId, odCart.sessionKey, odCart.prodId, odCart.prodSkuId,
+                        odCart.prodOptId1, odCart.prodOptId2, odCart.unitPrice, odCart.orderQty, odCart.itemPrice, odCart.isChecked,
                         odCart.regBy, odCart.regDate, odCart.updBy, odCart.updDate,
                         sySite.siteNm.as("siteNm"),
                         mbMember.memberNm.as("memberNm"),
                         pdProd.prodNm.as("prodNm"),
-                        oi1.optNm.as("optNm1"),
-                        oi2.optNm.as("optNm2")
+                        oi1.prodOptNm.as("prodOptNm1"),
+                        oi2.prodOptNm.as("prodOptNm2")
                 ))
                 .from(odCart)
                 .leftJoin(sySite).on(sySite.siteId.eq(odCart.siteId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId))
-                .leftJoin(oi1).on(oi1.optItemId.eq(odCart.optItemId1))
-                .leftJoin(oi2).on(oi2.optItemId.eq(odCart.optItemId2));
+                .leftJoin(oi1).on(oi1.prodOptId.eq(odCart.prodOptId1))
+                .leftJoin(oi2).on(oi2.prodOptId.eq(odCart.prodOptId2));
     }
 
     /* 장바구니 키조회 */
@@ -188,12 +188,12 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         or = orLike(or, all, types, ",cartId,", odCart.cartId, pattern);
         or = orLike(or, all, types, ",isChecked,", odCart.isChecked, pattern);
         or = orLike(or, all, types, ",memberId,", odCart.memberId, pattern);
-        or = orLike(or, all, types, ",optItemId1,", odCart.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", odCart.optItemId2, pattern);
+        or = orLike(or, all, types, ",prodOptId1,", odCart.prodOptId1, pattern);
+        or = orLike(or, all, types, ",prodOptId2,", odCart.prodOptId2, pattern);
         or = orLike(or, all, types, ",prodId,", odCart.prodId, pattern);
         or = orLike(or, all, types, ",sessionKey,", odCart.sessionKey, pattern);
         or = orLike(or, all, types, ",siteId,", odCart.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", odCart.skuId, pattern);
+        or = orLike(or, all, types, ",prodSkuId,", odCart.prodSkuId, pattern);
         return or;
     }
 
@@ -253,9 +253,9 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         if (entity.getMemberId()    != null) { update.set(odCart.memberId,    entity.getMemberId());    hasAny = true; }
         if (entity.getSessionKey()  != null) { update.set(odCart.sessionKey,  entity.getSessionKey());  hasAny = true; }
         if (entity.getProdId()      != null) { update.set(odCart.prodId,      entity.getProdId());      hasAny = true; }
-        if (entity.getSkuId()       != null) { update.set(odCart.skuId,       entity.getSkuId());       hasAny = true; }
-        if (entity.getOptItemId1()  != null) { update.set(odCart.optItemId1,  entity.getOptItemId1());  hasAny = true; }
-        if (entity.getOptItemId2()  != null) { update.set(odCart.optItemId2,  entity.getOptItemId2());  hasAny = true; }
+        if (entity.getProdSkuId()   != null) { update.set(odCart.prodSkuId,   entity.getProdSkuId());   hasAny = true; }
+        if (entity.getProdOptId1()  != null) { update.set(odCart.prodOptId1,  entity.getProdOptId1());  hasAny = true; }
+        if (entity.getProdOptId2()  != null) { update.set(odCart.prodOptId2,  entity.getProdOptId2());  hasAny = true; }
         if (entity.getUnitPrice()   != null) { update.set(odCart.unitPrice,   entity.getUnitPrice());   hasAny = true; }
         if (entity.getOrderQty()    != null) { update.set(odCart.orderQty,    entity.getOrderQty());    hasAny = true; }
         if (entity.getItemPrice()   != null) { update.set(odCart.itemPrice,   entity.getItemPrice());   hasAny = true; }

@@ -1,46 +1,9 @@
 package com.shopjoy.ecadminapi.base.ec.pd.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
-import com.shopjoy.ecadminapi.common.data.BaseRequest;
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-public class PdProdOptItemDto {
-
-    @Getter @Setter @NoArgsConstructor
-    public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 1) private String useYn;
-        @Size(max = 21) private String optItemId;
-        @Size(max = 21) private String optId;
-        @Size(max = 21) private String prodId;
-        private List<String> prodIds;                  // PK 다건 IN (opt 경유)
-    }
-
-    @Getter @Setter @NoArgsConstructor
-    public static class Item {
-        private String optItemId;
-        private String siteId;
-        private String optId;
-        private String optTypeCd;
-        private String optNm;
-        private String optVal;
-        private String optValCodeId;
-        private String parentOptItemId;
-        private String optStyle;
-        private Integer sortOrd;
-        private String useYn;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String updBy;
-        private LocalDateTime updDate;
-    }
-
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
+/**
+ * @deprecated 2026-07-12 PdProdOptDto 로 통합됨 (pd_prod_opt_item → pd_prod_opt 테이블 rename).
+ * 모든 참조는 PdProdOptDto 로 변경할 것.
+ */
+@Deprecated
+public class PdProdOptItemDto extends PdProdOptDto {
 }

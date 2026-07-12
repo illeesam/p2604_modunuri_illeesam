@@ -59,9 +59,9 @@ public class StSettleRawDto {
         private String categoryId3;
         private String categoryId4;
         private String categoryId5;
-        private String skuId;
-        private String optItemId1;
-        private String optItemId2;
+        private String prodSkuId;
+        private String prodOptId1;
+        private String prodOptId2;
         private String mdUserId;
         private Long normalPrice;
         private Long unitPrice;

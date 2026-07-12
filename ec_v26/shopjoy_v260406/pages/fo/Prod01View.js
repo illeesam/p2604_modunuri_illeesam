@@ -176,8 +176,8 @@ window.Prod01View = {
       if (newProd) { Object.assign(svProduct, newProd); }
     };
     /* 백엔드 응답 (prod + opts + skus + images) → 화면이 기대하는 단일 prod 형태로 머지
-       - opts.groups[level=1].items → opt1s        = [{ optItemId, name, priceDelta, imgUrl }]
-       - opts.groups[level=2].items → opt2sAll     = [{ optItemId, name, parentOptItemId }]
+       - opts.groups (PdProdOptTypeDto) → opt1s = [{ optId, name, priceDelta, imgUrl }]
+       - opts.items  (PdProdOptDto)     → opt2sAll = [{ optId, name, parentOptId }]
        - opt1 → opt2 의 종속 트리: 색상별 가능한 사이즈 매핑
        - skus 의 1단별 addPrice 평균 → opt2Prices = { 'S': delta, ... }
     */
@@ -217,7 +217,7 @@ window.Prod01View = {
         const prod = data.prod || data;
         if (prod && prod.prodId) {
           /* opts/skus/images 를 화면이 기대하는 형태(opt1s/opt2s/opt2Prices)로 변환 후 prod 에 합쳐 주입 */
-          const prodOpts  = { groups: data.prodOpts || [], items: data.prodOptItems || [] };
+          const prodOpts  = { groups: data.prodOptTypes || [], items: data.prodOpts || [] };
           const prodSkus  = data.prodSkus || [];
           const prodImgs  = data.prodImgs || [];
           const merged    = fnMergeProdOpts(prod, prodOpts, prodSkus, prodImgs);
@@ -368,7 +368,7 @@ window.Prod01View = {
       if (!p) { return []; }
       // 1) 실제 등록된 이미지(prod.images) 우선
       //    - 색상이 선택되었으면 그 색상에 매핑된 이미지만 표시
-      //    - 매칭 키는 (a) opt_item_id (b) codeValue(val) 둘 다 허용 — BO 이미지 select 가 val 또는 _id 를 저장하므로
+      //    - 매칭 키는 (a) opt_id (b) codeValue(val) 둘 다 허용 — BO 이미지 select 가 val 또는 _id 를 저장하므로
       //    - 매핑 0건이면 빈 상태 (fallback 안 함)
       //    - 색상 미선택 시: 등록된 이미지 전체 표시
       const real = Array.isArray(p.images) ? p.images : [];
@@ -377,27 +377,27 @@ window.Prod01View = {
         // 색상 매칭 후보 키들 (Set) — itemId, val, name 모두 포함
         const colorKeys = new Set();
         if (sel) {
-          if (sel.optItemId) { colorKeys.add(String(sel.optItemId)); }
+          if (sel.optId) { colorKeys.add(String(sel.optId)); }
           if (sel.val) { colorKeys.add(String(sel.val)); }
           if (sel.name) { colorKeys.add(String(sel.name)); }
         }
-        // 옵션값 → 표시명 매핑 (image.optItemId1 가 무엇이든 라벨 만들 수 있도록)
+        // 옵션값 → 표시명 매핑 (image.prodOptId1 가 무엇이든 라벨 만들 수 있도록)
         const opt1ById = new Map();
         (p.opt1s || []).forEach(c => {
-          if (c.optItemId) { opt1ById.set(String(c.optItemId), c); }
+          if (c.optId) { opt1ById.set(String(c.optId), c); }
           if (c.val) { opt1ById.set(String(c.val), c); }
           if (c.name) { opt1ById.set(String(c.name), c); }
         });
         const opt2ById = new Map();
         (p.opt2sAll || []).forEach(c => {
-          if (c.optItemId) { opt2ById.set(String(c.optItemId), c); }
+          if (c.optId) { opt2ById.set(String(c.optId), c); }
           if (c.val) { opt2ById.set(String(c.val), c); }
           if (c.name) { opt2ById.set(String(c.name), c); }
         });
-        // 색상 무관 공통 이미지(optItemId1 빈값)는 어떤 색상이든 항상 표시.
+        // 색상 무관 공통 이미지(prodOptId1 빈값)는 어떤 색상이든 항상 표시.
         // 선택 색상 전용 이미지가 있을 때만 다른 색상 전용을 제외한다.
-        const isCommon = (im) => !im.optItemId1 || String(im.optItemId1).trim() === '';
-        const matchesColor = (im) => colorKeys.has(String(im.optItemId1));
+        const isCommon = (im) => !im.prodOptId1 || String(im.prodOptId1).trim() === '';
+        const matchesColor = (im) => colorKeys.has(String(im.prodOptId1));
         const filtered = colorKeys.size
           ? (real.some(matchesColor)
               ? real.filter(im => isCommon(im) || matchesColor(im))
@@ -407,8 +407,8 @@ window.Prod01View = {
           ((b.isThumb === 'Y') - (a.isThumb === 'Y')) || ((a.sortOrd||0) - (b.sortOrd||0))
         );
         return list.map((im, i) => {
-          const c1 = im.optItemId1 != null ? opt1ById.get(String(im.optItemId1)) : null;
-          const c2 = im.optItemId2 != null ? opt2ById.get(String(im.optItemId2)) : null;
+          const c1 = im.prodOptId1 != null ? opt1ById.get(String(im.prodOptId1)) : null;
+          const c2 = im.prodOptId2 != null ? opt2ById.get(String(im.prodOptId2)) : null;
           // hover 시 표시할 옵션 라벨 — "색상: 블랙 / 사이즈: M" 형태
           const parts = [];
           if (c1) { parts.push((p.opt1Nm || '색상') + ': ' + c1.name); }
@@ -447,8 +447,8 @@ window.Prod01View = {
         maskedName: masked,
         rating,
         date:       dateStr,
-        sizeInfo:   r.optNm2 || r.sizeInfo || '',
-        colorInfo:  r.optNm1 || r.colorInfo || '',
+        sizeInfo:   r.prodOptNm2 || r.sizeInfo || '',
+        colorInfo:  r.prodOptNm1 || r.colorInfo || '',
         text:       r.reviewContent || r.reviewTitle || '',
         hasPhoto:   imgs.length > 0,
         photoImg:   coUtil.cofImgSrc(imgs[0]?.thumbUrl || imgs[0]?.cdnImgUrl || ''),
@@ -687,17 +687,17 @@ window.Prod01View = {
       });
       return map;
     });
-    /* 선택된 색상의 자식 사이즈 이름 Set — 옵션 트리(parent_opt_item_id) 기반 */
+    /* 선택된 색상의 자식 사이즈 이름 Set — 옵션 트리(parent_opt_id) 기반 */
     const cfAllowedSizeNms = computed(() => {
       const all = svProduct.opt2sAll || [];
       if (!all.length) return null; // 종속 정보 없으면 전체 허용
       // 어떤 사이즈도 부모색상 연결이 없으면 색상-사이즈 종속 트리가 없는 것 → 전체 허용
-      const hasTree = all.some(it => it.parentOptItemId && String(it.parentOptItemId).trim());
+      const hasTree = all.some(it => it.parentOptId && String(it.parentOptId).trim());
       if (!hasTree) return null;
-      const parent = uiState.selectedColor?.optItemId;
+      const parent = uiState.selectedColor?.optId;
       if (!parent) return new Set(); // 색상 미선택 시 빈 Set
       const set = new Set();
-      all.forEach(it => { if (it.parentOptItemId === parent && it.name) set.add(it.name); });
+      all.forEach(it => { if (it.parentOptId === parent && it.name) set.add(it.name); });
       return set;
     });
 

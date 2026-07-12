@@ -35,7 +35,7 @@ public class PdProdSetItem extends BaseEntity {
     @Column(name = "item_prod_id", length = 21)
     private String itemProdId;
 
-    @Comment("구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU 미지정)")
+    @Comment("구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)")
     @Column(name = "item_sku_id", length = 21)
     private String itemSkuId;
 

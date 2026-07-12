@@ -34,11 +34,11 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     private JPAQuery<PdProdSkuDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdSkuDto.Item.class,
-                        pdProdSku.skuId,
+                        pdProdSku.prodSkuId,
                         pdProdSku.prodId,
-                        pdProdSku.optItemId1,
-                        pdProdSku.optItemId2,
-                        pdProdSku.skuCode,
+                        pdProdSku.prodOptId1,
+                        pdProdSku.prodOptId2,
+                        pdProdSku.prodSkuCode,
                         pdProdSku.addPrice,
                         pdProdSku.useYn,
                         pdProdSku.regBy,
@@ -51,9 +51,9 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
     /* 상품 SKU 키조회 */
     @Override
-    public Optional<PdProdSkuDto.Item> selectById(String skuId) {
+    public Optional<PdProdSkuDto.Item> selectById(String prodSkuId) {
         PdProdSkuDto.Item dto = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdSku.skuId.eq(skuId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdSku.prodSkuId.eq(prodSkuId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -150,10 +150,10 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                 ? pdProdSku.siteId.eq(search.getSiteId()) : null;
     }
 
-    /* skuId 정확 일치 */
+    /* prodSkuId 정확 일치 */
     private BooleanExpression baseAndSkuId(PdProdSkuDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSkuId())
-                ? pdProdSku.skuId.eq(search.getSkuId()) : null;
+        return search != null && StringUtils.hasText(search.getProdSkuId())
+                ? pdProdSku.prodSkuId.eq(search.getProdSkuId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -180,12 +180,12 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",optItemId1,", pdProdSku.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", pdProdSku.optItemId2, pattern);
+        or = orLike(or, all, types, ",prodOptId1,", pdProdSku.prodOptId1, pattern);
+        or = orLike(or, all, types, ",prodOptId2,", pdProdSku.prodOptId2, pattern);
         or = orLike(or, all, types, ",prodId,", pdProdSku.prodId, pattern);
         or = orLike(or, all, types, ",siteId,", pdProdSku.siteId, pattern);
-        or = orLike(or, all, types, ",skuCode,", pdProdSku.skuCode, pattern);
-        or = orLike(or, all, types, ",skuId,", pdProdSku.skuId, pattern);
+        or = orLike(or, all, types, ",prodSkuCode,", pdProdSku.prodSkuCode, pattern);
+        or = orLike(or, all, types, ",prodSkuId,", pdProdSku.prodSkuId, pattern);
         or = orLike(or, all, types, ",useYn,", pdProdSku.useYn, pattern);
         return or;
     }
@@ -208,7 +208,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         String sort = req == null ? null : req.getSort();
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, pdProdSku.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSku.skuId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSku.prodSkuId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -218,8 +218,8 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
             if (fieldAndDir.length == 2) {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("skuId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdSku.skuId));
+                if ("prodSkuId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, pdProdSku.prodSkuId));
                 } else if ("regDate".equals(field)) {
                     orders.add(new OrderSpecifier(order, pdProdSku.regDate));
                 }
@@ -229,7 +229,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.DESC, pdProdSku.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSku.skuId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSku.prodSkuId));
         }
         return orders;
     }
@@ -238,16 +238,16 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
     @Override
     public int updateSelective(PdProdSku entity) {
-        if (entity.getSkuId() == null) return 0;
+        if (entity.getProdSkuId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(pdProdSku);
         boolean hasAny = false;
 
         if (entity.getSiteId()       != null) { update.set(pdProdSku.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getProdId()       != null) { update.set(pdProdSku.prodId,       entity.getProdId());       hasAny = true; }
-        if (entity.getOptItemId1()   != null) { update.set(pdProdSku.optItemId1,   entity.getOptItemId1());   hasAny = true; }
-        if (entity.getOptItemId2()   != null) { update.set(pdProdSku.optItemId2,   entity.getOptItemId2());   hasAny = true; }
-        if (entity.getSkuCode()      != null) { update.set(pdProdSku.skuCode,      entity.getSkuCode());      hasAny = true; }
+        if (entity.getProdOptId1()   != null) { update.set(pdProdSku.prodOptId1,   entity.getProdOptId1());   hasAny = true; }
+        if (entity.getProdOptId2()   != null) { update.set(pdProdSku.prodOptId2,   entity.getProdOptId2());   hasAny = true; }
+        if (entity.getProdSkuCode()  != null) { update.set(pdProdSku.prodSkuCode,  entity.getProdSkuCode());  hasAny = true; }
         if (entity.getAddPrice()     != null) { update.set(pdProdSku.addPrice,     entity.getAddPrice());     hasAny = true; }
         if (entity.getProdOptStock() != null) { update.set(pdProdSku.prodOptStock, entity.getProdOptStock()); hasAny = true; }
         if (entity.getUseYn()        != null) { update.set(pdProdSku.useYn,        entity.getUseYn());        hasAny = true; }
@@ -257,7 +257,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
         if (!hasAny) return 0;
 
-        long affected = update.where(pdProdSku.skuId.eq(entity.getSkuId())).execute();
+        long affected = update.where(pdProdSku.prodSkuId.eq(entity.getProdSkuId())).execute();
         return (int) affected;
     }
 }

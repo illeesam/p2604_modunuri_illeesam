@@ -76,8 +76,8 @@ public class PdProdSkuService {
     /* 상품 SKU 등록 */
     @Transactional
     public PdProdSku create(PdProdSku body) {
-        if (body.getSkuId() == null || body.getSkuId().isBlank())
-            body.setSkuId(CmUtil.generateId("pd_prod_sku"));
+        if (body.getProdSkuId() == null || body.getProdSkuId().isBlank())
+            body.setProdSkuId(CmUtil.generateId("pd_prod_sku"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -107,9 +107,9 @@ public class PdProdSkuService {
     /* 상품 SKU 수정 */
     @Transactional
     public PdProdSku updateSelective(PdProdSku entity) {
-        if (entity.getSkuId() == null) throw new CmBizException("skuId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getSkuId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSkuId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getProdSkuId() == null) throw new CmBizException("skuId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getProdSkuId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdSkuId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = pdProdSkuRepository.updateSelective(entity);
@@ -140,32 +140,32 @@ public class PdProdSkuService {
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
         if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getSkuId() == null || entity.getSkuId().isBlank()) ? "I" : "U";
+            rowStatus = (entity.getProdSkuId() == null || entity.getProdSkuId().isBlank()) ? "I" : "U";
         }
 
         if ("D".equals(rowStatus)) {
-            if (entity.getSkuId() == null)
+            if (entity.getProdSkuId() == null)
                 throw new CmBizException("삭제 대상 skuId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!pdProdSkuRepository.existsById(entity.getSkuId()))
-                throw new CmBizException("존재하지 않는 PdProdSku입니다: " + entity.getSkuId() + "::" + CmUtil.svcCallerInfo(this));
-            pdProdSkuRepository.deleteById(entity.getSkuId());
+            if (!pdProdSkuRepository.existsById(entity.getProdSkuId()))
+                throw new CmBizException("존재하지 않는 PdProdSku입니다: " + entity.getProdSkuId() + "::" + CmUtil.svcCallerInfo(this));
+            pdProdSkuRepository.deleteById(entity.getProdSkuId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setSkuId(CmUtil.generateId("pd_prod_sku"));
+            entity.setProdSkuId(CmUtil.generateId("pd_prod_sku"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             PdProdSku saved = pdProdSkuRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getSkuId() == null)
+            if (entity.getProdSkuId() == null)
                 throw new CmBizException("수정 대상 skuId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = pdProdSkuRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 PdProdSku입니다: " + entity.getSkuId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 PdProdSku입니다: " + entity.getProdSkuId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getSkuId());
+            return findById(entity.getProdSkuId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -179,20 +179,20 @@ public class PdProdSkuService {
         for (PdProdSku row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getSkuId() == null || row.getSkuId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getProdSkuId() == null || row.getProdSkuId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, PdProdSku::getSkuId, "U", "skuId", this);
-        CmUtil.requireRowIds(rows, PdProdSku::getSkuId, "D", "skuId", this);
+        CmUtil.requireRowIds(rows, PdProdSku::getProdSkuId, "U", "prodSkuId", this);
+        CmUtil.requireRowIds(rows, PdProdSku::getProdSkuId, "D", "prodSkuId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(PdProdSku::getSkuId)
+            .map(PdProdSku::getProdSkuId)
             .toList();
         if (!deleteIds.isEmpty()) {
             pdProdSkuRepository.deleteAllById(deleteIds);
@@ -205,7 +205,7 @@ public class PdProdSkuService {
         for (PdProdSku row : updateRows) {
             row.setUpdBy(authId);
             int affected = pdProdSkuRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSkuId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdSkuId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -213,7 +213,7 @@ public class PdProdSkuService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (PdProdSku row : insertRows) {
-            row.setSkuId(CmUtil.generateId("pd_prod_sku"));
+            row.setProdSkuId(CmUtil.generateId("pd_prod_sku"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdSkuRepository.save(row);

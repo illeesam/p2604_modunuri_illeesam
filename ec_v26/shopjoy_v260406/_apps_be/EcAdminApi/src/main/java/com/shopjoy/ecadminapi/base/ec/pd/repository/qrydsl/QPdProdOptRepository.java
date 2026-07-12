@@ -6,7 +6,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt;
 import java.util.List;
 import java.util.Optional;
 
-/** PdProdOpt QueryDSL Custom Repository */
+/** PdProdOpt (pd_prod_opt — 옵션값) QueryDSL Custom Repository */
 public interface QPdProdOptRepository {
 
     Optional<PdProdOptDto.Item> selectById(String optId);

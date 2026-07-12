@@ -321,8 +321,8 @@ window.OdOrderDtl = {
         orderItems.splice(0, orderItems.length, ...((o.orderItems || []).map(it => ({
           ...it,
           prodNm: it.prodNm,
-          color: it.optItemId1 || '',
-          size: it.optItemId2 || '',
+          color: it.prodOptId1 || '',
+          size: it.prodOptId2 || '',
           qty: it.orderQty || 1,
           salePrice: it.normalPrice || it.unitPrice || 0,
           price: it.itemOrderAmt || (it.unitPrice * (it.orderQty || 1)) || 0,
@@ -391,7 +391,7 @@ window.OdOrderDtl = {
             totalAmt: itemSum, dlivFee: Number(form.dlivFee || 0), payAmt: itemSum + Number(form.dlivFee || 0),
             memo: form.memo,
             orderItems: orderItems.map(it => ({
-              prodId: it.productId || it.prodId, skuId: it.skuId || null, prodNm: it.prodNm,
+              prodId: it.productId || it.prodId, prodSkuId: it.prodSkuId || null, prodNm: it.prodNm,
               unitPrice: Number(it.salePrice || it.unitPrice || it.price || 0), orderQty: Number(it.qty || it.orderQty || 1),
               itemOrderAmt: Number(it.price || it.itemOrderAmt || (it.salePrice * (it.qty || 1)) || 0),
             })),

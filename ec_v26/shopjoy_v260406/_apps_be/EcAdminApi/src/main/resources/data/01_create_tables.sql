@@ -2670,9 +2670,8 @@ CREATE TABLE IF NOT EXISTS pd_prod_opt (
     opt_id            VARCHAR(21)     NOT NULL,
     site_id           VARCHAR(21),                            -- sy_site.site_id
     prod_id           VARCHAR(21)     NOT NULL,
-    opt_grp_nm        VARCHAR(50)     NOT NULL,               -- 예: 색상, 사이즈
+    opt_nm            VARCHAR(50)     NOT NULL,               -- 예: 색상, 사이즈
     opt_level         INTEGER         NOT NULL DEFAULT 1,     -- 옵션 차원 순서 (1=첫번째, 2=두번째)
-    opt_type_cd       VARCHAR(20),                            -- 코드: OPT_TYPE (COLOR/SIZE/MATERIAL/CUSTOM)
     opt_input_type_cd VARCHAR(20)     DEFAULT 'SELECT',       -- 코드: OPT_INPUT_TYPE (SELECT/SELECT_INPUT/MULTI_SELECT)
     sort_ord          INTEGER         DEFAULT 0,
     reg_by            VARCHAR(16),
@@ -2686,9 +2685,8 @@ COMMENT ON TABLE pd_prod_opt IS '상품 옵션 (색상, 사이즈 등 옵션 차
 COMMENT ON COLUMN pd_prod_opt.opt_id            IS '옵션ID';
 COMMENT ON COLUMN pd_prod_opt.site_id           IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN pd_prod_opt.prod_id           IS '상품ID';
-COMMENT ON COLUMN pd_prod_opt.opt_grp_nm        IS '옵션명 (예: 색상, 사이즈)';
+COMMENT ON COLUMN pd_prod_opt.opt_nm            IS '옵션명 (예: 색상, 사이즈)';
 COMMENT ON COLUMN pd_prod_opt.opt_level         IS '옵션 차원 순서 — 1=첫번째(색상), 2=두번째(사이즈)';
-COMMENT ON COLUMN pd_prod_opt.opt_type_cd       IS '옵션카테고리 (코드: OPT_TYPE — COLOR/SIZE/MATERIAL/CUSTOM)';
 COMMENT ON COLUMN pd_prod_opt.opt_input_type_cd IS '옵션입력방식 (코드: OPT_INPUT_TYPE — SELECT/SELECT_INPUT/MULTI_SELECT)';
 COMMENT ON COLUMN pd_prod_opt.sort_ord          IS '정렬순서';
 COMMENT ON COLUMN pd_prod_opt.reg_by            IS '등록자 (sy_user.user_id, mb_member.member_id)';
@@ -2701,18 +2699,17 @@ COMMENT ON COLUMN pd_prod_opt.upd_date          IS '수정일';
 -- ============================================================
 -- 데이터 예제 (상품 P001 — 티셔츠, 색상+사이즈 2단 옵션)
 -- ============================================================
--- prod_id='P001'
---   ├─ opt_id='OPT001', opt_level=1, opt_type_cd='COLOR', opt_grp_nm='색상',   opt_input_type_cd='SELECT'
---   └─ opt_id='OPT002', opt_level=2, opt_type_cd='SIZE',  opt_grp_nm='사이즈', opt_input_type_cd='SELECT'
+-- prod_id='P001' (pd_prod.opt_type_cd='COLOR')
+--   ├─ opt_id='OPT001', opt_level=1, opt_nm='색상',   opt_input_type_cd='SELECT'
+--   └─ opt_id='OPT002', opt_level=2, opt_nm='사이즈', opt_input_type_cd='SELECT'
 
 CREATE TABLE IF NOT EXISTS pd_prod_opt_item (
     opt_item_id         VARCHAR(21)     NOT NULL,
     site_id             VARCHAR(21),                            -- sy_site.site_id
     opt_id              VARCHAR(21)     NOT NULL,               -- pd_prod_opt.opt_id
-    opt_type_cd         VARCHAR(20)     NOT NULL,               -- 코드: OPT_TYPE (COLOR/SIZE/MATERIAL/CUSTOM)
-    opt_nm              VARCHAR(100)    NOT NULL,               -- 옵션값 표시명 (예: 빨강, M)
-    opt_val             VARCHAR(50),                            -- 실제 저장값 (opt_val_code_id 선택 시 codeValue 자동 채움, 직접입력 가능)
-    opt_val_code_id     VARCHAR(50),                            -- OPT_VAL 공통코드 참조ID (sy_code.code_id, NULL이면 직접입력)
+    opt_item_nm         VARCHAR(100)    NOT NULL,               -- 옵션항목명 (예: 빨강, M)
+    opt_item_val            VARCHAR(50),                        -- 실제 저장값 (opt_item_val_code_id 선택 시 codeValue 자동 채움, 직접입력 가능)
+    opt_item_val_code_id    VARCHAR(50),                        -- OPT_ITEM_VAL 공통코드 참조ID (sy_code.code_id, NULL이면 직접입력)
     parent_opt_item_id  VARCHAR(21),                            -- 상위 옵션값ID (2단 옵션에서 1단 값 참조, pd_prod_opt_item.opt_item_id)
     sort_ord            INTEGER         DEFAULT 0,
     use_yn              CHAR(1)         DEFAULT 'Y',
@@ -2727,10 +2724,9 @@ COMMENT ON TABLE pd_prod_opt_item IS '상품 옵션 값';
 COMMENT ON COLUMN pd_prod_opt_item.opt_item_id        IS '옵션값ID';
 COMMENT ON COLUMN pd_prod_opt_item.site_id            IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN pd_prod_opt_item.opt_id             IS '옵션ID (pd_prod_opt.opt_id)';
-COMMENT ON COLUMN pd_prod_opt_item.opt_type_cd        IS '옵션카테고리 (코드: OPT_TYPE — COLOR/SIZE/MATERIAL/CUSTOM)';
-COMMENT ON COLUMN pd_prod_opt_item.opt_nm             IS '옵션값 표시명 (예: 빨강, M)';
-COMMENT ON COLUMN pd_prod_opt_item.opt_val            IS '실제 저장값 — opt_val_code_id 선택 시 codeValue 자동 채움, 직접입력도 허용';
-COMMENT ON COLUMN pd_prod_opt_item.opt_val_code_id    IS 'OPT_VAL 공통코드 참조ID (sy_code.code_id) — NULL이면 opt_val 직접입력';
+COMMENT ON COLUMN pd_prod_opt_item.opt_item_nm        IS '옵션항목명 (예: 빨강, M)';
+COMMENT ON COLUMN pd_prod_opt_item.opt_item_val           IS '실제 저장값 — opt_item_val_code_id 선택 시 codeValue 자동 채움, 직접입력도 허용';
+COMMENT ON COLUMN pd_prod_opt_item.opt_item_val_code_id   IS 'OPT_ITEM_VAL 공통코드 참조ID (sy_code.code_id) — NULL이면 opt_item_val 직접입력';
 COMMENT ON COLUMN pd_prod_opt_item.parent_opt_item_id IS '상위 옵션값ID — 2단 옵션에서 상위 1단 옵션값 참조 (pd_prod_opt_item.opt_item_id), NULL이면 독립값(전체 공통)';
 COMMENT ON COLUMN pd_prod_opt_item.sort_ord           IS '정렬순서';
 COMMENT ON COLUMN pd_prod_opt_item.use_yn             IS '사용여부 Y/N';
@@ -2744,9 +2740,9 @@ CREATE INDEX idx_pd_prod_opt_item_parent ON pd_prod_opt_item (parent_opt_item_id
 
 -- ============================================================
 -- 값 결정 규칙
--- opt_val_code_id 선택 시 → opt_val = 해당 코드의 codeValue (자동 채움)
--- opt_val_code_id = NULL  → opt_val = 직접입력값 (CUSTOM 또는 임의 문자열)
--- opt_val 은 항상 실제 저장값; opt_val=NULL 는 허용하지 않음 (앱에서 검증)
+-- opt_item_val_code_id 선택 시 → opt_item_val = 해당 코드의 codeValue (자동 채움)
+-- opt_item_val_code_id = NULL  → opt_item_val = 직접입력값 (CUSTOM 또는 임의 문자열)
+-- opt_item_val 은 항상 실제 저장값; opt_item_val=NULL 는 허용하지 않음 (앱에서 검증)
 -- ============================================================
 
 -- ============================================================
@@ -2764,13 +2760,13 @@ CREATE INDEX idx_pd_prod_opt_item_parent ON pd_prod_opt_item (parent_opt_item_id
 -- ============================================================
 -- prod_id='P001'
 --   ├─ opt_id='OPT001' (COLOR, opt_level=1)
---   │   ├─ opt_item_id='ITEM001', opt_nm='블랙',     opt_val='BLACK', opt_val_code_id=NULL,          parent_opt_item_id=NULL → 저장값: BLACK
---   │   ├─ opt_item_id='ITEM002', opt_nm='화이트',   opt_val='WHITE', opt_val_code_id=NULL,          parent_opt_item_id=NULL → 저장값: WHITE
---   │   └─ opt_item_id='ITEM003', opt_nm='딥네이비', opt_val='NAVY',  opt_val_code_id='DEEP_NAVY',   parent_opt_item_id=NULL → 저장값: NAVY
+--   │   ├─ opt_item_id='ITEM001', opt_item_nm='블랙',     opt_item_val='BLACK', opt_item_val_code_id=NULL,          parent_opt_item_id=NULL → 저장값: BLACK
+--   │   ├─ opt_item_id='ITEM002', opt_item_nm='화이트',   opt_item_val='WHITE', opt_item_val_code_id=NULL,          parent_opt_item_id=NULL → 저장값: WHITE
+--   │   └─ opt_item_id='ITEM003', opt_item_nm='딥네이비', opt_item_val='NAVY',  opt_item_val_code_id='DEEP_NAVY',   parent_opt_item_id=NULL → 저장값: NAVY
 --   └─ opt_id='OPT002' (SIZE, opt_level=2)
---       ├─ opt_item_id='ITEM004', opt_nm='S', opt_val='S', opt_val_code_id=NULL, parent_opt_item_id=NULL  → 전체 색상 공통
---       ├─ opt_item_id='ITEM005', opt_nm='M', opt_val='M', opt_val_code_id=NULL, parent_opt_item_id=NULL  → 전체 색상 공통
---       └─ opt_item_id='ITEM006', opt_nm='L', opt_val='L', opt_val_code_id=NULL, parent_opt_item_id='ITEM001' → 블랙만 L 사이즈 제공
+--       ├─ opt_item_id='ITEM004', opt_item_nm='S', opt_item_val='S', opt_item_val_code_id=NULL, parent_opt_item_id=NULL  → 전체 색상 공통
+--       ├─ opt_item_id='ITEM005', opt_item_nm='M', opt_item_val='M', opt_item_val_code_id=NULL, parent_opt_item_id=NULL  → 전체 색상 공통
+--       └─ opt_item_id='ITEM006', opt_item_nm='L', opt_item_val='L', opt_item_val_code_id=NULL, parent_opt_item_id='ITEM001' → 블랙만 L 사이즈 제공
 
 -- 상품 상세 컨텐츠 (HTML 에디터로 관리)
 CREATE TABLE IF NOT EXISTS pd_prod_content (

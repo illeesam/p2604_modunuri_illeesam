@@ -35,8 +35,8 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     private JPAQuery<PdProdQnaDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdQnaDto.Item.class,
-                        pdProdQna.qnaId, pdProdQna.siteId, pdProdQna.prodId, pdProdQna.skuId, pdProdQna.memberId, pdProdQna.orderId,
-                        pdProdQna.qnaTypeCd, pdProdQna.qnaTitle, pdProdQna.qnaContent,
+                        pdProdQna.prodQnaId, pdProdQna.siteId, pdProdQna.prodId, pdProdQna.prodSkuId, pdProdQna.memberId, pdProdQna.orderId,
+                        pdProdQna.prodQnaTypeCd, pdProdQna.prodQnaTitle, pdProdQna.prodQnaContent,
                         pdProdQna.scrtYn, pdProdQna.answYn, pdProdQna.answContent, pdProdQna.answDate, pdProdQna.answUserId,
                         pdProdQna.dispYn, pdProdQna.useYn,
                         pdProdQna.regBy, pdProdQna.regDate, pdProdQna.updBy, pdProdQna.updDate
@@ -45,9 +45,9 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     }
 
     @Override
-    public Optional<PdProdQnaDto.Item> selectById(String qnaId) {
+    public Optional<PdProdQnaDto.Item> selectById(String prodQnaId) {
         PdProdQnaDto.Item dto = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdQna.qnaId.eq(qnaId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdQna.prodQnaId.eq(prodQnaId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -135,10 +135,10 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                 ? pdProdQna.siteId.eq(search.getSiteId()) : null;
     }
 
-    /* qnaId 정확 일치 */
+    /* prodQnaId 정확 일치 */
     private BooleanExpression baseAndQnaId(PdProdQnaDto.Request search) {
-        return search != null && StringUtils.hasText(search.getQnaId())
-                ? pdProdQna.qnaId.eq(search.getQnaId()) : null;
+        return search != null && StringUtils.hasText(search.getProdQnaId())
+                ? pdProdQna.prodQnaId.eq(search.getProdQnaId()) : null;
     }
 
     /* prodId 정확 일치 */
@@ -190,13 +190,13 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         or = orLike(or, all, types, ",memberId,", pdProdQna.memberId, pattern);
         or = orLike(or, all, types, ",orderId,", pdProdQna.orderId, pattern);
         or = orLike(or, all, types, ",prodId,", pdProdQna.prodId, pattern);
-        or = orLike(or, all, types, ",qnaContent,", pdProdQna.qnaContent, pattern);
-        or = orLike(or, all, types, ",qnaId,", pdProdQna.qnaId, pattern);
-        or = orLike(or, all, types, ",qnaTitle,", pdProdQna.qnaTitle, pattern);
-        or = orLike(or, all, types, ",qnaTypeCd,", pdProdQna.qnaTypeCd, pattern);
+        or = orLike(or, all, types, ",prodQnaContent,", pdProdQna.prodQnaContent, pattern);
+        or = orLike(or, all, types, ",prodQnaId,", pdProdQna.prodQnaId, pattern);
+        or = orLike(or, all, types, ",prodQnaTitle,", pdProdQna.prodQnaTitle, pattern);
+        or = orLike(or, all, types, ",prodQnaTypeCd,", pdProdQna.prodQnaTypeCd, pattern);
         or = orLike(or, all, types, ",scrtYn,", pdProdQna.scrtYn, pattern);
         or = orLike(or, all, types, ",siteId,", pdProdQna.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", pdProdQna.skuId, pattern);
+        or = orLike(or, all, types, ",prodSkuId,", pdProdQna.prodSkuId, pattern);
         or = orLike(or, all, types, ",useYn,", pdProdQna.useYn, pattern);
         return or;
     }
@@ -219,7 +219,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, pdProdQna.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdQna.qnaId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdQna.prodQnaId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -229,10 +229,10 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
             if (fieldAndDir.length == 2) {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("qnaId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdQna.qnaId));
-                } else if ("qnaTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdQna.qnaTitle));
+                if ("prodQnaId".equals(field)) {
+                    orders.add(new OrderSpecifier(order, pdProdQna.prodQnaId));
+                } else if ("prodQnaTitle".equals(field)) {
+                    orders.add(new OrderSpecifier(order, pdProdQna.prodQnaTitle));
                 } else if ("regDate".equals(field)) {
                     orders.add(new OrderSpecifier(order, pdProdQna.regDate));
                 }
@@ -242,7 +242,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.DESC, pdProdQna.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdQna.qnaId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdQna.prodQnaId));
         }
         return orders;
     }
@@ -251,33 +251,33 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
 
     @Override
     public int updateSelective(PdProdQna entity) {
-        if (entity.getQnaId() == null) return 0;
+        if (entity.getProdQnaId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(pdProdQna);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(pdProdQna.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getProdId()      != null) { update.set(pdProdQna.prodId,      entity.getProdId());      hasAny = true; }
-        if (entity.getSkuId()       != null) { update.set(pdProdQna.skuId,       entity.getSkuId());       hasAny = true; }
-        if (entity.getMemberId()    != null) { update.set(pdProdQna.memberId,    entity.getMemberId());    hasAny = true; }
-        if (entity.getOrderId()     != null) { update.set(pdProdQna.orderId,     entity.getOrderId());     hasAny = true; }
-        if (entity.getQnaTypeCd()   != null) { update.set(pdProdQna.qnaTypeCd,   entity.getQnaTypeCd());   hasAny = true; }
-        if (entity.getQnaTitle()    != null) { update.set(pdProdQna.qnaTitle,    entity.getQnaTitle());    hasAny = true; }
-        if (entity.getQnaContent()  != null) { update.set(pdProdQna.qnaContent,  entity.getQnaContent());  hasAny = true; }
-        if (entity.getScrtYn()      != null) { update.set(pdProdQna.scrtYn,      entity.getScrtYn());      hasAny = true; }
-        if (entity.getAnswYn()      != null) { update.set(pdProdQna.answYn,      entity.getAnswYn());      hasAny = true; }
-        if (entity.getAnswContent() != null) { update.set(pdProdQna.answContent, entity.getAnswContent()); hasAny = true; }
-        if (entity.getAnswDate()    != null) { update.set(pdProdQna.answDate,    entity.getAnswDate());    hasAny = true; }
-        if (entity.getAnswUserId()  != null) { update.set(pdProdQna.answUserId,  entity.getAnswUserId());  hasAny = true; }
-        if (entity.getDispYn()      != null) { update.set(pdProdQna.dispYn,      entity.getDispYn());      hasAny = true; }
-        if (entity.getUseYn()       != null) { update.set(pdProdQna.useYn,       entity.getUseYn());       hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(pdProdQna.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()        != null) { update.set(pdProdQna.siteId,        entity.getSiteId());        hasAny = true; }
+        if (entity.getProdId()        != null) { update.set(pdProdQna.prodId,        entity.getProdId());        hasAny = true; }
+        if (entity.getProdSkuId()     != null) { update.set(pdProdQna.prodSkuId,     entity.getProdSkuId());     hasAny = true; }
+        if (entity.getMemberId()      != null) { update.set(pdProdQna.memberId,      entity.getMemberId());      hasAny = true; }
+        if (entity.getOrderId()       != null) { update.set(pdProdQna.orderId,       entity.getOrderId());       hasAny = true; }
+        if (entity.getProdQnaTypeCd() != null) { update.set(pdProdQna.prodQnaTypeCd, entity.getProdQnaTypeCd()); hasAny = true; }
+        if (entity.getProdQnaTitle()  != null) { update.set(pdProdQna.prodQnaTitle,  entity.getProdQnaTitle());  hasAny = true; }
+        if (entity.getProdQnaContent()!= null) { update.set(pdProdQna.prodQnaContent,entity.getProdQnaContent());hasAny = true; }
+        if (entity.getScrtYn()        != null) { update.set(pdProdQna.scrtYn,        entity.getScrtYn());        hasAny = true; }
+        if (entity.getAnswYn()        != null) { update.set(pdProdQna.answYn,        entity.getAnswYn());        hasAny = true; }
+        if (entity.getAnswContent()   != null) { update.set(pdProdQna.answContent,   entity.getAnswContent());   hasAny = true; }
+        if (entity.getAnswDate()      != null) { update.set(pdProdQna.answDate,      entity.getAnswDate());      hasAny = true; }
+        if (entity.getAnswUserId()    != null) { update.set(pdProdQna.answUserId,    entity.getAnswUserId());    hasAny = true; }
+        if (entity.getDispYn()        != null) { update.set(pdProdQna.dispYn,        entity.getDispYn());        hasAny = true; }
+        if (entity.getUseYn()         != null) { update.set(pdProdQna.useYn,         entity.getUseYn());         hasAny = true; }
+        if (entity.getUpdBy()         != null) { update.set(pdProdQna.updBy,         entity.getUpdBy());         hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(pdProdQna.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(pdProdQna.qnaId.eq(entity.getQnaId())).execute();
+        long affected = update.where(pdProdQna.prodQnaId.eq(entity.getProdQnaId())).execute();
         return (int) affected;
     }
 }

@@ -126,8 +126,8 @@ window.OdDlivDtl = {
         dlivItems.splice(0, dlivItems.length, ...((d.dlivItems || []).map(it => ({
           ...it,
           prodNm: it.prodNm || it.prodId || '',
-          color: it.optItemId1 || '',
-          size: it.optItemId2 || '',
+          color: it.prodOptId1 || '',
+          size: it.prodOptId2 || '',
           qty: it.dlivQty || 1,
           salePrice: it.unitPrice || 0,
           price: (it.unitPrice * (it.dlivQty || 1)) || 0,

@@ -4,7 +4,7 @@
 CREATE TABLE shopjoy_2604.pdh_prod_sku_stock_hist (
     hist_id       VARCHAR(21)  NOT NULL PRIMARY KEY,
     site_id       VARCHAR(21)  NOT NULL,
-    sku_id        VARCHAR(21)  NOT NULL,
+    prod_sku_id   VARCHAR(21)  NOT NULL,
     prod_id       VARCHAR(21)  NOT NULL,
     stock_before  INTEGER      NOT NULL,
     stock_after   INTEGER      NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.pdh_prod_sku_stock_hist (
 COMMENT ON TABLE  shopjoy_2604.pdh_prod_sku_stock_hist IS 'SKU 재고 변경 이력';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_sku_stock_hist.hist_id IS '이력ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_sku_stock_hist.site_id IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN shopjoy_2604.pdh_prod_sku_stock_hist.sku_id IS 'SKU ID (pd_prod_sku.sku_id)';
+COMMENT ON COLUMN shopjoy_2604.pdh_prod_sku_stock_hist.prod_sku_id IS 'SKU ID (pd_prod_sku.prod_sku_id)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_sku_stock_hist.prod_id IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_sku_stock_hist.stock_before IS '변경 전 재고수량';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_sku_stock_hist.stock_after IS '변경 후 재고수량';
@@ -41,4 +41,4 @@ CREATE INDEX idx_pdh_prod_sku_stock_hist_order ON shopjoy_2604.pdh_prod_sku_stoc
 CREATE INDEX idx_pdh_prod_sku_stock_hist_prod ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (prod_id);
 CREATE INDEX idx_pdh_prod_sku_stock_hist_reason ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (chg_reason_cd);
 CREATE INDEX idx_pdh_prod_sku_stock_hist_site ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (site_id);
-CREATE INDEX idx_pdh_prod_sku_stock_hist_sku ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (sku_id);
+CREATE INDEX idx_pdh_prod_sku_stock_hist_sku ON shopjoy_2604.pdh_prod_sku_stock_hist USING btree (prod_sku_id);

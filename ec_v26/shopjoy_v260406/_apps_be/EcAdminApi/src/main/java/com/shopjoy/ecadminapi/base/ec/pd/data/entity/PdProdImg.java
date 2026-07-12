@@ -31,13 +31,13 @@ public class PdProdImg extends BaseEntity {
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Comment("옵션1 값ID (pd_prod_opt_item.opt_item_id, 색상 등, NULL이면 공통 이미지)")
-    @Column(name = "opt_item_id_1", length = 21)
-    private String optItemId1;
+    @Comment("옵션1 값ID (pd_prod_opt.prod_opt_id, 색상 등, NULL이면 공통 이미지)")
+    @Column(name = "prod_opt_id_1", length = 21)
+    private String prodOptId1;
 
-    @Comment("옵션2 값ID (pd_prod_opt_item.opt_item_id, 사이즈 등, NULL이면 색상 공통)")
-    @Column(name = "opt_item_id_2", length = 21)
-    private String optItemId2;
+    @Comment("옵션2 값ID (pd_prod_opt.prod_opt_id, 사이즈 등, NULL이면 색상 공통)")
+    @Column(name = "prod_opt_id_2", length = 21)
+    private String prodOptId2;
 
     @Comment("첨부파일ID (sy_attach.attach_id, 원본 파일 보관용)")
     @Column(name = "attach_id", length = 21)

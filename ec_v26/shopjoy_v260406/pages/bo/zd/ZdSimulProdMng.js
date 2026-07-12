@@ -188,6 +188,8 @@
             } else if (categories.value.length) {
               categoryId = pick(categories.value).categoryId;
             }
+            /* 상품 자체 임시 ID — 본 ID에 tmp- 접두어, body.prodId로 전송 */
+            const tmpProdId = 'tmp-prod-01';
             const body = {
               prodNm, salePrice,
               purchasePrice: costPrice,           /* pd_prod.purchase_price */
@@ -195,15 +197,16 @@
               prodTypeCd: type.cd,                /* pd_prod.prod_type_cd (SINGLE/OPTION/SET) */
               prodStatusCd: domCfg.createStatus,
               advrtStmt: domCfg.useAdCopy ? pick(AD_COPIES) : '', /* pd_prod.advrt_stmt */
-              ...(categoryId                ? { categoryId }                              : {}),
-              ...(defaults.value.siteId     ? { siteId:     defaults.value.siteId }     : {}),
-              ...(defaults.value.dlivTmpltId ? { dlivTmpltId: defaults.value.dlivTmpltId } : {}),
+              categoryId: categoryId || null,
+              siteId: defaults.value.siteId || null,
+              dlivTmpltId: defaults.value.dlivTmpltId || null,
               simulYn: simulYn || 'Y',
               /* 항상 포함 — 값 없으면 null/[] */
               optTypeCd:   null,    /* pd_prod.opt_type_cd */
               prodOpts:    [],      /* pd_prod_opt[] */
               prodSkus:    [],      /* pd_prod_sku[] (참고) */
               prodImages:  [],      /* pd_prod_img[] */
+              prodId: tmpProdId,    /* 상품 임시 ID */
             };
             /* 옵션형: 프리셋 기반 opt1/opt2 풀 선택 후 count range 기준 슬라이스 */
             let opt1List = null, opt2List = null;
@@ -213,9 +216,6 @@
               if (type === 'size')  return 'SIZ_' + nm;
               return (prefix || 'OPT') + '_' + nm.replace(/[^A-Za-z0-9가-힣]/g, '_').toUpperCase();
             };
-            /* 상품 자체 임시 ID — 본 ID에 tmp- 접두어, body.prodId로 전송 */
-            const tmpProdId = 'tmp-prod-01';
-            body.prodId = tmpProdId;
 
             if (isOption) {
               const preset = _pickOptPreset();
@@ -231,36 +231,35 @@
               const grp2Nm = preset.opt2LabelType === 'size' ? '사이즈' : preset.opt2LabelType === 'color' ? '색상' : '옵션2';
               /* 상품 레벨 옵션 카테고리 코드 (pd_prod.opt_type_cd) */
               body.optTypeCd = preset.cd;
-              /* 옵션항목 임시 ID: 본 ID(optItemId)에 tmp-opt1-/tmp-opt2- 접두어 */
+              /* 옵션항목 임시 ID: 본 ID(prodOptId)에 tmp-opt1-/tmp-opt2- 접두어 */
               const _pad2 = (n) => String(n + 1).padStart(2, '0');
               const opt1Items = opt1List.map((nm, i) => ({
-                optItemId: 'tmp-opt1-' + _pad2(i),
-                optNm: nm, optVal: _makeVal(nm, preset.opt1LabelType, 'O1'),
-                optTypeCd: preset.opt1LabelType, sortOrd: i + 1, useYn: 'Y',
+                prodOptId: 'tmp-opt1-' + _pad2(i),
+                prodOptNm: nm, prodOptVal: _makeVal(nm, preset.opt1LabelType, 'O1'),
+                sortOrd: i + 1, useYn: 'Y',
               }));
               const opt2Items = opt2List.map((nm, i) => ({
-                optItemId: 'tmp-opt2-' + _pad2(i),
-                optNm: nm, optVal: _makeVal(nm, preset.opt2LabelType, 'O2'),
-                optTypeCd: preset.opt2LabelType, sortOrd: i + 1, useYn: 'Y',
+                prodOptId: 'tmp-opt2-' + _pad2(i),
+                prodOptNm: nm, prodOptVal: _makeVal(nm, preset.opt2LabelType, 'O2'),
+                sortOrd: i + 1, useYn: 'Y',
               }));
-              /* 실제 전송 body: prodOpts — pd_prod_opt.opt_grp_nm 에 저장, optTypeCdNm 키로 전송 */
+              /* 실제 전송 body: prodOpts — pd_prod_opt_type/pd_prod_opt Entity 컬럼명 기준 */
               body.prodOpts = [
-                { optTypeCdNm: grp1Nm, optTypeCd: preset.opt1LabelType, optLevel: 1, optInputTypeCd: 'SELECT', sortOrd: 1, prodOptItems: opt1Items },
-                { optTypeCdNm: grp2Nm, optTypeCd: preset.opt2LabelType, optLevel: 2, optInputTypeCd: 'SELECT', sortOrd: 2, prodOptItems: opt2Items },
+                { prodOptTypeNm: grp1Nm, prodOptTypeLevel: 1, prodOptInputTypeCd: 'SELECT', sortOrd: 1, prodOpts: opt1Items },
+                { prodOptTypeNm: grp2Nm, prodOptTypeLevel: 2, prodOptInputTypeCd: 'SELECT', sortOrd: 2, prodOpts: opt2Items },
               ];
               if (previewOnly) {
-                /* prodOpts: 실제 전송 key. pd_prod_opt Entity 컬럼명 기준 표시 */
+                /* prodOpts: 실제 전송 key. pd_prod_opt_type / pd_prod_opt Entity 컬럼명 기준 표시 */
                 body['_preview_[prodOpts]'] = body.prodOpts.map(grp => ({
-                  optTypeCdNm: grp.optTypeCdNm,
-                  optTypeCd: grp.optTypeCd,
-                  optLevel: grp.optLevel,
-                  optInputTypeCd: grp.optInputTypeCd,
+                  prodOptTypeId: 'tmp-opt-type-' + grp.prodOptTypeLevel,
+                  prodOptTypeNm: grp.prodOptTypeNm,
+                  prodOptTypeLevel: grp.prodOptTypeLevel,
+                  prodOptInputTypeCd: grp.prodOptInputTypeCd,
                   sortOrd: grp.sortOrd,
-                  prodOptItems: grp.prodOptItems.map(it => ({
-                    optItemId: it.optItemId,
-                    optNm: it.optNm,
-                    optVal: it.optVal,
-                    optTypeCd: it.optTypeCd,
+                  prodOpts: grp.prodOpts.map(it => ({
+                    prodOptId: it.prodOptId,
+                    prodOptNm: it.prodOptNm,
+                    prodOptVal: it.prodOptVal,
                     sortOrd: it.sortOrd,
                     useYn: it.useYn,
                   })),
@@ -274,10 +273,10 @@
                 for (const o1 of opt1Items) {
                   for (const o2 of opt2Items) {
                     skuPreview.push({
-                      skuId: 'tmp-sku-' + _pad2(skuIdx++),
-                      skuNm: o1.optNm + ' / ' + o2.optNm,
-                      optItemId1: o1.optItemId,
-                      optItemId2: o2.optItemId,
+                      prodSkuId: 'tmp-sku-' + _pad2(skuIdx++),
+                      skuNm: o1.prodOptNm + ' / ' + o2.prodOptNm,
+                      prodOptId1: o1.prodOptId,
+                      prodOptId2: o2.prodOptId,
                       addPrice: addP,
                       prodOptStock: randInt(domCfg.stockMin, domCfg.stockMax),
                       useYn: 'Y',
@@ -295,8 +294,8 @@
                     for (let j = 0; j < perColor; j++) {
                       imgPreview.push({
                         prodImgId: 'tmp-img-' + _pad2(imgIdx++),
-                        optItemId1: o1.optItemId,
-                        optNm: o1.optNm,
+                        prodOptId1: o1.prodOptId,
+                        prodOptNm: o1.prodOptNm,
                         cdnImgUrl: 'https://picsum.photos/seed/' + (200 + imgIdx * 37) + '/400/400',
                         isThumb: imgIdx === 1 ? 'Y' : 'N',
                         sortOrd: imgIdx,
@@ -313,11 +312,11 @@
                   let imgIdx = 0;
                   for (let ci = 0; ci < opt1Items.length; ci++) {
                     const o1 = opt1Items[ci];
-                    const hex = OPT1_COLORS[o1.optNm] || '#cccccc';
+                    const hex = OPT1_COLORS[o1.prodOptNm] || '#cccccc';
                     const blob = await _makeColorBlob(hex);
                     for (let j = 0; j < perColor; j++) {
                       const fd = new FormData();
-                      fd.append('file', blob, 'opt_' + o1.optNm + '_' + (j + 1) + '.png');
+                      fd.append('file', blob, 'opt_' + o1.prodOptNm + '_' + (j + 1) + '.png');
                       try {
                         const r = await coApiSvc.cmUpload.uploadOne(fd, '상품시뮬', '옵션이미지');
                         const url = r?.data?.data?.cdnImgUrl || r?.data?.data?.attachUrl || '';
@@ -325,7 +324,7 @@
                           body.prodImages.push({
                             prodImgId: 'tmp-img-' + _pad2(imgIdx++),
                             cdnImgUrl: url,
-                            optItemId1: o1.optItemId,
+                            prodOptId1: o1.prodOptId,
                             isThumb: imgIdx === 1 ? 'Y' : 'N',
                             sortOrd: imgIdx,
                           });

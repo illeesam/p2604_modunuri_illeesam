@@ -117,17 +117,17 @@ public class StSettleRaw extends BaseEntity {
     @Column(name = "category_id_5", length = 21)
     private String categoryId5;
 
-    @Comment("SKU ID 스냅샷 (pd_prod_sku.sku_id)")
-    @Column(name = "sku_id", length = 21)
-    private String skuId;
+    @Comment("SKU ID 스냅샷 (pd_prod_sku.prod_sku_id)")
+    @Column(name = "prod_sku_id", length = 21)
+    private String prodSkuId;
 
-    @Comment("옵션1 값ID 스냅샷 (pd_prod_opt_item.opt_item_id)")
-    @Column(name = "opt_item_id_1", length = 21)
-    private String optItemId1;
+    @Comment("옵션1 값ID 스냅샷 (pd_prod_opt.opt_id)")
+    @Column(name = "prod_opt_id_1", length = 21)
+    private String prodOptId1;
 
-    @Comment("옵션2 값ID 스냅샷 (pd_prod_opt_item.opt_item_id)")
-    @Column(name = "opt_item_id_2", length = 21)
-    private String optItemId2;
+    @Comment("옵션2 값ID 스냅샷 (pd_prod_opt.opt_id)")
+    @Column(name = "prod_opt_id_2", length = 21)
+    private String prodOptId2;
 
     @Comment("담당MD (sy_user.user_id)")
     @Column(name = "md_user_id", length = 21)

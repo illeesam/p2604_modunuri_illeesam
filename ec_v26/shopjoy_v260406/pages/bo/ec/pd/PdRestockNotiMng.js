@@ -162,7 +162,7 @@ window.PdRestockNotiMng = {
     // 기본 그리드
     columns.baseGrid = [
       { key: 'prodId',   label: '상품명', fmt: (v, row) => getProdNm(row.prodId) },
-      { key: 'skuId',    label: 'SKU',    style: 'width:100px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
+      { key: 'prodSkuId', label: 'SKU',   style: 'width:100px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
       { key: 'memberId', label: '신청회원', style: 'width:100px', fmt: (v, row) => getMemNm(row.memberId) },
       { key: 'notiYn',   label: '발송여부', style: 'width:80px;text-align:center', align: 'center',
         badge: (row) => fnYnBadge(row.notiYn), fmt: (v, row) => row.notiYn === 'Y' ? '발송완료' : '미발송' },

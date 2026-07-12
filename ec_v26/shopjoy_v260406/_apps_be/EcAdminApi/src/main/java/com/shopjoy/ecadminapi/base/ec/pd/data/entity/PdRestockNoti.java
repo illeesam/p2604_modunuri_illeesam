@@ -32,9 +32,9 @@ public class PdRestockNoti extends BaseEntity {
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Comment("SKUID (pd_prod_sku.sku_id)")
-    @Column(name = "sku_id", length = 21)
-    private String skuId;
+    @Comment("SKUID (pd_prod_sku.prod_sku_id)")
+    @Column(name = "prod_sku_id", length = 21)
+    private String prodSkuId;
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)

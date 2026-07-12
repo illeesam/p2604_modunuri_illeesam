@@ -146,7 +146,7 @@
         uiNm: '주문 시뮬레이터',
         label: '시뮬주문',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, simulYn, previewOnly, randInt, pick }) => {
+        runFn: async ({ mode, simulYn, randInt, pick }) => {
           if (mode === 'create') {
             /* 상품: 고정 지정 or 랜덤 */
             let prods = [];
@@ -196,11 +196,9 @@
               orderItems: items,
               simulYn: simulYn || 'Y',
             };
-            if (previewOnly) {
-              body['_preview_[orderItems](' + items.length + '개)'] = items.map(it => ({
-                prodId: it.prodId, qty: it.qty, unitPrice: it.unitPrice, rowAmt: it.rowAmt,
-              }));
-            }
+            body['_preview_[orderItems](' + items.length + '개)'] = items.map(it => ({
+              prodId: it.prodId, qty: it.qty, unitPrice: it.unitPrice, rowAmt: it.rowAmt,
+            }));
             const res = await boApi.post('/bo/zd/simul/order/create', body, coUtil.cofApiHdr('주문시뮬', '생성'));
             const id  = res?.data?.data?.orderId || '-';
             return {

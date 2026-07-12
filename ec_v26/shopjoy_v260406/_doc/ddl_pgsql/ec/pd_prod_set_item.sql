@@ -23,7 +23,7 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.set_item_id IS '세트구성ID (
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.set_prod_id IS '세트상품ID (pd_prod.prod_id, prod_type_cd=SET)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.item_prod_id IS '구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.item_sku_id IS '구성품 SKU ID (pd_prod_sku.sku_id, NULL=SKU 미지정)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.item_sku_id IS '구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.item_nm IS '구성품 표시명 (예: 머그컵, 접시 2p)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.item_qty IS '구성 수량';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.item_desc IS '구성품 부가 설명 (소재·용량·색상 등)';

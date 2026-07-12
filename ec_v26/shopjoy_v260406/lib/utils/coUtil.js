@@ -928,32 +928,32 @@
   /* cofMergeProdOpts — 백엔드 상품상세 응답(prod + opts + skus + images)을
    *   화면이 기대하는 단일 prod 형태(opt1s/opt2s/opt2sAll/opt2Prices/mainImage/images)로 머지.
    *   Prod*View.fnMergeProdOpts 통합 (Prod01 의 opt2sAll 포함 슈퍼셋 기준 — View02/03 도 호환).
-   *   - opts.groups[level=1] → opt1s = [{ optItemId, name, val, priceDelta, imgUrl, optStyle, hex }]
-   *   - opts.groups[level=2] → opt2s(unique 이름) + opt2sAll(parentOptItemId 포함)
-   *   - skus 의 2단별 addPrice 평균 → opt2Prices = { '사이즈명': delta } */
+   *   - opts.groups (PdProdOptTypeDto) → opt1s = [{ optId, name, val, priceDelta, imgUrl, optStyle, hex }]
+   *   - opts.items  (PdProdOptDto)     → opt2s(unique 이름) + opt2sAll(parentProdOptId 포함)
+   *   - skus 의 2단별 addPrice 평균   → opt2Prices = { '사이즈명': delta } */
   function cofMergeProdOpts(prod, optsObj, skusList, imgList) {
     var groups = ((optsObj && optsObj.groups) || []).slice()
-      .sort(function (a, b) { return (a.optLevel || a.level || 0) - (b.optLevel || b.level || 0); });
+      .sort(function (a, b) { return (a.prodOptTypeLevel || a.optTypeLevel || a.optLevel || a.level || 0) - (b.prodOptTypeLevel || b.optTypeLevel || b.optLevel || b.level || 0); });
     var items = (optsObj && optsObj.items) || [];
     var imgs = imgList || [];
     var skus = skusList || [];
-    var lv1 = groups.find(function (g) { return Number(g.optLevel || g.level || 0) === 1; });
-    var lv2 = groups.find(function (g) { return Number(g.optLevel || g.level || 0) === 2; });
+    var lv1 = groups.find(function (g) { return Number(g.prodOptTypeLevel || g.optTypeLevel || g.optLevel || g.level || 0) === 1; });
+    var lv2 = groups.find(function (g) { return Number(g.prodOptTypeLevel || g.optTypeLevel || g.optLevel || g.level || 0) === 2; });
 
-    var itemsOf = function (g) { return g ? items.filter(function (i) { return i.optId === g.optId; }) : []; };
+    var itemsOf = function (g) { return g ? items.filter(function (i) { return i.prodOptTypeId === g.prodOptTypeId; }) : []; };
     var lv1Items = itemsOf(lv1).sort(function (a, b) { return (a.sortOrd || 0) - (b.sortOrd || 0); });
     var lv2Items = itemsOf(lv2).sort(function (a, b) { return (a.sortOrd || 0) - (b.sortOrd || 0); });
 
-    var opt1Nm = ((lv1 && (lv1.optGrpNm || lv1.grpNm)) || '').trim() || '색상';
-    var opt2Nm = ((lv2 && (lv2.optGrpNm || lv2.grpNm)) || '').trim() || '사이즈';
+    var opt1Nm = ((lv1 && (lv1.prodOptTypeNm || lv1.optTypeNm || lv1.optGrpNm || lv1.grpNm)) || '').trim() || '색상';
+    var opt2Nm = ((lv2 && (lv2.prodOptTypeNm || lv2.optTypeNm || lv2.optGrpNm || lv2.grpNm)) || '').trim() || '사이즈';
 
     var opt1s = lv1Items.map(function (it) {
-      var optImgs = imgs.filter(function (im) { return im.optItemId1 === it.optItemId; });
+      var optImgs = imgs.filter(function (im) { return im.prodOptId1 === it.prodOptId; });
       var style = (it.optStyle || '').trim();
       return {
-        optItemId: it.optItemId,
-        name: it.optNm || it.optVal || '',
-        val: it.optVal || '',
+        optId: it.prodOptId,
+        name: it.prodOptNm || it.prodOptVal || '',
+        val: it.prodOptVal || '',
         priceDelta: 0,
         imgUrl: cofImgSrc((optImgs[0] && (optImgs[0].cdnImgUrl || optImgs[0].cdnThumbUrl)) || ''),
         optStyle: style,
@@ -963,10 +963,10 @@
 
     var opt2sAll = lv2Items.map(function (it) {
       return {
-        optItemId: it.optItemId,
-        name: it.optNm || it.optVal || '',
-        val: it.optVal || '',
-        parentOptItemId: it.parentOptItemId || '',
+        optId: it.prodOptId,
+        name: it.prodOptNm || it.prodOptVal || '',
+        val: it.prodOptVal || '',
+        parentOptId: it.parentProdOptId || '',
       };
     });
 
@@ -976,10 +976,10 @@
 
     var opt2Prices = {};
     lv2Items.forEach(function (it) {
-      var matchedSkus = skus.filter(function (s) { return (s.optItemId2 === it.optItemId) || (s.optItemNm2 === it.optNm); });
+      var matchedSkus = skus.filter(function (s) { return (s.prodOptId2 === it.prodOptId) || (s.prodOptNm2 === it.prodOptNm); });
       if (!matchedSkus.length) { return; }
       var avg = Math.round(matchedSkus.reduce(function (a, s) { return a + (Number(s.addPrice) || 0); }, 0) / matchedSkus.length);
-      if (avg) { opt2Prices[it.optNm || it.optVal] = avg; }
+      if (avg) { opt2Prices[it.prodOptNm || it.prodOptVal] = avg; }
     });
 
     var main = imgs.find(function (im) { return im.isThumb === 'Y'; }) || imgs[0];

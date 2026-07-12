@@ -363,17 +363,17 @@ public class TableRegistry {
             .fkFields(Map.of("prod_id", "pd_prod"))
             .build());
 
-        register("pd_prod_opt", TableConfig.builder()
-            .pkColumn("prod_opt_id")
-            .requiredFields(List.of("prod_id", "opt_nm"))
+        register("pd_prod_opt_type", TableConfig.builder()
+            .pkColumn("opt_type_id")
+            .requiredFields(List.of("prod_id", "opt_type_nm"))
             .fkFields(Map.of("prod_id", "pd_prod"))
-            .childTables(List.of("pd_prod_opt_item"))
+            .childTables(List.of("pd_prod_opt"))
             .build());
 
-        register("pd_prod_opt_item", TableConfig.builder()
-            .pkColumn("prod_opt_item_id")
-            .requiredFields(List.of("prod_opt_id", "opt_item_nm"))
-            .fkFields(Map.of("prod_opt_id", "pd_prod_opt"))
+        register("pd_prod_opt", TableConfig.builder()
+            .pkColumn("opt_id")
+            .requiredFields(List.of("opt_type_id", "opt_nm"))
+            .fkFields(Map.of("opt_type_id", "pd_prod_opt_type", "prod_id", "pd_prod"))
             .build());
 
         register("pd_prod_sku", TableConfig.builder()

@@ -26,9 +26,9 @@ public class PdhProdSkuPriceHist {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("SKU ID (pd_prod_sku.sku_id)")
-    @Column(name = "sku_id", length = 21, nullable = false)
-    private String skuId;
+    @Comment("SKU ID (pd_prod_sku.prod_sku_id)")
+    @Column(name = "prod_sku_id", length = 21, nullable = false)
+    private String prodSkuId;
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)

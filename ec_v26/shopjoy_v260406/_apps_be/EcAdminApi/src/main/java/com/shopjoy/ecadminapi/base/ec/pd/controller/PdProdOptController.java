@@ -46,14 +46,14 @@ public class PdProdOptController {
     /* 상품 옵션 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdOpt>> save(@PathVariable("id") String id, @RequestBody PdProdOpt entity) {
-        entity.setOptId(id);
+        entity.setProdOptId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 상품 옵션 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdOpt>> updateSelective(@PathVariable("id") String id, @RequestBody PdProdOpt entity) {
-        entity.setOptId(id);
+        entity.setProdOptId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

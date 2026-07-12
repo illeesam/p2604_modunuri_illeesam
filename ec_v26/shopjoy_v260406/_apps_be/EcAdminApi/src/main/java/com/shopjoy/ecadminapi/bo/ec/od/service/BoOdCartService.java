@@ -62,10 +62,10 @@ public class BoOdCartService {
         PdProdSkuDto.Request skuReq = new PdProdSkuDto.Request();
         skuReq.setProdIds(prodIds);
         Map<String, PdProdSkuDto.Item> skuMap = pdProdSkuService.getList(skuReq).stream()
-            .collect(Collectors.toMap(PdProdSkuDto.Item::getSkuId, x -> x, (a, b) -> a));
+            .collect(Collectors.toMap(PdProdSkuDto.Item::getProdSkuId, x -> x, (a, b) -> a));
 
         cart.setProd(prodMap.get(cart.getProdId())); // 상품단건
-        cart.setSku(skuMap.get(cart.getSkuId())); // SKU단건
+        cart.setSku(skuMap.get(cart.getProdSkuId())); // SKU단건
     }
 
     /**
@@ -93,12 +93,12 @@ public class BoOdCartService {
         PdProdSkuDto.Request skuReq = new PdProdSkuDto.Request();
         skuReq.setProdIds(prodIds);
         Map<String, PdProdSkuDto.Item> skuMap = pdProdSkuService.getList(skuReq).stream()
-            .collect(Collectors.toMap(PdProdSkuDto.Item::getSkuId, x -> x, (a, b) -> a));
+            .collect(Collectors.toMap(PdProdSkuDto.Item::getProdSkuId, x -> x, (a, b) -> a));
 
         // 각 항목에 분배
         for (OdCartDto.Item cart : list) {
             cart.setProd(prodMap.get(cart.getProdId())); // 상품단건
-            cart.setSku(skuMap.get(cart.getSkuId())); // SKU단건
+            cart.setSku(skuMap.get(cart.getProdSkuId())); // SKU단건
         }
     }
 

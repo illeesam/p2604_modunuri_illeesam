@@ -1,19 +1,9 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
 
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptItemDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOptItem;
-
-import java.util.List;
-import java.util.Optional;
-
-/** PdProdOptItem QueryDSL Custom Repository */
+/**
+ * @deprecated 2026-07-12 QPdProdOptRepository 로 통합됨.
+ * 이 인터페이스는 빈 stub으로 유지하다 다음 정리 때 제거.
+ */
+@Deprecated
 public interface QPdProdOptItemRepository {
-
-    Optional<PdProdOptItemDto.Item> selectById(String optItemId);
-
-    List<PdProdOptItemDto.Item> selectList(PdProdOptItemDto.Request search);
-
-    PdProdOptItemDto.PageResponse selectPageData(PdProdOptItemDto.Request search);
-
-    int updateSelective(PdProdOptItem entity);
 }

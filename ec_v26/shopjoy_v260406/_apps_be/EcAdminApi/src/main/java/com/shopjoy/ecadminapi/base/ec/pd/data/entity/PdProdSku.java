@@ -20,8 +20,8 @@ public class PdProdSku extends BaseEntity {
 
     @Id
     @Comment("SKU ID")
-    @Column(name = "sku_id", length = 21, nullable = false)
-    private String skuId;
+    @Column(name = "prod_sku_id", length = 21, nullable = false)
+    private String prodSkuId;
 
     @Comment("사이트ID (sy_site.site_id)")
     @Column(name = "site_id", length = 21, nullable = false)
@@ -31,17 +31,17 @@ public class PdProdSku extends BaseEntity {
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Comment("옵션1 값ID (pd_prod_opt_item.opt_item_id)")
-    @Column(name = "opt_item_id_1", length = 21)
-    private String optItemId1;
+    @Comment("옵션1 값ID (pd_prod_opt.prod_opt_id)")
+    @Column(name = "prod_opt_id_1", length = 21)
+    private String prodOptId1;
 
-    @Comment("옵션2 값ID (pd_prod_opt_item.opt_item_id)")
-    @Column(name = "opt_item_id_2", length = 21)
-    private String optItemId2;
+    @Comment("옵션2 값ID (pd_prod_opt.prod_opt_id)")
+    @Column(name = "prod_opt_id_2", length = 21)
+    private String prodOptId2;
 
     @Comment("자체 SKU 코드")
-    @Column(name = "sku_code", length = 50)
-    private String skuCode;
+    @Column(name = "prod_sku_code", length = 50)
+    private String prodSkuCode;
 
     @Comment("옵션 추가금액 (기본가 대비)")
     @Column(name = "add_price")

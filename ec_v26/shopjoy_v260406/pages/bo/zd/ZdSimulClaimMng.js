@@ -126,7 +126,7 @@
         uiNm: '클레임 시뮬레이터',
         label: '시뮬클레임',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, simulYn, previewOnly, randInt, pick }) => {
+        runFn: async ({ mode, simulYn, randInt, pick }) => {
           if (mode === 'create') {
             /* 1) 대상 주문: 고정 지정 or 랜덤 */
             let order;
@@ -156,13 +156,6 @@
               refundRate:    refRate,
               simulYn:       simulYn || 'Y',
             };
-            if (previewOnly) {
-              body['_preview_[claimBody]'] = {
-                orderId: body.orderId, claimTypeCd: body.claimTypeCd,
-                reasonCd: body.reasonCd, claimStatusCd: body.claimStatusCd,
-                partialClaim: body.partialClaim, refundRate: body.refundRate,
-              };
-            }
             const res = await boApi.post('/bo/zd/simul/claim/from-order', body, coUtil.cofApiHdr('클레임시뮬', '생성'));
             const d = res?.data?.data || {};
             const id = d.claimId || '-';

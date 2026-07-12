@@ -8,7 +8,18 @@ CREATE TABLE shopjoy_2604.od_claim_item (
     order_item_id               VARCHAR(21)  NOT NULL,
     prod_id                     VARCHAR(21) ,
     prod_nm                     VARCHAR(200),
+    prod_sku_id                 VARCHAR(21) ,
+    prod_opt_id_1               VARCHAR(21) ,
+    prod_opt_id_2               VARCHAR(21) ,
     prod_option                 VARCHAR(500),
+    new_prod_id                 VARCHAR(21) ,
+    new_prod_sku_id             VARCHAR(21) ,
+    new_prod_opt_id_1           VARCHAR(21) ,
+    new_prod_opt_id_2           VARCHAR(21) ,
+    new_prod_nm                 VARCHAR(200),
+    new_prod_option             VARCHAR(500),
+    new_qty                     INTEGER     ,
+    new_unit_price              BIGINT      ,
     unit_price                  BIGINT       DEFAULT 0,
     claim_qty                   INTEGER      DEFAULT 1,
     item_amt                    BIGINT       DEFAULT 0,
@@ -31,7 +42,18 @@ COMMENT ON COLUMN shopjoy_2604.od_claim_item.claim_id IS '클레임ID (od_claim.
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.order_item_id IS '주문상품ID (od_order_item.)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_id IS '상품ID';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_nm IS '상품명 (주문시점 스냅샷)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_sku_id IS 'SKU ID (pd_prod_sku.prod_sku_id, 주문시점 스냅샷)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_opt_id_1 IS '옵션1 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_opt_id_2 IS '옵션2 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_option IS '옵션 (색상/사이즈 스냅샷)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.new_prod_id IS '[교환] 교환 요청 상품ID (claim_type_cd=EXCHANGE 시에만 사용)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.new_prod_sku_id IS '[교환] 교환 요청 SKU ID';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.new_prod_opt_id_1 IS '[교환] 교환 요청 옵션1 값ID';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.new_prod_opt_id_2 IS '[교환] 교환 요청 옵션2 값ID';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.new_prod_nm IS '[교환] 교환 요청 상품명';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.new_prod_option IS '[교환] 교환 요청 옵션 텍스트';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.new_qty IS '[교환] 교환 요청 수량';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.new_unit_price IS '[교환] 교환 요청 단가 (정산 차액 계산: new_unit_price*new_qty - unit_price*claim_qty)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.unit_price IS '판매가 (단가)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.claim_qty IS '클레임 수량';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.item_amt IS '클레임금액 (unit_price × claim_qty)';

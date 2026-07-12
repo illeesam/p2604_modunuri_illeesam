@@ -16,18 +16,18 @@ public class PdProdSkuDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
-        @Size(max = 21) private String skuId;
+        @Size(max = 21) private String prodSkuId;
         @Size(max = 21) private String prodId;
         private List<String> prodIds;                  // PK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String skuId;
+        private String prodSkuId;
         private String prodId;
-        private String optItemId1;
-        private String optItemId2;
-        private String skuCode;
+        private String prodOptId1;
+        private String prodOptId2;
+        private String prodSkuCode;
         private Long addPrice;
         private Integer stock;
         private String useYn;
@@ -36,8 +36,8 @@ public class PdProdSkuDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
-        private String optItemNm1;
-        private String optItemNm2;
+        private String prodOptNm1;
+        private String prodOptNm2;
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -44,8 +44,8 @@ public class FoPdProdService {
     private final PdProdRepository      pdProdRepository;
     private final PdProdService         pdProdService;
     private final PdProdImgService      pdProdImgService;
+    private final PdProdOptTypeService  pdProdOptTypeService;
     private final PdProdOptService      pdProdOptService;
-    private final PdProdOptItemService  pdProdOptItemService;
     private final PdProdSkuService      pdProdSkuService;
     private final PdProdContentService  pdProdContentService;
     private final PdProdRelService      pdProdRelService;
@@ -98,22 +98,17 @@ public class FoPdProdService {
         Map<String, List<PdProdImgDto.Item>> imgMap = pdProdImgService.getList(imgReq).stream()
             .collect(java.util.stream.Collectors.groupingBy(PdProdImgDto.Item::getProdId));
 
-        // 옵션그룹 일괄조회 → Map<prodId, List<group>> + optId→prodId 매핑
+        // 옵션유형 일괄조회 → Map<prodId, List<optType>>
+        PdProdOptTypeDto.Request optTypeReq = new PdProdOptTypeDto.Request();
+        optTypeReq.setProdIds(prodIds);
+        Map<String, List<PdProdOptTypeDto.Item>> optTypeMap = pdProdOptTypeService.getList(optTypeReq).stream()
+            .collect(java.util.stream.Collectors.groupingBy(PdProdOptTypeDto.Item::getProdId));
+
+        // 옵션값 일괄조회 → Map<prodId, List<opt>> (pd_prod_opt 에 prodId 직접 보유)
         PdProdOptDto.Request optReq = new PdProdOptDto.Request();
         optReq.setProdIds(prodIds);
-        List<PdProdOptDto.Item> allGroups = pdProdOptService.getList(optReq);
-        Map<String, List<PdProdOptDto.Item>> groupMap = allGroups.stream()
+        Map<String, List<PdProdOptDto.Item>> itemMap = pdProdOptService.getList(optReq).stream()
             .collect(java.util.stream.Collectors.groupingBy(PdProdOptDto.Item::getProdId));
-        Map<String, String> optIdToProdId = allGroups.stream()
-            .collect(java.util.stream.Collectors.toMap(
-                PdProdOptDto.Item::getOptId, PdProdOptDto.Item::getProdId, (a, b) -> a));
-
-        // 옵션아이템 일괄조회 → optId 경유로 prodId 그룹핑 (optItem 에는 prodId 필드 없음)
-        PdProdOptItemDto.Request itemReq = new PdProdOptItemDto.Request();
-        itemReq.setProdIds(prodIds);
-        Map<String, List<PdProdOptItemDto.Item>> itemMap = pdProdOptItemService.getList(itemReq).stream()
-            .filter(it -> optIdToProdId.get(it.getOptId()) != null)
-            .collect(java.util.stream.Collectors.groupingBy(it -> optIdToProdId.get(it.getOptId())));
 
         // SKU 일괄조회 → Map<prodId, List<sku>>
         PdProdSkuDto.Request skuReq = new PdProdSkuDto.Request();
@@ -124,10 +119,10 @@ public class FoPdProdService {
         // 각 항목에 분배
         for (PdProdDto.Item prod : list) {
             String pid = prod.getProdId();
-            prod.setProdImgs(imgMap.getOrDefault(pid, List.of())); // 이미지목록
-            prod.setProdOpts(groupMap.getOrDefault(pid, List.of())); // 옵션목록
-            prod.setProdOptItems(itemMap.getOrDefault(pid, List.of())); // 옵션아이템목록
-            prod.setProdSkus(skuMap.getOrDefault(pid, List.of())); // SKU목록
+            prod.setProdImgs(imgMap.getOrDefault(pid, List.of()));         // 이미지목록
+            prod.setProdOptTypes(optTypeMap.getOrDefault(pid, List.of())); // 옵션유형목록
+            prod.setProdOpts(itemMap.getOrDefault(pid, List.of()));        // 옵션값목록
+            prod.setProdSkus(skuMap.getOrDefault(pid, List.of()));         // SKU목록
         }
     }
 
@@ -150,25 +145,25 @@ public class FoPdProdService {
         imgReq.setProdId(prodId);
         List<PdProdImgDto.Item> prodImgs = pdProdImgService.getList(imgReq);
 
-        // 하위 옵션그룹 목록 조회 (prodId 기준)
+        // 하위 옵션유형 목록 조회 (prodId 기준)
+        PdProdOptTypeDto.Request optTypeReq = new PdProdOptTypeDto.Request();
+        optTypeReq.setProdId(prodId);
+        List<PdProdOptTypeDto.Item> prodOptTypes = pdProdOptTypeService.getList(optTypeReq);
+
+        // 하위 옵션값 목록 조회 (prodId 기준)
         PdProdOptDto.Request optReq = new PdProdOptDto.Request();
         optReq.setProdId(prodId);
         List<PdProdOptDto.Item> prodOpts = pdProdOptService.getList(optReq);
-
-        // 하위 옵션항목 목록 조회 (prodId 기준)
-        PdProdOptItemDto.Request itemReq = new PdProdOptItemDto.Request();
-        itemReq.setProdId(prodId);
-        List<PdProdOptItemDto.Item> prodOptItems = pdProdOptItemService.getList(itemReq);
 
         // 하위 SKU 목록 조회 (prodId 기준)
         PdProdSkuDto.Request skuReq = new PdProdSkuDto.Request();
         skuReq.setProdId(prodId);
         List<PdProdSkuDto.Item> prodSkus = pdProdSkuService.getList(skuReq);
 
-        prod.setProdImgs(prodImgs); // 이미지목록
-        prod.setProdOpts(prodOpts); // 옵션목록
-        prod.setProdOptItems(prodOptItems); // 옵션아이템목록
-        prod.setProdSkus(prodSkus); // SKU목록
+        prod.setProdImgs(prodImgs);           // 이미지목록
+        prod.setProdOptTypes(prodOptTypes);   // 옵션유형목록
+        prod.setProdOpts(prodOpts);           // 옵션값목록
+        prod.setProdSkus(prodSkus);           // SKU목록
     }
 
     /* ── Tier 2: lazy load ──────────────────────────────────── */

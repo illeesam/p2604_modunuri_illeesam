@@ -28,7 +28,18 @@ public class OdClaimItemDto {
         private String orderItemId;
         private String prodId;
         private String prodNm;
+        private String prodSkuId;
+        private String prodOptId1;
+        private String prodOptId2;
         private String prodOption;
+        private String newProdId;
+        private String newProdSkuId;
+        private String newProdOptId1;
+        private String newProdOptId2;
+        private String newProdNm;
+        private String newProdOption;
+        private Integer newQty;
+        private Long newUnitPrice;
         private Long unitPrice;
         private Integer claimQty;
         private Long itemAmt;

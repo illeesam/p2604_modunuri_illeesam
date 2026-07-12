@@ -14,7 +14,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderItemRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOptItem;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdSku;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +37,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QOdOrderItem   odOrderItem   = QOdOrderItem.odOrderItem;
     private static final QPdProd        pdProd    = QPdProd.pdProd;
     private static final QPdProdSku     pdProdSku   = QPdProdSku.pdProdSku;
-    private static final QPdProdOptItem oi1  = new QPdProdOptItem("oi1");
-    private static final QPdProdOptItem oi2  = new QPdProdOptItem("oi2");
+    private static final QPdProdOpt oi1  = new QPdProdOpt("oi1");
+    private static final QPdProdOpt oi2  = new QPdProdOpt("oi2");
     private static final QSyCode        cdIs = new QSyCode("cd_is");
     private static final QSyCode        cdDc = new QSyCode("cd_dc");
 
@@ -46,8 +46,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private JPAQuery<OdOrderItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdOrderItemDto.Item.class,
-                        odOrderItem.orderItemId, odOrderItem.siteId, odOrderItem.orderId, odOrderItem.prodId, odOrderItem.skuId,
-                        odOrderItem.optItemId1, odOrderItem.optItemId2, odOrderItem.prodNm, odOrderItem.brandNm, odOrderItem.dlivTmpltId,
+                        odOrderItem.orderItemId, odOrderItem.siteId, odOrderItem.orderId, odOrderItem.prodId, odOrderItem.prodSkuId,
+                        odOrderItem.prodOptId1, odOrderItem.prodOptId2, odOrderItem.prodNm, odOrderItem.brandNm, odOrderItem.dlivTmpltId,
                         odOrderItem.normalPrice, odOrderItem.unitPrice, odOrderItem.orderQty, odOrderItem.itemOrderAmt,
                         odOrderItem.cancelQty, odOrderItem.itemCancelAmt, odOrderItem.completQty, odOrderItem.itemCompletedAmt,
                         odOrderItem.orgUnitPrice, odOrderItem.orgItemOrderAmt, odOrderItem.orgDiscountAmt, odOrderItem.orgShippingFee,
@@ -62,17 +62,17 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         pdProd.thumbnailUrl.as("thumbnailUrl"),
                         pdProd.salePrice.as("salePriceCurrent"),
                         pdProd.prodNm.as("prodNmCurrent"),
-                        pdProdSku.skuCode.as("skuCode"),
-                        oi1.optNm.as("optItemNm1"),
-                        oi2.optNm.as("optItemNm2"),
+                        pdProdSku.prodSkuCode.as("prodSkuCode"),
+                        oi1.prodOptNm.as("prodOptNm1"),
+                        oi2.prodOptNm.as("prodOptNm2"),
                         cdIs.codeLabel.as("orderItemStatusCdNm"),
                         cdDc.codeLabel.as("dlivCourierCdNm")
                 ))
                 .from(odOrderItem)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId))
-                .leftJoin(pdProdSku).on(pdProdSku.skuId.eq(odOrderItem.skuId))
-                .leftJoin(oi1).on(oi1.optItemId.eq(odOrderItem.optItemId1))
-                .leftJoin(oi2).on(oi2.optItemId.eq(odOrderItem.optItemId2))
+                .leftJoin(pdProdSku).on(pdProdSku.prodSkuId.eq(odOrderItem.prodSkuId))
+                .leftJoin(oi1).on(oi1.prodOptId.eq(odOrderItem.prodOptId1))
+                .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOptId2))
                 .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd)))
                 .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd)));
     }
@@ -214,8 +214,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         or = orLike(or, all, types, ",dlivTmpltId,", odOrderItem.dlivTmpltId, pattern);
         or = orLike(or, all, types, ",dlivTrackingNo,", odOrderItem.dlivTrackingNo, pattern);
         or = orLike(or, all, types, ",giftId,", odOrderItem.giftId, pattern);
-        or = orLike(or, all, types, ",optItemId1,", odOrderItem.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", odOrderItem.optItemId2, pattern);
+        or = orLike(or, all, types, ",prodOptId1,", odOrderItem.prodOptId1, pattern);
+        or = orLike(or, all, types, ",prodOptId2,", odOrderItem.prodOptId2, pattern);
         or = orLike(or, all, types, ",orderId,", odOrderItem.orderId, pattern);
         or = orLike(or, all, types, ",orderItemId,", odOrderItem.orderItemId, pattern);
         or = orLike(or, all, types, ",orderItemStatusCd,", odOrderItem.orderItemStatusCd, pattern);
@@ -225,7 +225,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         or = orLike(or, all, types, ",reserveSaleYn,", odOrderItem.reserveSaleYn, pattern);
         or = orLike(or, all, types, ",settleYn,", odOrderItem.settleYn, pattern);
         or = orLike(or, all, types, ",siteId,", odOrderItem.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", odOrderItem.skuId, pattern);
+        or = orLike(or, all, types, ",prodSkuId,", odOrderItem.prodSkuId, pattern);
         return or;
     }
 

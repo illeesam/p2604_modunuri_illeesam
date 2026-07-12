@@ -5,7 +5,7 @@ CREATE TABLE shopjoy_2604.pd_prod_qna (
     qna_id       VARCHAR(21)  NOT NULL PRIMARY KEY,
     site_id      VARCHAR(21)  NOT NULL,
     prod_id      VARCHAR(21)  NOT NULL,
-    sku_id       VARCHAR(21) ,
+    prod_sku_id  VARCHAR(21) ,
     member_id    VARCHAR(21) ,
     order_id     VARCHAR(21) ,
     qna_type_cd  VARCHAR(20) ,
@@ -28,7 +28,7 @@ COMMENT ON TABLE  shopjoy_2604.pd_prod_qna IS '상품문의';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.qna_id IS '문의ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.prod_id IS '상품ID (pd_prod.prod_id)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.sku_id IS 'SKUID (pd_prod_sku.sku_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.prod_sku_id IS 'SKU ID (pd_prod_sku.prod_sku_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.member_id IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.order_id IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.qna_type_cd IS '문의유형코드 (코드: PROD_QNA_TYPE)';

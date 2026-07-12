@@ -85,10 +85,10 @@ public class PdProdDto {
         private String prodTypeCdNm;
         private String sizeInfoCdNm;
         // ── Tier 1 상세 연관정보 (getDetail 시 채움) ──
-        private List<PdProdImgDto.Item>     prodImgs;     // 상품 이미지 목록
-        private List<PdProdOptDto.Item>     prodOpts;     // 옵션 그룹 목록
-        private List<PdProdOptItemDto.Item> prodOptItems; // 옵션 아이템 목록
-        private List<PdProdSkuDto.Item>     prodSkus;     // SKU 목록
+        private List<PdProdImgDto.Item>         prodImgs;     // 상품 이미지 목록
+        private List<PdProdOptTypeDto.Item>     prodOptTypes; // 옵션유형 목록 (pd_prod_opt_type)
+        private List<PdProdOptDto.Item>         prodOpts;     // 옵션값 목록 (pd_prod_opt)
+        private List<PdProdSkuDto.Item>         prodSkus;     // SKU 목록
     }
 
     @Getter @Setter @NoArgsConstructor

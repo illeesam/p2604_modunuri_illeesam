@@ -28,9 +28,9 @@ public class OdOrderItemDto {
         private String siteId;
         private String orderId;
         private String prodId;
-        private String skuId;
-        private String optItemId1;
-        private String optItemId2;
+        private String prodSkuId;
+        private String prodOptId1;
+        private String prodOptId2;
         private String prodNm;
         private String brandNm;
         private String dlivTmpltId;
@@ -73,9 +73,9 @@ public class OdOrderItemDto {
         private String thumbnailUrl;
         private Long salePriceCurrent;
         private String prodNmCurrent;
-        private String skuCode;
-        private String optItemNm1;
-        private String optItemNm2;
+        private String prodSkuCode;
+        private String prodOptNm1;
+        private String prodOptNm2;
         private String orderItemStatusCdNm;
         private String dlivCourierCdNm;
     }
@@ -87,7 +87,7 @@ public class OdOrderItemDto {
     @Getter @Setter @NoArgsConstructor
     public static class SaveItem {
         private String  prodId;
-        private String  skuId;
+        private String  prodSkuId;
         private String  prodNm;
         private Long    unitPrice;     // 판매 단가
         private Integer orderQty;      // 수량

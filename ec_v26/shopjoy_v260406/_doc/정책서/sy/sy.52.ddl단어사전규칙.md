@@ -134,7 +134,7 @@ JPA 스키마 검증(`sy.56`) 통과 기준. 신규 DDL 작성 시 반드시 따
 | `login_id` | `VARCHAR(50)` | 사용자 입력 로그인 식별자 |
 | `sns_user_id` | `VARCHAR(200)` | 외부 SNS 시스템 ID |
 | `pg_transaction_id`, `pg_refund_id`, `refund_pg_tid` | `VARCHAR(100)` | PG 외부 거래 ID |
-| `opt_val_code_id` | `VARCHAR(50)` | 옵션 값 코드 |
+| `opt_item_val_code_id` | `VARCHAR(50)` | 옵션 값 코드 |
 
 > **❌ 금지**: 같은 의미의 ID 컬럼이 테이블마다 다른 길이를 가지면 안 된다. (`opt_item_id` 가 어떤 테이블은 20, 어떤 테이블은 21 → 검증 실패)
 

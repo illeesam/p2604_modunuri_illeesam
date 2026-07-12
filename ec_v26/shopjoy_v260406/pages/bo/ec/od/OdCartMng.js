@@ -249,10 +249,10 @@ window.OdCartMng = {
         fmt: (v, row) => `${row.prodNm || '-'} #${row.prodId}` },
       { key: '_opt',     label: '옵션',   style: 'min-width:120px;',
         fmt: (v, row) => {
-          const arr = [row.optNm1, row.optNm2].filter(Boolean);
+          const arr = [row.prodOptNm1, row.prodOptNm2].filter(Boolean);
           return arr.length ? arr.join(' / ') : '-';
         },
-        cellInnerStyle: (v, row) => (row.optNm1 || row.optNm2) ? '' : 'color:#ccc;font-size:12px;' },
+        cellInnerStyle: (v, row) => (row.prodOptNm1 || row.prodOptNm2) ? '' : 'color:#ccc;font-size:12px;' },
       { key: 'unitPrice',label: '단가',   style: 'width:90px;text-align:right;',
         align: 'right', fmt: (v) => fnPrice(v), cellStyle: 'font-size:13px;' },
       { key: 'orderQty', label: '수량',   style: 'width:50px;text-align:center;',

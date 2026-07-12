@@ -43,9 +43,53 @@ public class OdClaimItem extends BaseEntity {
     @Column(name = "prod_nm", length = 200)
     private String prodNm;
 
+    @Comment("SKU ID (pd_prod_sku.prod_sku_id, 주문시점 스냅샷)")
+    @Column(name = "prod_sku_id", length = 21)
+    private String prodSkuId;
+
+    @Comment("옵션1 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)")
+    @Column(name = "prod_opt_id_1", length = 21)
+    private String prodOptId1;
+
+    @Comment("옵션2 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)")
+    @Column(name = "prod_opt_id_2", length = 21)
+    private String prodOptId2;
+
     @Comment("옵션 (색상/사이즈 스냅샷)")
     @Column(name = "prod_option", length = 500)
     private String prodOption;
+
+    @Comment("[교환] 교환 요청 상품ID (claim_type_cd=EXCHANGE 시에만 사용)")
+    @Column(name = "new_prod_id", length = 21)
+    private String newProdId;
+
+    @Comment("[교환] 교환 요청 SKU ID")
+    @Column(name = "new_prod_sku_id", length = 21)
+    private String newProdSkuId;
+
+    @Comment("[교환] 교환 요청 옵션1 값ID")
+    @Column(name = "new_prod_opt_id_1", length = 21)
+    private String newProdOptId1;
+
+    @Comment("[교환] 교환 요청 옵션2 값ID")
+    @Column(name = "new_prod_opt_id_2", length = 21)
+    private String newProdOptId2;
+
+    @Comment("[교환] 교환 요청 상품명")
+    @Column(name = "new_prod_nm", length = 200)
+    private String newProdNm;
+
+    @Comment("[교환] 교환 요청 옵션 텍스트")
+    @Column(name = "new_prod_option", length = 500)
+    private String newProdOption;
+
+    @Comment("[교환] 교환 요청 수량")
+    @Column(name = "new_qty")
+    private Integer newQty;
+
+    @Comment("[교환] 교환 요청 단가 (정산 차액 계산: new_unit_price*new_qty - unit_price*claim_qty)")
+    @Column(name = "new_unit_price")
+    private Long newUnitPrice;
 
     @Comment("판매가 (단가)")
     @Column(name = "unit_price")

@@ -53,7 +53,7 @@
         uiNm: '사용자 시뮬레이터',
         label: '시뮬사용자',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, simulYn, previewOnly, suffix, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, pick }) => {
           if (mode === 'create') {
             const seq     = String(Date.now()).slice(-5);
             const ln      = pick(LAST_NAMES);
@@ -68,12 +68,6 @@
               userStatusCd: domCfg.statusOnCreate,
               loginPwd: domCfg.loginPwd || '1111',
             };
-            if (previewOnly) {
-              body['_preview_[userBody]'] = {
-                loginId: body.loginId, userNm: body.userNm, userEmail: body.userEmail,
-                userPhone: body.userPhone, userStatusCd: body.userStatusCd,
-              };
-            }
             const res = await boApi.post('/bo/zd/simul/user/create', body, coUtil.cofApiHdr('사용자시뮬', '생성'));
             const id  = res?.data?.data?.userId || loginId;
             return { ok: true, desc: nm + ' / ' + email + ' / ' + dept, meta: { id, params: body } };

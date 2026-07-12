@@ -7,36 +7,35 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * 상품 옵션 그룹/아이템 일괄 갱신 Request DTO.
+ * 상품 옵션 유형/값 일괄 갱신 Request DTO.
  * 사용: PUT /api/bo/ec/pd/prod/{prodId}/opts
  *
- * 클라이언트 _id (그룹/아이템 임시키) 는 부모 매핑 변환에 사용.
+ * 클라이언트 _id (유형/값 임시키) 는 부모 매핑 변환에 사용.
  */
 public class PdProdOptUpdateDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        private List<Group> optGroups;
+        private List<OptType> optTypes;
     }
 
     @Getter @Setter @NoArgsConstructor
-    public static class Group {
+    public static class OptType {
         private Object _id;
-        private String grpNm;
-        private String typeCd;
-        private String inputTypeCd;
-        private Integer level;
-        private List<Item> items;
+        private String optTypeNm;
+        private String optInputTypeCd;
+        private Integer optTypeLevel;
+        private List<OptVal> optVals;
     }
 
     @Getter @Setter @NoArgsConstructor
-    public static class Item {
+    public static class OptVal {
         private Object _id;
         private String nm;
         private String val;
         private String valCodeId;
-        /** 부모 _id 또는 부모 optItemId */
-        private Object parentOptItemId;
+        /** 부모 _id 또는 부모 optId */
+        private Object parentOptId;
         private Integer sortOrd;
         private String useYn;
     }

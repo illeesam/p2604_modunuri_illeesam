@@ -25,8 +25,8 @@ public class PdProdImgDto {
         private String prodImgId;
         private String siteId;
         private String prodId;
-        private String optItemId1;
-        private String optItemId2;
+        private String prodOptId1;
+        private String prodOptId2;
         private String attachId;
         private String cdnHost;
         private String cdnImgUrl;
