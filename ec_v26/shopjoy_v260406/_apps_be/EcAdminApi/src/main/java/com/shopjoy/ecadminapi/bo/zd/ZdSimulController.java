@@ -359,12 +359,11 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
         int count = body != null && body.get("count") instanceof Number
             ? ((Number) body.get("count")).intValue() : 3;
-        String statusCd = body != null && body.get("prodStatusCd") instanceof String
-            ? (String) body.get("prodStatusCd") : "SELLING";
-
         PdProdDto.Request req = new PdProdDto.Request();
         req.setSiteId(siteId);
-        req.setProdStatusCd(statusCd);
+        if (body != null && body.get("prodStatusCd") instanceof String s && !s.isBlank()) {
+            req.setProdStatusCd(s);
+        }
         req.setPageSize(50);
         List<PdProdDto.Item> all = pdProdService.getList(req);
         Collections.shuffle(all);

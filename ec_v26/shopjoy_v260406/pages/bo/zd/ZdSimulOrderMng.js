@@ -117,7 +117,7 @@
         memberPicker.loading = true;
         try {
           const res = await boApiSvc.mbMember.getPage({
-            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            pageNo: 1, pageSize: 30, memberStatusCd: 'ACTIVE',
             ...(memberPicker.searchValue ? { searchValue: memberPicker.searchValue, searchType: 'memberId,memberNm,loginId' } : {}),
           });
           memberPicker.rows = res.data?.data?.pageList || [];
@@ -128,18 +128,18 @@
         prodPicker.loading = true;
         try {
           const res = await boApiSvc.pdProd.getPage({
-            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            pageNo: 1, pageSize: 30,
             ...(prodPicker.searchValue ? { searchValue: prodPicker.searchValue, searchType: 'prodId,prodNm' } : {}),
           });
           prodPicker.rows = res.data?.data?.pageList || [];
-        } catch (_) { prodPicker.rows = []; }
+        } catch (err) { prodPicker.rows = []; props.showToast('상품 조회 실패: ' + (err?.response?.data?.message || err?.message || ''), 'error', 0); }
         prodPicker.loading = false;
       };
       const _loadOrderPicker = async () => {
         orderPicker.loading = true;
         try {
           const res = await boApiSvc.odOrder.getPage({
-            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            pageNo: 1, pageSize: 30,
             ...(orderPicker.searchValue ? { searchValue: orderPicker.searchValue, searchType: 'orderId' } : {}),
           });
           orderPicker.rows = res.data?.data?.pageList || [];
@@ -150,7 +150,7 @@
         couponPicker.loading = true;
         try {
           const res = await boApiSvc.pmCoupon.getPage({
-            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            pageNo: 1, pageSize: 30,
             ...(couponPicker.searchValue ? { searchValue: couponPicker.searchValue } : {}),
           });
           couponPicker.rows = res.data?.data?.pageList || [];
@@ -161,7 +161,7 @@
         discntPicker.loading = true;
         try {
           const res = await boApiSvc.pmDiscnt.getPage({
-            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            pageNo: 1, pageSize: 30,
             ...(discntPicker.searchValue ? { searchValue: discntPicker.searchValue } : {}),
           });
           discntPicker.rows = res.data?.data?.pageList || [];
@@ -183,6 +183,32 @@
       const onSelectOrder = (row) => {
         domCfg.fixedOrderId = row.orderId;
         orderPicker.show = false;
+      };
+
+      /* 랜덤 1건 즉시 pick */
+      const onPickRandomMember = async () => {
+        try {
+          const rows = (await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 50, memberStatusCd: 'ACTIVE' })).data?.data?.pageList || [];
+          if (!rows.length) return props.showToast('조회된 회원 없음', 'error');
+          const row = rows[Math.floor(Math.random() * rows.length)];
+          onSelectMember(row);
+        } catch (_) { props.showToast('회원 랜덤 조회 실패', 'error'); }
+      };
+      const onPickRandomProd = async () => {
+        try {
+          const rows = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 50 })).data?.data?.pageList || [];
+          if (!rows.length) return props.showToast('조회된 상품 없음', 'error');
+          const row = rows[Math.floor(Math.random() * rows.length)];
+          onSelectProd(row);
+        } catch (err) { props.showToast('상품 랜덤 조회 실패: ' + (err?.response?.data?.message || err?.message || ''), 'error', 0); }
+      };
+      const onPickRandomOrder = async () => {
+        try {
+          const rows = (await boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 50 })).data?.data?.pageList || [];
+          if (!rows.length) return props.showToast('조회된 주문 없음', 'error');
+          const row = rows[Math.floor(Math.random() * rows.length)];
+          onSelectOrder(row);
+        } catch (_) { props.showToast('주문 랜덤 조회 실패', 'error'); }
       };
       const onSelectCoupon = (row) => {
         domCfg.fixedCouponId = row.couponId;
@@ -219,7 +245,7 @@
             } else {
               const cnt = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
               const randRes = await boApi.post('/bo/zd/simul/order/rand-prod',
-                { count: Math.max(cnt, 5), prodStatusCd: 'SELLING' }, coUtil.cofApiHdr('주문시뮬', '상품조회'));
+                { count: Math.max(cnt, 5) }, coUtil.cofApiHdr('주문시뮬', '상품조회'));
               prods = randRes?.data?.data?.prods || [];
             }
 
@@ -263,7 +289,7 @@
                 promos.couponNm = domCfg.fixedCouponNm;
               } else if (domCfg.couponMode === 'random' && Math.random() * 100 < domCfg.couponApplyRate) {
                 try {
-                  const cRes = await boApiSvc.pmCoupon.getPage({ pageNo: 1, pageSize: 30, simulYn: 'Y' });
+                  const cRes = await boApiSvc.pmCoupon.getPage({ pageNo: 1, pageSize: 30 });
                   const cList = cRes.data?.data?.pageList || [];
                   if (cList.length) {
                     const c = pick(cList);
@@ -283,7 +309,7 @@
                 promos.discntNm = domCfg.fixedDiscntNm;
               } else if (domCfg.discntMode === 'random' && Math.random() * 100 < domCfg.discntApplyRate) {
                 try {
-                  const dRes = await boApiSvc.pmDiscnt.getPage({ pageNo: 1, pageSize: 30, simulYn: 'Y' });
+                  const dRes = await boApiSvc.pmDiscnt.getPage({ pageNo: 1, pageSize: 30 });
                   const dList = dRes.data?.data?.pageList || [];
                   if (dList.length) {
                     const d = pick(dList);
@@ -305,7 +331,7 @@
               /* 사은품 */
               if (domCfg.giftApplyRate > 0 && Math.random() * 100 < domCfg.giftApplyRate) {
                 try {
-                  const gRes = await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 20, prodTypeCd: 'GIFT', simulYn: 'Y' });
+                  const gRes = await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 20, prodTypeCd: 'GIFT' });
                   const gList = gRes.data?.data?.pageList || [];
                   if (gList.length) promos.giftProdId = pick(gList).prodId;
                 } catch (_) {}
@@ -425,6 +451,7 @@
         /* picker */
         memberPicker, prodPicker, orderPicker, couponPicker, discntPicker,
         onOpenMemberPicker, onOpenProdPicker, onOpenOrderPicker, onOpenCouponPicker, onOpenDiscntPicker,
+        onPickRandomMember, onPickRandomProd, onPickRandomOrder,
         onSelectMember, onSelectProd, onSelectOrder, onSelectCoupon, onSelectDiscnt,
         _loadMemberPicker, _loadProdPicker, _loadOrderPicker, _loadCouponPicker, _loadDiscntPicker,
       };
@@ -451,12 +478,12 @@
         <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">👤 주문 회원 지정</div>
         <div style="display:flex;gap:5px;align-items:center;">
           <input type="text" :value="domCfg.fixedMemberNm || domCfg.fixedMemberId || ''" readonly
-            placeholder="랜덤 선택"
-            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;"
-            @click="onOpenMemberPicker" />
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;" />
           <button v-if="domCfg.fixedMemberId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
             @click="domCfg.fixedMemberId='';domCfg.fixedMemberNm=''">✕</button>
-          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenMemberPicker">선택</button>
+          <button class="btn" style="height:28px;padding:0 8px;font-size:11px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;"
+            @click="onPickRandomMember">랜덤</button>
+          <button class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenMemberPicker">선택</button>
         </div>
         <div v-if="domCfg.fixedMemberId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedMemberId }}</div>
         <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 ACTIVE 회원 랜덤</div>
@@ -466,12 +493,12 @@
         <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">📦 주문 상품 지정</div>
         <div style="display:flex;gap:5px;align-items:center;">
           <input type="text" :value="domCfg.fixedProdNm || domCfg.fixedProdId || ''" readonly
-            placeholder="랜덤 선택"
-            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;"
-            @click="onOpenProdPicker" />
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;" />
           <button v-if="domCfg.fixedProdId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
             @click="domCfg.fixedProdId='';domCfg.fixedProdNm=''">✕</button>
-          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenProdPicker">선택</button>
+          <button class="btn" style="height:28px;padding:0 8px;font-size:11px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;"
+            @click="onPickRandomProd">랜덤</button>
+          <button class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenProdPicker">선택</button>
         </div>
         <div v-if="domCfg.fixedProdId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedProdId }}</div>
         <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 판매중 상품 랜덤</div>
@@ -481,12 +508,12 @@
         <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">🛒 수정 대상 주문 지정</div>
         <div style="display:flex;gap:5px;align-items:center;">
           <input type="text" :value="domCfg.fixedOrderId || ''" readonly
-            placeholder="랜덤 선택"
-            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;font-family:monospace;"
-            @click="onOpenOrderPicker" />
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;font-family:monospace;" />
           <button v-if="domCfg.fixedOrderId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
             @click="domCfg.fixedOrderId=''">✕</button>
-          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenOrderPicker">선택</button>
+          <button class="btn" style="height:28px;padding:0 8px;font-size:11px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;"
+            @click="onPickRandomOrder">랜덤</button>
+          <button class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenOrderPicker">선택</button>
         </div>
         <div v-if="!domCfg.fixedOrderId" style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 조건에 맞는 주문 랜덤</div>
       </div>

@@ -65,7 +65,7 @@
         memberPicker.loading = true;
         try {
           const res = await boApiSvc.mbMember.getPage({
-            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            pageNo: 1, pageSize: 30, memberStatusCd: 'ACTIVE',
             ...(memberPicker.searchValue ? { searchValue: memberPicker.searchValue, searchType: 'memberId,memberNm,loginId' } : {}),
           });
           memberPicker.rows = res.data?.data?.pageList || [];
@@ -76,7 +76,7 @@
         orderPicker.loading = true;
         try {
           const res = await boApiSvc.odOrder.getPage({
-            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            pageNo: 1, pageSize: 30,
             ...(domCfg.fixedMemberId ? { memberId: domCfg.fixedMemberId } : {}),
             ...(orderPicker.searchValue ? { searchValue: orderPicker.searchValue, searchType: 'orderId' } : {}),
           });
@@ -125,6 +125,25 @@
         orderPicker.show = false;
         await _loadOrderItems(row.orderId);
       };
+      /* 랜덤 1건 즉시 pick */
+      const onPickRandomMember = async () => {
+        try {
+          const rows = (await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 50, memberStatusCd: 'ACTIVE' })).data?.data?.pageList || [];
+          if (!rows.length) return props.showToast('조회된 회원 없음', 'error');
+          onSelectMember(rows[Math.floor(Math.random() * rows.length)]);
+        } catch (_) { props.showToast('회원 랜덤 조회 실패', 'error'); }
+      };
+      const onPickRandomOrder = async () => {
+        try {
+          const q = { pageNo: 1, pageSize: 50 };
+          if (domCfg.fromOrderStatus) q.orderStatusCd = domCfg.fromOrderStatus;
+          if (domCfg.fixedMemberId)   q.memberId = domCfg.fixedMemberId;
+          const rows = (await boApiSvc.odOrder.getPage(q)).data?.data?.pageList || [];
+          if (!rows.length) return props.showToast('조회된 주문 없음', 'error');
+          await onSelectOrder(rows[Math.floor(Math.random() * rows.length)]);
+        } catch (_) { props.showToast('주문 랜덤 조회 실패', 'error'); }
+      };
+
       const onRandomCheckItems = () => {
         orderItems.list.forEach(it => {
           it._checked = Math.random() > 0.35;
@@ -289,6 +308,7 @@
         memberPicker, orderPicker, orderItems,
         onOpenMemberPicker, onOpenOrderPicker,
         onSelectMember, onSelectOrder,
+        onPickRandomMember, onPickRandomOrder,
         onRandomCheckItems, onCheckAllItems,
         _loadMemberPicker, _loadOrderPicker,
       };
@@ -309,18 +329,18 @@
   <!-- 시뮬 대상 지정 + 주문 아이템 선택 (3열 그리드) -->
   <div class="card" style="padding:12px 16px;margin-top:12px;">
     <div class="list-title">🎯 시뮬 대상 지정</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin-top:10px;align-items:start;">
-      <!-- 회원 지정 (1/4) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:10px;align-items:start;">
+      <!-- 회원 지정 (1/3) -->
       <div>
         <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">👤 주문 회원 지정</div>
         <div style="display:flex;gap:5px;align-items:center;">
           <input type="text" :value="domCfg.fixedMemberNm || domCfg.fixedMemberId || ''" readonly
-            placeholder="랜덤 선택"
-            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;"
-            @click="onOpenMemberPicker" />
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;" />
           <button v-if="domCfg.fixedMemberId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
             @click="domCfg.fixedMemberId='';domCfg.fixedMemberNm='';domCfg.fixedOrderId='';orderItems.list=[];orderItems.orderId=''">✕</button>
-          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenMemberPicker">선택</button>
+          <button class="btn" style="height:28px;padding:0 8px;font-size:11px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;"
+            @click="onPickRandomMember">랜덤</button>
+          <button class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenMemberPicker">선택</button>
         </div>
         <div v-if="domCfg.fixedMemberId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedMemberId }}</div>
         <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 시뮬 주문의 회원 랜덤</div>
@@ -330,18 +350,18 @@
         <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">🛒 대상 주문 지정</div>
         <div style="display:flex;gap:5px;align-items:center;">
           <input type="text" :value="domCfg.fixedOrderId || ''" readonly
-            placeholder="랜덤 선택"
-            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;font-family:monospace;"
-            @click="onOpenOrderPicker" />
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;font-family:monospace;" />
           <button v-if="domCfg.fixedOrderId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
             @click="domCfg.fixedOrderId='';orderItems.list=[];orderItems.orderId=''">✕</button>
-          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenOrderPicker">선택</button>
+          <button class="btn" style="height:28px;padding:0 8px;font-size:11px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;"
+            @click="onPickRandomOrder">랜덤</button>
+          <button class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenOrderPicker">선택</button>
         </div>
         <div v-if="domCfg.fixedOrderId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedOrderId }}</div>
         <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 조건에 맞는 시뮬 주문 랜덤</div>
       </div>
-      <!-- 주문 아이템 선택 (2/4 — 주문 고정 지정 시) -->
-      <div v-if="cfg.mode==='create' && domCfg.fixedOrderId" style="border-left:1px solid #f1f5f9;padding-left:12px;">
+      <!-- 주문 아이템 선택 (1/3) -->
+      <div v-if="cfg.mode==='create' && domCfg.fixedOrderId">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
           <div style="font-size:11px;font-weight:600;color:#475569;">📦 주문 아이템 선택</div>
           <div style="margin-left:auto;display:flex;gap:4px;">
@@ -353,45 +373,45 @@
         </div>
         <div v-if="orderItems.loading" style="text-align:center;padding:12px;color:#94a3b8;font-size:11px;">로드 중...</div>
         <div v-else-if="!orderItems.list.length" style="text-align:center;padding:12px;color:#94a3b8;font-size:11px;">아이템 없음</div>
-        <table v-else class="admin-table" style="font-size:11px;">
-          <thead><tr>
-            <th style="width:28px;text-align:center;">
+        <table v-else style="font-size:11px;width:100%;border-collapse:collapse;">
+          <thead><tr style="background:#f8fafc;">
+            <th style="width:28px;text-align:center;border:1px solid #e2e8f0;padding:4px;">
               <input type="checkbox" :checked="orderItems.list.every(it => it._checked)"
                 :indeterminate.prop="orderItems.list.some(it => it._checked) &amp;&amp; !orderItems.list.every(it => it._checked)"
                 @change="onCheckAllItems" style="cursor:pointer;" />
             </th>
-            <th>상품명</th>
-            <th style="width:52px;text-align:center;">주문</th>
-            <th style="width:100px;text-align:center;">클레임수량</th>
-            <th style="width:80px;text-align:right;">소계</th>
+            <th style="border:1px solid #e2e8f0;padding:4px 8px;">상품명</th>
+            <th style="width:40px;text-align:center;border:1px solid #e2e8f0;padding:4px;">주문</th>
+            <th style="width:90px;text-align:center;border:1px solid #e2e8f0;padding:4px;">클레임수량</th>
+            <th style="width:70px;text-align:right;border:1px solid #e2e8f0;padding:4px 8px;">소계</th>
           </tr></thead>
           <tbody>
             <tr v-for="it in orderItems.list" :key="it.orderItemId"
               :style="it._checked ? '' : 'opacity:0.4;'">
-              <td style="text-align:center;">
+              <td style="text-align:center;border:1px solid #e2e8f0;padding:4px;">
                 <input type="checkbox" v-model="it._checked" style="cursor:pointer;" />
               </td>
-              <td>
-                <div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">{{ it.prodNm || it.prodId }}</div>
-                <div v-if="it.optNm" style="font-size:10px;color:#94a3b8;">{{ it.optNm }}</div>
+              <td style="border:1px solid #e2e8f0;padding:4px 8px;max-width:0;">
+                <div style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="it.prodNm || it.prodId">{{ it.prodNm || it.prodId }}</div>
+                <div v-if="it.optNm" style="font-size:10px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ it.optNm }}</div>
               </td>
-              <td style="text-align:center;font-family:monospace;">{{ it.orderQty }}</td>
-              <td style="text-align:center;">
+              <td style="text-align:center;font-family:monospace;border:1px solid #e2e8f0;padding:4px;">{{ it.orderQty }}</td>
+              <td style="text-align:center;border:1px solid #e2e8f0;padding:4px;">
                 <div style="display:flex;align-items:center;gap:3px;justify-content:center;">
                   <input type="range" min="1" :max="it.orderQty || 1" v-model.number="it._claimQty"
-                    :disabled="!it._checked" style="width:52px;accent-color:#ea580c;" />
+                    :disabled="!it._checked" style="width:44px;accent-color:#ea580c;" />
                   <span style="font-family:monospace;min-width:14px;font-weight:600;color:#ea580c;font-size:11px;">{{ it._claimQty }}</span>
                 </div>
               </td>
-              <td style="text-align:right;font-family:monospace;font-weight:600;">
+              <td style="text-align:right;font-family:monospace;font-weight:600;border:1px solid #e2e8f0;padding:4px 8px;">
                 {{ (it._checked ? (it.unitPrice||0)*it._claimQty : 0).toLocaleString() }}
               </td>
             </tr>
           </tbody>
           <tfoot>
             <tr style="background:#fff7ed;">
-              <td colspan="4" style="text-align:right;font-size:11px;font-weight:600;color:#ea580c;">예상 환불액</td>
-              <td style="text-align:right;font-family:monospace;font-weight:700;color:#ea580c;">
+              <td colspan="4" style="text-align:right;font-size:11px;font-weight:600;color:#ea580c;border:1px solid #e2e8f0;padding:4px 8px;">예상 환불액</td>
+              <td style="text-align:right;font-family:monospace;font-weight:700;color:#ea580c;border:1px solid #e2e8f0;padding:4px 8px;">
                 {{ orderItems.list.filter(it => it._checked).reduce((s,it) => s+(it.unitPrice||0)*it._claimQty,0).toLocaleString() }}원
               </td>
             </tr>
