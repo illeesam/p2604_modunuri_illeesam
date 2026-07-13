@@ -67,13 +67,13 @@
         stockMax: 999,
         priceRoundUnit: 100,
         fixedSaleType: '__weighted__',
-        saleTypeWeights: { NORMAL: 60, OPTION: 25, SET: 10, BUNDLE: 5 },
+        saleTypeWeights: { NORMAL: 10, OPTION: 70, SET: 10, BUNDLE: 10 },
         createStatus: 'SELLING',
         useAdCopy: true,
         useOptImg: true,
         fixedCategoryId: '',
         fixedOptPreset: '__weighted__',
-        optPresetWeights: { CLOTH: 40, OUTER: 15, PANTS: 10, SHOES: 10, BAG: 10, COSMETIC: 5, PERFUME: 5, FOOD: 3, ETC: 2 },
+        optPresetWeights: { CLOTH: 60, OUTER: 10, PANTS: 7, SHOES: 7, BAG: 7, COSMETIC: 3, PERFUME: 3, FOOD: 2, ETC: 1 },
         opt1CountMin: 2,
         opt1CountMax: 3,
         opt2CountMin: 2,
@@ -205,7 +205,7 @@
               prodOptTypeLevel1Cd: null, /* pd_prod.prod_opt_type_level1_cd */
               prodOpts:    [],      /* pd_prod_opt[] */
               prodSkus:    [],      /* pd_prod_sku[] (참고) */
-              prodImages:  [],      /* pd_prod_img[] */
+              prodImgs:  [],      /* pd_prod_img[] */
               prodId: tmpProdId,    /* 상품 임시 ID */
             };
             /* 옵션형: 프리셋 기반 opt1/opt2 풀 선택 후 count range 기준 슬라이스 */
@@ -286,7 +286,7 @@
                   }
                 }
                 body.prodSkus = skuPreview;
-                /* prodImages: 옵션 이미지 (미리보기) */
+                /* prodImgs: 옵션 이미지 (미리보기) */
                 const imgPreview = [];
                 if (domCfg.useOptImg && preset.opt1LabelType === 'color') {
                   const perColor = randInt(domCfg.imgCountMin, domCfg.imgCountMax);
@@ -304,7 +304,7 @@
                     }
                   }
                 }
-                body.prodImages = imgPreview;
+                body.prodImgs = imgPreview;
               } else {
                 /* 실제 실행: 이미지 업로드 (색상 opt1) */
                 if (domCfg.useOptImg && preset.opt1LabelType === 'color') {
@@ -322,7 +322,7 @@
                         const r = await coApiSvc.cmUpload.uploadOne(fd, '상품시뮬', '옵션이미지');
                         const url = r?.data?.data?.cdnImgUrl || r?.data?.data?.attachUrl || '';
                         if (url) {
-                          body.prodImages.push({
+                          body.prodImgs.push({
                             prodImgId: 'tmp-img-' + _pad2(imgIdx++),
                             cdnImgUrl: url,
                             prodOptId1: o1.prodOptId,
@@ -340,7 +340,7 @@
               /* prodSkus: 백엔드가 자동 생성, 단일 SKU 참고용 */
               body.prodSkus = [{ skuNm: prodNm, salePrice, purchasePrice: costPrice, prodOptStock: stock, useYn: 'Y' }];
               if (previewOnly) {
-                body.prodImages = [{ cdnImgUrl: 'https://picsum.photos/seed/200/400/400', isThumb: 'Y', sortOrd: 1 }];
+                body.prodImgs = [{ cdnImgUrl: 'https://picsum.photos/seed/200/400/400', isThumb: 'Y', sortOrd: 1 }];
               }
             }
             const res = await boApi.post('/bo/zd/simul/prod/create', body, coUtil.cofApiHdr('상품시뮬', '생성'));

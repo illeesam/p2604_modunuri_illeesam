@@ -5,6 +5,11 @@
 
   const STATUS_FLOW    = ['PENDING', 'PAID', 'PREPARING', 'SHIPPED', 'COMPLT'];
   const STATUS_LABELS  = { PENDING: '결제대기', PAID: '결제완료', PREPARING: '준비중', SHIPPED: '배송중', COMPLT: '완료' };
+  const PROMO_MODES    = [
+    { value: 'none',   label: '없음' },
+    { value: 'random', label: '랜덤 선택' },
+    { value: 'fixed',  label: '직접 지정' },
+  ];
   const PAY_METHODS    = [
     { value: 'CARD',       label: '신용카드',  color: '#2563eb' },
     { value: 'TOSS_PAY',   label: '토스페이',  color: '#3b82f6' },
@@ -58,12 +63,29 @@
         /* 결제수단 가중치 */
         fixedPayMethod: '__weighted__',
         payMethodWeights: { CARD: 45, TOSS_PAY: 20, KAKAO_PAY: 15, NAVER_PAY: 10, BANK: 7, VBANK: 3 },
+        /* 프로모션 설정 */
+        promoOpen: true,
+        couponMode: 'random',
+        fixedCouponId: '',
+        fixedCouponNm: '',
+        couponApplyRate: 40,
+        discntMode: 'none',
+        fixedDiscntId: '',
+        fixedDiscntNm: '',
+        discntApplyRate: 30,
+        saveMode: 'none',
+        saveApplyRate: 20,
+        saveDeductMin: 10,
+        saveDeductMax: 50,
+        giftApplyRate: 0,
       });
 
       /* ── picker 모달 상태 ──────────────────────────── */
       const memberPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
       const prodPicker   = reactive({ show: false, searchValue: '', rows: [], loading: false });
       const orderPicker  = reactive({ show: false, searchValue: '', rows: [], loading: false });
+      const couponPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+      const discntPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
 
       const onOpenMemberPicker = async () => {
         memberPicker.show = true;
@@ -79,6 +101,16 @@
         orderPicker.show = true;
         orderPicker.searchValue = '';
         await _loadOrderPicker();
+      };
+      const onOpenCouponPicker = async () => {
+        couponPicker.show = true;
+        couponPicker.searchValue = '';
+        await _loadCouponPicker();
+      };
+      const onOpenDiscntPicker = async () => {
+        discntPicker.show = true;
+        discntPicker.searchValue = '';
+        await _loadDiscntPicker();
       };
 
       const _loadMemberPicker = async () => {
@@ -114,6 +146,28 @@
         } catch (_) { orderPicker.rows = []; }
         orderPicker.loading = false;
       };
+      const _loadCouponPicker = async () => {
+        couponPicker.loading = true;
+        try {
+          const res = await boApiSvc.pmCoupon.getPage({
+            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            ...(couponPicker.searchValue ? { searchValue: couponPicker.searchValue } : {}),
+          });
+          couponPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { couponPicker.rows = []; }
+        couponPicker.loading = false;
+      };
+      const _loadDiscntPicker = async () => {
+        discntPicker.loading = true;
+        try {
+          const res = await boApiSvc.pmDiscnt.getPage({
+            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            ...(discntPicker.searchValue ? { searchValue: discntPicker.searchValue } : {}),
+          });
+          discntPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { discntPicker.rows = []; }
+        discntPicker.loading = false;
+      };
 
       const onSelectMember = (row) => {
         domCfg.fixedMemberId = row.memberId;
@@ -129,6 +183,16 @@
       const onSelectOrder = (row) => {
         domCfg.fixedOrderId = row.orderId;
         orderPicker.show = false;
+      };
+      const onSelectCoupon = (row) => {
+        domCfg.fixedCouponId = row.couponId;
+        domCfg.fixedCouponNm = row.couponNm || row.couponId;
+        couponPicker.show = false;
+      };
+      const onSelectDiscnt = (row) => {
+        domCfg.fixedDiscntId = row.discntId;
+        domCfg.fixedDiscntNm = row.discntNm || row.discntId;
+        discntPicker.show = false;
       };
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
@@ -184,27 +248,108 @@
             const dlivFee = domCfg.addDlivFee && totalAmt < 50000 ? domCfg.dlivFeeAmt : 0;
             const payMethod = _pickPayMethod();
             const addr = domCfg.randomAddr ? pick(ADDR_LIST) : ADDR_LIST[0];
+
+            /* ── 프로모션 적용 판정 ── */
+            const promos = {
+              couponId: null, couponNm: null, couponDiscntAmt: 0,
+              discntId: null, discntNm: null, discntAmt: 0,
+              saveDeductAmt: 0,
+              giftProdId: null,
+            };
+            if (domCfg.promoOpen) {
+              /* 쿠폰 */
+              if (domCfg.couponMode === 'fixed' && domCfg.fixedCouponId) {
+                promos.couponId = domCfg.fixedCouponId;
+                promos.couponNm = domCfg.fixedCouponNm;
+              } else if (domCfg.couponMode === 'random' && Math.random() * 100 < domCfg.couponApplyRate) {
+                try {
+                  const cRes = await boApiSvc.pmCoupon.getPage({ pageNo: 1, pageSize: 30, simulYn: 'Y' });
+                  const cList = cRes.data?.data?.pageList || [];
+                  if (cList.length) {
+                    const c = pick(cList);
+                    promos.couponId = c.couponId;
+                    promos.couponNm = c.couponNm || c.couponId;
+                  }
+                } catch (_) {}
+              }
+              if (promos.couponId) {
+                /* 쿠폰 할인금: 정률이면 총금액의 10~20%, 정액이면 1000~5000원 시뮬 */
+                promos.couponDiscntAmt = Math.round(totalAmt * (randInt(10, 20) / 100) / 100) * 100;
+              }
+
+              /* 할인 */
+              if (domCfg.discntMode === 'fixed' && domCfg.fixedDiscntId) {
+                promos.discntId = domCfg.fixedDiscntId;
+                promos.discntNm = domCfg.fixedDiscntNm;
+              } else if (domCfg.discntMode === 'random' && Math.random() * 100 < domCfg.discntApplyRate) {
+                try {
+                  const dRes = await boApiSvc.pmDiscnt.getPage({ pageNo: 1, pageSize: 30, simulYn: 'Y' });
+                  const dList = dRes.data?.data?.pageList || [];
+                  if (dList.length) {
+                    const d = pick(dList);
+                    promos.discntId = d.discntId;
+                    promos.discntNm = d.discntNm || d.discntId;
+                  }
+                } catch (_) {}
+              }
+              if (promos.discntId) {
+                promos.discntAmt = Math.round(totalAmt * (randInt(5, 15) / 100) / 100) * 100;
+              }
+
+              /* 적립금 차감 */
+              if (domCfg.saveMode !== 'none' && Math.random() * 100 < domCfg.saveApplyRate) {
+                const rate = randInt(domCfg.saveDeductMin, domCfg.saveDeductMax) / 100;
+                promos.saveDeductAmt = Math.round(totalAmt * rate / 100) * 100;
+              }
+
+              /* 사은품 */
+              if (domCfg.giftApplyRate > 0 && Math.random() * 100 < domCfg.giftApplyRate) {
+                try {
+                  const gRes = await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 20, prodTypeCd: 'GIFT', simulYn: 'Y' });
+                  const gList = gRes.data?.data?.pageList || [];
+                  if (gList.length) promos.giftProdId = pick(gList).prodId;
+                } catch (_) {}
+              }
+            }
+
+            const totalDiscnt = promos.couponDiscntAmt + promos.discntAmt + promos.saveDeductAmt;
+            const finalPayAmt = Math.max(totalAmt + dlivFee - totalDiscnt, 0);
+
             const body = {
               memberId: member.memberId, memberNm: member.memberNm,
               orderStatusCd: domCfg.createStatus,
               payMethodCd: payMethod,
               orderAmt: totalAmt, dlivFee,
-              totalPayAmt: totalAmt + dlivFee,
+              discntAmt: totalDiscnt,
+              totalPayAmt: finalPayAmt,
               receiverNm: pick(RECEIVER_NAMES),
               receiverPhone: '010-' + String(randInt(1000, 9999)) + '-' + String(randInt(1000, 9999)),
               zipCode: addr.zipCode, dlivAddr: addr.addr, dlivAddrDtl: addr.addrDtl,
               orderItems: items,
+              promos,
               simulYn: simulYn || 'Y',
             };
             body['_preview_[orderItems](' + items.length + '개)'] = items.map(it => ({
               prodId: it.prodId, qty: it.qty, unitPrice: it.unitPrice, rowAmt: it.rowAmt,
             }));
+            if (promos.couponId || promos.discntId || promos.saveDeductAmt || promos.giftProdId) {
+              body['_preview_[promos]'] = {
+                쿠폰: promos.couponNm || '없음',
+                쿠폰할인: promos.couponDiscntAmt ? promos.couponDiscntAmt.toLocaleString('ko-KR') + '원' : '-',
+                할인: promos.discntNm || '없음',
+                할인금액: promos.discntAmt ? promos.discntAmt.toLocaleString('ko-KR') + '원' : '-',
+                적립금차감: promos.saveDeductAmt ? promos.saveDeductAmt.toLocaleString('ko-KR') + '원' : '-',
+                사은품: promos.giftProdId || '없음',
+                총할인: totalDiscnt.toLocaleString('ko-KR') + '원',
+                최종결제: finalPayAmt.toLocaleString('ko-KR') + '원',
+              };
+            }
             const res = await boApi.post('/bo/zd/simul/order/create', body, coUtil.cofApiHdr('주문시뮬', '생성'));
             const id  = res?.data?.data?.orderId || '-';
             return {
               ok: true,
-              desc: member.memberNm + ' | ' + cnt + '개 상품 | ' + (totalAmt + dlivFee).toLocaleString('ko-KR') + '원',
-              meta: { id, payMethod, totalAmt, dlivFee, memberId: member.memberId, params: body },
+              desc: member.memberNm + ' | ' + cnt + '개 상품 | ' + finalPayAmt.toLocaleString('ko-KR') + '원' + (totalDiscnt > 0 ? ' (할인 ' + totalDiscnt.toLocaleString('ko-KR') + '원)' : ''),
+              meta: { id, payMethod, totalAmt, dlivFee, totalDiscnt, finalPayAmt, memberId: member.memberId, params: body },
             };
           } else {
             /* 수정: 고정 주문 or 랜덤 */
@@ -276,12 +421,12 @@
         cfPayMethodTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
-        STATUS_FLOW, STATUS_LABELS, PAY_METHODS,
+        STATUS_FLOW, STATUS_LABELS, PAY_METHODS, PROMO_MODES,
         /* picker */
-        memberPicker, prodPicker, orderPicker,
-        onOpenMemberPicker, onOpenProdPicker, onOpenOrderPicker,
-        onSelectMember, onSelectProd, onSelectOrder,
-        _loadMemberPicker, _loadProdPicker, _loadOrderPicker,
+        memberPicker, prodPicker, orderPicker, couponPicker, discntPicker,
+        onOpenMemberPicker, onOpenProdPicker, onOpenOrderPicker, onOpenCouponPicker, onOpenDiscntPicker,
+        onSelectMember, onSelectProd, onSelectOrder, onSelectCoupon, onSelectDiscnt,
+        _loadMemberPicker, _loadProdPicker, _loadOrderPicker, _loadCouponPicker, _loadDiscntPicker,
       };
     },
 
@@ -346,6 +491,97 @@
         <div v-if="!domCfg.fixedOrderId" style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 조건에 맞는 주문 랜덤</div>
       </div>
       <div v-else style="font-size:10px;color:#94a3b8;padding-top:24px;">※ 수정 모드 전환 시 주문도 지정 가능</div>
+    </div>
+
+    <!-- 프로모션 적용 섹션 -->
+    <div v-if="cfg.mode==='create'" style="margin-top:12px;border-top:1px solid #e2e8f0;padding-top:10px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:600;color:#475569;">🎁 프로모션 적용</span>
+        <button class="btn" style="height:20px;padding:0 8px;font-size:10px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;border-radius:10px;"
+          @click="domCfg.promoOpen=!domCfg.promoOpen">{{ domCfg.promoOpen ? '▲ 접기' : '▼ 펼치기' }}</button>
+      </div>
+      <div v-show="domCfg.promoOpen" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;">
+
+        <!-- 쿠폰 -->
+        <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;">
+          <div style="font-size:10px;font-weight:600;color:#6366f1;margin-bottom:5px;">🎟 쿠폰</div>
+          <select v-model="domCfg.couponMode" style="width:100%;border:1px solid #e2e8f0;border-radius:4px;padding:2px 4px;font-size:11px;margin-bottom:5px;">
+            <option v-for="m in PROMO_MODES" :key="m.value" :value="m.value">{{ m.label }}</option>
+          </select>
+          <div v-if="domCfg.couponMode==='fixed'" style="display:flex;gap:4px;align-items:center;margin-bottom:5px;">
+            <input type="text" :value="domCfg.fixedCouponNm || domCfg.fixedCouponId || ''" readonly placeholder="쿠폰 선택"
+              style="flex:1;height:24px;padding:0 6px;font-size:10px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;cursor:pointer;"
+              @click="onOpenCouponPicker" />
+            <button v-if="domCfg.fixedCouponId" class="btn" style="height:24px;padding:0 5px;font-size:10px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+              @click="domCfg.fixedCouponId='';domCfg.fixedCouponNm=''">✕</button>
+            <button v-else class="btn" style="height:24px;padding:0 6px;font-size:10px;background:#ede9fe;color:#6366f1;border:1px solid #c4b5fd;"
+              @click="onOpenCouponPicker">선택</button>
+          </div>
+          <div v-if="domCfg.couponMode==='random'" style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:10px;color:#64748b;white-space:nowrap;">적용확률</span>
+            <input type="range" min="0" max="100" v-model.number="domCfg.couponApplyRate" style="flex:1;accent-color:#6366f1;" />
+            <span style="font-size:10px;font-weight:600;color:#6366f1;min-width:28px;">{{ domCfg.couponApplyRate }}%</span>
+          </div>
+        </div>
+
+        <!-- 할인 -->
+        <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;">
+          <div style="font-size:10px;font-weight:600;color:#f59e0b;margin-bottom:5px;">💸 할인</div>
+          <select v-model="domCfg.discntMode" style="width:100%;border:1px solid #e2e8f0;border-radius:4px;padding:2px 4px;font-size:11px;margin-bottom:5px;">
+            <option v-for="m in PROMO_MODES" :key="m.value" :value="m.value">{{ m.label }}</option>
+          </select>
+          <div v-if="domCfg.discntMode==='fixed'" style="display:flex;gap:4px;align-items:center;margin-bottom:5px;">
+            <input type="text" :value="domCfg.fixedDiscntNm || domCfg.fixedDiscntId || ''" readonly placeholder="할인 선택"
+              style="flex:1;height:24px;padding:0 6px;font-size:10px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;cursor:pointer;"
+              @click="onOpenDiscntPicker" />
+            <button v-if="domCfg.fixedDiscntId" class="btn" style="height:24px;padding:0 5px;font-size:10px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+              @click="domCfg.fixedDiscntId='';domCfg.fixedDiscntNm=''">✕</button>
+            <button v-else class="btn" style="height:24px;padding:0 6px;font-size:10px;background:#fef3c7;color:#b45309;border:1px solid #fcd34d;"
+              @click="onOpenDiscntPicker">선택</button>
+          </div>
+          <div v-if="domCfg.discntMode==='random'" style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:10px;color:#64748b;white-space:nowrap;">적용확률</span>
+            <input type="range" min="0" max="100" v-model.number="domCfg.discntApplyRate" style="flex:1;accent-color:#f59e0b;" />
+            <span style="font-size:10px;font-weight:600;color:#f59e0b;min-width:28px;">{{ domCfg.discntApplyRate }}%</span>
+          </div>
+        </div>
+
+        <!-- 적립금 -->
+        <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;">
+          <div style="font-size:10px;font-weight:600;color:#22c55e;margin-bottom:5px;">💰 적립금 차감</div>
+          <select v-model="domCfg.saveMode" style="width:100%;border:1px solid #e2e8f0;border-radius:4px;padding:2px 4px;font-size:11px;margin-bottom:5px;">
+            <option value="none">없음</option>
+            <option value="random">랜덤 적용</option>
+          </select>
+          <div v-if="domCfg.saveMode==='random'">
+            <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;">
+              <span style="font-size:10px;color:#64748b;white-space:nowrap;">사용확률</span>
+              <input type="range" min="0" max="100" v-model.number="domCfg.saveApplyRate" style="flex:1;accent-color:#22c55e;" />
+              <span style="font-size:10px;font-weight:600;color:#22c55e;min-width:28px;">{{ domCfg.saveApplyRate }}%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span style="font-size:10px;color:#64748b;white-space:nowrap;">차감범위</span>
+              <input type="number" min="0" max="100" v-model.number="domCfg.saveDeductMin" style="width:36px;text-align:center;border:1px solid #e2e8f0;border-radius:3px;font-size:10px;padding:1px;" />
+              <span style="font-size:10px;color:#94a3b8;">~</span>
+              <input type="number" min="0" max="100" v-model.number="domCfg.saveDeductMax" style="width:36px;text-align:center;border:1px solid #e2e8f0;border-radius:3px;font-size:10px;padding:1px;" />
+              <span style="font-size:10px;color:#94a3b8;">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 사은품 -->
+        <div style="background:#fafafa;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;">
+          <div style="font-size:10px;font-weight:600;color:#ec4899;margin-bottom:5px;">🎀 사은품</div>
+          <div style="font-size:10px;color:#94a3b8;margin-bottom:5px;">GIFT 타입 상품 중 랜덤</div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:10px;color:#64748b;white-space:nowrap;">포함확률</span>
+            <input type="range" min="0" max="100" v-model.number="domCfg.giftApplyRate" style="flex:1;accent-color:#ec4899;" />
+            <span style="font-size:10px;font-weight:600;color:#ec4899;min-width:28px;">{{ domCfg.giftApplyRate }}%</span>
+          </div>
+          <div v-if="domCfg.giftApplyRate===0" style="font-size:10px;color:#94a3b8;margin-top:3px;">0% = 미포함</div>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -454,6 +690,72 @@
             <td>{{ r.prodNm }}</td>
             <td style="text-align:right;">{{ (r.salePrice||0).toLocaleString() }}원</td>
             <td style="text-align:center;"><span class="badge badge-green" style="font-size:10px;">{{ r.prodStatusCd }}</span></td>
+            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
+
+  <!-- 쿠폰 picker 모달 -->
+  <bo-modal :show="couponPicker.show" title="쿠폰 선택" @close="couponPicker.show=false" box-width="620px">
+    <div style="padding:12px 0 8px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="couponPicker.searchValue" placeholder="쿠폰명 검색" @keyup.enter="_loadCouponPicker"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
+        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadCouponPicker">조회</button>
+      </div>
+      <div v-if="couponPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
+      <table v-else class="admin-table" style="width:100%;font-size:12px;">
+        <thead><tr>
+          <th style="width:36px;">번호</th>
+          <th>쿠폰ID</th>
+          <th>쿠폰명</th>
+          <th>유형</th>
+          <th>할인</th>
+          <th style="width:60px;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="!couponPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-for="(r,i) in couponPicker.rows" :key="r.couponId" style="cursor:pointer;" @click="onSelectCoupon(r)">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:11px;">{{ r.couponId }}</td>
+            <td>{{ r.couponNm }}</td>
+            <td style="text-align:center;"><span class="badge badge-purple" style="font-size:10px;">{{ r.couponTypeCd }}</span></td>
+            <td style="text-align:right;font-size:11px;">{{ r.discntRate ? r.discntRate + '%' : (r.discntAmt ? (r.discntAmt).toLocaleString() + '원' : '-') }}</td>
+            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
+
+  <!-- 할인 picker 모달 -->
+  <bo-modal :show="discntPicker.show" title="할인 선택" @close="discntPicker.show=false" box-width="620px">
+    <div style="padding:12px 0 8px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="discntPicker.searchValue" placeholder="할인명 검색" @keyup.enter="_loadDiscntPicker"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
+        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadDiscntPicker">조회</button>
+      </div>
+      <div v-if="discntPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
+      <table v-else class="admin-table" style="width:100%;font-size:12px;">
+        <thead><tr>
+          <th style="width:36px;">번호</th>
+          <th>할인ID</th>
+          <th>할인명</th>
+          <th>유형</th>
+          <th>할인율/금액</th>
+          <th style="width:60px;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="!discntPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-for="(r,i) in discntPicker.rows" :key="r.discntId" style="cursor:pointer;" @click="onSelectDiscnt(r)">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:11px;">{{ r.discntId }}</td>
+            <td>{{ r.discntNm }}</td>
+            <td style="text-align:center;"><span class="badge badge-orange" style="font-size:10px;">{{ r.discntTypeCd }}</span></td>
+            <td style="text-align:right;font-size:11px;">{{ r.discntRate ? r.discntRate + '%' : (r.discntAmt ? (r.discntAmt).toLocaleString() + '원' : '-') }}</td>
             <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
           </tr>
         </tbody>

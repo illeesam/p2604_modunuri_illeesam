@@ -8,7 +8,11 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderDiscnt;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdClaimService;
+import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderDiscntService;
+import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderItemService;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderService;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
@@ -89,6 +93,8 @@ public class ZdSimulController {
     private final MbMemberService      mbMemberService;
     private final MbMemberGradeService mbMemberGradeService;
     private final OdOrderService       odOrderService;
+    private final OdOrderItemService   odOrderItemService;
+    private final OdOrderDiscntService odOrderDiscntService;
     private final OdClaimService       odClaimService;
     private final PmEventService       pmEventService;
     private final PmPlanService        pmPlanService;
@@ -203,7 +209,7 @@ public class ZdSimulController {
         /* prodNm 깨짐 방지 */
         if (body.get("prodNm") instanceof String nm) body.put("prodNm", sanitizeText(nm));
         PdProd prod = new PdProd();
-        VoUtil.mapCopy(body, prod, "prodOpts", "prodImages", "prodId");
+        VoUtil.mapCopy(body, prod, "prodOpts", "prodImgs", "prodId");
         prod.setSiteId(siteId);
         prod.setSimulYn("Y");
         /* 프론트 제공 prodId(tmp-prod-01 등) 우선 사용 — 없으면 서비스에서 자동생성 */
@@ -302,16 +308,16 @@ public class ZdSimulController {
                 pdProdImgService.create(img);
             }
         } else {
-            /* 단순 상품: prodImages — 프론트 전송 이미지 목록 (빈 배열이면 기본 picsum 1장 생성) */
+            /* 단순 상품: prodImgs — 프론트 전송 이미지 목록 (빈 배열이면 기본 picsum 1장 생성) */
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> prodImages = body.get("prodImages") instanceof List
-                ? (List<Map<String, Object>>) body.get("prodImages") : null;
-            if (prodImages != null && !prodImages.isEmpty()) {
-                for (int i = 0; i < prodImages.size(); i++) {
+            List<Map<String, Object>> prodImgs = body.get("prodImgs") instanceof List
+                ? (List<Map<String, Object>>) body.get("prodImgs") : null;
+            if (prodImgs != null && !prodImgs.isEmpty()) {
+                for (int i = 0; i < prodImgs.size(); i++) {
                     PdProdImg img = new PdProdImg();
                     img.setSiteId(siteId);
                     img.setProdId(prodId);
-                    img.setCdnImgUrl(str(prodImages.get(i), "cdnImgUrl"));
+                    img.setCdnImgUrl(str(prodImgs.get(i), "cdnImgUrl"));
                     img.setIsThumb(i == 0 ? "Y" : "N");
                     img.setSortOrd(i + 1);
                     pdProdImgService.create(img);
@@ -386,11 +392,67 @@ public class ZdSimulController {
         /* memberNm 깨짐 방지 */
         if (body.get("memberNm") instanceof String nm) body.put("memberNm", sanitizeText(nm));
         OdOrder order = new OdOrder();
-        VoUtil.mapCopy(body, order);
+        VoUtil.mapCopy(body, order, "orderItems", "promos");
         order.setSiteId(siteId);
         order.setSimulYn("Y");
         OdOrder saved = odOrderService.create(order);
-        return ResponseEntity.ok(ApiResponse.ok(Map.of("orderId", saved.getOrderId())));
+        String orderId = saved.getOrderId();
+
+        /* 프로모션 처리 */
+        @SuppressWarnings("unchecked")
+        Map<String, Object> promos = body.get("promos") instanceof Map
+            ? (Map<String, Object>) body.get("promos") : null;
+
+        if (promos != null) {
+            String couponId      = blankToNull(str(promos, "couponId", null));
+            String discntId      = blankToNull(str(promos, "discntId", null));
+            long   couponDiscnt  = promos.get("couponDiscntAmt") instanceof Number n ? n.longValue() : 0L;
+            long   discntAmt     = promos.get("discntAmt")       instanceof Number n ? n.longValue() : 0L;
+            long   saveDeductAmt = promos.get("saveDeductAmt")   instanceof Number n ? n.longValue() : 0L;
+            String giftProdId    = blankToNull(str(promos, "giftProdId", null));
+
+            /* 쿠폰 할인 기록 */
+            if (couponId != null && couponDiscnt > 0) {
+                OdOrderDiscnt d = new OdOrderDiscnt();
+                d.setSiteId(siteId);
+                d.setOrderId(orderId);
+                d.setDiscntTypeCd("ORDER_COUPON");
+                d.setCouponId(couponId);
+                d.setDiscntAmt(couponDiscnt);
+                odOrderDiscntService.create(d);
+            }
+            /* 상품 할인 기록 */
+            if (discntId != null && discntAmt > 0) {
+                OdOrderDiscnt d = new OdOrderDiscnt();
+                d.setSiteId(siteId);
+                d.setOrderId(orderId);
+                d.setDiscntTypeCd("PROMO_DISCNT");
+                d.setDiscntAmt(discntAmt);
+                odOrderDiscntService.create(d);
+            }
+            /* 적립금 차감 기록 */
+            if (saveDeductAmt > 0) {
+                OdOrderDiscnt d = new OdOrderDiscnt();
+                d.setSiteId(siteId);
+                d.setOrderId(orderId);
+                d.setDiscntTypeCd("SAVE_USE");
+                d.setDiscntAmt(saveDeductAmt);
+                odOrderDiscntService.create(d);
+            }
+            /* 사은품 — od_order_item에 unit_price=0 행 추가 */
+            if (giftProdId != null) {
+                OdOrderItem gift = new OdOrderItem();
+                gift.setSiteId(siteId);
+                gift.setOrderId(orderId);
+                gift.setProdId(giftProdId);
+                gift.setOrderQty(1);
+                gift.setUnitPrice(0L);
+                gift.setItemOrderAmt(0L);
+                odOrderItemService.create(gift);
+            }
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("orderId", orderId)));
     }
 
     /** 주문 수정 */
@@ -426,17 +488,39 @@ public class ZdSimulController {
         OdOrderDto.Item order = odOrderService.getById(orderId);
         List<OdOrderItemDto.Item> items = order.getOrderItems();
 
+        /* 프론트에서 선택한 아이템 목록 */
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> selectedItems = body.get("selectedItems") instanceof List
+            ? (List<Map<String, Object>>) body.get("selectedItems") : null;
+
         long refundAmt = 0L;
-        if (items != null && !items.isEmpty()) {
+        int  itemCount = 0;
+        if (selectedItems != null && !selectedItems.isEmpty()) {
+            /* 프론트 지정 아이템 사용 */
+            Map<String, OdOrderItemDto.Item> itemMap = new java.util.LinkedHashMap<>();
+            if (items != null) {
+                for (OdOrderItemDto.Item it : items) itemMap.put(it.getOrderItemId(), it);
+            }
+            for (Map<String, Object> sel : selectedItems) {
+                String itemId  = sel.getOrDefault("orderItemId", "").toString();
+                int    claimQty = sel.get("claimQty") instanceof Number n ? n.intValue() : 1;
+                OdOrderItemDto.Item it = itemMap.get(itemId);
+                long unitAmt = (it != null && it.getUnitPrice() != null) ? it.getUnitPrice() : 0L;
+                refundAmt += unitAmt * claimQty;
+                itemCount++;
+            }
+        } else if (items != null && !items.isEmpty()) {
+            /* 기존 서버 랜덤 로직 */
             List<OdOrderItemDto.Item> selected = items.stream()
                 .filter(it -> !partial || Math.random() > 0.3).toList();
-            if (selected.isEmpty()) selected = List.of(items.get(0));
+            if (selected.isEmpty()) selected = java.util.List.of(items.get(0));
             for (OdOrderItemDto.Item it : selected) {
                 int qty = (partial && it.getOrderQty() != null && it.getOrderQty() > 1)
                     ? (int)(Math.random() * it.getOrderQty()) + 1
                     : (it.getOrderQty() != null ? it.getOrderQty() : 1);
                 long unitAmt = it.getUnitPrice() != null ? it.getUnitPrice() : 0L;
                 refundAmt += unitAmt * qty;
+                itemCount++;
             }
         } else {
             Long payAmt = order.getPayAmt();
@@ -458,7 +542,7 @@ public class ZdSimulController {
             "claimId",     saved.getClaimId(),
             "claimTypeCd", typeCd,
             "refundAmt",   finalRefund,
-            "itemCount",   items != null ? items.size() : 0
+            "itemCount",   itemCount
         )));
     }
 

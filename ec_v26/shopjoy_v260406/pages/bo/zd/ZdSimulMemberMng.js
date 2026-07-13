@@ -301,13 +301,10 @@
         { key: 'statusOnCreate', label: '초기 상태', type: 'select',
           options: [{ value: 'ACTIVE', label: '정상' }, { value: 'DORMANT', label: '휴면' }] },
         { key: 'loginPwd',       label: '비밀번호',          type: 'text', placeholder: 'bypass 비밀번호 (기본: 1111)', mono: true },
-        { key: 'randomGender',  label: '성별 랜덤',        type: 'select',
-          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
         { key: 'emailVerified', label: '이메일 인증 완료', type: 'select',
           options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
         { key: 'snsLinkYn',     label: 'SNS 연동 표시',    type: 'select',
           options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
-        { key: '_ageRange',     label: '연령 범위',        type: 'slot', name: 'ageRange' },
         { key: 'memoOnCreate',  label: '메모 자동 생성',   type: 'select',
           options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
       ];
@@ -346,29 +343,7 @@
   <!-- 생성 옵션 (전체 폭) -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">👤 회원 생성 옵션</div>
-    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
-      <template #ageRange>
-        <div style="padding:0;">
-          <div style="position:relative;height:20px;display:flex;align-items:center;">
-            <div style="position:absolute;left:0;right:0;height:4px;background:#e2e8f0;border-radius:2px;pointer-events:none;"></div>
-            <div :style="'position:absolute;left:'+((domCfg.agentRangeMin-10)/70*100)+'%;right:'+(100-(domCfg.agentRangeMax-10)/70*100)+'%;height:4px;background:linear-gradient(90deg,#7c3aed,#a855f7);border-radius:2px;pointer-events:none;'"></div>
-            <input type="range" min="10" max="80" v-model.number="domCfg.agentRangeMin"
-              @change="onAgeMinChange"
-              style="position:absolute;left:0;right:0;width:100%;margin:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;pointer-events:auto;" />
-            <input type="range" min="10" max="80" v-model.number="domCfg.agentRangeMax"
-              @change="onAgeMaxChange"
-              style="position:absolute;left:0;right:0;width:100%;margin:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;pointer-events:auto;" />
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
-            <span style="font-size:10px;color:#cbd5e1;">10세</span>
-            <span style="font-size:11px;color:#6d28d9;font-weight:700;">{{ domCfg.agentRangeMin }}세</span>
-            <span style="font-size:10px;color:#94a3b8;">~</span>
-            <span style="font-size:11px;color:#7c3aed;font-weight:700;">{{ domCfg.agentRangeMax }}세</span>
-            <span style="font-size:10px;color:#cbd5e1;">80세</span>
-          </div>
-        </div>
-      </template>
-    </bo-form-area>
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
   </div>
 
   <!-- 가중치 카드 행 (행1: 등급 / 이메일도메인 / 성별) -->

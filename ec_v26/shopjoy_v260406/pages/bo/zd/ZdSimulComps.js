@@ -502,7 +502,7 @@
     prodSkuId: 'SKU ID', skuNm: 'SKU명',
     prodOptId1: '옵션1 값ID', prodOptId2: '옵션2 값ID',
     addPrice: '추가금액', prodOptStock: '재고수량',
-    /* prodImages — pd_prod_img */
+    /* prodImgs — pd_prod_img */
     prodImgId: '이미지ID', cdnImgUrl: '이미지URL', prodOptNm: '옵션항목명',
     isThumb: '대표이미지', isMain: '대표이미지',
     skuStatusCd: 'SKU상태',
@@ -534,6 +534,7 @@
     /* 주문 */
     orderAmt: '주문금액', dlivFee: '배송비', totalPayAmt: '총결제금액',
     receiverNm: '수령자명', zipCode: '우편번호', dlivAddr: '배송주소',
+    addr1: '배송주소', addr2: '상세주소', dlivAddrDtl: '상세주소',
     orderItems: '주문항목(전송)',
     qty: '수량', unitPrice: '단가', rowAmt: '행금액',
     /* 클레임 */
@@ -541,17 +542,28 @@
     partialClaim: '부분클레임', refundRate: '환불비율(%)',
     /* 회원 */
     memberNm: '회원명', gradeCd: '등급코드', memberGender: '성별',
+    memberGradeId: '등급ID', memberEmail: '이메일', memberPhone: '전화번호',
     empTypeCd: '재직유형', snsProvider: 'SNS제공자',
     emailVerifiedYn: '이메일인증여부', snsLinkYn: 'SNS연동여부',
     /* 사용자 */
     userNm: '사용자명', userEmail: '이메일', userPhone: '전화번호', userStatusCd: '사용자상태',
+    deptId: '부서ID', roleIds: '권한목록',
     /* 업체 */
     vendorNm: '업체명', ceoNm: '대표자명', vendorType: '업체유형',
     vendorPhone: '업체전화', vendorEmail: '업체이메일', corpNo: '사업자번호',
     vendorStatusCd: '업체상태', openDate: '개업일', contractDate: '계약일',
+    /* 적립금 */
+    saveDurationDays: '유효기간(일)',
+    /* 쿠폰 */
+    prodIds: '적용상품ID목록',
+    /* 이벤트 */
+    benefitAmt: '혜택금액', winnerCount: '당첨자수',
+    /* 정산 */
+    settleId: '정산ID', settleAmt: '정산금액', commissionAmt: '수수료', netAmt: '순정산액',
+    settleStatusCd: '정산상태', settleYm: '정산년월',
     /* 바우처 */
     erpVoucherTypeCd: '전표유형', erpVoucherStatusCd: '전표상태', erpVoucherDesc: '전표설명',
-    voucherDate: '전표일자', totalDebitAmt: '총차변금액', totalCreditAmt: '총대변금액', settleYm: '정산년월',
+    voucherDate: '전표일자', totalDebitAmt: '총차변금액', totalCreditAmt: '총대변금액',
   };
 
   /* 코드값 → 한글 코드명 매핑 */
@@ -566,35 +578,78 @@
     ORDER_PENDING: '결제대기', ORDER_PAID: '결제완료', ORDER_PREPARING: '상품준비중',
     ORDER_SHIPPED: '배송중', ORDER_DELIVERED: '배송완료', ORDER_COMPLETE: '구매확정', ORDER_CANCEL: '주문취소',
     PENDING: '결제대기', PAID: '결제완료', PREPARING: '상품준비중',
-    SHIPPED: '배송중', DELIVERED: '배송완료', COMPLETE: '구매확정', CANCEL: '취소',
+    SHIPPED: '배송중', DELIVERED: '배송완료', COMPLETE: '구매확정', COMPLT: '구매확정',
+    CANCEL: '취소',
     /* 클레임유형 */
     CANCEL_REQ: '취소요청', RETURN_REQ: '반품요청', EXCHANGE_REQ: '교환요청',
     CANCEL_DONE: '취소완료', RETURN_DONE: '반품완료', EXCHANGE_DONE: '교환완료',
+    RETURN: '반품', EXCHANGE: '교환',
+    /* 클레임상태 (실제 코드값) */
+    CLAIM_RECV: '접수', RETURN_COLL: '수거중', EXCH_REQ: '교환요청', EXCH_SHIP: '교환발송', EXCH_DONE: '교환완료',
     /* 배송상태 */
     DLIV_READY: '출고준비', DLIV_ING: '배송중', DLIV_DONE: '배송완료',
     OUTBOUND: '출고', INBOUND: '입고(반품)',
     /* 결제수단 */
     CARD: '신용카드', VIRTUAL_ACCOUNT: '가상계좌', TRANSFER: '무통장입금',
-    TOSS: '토스페이', KAKAO: '카카오페이', NAVER: '네이버페이', PHONE: '핸드폰결제',
+    TOSS: '토스페이', TOSS_PAY: '토스페이',
+    KAKAO: '카카오페이', KAKAO_PAY: '카카오페이',
+    NAVER: '네이버페이', NAVER_PAY: '네이버페이',
+    PHONE: '핸드폰결제', BANK: '무통장입금', VBANK: '가상계좌',
     /* 회원상태 */
     ACTIVE: '정상', DORMANT: '휴면', SUSPENDED: '정지', WITHDRAWN: '탈퇴',
+    INACTIVE: '비활성',
     /* 회원등급 */
     GRADE_BASIC: '일반', GRADE_SILVER: '실버', GRADE_GOLD: '골드', GRADE_VIP: 'VIP',
     BASIC: '일반', SILVER: '실버', GOLD: '골드', VIP: 'VIP',
+    /* 성별 */
+    M: '남성', F: '여성',
+    /* 국가 */
+    KR: '한국', CN: '중국', JP: '일본', US: '영어권', FR: '프랑스', IN: '인도',
+    /* 유입채널 */
+    SEARCH: '검색유입', SNS: 'SNS광고', REFERRAL: '추천인', DIRECT: '직접접속', EMAIL: '이메일', APP: '앱설치',
+    /* 구매유형 */
+    IMPULSIVE: '충동구매형', COMPARE: '비교탐색형', LOYAL: '단골재구매형', PRICE: '가격민감형', PREMIUM: '프리미엄선호',
+    /* SNS제공자 */
+    GOOGLE: 'Google', NONE: '일반가입',
+    /* 재직유형 */
+    STAFF: '직원', PARTNER: '협력직원',
     /* 공통 Y/N */
     Y: '예', N: '아니오',
     /* 입력유형 */
     SELECT: '선택형', TEXT: '텍스트', RADIO: '라디오',
     /* 플랜유형 */
     MONTHLY: '월간', YEARLY: '연간', ONETIME: '일회성',
-    /* 쿠폰/할인유형 */
-    RATE: '정률(%)', AMOUNT: '정액(원)', FREE_SHIP: '무료배송',
+    /* 쿠폰유형 */
+    JOIN_GIFT: '가입선물', ORDER_DISCNT: '주문할인', PROD_DISCNT: '상품할인',
+    SHIP_DISCNT: '배송비할인', CLAIM_COMP: '클레임보상',
+    /* 쿠폰/할인값 유형 */
+    RATE: '정률(%)', AMOUNT: '정액(원)', FREE_SHIP: '무료배송', SHIP_FREE: '무료배송',
+    /* 할인정책유형 */
+    ORDER: '주문할인', PROD: '상품할인', SHIP: '배송비할인',
     /* 이벤트상태 */
     EVENT_ACTIVE: '진행중', EVENT_READY: '예정', EVENT_END: '종료',
-    /* 적립금유형 */
+    /* 이벤트유형 */
+    ATTEND: '출석체크', LOTTERY: '추첨', PHOTO: '포토', PURCHASE: '구매', QUIZ: '퀴즈',
+    REVIEW: '리뷰', SHARE: '공유', SURVEY: '설문',
+    /* 혜택유형 */
+    COUPON: '쿠폰',
+    /* 적립금목적 */
+    JOIN: '가입적립', BIRTHDAY: '생일적립', EVENT: '이벤트적립', ADMIN: '수동지급',
     SAVE_PURCHASE: '구매적립', SAVE_REVIEW: '리뷰적립', SAVE_JOIN: '가입적립', SAVE_MANUAL: '수동지급',
+    /* 기획전 테마 */
+    SPRING_NEW: '봄신상', SUMMER_COOL: '여름쿨', WINTER_WARM: '겨울따뜻', BLACK_FRI: '블랙프라이데이',
+    NEW_YEAR: '신년', CHUSEOK: '추석', CHILDREN_DAY: '어린이날', CHRISTMAS: '크리스마스',
+    HALLOWEEN: '핼로윈', ZOMBIE_DAY: '좀비데이',
+    FASHION: '패션', BEAUTY: '뷰티', DIGITAL: '디지털', HEALTH_FOOD: '건강식품',
+    HOME_DECOR: '홈데코', KIDS: '키즈', OUTDOOR: '아웃도어', PET: '펫',
+    LUXURY_BRAND: '명품브랜드', TRAVEL: '여행', DISABILITY: '장애인의날',
+    /* 상품 옵션 프리셋 카테고리 */
+    CLOTH: '의류', OUTER: '아우터', PANTS: '바지', SHOES: '신발', BAG: '가방',
+    COSMETIC: '화장품', PERFUME: '향수', FOOD: '식품/음료', ETC: '기타',
     /* 바우처상태 */
     VOUCHER_UNUSED: '미사용', VOUCHER_USED: '사용완료', VOUCHER_EXPIRE: '만료',
+    /* 공통상태 */
+    SUCCESS: '성공', FAIL: '실패', DRAFT: '임시저장',
   };
 
   /* 미리보기 테이블 키 고정 표시 순서 — 배열에 없는 키는 맨 뒤에 삽입 순서대로 */
@@ -603,7 +658,7 @@
     'prodNm', 'salePrice', 'purchasePrice', 'prodStock',
     'prodTypeCd', 'prodStatusCd', 'advrtStmt',
     'categoryId', 'siteId', 'dlivTmpltId', 'simulYn',
-    'prodOptTypeLevel1Cd', 'prodOpts', '_preview_[prodOpts]', 'prodSkus', 'prodImages',
+    'prodOptTypeLevel1Cd', 'prodOpts', '_preview_[prodOpts]', 'prodSkus', 'prodImgs',
     'prodId',
     /* 회원 */
     'memberNm', 'loginId', 'memberEmail', 'memberPhone',
@@ -665,7 +720,7 @@
   /* 실제 body에 전송되는 최상위 key (또는 body 자체를 나타내는 xxxBody 패턴) */
   const _REAL_BODY_KEYS = new Set([
     /* 상품 시뮬 */
-    'prodOpts', 'prodImages',
+    'prodOpts', 'prodImgs',
     /* 도메인 body 전체 전송 (VoUtil.mapCopy(body, entity)) */
     'couponBody', 'discntBody', 'saveBody', 'eventBody', 'planBody',
     'memberBody', 'orderBody', 'claimBody', 'userBody', 'vendorBody', 'voucherBody',
@@ -751,9 +806,9 @@
   <!-- object → 3열 표: 키 | 값 | 한글명 -->
   <table v-else-if="isObject" style="width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed;">
     <colgroup>
-      <col style="width:150px;" />
+      <col style="width:130px;" />
+      <col style="width:30%;" />
       <col />
-      <col style="width:70px;" />
     </colgroup>
     <tbody>
       <tr v-for="e in objEntries" :key="e.key">
