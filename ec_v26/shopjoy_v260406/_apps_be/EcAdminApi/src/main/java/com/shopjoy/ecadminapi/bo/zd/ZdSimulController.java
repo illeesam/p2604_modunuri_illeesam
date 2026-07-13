@@ -364,8 +364,20 @@ public class ZdSimulController {
         if (body != null && body.get("prodStatusCd") instanceof String s && !s.isBlank()) {
             req.setProdStatusCd(s);
         }
-        req.setPageSize(50);
+        if (body != null && body.get("prodTypeCd") instanceof String t && !t.isBlank()) {
+            req.setProdTypeCd(t);
+        }
+        req.setPageSize(200);
         List<PdProdDto.Item> all = pdProdService.getList(req);
+        /* hasOpt 필터: "Y"=옵션있는 상품만, "N"=옵션없는 상품만 */
+        if (body != null && body.get("hasOpt") instanceof String ho && !ho.isBlank()) {
+            boolean wantOpt = "Y".equalsIgnoreCase(ho);
+            all = all.stream()
+                .filter(p -> wantOpt
+                    ? (p.getProdOptTypes() != null && !p.getProdOptTypes().isEmpty())
+                    : (p.getProdOptTypes() == null || p.getProdOptTypes().isEmpty()))
+                .toList();
+        }
         Collections.shuffle(all);
 
         List<Map<String, Object>> prods = all.stream().limit(count).map(p -> Map.<String, Object>of(

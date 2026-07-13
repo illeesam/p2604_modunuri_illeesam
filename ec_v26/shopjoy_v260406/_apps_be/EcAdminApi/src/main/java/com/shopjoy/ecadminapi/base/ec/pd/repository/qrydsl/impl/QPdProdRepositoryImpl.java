@@ -156,6 +156,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                     baseAndBrandId(search),
                     baseAndMdUserId(search),
                     baseAndProdStatusCd(search),
+                    baseAndProdTypeCd(search),
                     baseAndVendorId(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
@@ -187,6 +188,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 baseAndBrandId(search),
                 baseAndMdUserId(search),
                 baseAndProdStatusCd(search),
+                baseAndProdTypeCd(search),
                 baseAndVendorId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
@@ -264,6 +266,12 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private BooleanExpression baseAndVendorId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
                 ? pdProd.vendorId.eq(search.getVendorId()) : null;
+    }
+
+    /* prodTypeCd 정확 일치 */
+    private BooleanExpression baseAndProdTypeCd(PdProdDto.Request search) {
+        return search != null && StringUtils.hasText(search.getProdTypeCd())
+                ? pdProd.prodTypeCd.eq(search.getProdTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

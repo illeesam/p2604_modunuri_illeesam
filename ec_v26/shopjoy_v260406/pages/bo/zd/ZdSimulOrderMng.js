@@ -57,8 +57,7 @@
         /* 고정 지정 */
         fixedMemberId: '',
         fixedMemberNm: '',
-        fixedProdId: '',
-        fixedProdNm: '',
+        fixedProds: [],   /* [{ prodId, prodNm, salePrice, qty }] */
         fixedOrderId: '',
         /* 결제수단 가중치 */
         fixedPayMethod: '__weighted__',
@@ -175,11 +174,33 @@
         domCfg.fixedMemberNm = window.ZdSimulBase?._sanitize ? window.ZdSimulBase._sanitize(nm) : nm;
         memberPicker.show = false;
       };
+      const _prodEntry = (row) => {
+        const optTypes = (row.prodOptTypes || []).slice(0, 2);
+        const opts     = row.prodOpts || [];
+        /* 옵션유형별 선택 구조: [{ typeId, typeNm, choices:[{id,nm}], selectedId:'' }] */
+        const optSelects = optTypes.map(t => ({
+          typeId:     t.prodOptTypeId,
+          typeNm:     t.prodOptTypeNm || '',
+          choices:    opts.filter(o => o.prodOptTypeId === t.prodOptTypeId)
+                          .map(o => ({ id: o.prodOptId, nm: o.prodOptNm || o.prodOptVal || '' })),
+          selectedId: '',
+        }));
+        return {
+          prodId:      row.prodId,
+          prodNm:      row.prodNm || row.prodId,
+          prodTypeCd:  row.prodTypeCd || 'SINGLE',
+          salePrice:   row.salePrice || 0,
+          qty:         1,
+          optTypeNms:  optTypes.map(t => t.prodOptTypeNm || '').filter(Boolean),
+          optSelects,  /* 옵션 드롭다운 상태 */
+        };
+      };
       const onSelectProd = (row) => {
-        domCfg.fixedProdId = row.prodId;
-        domCfg.fixedProdNm = row.prodNm || row.prodId;
+        const already = domCfg.fixedProds.find(p => p.prodId === row.prodId);
+        if (!already) domCfg.fixedProds.push(_prodEntry(row));
         prodPicker.show = false;
       };
+      const onRemoveFixedProd = (idx) => { domCfg.fixedProds.splice(idx, 1); };
       const onSelectOrder = (row) => {
         domCfg.fixedOrderId = row.orderId;
         orderPicker.show = false;
@@ -194,12 +215,31 @@
           onSelectMember(row);
         } catch (_) { props.showToast('회원 랜덤 조회 실패', 'error'); }
       };
-      const onPickRandomProd = async () => {
+      /* type: 'SINGLE_NO_OPT'(단품) | 'SINGLE_OPT'(옵션) | 'SET'(세트) | 'GROUP'(묶음) */
+      const onPickRandomProd = async (type) => {
         try {
-          const rows = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 50 })).data?.data?.pageList || [];
-          if (!rows.length) return props.showToast('조회된 상품 없음', 'error');
-          const row = rows[Math.floor(Math.random() * rows.length)];
-          onSelectProd(row);
+          const params = { pageNo: 1, pageSize: 100 };
+          if (type === 'SET')   params.prodTypeCd = 'SET';
+          else if (type === 'GROUP') params.prodTypeCd = 'GROUP';
+          else params.prodTypeCd = 'SINGLE';
+          const rows = (await boApiSvc.pdProd.getPage(params)).data?.data?.pageList || [];
+          let pool = rows;
+          if (type === 'SINGLE_NO_OPT') {
+            pool = rows.filter(r => !r.prodOptTypes || r.prodOptTypes.length === 0);
+          } else if (type === 'SINGLE_OPT') {
+            pool = rows.filter(r => r.prodOptTypes && r.prodOptTypes.length > 0);
+          }
+          if (!pool.length) {
+            const lbl = type === 'SINGLE_NO_OPT' ? '단품' : type === 'SINGLE_OPT' ? '옵션상품' : type === 'SET' ? '세트' : type === 'GROUP' ? '묶음' : '';
+            return props.showToast((lbl ? lbl + ' 상품이 없습니다.' : '조회된 상품 없음'), 'error');
+          }
+          const row = pool[Math.floor(Math.random() * pool.length)];
+          const already = domCfg.fixedProds.find(p => p.prodId === row.prodId);
+          if (!already) {
+            domCfg.fixedProds.push(_prodEntry(row));
+          } else {
+            props.showToast('이미 추가된 상품입니다: ' + (row.prodNm || row.prodId), 'error');
+          }
         } catch (err) { props.showToast('상품 랜덤 조회 실패: ' + (err?.response?.data?.message || err?.message || ''), 'error', 0); }
       };
       const onPickRandomOrder = async () => {
@@ -240,8 +280,14 @@
           if (mode === 'create') {
             /* 상품: 고정 지정 or 랜덤 */
             let prods = [];
-            if (domCfg.fixedProdId) {
-              prods = [{ prodId: domCfg.fixedProdId, prodNm: domCfg.fixedProdNm, salePrice: domCfg.amtMin }];
+            if (domCfg.fixedProds && domCfg.fixedProds.length) {
+              prods = domCfg.fixedProds.map(p => ({
+                prodId: p.prodId, prodNm: p.prodNm, salePrice: p.salePrice || domCfg.amtMin, _fixedQty: p.qty,
+                /* 선택된 옵션값 목록 (선택된 항목만) */
+                selectedOpts: (p.optSelects || [])
+                  .filter(os => os.selectedId)
+                  .map(os => ({ prodOptTypeId: os.typeId, prodOptTypeNm: os.typeNm, prodOptId: os.selectedId, prodOptNm: (os.choices.find(c => c.id === os.selectedId) || {}).nm || '' })),
+              }));
             } else {
               const cnt = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
               const randRes = await boApi.post('/bo/zd/simul/order/rand-prod',
@@ -261,15 +307,28 @@
 
             if (!prods.length) return { ok: false, reason: '판매중 상품 없음' };
 
-            const cnt     = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
             const items   = [];
             let   totalAmt = 0;
-            for (let i = 0; i < cnt; i++) {
-              const p   = pick(prods);
-              const qty = randInt(1, 3);
-              const price = Math.min(Math.max(domCfg.amtMin / cnt, p.salePrice || randInt(domCfg.amtMin, domCfg.amtMax)), domCfg.amtMax / cnt);
-              items.push({ prodId: p.prodId, qty, unitPrice: Math.round(price), rowAmt: Math.round(price) * qty });
-              totalAmt += Math.round(price) * qty;
+            const isFixed = !!(domCfg.fixedProds && domCfg.fixedProds.length);
+            if (isFixed) {
+              /* 고정 상품 목록: 지정된 각 상품을 지정 수량으로 */
+              for (const p of prods) {
+                const qty = p._fixedQty || 1;
+                const price = p.salePrice || domCfg.amtMin;
+                const item = { prodId: p.prodId, qty, unitPrice: Math.round(price), rowAmt: Math.round(price) * qty };
+                if (p.selectedOpts && p.selectedOpts.length) item.selectedOpts = p.selectedOpts;
+                items.push(item);
+                totalAmt += Math.round(price) * qty;
+              }
+            } else {
+              const cnt = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
+              for (let i = 0; i < cnt; i++) {
+                const p   = pick(prods);
+                const qty = randInt(1, 3);
+                const price = Math.min(Math.max(domCfg.amtMin / cnt, p.salePrice || randInt(domCfg.amtMin, domCfg.amtMax)), domCfg.amtMax / cnt);
+                items.push({ prodId: p.prodId, qty, unitPrice: Math.round(price), rowAmt: Math.round(price) * qty });
+                totalAmt += Math.round(price) * qty;
+              }
             }
             const dlivFee = domCfg.addDlivFee && totalAmt < 50000 ? domCfg.dlivFeeAmt : 0;
             const payMethod = _pickPayMethod();
@@ -442,6 +501,25 @@
         { minKey: 'amtMin',       maxKey: 'amtMax'       },
       ]);
 
+      /* 상품유형 배지 — 인자 p(fixedProds 항목) 직접 받아 &&없이 처리 */
+      const fnProdBadgeStyle = (p) => {
+        const t = p.prodTypeCd; const o = p.optTypeNms && p.optTypeNms.length > 0;
+        if (t === 'SET')   return 'display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;white-space:nowrap;background:#fdf4ff;color:#9333ea;border:1px solid #e9d5ff;';
+        if (t === 'GROUP') return 'display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;white-space:nowrap;background:#fffbeb;color:#b45309;border:1px solid #fde68a;';
+        if (t === 'GIFT')  return 'display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;white-space:nowrap;background:#fdf2f8;color:#ec4899;border:1px solid #fbcfe8;';
+        return o
+          ? 'display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;white-space:nowrap;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;'
+          : 'display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;white-space:nowrap;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;';
+      };
+      const fnProdBadgeLabel = (p) => {
+        const t = p.prodTypeCd; const o = p.optTypeNms && p.optTypeNms.length > 0;
+        if (t === 'SET')   return '세트';
+        if (t === 'GROUP') return '묶음';
+        if (t === 'GIFT')  return '사은품';
+        return o ? '옵션' : '단품';
+      };
+      const fnProdHasOpt = (p) => !!(p.optTypeNms && p.optTypeNms.length);
+
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfPayMethodTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
@@ -453,7 +531,9 @@
         onOpenMemberPicker, onOpenProdPicker, onOpenOrderPicker, onOpenCouponPicker, onOpenDiscntPicker,
         onPickRandomMember, onPickRandomProd, onPickRandomOrder,
         onSelectMember, onSelectProd, onSelectOrder, onSelectCoupon, onSelectDiscnt,
+        onRemoveFixedProd,
         _loadMemberPicker, _loadProdPicker, _loadOrderPicker, _loadCouponPicker, _loadDiscntPicker,
+        fnProdBadgeStyle, fnProdBadgeLabel, fnProdHasOpt,
       };
     },
 
@@ -472,8 +552,8 @@
   <!-- 시뮬 대상 고정 지정 -->
   <div class="card" style="padding:12px 16px;margin-top:12px;">
     <div class="list-title">🎯 시뮬 대상 지정</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
-      <!-- 회원 지정 -->
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:10px;">
+      <!-- 회원/주문 지정 (왼쪽 열) -->
       <div>
         <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">👤 주문 회원 지정</div>
         <div style="display:flex;gap:5px;align-items:center;">
@@ -487,37 +567,86 @@
         </div>
         <div v-if="domCfg.fixedMemberId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedMemberId }}</div>
         <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 ACTIVE 회원 랜덤</div>
+        <!-- 수정 모드: 대상 주문 지정 -->
+        <div v-if="cfg.mode==='update'" style="margin-top:10px;">
+          <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">🛒 수정 대상 주문 지정</div>
+          <div style="display:flex;gap:5px;align-items:center;">
+            <input type="text" :value="domCfg.fixedOrderId || ''" readonly
+              style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;font-family:monospace;" />
+            <button v-if="domCfg.fixedOrderId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+              @click="domCfg.fixedOrderId=''">✕</button>
+            <button class="btn" style="height:28px;padding:0 8px;font-size:11px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;"
+              @click="onPickRandomOrder">랜덤</button>
+            <button class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenOrderPicker">선택</button>
+          </div>
+          <div v-if="!domCfg.fixedOrderId" style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 조건에 맞는 주문 랜덤</div>
+        </div>
       </div>
-      <!-- 상품 지정 -->
+      <!-- 상품 지정 (N개, 그리드) -->
       <div>
-        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">📦 주문 상품 지정</div>
-        <div style="display:flex;gap:5px;align-items:center;">
-          <input type="text" :value="domCfg.fixedProdNm || domCfg.fixedProdId || ''" readonly
-            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;" />
-          <button v-if="domCfg.fixedProdId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
-            @click="domCfg.fixedProdId='';domCfg.fixedProdNm=''">✕</button>
-          <button class="btn" style="height:28px;padding:0 8px;font-size:11px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;"
-            @click="onPickRandomProd">랜덤</button>
-          <button class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenProdPicker">선택</button>
+        <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;flex-wrap:wrap;">
+          <span style="font-size:11px;font-weight:600;color:#475569;">📦 주문 상품 지정</span>
+          <span style="font-size:10px;color:#64748b;margin-left:2px;">랜덤 추가</span>
+          <button class="btn" style="height:22px;padding:0 7px;font-size:10px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;border-radius:4px;"
+            @click="onPickRandomProd('SINGLE_NO_OPT')">단품</button>
+          <button class="btn" style="height:22px;padding:0 7px;font-size:10px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:4px;"
+            @click="onPickRandomProd('SINGLE_OPT')">옵션</button>
+          <button class="btn" style="height:22px;padding:0 7px;font-size:10px;background:#fdf4ff;color:#9333ea;border:1px solid #e9d5ff;border-radius:4px;"
+            @click="onPickRandomProd('SET')">세트</button>
+          <button class="btn" style="height:22px;padding:0 7px;font-size:10px;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:4px;"
+            @click="onPickRandomProd('GROUP')">묶음</button>
+          <span style="font-size:10px;color:#cbd5e1;margin:0 2px;">|</span>
+          <button class="btn btn_detail" style="height:22px;padding:0 8px;font-size:10px;" @click="onOpenProdPicker">선택 추가</button>
+          <button v-if="domCfg.fixedProds.length" class="btn" style="height:22px;padding:0 8px;font-size:10px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:4px;margin-left:auto;"
+            @click="domCfg.fixedProds=[]">전체 삭제</button>
         </div>
-        <div v-if="domCfg.fixedProdId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedProdId }}</div>
-        <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 판매중 상품 랜덤</div>
+        <table v-if="domCfg.fixedProds.length" style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead>
+            <tr style="background:#f1f5f9;">
+              <th style="width:26px;padding:4px 6px;border:1px solid #e2e8f0;text-align:center;font-weight:600;color:#475569;">No</th>
+              <th style="width:46px;padding:4px 5px;border:1px solid #e2e8f0;text-align:center;font-weight:600;color:#475569;">유형</th>
+              <th style="padding:4px 8px;border:1px solid #e2e8f0;text-align:left;font-weight:600;color:#475569;">상품명</th>
+              <th style="width:80px;padding:4px 6px;border:1px solid #e2e8f0;text-align:right;font-weight:600;color:#475569;">판매가</th>
+              <th style="width:70px;padding:4px 6px;border:1px solid #e2e8f0;text-align:center;font-weight:600;color:#475569;">수량</th>
+              <th style="width:28px;padding:4px 6px;border:1px solid #e2e8f0;text-align:center;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(p, i) in domCfg.fixedProds" :key="p.prodId">
+              <td style="padding:3px 6px;border:1px solid #e2e8f0;text-align:center;color:#94a3b8;">{{ i+1 }}</td>
+              <td style="padding:3px 5px;border:1px solid #e2e8f0;text-align:center;">
+                <span :style="fnProdBadgeStyle(p)">{{ fnProdBadgeLabel(p) }}</span>
+              </td>
+              <td style="padding:3px 8px;border:1px solid #e2e8f0;min-width:0;">
+                <div style="display:flex;align-items:center;gap:5px;min-width:0;">
+                  <div style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="p.prodNm + ' (' + p.prodId + ')'">{{ p.prodNm }}</div>
+                  <!-- 옵션 드롭다운 (옵션상품만, 한 줄) -->
+                  <div v-if="fnProdHasOpt(p)" style="display:flex;align-items:center;gap:3px;flex-shrink:0;">
+                    <template v-for="(os, oi) in p.optSelects" :key="os.typeId">
+                      <span v-if="oi > 0" style="font-size:10px;color:#cbd5e1;">/</span>
+                      <select v-model="os.selectedId"
+                        style="height:20px;font-size:10px;border:1px solid #c4b5fd;border-radius:3px;padding:0 3px;background:#faf5ff;color:#6d28d9;max-width:80px;">
+                        <option value="">{{ os.typeNm }}</option>
+                        <option v-for="c in os.choices" :key="c.id" :value="c.id">{{ c.nm }}</option>
+                      </select>
+                    </template>
+                  </div>
+                </div>
+              </td>
+              <td style="padding:3px 6px;border:1px solid #e2e8f0;text-align:right;color:#334155;">{{ (p.salePrice||0).toLocaleString() }}원</td>
+              <td style="padding:2px 4px;border:1px solid #e2e8f0;text-align:center;">
+                <input type="number" min="1" max="99" v-model.number="p.qty"
+                  style="width:52px;height:22px;text-align:center;border:1px solid #cbd5e1;border-radius:3px;font-size:11px;padding:0 4px;" />
+              </td>
+              <td style="padding:2px 4px;border:1px solid #e2e8f0;text-align:center;">
+                <button class="btn" style="height:20px;width:20px;padding:0;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:3px;line-height:1;"
+                  @click="onRemoveFixedProd(i)">✕</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div v-else style="font-size:10px;color:#94a3b8;padding:4px 0;">미지정 시 판매중 상품 랜덤 선택</div>
       </div>
-      <!-- 수정 대상 주문 지정 (수정 모드) -->
-      <div v-if="cfg.mode==='update'">
-        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">🛒 수정 대상 주문 지정</div>
-        <div style="display:flex;gap:5px;align-items:center;">
-          <input type="text" :value="domCfg.fixedOrderId || ''" readonly
-            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;font-family:monospace;" />
-          <button v-if="domCfg.fixedOrderId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
-            @click="domCfg.fixedOrderId=''">✕</button>
-          <button class="btn" style="height:28px;padding:0 8px;font-size:11px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;"
-            @click="onPickRandomOrder">랜덤</button>
-          <button class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenOrderPicker">선택</button>
-        </div>
-        <div v-if="!domCfg.fixedOrderId" style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 조건에 맞는 주문 랜덤</div>
-      </div>
-      <div v-else style="font-size:10px;color:#94a3b8;padding-top:24px;">※ 수정 모드 전환 시 주문도 지정 가능</div>
     </div>
 
     <!-- 프로모션 적용 섹션 -->
