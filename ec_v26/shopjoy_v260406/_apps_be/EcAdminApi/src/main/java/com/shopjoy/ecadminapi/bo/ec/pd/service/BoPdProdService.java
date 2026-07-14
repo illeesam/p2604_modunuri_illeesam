@@ -3,12 +3,10 @@ package com.shopjoy.ecadminapi.bo.ec.pd.service;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdImgDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptDto;
-import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptTypeDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdSkuDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdImgService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdOptService;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdOptTypeService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdSkuService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +27,6 @@ public class BoPdProdService {
 
     private final PdProdService         pdProdService;
     private final PdProdImgService      pdProdImgService;
-    private final PdProdOptTypeService  pdProdOptTypeService;
     private final PdProdOptService      pdProdOptService;
     private final PdProdSkuService      pdProdSkuService;
 
@@ -64,10 +61,6 @@ public class BoPdProdService {
         imgReq.setProdId(prodId);
         prod.setProdImgs(pdProdImgService.getList(imgReq));
 
-        // 옵션유형 목록 (pd_prod_opt_type)
-        PdProdOptTypeDto.Request typeReq = new PdProdOptTypeDto.Request();
-        typeReq.setProdId(prodId);
-        prod.setProdOptTypes(pdProdOptTypeService.getList(typeReq));
 
         // 옵션값 목록 (pd_prod_opt) — prodId 직접 필터
         PdProdOptDto.Request optReq = new PdProdOptDto.Request();
@@ -100,12 +93,6 @@ public class BoPdProdService {
         Map<String, List<PdProdImgDto.Item>> imgMap = pdProdImgService.getList(imgReq).stream()
             .collect(Collectors.groupingBy(PdProdImgDto.Item::getProdId));
 
-        // 옵션유형 일괄조회 (pd_prod_opt_type)
-        PdProdOptTypeDto.Request typeReq = new PdProdOptTypeDto.Request();
-        typeReq.setProdIds(prodIds);
-        Map<String, List<PdProdOptTypeDto.Item>> typeMap = pdProdOptTypeService.getList(typeReq).stream()
-            .collect(Collectors.groupingBy(PdProdOptTypeDto.Item::getProdId));
-
         // 옵션값 일괄조회 (pd_prod_opt) — prodId 직접 보유하므로 JOIN 없음
         PdProdOptDto.Request optReq = new PdProdOptDto.Request();
         optReq.setProdIds(prodIds);
@@ -122,7 +109,6 @@ public class BoPdProdService {
         for (PdProdDto.Item prod : list) {
             String pid = prod.getProdId();
             prod.setProdImgs(imgMap.getOrDefault(pid, List.of()));
-            prod.setProdOptTypes(typeMap.getOrDefault(pid, List.of()));
             prod.setProdOpts(optMap.getOrDefault(pid, List.of()));
             prod.setProdSkus(skuMap.getOrDefault(pid, List.of()));
         }

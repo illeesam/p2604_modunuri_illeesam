@@ -84,9 +84,11 @@ public class PdProdDto {
         private String prodStatusCdNm;
         private String prodTypeCdNm;
         private String sizeInfoCdNm;
+        private String simulYn;
+        private String prodOptType1Nm;   // 옵션유형1명 (예: 색상) — pd_prod 직접 컬럼
+        private String prodOptType2Nm;   // 옵션유형2명 (예: 사이즈) — pd_prod 직접 컬럼
         // ── Tier 1 상세 연관정보 (getDetail 시 채움) ──
         private List<PdProdImgDto.Item>         prodImgs;     // 상품 이미지 목록
-        private List<PdProdOptTypeDto.Item>     prodOptTypes; // 옵션유형 목록 (pd_prod_opt_type)
         private List<PdProdOptDto.Item>         prodOpts;     // 옵션값 목록 (pd_prod_opt)
         private List<PdProdSkuDto.Item>         prodSkus;     // SKU 목록
     }

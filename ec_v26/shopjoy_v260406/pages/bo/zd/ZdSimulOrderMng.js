@@ -175,23 +175,33 @@
         memberPicker.show = false;
       };
       const _prodEntry = (row) => {
-        const optTypes = (row.prodOptTypes || []).slice(0, 2);
-        const opts     = row.prodOpts || [];
-        /* 옵션유형별 선택 구조: [{ typeId, typeNm, choices:[{id,nm}], selectedId:'' }] */
-        const optSelects = optTypes.map(t => ({
-          typeId:     t.prodOptTypeId,
-          typeNm:     t.prodOptTypeNm || '',
-          choices:    opts.filter(o => o.prodOptTypeId === t.prodOptTypeId)
-                          .map(o => ({ id: o.prodOptId, nm: o.prodOptNm || o.prodOptVal || '' })),
-          selectedId: '',
-        }));
+        const opts = row.prodOpts || [];
+        /* pd_prod_opt_type 흡수 후: prod_opt_type1_nm / prod_opt_type2_nm 직접 컬럼 사용 */
+        /* optSelects: level=1 옵션, level=2 옵션 각각 구성 */
+        const optSelects = [];
+        if (row.prodOptType1Nm) {
+          optSelects.push({
+            typeNm:     row.prodOptType1Nm,
+            choices:    opts.filter(o => o.prodOptTypeLevel === 1 || o.prodOptTypeLevel === '1')
+                            .map(o => ({ id: o.prodOptId, nm: o.prodOptNm || o.prodOptVal || '' })),
+            selectedId: '',
+          });
+        }
+        if (row.prodOptType2Nm) {
+          optSelects.push({
+            typeNm:     row.prodOptType2Nm,
+            choices:    opts.filter(o => o.prodOptTypeLevel === 2 || o.prodOptTypeLevel === '2')
+                            .map(o => ({ id: o.prodOptId, nm: o.prodOptNm || o.prodOptVal || '' })),
+            selectedId: '',
+          });
+        }
         return {
           prodId:      row.prodId,
           prodNm:      row.prodNm || row.prodId,
           prodTypeCd:  row.prodTypeCd || 'SINGLE',
           salePrice:   row.salePrice || 0,
           qty:         1,
-          optTypeNms:  optTypes.map(t => t.prodOptTypeNm || '').filter(Boolean),
+          optTypeNms:  [row.prodOptType1Nm, row.prodOptType2Nm].filter(Boolean),
           optSelects,  /* 옵션 드롭다운 상태 */
         };
       };
@@ -225,9 +235,9 @@
           const rows = (await boApiSvc.pdProd.getPage(params)).data?.data?.pageList || [];
           let pool = rows;
           if (type === 'SINGLE_NO_OPT') {
-            pool = rows.filter(r => !r.prodOptTypes || r.prodOptTypes.length === 0);
+            pool = rows.filter(r => !r.prodOptType1Nm);
           } else if (type === 'SINGLE_OPT') {
-            pool = rows.filter(r => r.prodOptTypes && r.prodOptTypes.length > 0);
+            pool = rows.filter(r => !!r.prodOptType1Nm);
           }
           if (!pool.length) {
             const lbl = type === 'SINGLE_NO_OPT' ? '단품' : type === 'SINGLE_OPT' ? '옵션상품' : type === 'SET' ? '세트' : type === 'GROUP' ? '묶음' : '';

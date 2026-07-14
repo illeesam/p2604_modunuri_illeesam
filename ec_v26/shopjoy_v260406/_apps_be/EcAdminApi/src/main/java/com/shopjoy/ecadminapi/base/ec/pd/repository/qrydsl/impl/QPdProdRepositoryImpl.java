@@ -67,6 +67,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.adltYn, pdProd.sameDayDlivYn, pdProd.soldOutYn, pdProd.dlivTmpltId,
                         pdProd.couponUseYn, pdProd.saveUseYn, pdProd.discntUseYn,
                         pdProd.advrtStmt, pdProd.advrtStartDate, pdProd.advrtEndDate,
+                        pdProd.simulYn, pdProd.prodOptType1Nm, pdProd.prodOptType2Nm,
                         pdProd.regBy, pdProd.regDate, pdProd.updBy, pdProd.updDate,
                         pdCategory.categoryNm.as("cateNm"),
                         syBrand.brandNm.as("brandNm"),
@@ -117,6 +118,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.adltYn, pdProd.sameDayDlivYn, pdProd.soldOutYn, pdProd.dlivTmpltId,
                         pdProd.couponUseYn, pdProd.saveUseYn, pdProd.discntUseYn,
                         pdProd.advrtStmt, pdProd.advrtStartDate, pdProd.advrtEndDate,
+                        pdProd.simulYn, pdProd.prodOptType1Nm, pdProd.prodOptType2Nm,
                         pdProd.regBy, pdProd.regDate, pdProd.updBy, pdProd.updDate,
                         // joined
                         pdCategory.categoryNm.as("cateNm"),

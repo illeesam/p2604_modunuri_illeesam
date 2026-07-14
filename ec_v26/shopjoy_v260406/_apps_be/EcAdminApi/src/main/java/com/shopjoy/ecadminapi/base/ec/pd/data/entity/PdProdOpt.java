@@ -71,4 +71,8 @@ public class PdProdOpt extends BaseEntity {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
+
+    @Comment("옵션유형레벨 (1 또는 2) — pd_prod_opt_type 흡수")
+    @Column(name = "prod_opt_type_level")
+    private Integer prodOptTypeLevel;
 }

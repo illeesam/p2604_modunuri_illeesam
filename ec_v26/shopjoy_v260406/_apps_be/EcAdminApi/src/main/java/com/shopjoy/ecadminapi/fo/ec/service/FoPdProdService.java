@@ -44,7 +44,6 @@ public class FoPdProdService {
     private final PdProdRepository      pdProdRepository;
     private final PdProdService         pdProdService;
     private final PdProdImgService      pdProdImgService;
-    private final PdProdOptTypeService  pdProdOptTypeService;
     private final PdProdOptService      pdProdOptService;
     private final PdProdSkuService      pdProdSkuService;
     private final PdProdContentService  pdProdContentService;
@@ -98,11 +97,6 @@ public class FoPdProdService {
         Map<String, List<PdProdImgDto.Item>> imgMap = pdProdImgService.getList(imgReq).stream()
             .collect(java.util.stream.Collectors.groupingBy(PdProdImgDto.Item::getProdId));
 
-        // 옵션유형 일괄조회 → Map<prodId, List<optType>>
-        PdProdOptTypeDto.Request optTypeReq = new PdProdOptTypeDto.Request();
-        optTypeReq.setProdIds(prodIds);
-        Map<String, List<PdProdOptTypeDto.Item>> optTypeMap = pdProdOptTypeService.getList(optTypeReq).stream()
-            .collect(java.util.stream.Collectors.groupingBy(PdProdOptTypeDto.Item::getProdId));
 
         // 옵션값 일괄조회 → Map<prodId, List<opt>> (pd_prod_opt 에 prodId 직접 보유)
         PdProdOptDto.Request optReq = new PdProdOptDto.Request();
@@ -120,7 +114,6 @@ public class FoPdProdService {
         for (PdProdDto.Item prod : list) {
             String pid = prod.getProdId();
             prod.setProdImgs(imgMap.getOrDefault(pid, List.of()));         // 이미지목록
-            prod.setProdOptTypes(optTypeMap.getOrDefault(pid, List.of())); // 옵션유형목록
             prod.setProdOpts(itemMap.getOrDefault(pid, List.of()));        // 옵션값목록
             prod.setProdSkus(skuMap.getOrDefault(pid, List.of()));         // SKU목록
         }
@@ -146,9 +139,6 @@ public class FoPdProdService {
         List<PdProdImgDto.Item> prodImgs = pdProdImgService.getList(imgReq);
 
         // 하위 옵션유형 목록 조회 (prodId 기준)
-        PdProdOptTypeDto.Request optTypeReq = new PdProdOptTypeDto.Request();
-        optTypeReq.setProdId(prodId);
-        List<PdProdOptTypeDto.Item> prodOptTypes = pdProdOptTypeService.getList(optTypeReq);
 
         // 하위 옵션값 목록 조회 (prodId 기준)
         PdProdOptDto.Request optReq = new PdProdOptDto.Request();
@@ -161,7 +151,6 @@ public class FoPdProdService {
         List<PdProdSkuDto.Item> prodSkus = pdProdSkuService.getList(skuReq);
 
         prod.setProdImgs(prodImgs);           // 이미지목록
-        prod.setProdOptTypes(prodOptTypes);   // 옵션유형목록
         prod.setProdOpts(prodOpts);           // 옵션값목록
         prod.setProdSkus(prodSkus);           // SKU목록
     }

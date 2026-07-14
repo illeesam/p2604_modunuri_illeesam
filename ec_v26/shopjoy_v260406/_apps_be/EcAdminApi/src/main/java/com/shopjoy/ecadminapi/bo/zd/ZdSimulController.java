@@ -374,8 +374,8 @@ public class ZdSimulController {
             boolean wantOpt = "Y".equalsIgnoreCase(ho);
             all = all.stream()
                 .filter(p -> wantOpt
-                    ? (p.getProdOptTypes() != null && !p.getProdOptTypes().isEmpty())
-                    : (p.getProdOptTypes() == null || p.getProdOptTypes().isEmpty()))
+                    ? (p.getProdOptType1Nm() != null)
+                    : (p.getProdOptType1Nm() == null))
                 .toList();
         }
         Collections.shuffle(all);
