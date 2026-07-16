@@ -258,6 +258,7 @@
       const suffix = cfg.addSuffix ? '_' + _nowSuffix() : '';
       /* boApi의 변경성 메서드를 dry-run proxy로 임시 교체 — get은 실제 호출(목록 조회 필요) */
       const _api = window.boApi;
+      window._zdRealBoApi = _api; /* runFn 내부에서 실제 조회 API 직접 호출용 */
       const _captured = [];
       const _dryMethod = (method) => (url, body) => {
         _captured.push({ method: method.toUpperCase(), url, body: body || null });
@@ -284,6 +285,7 @@
         window.dispatchEvent(new CustomEvent('zd-preview', { detail: { json: JSON.stringify({ error: e?.message || String(e) }, null, 2) } }));
       } finally {
         window.boApi = _api;
+        window._zdRealBoApi = null;
       }
     };
 

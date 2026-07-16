@@ -80,27 +80,15 @@
       });
 
       /* ── picker 모달 상태 ──────────────────────────── */
-      const memberPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+      const memberPicker = reactive({ show: false, searchValue: '', rows: [], loading: false, pageNo: 1, pageSize: 10, pageSizes: [10, 20, 30], pageTotalCount: 0, pageTotalPage: 1 });
       const prodPicker   = reactive({ show: false, searchValue: '', rows: [], loading: false });
-      const orderPicker  = reactive({ show: false, searchValue: '', rows: [], loading: false });
+      const orderPicker  = reactive({ show: false, searchValue: '', rows: [], loading: false, pageNo: 1, pageSize: 10, pageSizes: [10, 20, 30], pageTotalCount: 0, pageTotalPage: 1 });
       const couponPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
       const discntPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
 
-      const onOpenMemberPicker = async () => {
-        memberPicker.show = true;
-        memberPicker.searchValue = '';
-        await _loadMemberPicker();
-      };
-      const onOpenProdPicker = async () => {
-        prodPicker.show = true;
-        prodPicker.searchValue = '';
-        await _loadProdPicker();
-      };
-      const onOpenOrderPicker = async () => {
-        orderPicker.show = true;
-        orderPicker.searchValue = '';
-        await _loadOrderPicker();
-      };
+      const onOpenMemberPicker = async () => { memberPicker.show = true; memberPicker.pageNo = 1; memberPicker.searchValue = ''; await _loadMemberPicker(); };
+      const onOpenProdPicker = async () => { prodPicker.show = true; prodPicker.searchValue = ''; await _loadProdPicker(); };
+      const onOpenOrderPicker = async () => { orderPicker.show = true; orderPicker.pageNo = 1; orderPicker.searchValue = ''; await _loadOrderPicker(); };
       const onOpenCouponPicker = async () => {
         couponPicker.show = true;
         couponPicker.searchValue = '';
@@ -116,10 +104,13 @@
         memberPicker.loading = true;
         try {
           const res = await boApiSvc.mbMember.getPage({
-            pageNo: 1, pageSize: 30, memberStatusCd: 'ACTIVE',
+            pageNo: memberPicker.pageNo, pageSize: memberPicker.pageSize, memberStatusCd: 'ACTIVE',
             ...(memberPicker.searchValue ? { searchValue: memberPicker.searchValue, searchType: 'memberId,memberNm,loginId' } : {}),
           });
-          memberPicker.rows = res.data?.data?.pageList || [];
+          const d = res.data?.data || {};
+          memberPicker.rows = d.pageList || [];
+          memberPicker.pageTotalCount = d.pageTotalCount || 0;
+          memberPicker.pageTotalPage  = d.pageTotalPage  || 1;
         } catch (_) { memberPicker.rows = []; }
         memberPicker.loading = false;
       };
@@ -138,10 +129,13 @@
         orderPicker.loading = true;
         try {
           const res = await boApiSvc.odOrder.getPage({
-            pageNo: 1, pageSize: 30,
+            pageNo: orderPicker.pageNo, pageSize: orderPicker.pageSize,
             ...(orderPicker.searchValue ? { searchValue: orderPicker.searchValue, searchType: 'orderId' } : {}),
           });
-          orderPicker.rows = res.data?.data?.pageList || [];
+          const d = res.data?.data || {};
+          orderPicker.rows = d.pageList || [];
+          orderPicker.pageTotalCount = d.pageTotalCount || 0;
+          orderPicker.pageTotalPage  = d.pageTotalPage  || 1;
         } catch (_) { orderPicker.rows = []; }
         orderPicker.loading = false;
       };
@@ -286,7 +280,7 @@
         uiNm: '주문 시뮬레이터',
         label: '시뮬주문',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, simulYn, randInt, pick }) => {
+        runFn: async ({ mode, simulYn, randInt, pick, previewOnly }) => {
           if (mode === 'create') {
             /* 상품: 고정 지정 or 랜덤 */
             let prods = [];
@@ -300,7 +294,9 @@
               }));
             } else {
               const cnt = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
-              const randRes = await boApi.post('/bo/zd/simul/order/rand-prod',
+              /* previewOnly: dry-run 프록시가 post를 mock하므로 실제 boApi(원본)로 직접 호출 */
+              const _realBoApi = window._zdRealBoApi || window.boApi;
+              const randRes = await _realBoApi.post('/bo/zd/simul/order/rand-prod',
                 { count: Math.max(cnt, 5) }, coUtil.cofApiHdr('주문시뮬', '상품조회'));
               prods = randRes?.data?.data?.prods || [];
             }
@@ -543,6 +539,8 @@
         onSelectMember, onSelectProd, onSelectOrder, onSelectCoupon, onSelectDiscnt,
         onRemoveFixedProd,
         _loadMemberPicker, _loadProdPicker, _loadOrderPicker, _loadCouponPicker, _loadDiscntPicker,
+        onMemberPickerPage: async (n) => { memberPicker.pageNo = n; await _loadMemberPicker(); },
+        onOrderPickerPage:  async (n) => { orderPicker.pageNo  = n; await _loadOrderPicker(); },
         fnProdBadgeStyle, fnProdBadgeLabel, fnProdHasOpt,
       };
     },
@@ -798,35 +796,35 @@
   <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- 회원 picker 모달 -->
-  <bo-modal :show="memberPicker.show" title="회원 선택" @close="memberPicker.show=false" box-width="600px">
+  <bo-modal :show="memberPicker.show" title="시뮬 회원 선택" @close="memberPicker.show=false" box-width="660px">
     <div style="padding:12px 0 8px;">
       <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="memberPicker.searchValue" placeholder="이름 / 이메일 / ID 검색" @keyup.enter="_loadMemberPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadMemberPicker">조회</button>
+        <input type="text" v-model="memberPicker.searchValue" placeholder="이름 / 이메일 / 회원ID 검색" @keyup.enter="()=>{ memberPicker.pageNo=1; _loadMemberPicker(); }"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:6px;" />
+        <button class="btn btn_search" style="height:32px;padding:0 14px;" @click="()=>{ memberPicker.pageNo=1; _loadMemberPicker(); }">조회</button>
       </div>
-      <div v-if="memberPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th>
-          <th>ID</th>
-          <th>이름</th>
-          <th>이메일</th>
-          <th>상태</th>
-          <th style="width:60px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!memberPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in memberPicker.rows" :key="r.memberId" style="cursor:pointer;" @click="onSelectMember(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:11px;">{{ r.memberId }}</td>
-            <td>{{ r.memberNm }}</td>
-            <td style="font-size:11px;color:#64748b;">{{ r.loginId }}</td>
-            <td style="text-align:center;"><span class="badge badge-green" style="font-size:10px;">{{ r.memberStatusCd }}</span></td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid
+        :columns="[
+          { key:'_no', label:'번호', width:'44px', align:'center', fmt:(_,r,i)=>(memberPicker.pageNo-1)*memberPicker.pageSize+(i+1) },
+          { key:'memberId', label:'회원ID', width:'160px', cellStyle:'font-family:monospace;font-size:11px;' },
+          { key:'memberNm', label:'이름', width:'90px' },
+          { key:'loginId', label:'이메일/로그인ID', cellStyle:'font-size:11px;color:#64748b;' },
+          { key:'memberStatusCd', label:'상태', width:'70px', align:'center', badge:(r)=>r.memberStatusCd==='ACTIVE'?'badge-green':'badge-gray' },
+          { key:'btn_select', label:'선택', width:'60px', align:'center' },
+        ]"
+        :rows="memberPicker.rows"
+        :loading="memberPicker.loading"
+        :pager="memberPicker"
+        grid-id="memberPickerGrid"
+        row-clickable
+        @cell-click="(e)=>{ if(e.colKey!=='btn_select') onSelectMember(e.row); }"
+        @row-click="(r)=>onSelectMember(r)"
+      >
+        <template #cell-btn_select="{ row }">
+          <button class="btn btn_select" style="font-size:11px;padding:2px 10px;height:24px;" @click.stop="onSelectMember(row)">선택</button>
+        </template>
+      </bo-grid>
+      <bo-pager :pager="memberPicker" style="margin-top:8px;" :on-set-page="onMemberPickerPage" :on-size-change="()=>{ memberPicker.pageNo=1; _loadMemberPicker(); }" />
     </div>
   </bo-modal>
 
@@ -930,35 +928,34 @@
   </bo-modal>
 
   <!-- 주문 picker 모달 -->
-  <bo-modal :show="orderPicker.show" title="주문 선택" @close="orderPicker.show=false" box-width="620px">
+  <bo-modal :show="orderPicker.show" title="시뮬 주문 선택" @close="orderPicker.show=false" box-width="700px">
     <div style="padding:12px 0 8px;">
       <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="orderPicker.searchValue" placeholder="주문ID 검색" @keyup.enter="_loadOrderPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;font-family:monospace;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadOrderPicker">조회</button>
+        <input type="text" v-model="orderPicker.searchValue" placeholder="주문ID 검색" @keyup.enter="()=>{ orderPicker.pageNo=1; _loadOrderPicker(); }"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:6px;font-family:monospace;" />
+        <button class="btn btn_search" style="height:32px;padding:0 14px;" @click="()=>{ orderPicker.pageNo=1; _loadOrderPicker(); }">조회</button>
       </div>
-      <div v-if="orderPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th>
-          <th>주문ID</th>
-          <th>주문자</th>
-          <th>상태</th>
-          <th style="text-align:right;">결제금액</th>
-          <th style="width:60px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!orderPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in orderPicker.rows" :key="r.orderId" style="cursor:pointer;" @click="onSelectOrder(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:11px;">{{ r.orderId }}</td>
-            <td>{{ r.memberNm || '-' }}</td>
-            <td style="text-align:center;"><span class="badge badge-blue" style="font-size:10px;">{{ r.orderStatusCd }}</span></td>
-            <td style="text-align:right;">{{ (r.totalPayAmt||0).toLocaleString() }}원</td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid
+        :columns="[
+          { key:'_no', label:'번호', width:'44px', align:'center', fmt:(_,r,i)=>(orderPicker.pageNo-1)*orderPicker.pageSize+(i+1) },
+          { key:'orderId', label:'주문ID', width:'180px', cellStyle:'font-family:monospace;font-size:11px;' },
+          { key:'memberNm', label:'주문자', width:'90px', fmt:(v)=>v||'-' },
+          { key:'orderStatusCd', label:'상태', width:'90px', align:'center', badge:(r)=>({PENDING:'badge-gray',PAID:'badge-blue',PREPARING:'badge-orange',SHIPPED:'badge-purple',COMPLT:'badge-green',COMPLT:'badge-green'}[r.orderStatusCd]||'badge-gray') },
+          { key:'totalPayAmt', label:'결제금액', width:'100px', align:'right', fmt:(v)=>(v||0).toLocaleString()+'원' },
+          { key:'btn_select', label:'선택', width:'60px', align:'center' },
+        ]"
+        :rows="orderPicker.rows"
+        :loading="orderPicker.loading"
+        :pager="orderPicker"
+        grid-id="orderPickerGrid"
+        row-clickable
+        @row-click="(r)=>onSelectOrder(r)"
+      >
+        <template #cell-btn_select="{ row }">
+          <button class="btn btn_select" style="font-size:11px;padding:2px 10px;height:24px;" @click.stop="onSelectOrder(row)">선택</button>
+        </template>
+      </bo-grid>
+      <bo-pager :pager="orderPicker" style="margin-top:8px;" :on-set-page="onOrderPickerPage" :on-size-change="()=>{ orderPicker.pageNo=1; _loadOrderPicker(); }" />
     </div>
   </bo-modal>
 

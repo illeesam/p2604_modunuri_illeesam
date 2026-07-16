@@ -201,12 +201,14 @@
               siteId: defaults.value.siteId || null,
               dlivTmpltId: defaults.value.dlivTmpltId || null,
               simulYn: simulYn || 'Y',
+              prodId: tmpProdId,    /* 상품 임시 ID */
               /* 항상 포함 — 값 없으면 null/[] */
-              prodOptTypeLevel1Cd: null, /* pd_prod.prod_opt_type_level1_cd */
+              prodOptStdCd: null,   /* pd_prod.prod_opt_std_cd */
+              prodOptType1Cd: null, /* pd_prod.prod_opt_type1_cd */
+              prodOptType2Cd: null, /* pd_prod.prod_opt_type2_cd */
               prodOpts:    [],      /* pd_prod_opt[] */
               prodSkus:    [],      /* pd_prod_sku[] (참고) */
               prodImgs:  [],      /* pd_prod_img[] */
-              prodId: tmpProdId,    /* 상품 임시 ID */
             };
             /* 옵션형: 프리셋 기반 opt1/opt2 풀 선택 후 count range 기준 슬라이스 */
             let opt1List = null, opt2List = null;
@@ -229,8 +231,10 @@
               opt2List = pool2.slice(0, o2cnt);
               const grp1Nm = preset.opt1LabelType === 'color' ? '색상' : preset.opt1LabelType === 'size' ? '사이즈' : '옵션1';
               const grp2Nm = preset.opt2LabelType === 'size' ? '사이즈' : preset.opt2LabelType === 'color' ? '색상' : '옵션2';
-              /* 상품 레벨 옵션 1단 분류 코드 (pd_prod.prod_opt_type_level1_cd) */
-              body.prodOptTypeLevel1Cd = preset.cd;
+              /* 상품 레벨 옵션 분류 코드 */
+              body.prodOptStdCd   = preset.cd;
+              body.prodOptType1Cd = preset.opt1LabelType.toUpperCase();
+              body.prodOptType2Cd = preset.opt2LabelType.toUpperCase();
               /* 옵션항목 임시 ID: 본 ID(prodOptId)에 tmp-opt1-/tmp-opt2- 접두어 */
               const _pad2 = (n) => String(n + 1).padStart(2, '0');
               const opt1Items = opt1List.map((nm, i) => ({
@@ -245,14 +249,15 @@
               }));
               /* 실제 전송 body: prodOpts — pd_prod_opt_type/pd_prod_opt Entity 컬럼명 기준 */
               body.prodOpts = [
-                { prodOptTypeNm: grp1Nm, prodOptTypeLevel: 1, level1Cd: preset.cd, level2Cd: preset.cd + '_1', sortOrd: 1, prodOpts: opt1Items },
-                { prodOptTypeNm: grp2Nm, prodOptTypeLevel: 2, level1Cd: preset.cd, level2Cd: preset.cd + '_2', sortOrd: 2, prodOpts: opt2Items },
+                { prodOptTypeNm: grp1Nm, prodOptTypeCd: preset.opt1LabelType.toUpperCase(), prodOptTypeLevel: 1, level1Cd: preset.cd, level2Cd: preset.cd + '_1', sortOrd: 1, prodOpts: opt1Items },
+                { prodOptTypeNm: grp2Nm, prodOptTypeCd: preset.opt2LabelType.toUpperCase(), prodOptTypeLevel: 2, level1Cd: preset.cd, level2Cd: preset.cd + '_2', sortOrd: 2, prodOpts: opt2Items },
               ];
               if (previewOnly) {
                 /* prodOpts: 실제 전송 key. pd_prod_opt_type / pd_prod_opt Entity 컬럼명 기준 표시 */
                 body['_preview_[prodOpts]'] = body.prodOpts.map(grp => ({
                   prodOptTypeId: 'tmp-opt-type-' + grp.prodOptTypeLevel,
                   prodOptTypeNm: grp.prodOptTypeNm,
+                  prodOptTypeCd: grp.prodOptTypeCd,
                   prodOptTypeLevel: grp.prodOptTypeLevel,
                   level1Cd: grp.level1Cd,
                   level2Cd: grp.level2Cd,

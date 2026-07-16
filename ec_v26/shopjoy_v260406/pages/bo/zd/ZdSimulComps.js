@@ -658,8 +658,8 @@
     'prodNm', 'salePrice', 'purchasePrice', 'prodStock',
     'prodTypeCd', 'prodStatusCd', 'advrtStmt',
     'categoryId', 'siteId', 'dlivTmpltId', 'simulYn',
-    'prodOptTypeLevel1Cd', 'prodOpts', '_preview_[prodOpts]', 'prodSkus', 'prodImgs',
-    'prodId',
+    'prodId', 'prodOptStdCd', 'prodOptType1Cd', 'prodOptType2Cd',
+    'prodOpts', '_preview_[prodOpts]', 'prodSkus', 'prodImgs',
     /* 회원 */
     'memberNm', 'loginId', 'memberEmail', 'memberPhone',
     'gradeCd', 'memberGender', 'empTypeCd', 'memberStatusCd',
