@@ -1,4 +1,4 @@
-/* ZdSimulPlanMng — 기획전 시뮬레이터 (bo-form-area / bo-grid 활용) */
+﻿/* ZdSimulPlanMng — 기획전 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { reactive, ref, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -87,6 +87,7 @@
         domain: '기획전',
         uiNm: '기획전 시뮬레이터',
         label: '시뮬기획전',
+        showToast: props.showToast,
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, simulYn, randInt, pick }) => {
           if (mode === 'create') {

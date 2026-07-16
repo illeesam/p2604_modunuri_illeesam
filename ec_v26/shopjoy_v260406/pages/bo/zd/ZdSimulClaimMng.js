@@ -1,4 +1,4 @@
-/* ZdSimulClaimMng — 클레임 시뮬레이터 */
+﻿/* ZdSimulClaimMng — 클레임 시뮬레이터 */
 (function () {
   const { reactive, computed, onMounted } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -184,6 +184,7 @@
         domain: '클레임',
         uiNm: '클레임 시뮬레이터',
         label: '시뮬클레임',
+        showToast: props.showToast,
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, simulYn, randInt, pick }) => {
           if (mode === 'create') {

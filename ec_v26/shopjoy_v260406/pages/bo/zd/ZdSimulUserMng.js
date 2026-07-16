@@ -1,4 +1,4 @@
-/* ZdSimulUserMng — 관리자 사용자 시뮬레이터 */
+﻿/* ZdSimulUserMng — 관리자 사용자 시뮬레이터 */
 (function () {
   const { reactive } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
@@ -52,6 +52,7 @@
         domain: '사용자',
         uiNm: '사용자 시뮬레이터',
         label: '시뮬사용자',
+        showToast: props.showToast,
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, pick }) => {
           if (mode === 'create') {

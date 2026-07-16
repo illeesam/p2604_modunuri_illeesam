@@ -1,4 +1,4 @@
-/* ZdSimulVoucherMng — ERP 전표 시뮬레이터 */
+﻿/* ZdSimulVoucherMng — ERP 전표 시뮬레이터 */
 (function () {
   const { reactive } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
@@ -67,6 +67,7 @@
         domain: '전표',
         uiNm: 'ERP 전표 시뮬레이터',
         label: '시뮬전표',
+        showToast: props.showToast,
         defaultCfg: { mode: 'create', countMin: 1, countMax: 3, intervalVal: 20, intervalUnit: 'sec', durationMin: 5 },
         runFn: async ({ mode, randInt, pick }) => {
           if (mode === 'create') {

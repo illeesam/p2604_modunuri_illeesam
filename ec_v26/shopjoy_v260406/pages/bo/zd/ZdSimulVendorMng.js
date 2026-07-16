@@ -1,4 +1,4 @@
-/* ZdSimulVendorMng — 업체 시뮬레이터 */
+﻿/* ZdSimulVendorMng — 업체 시뮬레이터 */
 (function () {
   const { reactive } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
@@ -57,6 +57,7 @@
         domain: '업체',
         uiNm: '업체 시뮬레이터',
         label: '시뮬업체',
+        showToast: props.showToast,
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, randInt, pick }) => {
           if (mode === 'create') {

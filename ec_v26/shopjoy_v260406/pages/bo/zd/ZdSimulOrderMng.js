@@ -1,4 +1,4 @@
-/* ZdSimulOrderMng — 주문 시뮬레이터 (bo-form-area / bo-grid 활용) */
+﻿/* ZdSimulOrderMng — 주문 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { reactive, ref, computed, onMounted } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -279,6 +279,7 @@
         domain: '주문',
         uiNm: '주문 시뮬레이터',
         label: '시뮬주문',
+        showToast: props.showToast,
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, simulYn, randInt, pick, previewOnly }) => {
           if (mode === 'create') {

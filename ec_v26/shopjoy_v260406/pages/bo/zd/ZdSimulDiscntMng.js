@@ -1,4 +1,4 @@
-/* ZdSimulDiscntMng — 프로모션 할인정책 시뮬레이터 */
+﻿/* ZdSimulDiscntMng — 프로모션 할인정책 시뮬레이터 */
 (function () {
   const { reactive, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -82,6 +82,7 @@
         domain: '할인',
         uiNm: '프로모션 할인 시뮬레이터',
         label: '시뮬할인',
+        showToast: props.showToast,
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, randInt, pick }) => {
           if (mode === 'create') {

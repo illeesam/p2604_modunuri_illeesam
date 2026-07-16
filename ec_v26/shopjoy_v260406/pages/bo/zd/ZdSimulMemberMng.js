@@ -1,4 +1,4 @@
-/* ZdSimulMemberMng — 회원 시뮬레이터 (bo-form-area / bo-grid 활용) */
+﻿/* ZdSimulMemberMng — 회원 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { ref, reactive, computed, onMounted } = Vue;
 
@@ -179,6 +179,7 @@
         domain: '회원',
         uiNm: '회원 시뮬레이터',
         label: '시뮬회원',
+        showToast: props.showToast,
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, pick }) => {
           const ln = pick(LAST_NAMES);

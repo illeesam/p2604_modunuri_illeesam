@@ -76,7 +76,7 @@
 
   /* ── 공통 setup 팩토리 ───────────────────────────────────── */
   const useSimulSetup = (opts) => {
-    const { domain, label, uiNm, runFn, defaultCfg } = opts;
+    const { domain, label, uiNm, runFn, defaultCfg, showToast } = opts;
 
     /* [01] 기본 + 도메인 확장 설정 */
     const cfg = reactive(Object.assign({
@@ -294,6 +294,7 @@
       if (!_lastPreviewPayloads || !_lastPreviewPayloads.length) return;
       state.totalRun++;
       try {
+        let _createdId = null;
         for (const p of _lastPreviewPayloads) {
           const method = (p.method || 'POST').toLowerCase();
           if (typeof window.boApi[method] === 'function') {
@@ -308,13 +309,32 @@
                 }
               });
             }
-            await window.boApi[method](p.url, body, coUtil.cofApiHdr('상품시뮬', '미리보기생성'));
+            const res = await window.boApi[method](p.url, body, coUtil.cofApiHdr(uiNm || domain, '미리보기생성'));
+            /* 응답에서 생성된 ID 추출 (첫 번째 성공 응답 기준) */
+            if (!_createdId) {
+              const d = res?.data?.data;
+              if (d) {
+                _createdId = d.prodId || d.userId || d.orderId || d.memberId || d.id || null;
+                if (_createdId && String(_createdId).startsWith('__')) _createdId = null;
+              }
+            }
           }
         }
         state.totalOk++;
+        const _au = window.boAuthStore?.svAuthUser || (window.boAuthStore && window.boAuthStore.sgCurrentUser?.()) || {};
+        const userNm = _au.name || _au.authNm || _au.userNm || '-';
+        _addLog(domain, '미리보기생성', '성공', '미리보기 생성 완료', '', { id: _createdId || undefined }, userNm, uiNm || label);
+        setTimeout(() => _fetchLogs(1), 300);
         window.dispatchEvent(new CustomEvent('zd-preview-created', {}));
+        if (typeof showToast === 'function') showToast('미리보기 생성이 완료되었습니다.', 'success');
       } catch (e) {
         state.totalFail++;
+        const _au = window.boAuthStore?.svAuthUser || (window.boAuthStore && window.boAuthStore.sgCurrentUser?.()) || {};
+        const userNm = _au.name || _au.authNm || _au.userNm || '-';
+        const reason = e?.response?.data?.message || e?.message || String(e);
+        _addLog(domain, '미리보기생성', '실패', '미리보기 생성 오류', reason, {}, userNm, uiNm || label);
+        setTimeout(() => _fetchLogs(1), 300);
+        if (typeof showToast === 'function') showToast(e?.response?.data?.message || e?.message || '미리보기 생성 중 오류가 발생했습니다.', 'error', 0);
         throw e;
       }
     };
