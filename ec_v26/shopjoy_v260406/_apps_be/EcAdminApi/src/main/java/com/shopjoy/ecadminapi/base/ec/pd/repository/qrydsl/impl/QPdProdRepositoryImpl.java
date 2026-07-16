@@ -392,6 +392,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         if (entity.getIsBest()             != null) { update.set(pdProd.isBest,             entity.getIsBest());             hasAny = true; }
         if (entity.getIsNew()              != null) { update.set(pdProd.isNew,              entity.getIsNew());              hasAny = true; }
         if (entity.getSoldOutYn()          != null) { update.set(pdProd.soldOutYn,          entity.getSoldOutYn());          hasAny = true; }
+        if (entity.getProdOptStdCd()       != null) { update.set(pdProd.prodOptStdCd,       entity.getProdOptStdCd());       hasAny = true; }
+        if (entity.getProdOptType1Cd()     != null) { update.set(pdProd.prodOptType1Cd,     entity.getProdOptType1Cd());     hasAny = true; }
+        if (entity.getProdOptType2Cd()     != null) { update.set(pdProd.prodOptType2Cd,     entity.getProdOptType2Cd());     hasAny = true; }
         if (entity.getUpdBy()              != null) { update.set(pdProd.updBy,              entity.getUpdBy());              hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(pdProd.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));

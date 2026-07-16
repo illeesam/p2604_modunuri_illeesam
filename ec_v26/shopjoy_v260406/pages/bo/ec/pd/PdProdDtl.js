@@ -187,55 +187,50 @@ window.PdProdDtl = {
             prodOptId2:  img.prodOptId2 || '',
           })));
 
-          // 옵션그룹+아이템 [4]
-          //   백엔드 키:  pd_prod_opt_type → prodOptTypeId / prodOptTypeNm / prodOptTypeLevel1Cd / prodOptTypeLevel2Cd / prodOptTypeLevel / sortOrd
-          //              pd_prod_opt      → prodOptId / prodOptTypeId / prodOptNm / prodOptVal / prodOptStdCd / prodOptTypeLevel1Cd / prodOptTypeLevel2Cd / prodOptStyle / parentProdOptId / sortOrd / useYn
-          //   화면 키:    {_id, grpNm, level1Cd, level2Cd, level, items:[{_id, nm, val, stdCd, prodOptStyle, parentOptId, sortOrd, useYn}]}
-          //   getById 응답에 embedded (PdProdDto.Item: prodOptTypes=옵션유형배열, prodOpts=옵션값배열)
-          const prodOptTypes_ = p.prodOptTypes || [];
-          const prodOpts_     = p.prodOpts     || [];
-          tabData.opts.groups.splice(0, tabData.opts.groups.length, ...prodOptTypes_);
+          // 옵션그룹+아이템 [4] — GET /opts 응답 구조
+          //   백엔드: { optTypes:[{optTypeCd, optTypeLevel}], opts:[pd_prod_opt 항목] }
+          //   pd_prod_opt 필드: prodOptId / prodOptNm / prodOptVal / prodOptStdCd / prodOptStyle
+          //                   / prodOptTypeLevel(1|2) / prodOptType1Cd / prodOptType2Cd
+          //                   / parentProdOptId / sortOrd / useYn
+          //   화면 키: {_id, grpNm, level1Cd, level, items:[{_id, nm, val, stdCd, prodOptStyle, parentOptId, sortOrd, useYn}]}
+          const optsRes_   = r[4]?.data?.data || {};
+          const optTypes_  = optsRes_.optTypes || [];
+          const prodOpts_  = optsRes_.opts     || [];
+          tabData.opts.groups.splice(0, tabData.opts.groups.length, ...optTypes_);
           tabData.opts.items.splice(0,  tabData.opts.items.length,  ...prodOpts_);
-          if (prodOptTypes_.length) {
-            // 1) 유형: prodOptTypeId → 임시 _id 매핑 (parentProdOptId 변환에 사용)
-            const groupClientId = {};
-            const built = prodOptTypes_.map(g => {
-              const _id = _optSeq++;
-              groupClientId[g.prodOptTypeId] = _id;
-              return {
-                _id,
-                _origOptTypeId: g.prodOptTypeId,
-                grpNm:   g.prodOptTypeNm || g.grpNm || '',
-                level1Cd: g.prodOptTypeLevel1Cd || g.level1Cd || '',
-                level2Cd: g.prodOptTypeLevel2Cd || g.level2Cd || '',
-                level:   g.prodOptTypeLevel != null ? Number(g.prodOptTypeLevel) : (g.level || 1),
-                sortOrd: Number(g.sortOrd || 0),
-                items:   [],
-              };
-            });
-            // 2) 옵션값: prodOptId → 임시 _id 매핑 (자기 자신용)
+          if (optTypes_.length) {
+            // 옵션값: prodOptId → 임시 _id 매핑 (parentProdOptId 변환용)
             const itemClientId = {};
             prodOpts_.forEach(i => { itemClientId[i.prodOptId] = _itemSeq++; });
-            // 3) 유형별 옵션값 채움 + parentProdOptId 를 화면용 _id 로 변환
-            built.forEach(grp => {
-              const grpOpts = prodOpts_.filter(i => i.prodOptTypeId === grp._origOptTypeId).map(i => {
-                const parentClient = i.parentProdOptId ? itemClientId[i.parentProdOptId] : '';
-                return {
-                  _id: itemClientId[i.prodOptId],
-                  nm:           i.prodOptNm || '',
-                  val:          i.prodOptVal || '',
-                  stdCd:        i.prodOptStdCd || '',
-                  prodOptStyle: i.prodOptStyle || '',
-                  parentOptId:  parentClient ? String(parentClient) : '',
-                  sortOrd:      Number(i.sortOrd || 0),
-                  useYn:        i.useYn || 'Y',
-                };
-              });
+            // 유형별(optTypeLevel) 옵션값 채움 + parentProdOptId → 화면용 _id 변환
+            const built = optTypes_.map(g => {
+              const level = Number(g.optTypeLevel) || 1;
+              const grpOpts = prodOpts_
+                .filter(i => Number(i.prodOptTypeLevel) === level)
+                .map(i => {
+                  const parentClient = i.parentProdOptId ? itemClientId[i.parentProdOptId] : '';
+                  return {
+                    _id:          itemClientId[i.prodOptId] ?? (_itemSeq++),
+                    nm:           i.prodOptNm    || '',
+                    val:          i.prodOptVal   || '',
+                    stdCd:        i.prodOptStdCd || '',
+                    prodOptStyle: i.prodOptStyle || '',
+                    parentOptId:  parentClient ? String(parentClient) : '',
+                    sortOrd:      Number(i.sortOrd || 0),
+                    useYn:        i.useYn || 'Y',
+                  };
+                });
               grpOpts.sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
-              grp.items = grpOpts;
-              delete grp._origOptTypeId;
+              return {
+                _id:      _optSeq++,
+                grpNm:    g.optTypeCd || '',
+                level1Cd: level === 1 ? (g.optTypeCd || '') : (optTypes_[0]?.optTypeCd || ''),
+                level2Cd: level === 2 ? (g.optTypeCd || '') : '',
+                level,
+                items:    grpOpts,
+              };
             });
-            built.sort((a,b) => (a.level||0) - (b.level||0) || (a.sortOrd||0) - (b.sortOrd||0));
+            built.sort((a,b) => a.level - b.level);
             optGroups.splice(0, optGroups.length, ...built);
           }
 
@@ -1142,6 +1137,7 @@ window.PdProdDtl = {
             optTypes: optGroups.map(g => ({
               _id:          g._id,
               optTypeNm:    g.grpNm,
+              optTypeCd:    g.level2Cd || g.level1Cd || '',  // pd_prod.prod_opt_type{N}_cd 로 저장
               level1Cd:     g.level1Cd,
               level2Cd:     g.level2Cd,
               optTypeLevel: g.level,

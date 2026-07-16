@@ -68,13 +68,21 @@ public class BoPdProdTabController {
             @PathVariable("prodId") String prodId) {
         PdProd prod = pdProdRepository.findById(prodId).orElse(null);
 
-        Map<String, Object> optType1 = new HashMap<>();
-        Map<String, Object> optType2 = new HashMap<>();
+        // pd_prod 플랫 컬럼 → optTypes 배열로 변환 (프론트 화면 구조와 정합)
+        List<Map<String, Object>> optTypes = new ArrayList<>();
         if (prod != null) {
-            optType1.put("optTypeCd",  prod.getProdOptType1Cd());
-            optType1.put("optTypeLevel", 1);
-            optType2.put("optTypeCd",  prod.getProdOptType2Cd());
-            optType2.put("optTypeLevel", 2);
+            if (prod.getProdOptType1Cd() != null) {
+                Map<String, Object> t1 = new HashMap<>();
+                t1.put("optTypeCd",    prod.getProdOptType1Cd());
+                t1.put("optTypeLevel", 1);
+                optTypes.add(t1);
+            }
+            if (prod.getProdOptType2Cd() != null) {
+                Map<String, Object> t2 = new HashMap<>();
+                t2.put("optTypeCd",    prod.getProdOptType2Cd());
+                t2.put("optTypeLevel", 2);
+                optTypes.add(t2);
+            }
         }
 
         PdProdOptDto.Request optReq = new PdProdOptDto.Request();
@@ -82,9 +90,8 @@ public class BoPdProdTabController {
         List<PdProdOptDto.Item> opts = optService.getList(optReq);
 
         Map<String, Object> result = new HashMap<>();
-        result.put("optType1", optType1);
-        result.put("optType2", optType2);
-        result.put("opts", opts);
+        result.put("optTypes", optTypes);  // [{optTypeCd, optTypeLevel}]
+        result.put("opts",     opts);       // 옵션값 목록 (prodOptTypeLevel 로 그룹 구분)
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
