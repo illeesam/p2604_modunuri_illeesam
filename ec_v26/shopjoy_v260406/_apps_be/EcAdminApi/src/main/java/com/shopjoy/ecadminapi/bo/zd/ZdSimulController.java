@@ -223,6 +223,8 @@ public class ZdSimulController {
         if (optGroups != null && !optGroups.isEmpty()) {
             List<String> grp1ItemIds = new ArrayList<>();
             List<String> grp2ItemIds = new ArrayList<>();
+            /* tmpOptId → 실제 저장된 optId 매핑 (프론트 prodImgs.prodOptId1 변환용) */
+            Map<String, String> tmpToRealOptId = new java.util.LinkedHashMap<>();
 
             /* pd_prod 플랫 컬럼 업데이트 (optType1/2 명칭·코드) */
             PdProd prodToUpdate = pdProdService.findById(prodId);
@@ -247,6 +249,7 @@ public class ZdSimulController {
                     ? (List<Map<String, Object>>) grp.get("prodOpts") : List.of();
 
                 for (Map<String, Object> it : optItems) {
+                    String tmpOptId = str(it, "prodOptId");
                     PdProdOpt optVal = new PdProdOpt();
                     optVal.setSiteId(siteId);
                     optVal.setProdId(prodId);
@@ -257,8 +260,10 @@ public class ZdSimulController {
                     optVal.setSortOrd(intVal(it, "sortOrd", 1));
                     optVal.setUseYn(str(it, "useYn", "Y"));
                     PdProdOpt savedOptVal = pdProdOptService.create(optVal);
-                    if (level == 1) grp1ItemIds.add(savedOptVal.getProdOptId());
-                    else grp2ItemIds.add(savedOptVal.getProdOptId());
+                    String realOptId = savedOptVal.getProdOptId();
+                    if (tmpOptId != null && !tmpOptId.isBlank()) tmpToRealOptId.put(tmpOptId, realOptId);
+                    if (level == 1) grp1ItemIds.add(realOptId);
+                    else grp2ItemIds.add(realOptId);
                 }
                 gIdx++;
             }
@@ -296,17 +301,39 @@ public class ZdSimulController {
                 }
             }
 
-            /* 이미지 (색상별 picsum URL) */
-            for (int i = 0; i < grp1ItemIds.size(); i++) {
-                PdProdImg img = new PdProdImg();
-                img.setProdImgId("tmp-img-" + pad2(i));
-                img.setSiteId(siteId);
-                img.setProdId(prodId);
-                img.setProdOptId1(grp1ItemIds.get(i));
-                img.setCdnImgUrl("https://picsum.photos/seed/" + (200 + i * 37) + "/400/400");
-                img.setIsThumb(i == 0 ? "Y" : "N");
-                img.setSortOrd(i + 1);
-                pdProdImgService.create(img);
+            /* 이미지: 프론트 전송 prodImgs 우선. 없으면 색상별 picsum 폴백 */
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> frontImgs = body.get("prodImgs") instanceof List
+                ? (List<Map<String, Object>>) body.get("prodImgs") : null;
+            if (frontImgs != null && !frontImgs.isEmpty()) {
+                int imgSortOrd = 1;
+                for (Map<String, Object> fim : frontImgs) {
+                    String url = str(fim, "cdnImgUrl");
+                    if (url == null || url.isBlank()) continue;
+                    String tmpOpt1 = str(fim, "prodOptId1");
+                    String realOpt1 = (tmpOpt1 != null) ? tmpToRealOptId.getOrDefault(tmpOpt1, tmpOpt1) : null;
+                    PdProdImg img = new PdProdImg();
+                    img.setSiteId(siteId);
+                    img.setProdId(prodId);
+                    img.setProdOptId1(realOpt1);
+                    img.setCdnImgUrl(url);
+                    img.setIsThumb(imgSortOrd == 1 ? "Y" : "N");
+                    img.setSortOrd(imgSortOrd++);
+                    pdProdImgService.create(img);
+                }
+            } else {
+                /* 폴백: 색상별 picsum */
+                for (int i = 0; i < grp1ItemIds.size(); i++) {
+                    PdProdImg img = new PdProdImg();
+                    img.setProdImgId("tmp-img-" + pad2(i));
+                    img.setSiteId(siteId);
+                    img.setProdId(prodId);
+                    img.setProdOptId1(grp1ItemIds.get(i));
+                    img.setCdnImgUrl("https://picsum.photos/seed/" + (200 + i * 37) + "/400/400");
+                    img.setIsThumb(i == 0 ? "Y" : "N");
+                    img.setSortOrd(i + 1);
+                    pdProdImgService.create(img);
+                }
             }
         } else {
             /* 단순 상품: prodImgs — 프론트 전송 이미지 목록 (빈 배열이면 기본 picsum 1장 생성) */

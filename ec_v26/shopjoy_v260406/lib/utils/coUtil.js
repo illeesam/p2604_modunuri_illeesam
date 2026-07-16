@@ -929,6 +929,7 @@
    *   화면이 기대하는 단일 prod 형태(opt1s/opt2s/opt2sAll/opt2Prices/mainImage/images)로 머지.
    *   Prod*View.fnMergeProdOpts 통합 (Prod01 의 opt2sAll 포함 슈퍼셋 기준 — View02/03 도 호환).
    *   - opts.groups (PdProdOptTypeDto) → opt1s = [{ optId, name, val, priceDelta, imgUrl, prodOptStyle, hex }]
+   *     groups 없을 때: opts.items 의 prodOptTypeLevel(1/2) 로 직접 분류 (pd_prod_opt 단일 테이블 구조 지원)
    *   - opts.items  (PdProdOptDto)     → opt2s(unique 이름) + opt2sAll(parentProdOptId 포함)
    *   - skus 의 2단별 addPrice 평균   → opt2Prices = { '사이즈명': delta } */
   function cofMergeProdOpts(prod, optsObj, skusList, imgList) {
@@ -940,25 +941,41 @@
     var lv1 = groups.find(function (g) { return Number(g.prodOptTypeLevel || g.optTypeLevel || g.optLevel || g.level || 0) === 1; });
     var lv2 = groups.find(function (g) { return Number(g.prodOptTypeLevel || g.optTypeLevel || g.optLevel || g.level || 0) === 2; });
 
-    var itemsOf = function (g) { return g ? items.filter(function (i) { return i.prodOptTypeId === g.prodOptTypeId; }) : []; };
-    var lv1Items = itemsOf(lv1).sort(function (a, b) { return (a.sortOrd || 0) - (b.sortOrd || 0); });
-    var lv2Items = itemsOf(lv2).sort(function (a, b) { return (a.sortOrd || 0) - (b.sortOrd || 0); });
+    // groups 없을 때: items 의 prodOptTypeLevel 로 직접 분류 (pd_prod_opt 단일 테이블 구조)
+    var itemsOf;
+    if (groups.length > 0) {
+      itemsOf = function (g) { return g ? items.filter(function (i) { return i.prodOptTypeId === g.prodOptTypeId; }) : []; };
+    } else {
+      itemsOf = function (lv) { return lv === 1 ? items.filter(function (i) { return Number(i.prodOptTypeLevel) === 1; })
+                                       : lv === 2 ? items.filter(function (i) { return Number(i.prodOptTypeLevel) === 2; }) : []; };
+      lv1 = items.some(function (i) { return Number(i.prodOptTypeLevel) === 1; }) ? 1 : null;
+      lv2 = items.some(function (i) { return Number(i.prodOptTypeLevel) === 2; }) ? 2 : null;
+    }
+    var lv1Items = (groups.length > 0 ? itemsOf(lv1) : itemsOf(1)).sort(function (a, b) { return (a.sortOrd || 0) - (b.sortOrd || 0); });
+    var lv2Items = (groups.length > 0 ? itemsOf(lv2) : itemsOf(2)).sort(function (a, b) { return (a.sortOrd || 0) - (b.sortOrd || 0); });
 
-    var opt1Nm = ((lv1 && (lv1.prodOptTypeNm || lv1.optTypeNm || lv1.optGrpNm || lv1.grpNm)) || '').trim() || '색상';
-    var opt2Nm = ((lv2 && (lv2.prodOptTypeNm || lv2.optTypeNm || lv2.optGrpNm || lv2.grpNm)) || '').trim() || '사이즈';
+    // opt1Nm/opt2Nm: groups 있으면 그룹명, 없으면 상품 prod 의 optType 코드에서 추론
+    var opt1Nm = (groups.length > 0 && lv1 && (lv1.prodOptTypeNm || lv1.optTypeNm || lv1.optGrpNm || lv1.grpNm) || '').trim() || '색상';
+    var opt2Nm = (groups.length > 0 && lv2 && (lv2.prodOptTypeNm || lv2.optTypeNm || lv2.optGrpNm || lv2.grpNm) || '').trim() || '사이즈';
 
-    var opt1s = lv1Items.map(function (it) {
+    // opt1s: 중복 이름 제거 (시뮬 재생성 등으로 같은 이름이 여러 번 들어올 수 있음)
+    var seenOpt1Nm = new Set();
+    var opt1s = [];
+    lv1Items.forEach(function (it) {
+      var nm = it.prodOptNm || it.prodOptVal || '';
+      if (!nm || seenOpt1Nm.has(nm)) { return; }
+      seenOpt1Nm.add(nm);
       var optImgs = imgs.filter(function (im) { return im.prodOptId1 === it.prodOptId; });
       var style = (it.prodOptStyle || '').trim();
-      return {
+      opt1s.push({
         optId: it.prodOptId,
-        name: it.prodOptNm || it.prodOptVal || '',
+        name: nm,
         val: it.prodOptVal || '',
         priceDelta: 0,
         imgUrl: cofImgSrc((optImgs[0] && (optImgs[0].cdnImgUrl || optImgs[0].cdnThumbUrl)) || ''),
         optStyle: style,
         hex: cofHexColor(style),
-      };
+      });
     });
 
     var opt2sAll = lv2Items.map(function (it) {

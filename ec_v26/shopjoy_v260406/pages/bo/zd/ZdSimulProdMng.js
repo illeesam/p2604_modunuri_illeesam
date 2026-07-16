@@ -241,6 +241,7 @@
               const opt1Items = opt1List.map((nm, i) => ({
                 prodOptId: 'tmp-opt1-' + _pad2(i),
                 prodOptNm: nm, prodOptVal: _makeVal(nm, preset.opt1LabelType, 'O1'),
+                prodOptStyle: preset.opt1LabelType === 'color' ? (OPT1_COLORS[nm] || '#cccccc') : undefined,
                 sortOrd: i + 1, useYn: 'Y',
               }));
               const opt2Items = opt2List.map((nm, i) => ({

@@ -323,7 +323,15 @@
         state.totalOk++;
         const _au = window.boAuthStore?.svAuthUser || (window.boAuthStore && window.boAuthStore.sgCurrentUser?.()) || {};
         const userNm = _au.name || _au.authNm || _au.userNm || '-';
-        _addLog(domain, '미리보기생성', '성공', '미리보기 생성 완료', '', { id: _createdId || undefined }, userNm, uiNm || label);
+        /* payload body에서 제목 추출 (prodNm / orderNm / couponNm / eventNm / memberNm 등) */
+        const _firstBody = (_lastPreviewPayloads || []).map(p => p.body).find(b => b);
+        const _titleVal = _firstBody && (
+          _firstBody.prodNm || _firstBody.orderNm || _firstBody.couponNm || _firstBody.eventNm ||
+          _firstBody.memberNm || _firstBody.planNm || _firstBody.discntNm || _firstBody.cachNm ||
+          _firstBody.bbsTitle || _firstBody.title || _firstBody.name
+        );
+        const _previewDesc = _titleVal ? (_titleVal + ' — 미리보기 생성 완료') : '미리보기 생성 완료';
+        _addLog(domain, '미리보기생성', '성공', _previewDesc, '', { id: _createdId || undefined }, userNm, uiNm || label);
         setTimeout(() => _fetchLogs(1), 300);
         window.dispatchEvent(new CustomEvent('zd-preview-created', {}));
         if (typeof showToast === 'function') showToast('미리보기 생성이 완료되었습니다.', 'success');
