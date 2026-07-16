@@ -48,11 +48,13 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final QSyCode     cdPt = new QSyCode("cd_pt");
     private static final QSyCode     cdSz = new QSyCode("cd_sz");
 
-    /** 목록/페이지 공용 base query — selectList/selectPageData 의 컬럼 셋 (thumbnail COALESCE 포함) */
-    private JPAQuery<PdProdDto.Item> baseListQuery() {
-        QPdProdImg pi  = new QPdProdImg("pi");
-        QPdProdImg pi2 = new QPdProdImg("pi2");
+    private static final QPdProdImg piThumb    = new QPdProdImg("pi_thumb");     // 썸네일 (is_thumb=Y, outer)
+    private static final QPdProdImg piThumbMin = new QPdProdImg("pi_thumb_min"); // 썸네일 MIN(sort_ord) 내부
+    private static final QPdProdImg piFirst    = new QPdProdImg("pi_first");     // 첫번째 이미지 (outer)
+    private static final QPdProdImg piFirstMin = new QPdProdImg("pi_first_min"); // 첫번째 이미지 MIN(sort_ord) 내부
 
+    /** 목록/페이지 공용 base query — selectList/selectPageData 의 컬럼 셋 (thumbnail LEFT JOIN으로 1행 보장) */
+    private JPAQuery<PdProdDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdDto.Item.class,
                         pdProd.prodId, pdProd.siteId, pdProd.categoryId, pdProd.brandId, pdProd.vendorId, pdProd.mdUserId,
@@ -76,20 +78,27 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         syUser.userNm.as("mdUserNm"),
                         cdPs.codeLabel.as("prodStatusCdNm"),
                         cdPt.codeLabel.as("prodTypeCdNm"),
-                        // COALESCE(a.thumbnail_url, thumb 1순위, 정렬 1순위)
-                        Expressions.stringTemplate(
-                            "COALESCE({0}, ({1}), ({2}))",
+                        // thumbnail_url: prod 직접 값 → is_thumb='Y' 중 MIN(prod_img_id) 행 → 전체 중 MIN(prod_img_id) 행
+                        // Hibernate 6.x 는 스칼라 서브쿼리 .limit() 을 무시하므로
+                        // MIN(PK) 이중 서브쿼리로 단일 행을 보장함 (PK는 항상 유일)
+                        Expressions.stringTemplate("COALESCE({0}, {1}, {2})",
                             pdProd.thumbnailUrl,
-                            JPAExpressions.select(pi.cdnImgUrl)
-                                .from(pi)
-                                .where(pi.prodId.eq(pdProd.prodId).and(pi.isThumb.eq("Y")))
-                                .orderBy(pi.sortOrd.asc())
-                                .limit(1L),
-                            JPAExpressions.select(pi2.cdnImgUrl)
-                                .from(pi2)
-                                .where(pi2.prodId.eq(pdProd.prodId))
-                                .orderBy(pi2.sortOrd.asc())
-                                .limit(1L)
+                            JPAExpressions.select(piThumb.cdnImgUrl)
+                                .from(piThumb)
+                                .where(piThumb.prodId.eq(pdProd.prodId)
+                                    .and(piThumb.isThumb.eq("Y"))
+                                    .and(piThumb.prodImgId.eq(
+                                        JPAExpressions.select(piThumbMin.prodImgId.min())
+                                            .from(piThumbMin)
+                                            .where(piThumbMin.prodId.eq(pdProd.prodId)
+                                                .and(piThumbMin.isThumb.eq("Y")))))),
+                            JPAExpressions.select(piFirst.cdnImgUrl)
+                                .from(piFirst)
+                                .where(piFirst.prodId.eq(pdProd.prodId)
+                                    .and(piFirst.prodImgId.eq(
+                                        JPAExpressions.select(piFirstMin.prodImgId.min())
+                                            .from(piFirstMin)
+                                            .where(piFirstMin.prodId.eq(pdProd.prodId)))))
                         ).as("thumbnailUrl")
                 ))
                 .from(pdProd)
