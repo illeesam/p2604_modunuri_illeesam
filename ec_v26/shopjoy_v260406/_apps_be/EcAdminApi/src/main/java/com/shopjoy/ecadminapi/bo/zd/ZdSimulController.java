@@ -19,12 +19,10 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOptType;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdDlivTmpltService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdImgService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdOptService;
-import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdOptTypeService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdSkuService;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
@@ -85,7 +83,6 @@ import java.util.Map;
 public class ZdSimulController {
 
     private final PdProdService        pdProdService;
-    private final PdProdOptTypeService pdProdOptTypeService;
     private final PdProdOptService     pdProdOptService;
     private final PdProdSkuService     pdProdSkuService;
     private final PdProdImgService     pdProdImgService;
@@ -218,7 +215,7 @@ public class ZdSimulController {
         PdProd saved = pdProdService.create(prod);
         String prodId = saved.getProdId();
 
-        /* 옵션형: prodOpts 처리 — pd_prod_opt_type + pd_prod_opt Entity 컬럼명 기준 */
+        /* 옵션형: prodOpts 처리 — pd_prod 플랫 컬럼 + pd_prod_opt (prod_opt_type_level) */
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> optGroups = body.get("prodOpts") instanceof List
             ? (List<Map<String, Object>>) body.get("prodOpts") : null;
@@ -227,39 +224,43 @@ public class ZdSimulController {
             List<String> grp1ItemIds = new ArrayList<>();
             List<String> grp2ItemIds = new ArrayList<>();
 
+            /* pd_prod 플랫 컬럼 업데이트 (optType1/2 명칭·코드) */
+            PdProd prodToUpdate = pdProdService.findById(prodId);
+            if (optGroups.size() > 0) {
+                Map<String, Object> g0 = optGroups.get(0);
+                String cd0 = blankToNull(str(g0, "level1Cd"));
+                prodToUpdate.setProdOptType1Cd(cd0);
+            }
+            if (optGroups.size() > 1) {
+                Map<String, Object> g1 = optGroups.get(1);
+                String cd1 = blankToNull(str(g1, "level1Cd"));
+                prodToUpdate.setProdOptType2Cd(cd1);
+            }
+            pdProdService.update(prodId, prodToUpdate);
+
+            int gIdx = 0;
             for (Map<String, Object> grp : optGroups) {
-                PdProdOptType optType = new PdProdOptType();
-                optType.setSiteId(siteId);
-                optType.setProdId(prodId);
-                optType.setProdOptTypeNm(str(grp, "prodOptTypeNm"));
-                optType.setProdOptTypeLevel(intVal(grp, "prodOptTypeLevel", 1));
-                optType.setProdOptTypeLevel1Cd(str(grp, "level1Cd"));
-                optType.setProdOptTypeLevel2Cd(str(grp, "level2Cd"));
-                optType.setSortOrd(intVal(grp, "sortOrd", 1));
-                PdProdOptType savedOptType = pdProdOptTypeService.create(optType);
-                String optTypeId = savedOptType.getProdOptTypeId();
+                int level = gIdx + 1;
 
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> optItems = grp.get("prodOpts") instanceof List
                     ? (List<Map<String, Object>>) grp.get("prodOpts") : List.of();
 
-                int level = intVal(grp, "prodOptTypeLevel", 1);
                 for (Map<String, Object> it : optItems) {
                     PdProdOpt optVal = new PdProdOpt();
                     optVal.setSiteId(siteId);
-                    optVal.setProdOptTypeId(optTypeId);
                     optVal.setProdId(prodId);
+                    optVal.setProdOptTypeLevel(level);
                     optVal.setProdOptNm(str(it, "prodOptNm"));
                     optVal.setProdOptVal(str(it, "prodOptVal"));
                     optVal.setProdOptStyle(str(it, "prodOptStyle"));
-                    optVal.setProdOptTypeLevel1Cd(str(grp, "level1Cd"));
-                    optVal.setProdOptTypeLevel2Cd(str(grp, "level2Cd"));
                     optVal.setSortOrd(intVal(it, "sortOrd", 1));
                     optVal.setUseYn(str(it, "useYn", "Y"));
                     PdProdOpt savedOptVal = pdProdOptService.create(optVal);
                     if (level == 1) grp1ItemIds.add(savedOptVal.getProdOptId());
                     else grp2ItemIds.add(savedOptVal.getProdOptId());
                 }
+                gIdx++;
             }
 
             /* SKU 조합 (그룹1 × 그룹2) */
@@ -374,8 +375,8 @@ public class ZdSimulController {
             boolean wantOpt = "Y".equalsIgnoreCase(ho);
             all = all.stream()
                 .filter(p -> wantOpt
-                    ? (p.getProdOptType1Nm() != null)
-                    : (p.getProdOptType1Nm() == null))
+                    ? (p.getProdOptType1Cd() != null)
+                    : (p.getProdOptType1Cd() == null))
                 .toList();
         }
         Collections.shuffle(all);

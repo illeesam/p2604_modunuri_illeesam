@@ -1,15 +1,15 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.*;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdContent;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOptType;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdContentRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdImgRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptRepository;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptTypeRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdSkuRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -40,14 +40,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BoPdProdTabController {
 
-    private final PdProdImgService      imgService;
-    private final PdProdOptService      optService;
-    private final PdProdOptTypeService  optTypeService;
-    private final PdProdSkuService      skuService;
-    private final PdProdContentService  contentService;
-    private final PdProdRelService      relService;
+    private final PdProdImgService         imgService;
+    private final PdProdOptService         optService;
+    private final PdProdSkuService         skuService;
+    private final PdProdContentService     contentService;
+    private final PdProdRelService         relService;
+    private final PdProdRepository         pdProdRepository;
     private final PdProdContentRepository  pdProdContentRepository;
-    private final PdProdOptTypeRepository  pdProdOptTypeRepository;
     private final PdProdOptRepository      pdProdOptRepository;
     private final PdProdImgRepository      pdProdImgRepository;
     private final PdProdSkuRepository      pdProdSkuRepository;
@@ -63,20 +62,28 @@ public class BoPdProdTabController {
         return ResponseEntity.ok(ApiResponse.ok(imgService.getList(req)));
     }
 
-    /** opts — 옵션유형(optTypes) + 옵션값(opts) */
+    /** opts — 옵션유형(pd_prod 플랫 컬럼) + 옵션값(pd_prod_opt) */
     @GetMapping("/opts")
     public ResponseEntity<ApiResponse<Map<String, Object>>> opts(
             @PathVariable("prodId") String prodId) {
-        PdProdOptTypeDto.Request typeReq = new PdProdOptTypeDto.Request();
-        typeReq.setProdId(prodId);
-        List<PdProdOptTypeDto.Item> optTypes = optTypeService.getList(typeReq);
+        PdProd prod = pdProdRepository.findById(prodId).orElse(null);
+
+        Map<String, Object> optType1 = new HashMap<>();
+        Map<String, Object> optType2 = new HashMap<>();
+        if (prod != null) {
+            optType1.put("optTypeCd",  prod.getProdOptType1Cd());
+            optType1.put("optTypeLevel", 1);
+            optType2.put("optTypeCd",  prod.getProdOptType2Cd());
+            optType2.put("optTypeLevel", 2);
+        }
 
         PdProdOptDto.Request optReq = new PdProdOptDto.Request();
         optReq.setProdId(prodId);
         List<PdProdOptDto.Item> opts = optService.getList(optReq);
 
         Map<String, Object> result = new HashMap<>();
-        result.put("optTypes", optTypes);
+        result.put("optType1", optType1);
+        result.put("optType2", optType2);
         result.put("opts", opts);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -201,12 +208,15 @@ public class BoPdProdTabController {
      * 옵션설정 저장 (전체 교체).
      * body 예: {
      *   "optTypes": [{
-     *     "_id": 1, "optTypeNm": "색상", "prodOptTypeLevel1Cd": "COLOR", "optTypeLevel": 1,
+     *     "_id": 1, "optTypeNm": "색상", "optTypeCd": "COLOR", "optTypeLevel": 1,
      *     "optVals": [{ "_id": 11, "nm": "블랙", "val": "VAL_OCOL_BLACK", "prodOptStyle": "#000000",
      *                   "parentOptId": "", "sortOrd": 1, "useYn": "Y" }, ...]
      *   }, ...]
      * }
-     * 처리 순서: 기존 opt(값) 전체 삭제 → 기존 optType(유형) 전체 삭제 → optType INSERT → opt(값) INSERT.
+     * 처리 순서:
+     *   1) pd_prod_opt 전체 삭제
+     *   2) pd_prod 의 opt_type1/2 플랫 컬럼 업데이트 (groups[0], groups[1])
+     *   3) pd_prod_opt INSERT (prod_opt_type_level = 그룹 인덱스+1)
      * 클라이언트 _id 는 그룹/아이템 식별 임시키 — 부모 매핑(parent_opt_id) 변환에 사용.
      */
     @PutMapping("/opts")
@@ -219,43 +229,29 @@ public class BoPdProdTabController {
         String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
         LocalDateTime now = LocalDateTime.now();
 
-        // 1) 기존 데이터 삭제 (opt값 → optType유형 순)
+        // 1) 기존 opt 값 전체 삭제
         pdProdOptRepository.deleteByProdId(prodId);
-        pdProdOptTypeRepository.deleteByProdId(prodId);
 
-        // 2) 신규 INSERT — optType(유형) INSERT 후 opt(값) INSERT
-        // opt(값) 의 client _id → 신규 opt_id 매핑 (parentOptId 변환용)
+        // 2) pd_prod 플랫 컬럼 업데이트
+        PdProd prod = pdProdRepository.findById(prodId)
+            .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다: " + prodId));
+        PdProdOptUpdateDto.OptType g0 = groups.size() > 0 ? groups.get(0) : null;
+        PdProdOptUpdateDto.OptType g1 = groups.size() > 1 ? groups.get(1) : null;
+        prod.setProdOptType1Cd(g0 != null ? coalesce(nullIfEmpty(g0.getOptTypeCd()), nullIfEmpty(g0.getLevel1Cd())) : null);
+        prod.setProdOptType2Cd(g1 != null ? coalesce(nullIfEmpty(g1.getOptTypeCd()), nullIfEmpty(g1.getLevel1Cd())) : null);
+        prod.setUpdBy(authId);
+        prod.setUpdDate(now);
+        pdProdRepository.save(prod);
+
+        // 3) pd_prod_opt INSERT
+        // client _id → 신규 opt_id 매핑 (2단 parentOptId 변환용)
         Map<String, String> clientOptIdToOptId = new HashMap<>();
-        // opt(값) INSERT 는 parent 매핑 후 일괄 처리
         List<PdProdOpt> optsToInsert = new ArrayList<>();
         List<String[]> optParentLinks = new ArrayList<>();
 
         int gIdx = 0;
         for (PdProdOptUpdateDto.OptType g : groups) {
-            String typeNm = nullIfEmpty(g.getOptTypeNm());
-            String level1Cd = nullIfEmpty(g.getLevel1Cd());
-            String level2Cd = nullIfEmpty(g.getLevel2Cd());
-            if (typeNm == null) typeNm = (level1Cd != null ? level1Cd : "옵션" + (gIdx + 1));
-            int level = g.getOptTypeLevel() != null ? g.getOptTypeLevel() : (gIdx + 1);
-
-            String optTypeId = "OT" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + gIdx;
-            if (optTypeId.length() > 21) optTypeId = optTypeId.substring(0, 21);
-
-            PdProdOptType optType = new PdProdOptType();
-            optType.setProdOptTypeId(optTypeId);
-            optType.setSiteId(siteId);
-            optType.setProdId(prodId);
-            optType.setProdOptTypeNm(typeNm);
-            optType.setProdOptTypeLevel1Cd(level1Cd);
-            optType.setProdOptTypeLevel2Cd(level2Cd);
-            optType.setProdOptTypeLevel(level);
-            optType.setSortOrd(gIdx + 1);
-            optType.setRegBy(authId);
-            optType.setRegDate(now);
-            optType.setUpdBy(authId);
-            optType.setUpdDate(now);
-            pdProdOptTypeRepository.save(optType);
-
+            int level = gIdx + 1;
             List<PdProdOptUpdateDto.OptVal> items = g.getOptVals() != null ? g.getOptVals() : List.of();
             int iIdx = 0;
             for (PdProdOptUpdateDto.OptVal it : items) {
@@ -266,14 +262,12 @@ public class BoPdProdTabController {
 
                 PdProdOpt opt = new PdProdOpt();
                 opt.setProdOptId(optId);
-                opt.setProdOptTypeId(optTypeId);
                 opt.setProdId(prodId);
                 opt.setSiteId(siteId);
+                opt.setProdOptTypeLevel(level);
                 opt.setProdOptNm(it.getNm() != null ? it.getNm() : "");
                 opt.setProdOptVal(it.getVal() != null ? it.getVal() : "");
                 opt.setProdOptStdCd(nullIfEmpty(it.getStdCd()));
-                opt.setProdOptTypeLevel1Cd(level1Cd);
-                opt.setProdOptTypeLevel2Cd(level2Cd);
                 opt.setProdOptStyle(nullIfEmpty(it.getProdOptStyle()));
                 opt.setSortOrd(it.getSortOrd() != null ? it.getSortOrd() : (iIdx + 1));
                 opt.setUseYn(it.getUseYn() != null && !it.getUseYn().isEmpty() ? it.getUseYn() : "Y");
@@ -281,7 +275,6 @@ public class BoPdProdTabController {
                 opt.setRegDate(now);
                 opt.setUpdBy(authId);
                 opt.setUpdDate(now);
-                // parent 임시 보관 (1단=비어있음, 2단=1단 client _id)
                 String parentClient = it.getParentOptId() != null ? String.valueOf(it.getParentOptId()) : null;
                 if (parentClient != null && parentClient.isEmpty()) parentClient = null;
                 optsToInsert.add(opt);
@@ -291,7 +284,7 @@ public class BoPdProdTabController {
             gIdx++;
         }
 
-        // 3) 부모 client _id → 신규 opt_id 변환 후 INSERT
+        // parent client _id → 신규 opt_id 변환 후 INSERT
         for (int i = 0; i < optsToInsert.size(); i++) {
             PdProdOpt opt = optsToInsert.get(i);
             String parentClient = optParentLinks.get(i)[1];
@@ -308,6 +301,11 @@ public class BoPdProdTabController {
     /** nullIfEmpty — 빈 문자열을 null로 정규화 */
     private static String nullIfEmpty(String s) {
         return (s == null || s.isEmpty()) ? null : s;
+    }
+
+    /** coalesce — 첫 번째 non-null 값 반환 */
+    private static String coalesce(String a, String b) {
+        return a != null ? a : b;
     }
 
     /** contents */

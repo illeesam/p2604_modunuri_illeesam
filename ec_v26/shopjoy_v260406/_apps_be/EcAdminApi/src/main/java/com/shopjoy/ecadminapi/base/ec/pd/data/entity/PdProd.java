@@ -193,12 +193,16 @@ public class PdProd extends BaseEntity {
     @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
     private String simulYn;
 
-    @Comment("옵션유형1명 (예: 색상) — pd_prod_opt_type 흡수")
-    @Column(name = "prod_opt_type1_nm", length = 50)
-    private String prodOptType1Nm;
+    @Comment("옵션 표준코드 (예: COLOR, SIZE — 공통코드 그룹 기준)")
+    @Column(name = "prod_opt_std_cd", length = 20)
+    private String prodOptStdCd;
 
-    @Comment("옵션유형2명 (예: 사이즈) — pd_prod_opt_type 흡수")
-    @Column(name = "prod_opt_type2_nm", length = 50)
-    private String prodOptType2Nm;
+    @Comment("옵션유형1 분류코드 (예: COLOR)")
+    @Column(name = "prod_opt_type1_cd", length = 20)
+    private String prodOptType1Cd;
+
+    @Comment("옵션유형2 분류코드 (예: SIZE)")
+    @Column(name = "prod_opt_type2_cd", length = 20)
+    private String prodOptType2Cd;
 
 }

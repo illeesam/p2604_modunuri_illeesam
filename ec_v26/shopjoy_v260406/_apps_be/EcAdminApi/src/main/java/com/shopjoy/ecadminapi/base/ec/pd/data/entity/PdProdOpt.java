@@ -27,10 +27,6 @@ public class PdProdOpt extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("옵션유형ID (pd_prod_opt_type.prod_opt_type_id)")
-    @Column(name = "prod_opt_type_id", length = 21, nullable = false)
-    private String prodOptTypeId;
-
     @Comment("상품ID (pd_prod.prod_id) — 조회 편의용 비정규화 컬럼")
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
@@ -46,14 +42,6 @@ public class PdProdOpt extends BaseEntity {
     @Comment("표준 코드값 (코드: OPT_VAL — BLACK/WHITE/SIZE_M 등). 프리셋 선택 시 자동 세팅, 직접입력 시 NULL. 통계·필터 기준 컬럼")
     @Column(name = "prod_opt_std_cd", length = 20)
     private String prodOptStdCd;
-
-    @Comment("1단 분류 코드 — pd_prod.prod_opt_type_level1_cd 비정규화 (COLOR/SIZE 등)")
-    @Column(name = "prod_opt_type_level1_cd", length = 20)
-    private String prodOptTypeLevel1Cd;
-
-    @Comment("2단 분류 코드 — pd_prod_opt_type.prod_opt_type_level2_cd 비정규화 (NULL 가능)")
-    @Column(name = "prod_opt_type_level2_cd", length = 20)
-    private String prodOptTypeLevel2Cd;
 
     @Comment("상위 옵션ID — 2단 옵션에서 상위 1단 옵션값 참조 (pd_prod_opt.prod_opt_id), NULL이면 독립값")
     @Column(name = "parent_prod_opt_id", length = 21)
@@ -72,7 +60,15 @@ public class PdProdOpt extends BaseEntity {
     private String useYn;
 
 
-    @Comment("옵션유형레벨 (1 또는 2) — pd_prod_opt_type 흡수")
+    @Comment("옵션유형레벨 (1 또는 2)")
     @Column(name = "prod_opt_type_level")
     private Integer prodOptTypeLevel;
+
+    @Comment("옵션유형1 분류코드 (예: COLOR)")
+    @Column(name = "prod_opt_type1_cd", length = 20)
+    private String prodOptType1Cd;
+
+    @Comment("옵션유형2 분류코드 (예: SIZE)")
+    @Column(name = "prod_opt_type2_cd", length = 20)
+    private String prodOptType2Cd;
 }

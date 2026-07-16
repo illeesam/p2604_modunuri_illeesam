@@ -17,7 +17,6 @@ public class PdProdOptDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String prodOptId;
-        @Size(max = 21) private String prodOptTypeId;
         @Size(max = 21) private String prodId;
         private List<String> prodIds;                  // PK 다건 IN
     }
@@ -26,17 +25,17 @@ public class PdProdOptDto {
     public static class Item {
         private String prodOptId;
         private String siteId;
-        private String prodOptTypeId;
         private String prodId;
         private String prodOptNm;
         private String prodOptVal;
         private String prodOptStdCd;
-        private String prodOptTypeLevel1Cd;
-        private String prodOptTypeLevel2Cd;
         private String parentProdOptId;
         private String prodOptStyle;
         private Integer sortOrd;
         private String useYn;
+        private Integer prodOptTypeLevel;  // 1 또는 2
+        private String prodOptType1Cd;     // 옵션유형1 분류코드 (예: COLOR)
+        private String prodOptType2Cd;     // 옵션유형2 분류코드 (예: SIZE)
         private String regBy;
         private LocalDateTime regDate;
         private String updBy;

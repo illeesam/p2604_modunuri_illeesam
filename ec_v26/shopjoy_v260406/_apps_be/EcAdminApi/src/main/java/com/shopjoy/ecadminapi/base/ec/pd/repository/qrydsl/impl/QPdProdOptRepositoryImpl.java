@@ -37,16 +37,17 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                 .select(Projections.bean(PdProdOptDto.Item.class,
                         pdProdOpt.prodOptId,
                         pdProdOpt.siteId,
-                        pdProdOpt.prodOptTypeId,
                         pdProdOpt.prodId,
                         pdProdOpt.prodOptNm,
                         pdProdOpt.prodOptVal,
-                        pdProdOpt.prodOptTypeLevel1Cd,
-                        pdProdOpt.prodOptTypeLevel2Cd,
+                        pdProdOpt.prodOptStdCd,
                         pdProdOpt.parentProdOptId,
                         pdProdOpt.prodOptStyle,
                         pdProdOpt.sortOrd,
                         pdProdOpt.useYn,
+                        pdProdOpt.prodOptTypeLevel,
+                        pdProdOpt.prodOptType1Cd,
+                        pdProdOpt.prodOptType2Cd,
                         pdProdOpt.regBy,
                         pdProdOpt.regDate,
                         pdProdOpt.updBy,
@@ -132,8 +133,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
      * ============================================================ */
 
     private BooleanExpression baseAndOptTypeId(PdProdOptDto.Request search) {
-        return search != null && StringUtils.hasText(search.getProdOptTypeId())
-                ? pdProdOpt.prodOptTypeId.eq(search.getProdOptTypeId()) : null;
+        return null; // prod_opt_type_id 컬럼 제거됨 — pd_prod 플랫 컬럼으로 대체
     }
 
     private BooleanExpression baseAndProdIds(PdProdOptDto.Request search) {
@@ -179,7 +179,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
         or = orLike(or, all, types, ",prodOptId,", pdProdOpt.prodOptId, pattern);
-        or = orLike(or, all, types, ",prodOptTypeId,", pdProdOpt.prodOptTypeId, pattern);
         or = orLike(or, all, types, ",prodId,", pdProdOpt.prodId, pattern);
         or = orLike(or, all, types, ",prodOptNm,", pdProdOpt.prodOptNm, pattern);
         or = orLike(or, all, types, ",prodOptVal,", pdProdOpt.prodOptVal, pattern);
@@ -241,16 +240,16 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         boolean hasAny = false;
 
         if (entity.getSiteId()            != null) { update.set(pdProdOpt.siteId,            entity.getSiteId());            hasAny = true; }
-        if (entity.getProdOptTypeId()     != null) { update.set(pdProdOpt.prodOptTypeId,     entity.getProdOptTypeId());     hasAny = true; }
         if (entity.getProdId()            != null) { update.set(pdProdOpt.prodId,            entity.getProdId());            hasAny = true; }
         if (entity.getProdOptNm()         != null) { update.set(pdProdOpt.prodOptNm,         entity.getProdOptNm());         hasAny = true; }
         if (entity.getProdOptVal()            != null) { update.set(pdProdOpt.prodOptVal,            entity.getProdOptVal());            hasAny = true; }
-        if (entity.getProdOptTypeLevel1Cd()   != null) { update.set(pdProdOpt.prodOptTypeLevel1Cd,   entity.getProdOptTypeLevel1Cd());   hasAny = true; }
-        if (entity.getProdOptTypeLevel2Cd()   != null) { update.set(pdProdOpt.prodOptTypeLevel2Cd,   entity.getProdOptTypeLevel2Cd());   hasAny = true; }
         if (entity.getParentProdOptId()       != null) { update.set(pdProdOpt.parentProdOptId,       entity.getParentProdOptId());       hasAny = true; }
         if (entity.getProdOptStyle()          != null) { update.set(pdProdOpt.prodOptStyle,          entity.getProdOptStyle());          hasAny = true; }
         if (entity.getSortOrd()           != null) { update.set(pdProdOpt.sortOrd,           entity.getSortOrd());           hasAny = true; }
         if (entity.getUseYn()             != null) { update.set(pdProdOpt.useYn,             entity.getUseYn());             hasAny = true; }
+        if (entity.getProdOptTypeLevel()  != null) { update.set(pdProdOpt.prodOptTypeLevel,  entity.getProdOptTypeLevel());  hasAny = true; }
+        if (entity.getProdOptType1Cd()    != null) { update.set(pdProdOpt.prodOptType1Cd,    entity.getProdOptType1Cd());    hasAny = true; }
+        if (entity.getProdOptType2Cd()    != null) { update.set(pdProdOpt.prodOptType2Cd,    entity.getProdOptType2Cd());    hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(pdProdOpt.updBy,             entity.getUpdBy());             hasAny = true; }
         update.set(pdProdOpt.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 

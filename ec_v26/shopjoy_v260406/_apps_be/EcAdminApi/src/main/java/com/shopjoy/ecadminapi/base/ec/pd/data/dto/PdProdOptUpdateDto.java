@@ -23,7 +23,8 @@ public class PdProdOptUpdateDto {
     public static class OptType {
         private Object _id;
         private String optTypeNm;
-        private String level1Cd;
+        private String optTypeCd;    // 옵션유형 분류코드 (예: COLOR, SIZE) — pd_prod.prod_opt_type1_cd/2_cd 로 저장
+        private String level1Cd;     // 하위호환용 (optTypeCd 없을 때 폴백)
         private String level2Cd;
         private Integer optTypeLevel;
         private List<OptVal> optVals;
