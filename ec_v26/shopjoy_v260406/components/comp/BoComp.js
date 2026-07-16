@@ -402,11 +402,16 @@ window.BoPathTreeNode = {
     position:'relative', zIndex: selected===node.pathId ? 1 : 'auto' }"
     @mouseover="handleSelectAction('node-hover', $event)"
     @mouseout="handleSelectAction('node-leave', $event)">
-    <span v-if="(node.children||[]).length>0" style="width:14px;font-size:10px;color:#999;flex-shrink:0"
+    <!-- 토글 아이콘 (자식 있음: ▶/▼, 자식 없음: 여백) -->
+    <span v-if="(node.children||[]).length>0"
+      style="width:14px;font-size:9px;color:#bbb;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
       @click.stop="handleBtnAction('node-toggle', node.pathId)">
       {{ expanded.has(node.pathId) ? '▼' : '▶' }}
     </span>
-    <span v-else style="width:14px;flex-shrink:0">
+    <span v-else style="width:14px;flex-shrink:0"></span>
+    <!-- 폴더 아이콘 -->
+    <span style="font-size:13px;line-height:1;flex-shrink:0;">
+      {{ depth===0 ? '🗂' : ((node.children||[]).length>0 ? (expanded.has(node.pathId) ? '📂' : '📁') : '📄') }}
     </span>
     <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
       {{ node.pathLabel || '(이름없음)' }}
@@ -508,8 +513,11 @@ window.BoCategoryTree = {
     /* DEPTH_COLOR */
     const DEPTH_COLOR  = d => ({0:'#e8587a', 1:'#1677ff', 2:'#3ba87a'}[d] || '#999');
 
-    /* DEPTH_BULLET */
-    const DEPTH_BULLET = d => ['●','○','▪'][d] || '·';
+    /* DEPTH_BULLET — 폴더 아이콘 (hasChildren/expanded 는 컬럼 접근이 어려워 depth 기반) */
+    const DEPTH_BULLET = (d, hasChildren, isExpanded) => {
+      if (d === 0) return hasChildren ? (isExpanded ? '📂' : '📁') : '📄';
+      return hasChildren ? (isExpanded ? '📂' : '📁') : '📄';
+    };
 
     /* load */
     const load = async () => {
@@ -644,14 +652,9 @@ window.BoCategoryTree = {
       outlineOffset: selected===null ? '-2px' : '0',
       position:'relative', zIndex: selected===null ? 1 : 'auto' }"
       @click="handleSelectAction('tree-node-select', null)">
-      <span style="width:14px;flex-shrink:0">
-      </span>
-      <span style="font-size:11px;font-weight:700;color:#e8587a;margin-right:4px">
-        ★
-      </span>
-      <span style="font-size:12px;flex:1">
-        전체
-      </span>
+      <span style="width:14px;flex-shrink:0"></span>
+      <span style="font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;">🗂</span>
+      <span style="font-size:12px;flex:1">전체</span>
       <span v-if="showCount ? (showCount(null) > 0) : false" style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0;margin-left:4px;">
         {{ showCount(null) }}
       </span>
@@ -667,25 +670,22 @@ window.BoCategoryTree = {
       position:'relative', zIndex: selected===cat.categoryId ? 1 : 'auto' }"
       @click="handleSelectAction('tree-node-select', cat.categoryId)">
       <span v-if="cat._hasChildren"
-        style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
+        style="width:14px;text-align:center;font-size:9px;color:#bbb;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
         @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
         {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
       </span>
-      <span v-else style="width:14px;flex-shrink:0">
-      </span>
-      <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">
-        {{ DEPTH_BULLET(cat._depth) }}
+      <span v-else style="width:14px;flex-shrink:0"></span>
+      <span style="font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;">
+        {{ DEPTH_BULLET(cat._depth, cat._hasChildren, expandedSet.has(cat.categoryId)) }}
       </span>
       <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
         {{ cat.categoryNm }}
       </span>
       <span v-if="showCount ? (showCount(cat.categoryId) > 0) : false" style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0;margin-left:4px;">
-      {{ showCount(cat.categoryId) }}
-    </span>
-    <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">
-      (비활성)
-    </span>
-  </div>
+        {{ showCount(cat.categoryId) }}
+      </span>
+      <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
+    </div>
   <div v-if="!cfTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">
     카테고리 없음
   </div>
@@ -723,21 +723,18 @@ window.BoCategoryTree = {
             </div>
             <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;transition:background .1s;" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds?.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds?.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat?.categoryId === cat.categoryId ? '#eff6ff' : '', outline: pickerTempCat?.categoryId === cat.categoryId ? '2px solid #2563eb' : 'none', outlineOffset: pickerTempCat?.categoryId === cat.categoryId ? '-2px' : '0', position:'relative', zIndex: pickerTempCat?.categoryId === cat.categoryId ? 1 : 'auto' }" @click="handleSelectAction('picker-select', cat)">
             <span v-if="cat._hasChildren"
-                style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
+                style="width:14px;text-align:center;font-size:9px;color:#bbb;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
                 @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
               {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
             </span>
-            <span v-else style="width:14px;flex-shrink:0">
-            </span>
-            <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">
-              {{ DEPTH_BULLET(cat._depth) }}
+            <span v-else style="width:14px;flex-shrink:0"></span>
+            <span style="font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;">
+              {{ DEPTH_BULLET(cat._depth, cat._hasChildren, expandedSet.has(cat.categoryId)) }}
             </span>
             <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
               {{ cat.categoryNm }}
             </span>
-            <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">
-              (비활성)
-            </span>
+            <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
           </div>
           <div v-if="!cfTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">
             카테고리 없음
@@ -1486,14 +1483,16 @@ window.BoDeptTreeNode = {
     outlineOffset: selected === node.deptId ? '-2px' : '0',
     position:'relative', zIndex: selected === node.deptId ? 1 : 'auto' }"
     @click.stop="handleSelectAction('node-select', node.deptId)">
-    <span v-if="node.children ? (node.children.length) : false" @click.stop="handleBtnAction('node-toggle', node.deptId)" style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
-    {{ expanded.has(node.deptId) ? '▼' : '▶' }}
-  </span>
-  <span v-else style="margin-right:4px;width:14px;flex-shrink:0;">
-  </span>
-  <span style="font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-    {{ node.deptNm }}
-  </span>
+    <span v-if="node.children ? (node.children.length) : false" @click.stop="handleBtnAction('node-toggle', node.deptId)" style="margin-right:2px;font-size:9px;color:#bbb;width:14px;text-align:center;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+      {{ expanded.has(node.deptId) ? '▼' : '▶' }}
+    </span>
+    <span v-else style="margin-right:2px;width:14px;flex-shrink:0;"></span>
+    <span style="font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;">
+      {{ depth===0 ? '🗂' : ((node.children ? node.children.length : 0) > 0 ? (expanded.has(node.deptId) ? '📂' : '📁') : '📄') }}
+    </span>
+    <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+      {{ node.deptNm }}
+    </span>
   <!-- counts(외부 데이터 수) 가 제공되고 비어있지 않으면 우선 표시 (백엔드에서 자손 누적 계산).
        node.deptId === null (루트 "전체") 은 counts['__total__'] 매핑 -->
   <span v-if="counts ? (Object.keys(counts).length > 0) : false"

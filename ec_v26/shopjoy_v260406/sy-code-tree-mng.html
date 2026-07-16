@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>코드 트리 관리</title>
+  <script>
+    // BO 사이트 번호 (팝업은 항상 01)
+    window.BO_SITE_NO = '01';
+  </script>
+  <link rel="stylesheet" href="assets/css/boGlobalStyle01.css">
+  <style>
+    /* 팝업 전용 기본 */
+    body { margin: 0; background: #f5f6fa; font-size: 13px; }
+    #app { height: 100vh; overflow: hidden; }
+
+    /* bo-2col 좌우 패널 높이 맞춤 */
+    .bo-2col { height: calc(100vh - 94px); }
+
+    /* 트리 노드 공통 */
+    .tree-node { border-left: 3px solid transparent; transition: background .12s; }
+    .tree-node:hover { background: #fff5f7; }
+    .tree-node-selected { background: #fff0f4 !important; border-left-color: #e8587a !important; font-weight: 600; color: #e8587a; }
+    .tree-node-lv2-plain { color: #555; }
+    .tree-node-selected.tree-node-lv2 { background: #e8f4ff !important; border-left-color: #1677ff !important; color: #1677ff; font-weight: 600; }
+
+    /* 토스트 */
+    .popup-toast { box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+    .toast-success { background: #52c41a; color: #fff; }
+    .toast-error   { background: #ff4d4f; color: #fff; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- ── Vue 3 core ── -->
+<script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+<script src="assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js"></script>
+<script src="assets/cdn/pkg/pinia/2.1.7/pinia.iife.js"></script>
+<script src="assets/cdn/pkg/axios/1.7.9/axios.min.js"></script>
+
+<!-- ── 유틸 & API ── -->
+<script src="lib/utils/coUtil.js"></script>
+<script src="lib/utils/boApiAxios.js"></script>
+<script src="lib/utils/boUtil.js"></script>
+<script src="lib/env/boEnvConsts.js"></script>
+<script src="lib/utils/coExtSdk.js"></script>
+<script src="lib/utils/coAuth.js"></script>
+<script src="lib/services/coApiSvc.js"></script>
+<script src="lib/services/boApiSvc.js"></script>
+<script src="lib/utils/refDefaults.js"></script>
+<script src="lib/utils/safeArrayUtils.js"></script>
+
+<!-- ── Pinia 스토어 (인증/코드 의존) ── -->
+<script src="lib/stores/bo/boAppInitStore.js"></script>
+<script src="lib/stores/bo/boAppStore.js"></script>
+<script src="lib/stores/bo/boAuthStore.js"></script>
+<script src="lib/stores/bo/boCodeStore.js"></script>
+<script src="lib/stores/bo/boConfigStore.js"></script>
+<script src="lib/stores/bo/boMenuStore.js"></script>
+<script src="lib/stores/bo/boPropStore.js"></script>
+<script src="lib/stores/bo/boRoleStore.js"></script>
+
+<!-- ── 공통 컴포넌트 (btn / form 등 CSS 클래스 재사용) ── -->
+<script src="components/comp/BaseComp.js"></script>
+<script src="components/comp/BoComp.js"></script>
+<script src="components/comp/BoAreaComp.js"></script>
+
+<!-- ── 팝업 컴포넌트 ── -->
+<script src="pages/bo/ec/pd/PdOptCodeMng.js"></script>
+
+<script>
+  const { createApp } = Vue;
+  const { createPinia } = Pinia;
+
+  const pinia = createPinia();
+  const app = createApp({
+    template: `<pd-opt-code-mng />`,
+  });
+
+  app.use(pinia);
+
+  // BoAreaComp 컴포넌트 등록 (btn 클래스 등 공통)
+  if (window.BoPage)              app.component('BoPage',              window.BoPage);
+  if (window.BoContainer)         app.component('BoContainer',         window.BoContainer);
+  if (window.BoSearchArea)        app.component('BoSearchArea',        window.BoSearchArea);
+  if (window.BoGrid)              app.component('BoGrid',              window.BoGrid);
+  if (window.BoGridCrud)          app.component('BoGridCrud',          window.BoGridCrud);
+  if (window.BoPager)             app.component('BoPager',             window.BoPager);
+  if (window.BoFormArea)          app.component('BoFormArea',          window.BoFormArea);
+  if (window.BoModal)             app.component('BoModal',             window.BoModal);
+  if (window.BoTabBar)            app.component('BoTabBar',            window.BoTabBar);
+  if (window.BoRowCancelDelete)   app.component('BoRowCancelDelete',   window.BoRowCancelDelete);
+  if (window.BoPathTreeCard)      app.component('BoPathTreeCard',      window.BoPathTreeCard);
+
+  app.component('PdOptCodeMng', window.PdOptCodeMng);
+
+  // boApp 최소 mock (PdOptCodeMng 내부에서 자체 toast/confirm 구현)
+  window.boApp = window.boApp || {};
+
+  app.mount('#app');
+</script>
+</body>
+</html>

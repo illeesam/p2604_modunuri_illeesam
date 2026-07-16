@@ -9,6 +9,7 @@ window.MbMemberDtl = {
     handleSave:    { type: Function, default: () => {} },     // 저장 콜백
     handleDelete:  { type: Function, default: () => {} },     // 삭제 콜백
     closeDetail:   { type: Function, default: () => {} },     // 닫기 콜백
+    switchToEdit:  { type: Function, default: () => {} },     // 보기→수정 전환 콜백
     dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
     reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-bo §18)
   },
@@ -34,6 +35,9 @@ window.MbMemberDtl = {
       // 폼 닫기 (부모 콜백)
       } else if (cmd === 'form-close') {
         return props.closeDetail();
+      // 보기→수정 전환 (부모 콜백)
+      } else if (cmd === 'form-switch-edit') {
+        return props.switchToEdit();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -91,13 +95,19 @@ window.MbMemberDtl = {
   template: /* html */`
 <!-- ===== ■. 상세/수정 카드 (항상 표시) ====================================== -->
 <bo-container body-style="padding:12px;"
-  :title="!active ? '회원 상세' : (detailModal.isNew ? '신규 등록' : '상세 / 수정')"
+  :title="!active ? '회원 상세' : (detailModal.isNew ? '신규 등록' : '회원 수정')"
   :title-id="!active ? '' : (detailModal.isNew ? '' : (detailModal.form?.memberId || ''))">
-  <!-- ===== ■.■. 상세 툴바: 저장/삭제/닫기 (active 시에만 버튼 노출) ============ -->
-  <template v-if="active" #toolbar-actions>
-    <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-    <button v-if="!detailModal.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-    <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+  <!-- ===== ■.■. 상세 툴바: 보기모드=[수정]/[닫기], 편집모드=[저장]/[삭제]/[닫기] ============ -->
+  <template v-if="detailModal.dtlId" #toolbar-actions>
+    <template v-if="!active">
+      <button class="btn btn_edit" @click="handleBtnAction('form-switch-edit')">수정</button>
+      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+    </template>
+    <template v-if="active">
+      <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+      <button v-if="!detailModal.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+    </template>
   </template>
   <!-- ===== □.■. 상세 툴바 ================================================ -->
   <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->

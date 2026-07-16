@@ -356,6 +356,11 @@ window.PdProdMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
+    /* fnOpenOptCodeMng — 상품옵션코드관리 팝업 */
+    const fnOpenOptCodeMng = () => {
+      window.open('sy-code-tree-mng.html', 'pdOptCodeMng', 'width=1100,height=720,resizable=yes,scrollbars=yes');
+    };
+
     return {
       columns,
       products, uiState, searchParam, baseGridPager, detailPanel, catModal,       // 상태 / 데이터
@@ -363,12 +368,18 @@ window.PdProdMng = {
       cfDetailEditId, cfDetailKey,                        // computed
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
       handleSearchList,                                      // Dtl 임베드 전달용
+      fnOpenOptCodeMng,
     };
   },
   template: /* html */`
 <bo-page title="상품관리"
   desc-summary="상품관리 는 판매 상품의 기본정보·가격·재고·옵션을 등록하고 관리합니다."
   :desc-detail="['✔ 단품/묶음/세트 상품 유형별 등록·수정·삭제를 처리합니다.','✔ 옵션(1단/2단) 및 SKU별 가격·재고를 설정합니다.','✔ 상품 상태(임시저장→검수→판매중→품절·중단)를 관리합니다.','예) 단품 의류 등록, 옵션(색상·사이즈) 설정, 재고 이력 확인'].join(String.fromCharCode(10))">
+  <template #actions>
+    <button class="btn btn-secondary btn-sm" style="font-size:12px;" @click="fnOpenOptCodeMng()">
+      ⚙ 상품옵션코드관리
+    </button>
+  </template>
   <!-- ===== ■. 검색 ====================================================== -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"

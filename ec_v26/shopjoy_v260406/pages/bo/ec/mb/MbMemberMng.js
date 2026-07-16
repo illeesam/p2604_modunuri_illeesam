@@ -80,10 +80,10 @@ window.MbMemberMng = {
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ MbMemberMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'members-cellClick') {
-        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        // 보기모드 트리거 컬럼: 행번호(__no__) 또는 link 셀 → 보기모드(저장/취소 숨김)
         const VIEW_COLS = ['__no__'];
-        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
-          return openDetail(row);
+        if (VIEW_COLS.includes(colKey) || (e.col && e.col.link)) {
+          return openView(row);
         }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
@@ -165,22 +165,28 @@ window.MbMemberMng = {
       });
     };
 
-    /* openDetail — 인라인 패널 편집 모드로 열기 (행 선택 → 저장/취소 노출) */
-    const openDetail = async (row) => {
+    /* _loadMember — 공통 상세 데이터 로드 (row 먼저 표시 후 API 재조회) */
+    const _loadMember = async (row, active) => {
       detailPanel.dtlId = row.memberId;
       detailPanel.isNew = false;
       detailPanel.show = true;
-      detailPanel.active = true;     // 행 선택 → 저장/취소 노출
+      detailPanel.active = active;
       detailPanel.reloadTrigger++;
-      fnApplyForm(row); // 목록 row 데이터로 먼저 표시
+      fnApplyForm(row);
       try {
         const res = await boApiSvc.mbMember.getById(row.memberId, '회원관리', '상세조회');
         const d = res.data?.data || res.data;
         if (d) { fnApplyForm(d); }
       } catch (err) {
-        console.error('[openDetail]', err);
+        console.error('[_loadMember]', err);
       }
     };
+
+    /* openView — 번호/이름 클릭 → 보기 모드 (저장/취소 숨김) */
+    const openView = (row) => _loadMember(row, false);
+
+    /* openDetail — 수정 버튼 클릭 → 편집 모드 (저장/취소 노출) */
+    const openDetail = (row) => _loadMember(row, true);
 
     /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
     const openNew = () => {
@@ -204,6 +210,9 @@ window.MbMemberMng = {
 
     /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
     const closeDetail = () => { resetDetailToNew(); };
+
+    /* switchToEdit — 보기모드 → 편집모드 전환 (Dtl 내 [수정] 버튼 콜백) */
+    const switchToEdit = () => { detailPanel.active = true; };
 
     /* handleSave — 저장 */
     const handleSave = async () => {
@@ -340,7 +349,7 @@ window.MbMemberMng = {
       members, uiState, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       fnGridRowClass,                                                  // 헬퍼
-      handleSave, handleDelete, closeDetail, handleSearchList,                         // Dtl 콜백 (자식 컴포넌트로 전달)
+      handleSave, handleDelete, closeDetail, switchToEdit, handleSearchList,            // Dtl 콜백 (자식 컴포넌트로 전달)
     };
   },
   template: /* html */`
@@ -375,6 +384,7 @@ window.MbMemberMng = {
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================== -->
   <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"
     :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
+    :switch-to-edit="switchToEdit"
     :reload-trigger="detailPanel.reloadTrigger"
     />
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
