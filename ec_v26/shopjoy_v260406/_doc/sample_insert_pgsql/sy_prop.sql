@@ -834,3 +834,55 @@ VALUES ('2604010000000001','biz','biz.site',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+
+-- ──────────────────────────────────────────────────────────────
+-- 스윗트래커 배송 조회 API — app.courier.sweettracker.*
+--   월 1,000건 무료 / 발급: https://info.sweettracker.co.kr
+-- ──────────────────────────────────────────────────────────────
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.courier.sweettracker','app.courier.sweettracker.api-key',
+ '',
+ '스윗트래커 API Key','SECRET',10,'Y','^local^dev^',
+ '스윗트래커 배송조회 API 키 — 월 1,000건 무료 / 발급: https://info.sweettracker.co.kr → 마이페이지 → API 키 발급',
+ 'SYSTEM','2026-07-17 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+-- ──────────────────────────────────────────────────────────────
+-- 우체국 배송조회 공공데이터포털 API — app.courier.epost.*
+--   일 10,000건 무료 / 발급: https://www.data.go.kr/data/15035122/openapi.do → 활용신청
+-- ──────────────────────────────────────────────────────────────
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.courier.epost','app.courier.epost.service-key',
+ '',
+ '우체국 배송조회 Service Key','SECRET',10,'Y','^local^dev^',
+ '공공데이터포털 우체국 종적조회 API 키 — 일 10,000건 무료 / 발급: https://www.data.go.kr/data/15035122/openapi.do',
+ 'SYSTEM','2026-07-17 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+-- ──────────────────────────────────────────────────────────────
+-- Delivery Tracker API — app.courier.delivery-tracker.*
+--   무료 플랜 있음 / 발급: https://tracker.delivery → 로그인 → 개발자 → API Key 발급
+--   지원 택배사: CJ대한통운(kr.cjlogistics) / 롯데(kr.lotte) / 한진(kr.hanjin) /
+--               로젠(kr.logen) / 우체국(kr.epost) / 쿠팡로켓(kr.coupang) 외 다수
+--   인증: Authorization: TRACKQL-API-KEY {clientId}:{secret}
+-- ──────────────────────────────────────────────────────────────
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.courier.delivery-tracker','app.courier.delivery-tracker.client-id',
+ '',
+ 'Delivery Tracker Client ID','SECRET',10,'Y','^local^dev^',
+ 'Delivery Tracker API Client ID — 발급: https://tracker.delivery → 개발자 → API Key',
+ 'SYSTEM','2026-07-17 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.courier.delivery-tracker','app.courier.delivery-tracker.secret',
+ '',
+ 'Delivery Tracker Secret','SECRET',20,'Y','^local^dev^',
+ 'Delivery Tracker API Secret — Client ID 와 쌍으로 발급. 인증헤더: TRACKQL-API-KEY {clientId}:{secret}',
+ 'SYSTEM','2026-07-17 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
