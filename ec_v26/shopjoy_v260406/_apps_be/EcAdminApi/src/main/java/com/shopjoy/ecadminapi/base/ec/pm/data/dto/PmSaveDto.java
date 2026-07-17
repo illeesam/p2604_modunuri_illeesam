@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PmSaveDto {
 
@@ -15,6 +16,7 @@ public class PmSaveDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String saveId;
+        private List<String> saveIds;              // PK 다건 IN
         @Size(max = 20) private String saveTypeCd;
     }
 

@@ -3,11 +3,13 @@ package com.shopjoy.ecadminapi.fo.ec.service;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponIssueDto;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponIssueRepository;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmCouponService;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -25,12 +27,26 @@ public class FoPmCouponService {
 
     private final PmCouponIssueRepository pmCouponIssueRepository;
     private final PmCouponService         pmCouponService;
+    private final PmCouponProdRepository  pmCouponProdRepository;
 
-    /** getAvailableCoupons — 조회 */
+    private static final String DEFAULT_SITE_ID = "2604010000000001";
+
+    /** getAvailableCoupons — 조회
+     *  req.prodId 가 있으면 pm_coupon_prod 로 적용 가능한 쿠폰만 필터링 */
     public List<PmCouponIssueDto.Item> getAvailableCoupons(PmCouponIssueDto.Request req) {
         if (req == null) req = new PmCouponIssueDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         req.setUseYn("N");
+
+        // prodId 가 있으면 해당 상품에 적용 가능한 쿠폰 ID 만 사전 필터
+        String prodId = req.getProdId();
+        if (StringUtils.hasText(prodId)) {
+            String siteId = StringUtils.hasText(req.getSiteId()) ? req.getSiteId() : DEFAULT_SITE_ID;
+            List<String> couponIds = pmCouponProdRepository.findCouponIdsByProdId(prodId, siteId);
+            if (couponIds.isEmpty()) return List.of();  // 적용 쿠폰 없음
+            req.setCouponIds(couponIds);
+        }
+
         List<PmCouponIssueDto.Item> list = pmCouponIssueRepository.selectList(req);
         _listFillRelations(list);
         return list;

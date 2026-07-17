@@ -10,6 +10,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PmDiscntDto {
 
@@ -18,6 +19,7 @@ public class PmDiscntDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String discntId;
+        private List<String> discntIds;            // PK 다건 IN
         @Size(max = 20) private String discntTypeCd;
         @Size(max = 20) private String discntStatusCd;
     }

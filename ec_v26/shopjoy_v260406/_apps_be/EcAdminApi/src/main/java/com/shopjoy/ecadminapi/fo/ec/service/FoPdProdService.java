@@ -7,10 +7,16 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponProdRepository;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmDiscntProdRepository;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventProdRepository;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmCouponService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmGiftService;
+import com.shopjoy.ecadminapi.base.ec.pm.service.PmSaveService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +61,11 @@ public class FoPdProdService {
     private final PmDiscntService       pmDiscntService;
     private final PmGiftService         pmGiftService;
     private final PmEventService        pmEventService;
+    private final PmSaveService         pmSaveService;
+    private final PmCouponProdRepository pmCouponProdRepository;
+    private final PmDiscntProdRepository pmDiscntProdRepository;
+    private final PmEventProdRepository  pmEventProdRepository;
+    private final PmSaveProdRepository   pmSaveProdRepository;
 
     /* ── 목록 ────────────────────────────────────────────────── */
 
@@ -225,22 +236,53 @@ public class FoPdProdService {
      */
     public Map<String, Object> getPromotions(String prodId) {
         PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
-        String siteId = prod != null ? prod.getSiteId() : null;
+        String siteId = prod != null ? prod.getSiteId() : DEFAULT_SITE_ID;
 
-        PmCouponDto.Request couponReq = new PmCouponDto.Request();
-        couponReq.setSiteId(siteId); couponReq.setUseYn("Y");
-        PmDiscntDto.Request discntReq = new PmDiscntDto.Request();
-        discntReq.setSiteId(siteId); discntReq.setUseYn("Y");
-        PmGiftDto.Request giftReq = new PmGiftDto.Request();
-        giftReq.setSiteId(siteId); giftReq.setUseYn("Y");
-        PmEventDto.Request eventReq = new PmEventDto.Request();
-        eventReq.setSiteId(siteId); eventReq.setUseYn("Y");
+        // pm_*_prod 테이블에서 이 상품에 적용 가능한 ID 목록 조회
+        List<String> couponIds = pmCouponProdRepository.findCouponIdsByProdId(prodId, siteId);
+        List<String> discntIds = pmDiscntProdRepository.findDiscntIdsByProdId(prodId, siteId);
+        List<String> eventIds  = pmEventProdRepository.findEventIdsByProdId(prodId, siteId);
+        List<String> saveIds   = pmSaveProdRepository.findSaveIdsByProdId(prodId, siteId);
 
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("coupons", pmCouponService.getList(couponReq));
-        result.put("discnts", pmDiscntService.getList(discntReq));
-        result.put("gifts",   pmGiftService.getList(giftReq));
-        result.put("events",  pmEventService.getList(eventReq));
+
+        if (!couponIds.isEmpty()) {
+            PmCouponDto.Request req = new PmCouponDto.Request();
+            req.setSiteId(siteId); req.setCouponIds(couponIds);
+            result.put("coupons", pmCouponService.getList(req));
+        } else {
+            result.put("coupons", List.of());
+        }
+
+        if (!discntIds.isEmpty()) {
+            PmDiscntDto.Request req = new PmDiscntDto.Request();
+            req.setSiteId(siteId); req.setDiscntIds(discntIds);
+            result.put("discnts", pmDiscntService.getList(req));
+        } else {
+            result.put("discnts", List.of());
+        }
+
+        // 사은품(gift)은 *_prod 테이블 미운용 — useYn 전체 조회 유지
+        PmGiftDto.Request giftReq = new PmGiftDto.Request();
+        giftReq.setSiteId(siteId); giftReq.setUseYn("Y");
+        result.put("gifts", pmGiftService.getList(giftReq));
+
+        if (!eventIds.isEmpty()) {
+            PmEventDto.Request req = new PmEventDto.Request();
+            req.setSiteId(siteId); req.setEventIds(eventIds);
+            result.put("events", pmEventService.getList(req));
+        } else {
+            result.put("events", List.of());
+        }
+
+        if (!saveIds.isEmpty()) {
+            PmSaveDto.Request req = new PmSaveDto.Request();
+            req.setSiteId(siteId); req.setSaveIds(saveIds);
+            result.put("saves", pmSaveService.getList(req));
+        } else {
+            result.put("saves", List.of());
+        }
+
         return result;
     }
 }

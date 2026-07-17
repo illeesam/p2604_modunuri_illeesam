@@ -14,6 +14,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEvent;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -63,6 +64,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     baseAndSiteId(search),
+                    baseAndEventIds(search),
                     baseAndEventId(search),
                     baseAndUseYn(search),
                     baseAndEventStatusCd(search),
@@ -91,6 +93,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
+                baseAndEventIds(search),
                 baseAndEventId(search),
                 baseAndUseYn(search),
                 baseAndEventStatusCd(search),
@@ -130,6 +133,12 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     private BooleanExpression baseAndSiteId(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pmEvent.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* eventId IN */
+    private BooleanExpression baseAndEventIds(PmEventDto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getEventIds())
+                ? pmEvent.eventId.in(search.getEventIds()) : null;
     }
 
     /* eventId 정확 일치 */

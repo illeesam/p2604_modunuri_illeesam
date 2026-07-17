@@ -18,7 +18,9 @@ public class PmEventDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String eventId;
+        private List<String> eventIds;             // PK 다건 IN
         @Size(max = 20) private String eventStatusCd;
+        @Size(max = 21) private String prodId;     // 상품 기준 필터 — pm_event_prod 조회 후 eventIds 주입
     }
 
     @Getter @Setter @NoArgsConstructor

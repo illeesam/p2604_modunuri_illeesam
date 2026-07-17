@@ -17,6 +17,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponIssueRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -79,6 +80,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     baseAndSiteId(search),
+                    baseAndCouponIds(search),
                     baseAndIssueId(search),
                     baseAndMemberId(search),
                     baseAndUseYn(search),
@@ -107,6 +109,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
+                baseAndCouponIds(search),
                 baseAndIssueId(search),
                 baseAndMemberId(search),
                 baseAndUseYn(search),
@@ -146,6 +149,12 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
     private BooleanExpression baseAndSiteId(PmCouponIssueDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pmCouponIssue.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* couponId IN — prodId 기반 사전 필터용 */
+    private BooleanExpression baseAndCouponIds(PmCouponIssueDto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getCouponIds())
+                ? pmCouponIssue.couponId.in(search.getCouponIds()) : null;
     }
 
     /* issueId 정확 일치 */

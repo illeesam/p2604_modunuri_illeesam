@@ -4,20 +4,22 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventRepository;
+import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventItemService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventBenefitService;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
 
 /**
  * FO 이벤트 서비스 — 진행 중 이벤트 조회
@@ -28,23 +30,37 @@ import com.shopjoy.ecadminapi.common.util.CmUtil;
 @Transactional(readOnly = true)
 public class FoPmEventService {
 
-    private final PmEventRepository pmEventRepository;
-    private final PmEventItemService pmEventItemService;
-    private final PmEventBenefitService pmEventBenefitService;
+    private final PmEventRepository     pmEventRepository;
+    private final PmEventProdRepository  pmEventProdRepository;
+    private final PmEventItemService     pmEventItemService;
+    private final PmEventBenefitService  pmEventBenefitService;
 
     private static final String DEFAULT_SITE_ID = "2604010000000001";
 
-    /** getList — 조회 */
+    /** getList — 조회. req.prodId 가 있으면 pm_event_prod 로 적용 가능한 이벤트만 필터링 */
     public List<PmEventDto.Item> getList(PmEventDto.Request req) {
         SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
+        if (StringUtils.hasText(req.getProdId())) {
+            List<String> eventIds = pmEventProdRepository.findEventIdsByProdId(req.getProdId(), req.getSiteId());
+            if (eventIds.isEmpty()) return List.of();
+            req.setEventIds(eventIds);
+        }
         List<PmEventDto.Item> list = pmEventRepository.selectList(req);
         _listFillRelations(list);
         return list;
     }
 
-    /** getPageData — 조회 */
+    /** getPageData — 조회. req.prodId 가 있으면 pm_event_prod 로 적용 가능한 이벤트만 필터링 */
     public PmEventDto.PageResponse getPageData(PmEventDto.Request req) {
         SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
+        if (StringUtils.hasText(req.getProdId())) {
+            List<String> eventIds = pmEventProdRepository.findEventIdsByProdId(req.getProdId(), req.getSiteId());
+            if (eventIds.isEmpty()) {
+                PmEventDto.PageResponse empty = new PmEventDto.PageResponse();
+                return empty.setPageInfo(List.of(), 0L, 1, 10, req);
+            }
+            req.setEventIds(eventIds);
+        }
         PageHelper.addPaging(req);
         PmEventDto.PageResponse res = pmEventRepository.selectPageData(req);
         _listFillRelations(res.getPageList());

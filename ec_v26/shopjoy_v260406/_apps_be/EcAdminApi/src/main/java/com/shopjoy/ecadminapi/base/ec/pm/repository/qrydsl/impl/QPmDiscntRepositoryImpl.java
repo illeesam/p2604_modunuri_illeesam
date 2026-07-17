@@ -14,6 +14,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscnt;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmDiscntRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -65,6 +66,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     baseAndSiteId(search),
+                    baseAndDiscntIds(search),
                     baseAndDiscntId(search),
                     baseAndUseYn(search),
                     baseAndDiscntTypeCd(search),
@@ -94,6 +96,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
+                baseAndDiscntIds(search),
                 baseAndDiscntId(search),
                 baseAndUseYn(search),
                 baseAndDiscntTypeCd(search),
@@ -134,6 +137,12 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     private BooleanExpression baseAndSiteId(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pmDiscnt.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* discntId IN */
+    private BooleanExpression baseAndDiscntIds(PmDiscntDto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getDiscntIds())
+                ? pmDiscnt.discntId.in(search.getDiscntIds()) : null;
     }
 
     /* discntId 정확 일치 */

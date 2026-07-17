@@ -16,6 +16,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -67,6 +68,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     baseAndSiteId(search),
+                    baseAndSaveIds(search),
                     baseAndSaveId(search),
                     baseAndSaveTypeCd(search),
                     baseAndDateRange(search),
@@ -94,6 +96,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
+                baseAndSaveIds(search),
                 baseAndSaveId(search),
                 baseAndSaveTypeCd(search),
                 baseAndDateRange(search),
@@ -133,6 +136,12 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     private BooleanExpression baseAndSiteId(PmSaveDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pmSave.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* saveId IN */
+    private BooleanExpression baseAndSaveIds(PmSaveDto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getSaveIds())
+                ? pmSave.saveId.in(search.getSaveIds()) : null;
     }
 
     /* saveId 정확 일치 */

@@ -10,6 +10,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PmCouponIssueDto {
 
@@ -19,6 +20,8 @@ public class PmCouponIssueDto {
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String issueId;
         @Size(max = 21) private String memberId;
+        private List<String> couponIds;          // 쿠폰 ID IN — prodId 기반 사전 필터용
+        @Size(max = 21) private String prodId;   // 상품 기준 필터 — pm_coupon_prod 조회 후 couponIds 주입
     }
 
     @Getter @Setter @NoArgsConstructor
