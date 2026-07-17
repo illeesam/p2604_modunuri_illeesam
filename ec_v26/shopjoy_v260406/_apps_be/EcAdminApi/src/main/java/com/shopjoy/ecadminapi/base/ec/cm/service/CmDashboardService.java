@@ -11,6 +11,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -145,6 +146,7 @@ public class CmDashboardService {
      *           payMethods:[{method,count,amt}],
      *           categories:[{categoryNm,orderCount,amt}] }
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @SuppressWarnings("unchecked")
     public Map<String, Object> getDailyStats(LocalDate targetDate) {
         LocalDate date     = targetDate != null ? targetDate : LocalDate.now().minusDays(1);
