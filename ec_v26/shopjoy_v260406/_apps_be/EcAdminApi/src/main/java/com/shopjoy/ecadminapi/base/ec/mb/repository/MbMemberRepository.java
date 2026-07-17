@@ -38,4 +38,18 @@ public interface MbMemberRepository extends JpaRepository<MbMember, String>, QMb
         @Param("warnThreshold") LocalDateTime warnThreshold,
         @Param("dormantThreshold") LocalDateTime dormantThreshold
     );
+
+    /**
+     * 휴면 전환 대상 조회 — ACTIVE 상태 + 마지막 로그인이 threshold 이전인 회원.
+     * lastLogin IS NULL(가입 후 미로그인)인 경우도 regDate 기준으로 threshold 경과 시 대상에 포함.
+     */
+    @Query("SELECT m FROM MbMember m " +
+           "WHERE m.siteId = :siteId " +
+           "AND m.memberStatusCd = 'ACTIVE' " +
+           "AND (m.lastLogin <= :threshold OR " +
+           "     (m.lastLogin IS NULL AND m.regDate <= :threshold))")
+    List<MbMember> findDormantTargets(
+        @Param("siteId") String siteId,
+        @Param("threshold") LocalDateTime threshold
+    );
 }

@@ -24,4 +24,5 @@ VALUES
 ('BT000016', '2604010000000001', 'SY_SEND_EMAIL',      '이메일 배치 발송',      '휴면 예정 안내 등 대상자에게 이메일 자동 발송',                   '0 9 * * *',    'DAILY',   0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP),
 ('BT000017', '2604010000000001', 'SY_SEND_MSG',        'SMS/카카오 배치 발송',  '쿠폰 만료 D-3 등 대상자에게 카카오/SMS 자동 발송',                '0 10 * * *',   'DAILY',   0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP),
 ('BT000018', '2604010000000001', 'SY_SEND_ALARM',      '관리자 알림 배치',      '미처리 주문/클레임 경보를 관리자 시스템 알림으로 발송',            '0 8 * * *',    'DAILY',   0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP),
-('BT000019', '2604010000000001', 'STATS_DASHBOARD',    '대시보드 데이터 생성',  '전일 집계값을 cm_dashboard_item_data에 UPSERT',                    '5 0 * * *',    'DAILY',   0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP);
+('BT000019', '2604010000000001', 'STATS_DASHBOARD',    '대시보드 데이터 생성',  '전일 집계값을 cm_dashboard_item_data에 UPSERT',                    '5 0 * * *',    'DAILY',   0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP),
+('BT000020', '2604010000000001', 'MEMBER_DORMANT',    '회원 휴면 전환',        '1년 이상 미로그인 ACTIVE 회원을 DORMANT로 자동 전환',               '0 1 * * *',    'DAILY',   0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP);
