@@ -1,7 +1,10 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveItem;
+import com.shopjoy.ecadminapi.base.ec.pm.service.PmSaveItemService;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmSaveService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -20,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoPmSaveController {
     private final BoPmSaveService boPmSaveService;
+    private final PmSaveItemService pmSaveItemService;
 
     /** list — 목록 */
     @GetMapping
@@ -76,5 +80,27 @@ public class BoPmSaveController {
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
         }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /* ── 적립금 대상상품 (item) 서브 API ─────────────────── */
+
+    /** 상품에 연결된 적립금 항목 목록 조회 */
+    @GetMapping("/items")
+    public ResponseEntity<ApiResponse<List<PmSaveItemDto.Item>>> listItems(
+            @Valid @ModelAttribute PmSaveItemDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(pmSaveItemService.getList(req)));
+    }
+
+    /** 적립금 항목 등록 (상품을 적립금에 연결) */
+    @PostMapping("/items")
+    public ResponseEntity<ApiResponse<PmSaveItem>> createItem(@RequestBody PmSaveItem entity) {
+        return ResponseEntity.status(201).body(ApiResponse.created(pmSaveItemService.create(entity)));
+    }
+
+    /** 적립금 항목 삭제 (상품을 적립금에서 제거) */
+    @DeleteMapping("/items/{itemId}")
+    public ResponseEntity<ApiResponse<Void>> deleteItem(@PathVariable("itemId") String itemId) {
+        pmSaveItemService.delete(itemId);
+        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }

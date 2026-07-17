@@ -25,7 +25,7 @@ window.PdProdDtl = {
     const boUsers = reactive([]);
     const categories = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '' });
+    const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, isPageCodeLoad: false, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
     const grpCodes = reactive({ product_statuses: [], prod_types: [], prod_plan_statuses: [], opt_stock_statuses: [], stock_filter_opts: [{value:'in',label:'재고있음'},{value:'out',label:'품절(0)'}] });
@@ -61,6 +61,79 @@ window.PdProdDtl = {
       // 사용자 페이스 미리보기 (새창)
       } else if (cmd === 'form-preview') {
         return onPreview();
+      // 프로모션 탭 재조회
+      } else if (cmd === 'promo-coupon-reload') {
+        if (!cfCurProdId.value) return;
+        boApiSvc.pmCouponItem.getList({ targetId: cfCurProdId.value, targetTypeCd: 'PRODUCT' }, '상품관리', '쿠폰재조회')
+          .then(r => tabData.promoCoupons.splice(0, tabData.promoCoupons.length, ...(r.data?.data || [])))
+          .catch(() => {});
+        return;
+      } else if (cmd === 'promo-save-reload') {
+        if (!cfCurProdId.value) return;
+        boApiSvc.pmSaveItem.getList({ targetId: cfCurProdId.value, targetTypeCd: 'PRODUCT' }, '상품관리', '적립금재조회')
+          .then(r => tabData.promoSaves.splice(0, tabData.promoSaves.length, ...(r.data?.data || [])))
+          .catch(() => {});
+        return;
+      } else if (cmd === 'promo-discnt-reload') {
+        if (!cfCurProdId.value) return;
+        boApiSvc.pmDiscntItem.getList({ targetId: cfCurProdId.value, targetTypeCd: 'PRODUCT' }, '상품관리', '할인재조회')
+          .then(r => tabData.promoDiscnts.splice(0, tabData.promoDiscnts.length, ...(r.data?.data || [])))
+          .catch(() => {});
+        return;
+      } else if (cmd === 'promo-coupon-delete') {
+        if (!param) return;
+        props.showConfirm('삭제', '이 상품을 쿠폰 대상에서 제거하시겠습니까?').then(ok => {
+          if (!ok) return;
+          boApiSvc.pmCouponItem.remove(param, '상품관리', '쿠폰삭제')
+            .then(() => { props.showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-coupon-reload'); })
+            .catch(err => props.showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
+        });
+        return;
+      } else if (cmd === 'promo-save-delete') {
+        if (!param) return;
+        props.showConfirm('삭제', '이 상품을 적립금 대상에서 제거하시겠습니까?').then(ok => {
+          if (!ok) return;
+          boApiSvc.pmSaveItem.remove(param, '상품관리', '적립금삭제')
+            .then(() => { props.showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-save-reload'); })
+            .catch(err => props.showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
+        });
+        return;
+      } else if (cmd === 'promo-discnt-delete') {
+        if (!param) return;
+        props.showConfirm('삭제', '이 상품을 할인 대상에서 제거하시겠습니까?').then(ok => {
+          if (!ok) return;
+          boApiSvc.pmDiscntItem.remove(param, '상품관리', '할인삭제')
+            .then(() => { props.showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-discnt-reload'); })
+            .catch(err => props.showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
+        });
+        return;
+      } else if (cmd === 'promo-coupon-add') {
+        uiState.promoPicker = 'coupon';
+        return;
+      } else if (cmd === 'promo-save-add') {
+        uiState.promoPicker = 'save';
+        return;
+      } else if (cmd === 'promo-discnt-add') {
+        uiState.promoPicker = 'discnt';
+        return;
+      } else if (cmd === 'promo-coupon-pick') {
+        if (!param?.couponId || !cfCurProdId.value) return;
+        boApiSvc.pmCouponItem.create({ couponId: param.couponId, targetTypeCd: 'PRODUCT', targetId: cfCurProdId.value }, '상품관리', '쿠폰추가')
+          .then(() => { uiState.promoPicker = null; props.showToast('추가되었습니다.', 'success'); handleBtnAction('promo-coupon-reload'); })
+          .catch(err => props.showToast(err.response?.data?.message || '추가 실패', 'error', 0));
+        return;
+      } else if (cmd === 'promo-save-pick') {
+        if (!param?.saveId || !cfCurProdId.value) return;
+        boApiSvc.pmSaveItem.create({ saveId: param.saveId, targetTypeCd: 'PRODUCT', targetId: cfCurProdId.value }, '상품관리', '적립금추가')
+          .then(() => { uiState.promoPicker = null; props.showToast('추가되었습니다.', 'success'); handleBtnAction('promo-save-reload'); })
+          .catch(err => props.showToast(err.response?.data?.message || '추가 실패', 'error', 0));
+        return;
+      } else if (cmd === 'promo-discnt-pick') {
+        if (!param?.discntId || !cfCurProdId.value) return;
+        boApiSvc.pmDiscntItem.create({ discntId: param.discntId, targetTypeCd: 'PRODUCT', targetId: cfCurProdId.value }, '상품관리', '할인추가')
+          .then(() => { uiState.promoPicker = null; props.showToast('추가되었습니다.', 'success'); handleBtnAction('promo-discnt-reload'); })
+          .catch(err => props.showToast(err.response?.data?.message || '추가 실패', 'error', 0));
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -117,7 +190,7 @@ window.PdProdDtl = {
       rels:    { pageNo: 1, pageSize: 10, totalCount: 0 },
     });
     // 탭별 전체 데이터 (페이징은 프론트 슬라이스)
-    const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [] });
+    const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [], bundleItems: [], setItems: [], promoCoupons: [], promoSaves: [], promoDiscnts: [] });
 
 
     /* 상품 onTabPageChange */
@@ -245,6 +318,36 @@ window.PdProdDtl = {
           // 연관상품 [7]
           const relList = r[7].data?.data || [];
           tabData.rels.splice(0, tabData.rels.length, ...relList.map(rel => ({ ...rel, _id: _relSeq++, prodNm: rel.relProdNm || rel.prodNm || '' })));
+
+          // 묶음구성 / 세트구성 — prodTypeCd 기준 선택 로드
+          const prodTypeCd_ = (p.prodTypeCd || '').toUpperCase();
+          if (prodTypeCd_ === 'GROUP') {
+            try {
+              const br = await boApiSvc.pdBundle.getItems(props.dtlId, '상품관리', '묶음구성조회');
+              const bundleList = br.data?.data || [];
+              tabData.bundleItems.splice(0, tabData.bundleItems.length, ...bundleList.map((b, i) => ({ ...b, _id: i + 1 })));
+            } catch (_) { tabData.bundleItems.splice(0); }
+          }
+          if (prodTypeCd_ === 'SET') {
+            try {
+              const sr = await boApiSvc.pdSet.getItems(props.dtlId, '상품관리', '세트구성조회');
+              const setList = sr.data?.data || [];
+              tabData.setItems.splice(0, tabData.setItems.length, ...setList.map((s, i) => ({ ...s, _id: i + 1 })));
+            } catch (_) { tabData.setItems.splice(0); }
+          }
+          // 프로모션 — 이 상품에 연결된 쿠폰/적립금/할인 항목 조회 (junction 테이블)
+          try {
+            const [cr, sr2, dr] = await Promise.all([
+              boApiSvc.pmCouponItem.getList({ targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '쿠폰조회'),
+              boApiSvc.pmSaveItem.getList(  { targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '적립금조회'),
+              boApiSvc.pmDiscntItem.getList({ targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '할인조회'),
+            ]);
+            tabData.promoCoupons.splice(0, tabData.promoCoupons.length, ...(cr.data?.data || []));
+            tabData.promoSaves.splice(0,   tabData.promoSaves.length,   ...(sr2.data?.data || []));
+            tabData.promoDiscnts.splice(0, tabData.promoDiscnts.length, ...(dr.data?.data || []));
+          } catch (_) {
+            tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0);
+          }
         }
         uiState.error = null;
       } catch (err) {
@@ -266,22 +369,39 @@ window.PdProdDtl = {
       tabData.images.splice(0); tabData.skus.splice(0);
       tabData.content.splice(0); tabData.rels.splice(0);
       tabData.opts.groups.splice(0); tabData.opts.items.splice(0);
+      tabData.bundleItems.splice(0); tabData.setItems.splice(0);
+      tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0);
     });
 
     watch(tabMode2, v => { uiState.tabMode2 = v; window._pdProdDtlState.tabMode = v; });
+
+    /* prodTypeCd 변경 시 현재 탭이 숨겨지면 info 로 자동 이탈 */
+    watch(() => form.prodTypeCd, () => {
+      const cur = tabs.find(t => t.id === topTab.value);
+      if (cur && cur.visible === false) { topTab.value = 'info'; }
+    });
 
     /* showTab — 표시 */
     const showTab = id => tabMode2.value !== 'tab' || topTab.value === id;
 
     /* tabs — 탭 정의 (BoTabBar 데이터, reactive). 카운트는 tabData getter 로 반응형 유지 */
     const tabs = reactive([
-      { id: 'info',    label: '기본정보',        icon: '📋' },
-      { id: 'detail',  label: '상세설정',        icon: '📝' },
-      { id: 'content', label: '상품설명',        icon: '📄', get count() { return tabData.content.length; } },
-      { id: 'option',  label: '옵션설정',        icon: '⚙',  get count() { return tabData.opts.groups.length; } },
-      { id: 'price',   label: '옵션(가격/재고)', icon: '💰', get count() { return tabData.skus.length; } },
-      { id: 'image',   label: '이미지',          icon: '🖼', get count() { return tabData.images.length; } },
-      { id: 'related', label: '연관상품',        icon: '🔗', get count() { return tabData.rels.length; } },
+      { id: 'info',     label: '기본정보',        icon: '📋' },
+      { id: 'detail',   label: '상세설정',        icon: '📝' },
+      { id: 'promo',    label: '프로모션',        icon: '🎯' },
+      { id: 'content',  label: '상품설명',        icon: '📄', get count() { return tabData.content.length; } },
+      { id: 'option',   label: '옵션설정',        icon: '⚙',
+        get visible() { return form.prodTypeCd === 'OPTION'; },
+        get count() { return tabData.opts.groups.length; } },
+      { id: 'price',    label: '옵션(가격/재고)', icon: '💰',
+        get visible() { return form.prodTypeCd === 'OPTION'; },
+        get count() { return tabData.skus.length; } },
+      { id: 'bundle',   label: '묶음구성',        icon: '📦',
+        get visible() { return form.prodTypeCd === 'GROUP'; } },
+      { id: 'setitems', label: '세트구성',        icon: '🎁',
+        get visible() { return form.prodTypeCd === 'SET'; } },
+      { id: 'image',    label: '이미지',          icon: '🖼', get count() { return tabData.images.length; } },
+      { id: 'related',  label: '연관상품',        icon: '🔗', get count() { return tabData.rels.length; } },
     ]);
 
     // -- form: pd_prod 전체 필드
@@ -1118,7 +1238,7 @@ window.PdProdDtl = {
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) { return; }
 
-      const TAB_LABEL = { content: '상품설명', option: '옵션설정', price: '옵션(가격/재고)', image: '이미지', related: '연관상품' };
+      const TAB_LABEL = { content: '상품설명', option: '옵션설정', price: '옵션(가격/재고)', bundle: '묶음구성', setitems: '세트구성', promo: '프로모션', image: '이미지', related: '연관상품' };
       let payload = null;
       switch (tabId) {
         case 'content':  payload = { contentBlocks: [...contentBlocks] }; break;
@@ -1153,12 +1273,14 @@ window.PdProdDtl = {
           break;
         }
         case 'price':    payload = { skus: skus.map(s => ({ ...s, stockQty: s.stock ?? 0, prodSkuCode: s.skuCode || s.prodSkuCode || '' })) }; break;
+        case 'bundle':   payload = { items: tabData.bundleItems.map(b => ({ prodId: b.itemProdId || b.prodId || null, qty: b.itemQty || 1, priceRate: b.priceRate || 0, sortOrd: b.sortOrd || 0 })) }; break;
+        case 'setitems': payload = { items: tabData.setItems.map(s => ({ prodId: s.itemProdId || s.prodId || null, qty: s.itemQty || 1, itemDesc: s.itemDesc || '', sortOrd: s.sortOrd || 0 })) }; break;
         case 'image':    payload = { images: images.map(({ id, ...rest }) => rest) }; break;
         case 'related':  payload = { relProds, codeProds }; break;
         default:         payload = {}; break;
       }
       try {
-        /* content / option / image 탭은 전용 엔드포인트로 분리 호출 — 백엔드에서 일괄 저장 처리 */
+        /* content / option / image / bundle / setitems 탭은 전용 엔드포인트로 분리 호출 */
         let res;
         if (tabId === 'content') {
           res = await boApiSvc.pdProd.saveContents(cfCurProdId.value, payload, '상품관리', '상품설명저장');
@@ -1166,6 +1288,10 @@ window.PdProdDtl = {
           res = await boApiSvc.pdProd.saveOpts(cfCurProdId.value, payload, '상품관리', '옵션설정저장');
         } else if (tabId === 'image') {
           res = await boApiSvc.pdProd.saveImages(cfCurProdId.value, payload, '상품관리', '이미지저장');
+        } else if (tabId === 'bundle') {
+          res = await boApiSvc.pdBundle.updateItems(cfCurProdId.value, payload, '상품관리', '묶음구성저장');
+        } else if (tabId === 'setitems') {
+          res = await boApiSvc.pdSet.updateItems(cfCurProdId.value, payload, '상품관리', '세트구성저장');
         } else {
           res = await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', `${TAB_LABEL[tabId] || tabId}저장`);
         }
@@ -1203,6 +1329,77 @@ window.PdProdDtl = {
     const splitPct = Vue.toRef(uiState, 'splitPct');
     const useOpt = Vue.toRef(uiState, 'useOpt');
 
+    // 묶음구성 상품 피커 상태
+    let _bundleSeq = 1;
+    const bundlePickerOpen = ref(false);
+    const bundlePickerSearch = ref('');
+    const bundlePickerRows = reactive([]);
+    const bundlePickerPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
+    const bundlePickerLoading = ref(false);
+
+    /* fnLoadBundlePicker — 묶음 상품 검색 */
+    const fnLoadBundlePicker = async () => {
+      bundlePickerLoading.value = true;
+      try {
+        const res = await boApiSvc.pdProd.getPage({ searchValue: bundlePickerSearch.value, pageNo: bundlePickerPager.pageNo, pageSize: bundlePickerPager.pageSize }, '상품관리', '묶음상품검색');
+        const d = res.data?.data || {};
+        bundlePickerRows.splice(0, bundlePickerRows.length, ...(d.pageList || []));
+        bundlePickerPager.pageTotalCount = d.pageTotalCount || 0;
+        bundlePickerPager.pageTotalPage  = d.pageTotalPage  || 1;
+      } catch (err) { console.error(err); } finally { bundlePickerLoading.value = false; }
+    };
+
+    /* addBundleItem — 묶음구성 행 추가 */
+    const addBundleItem = (prod) => {
+      if (!prod) {
+        tabData.bundleItems.push({ _id: _bundleSeq++, itemProdId: null, itemProdNm: '', itemQty: 1, priceRate: 0, sortOrd: tabData.bundleItems.length + 1 });
+      } else {
+        const already = tabData.bundleItems.some(b => b.itemProdId === prod.prodId);
+        if (already) { showToast('이미 추가된 상품입니다.', 'error'); return; }
+        tabData.bundleItems.push({ _id: _bundleSeq++, itemProdId: prod.prodId, itemProdNm: prod.prodNm || '', itemQty: 1, priceRate: 0, sortOrd: tabData.bundleItems.length + 1 });
+      }
+      bundlePickerOpen.value = false;
+    };
+
+    /* removeBundleItem — 묶음구성 행 제거 */
+    const removeBundleItem = (idx) => tabData.bundleItems.splice(idx, 1);
+
+    const cfBundleRateSum = computed(() => tabData.bundleItems.reduce((s, b) => s + (Number(b.priceRate) || 0), 0));
+    const cfBundleRateOk  = computed(() => cfBundleRateSum.value === 100 || tabData.bundleItems.length === 0);
+
+    // 세트구성 상품 피커 상태
+    let _setSeq = 1;
+    const setPickerOpen = ref(false);
+    const setPickerSearch = ref('');
+    const setPickerRows = reactive([]);
+    const setPickerPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
+    const setPickerLoading = ref(false);
+
+    /* fnLoadSetPicker — 세트 상품 검색 */
+    const fnLoadSetPicker = async () => {
+      setPickerLoading.value = true;
+      try {
+        const res = await boApiSvc.pdProd.getPage({ searchValue: setPickerSearch.value, pageNo: setPickerPager.pageNo, pageSize: setPickerPager.pageSize }, '상품관리', '세트상품검색');
+        const d = res.data?.data || {};
+        setPickerRows.splice(0, setPickerRows.length, ...(d.pageList || []));
+        setPickerPager.pageTotalCount = d.pageTotalCount || 0;
+        setPickerPager.pageTotalPage  = d.pageTotalPage  || 1;
+      } catch (err) { console.error(err); } finally { setPickerLoading.value = false; }
+    };
+
+    /* addSetItem — 세트구성 행 추가 (상품 없이도 추가 가능) */
+    const addSetItem = (prod) => {
+      if (!prod) {
+        tabData.setItems.push({ _id: _setSeq++, itemProdId: null, itemProdNm: '', itemQty: 1, itemDesc: '', sortOrd: tabData.setItems.length + 1 });
+      } else {
+        tabData.setItems.push({ _id: _setSeq++, itemProdId: prod.prodId, itemProdNm: prod.prodNm || '', itemQty: 1, itemDesc: '', sortOrd: tabData.setItems.length + 1 });
+      }
+      setPickerOpen.value = false;
+    };
+
+    /* removeSetItem — 세트구성 행 제거 */
+    const removeSetItem = (idx) => tabData.setItems.splice(idx, 1);
+
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
@@ -1236,6 +1433,32 @@ window.PdProdDtl = {
     ];
     /* fnMdRowStyle — 유틸 */
     const fnMdRowStyle = (u) => '' + (form.mdUserId === u.userId ? 'font-weight:700;' : '');
+    // 묶음구성 그리드
+    columns.bundleGrid = [
+      { key: 'sortOrd',    label: '순서',  style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
+      { key: 'itemProdNm', label: '구성상품명', cellStyle: 'font-weight:600;',
+        fmt: (v, row) => row.itemProdNm || '(직접입력)' },
+      { key: 'itemQty',    label: '수량',  style: 'width:70px;', align: 'right', edit: 'number' },
+      { key: 'priceRate',  label: '안분율(%)', style: 'width:90px;', align: 'right', edit: 'number',
+        cellStyle: (v) => (Number(v) === 0 ? 'color:#f5222d;' : '') },
+    ];
+    // 세트구성 그리드
+    columns.setGrid = [
+      { key: 'sortOrd',    label: '순서',  style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
+      { key: 'itemProdNm', label: '구성품명', cellStyle: 'font-weight:600;',
+        fmt: (v, row) => row.itemProdNm || '(비상품 구성품)' },
+      { key: 'itemQty',    label: '수량',  style: 'width:70px;', align: 'right', edit: 'number' },
+      { key: 'itemDesc',   label: '구성품 설명', edit: 'text', placeholder: '예: 선물박스, 엽서' },
+    ];
+    // 묶음/세트 상품 피커 공통 그리드
+    columns.bundlePickerGrid = [
+      { key: 'prodId',     label: 'ID',     style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
+      { key: 'prodNm',     label: '상품명', cellStyle: 'font-weight:600;' },
+      { key: 'salePrice',  label: '판매가', style: 'width:100px;', align: 'right',
+        fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'prodStatusCd', label: '상태', style: 'width:60px;',
+        badge: (row) => row.prodStatusCd === 'SALE' ? 'badge-green' : 'badge-gray' },
+    ];
     // 상품 선택 모달 그리드
     columns.prodPickerGrid = [
       { key: 'productId', label: 'ID',       style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
@@ -1370,6 +1593,36 @@ window.PdProdDtl = {
     // (광고 노출 기간 / 구매 제한은 detailFormColumns 로 통합됨 — 위 정의 참조)
     // 단일 재고 — pd_prod_stock 기반으로 별도 관리 (columns.singleStockForm 미사용)
     columns.singleStockForm = [];
+    // 프로모션 탭 — 쿠폰 목록 그리드 (pm_coupon_item 행)
+    columns.promoCouponGrid = [
+      { key: 'couponItemId', label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
+        fmt: (v, row, idx) => idx + 1 },
+      { key: 'couponId',     label: '쿠폰 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'targetTypeCd', label: '대상유형', style: 'width:80px;', align: 'center',
+        badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
+      { key: 'regDate',      label: '연결일시', style: 'width:130px;', align: 'center',
+        fmt: v => v ? String(v).slice(0, 16) : '' },
+    ];
+    // 프로모션 탭 — 적립금 목록 그리드 (pm_save_item 행)
+    columns.promoSaveGrid = [
+      { key: 'saveItemId', label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
+        fmt: (v, row, idx) => idx + 1 },
+      { key: 'saveId',     label: '적립금 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'targetTypeCd', label: '대상유형', style: 'width:80px;', align: 'center',
+        badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
+      { key: 'regDate',    label: '연결일시', style: 'width:130px;', align: 'center',
+        fmt: v => v ? String(v).slice(0, 16) : '' },
+    ];
+    // 프로모션 탭 — 할인 목록 그리드 (pm_discnt_item 행)
+    columns.promoDiscntGrid = [
+      { key: 'discntItemId', label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
+        fmt: (v, row, idx) => idx + 1 },
+      { key: 'discntId',     label: '할인 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'targetTypeCd', label: '대상유형', style: 'width:80px;', align: 'center',
+        badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
+      { key: 'regDate',      label: '연결일시', style: 'width:130px;', align: 'center',
+        fmt: v => v ? String(v).slice(0, 16) : '' },
+    ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
@@ -1391,6 +1644,10 @@ window.PdProdDtl = {
       removeRelProd, removeCodeProd,
       onRelDrop,
       onCodeDrop,
+      bundlePickerOpen, bundlePickerSearch, bundlePickerRows, bundlePickerPager, bundlePickerLoading,
+      fnLoadBundlePicker, addBundleItem, removeBundleItem, cfBundleRateSum, cfBundleRateOk,
+      setPickerOpen, setPickerSearch, setPickerRows, setPickerPager, setPickerLoading,
+      fnLoadSetPicker, addSetItem, removeSetItem,
       cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked,
       cfMarginRateCalc, cfDiscountRate, cfPlatformFeeDisp, cfNetRevenueDisp,
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
@@ -1556,6 +1813,49 @@ window.PdProdDtl = {
           <input type="checkbox" :checked="form.soldOutYn==='Y'" @change="form.soldOutYn=$event.target.checked?'Y':'N'" style="accent-color:#e8587a;" />
           <span style="color:#e8587a;">강제품절</span>
         </label>
+      </div>
+      <!-- ===== ■.■.■. 기본 가격 (BoFormArea 자동 렌더) ============================ -->
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
+      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
+        기본 가격
+        <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
+      </div>
+      <bo-form-area :columns="columns.basePriceForm" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+        <template #marginRate>
+          <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
+            {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
+          </div>
+        </template>
+      </bo-form-area>
+      <!-- ===== ■.■.■. 가격 요약 카드 (컴팩트) ====================================== -->
+      <div style="padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e8e8e8;margin-bottom:12px;">
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;align-items:center;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">{{ (form.listPrice||0).toLocaleString() }}원</div>
+            <div style="font-size:10px;color:#888;">정가</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#e8587a;">{{ (form.salePrice||0).toLocaleString() }}원</div>
+            <div style="font-size:10px;color:#888;">판매가</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f5222d;">{{ cfDiscountRate }}%</div>
+            <div style="font-size:10px;color:#888;">할인율</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#52c41a;">{{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}</div>
+            <div style="font-size:10px;color:#888;">마진율</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#722ed1;">{{ cfPlatformFeeDisp }}</div>
+            <div style="font-size:10px;color:#888;">플랫폼수수료</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1677ff;">{{ cfNetRevenueDisp }}</div>
+            <div style="font-size:10px;color:#888;">예상 순수익</div>
+          </div>
+        </div>
       </div>
       </fieldset>
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
@@ -1927,9 +2227,53 @@ window.PdProdDtl = {
           <bo-date-time-picker v-model="form.advrtEndDate" />
         </template>
       </bo-form-area>
-      <!-- ===== ■.■.■. 혜택 적용 여부 ============================================ -->
-      <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">혜택 적용 여부</div>
-      <div style="display:flex;gap:24px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;flex-wrap:wrap;">
+      <!-- ===== ■.■.■. 판매계획 ================================================= -->
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          판매계획
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ cfPlanVisible.length }}건</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-danger"    @click="deletePlanChecked">체크삭제</button>
+          <button class="btn btn-sm btn-secondary" @click="addPlanRow">행추가</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <bo-grid bare :columns="columns.planGrid" :rows="cfPlanVisible" row-key="_id"
+          selectable checked-key="_id"
+          :all-checked="cfPlanAllChecked" :is-checked="fnPlanRowChecked"
+          :row-style="fnPlanRowStyle2"
+          empty-text="[행추가]로 판매계획을 추가하세요."
+          @toggle-check="onPlanToggleCheck" @toggle-check-all="onPlanToggleCheckAll"
+          @cell-change="e => onPlanChange(e.row)"></bo-grid>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;font-size:11px;color:#aaa;align-items:center;">
+        <span style="background:#f6ffed;border:1px solid #b7eb8f;border-radius:3px;padding:1px 6px;color:#389e0d;">I 신규</span>
+        <span style="background:#fffbe6;border:1px solid #ffe58f;border-radius:3px;padding:1px 6px;color:#d46b08;">U 수정</span>
+        <span style="background:#fff1f0;border:1px solid #ffa39e;border-radius:3px;padding:1px 6px;color:#cf1322;">D 삭제예정</span>
+      </div>
+      </fieldset>
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+      </div>
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
+        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+          저장
+        </button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+      </div>
+    </div>
+    <!-- ══════════════════════════════════════
+     🎯 프로모션  (쿠폰 / 적립금 / 할인 / 프로모션 적용 여부)
+══════════════════════════════════════ -->
+    <div class="dtl-pane" v-show="showTab('promo')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 프로모션</div>
+      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
+      <!-- ===== ■.■.■. 프로모션 적용 여부 ======================================= -->
+      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px;">프로모션 적용 여부</div>
+      <div style="display:flex;gap:24px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;flex-wrap:wrap;margin-bottom:24px;">
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;">
           <input type="checkbox" :checked="form.couponUseYn==='Y'" @change="form.couponUseYn=$event.target.checked?'Y':'N'" />
           쿠폰 사용 가능 (coupon_use_yn)
@@ -1943,6 +2287,90 @@ window.PdProdDtl = {
           할인 적용 가능 (discnt_use_yn)
         </label>
       </div>
+      <!-- ===== ■.■.■. 쿠폰 목록설정 ========================================= -->
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 16px;" />
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          쿠폰 목록설정
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoCoupons.length }}건</span>
+          <span v-if="!form.couponUseYn || form.couponUseYn==='N'" class="badge badge-gray" style="margin-left:6px;font-size:11px;">사용 미허용</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-coupon-reload')">🔄 재조회</button>
+          <button v-if="!cfDtlMode" class="btn btn-sm btn-primary" @click="handleBtnAction('promo-coupon-add')">+ 쿠폰 추가</button>
+        </div>
+      </div>
+      <bo-grid bare :columns="columns.promoCouponGrid" :rows="tabData.promoCoupons"
+        row-key="couponItemId"
+        empty-text="이 상품에 연결된 쿠폰이 없습니다.">
+        <template v-if="!cfDtlMode" #row-actions="{ row: r }">
+          <button class="btn btn_row_delete" @click="handleBtnAction('promo-coupon-delete', r.couponItemId)">삭제</button>
+        </template>
+      </bo-grid>
+      <!-- 쿠폰 피커 모달 -->
+      <bo-modal :show="uiState.promoPicker === 'coupon'" title="쿠폰 선택" @close="uiState.promoPicker = null" width="560px">
+        <pm-coupon-pick-modal
+          :show-toast="props.showToast"
+          @select="r => handleBtnAction('promo-coupon-pick', r)"
+          @close="uiState.promoPicker = null">
+        </pm-coupon-pick-modal>
+      </bo-modal>
+      <!-- ===== ■.■.■. 적립금 목록설정 ======================================= -->
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          적립금 목록설정
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoSaves.length }}건</span>
+          <span v-if="!form.saveUseYn || form.saveUseYn==='N'" class="badge badge-gray" style="margin-left:6px;font-size:11px;">사용 미허용</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-save-reload')">🔄 재조회</button>
+          <button v-if="!cfDtlMode" class="btn btn-sm btn-primary" @click="handleBtnAction('promo-save-add')">+ 적립금 추가</button>
+        </div>
+      </div>
+      <bo-grid bare :columns="columns.promoSaveGrid" :rows="tabData.promoSaves"
+        row-key="saveItemId"
+        empty-text="이 상품에 연결된 적립금이 없습니다.">
+        <template v-if="!cfDtlMode" #row-actions="{ row: r }">
+          <button class="btn btn_row_delete" @click="handleBtnAction('promo-save-delete', r.saveItemId)">삭제</button>
+        </template>
+      </bo-grid>
+      <!-- 적립금 피커 모달 -->
+      <bo-modal :show="uiState.promoPicker === 'save'" title="적립금 선택" @close="uiState.promoPicker = null" width="560px">
+        <pm-save-pick-modal
+          :show-toast="props.showToast"
+          @select="r => handleBtnAction('promo-save-pick', r)"
+          @close="uiState.promoPicker = null">
+        </pm-save-pick-modal>
+      </bo-modal>
+      <!-- ===== ■.■.■. 할인적용설정 =========================================== -->
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          할인적용설정
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoDiscnts.length }}건</span>
+          <span v-if="!form.discntUseYn || form.discntUseYn==='N'" class="badge badge-gray" style="margin-left:6px;font-size:11px;">사용 미허용</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-discnt-reload')">🔄 재조회</button>
+          <button v-if="!cfDtlMode" class="btn btn-sm btn-primary" @click="handleBtnAction('promo-discnt-add')">+ 할인 추가</button>
+        </div>
+      </div>
+      <bo-grid bare :columns="columns.promoDiscntGrid" :rows="tabData.promoDiscnts"
+        row-key="discntItemId"
+        empty-text="이 상품에 연결된 할인이 없습니다.">
+        <template v-if="!cfDtlMode" #row-actions="{ row: r }">
+          <button class="btn btn_row_delete" @click="handleBtnAction('promo-discnt-delete', r.discntItemId)">삭제</button>
+        </template>
+      </bo-grid>
+      <!-- 할인 피커 모달 -->
+      <bo-modal :show="uiState.promoPicker === 'discnt'" title="할인 선택" @close="uiState.promoPicker = null" width="560px">
+        <pm-discnt-pick-modal
+          :show-toast="props.showToast"
+          @select="r => handleBtnAction('promo-discnt-pick', r)"
+          @close="uiState.promoPicker = null">
+        </pm-discnt-pick-modal>
+      </bo-modal>
       </fieldset>
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
@@ -2119,85 +2547,13 @@ window.PdProdDtl = {
         :on-callback="fnProdPickerCallback" />
     </div>
     <!-- ══════════════════════════════════════
-     💰 옵션(가격/재고)  (SKU 가격/재고 + 기본가격 + 판매계획)
+     💰 옵션(가격/재고)  (SKU별 가격·재고)
 ══════════════════════════════════════ -->
     <div class="dtl-pane" v-show="showTab('price')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
       <!-- 보기모드: fieldset disabled 로 SKU 재생성·인라인 입력·페이저 자동 비활성 (편집 잠금) -->
       <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
-      <!-- ===== ■.■.■. 기본 가격 (BoFormArea 자동 렌더) ============================ -->
-      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
-        기본 가격
-        <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
-      </div>
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.basePriceForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
-        <!-- ===== ■.■.■.■. 마진율 (purchasePrice 입력 시 자동 계산) ==================== -->
-        <template #marginRate>
-          <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
-            {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
-          </div>
-        </template>
-      </bo-form-area>
-      <!-- ===== ■.■.■. 가격 요약 카드 (컴팩트) ====================================== -->
-      <div style="padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e8e8e8;margin-bottom:12px;">
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;align-items:center;">
-          <div>
-            <div style="font-size:14px;font-weight:700;">{{ (form.listPrice||0).toLocaleString() }}원</div>
-            <div style="font-size:10px;color:#888;">정가</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#e8587a;">{{ (form.salePrice||0).toLocaleString() }}원</div>
-            <div style="font-size:10px;color:#888;">판매가</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#f5222d;">{{ cfDiscountRate }}%</div>
-            <div style="font-size:10px;color:#888;">할인율</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#52c41a;">{{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}</div>
-            <div style="font-size:10px;color:#888;">마진율</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#722ed1;">{{ cfPlatformFeeDisp }}</div>
-            <div style="font-size:10px;color:#888;">플랫폼수수료</div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#1677ff;">{{ cfNetRevenueDisp }}</div>
-            <div style="font-size:10px;color:#888;">예상 순수익</div>
-          </div>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 섹션2: 판매계획 =========================================== -->
-      <div style="margin-top:24px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div style="font-size:13px;font-weight:700;">
-            판매계획
-            <span style="font-size:12px;font-weight:400;color:#888;">{{ cfPlanVisible.length }}건</span>
-          </div>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-sm btn-danger"    @click="deletePlanChecked">체크삭제</button>
-            <button class="btn btn-sm btn-secondary" @click="addPlanRow">행추가</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto;">
-          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
-          <bo-grid bare :columns="columns.planGrid" :rows="cfPlanVisible" row-key="_id"
-            selectable checked-key="_id"
-            :all-checked="cfPlanAllChecked" :is-checked="fnPlanRowChecked"
-            :row-style="fnPlanRowStyle2"
-            empty-text="[행추가]로 판매계획을 추가하세요."
-            @toggle-check="onPlanToggleCheck" @toggle-check-all="onPlanToggleCheckAll"
-            @cell-change="e => onPlanChange(e.row)"></bo-grid>
-        </div>
-        <div style="margin-top:8px;display:flex;gap:8px;font-size:11px;color:#aaa;align-items:center;">
-          <span style="background:#f6ffed;border:1px solid #b7eb8f;border-radius:3px;padding:1px 6px;color:#389e0d;">I 신규</span>
-          <span style="background:#fffbe6;border:1px solid #ffe58f;border-radius:3px;padding:1px 6px;color:#d46b08;">U 수정</span>
-          <span style="background:#fff1f0;border:1px solid #ffa39e;border-radius:3px;padding:1px 6px;color:#cf1322;">D 삭제예정</span>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 섹션3: SKU별 가격·재고 (옵션 카테고리 설정 시) ====================== -->
+      <!-- ===== ■.■.■. SKU별 가격·재고 (옵션 카테고리 설정 시) ========================= -->
       <template v-if="prodOptCategoryTypeCd">
         <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0 20px;" />
         <!-- ===== ■.■.■.■. 헤더 행 ============================================== -->
@@ -2400,6 +2756,109 @@ window.PdProdDtl = {
         </button>
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
+    </div>
+    <!-- ══════════════════════════════════════
+     📦 묶음구성  (pd_prod_bundle_item)
+══════════════════════════════════════ -->
+    <div class="dtl-pane" v-show="showTab('bundle')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 묶음구성</div>
+      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
+      <!-- ===== ■.■.■. 안내 + 안분율 요약 =========================================== -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:10px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:13px;color:#555;">
+          묶음상품을 구성하는 개별 상품을 추가하고 <strong>안분율(%)</strong>을 설정하세요.
+          <br><span style="font-size:11px;color:#888;">안분율 합계가 100%여야 저장됩니다.</span>
+        </div>
+        <div style="font-size:14px;font-weight:700;" :style="cfBundleRateOk ? 'color:#389e0d;' : 'color:#f5222d;'">
+          안분율 합계: {{ cfBundleRateSum }}%
+          <span v-if="!cfBundleRateOk" style="font-size:11px;font-weight:400;margin-left:4px;">(100% 가 되어야 합니다)</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button class="btn btn-sm btn-secondary" @click="bundlePickerOpen=true">+ 상품 추가</button>
+        </div>
+      </div>
+      <!-- ===== ■.■.■. 구성 목록 ================================================ -->
+      <bo-grid bare :columns="columns.bundleGrid" :rows="tabData.bundleItems" row-key="_id"
+        empty-text="+ 상품 추가 버튼으로 묶음 구성품을 등록하세요."
+        @cell-change="e => { e.row[e.col.key] = e.value; }">
+        <template #row-actions="{ row, idx }">
+          <td style="text-align:center;white-space:nowrap;">
+            <button class="btn btn-xs btn-danger" @click="removeBundleItem(idx)">삭제</button>
+          </td>
+        </template>
+      </bo-grid>
+      </fieldset>
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+      </div>
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
+        <button class="btn btn_save" :disabled="cfSaveDisabled || !cfBundleRateOk"
+          :title="!cfBundleRateOk ? '안분율 합계가 100%여야 합니다.' : (cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : '')"
+          @click="handleBtnAction('form-save')">저장</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+      </div>
+      <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
+      <bo-modal :show="bundlePickerOpen" title="묶음 상품 선택" box-style="width:640px;max-height:80vh;" @close="bundlePickerOpen=false">
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <input class="form-control" v-model="bundlePickerSearch" placeholder="상품명 검색" style="flex:1;" @keyup.enter="fnLoadBundlePicker" />
+          <button class="btn btn_search" @click="fnLoadBundlePicker">조회</button>
+        </div>
+        <bo-grid bare :columns="columns.bundlePickerGrid" :rows="bundlePickerRows" row-key="prodId"
+          :loading="bundlePickerLoading" empty-text="조회 버튼으로 상품을 검색하세요."
+          @cell-click="e => addBundleItem(e.row)" />
+        <bo-pager :pager="bundlePickerPager" @set-page="n => { bundlePickerPager.pageNo=n; fnLoadBundlePicker(); }" style="margin-top:8px;" />
+      </bo-modal>
+    </div>
+    <!-- ══════════════════════════════════════
+     🎁 세트구성  (pd_prod_set_item)
+══════════════════════════════════════ -->
+    <div class="dtl-pane" v-show="showTab('setitems')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎁 세트구성</div>
+      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
+      <!-- ===== ■.■.■. 안내 + 버튼 ================================================ -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:10px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:13px;color:#555;">
+          세트를 구성하는 상품 또는 비상품 구성품(박스, 엽서 등)을 추가하세요.
+          <br><span style="font-size:11px;color:#888;">비상품 구성품은 [빈 행 추가] 후 설명을 입력하세요.</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button class="btn btn-sm btn-secondary" @click="addSetItem(null)">+ 빈 행 추가</button>
+          <button class="btn btn-sm btn-secondary" @click="setPickerOpen=true">+ 상품 추가</button>
+        </div>
+      </div>
+      <!-- ===== ■.■.■. 구성 목록 ================================================ -->
+      <bo-grid bare :columns="columns.setGrid" :rows="tabData.setItems" row-key="_id"
+        empty-text="+ 상품 추가 또는 빈 행 추가로 세트 구성품을 등록하세요."
+        @cell-change="e => { e.row[e.col.key] = e.value; }">
+        <template #row-actions="{ row, idx }">
+          <td style="text-align:center;white-space:nowrap;">
+            <button class="btn btn-xs btn-danger" @click="removeSetItem(idx)">삭제</button>
+          </td>
+        </template>
+      </bo-grid>
+      </fieldset>
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+      </div>
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
+        <button class="btn btn_save" :disabled="cfSaveDisabled"
+          :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''"
+          @click="handleBtnAction('form-save')">저장</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+      </div>
+      <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
+      <bo-modal :show="setPickerOpen" title="세트 구성 상품 선택" box-style="width:640px;max-height:80vh;" @close="setPickerOpen=false">
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <input class="form-control" v-model="setPickerSearch" placeholder="상품명 검색" style="flex:1;" @keyup.enter="fnLoadSetPicker" />
+          <button class="btn btn_search" @click="fnLoadSetPicker">조회</button>
+        </div>
+        <bo-grid bare :columns="columns.bundlePickerGrid" :rows="setPickerRows" row-key="prodId"
+          :loading="setPickerLoading" empty-text="조회 버튼으로 상품을 검색하세요."
+          @cell-click="e => addSetItem(e.row)" />
+        <bo-pager :pager="setPickerPager" @set-page="n => { setPickerPager.pageNo=n; fnLoadSetPicker(); }" style="margin-top:8px;" />
+      </bo-modal>
     </div>
   </div>
   <!-- ===== /dtl-tab-grid ============================================== -->

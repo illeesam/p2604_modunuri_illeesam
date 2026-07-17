@@ -59,6 +59,9 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndCouponItemId(search),
+                    baseAndCouponId(search),
+                    baseAndTargetId(search),
+                    baseAndTargetTypeCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -85,6 +88,9 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndCouponItemId(search),
+                baseAndCouponId(search),
+                baseAndTargetId(search),
+                baseAndTargetTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -127,6 +133,24 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     private BooleanExpression baseAndCouponItemId(PmCouponItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getCouponItemId())
                 ? pmCouponItem.couponItemId.eq(search.getCouponItemId()) : null;
+    }
+
+    /* couponId 정확 일치 */
+    private BooleanExpression baseAndCouponId(PmCouponItemDto.Request search) {
+        return search != null && StringUtils.hasText(search.getCouponId())
+                ? pmCouponItem.couponId.eq(search.getCouponId()) : null;
+    }
+
+    /* targetId 정확 일치 */
+    private BooleanExpression baseAndTargetId(PmCouponItemDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTargetId())
+                ? pmCouponItem.targetId.eq(search.getTargetId()) : null;
+    }
+
+    /* targetTypeCd 정확 일치 */
+    private BooleanExpression baseAndTargetTypeCd(PmCouponItemDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTargetTypeCd())
+                ? pmCouponItem.targetTypeCd.eq(search.getTargetTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

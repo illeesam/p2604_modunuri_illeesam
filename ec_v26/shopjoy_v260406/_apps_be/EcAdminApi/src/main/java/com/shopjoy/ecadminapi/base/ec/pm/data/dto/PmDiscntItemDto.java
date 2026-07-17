@@ -15,6 +15,9 @@ public class PmDiscntItemDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String discntItemId;
+        @Size(max = 21) private String discntId;
+        @Size(max = 21) private String targetId;
+        @Size(max = 20) private String targetTypeCd;
     }
 
     @Getter @Setter @NoArgsConstructor

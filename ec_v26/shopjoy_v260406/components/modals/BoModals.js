@@ -7574,3 +7574,164 @@ window.BoProdCatePickModal = {
 </bo-modal>
 `,
 };
+
+/* ── PmCouponPickModal — 쿠폰 선택 모달 (상품 프로모션 탭 전용) ──────────
+ * 서버 페이징 + 검색. 행 클릭 시 emit('select', { couponId, couponNm })
+ * 부모(PdProdDtl)가 bo-modal 로 감싸서 표시. */
+window.PmCouponPickModal = {
+  name: 'PmCouponPickModal',
+  inheritAttrs: false,
+  props: {
+    showToast: { type: Function, default: () => {} },
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { reactive, ref, onMounted } = Vue;
+    const searchParam = reactive({ searchValue: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
+    const rows = ref([]);
+    const loading = ref(false);
+    const columns = [
+      { key: 'couponId',  label: '쿠폰 ID',  style: 'width:140px;', cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'couponNm',  label: '쿠폰명' },
+      { key: 'useYn',     label: '사용', style: 'width:60px;', align: 'center',
+        badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt: v => v === 'Y' ? '사용' : '미사용' },
+    ];
+    const fnLoad = async () => {
+      loading.value = true;
+      try {
+        const res = await boApiSvc.pmCoupon.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '쿠폰피커', '조회');
+        const d = res.data?.data || {};
+        rows.value = d.pageList || [];
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage  = d.pageTotalPage  || 1;
+      } catch (err) {
+        props.showToast(err.response?.data?.message || '조회 실패', 'error', 0);
+      } finally { loading.value = false; }
+    };
+    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
+    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
+    onMounted(fnLoad);
+    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, emit };
+  },
+  template: `
+<div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="쿠폰명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
+    <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
+  </div>
+  <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="couponId"
+    row-clickable
+    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+    @row-click="row => emit('select', row)" />
+  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+</div>
+`,
+};
+
+/* ── PmSavePickModal — 적립금 선택 모달 (상품 프로모션 탭 전용) ──────────── */
+window.PmSavePickModal = {
+  name: 'PmSavePickModal',
+  inheritAttrs: false,
+  props: {
+    showToast: { type: Function, default: () => {} },
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { reactive, ref, onMounted } = Vue;
+    const searchParam = reactive({ searchValue: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
+    const rows = ref([]);
+    const loading = ref(false);
+    const columns = [
+      { key: 'saveId',  label: '적립금 ID', style: 'width:140px;', cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'saveNm',  label: '적립금명' },
+      { key: 'useYn',   label: '사용', style: 'width:60px;', align: 'center',
+        badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt: v => v === 'Y' ? '사용' : '미사용' },
+    ];
+    const fnLoad = async () => {
+      loading.value = true;
+      try {
+        const res = await boApiSvc.pmSave.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '적립금피커', '조회');
+        const d = res.data?.data || {};
+        rows.value = d.pageList || [];
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage  = d.pageTotalPage  || 1;
+      } catch (err) {
+        props.showToast(err.response?.data?.message || '조회 실패', 'error', 0);
+      } finally { loading.value = false; }
+    };
+    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
+    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
+    onMounted(fnLoad);
+    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, emit };
+  },
+  template: `
+<div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="적립금명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
+    <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
+  </div>
+  <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="saveId"
+    row-clickable
+    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+    @row-click="row => emit('select', row)" />
+  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+</div>
+`,
+};
+
+/* ── PmDiscntPickModal — 할인 선택 모달 (상품 프로모션 탭 전용) ──────────── */
+window.PmDiscntPickModal = {
+  name: 'PmDiscntPickModal',
+  inheritAttrs: false,
+  props: {
+    showToast: { type: Function, default: () => {} },
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { reactive, ref, onMounted } = Vue;
+    const searchParam = reactive({ searchValue: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
+    const rows = ref([]);
+    const loading = ref(false);
+    const columns = [
+      { key: 'discntId',  label: '할인 ID', style: 'width:140px;', cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'discntNm',  label: '할인명' },
+      { key: 'useYn',     label: '사용', style: 'width:60px;', align: 'center',
+        badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt: v => v === 'Y' ? '사용' : '미사용' },
+    ];
+    const fnLoad = async () => {
+      loading.value = true;
+      try {
+        const res = await boApiSvc.pmDiscnt.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '할인피커', '조회');
+        const d = res.data?.data || {};
+        rows.value = d.pageList || [];
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage  = d.pageTotalPage  || 1;
+      } catch (err) {
+        props.showToast(err.response?.data?.message || '조회 실패', 'error', 0);
+      } finally { loading.value = false; }
+    };
+    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
+    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
+    onMounted(fnLoad);
+    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, emit };
+  },
+  template: `
+<div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input class="form-control" v-model="searchParam.searchValue" placeholder="할인명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
+    <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
+  </div>
+  <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="discntId"
+    row-clickable
+    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+    @row-click="row => emit('select', row)" />
+  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+</div>
+`,
+};

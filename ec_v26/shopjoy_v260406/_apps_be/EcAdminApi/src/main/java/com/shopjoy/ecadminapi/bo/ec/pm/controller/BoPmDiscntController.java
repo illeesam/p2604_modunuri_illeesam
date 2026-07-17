@@ -2,7 +2,10 @@ package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntChangeStatusDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntItem;
+import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntItemService;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmDiscntService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -22,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoPmDiscntController {
     private final BoPmDiscntService boPmDiscntService;
+    private final PmDiscntItemService pmDiscntItemService;
 
     /** list — 목록 */
     @GetMapping
@@ -84,5 +88,27 @@ public class BoPmDiscntController {
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
         }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /* ── 할인 대상상품 (item) 서브 API ─────────────────── */
+
+    /** 상품에 연결된 할인 항목 목록 조회 */
+    @GetMapping("/items")
+    public ResponseEntity<ApiResponse<List<PmDiscntItemDto.Item>>> listItems(
+            @Valid @ModelAttribute PmDiscntItemDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(pmDiscntItemService.getList(req)));
+    }
+
+    /** 할인 항목 등록 (상품을 할인에 연결) */
+    @PostMapping("/items")
+    public ResponseEntity<ApiResponse<PmDiscntItem>> createItem(@RequestBody PmDiscntItem entity) {
+        return ResponseEntity.status(201).body(ApiResponse.created(pmDiscntItemService.create(entity)));
+    }
+
+    /** 할인 항목 삭제 (상품을 할인에서 제거) */
+    @DeleteMapping("/items/{itemId}")
+    public ResponseEntity<ApiResponse<Void>> deleteItem(@PathVariable("itemId") String itemId) {
+        pmDiscntItemService.delete(itemId);
+        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }
