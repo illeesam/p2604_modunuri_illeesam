@@ -68,6 +68,9 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndGiftCondId(search),
+                    baseAndGiftId(search),
+                    baseAndTargetTypeCd(search),
+                    baseAndTargetId(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -94,6 +97,9 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndGiftCondId(search),
+                baseAndGiftId(search),
+                baseAndTargetTypeCd(search),
+                baseAndTargetId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -137,6 +143,24 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     private BooleanExpression baseAndGiftCondId(PmGiftCondDto.Request search) {
         return search != null && StringUtils.hasText(search.getGiftCondId())
                 ? pmGiftCond.giftCondId.eq(search.getGiftCondId()) : null;
+    }
+
+    /* giftId 정확 일치 */
+    private BooleanExpression baseAndGiftId(PmGiftCondDto.Request search) {
+        return search != null && StringUtils.hasText(search.getGiftId())
+                ? pmGiftCond.giftId.eq(search.getGiftId()) : null;
+    }
+
+    /* targetTypeCd 정확 일치 */
+    private BooleanExpression baseAndTargetTypeCd(PmGiftCondDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTargetTypeCd())
+                ? pmGiftCond.targetTypeCd.eq(search.getTargetTypeCd()) : null;
+    }
+
+    /* targetId 정확 일치 */
+    private BooleanExpression baseAndTargetId(PmGiftCondDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTargetId())
+                ? pmGiftCond.targetId.eq(search.getTargetId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

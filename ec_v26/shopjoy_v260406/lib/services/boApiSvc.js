@@ -400,6 +400,13 @@
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/pm/gift/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── pm: 사은품 조건 (상품연결) ──────────────────────────────── */
+  boApiSvc.pmGiftCond = {
+    getList(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/pm/gift/gift-cond', { params, ...hdr(uiNm, cmdNm) }); },
+    create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/pm/gift/gift-cond', body, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/pm/gift/gift-cond/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── pm: 기획전 ─────────────────────────────────────────────── */
   boApiSvc.pmPlan = {
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/pm/plan/page', { params, ...hdr(uiNm, cmdNm) }); },

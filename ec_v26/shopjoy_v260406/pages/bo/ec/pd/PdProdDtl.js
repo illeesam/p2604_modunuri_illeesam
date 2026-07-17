@@ -82,29 +82,29 @@ window.PdProdDtl = {
         return;
       } else if (cmd === 'promo-coupon-delete') {
         if (!param) return;
-        props.showConfirm('삭제', '이 상품을 쿠폰 대상에서 제거하시겠습니까?').then(ok => {
+        showConfirm('삭제', '이 상품을 쿠폰 대상에서 제거하시겠습니까?').then(ok => {
           if (!ok) return;
           boApiSvc.pmCouponItem.remove(param, '상품관리', '쿠폰삭제')
-            .then(() => { props.showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-coupon-reload'); })
-            .catch(err => props.showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
+            .then(() => { showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-coupon-reload'); })
+            .catch(err => showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
         });
         return;
       } else if (cmd === 'promo-save-delete') {
         if (!param) return;
-        props.showConfirm('삭제', '이 상품을 적립금 대상에서 제거하시겠습니까?').then(ok => {
+        showConfirm('삭제', '이 상품을 적립금 대상에서 제거하시겠습니까?').then(ok => {
           if (!ok) return;
           boApiSvc.pmSaveItem.remove(param, '상품관리', '적립금삭제')
-            .then(() => { props.showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-save-reload'); })
-            .catch(err => props.showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
+            .then(() => { showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-save-reload'); })
+            .catch(err => showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
         });
         return;
       } else if (cmd === 'promo-discnt-delete') {
         if (!param) return;
-        props.showConfirm('삭제', '이 상품을 할인 대상에서 제거하시겠습니까?').then(ok => {
+        showConfirm('삭제', '이 상품을 할인 대상에서 제거하시겠습니까?').then(ok => {
           if (!ok) return;
           boApiSvc.pmDiscntItem.remove(param, '상품관리', '할인삭제')
-            .then(() => { props.showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-discnt-reload'); })
-            .catch(err => props.showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
+            .then(() => { showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-discnt-reload'); })
+            .catch(err => showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
         });
         return;
       } else if (cmd === 'promo-coupon-add') {
@@ -119,20 +119,45 @@ window.PdProdDtl = {
       } else if (cmd === 'promo-coupon-pick') {
         if (!param?.couponId || !cfCurProdId.value) return;
         boApiSvc.pmCouponItem.create({ couponId: param.couponId, targetTypeCd: 'PRODUCT', targetId: cfCurProdId.value }, '상품관리', '쿠폰추가')
-          .then(() => { uiState.promoPicker = null; props.showToast('추가되었습니다.', 'success'); handleBtnAction('promo-coupon-reload'); })
-          .catch(err => props.showToast(err.response?.data?.message || '추가 실패', 'error', 0));
+          .then(() => { uiState.promoPicker = null; showToast('추가되었습니다.', 'success'); handleBtnAction('promo-coupon-reload'); })
+          .catch(err => showToast(err.response?.data?.message || '추가 실패', 'error', 0));
         return;
       } else if (cmd === 'promo-save-pick') {
         if (!param?.saveId || !cfCurProdId.value) return;
         boApiSvc.pmSaveItem.create({ saveId: param.saveId, targetTypeCd: 'PRODUCT', targetId: cfCurProdId.value }, '상품관리', '적립금추가')
-          .then(() => { uiState.promoPicker = null; props.showToast('추가되었습니다.', 'success'); handleBtnAction('promo-save-reload'); })
-          .catch(err => props.showToast(err.response?.data?.message || '추가 실패', 'error', 0));
+          .then(() => { uiState.promoPicker = null; showToast('추가되었습니다.', 'success'); handleBtnAction('promo-save-reload'); })
+          .catch(err => showToast(err.response?.data?.message || '추가 실패', 'error', 0));
         return;
       } else if (cmd === 'promo-discnt-pick') {
         if (!param?.discntId || !cfCurProdId.value) return;
         boApiSvc.pmDiscntItem.create({ discntId: param.discntId, targetTypeCd: 'PRODUCT', targetId: cfCurProdId.value }, '상품관리', '할인추가')
-          .then(() => { uiState.promoPicker = null; props.showToast('추가되었습니다.', 'success'); handleBtnAction('promo-discnt-reload'); })
-          .catch(err => props.showToast(err.response?.data?.message || '추가 실패', 'error', 0));
+          .then(() => { uiState.promoPicker = null; showToast('추가되었습니다.', 'success'); handleBtnAction('promo-discnt-reload'); })
+          .catch(err => showToast(err.response?.data?.message || '추가 실패', 'error', 0));
+        return;
+      // 사은품 조건
+      } else if (cmd === 'promo-gift-reload') {
+        if (!cfCurProdId.value) return;
+        boApiSvc.pmGiftCond.getList({ targetId: cfCurProdId.value, targetTypeCd: 'PRODUCT' }, '상품관리', '사은품재조회')
+          .then(r => tabData.promoGifts.splice(0, tabData.promoGifts.length, ...(r.data?.data || [])))
+          .catch(() => {});
+        return;
+      } else if (cmd === 'promo-gift-delete') {
+        if (!param) return;
+        showConfirm('삭제', '이 상품을 사은품 대상에서 제거하시겠습니까?').then(ok => {
+          if (!ok) return;
+          boApiSvc.pmGiftCond.remove(param, '상품관리', '사은품삭제')
+            .then(() => { showToast('삭제되었습니다.', 'success'); handleBtnAction('promo-gift-reload'); })
+            .catch(err => showToast(err.response?.data?.message || '삭제 실패', 'error', 0));
+        });
+        return;
+      } else if (cmd === 'promo-gift-add') {
+        uiState.promoPicker = 'gift';
+        return;
+      } else if (cmd === 'promo-gift-pick') {
+        if (!param?.giftId || !cfCurProdId.value) return;
+        boApiSvc.pmGiftCond.create({ giftId: param.giftId, targetTypeCd: 'PRODUCT', targetId: cfCurProdId.value }, '상품관리', '사은품추가')
+          .then(() => { uiState.promoPicker = null; showToast('추가되었습니다.', 'success'); handleBtnAction('promo-gift-reload'); })
+          .catch(err => showToast(err.response?.data?.message || '추가 실패', 'error', 0));
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -190,7 +215,7 @@ window.PdProdDtl = {
       rels:    { pageNo: 1, pageSize: 10, totalCount: 0 },
     });
     // 탭별 전체 데이터 (페이징은 프론트 슬라이스)
-    const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [], bundleItems: [], setItems: [], promoCoupons: [], promoSaves: [], promoDiscnts: [] });
+    const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [], bundleItems: [], setItems: [], promoCoupons: [], promoSaves: [], promoDiscnts: [], promoGifts: [] });
 
 
     /* 상품 onTabPageChange */
@@ -335,18 +360,20 @@ window.PdProdDtl = {
               tabData.setItems.splice(0, tabData.setItems.length, ...setList.map((s, i) => ({ ...s, _id: i + 1 })));
             } catch (_) { tabData.setItems.splice(0); }
           }
-          // 프로모션 — 이 상품에 연결된 쿠폰/적립금/할인 항목 조회 (junction 테이블)
+          // 프로모션 — 이 상품에 연결된 쿠폰/적립금/할인/사은품 항목 조회 (junction 테이블)
           try {
-            const [cr, sr2, dr] = await Promise.all([
+            const [cr, sr2, dr, gr] = await Promise.all([
               boApiSvc.pmCouponItem.getList({ targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '쿠폰조회'),
               boApiSvc.pmSaveItem.getList(  { targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '적립금조회'),
               boApiSvc.pmDiscntItem.getList({ targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '할인조회'),
+              boApiSvc.pmGiftCond.getList(  { targetId: props.dtlId, targetTypeCd: 'PRODUCT' }, '상품관리', '사은품조회'),
             ]);
             tabData.promoCoupons.splice(0, tabData.promoCoupons.length, ...(cr.data?.data || []));
             tabData.promoSaves.splice(0,   tabData.promoSaves.length,   ...(sr2.data?.data || []));
             tabData.promoDiscnts.splice(0, tabData.promoDiscnts.length, ...(dr.data?.data || []));
+            tabData.promoGifts.splice(0,   tabData.promoGifts.length,   ...(gr.data?.data || []));
           } catch (_) {
-            tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0);
+            tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0); tabData.promoGifts.splice(0);
           }
         }
         uiState.error = null;
@@ -370,7 +397,7 @@ window.PdProdDtl = {
       tabData.content.splice(0); tabData.rels.splice(0);
       tabData.opts.groups.splice(0); tabData.opts.items.splice(0);
       tabData.bundleItems.splice(0); tabData.setItems.splice(0);
-      tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0);
+      tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0); tabData.promoGifts.splice(0);
     });
 
     watch(tabMode2, v => { uiState.tabMode2 = v; window._pdProdDtlState.tabMode = v; });
@@ -1623,6 +1650,18 @@ window.PdProdDtl = {
       { key: 'regDate',      label: '연결일시', style: 'width:130px;', align: 'center',
         fmt: v => v ? String(v).slice(0, 16) : '' },
     ];
+    // 프로모션 탭 — 사은품 조건 그리드 (pm_gift_cond 행)
+    columns.promoGiftGrid = [
+      { key: 'giftCondId',   label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
+        fmt: (v, row, idx) => idx + 1 },
+      { key: 'giftId',       label: '사은품 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'targetTypeCd', label: '대상유형', style: 'width:80px;', align: 'center',
+        badge: () => 'badge-green', fmt: v => v || 'PRODUCT' },
+      { key: 'condTypeCd',   label: '조건유형', style: 'width:100px;', align: 'center',
+        fmt: v => v || '-' },
+      { key: 'regDate',      label: '연결일시', style: 'width:130px;', align: 'center',
+        fmt: v => v ? String(v).slice(0, 16) : '' },
+    ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
@@ -1659,6 +1698,7 @@ window.PdProdDtl = {
       fnMdRowStyle, fnRemainSkuRowStyle,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
+      showToast,
       };
   },
   template: /* html */`
@@ -2307,14 +2347,6 @@ window.PdProdDtl = {
           <button class="btn btn_row_delete" @click="handleBtnAction('promo-coupon-delete', r.couponItemId)">삭제</button>
         </template>
       </bo-grid>
-      <!-- 쿠폰 피커 모달 -->
-      <bo-modal :show="uiState.promoPicker === 'coupon'" title="쿠폰 선택" @close="uiState.promoPicker = null" width="560px">
-        <pm-coupon-pick-modal
-          :show-toast="props.showToast"
-          @select="r => handleBtnAction('promo-coupon-pick', r)"
-          @close="uiState.promoPicker = null">
-        </pm-coupon-pick-modal>
-      </bo-modal>
       <!-- ===== ■.■.■. 적립금 목록설정 ======================================= -->
       <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -2335,14 +2367,6 @@ window.PdProdDtl = {
           <button class="btn btn_row_delete" @click="handleBtnAction('promo-save-delete', r.saveItemId)">삭제</button>
         </template>
       </bo-grid>
-      <!-- 적립금 피커 모달 -->
-      <bo-modal :show="uiState.promoPicker === 'save'" title="적립금 선택" @close="uiState.promoPicker = null" width="560px">
-        <pm-save-pick-modal
-          :show-toast="props.showToast"
-          @select="r => handleBtnAction('promo-save-pick', r)"
-          @close="uiState.promoPicker = null">
-        </pm-save-pick-modal>
-      </bo-modal>
       <!-- ===== ■.■.■. 할인적용설정 =========================================== -->
       <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -2363,15 +2387,55 @@ window.PdProdDtl = {
           <button class="btn btn_row_delete" @click="handleBtnAction('promo-discnt-delete', r.discntItemId)">삭제</button>
         </template>
       </bo-grid>
-      <!-- 할인 피커 모달 -->
+      <!-- ===== ■.■.■. 사은품 목록설정 =========================================== -->
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:20px 0 16px;" />
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:700;">
+          사은품 목록설정
+          <span style="font-size:12px;font-weight:400;color:#888;">{{ tabData.promoGifts.length }}건</span>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('promo-gift-reload')">🔄 재조회</button>
+          <button v-if="!cfDtlMode" class="btn btn-sm btn-primary" @click="handleBtnAction('promo-gift-add')">+ 사은품 추가</button>
+        </div>
+      </div>
+      <bo-grid bare :columns="columns.promoGiftGrid" :rows="tabData.promoGifts"
+        row-key="giftCondId"
+        empty-text="이 상품에 연결된 사은품이 없습니다.">
+        <template v-if="!cfDtlMode" #row-actions="{ row: r }">
+          <button class="btn btn_row_delete" @click="handleBtnAction('promo-gift-delete', r.giftCondId)">삭제</button>
+        </template>
+      </bo-grid>
+      </fieldset>
+      <!-- 프로모션 피커 모달 4개 — fieldset 밖에 배치 (fieldset disabled 영향 차단) -->
+      <bo-modal :show="uiState.promoPicker === 'coupon'" title="쿠폰 선택" @close="uiState.promoPicker = null" width="560px">
+        <pm-coupon-pick-modal
+          :show-toast="showToast"
+          @select="r => handleBtnAction('promo-coupon-pick', r)"
+          @close="uiState.promoPicker = null">
+        </pm-coupon-pick-modal>
+      </bo-modal>
+      <bo-modal :show="uiState.promoPicker === 'save'" title="적립금 선택" @close="uiState.promoPicker = null" width="560px">
+        <pm-save-pick-modal
+          :show-toast="showToast"
+          @select="r => handleBtnAction('promo-save-pick', r)"
+          @close="uiState.promoPicker = null">
+        </pm-save-pick-modal>
+      </bo-modal>
       <bo-modal :show="uiState.promoPicker === 'discnt'" title="할인 선택" @close="uiState.promoPicker = null" width="560px">
         <pm-discnt-pick-modal
-          :show-toast="props.showToast"
+          :show-toast="showToast"
           @select="r => handleBtnAction('promo-discnt-pick', r)"
           @close="uiState.promoPicker = null">
         </pm-discnt-pick-modal>
       </bo-modal>
-      </fieldset>
+      <bo-modal :show="uiState.promoPicker === 'gift'" title="사은품 선택" @close="uiState.promoPicker = null" width="560px">
+        <pm-gift-pick-modal
+          :show-toast="showToast"
+          @select="r => handleBtnAction('promo-gift-pick', r)"
+          @close="uiState.promoPicker = null">
+        </pm-gift-pick-modal>
+      </bo-modal>
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>

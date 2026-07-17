@@ -15,6 +15,9 @@ public class PmGiftCondDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String giftCondId;
+        @Size(max = 21) private String giftId;
+        @Size(max = 20) private String targetTypeCd;
+        @Size(max = 21) private String targetId;
     }
 
     @Getter @Setter @NoArgsConstructor

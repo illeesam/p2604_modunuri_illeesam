@@ -2,7 +2,10 @@ package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftChangeStatusDto;
+import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftCondDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGift;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftCond;
+import com.shopjoy.ecadminapi.base.ec.pm.service.PmGiftCondService;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmGiftService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -22,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoPmGiftController {
     private final BoPmGiftService boPmGiftService;
+    private final PmGiftCondService pmGiftCondService;
 
     /** list — 목록 */
     @GetMapping
@@ -84,5 +88,27 @@ public class BoPmGiftController {
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
         }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /* ── 사은품 지급 조건 (gift-cond) 서브 API ─────────────────── */
+
+    /** 상품에 연결된 사은품 조건 목록 조회 */
+    @GetMapping("/gift-cond")
+    public ResponseEntity<ApiResponse<List<PmGiftCondDto.Item>>> listGiftCond(
+            @Valid @ModelAttribute PmGiftCondDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(pmGiftCondService.getList(req)));
+    }
+
+    /** 사은품 조건 등록 (상품을 사은품에 연결) */
+    @PostMapping("/gift-cond")
+    public ResponseEntity<ApiResponse<PmGiftCond>> createGiftCond(@RequestBody PmGiftCond entity) {
+        return ResponseEntity.status(201).body(ApiResponse.created(pmGiftCondService.create(entity)));
+    }
+
+    /** 사은품 조건 삭제 (상품을 사은품에서 제거) */
+    @DeleteMapping("/gift-cond/{condId}")
+    public ResponseEntity<ApiResponse<Void>> deleteGiftCond(@PathVariable("condId") String condId) {
+        pmGiftCondService.delete(condId);
+        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 }
