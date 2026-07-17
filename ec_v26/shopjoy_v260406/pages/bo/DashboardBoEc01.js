@@ -40,6 +40,15 @@ window.DashboardBoEc01 = {
       filterExpand: false, activeTab: 'sales', tabMode: '4col', loading: false,
       xviewDrillRows: [], xviewDrillVisible: false,
       infoPanel: null, /* { title, optJson, dataJson, top, left } */
+      dailyStatsLoading: false,
+    });
+
+    const dailyStats = reactive({
+      dateLabel: '',
+      orderCount: 0, totalAmt: 0, avgAmt: 0, totalDiscount: 0, totalShipping: 0,
+      totalClaims: 0, claimRate: 0,
+      newMembers: 0, withdrawnMembers: 0, activeMembers: 0, loginCount: 0,
+      topProducts: [], payMethods: [], categories: [],
     });
 
     const COMP_IDS = [
@@ -315,6 +324,35 @@ window.DashboardBoEc01 = {
     let xviewTimer  = null;
 
     /* ##### [03] 데이터 로드 ##################################################### */
+
+    const loadDailyStats = async () => {
+      uiState.dailyStatsLoading = true;
+      try {
+        const res = await boApiSvc.cmDashboard.getDailyStats(null, '대시보드', '일별현황');
+        const d = res.data?.data || {};
+        Object.assign(dailyStats, {
+          dateLabel:        d.dateLabel        || '',
+          orderCount:       d.orderCount       || 0,
+          totalAmt:         d.totalAmt         || 0,
+          avgAmt:           d.avgAmt           || 0,
+          totalDiscount:    d.totalDiscount    || 0,
+          totalShipping:    d.totalShipping    || 0,
+          totalClaims:      d.totalClaims      || 0,
+          claimRate:        d.claimRate        || 0,
+          newMembers:       d.newMembers       || 0,
+          withdrawnMembers: d.withdrawnMembers || 0,
+          activeMembers:    d.activeMembers    || 0,
+          loginCount:       d.loginCount       || 0,
+          topProducts:      d.topProducts      || [],
+          payMethods:       d.payMethods       || [],
+          categories:       d.categories       || [],
+        });
+      } catch (err) {
+        console.warn('[일별현황 조회 오류]', err);
+      } finally {
+        uiState.dailyStatsLoading = false;
+      }
+    };
 
     const loadDashboard = async () => {
       uiState.loading = true;
@@ -711,6 +749,7 @@ window.DashboardBoEc01 = {
 
     onMounted(() => {
       document.addEventListener('click', _onDocClick);
+      loadDailyStats();
       loadDashboard();
       xviewTimer = setInterval(() => {
         const now = Date.now();
@@ -727,7 +766,7 @@ window.DashboardBoEc01 = {
     });
 
     return {
-      uiState, filters, dash,
+      uiState, filters, dash, dailyStats,
       handleBtnAction, handleSelectAction,
       cfBaseGridColumns, showPanel, isSel,
       TABS, VIEW_MODES, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
@@ -752,6 +791,58 @@ window.DashboardBoEc01 = {
     <span style="flex:1;"></span>
     <span style="font-size:11px;color:#aaa;">14개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}</span>
   </div>
+
+  <!-- 어제의 현황 KPI -->
+  <bo-container card-style="padding:14px 16px;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-size:12px;font-weight:800;color:#444;">📊 어제의 현황</span>
+      <span v-if="dailyStats.dateLabel" style="font-size:11px;color:#888;background:#f3f4f6;padding:2px 8px;border-radius:10px;">{{ dailyStats.dateLabel }}</span>
+      <span v-if="uiState.dailyStatsLoading" style="font-size:11px;color:#aaa;">⏳ 집계 중...</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;">
+      <div v-for="kpi in [
+          {label:'주문 건수',   value:fmt(dailyStats.orderCount),   unit:'건', icon:'📋', color:'#7b1fa2', bg:'#f5f0ff'},
+          {label:'결제 금액',   value:fmt(dailyStats.totalAmt),     unit:'원', icon:'💰', color:'#e8587a', bg:'#fff0f4'},
+          {label:'평균 결제액', value:fmt(dailyStats.avgAmt),       unit:'원', icon:'💳', color:'#f59e0b', bg:'#fffbeb'},
+          {label:'클레임율',    value:dailyStats.claimRate,         unit:'%',  icon:'⚠️', color:'#ef4444', bg:'#fff5f5'},
+        ]" :key="kpi.label"
+        :style="{background:kpi.bg,border:'1px solid #eef0f3',borderRadius:'8px',padding:'10px 12px',display:'flex',alignItems:'center',gap:'8px'}">
+        <div :style="{fontSize:'18px',width:'32px',height:'32px',borderRadius:'7px',background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}">{{ kpi.icon }}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:10px;color:#666;font-weight:600;">{{ kpi.label }}</div>
+          <div :style="{fontSize:'14px',fontWeight:800,color:kpi.color,marginTop:'2px'}">
+            {{ kpi.value }}<span style="font-size:10px;margin-left:2px;color:#999;">{{ kpi.unit }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div v-for="kpi in [
+          {label:'신규 가입',   value:fmt(dailyStats.newMembers),       unit:'명', icon:'👤', color:'#10b981', bg:'#f0fdf4'},
+          {label:'로그인 수',   value:fmt(dailyStats.loginCount),       unit:'건', icon:'🔑', color:'#3b82f6', bg:'#eff6ff'},
+          {label:'할인 금액',   value:fmt(dailyStats.totalDiscount),    unit:'원', icon:'🏷', color:'#6366f1', bg:'#f0f0ff'},
+          {label:'배송비 합계', value:fmt(dailyStats.totalShipping),    unit:'원', icon:'🚚', color:'#64748b', bg:'#f8fafc'},
+        ]" :key="kpi.label"
+        :style="{background:kpi.bg,border:'1px solid #eef0f3',borderRadius:'8px',padding:'10px 12px',display:'flex',alignItems:'center',gap:'8px'}">
+        <div :style="{fontSize:'18px',width:'32px',height:'32px',borderRadius:'7px',background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}">{{ kpi.icon }}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:10px;color:#666;font-weight:600;">{{ kpi.label }}</div>
+          <div :style="{fontSize:'14px',fontWeight:800,color:kpi.color,marginTop:'2px'}">
+            {{ kpi.value }}<span style="font-size:10px;margin-left:2px;color:#999;">{{ kpi.unit }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-if="dailyStats.topProducts.length > 0" style="margin-top:10px;border-top:1px dashed #eee;padding-top:10px;">
+      <div style="font-size:10.5px;font-weight:700;color:#666;margin-bottom:6px;">판매 Top {{ dailyStats.topProducts.length }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span v-for="p in dailyStats.topProducts.slice(0,5)" :key="p.rank"
+          style="font-size:10.5px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:3px 8px;color:#444;">
+          {{ p.rank }}위 {{ p.prodNm }} <span style="color:#888;">{{ fmt(p.qty) }}개</span>
+        </span>
+      </div>
+    </div>
+  </bo-container>
 
   <!-- 필터 -->
   <bo-container card-style="padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;">

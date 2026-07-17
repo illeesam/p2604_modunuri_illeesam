@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,16 @@ public class BoCmDashboardController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> data(
             @RequestBody List<Map<String, Object>> items) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardService.getDashboard(items)));
+    }
+
+    /** 일별 현황 집계 — StatsAggregationJob 과 동일한 쿼리를 온디맨드 실행. */
+    @GetMapping("/daily-stats")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> dailyStats(
+            @RequestParam(required = false) String targetDate) {
+        LocalDate date = targetDate != null && !targetDate.isBlank()
+            ? LocalDate.parse(targetDate)
+            : null;
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardService.getDailyStats(date)));
     }
 
     /* ── cm_dashboard CRUD ─────────────────────────────────────── */

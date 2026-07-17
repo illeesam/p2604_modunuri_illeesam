@@ -47,6 +47,10 @@
   /* ── cm: 대시보드 ────────────────────────────────────────────── */
   boApiSvc.cmDashboard = {
     getData(items, uiNm, cmdNm)       { return global.boApi.post('/bo/ec/cm/dashboard/data', items, hdr(uiNm, cmdNm)); },
+    getDailyStats(targetDate, uiNm, cmdNm) {
+      const params = targetDate ? { targetDate } : {};
+      return global.boApi.get('/bo/ec/cm/dashboard/daily-stats', { params, ...hdr(uiNm, cmdNm) });
+    },
     getList(params, uiNm, cmdNm)      { return global.boApi.get('/bo/ec/cm/dashboard/list', { params, ...hdr(uiNm, cmdNm) }); },
     getById(id, uiNm, cmdNm)          { return global.boApi.get('/bo/ec/cm/dashboard/' + id, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)         { return global.boApi.post('/bo/ec/cm/dashboard', body, hdr(uiNm, cmdNm)); },

@@ -18,4 +18,15 @@ public interface OdDlivRepository extends JpaRepository<OdDliv, String>, QOdDliv
 
     /** 특정 배송상태인 배송 전체 목록 (스윗트래커 실시간 조회용) */
     List<OdDliv> findByDlivStatusCd(String dlivStatusCd);
+
+    /**
+     * 주문 자동 완료 대상 조회.
+     * 출고 배송(OUTBOUND) 중 DELIVERED 상태이고 배송완료일시가 threshold 이전인 것만 반환.
+     * 반품/교환 입고(INBOUND) 건은 주문 완료 산정에서 제외.
+     */
+    @Query("SELECT d FROM OdDliv d " +
+           "WHERE d.dlivDivCd = 'OUTBOUND' " +
+           "AND d.dlivStatusCd = 'DELIVERED' " +
+           "AND d.dlivDate <= :threshold")
+    List<OdDliv> findDeliveredOutboundBefore(@Param("threshold") LocalDateTime threshold);
 }
