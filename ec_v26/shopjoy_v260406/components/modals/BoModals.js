@@ -7575,9 +7575,12 @@ window.BoProdCatePickModal = {
 `,
 };
 
-/* ── PmCouponPickModal — 쿠폰 선택 모달 (상품 프로모션 탭 전용) ──────────
- * 서버 페이징 + 검색. 행 클릭 시 emit('select', { couponId, couponNm })
- * 부모(PdProdDtl)가 bo-modal 로 감싸서 표시. */
+/* ── 프로모션 픽커 모달 4종 — 쿠폰/적립금/할인/사은품 ─────────────────────
+ * 각 모달이 <bo-modal>을 루트로 직접 포함 → 부모(PdProdDtl)는 v-if로 마운트.
+ * bo-modal 자체 teleport(body) 가 오버레이 처리하므로 부모 bo-modal 래퍼 불필요.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── PmCouponPickModal — 쿠폰 선택 모달 ────────────────────────────────── */
 window.PmCouponPickModal = {
   name: 'PmCouponPickModal',
   inheritAttrs: false,
@@ -7591,15 +7594,16 @@ window.PmCouponPickModal = {
     const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
     const rows = ref([]);
     const loading = ref(false);
+    const selectedRow = ref(null);
     const columns = [
-      { key: 'couponId',  label: '쿠폰 ID',  style: 'width:140px;', cellStyle: 'font-family:monospace;font-size:11px;' },
-      { key: 'couponNm',  label: '쿠폰명' },
-      { key: 'useYn',     label: '사용', style: 'width:60px;', align: 'center',
+      { key: 'couponId', label: '쿠폰 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'couponNm', label: '쿠폰명' },
+      { key: 'useYn',    label: '사용', style: 'width:60px;', align: 'center',
         badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: v => v === 'Y' ? '사용' : '미사용' },
     ];
     const fnLoad = async () => {
-      loading.value = true;
+      loading.value = true; selectedRow.value = null;
       try {
         const res = await boApiSvc.pmCoupon.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '쿠폰피커', '조회');
         const d = res.data?.data || {};
@@ -7612,25 +7616,33 @@ window.PmCouponPickModal = {
     };
     const setPage = (n) => { pager.pageNo = n; fnLoad(); };
     const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
+    const onRowClick = (row) => { selectedRow.value = row; };
+    const onDblClick = (row) => { emit('select', row); };
+    const onSelect = () => { if (selectedRow.value) emit('select', selectedRow.value); };
+    const onClose = () => emit('close');
     onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, emit };
+    return { searchParam, pager, rows, loading, columns, selectedRow, fnLoad, setPage, onSizeChange, onRowClick, onDblClick, onSelect, onClose };
   },
   template: `
-<div>
+<bo-modal :show="true" title="쿠폰 선택" width="600px" @close="onClose">
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="form-control" v-model="searchParam.searchValue" placeholder="쿠폰명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
     <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="couponId"
-    row-clickable
+    row-clickable selected-key="couponId" :selected-value="selectedRow ? selectedRow.couponId : null"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => emit('select', row)" />
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-</div>
+    @row-click="onRowClick" @row-dblclick="onDblClick" />
+  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
+  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
+    <button class="btn btn_select" :disabled="!selectedRow" @click="onSelect">선택</button>
+    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+  </div>
+</bo-modal>
 `,
 };
 
-/* ── PmSavePickModal — 적립금 선택 모달 (상품 프로모션 탭 전용) ──────────── */
+/* ── PmSavePickModal — 적립금 선택 모달 ─────────────────────────────────── */
 window.PmSavePickModal = {
   name: 'PmSavePickModal',
   inheritAttrs: false,
@@ -7644,15 +7656,16 @@ window.PmSavePickModal = {
     const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
     const rows = ref([]);
     const loading = ref(false);
+    const selectedRow = ref(null);
     const columns = [
-      { key: 'saveId',  label: '적립금 ID', style: 'width:140px;', cellStyle: 'font-family:monospace;font-size:11px;' },
-      { key: 'saveNm',  label: '적립금명' },
-      { key: 'useYn',   label: '사용', style: 'width:60px;', align: 'center',
+      { key: 'saveId', label: '적립금 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'saveNm', label: '적립금명' },
+      { key: 'useYn',  label: '사용', style: 'width:60px;', align: 'center',
         badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: v => v === 'Y' ? '사용' : '미사용' },
     ];
     const fnLoad = async () => {
-      loading.value = true;
+      loading.value = true; selectedRow.value = null;
       try {
         const res = await boApiSvc.pmSave.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '적립금피커', '조회');
         const d = res.data?.data || {};
@@ -7665,25 +7678,33 @@ window.PmSavePickModal = {
     };
     const setPage = (n) => { pager.pageNo = n; fnLoad(); };
     const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
+    const onRowClick = (row) => { selectedRow.value = row; };
+    const onDblClick = (row) => { emit('select', row); };
+    const onSelect = () => { if (selectedRow.value) emit('select', selectedRow.value); };
+    const onClose = () => emit('close');
     onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, emit };
+    return { searchParam, pager, rows, loading, columns, selectedRow, fnLoad, setPage, onSizeChange, onRowClick, onDblClick, onSelect, onClose };
   },
   template: `
-<div>
+<bo-modal :show="true" title="적립금 선택" width="600px" @close="onClose">
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="form-control" v-model="searchParam.searchValue" placeholder="적립금명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
     <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="saveId"
-    row-clickable
+    row-clickable selected-key="saveId" :selected-value="selectedRow ? selectedRow.saveId : null"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => emit('select', row)" />
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-</div>
+    @row-click="onRowClick" @row-dblclick="onDblClick" />
+  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
+  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
+    <button class="btn btn_select" :disabled="!selectedRow" @click="onSelect">선택</button>
+    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+  </div>
+</bo-modal>
 `,
 };
 
-/* ── PmDiscntPickModal — 할인 선택 모달 (상품 프로모션 탭 전용) ──────────── */
+/* ── PmDiscntPickModal — 할인 선택 모달 ─────────────────────────────────── */
 window.PmDiscntPickModal = {
   name: 'PmDiscntPickModal',
   inheritAttrs: false,
@@ -7697,15 +7718,16 @@ window.PmDiscntPickModal = {
     const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
     const rows = ref([]);
     const loading = ref(false);
+    const selectedRow = ref(null);
     const columns = [
-      { key: 'discntId',  label: '할인 ID', style: 'width:140px;', cellStyle: 'font-family:monospace;font-size:11px;' },
-      { key: 'discntNm',  label: '할인명' },
-      { key: 'useYn',     label: '사용', style: 'width:60px;', align: 'center',
+      { key: 'discntId', label: '할인 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'discntNm', label: '할인명' },
+      { key: 'useYn',    label: '사용', style: 'width:60px;', align: 'center',
         badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: v => v === 'Y' ? '사용' : '미사용' },
     ];
     const fnLoad = async () => {
-      loading.value = true;
+      loading.value = true; selectedRow.value = null;
       try {
         const res = await boApiSvc.pmDiscnt.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '할인피커', '조회');
         const d = res.data?.data || {};
@@ -7718,25 +7740,33 @@ window.PmDiscntPickModal = {
     };
     const setPage = (n) => { pager.pageNo = n; fnLoad(); };
     const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
+    const onRowClick = (row) => { selectedRow.value = row; };
+    const onDblClick = (row) => { emit('select', row); };
+    const onSelect = () => { if (selectedRow.value) emit('select', selectedRow.value); };
+    const onClose = () => emit('close');
     onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, emit };
+    return { searchParam, pager, rows, loading, columns, selectedRow, fnLoad, setPage, onSizeChange, onRowClick, onDblClick, onSelect, onClose };
   },
   template: `
-<div>
+<bo-modal :show="true" title="할인 선택" width="600px" @close="onClose">
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="form-control" v-model="searchParam.searchValue" placeholder="할인명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
     <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="discntId"
-    row-clickable
+    row-clickable selected-key="discntId" :selected-value="selectedRow ? selectedRow.discntId : null"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => emit('select', row)" />
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-</div>
+    @row-click="onRowClick" @row-dblclick="onDblClick" />
+  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
+  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
+    <button class="btn btn_select" :disabled="!selectedRow" @click="onSelect">선택</button>
+    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+  </div>
+</bo-modal>
 `,
 };
 
-/* ── PmGiftPickModal — 사은품 선택 모달 (상품 프로모션 탭 전용) ──────────── */
+/* ── PmGiftPickModal — 사은품 선택 모달 ─────────────────────────────────── */
 window.PmGiftPickModal = {
   name: 'PmGiftPickModal',
   inheritAttrs: false,
@@ -7750,15 +7780,16 @@ window.PmGiftPickModal = {
     const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
     const rows = ref([]);
     const loading = ref(false);
+    const selectedRow = ref(null);
     const columns = [
-      { key: 'giftId',    label: '사은품 ID', style: 'width:140px;', cellStyle: 'font-family:monospace;font-size:11px;' },
-      { key: 'giftNm',    label: '사은품명' },
-      { key: 'useYn',     label: '사용', style: 'width:60px;', align: 'center',
+      { key: 'giftId', label: '사은품 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'giftNm', label: '사은품명' },
+      { key: 'useYn',  label: '사용', style: 'width:60px;', align: 'center',
         badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: v => v === 'Y' ? '사용' : '미사용' },
     ];
     const fnLoad = async () => {
-      loading.value = true;
+      loading.value = true; selectedRow.value = null;
       try {
         const res = await boApiSvc.pmGift.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '사은품피커', '조회');
         const d = res.data?.data || {};
@@ -7771,20 +7802,28 @@ window.PmGiftPickModal = {
     };
     const setPage = (n) => { pager.pageNo = n; fnLoad(); };
     const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
+    const onRowClick = (row) => { selectedRow.value = row; };
+    const onDblClick = (row) => { emit('select', row); };
+    const onSelect = () => { if (selectedRow.value) emit('select', selectedRow.value); };
+    const onClose = () => emit('close');
     onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, emit };
+    return { searchParam, pager, rows, loading, columns, selectedRow, fnLoad, setPage, onSizeChange, onRowClick, onDblClick, onSelect, onClose };
   },
   template: `
-<div>
+<bo-modal :show="true" title="사은품 선택" width="600px" @close="onClose">
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="form-control" v-model="searchParam.searchValue" placeholder="사은품명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
     <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="giftId"
-    row-clickable
+    row-clickable selected-key="giftId" :selected-value="selectedRow ? selectedRow.giftId : null"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => emit('select', row)" />
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-</div>
+    @row-click="onRowClick" @row-dblclick="onDblClick" />
+  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
+  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
+    <button class="btn btn_select" :disabled="!selectedRow" @click="onSelect">선택</button>
+    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+  </div>
+</bo-modal>
 `,
 };

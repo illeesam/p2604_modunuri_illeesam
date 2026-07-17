@@ -2408,34 +2408,26 @@ window.PdProdDtl = {
       </bo-grid>
       </fieldset>
       <!-- 프로모션 피커 모달 4개 — fieldset 밖에 배치 (fieldset disabled 영향 차단) -->
-      <bo-modal :show="uiState.promoPicker === 'coupon'" title="쿠폰 선택" @close="uiState.promoPicker = null" width="560px">
-        <pm-coupon-pick-modal
-          :show-toast="showToast"
-          @select="r => handleBtnAction('promo-coupon-pick', r)"
-          @close="uiState.promoPicker = null">
-        </pm-coupon-pick-modal>
-      </bo-modal>
-      <bo-modal :show="uiState.promoPicker === 'save'" title="적립금 선택" @close="uiState.promoPicker = null" width="560px">
-        <pm-save-pick-modal
-          :show-toast="showToast"
-          @select="r => handleBtnAction('promo-save-pick', r)"
-          @close="uiState.promoPicker = null">
-        </pm-save-pick-modal>
-      </bo-modal>
-      <bo-modal :show="uiState.promoPicker === 'discnt'" title="할인 선택" @close="uiState.promoPicker = null" width="560px">
-        <pm-discnt-pick-modal
-          :show-toast="showToast"
-          @select="r => handleBtnAction('promo-discnt-pick', r)"
-          @close="uiState.promoPicker = null">
-        </pm-discnt-pick-modal>
-      </bo-modal>
-      <bo-modal :show="uiState.promoPicker === 'gift'" title="사은품 선택" @close="uiState.promoPicker = null" width="560px">
-        <pm-gift-pick-modal
-          :show-toast="showToast"
-          @select="r => handleBtnAction('promo-gift-pick', r)"
-          @close="uiState.promoPicker = null">
-        </pm-gift-pick-modal>
-      </bo-modal>
+      <pm-coupon-pick-modal v-if="uiState.promoPicker === 'coupon'"
+        :show-toast="showToast"
+        @select="r => handleBtnAction('promo-coupon-pick', r)"
+        @close="uiState.promoPicker = null">
+      </pm-coupon-pick-modal>
+      <pm-save-pick-modal v-if="uiState.promoPicker === 'save'"
+        :show-toast="showToast"
+        @select="r => handleBtnAction('promo-save-pick', r)"
+        @close="uiState.promoPicker = null">
+      </pm-save-pick-modal>
+      <pm-discnt-pick-modal v-if="uiState.promoPicker === 'discnt'"
+        :show-toast="showToast"
+        @select="r => handleBtnAction('promo-discnt-pick', r)"
+        @close="uiState.promoPicker = null">
+      </pm-discnt-pick-modal>
+      <pm-gift-pick-modal v-if="uiState.promoPicker === 'gift'"
+        :show-toast="showToast"
+        @select="r => handleBtnAction('promo-gift-pick', r)"
+        @close="uiState.promoPicker = null">
+      </pm-gift-pick-modal>
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
