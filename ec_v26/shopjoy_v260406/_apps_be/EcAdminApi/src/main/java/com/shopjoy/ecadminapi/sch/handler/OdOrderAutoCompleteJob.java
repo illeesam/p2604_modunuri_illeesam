@@ -39,7 +39,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderAutoCompleteJob implements SchBatchJobHandler {
+public class OdOrderAutoCompleteJob implements SchBatchJobHandler {
 
     private static final int COMPLETE_AFTER_DAYS = 14;
 

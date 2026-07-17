@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class CacheExpireJob implements SchBatchJobHandler {
+public class PmCacheExpireJob implements SchBatchJobHandler {
 
     /** batchCode */
     @Override

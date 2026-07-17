@@ -31,7 +31,7 @@ import java.time.LocalDate;
  */
 @Slf4j
 @Component
-public class PromoTargetExpandJob implements SchBatchJobHandler {
+public class PmPromoTargetExpandJob implements SchBatchJobHandler {
 
     private static final String S = "shopjoy_2604";
 

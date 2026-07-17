@@ -137,7 +137,7 @@ public class CmDashboardService {
     }
 
     /**
-     * 일별 현황 집계 — StatsAggregationJob 과 동일한 쿼리를 온디맨드로 실행하여 반환.
+     * 일별 현황 집계 — SyStatsAggregationJob 과 동일한 쿼리를 온디맨드로 실행하여 반환.
      *
      * @param targetDate 대상 날짜 (null 이면 어제)
      * @return { dateLabel, orderCount, totalAmt, avgAmt, totalDiscount, totalShipping,

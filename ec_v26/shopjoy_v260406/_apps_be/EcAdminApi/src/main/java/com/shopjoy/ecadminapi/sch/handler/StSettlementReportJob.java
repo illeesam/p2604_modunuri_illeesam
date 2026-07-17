@@ -52,7 +52,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SettlementReportJob implements SchBatchJobHandler {
+public class StSettlementReportJob implements SchBatchJobHandler {
 
     private static final DateTimeFormatter YM_FMT    = DateTimeFormatter.ofPattern("yyyy-MM");
     private static final DateTimeFormatter YYYYMM_FMT = DateTimeFormatter.ofPattern("yyyyMM");

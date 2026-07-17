@@ -31,7 +31,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ProdSalePlanSyncJob implements SchBatchJobHandler {
+public class PdProdSalePricePlanJob implements SchBatchJobHandler {
 
     private final PdProdPlanRepository  planRepository;
     private final PdProdRepository      prodRepository;

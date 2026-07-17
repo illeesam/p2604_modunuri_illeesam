@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class Dev10MinuteLogJob implements SchBatchJobHandler {
+public class SyDev10MinuteLogJob implements SchBatchJobHandler {
 
     /** batchCode */
     @Override

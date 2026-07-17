@@ -33,7 +33,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class StatsAggregationJob implements SchBatchJobHandler {
+public class SyStatsAggregationJob implements SchBatchJobHandler {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String S = "shopjoy_2604";

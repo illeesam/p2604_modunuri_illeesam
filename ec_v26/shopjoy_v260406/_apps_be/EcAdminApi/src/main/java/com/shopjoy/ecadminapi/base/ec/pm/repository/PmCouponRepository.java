@@ -23,4 +23,15 @@ public interface PmCouponRepository extends JpaRepository<PmCoupon, String>, QPm
            "AND c.validTo IS NOT NULL " +
            "AND c.validTo < :today")
     List<PmCoupon> findExpireTargets(@Param("today") LocalDate today);
+
+    /**
+     * 만료 D-N 안내 대상 쿠폰 조회 — 사이트별, validTo 가 정확히 expireTarget 인 ACTIVE 쿠폰.
+     */
+    @Query("SELECT c FROM PmCoupon c " +
+           "WHERE c.siteId = :siteId " +
+           "AND c.useYn = 'Y' " +
+           "AND c.couponStatusCd = 'ACTIVE' " +
+           "AND c.validTo = :expireTarget")
+    List<PmCoupon> findExpiringSoon(@Param("siteId") String siteId,
+                                    @Param("expireTarget") LocalDate expireTarget);
 }

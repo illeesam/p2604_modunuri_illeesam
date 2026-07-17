@@ -41,7 +41,7 @@ import java.util.List;
  *     │  batchCode로 핸들러 검색
  *     │  핸들러 없음 → batch_run_status='NO_HANDLER' 저장 후 종료
  *     ▼
- *   SchBatchJobHandler.execute(batch)   ← 각 Job 구현체 (e.g. CouponExpireJob)
+ *   SchBatchJobHandler.execute(batch)   ← 각 Job 구현체 (e.g. PmCouponExpireJob)
  *     │
  *     ▼
  *   sy_batch 상태 업데이트

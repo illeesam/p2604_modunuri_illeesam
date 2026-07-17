@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberRepository;
@@ -21,4 +22,20 @@ public interface MbMemberRepository extends JpaRepository<MbMember, String>, QMb
            "WHERE m.siteId = :siteId " +
            "AND m.memberStatusCd = 'ACTIVE'")
     List<MbMember> findActiveForGradeCalc(@Param("siteId") String siteId);
+
+    /**
+     * 휴면 예정 이메일 대상 조회 — ACTIVE 상태 + 마지막 로그인이 warnThreshold ~ dormantThreshold 사이인 회원.
+     * (lastLogin <= warnThreshold) AND (lastLogin > dormantThreshold)
+     * → 이미 휴면 기준(365일)을 넘은 회원은 제외(별도 처리).
+     */
+    @Query("SELECT m FROM MbMember m " +
+           "WHERE m.siteId = :siteId " +
+           "AND m.memberStatusCd = 'ACTIVE' " +
+           "AND m.lastLogin <= :warnThreshold " +
+           "AND m.lastLogin > :dormantThreshold")
+    List<MbMember> findDormantWarnTargets(
+        @Param("siteId") String siteId,
+        @Param("warnThreshold") LocalDateTime warnThreshold,
+        @Param("dormantThreshold") LocalDateTime dormantThreshold
+    );
 }

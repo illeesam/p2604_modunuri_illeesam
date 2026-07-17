@@ -42,7 +42,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DlivStatusSyncJob implements SchBatchJobHandler {
+public class OdDlivStatusSyncJob implements SchBatchJobHandler {
 
     private final OdDlivRepository            dlivRepository;
     private final OdDlivItemRepository        dlivItemRepository;

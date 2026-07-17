@@ -29,7 +29,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CouponExpireJob implements SchBatchJobHandler {
+public class PmCouponExpireJob implements SchBatchJobHandler {
 
     private static final String EXPIRED = "EXPIRED";
 

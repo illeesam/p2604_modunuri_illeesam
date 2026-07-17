@@ -40,7 +40,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MemberGradeCalcJob implements SchBatchJobHandler {
+public class MbMemberGradeCalcJob implements SchBatchJobHandler {
 
     private final SySiteRepository        siteRepository;
     private final MbMemberRepository      memberRepository;

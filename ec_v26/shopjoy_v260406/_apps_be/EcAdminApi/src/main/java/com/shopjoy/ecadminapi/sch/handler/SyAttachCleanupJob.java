@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class AttachCleanupJob implements SchBatchJobHandler {
+public class SyAttachCleanupJob implements SchBatchJobHandler {
 
     /** batchCode */
     @Override
