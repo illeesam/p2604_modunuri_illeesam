@@ -236,7 +236,7 @@ window.PdProdDtl = {
 
           // SKU — getById 응답에 embedded (PdProdDto.Item.skus)
           const skuList = p.prodSkus || [];
-          tabData.skus.splice(0, tabData.skus.length, ...skuList.map(s => ({ ...s, _id: 'sku_' + s.prodSkuId, _optKey: s.prodSkuId, _nm1: s.prodOptNm1 || '', _nm2: s.prodOptNm2 || '', stock: s.prodOptStock || 0 })));
+          tabData.skus.splice(0, tabData.skus.length, ...skuList.map(s => ({ ...s, _id: 'sku_' + s.prodSkuId, _optKey: s.prodSkuId, _nm1: s.prodOptNm1 || '', _nm2: s.prodOptNm2 || '', stock: s.stockQty || 0 })));
 
           // 상품설명 [6] — 백엔드에서 sortOrd ASC 기본 정렬
           const contentList = r[6].data?.data || [];
@@ -294,7 +294,6 @@ window.PdProdDtl = {
       dlivTmpltId: '',
       listPrice: 0, salePrice: 0, purchasePrice: null, marginRate: null,
       platformFeeRate: null, platformFeeAmount: null,
-      prodStock: 0,
       saleStartDate: '', saleEndDate: '',
       minBuyQty: 1, maxBuyQty: null, dayMaxBuyQty: null, idMaxBuyQty: null,
       adltYn: 'N', sameDayDlivYn: 'N', soldOutYn: 'N',
@@ -770,7 +769,6 @@ window.PdProdDtl = {
       const row = { _id: _relSeq++, prodId: p.prodId, prodNm: p.prodNm,
         cateNm: p.cateNm || p.categoryNm || '',
         listPrice: p.listPrice || p.price || 0,
-        prodStock: p.prodStock || 0,
         prodStatusCd: p.prodStatusCd || '' };
       if (uiState.prodPickerOpen === 'rel') { relProds.push(row); }
       else { codeProds.push(row); }
@@ -922,7 +920,6 @@ window.PdProdDtl = {
           form.purchasePrice  = p.purchasePrice || null;
           form.platformFeeRate   = p.platformFeeRate   != null ? p.platformFeeRate   : null;
           form.platformFeeAmount = p.platformFeeAmount != null ? p.platformFeeAmount : null;
-          form.prodStock      = p.prodStock || 0;
           form.saleStartDate  = p.saleStartDate || '';
           form.saleEndDate    = p.saleEndDate || '';
           form.minBuyQty      = p.minBuyQty || 1;
@@ -1155,7 +1152,7 @@ window.PdProdDtl = {
           };
           break;
         }
-        case 'price':    payload = { skus };          break;
+        case 'price':    payload = { skus: skus.map(s => ({ ...s, stockQty: s.stock ?? 0, prodSkuCode: s.skuCode || s.prodSkuCode || '' })) }; break;
         case 'image':    payload = { images: images.map(({ id, ...rest }) => rest) }; break;
         case 'related':  payload = { relProds, codeProds }; break;
         default:         payload = {}; break;
@@ -1371,11 +1368,8 @@ window.PdProdDtl = {
         placeholder: '(요율과 둘 중 하나만 입력)', hint: '원 — 내부관리용' },
     ];
     // (광고 노출 기간 / 구매 제한은 detailFormColumns 로 통합됨 — 위 정의 참조)
-    // 단일 재고 (옵션 미사용)
-    columns.singleStockForm = [
-      { key: 'prodStock', label: '재고수량 (prod_stock)', type: 'number',
-        placeholder: '0', min: 0, width: '160px' },
-    ];
+    // 단일 재고 — pd_prod_stock 기반으로 별도 관리 (columns.singleStockForm 미사용)
+    columns.singleStockForm = [];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
@@ -2264,7 +2258,8 @@ window.PdProdDtl = {
                   2단
                   <span v-if="optGroups[1]?.grpNm" style="color:#aaa;font-weight:400;">({{ optGroups[1].grpNm }})</span>
                 </th>
-                <th style="width:195px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">SKU코드</th>
+                <th style="width:150px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">SKU코드</th>
+                <th style="width:140px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">재고코드</th>
                 <th style="width:150px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">기본가</th>
                 <th style="width:135px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">추가금액</th>
                 <th style="width:105px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">재고</th>

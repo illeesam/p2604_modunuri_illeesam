@@ -61,9 +61,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.prodNm, pdProd.prodTypeCd, pdProd.prodCode,
                         pdProd.listPrice, pdProd.salePrice, pdProd.purchasePrice, pdProd.marginRate,
                         pdProd.platformFeeRate, pdProd.platformFeeAmount,
-                        pdProd.prodStock, pdProd.prodStatusCd, pdProd.prodStatusCdBefore,
+                        pdProd.prodStatusCd, pdProd.prodStatusCdBefore,
                         pdProd.contentHtml, pdProd.weight, pdProd.sizeInfoCd,
-                        pdProd.isNew, pdProd.isBest, pdProd.viewCount, pdProd.saleCount,
+                        pdProd.isNew, pdProd.isBest, pdProd.viewCount,
                         pdProd.saleStartDate, pdProd.saleEndDate,
                         pdProd.minBuyQty, pdProd.maxBuyQty, pdProd.dayMaxBuyQty, pdProd.idMaxBuyQty,
                         pdProd.adltYn, pdProd.sameDayDlivYn, pdProd.soldOutYn, pdProd.dlivTmpltId,
@@ -120,9 +120,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.prodNm, pdProd.prodTypeCd, pdProd.prodCode,
                         pdProd.listPrice, pdProd.salePrice, pdProd.purchasePrice, pdProd.marginRate,
                         pdProd.platformFeeRate, pdProd.platformFeeAmount,
-                        pdProd.prodStock, pdProd.prodStatusCd, pdProd.prodStatusCdBefore,
+                        pdProd.prodStatusCd, pdProd.prodStatusCdBefore,
                         pdProd.thumbnailUrl, pdProd.contentHtml, pdProd.weight, pdProd.sizeInfoCd,
-                        pdProd.isNew, pdProd.isBest, pdProd.viewCount, pdProd.saleCount,
+                        pdProd.isNew, pdProd.isBest, pdProd.viewCount,
                         pdProd.saleStartDate, pdProd.saleEndDate,
                         pdProd.minBuyQty, pdProd.maxBuyQty, pdProd.dayMaxBuyQty, pdProd.idMaxBuyQty,
                         pdProd.adltYn, pdProd.sameDayDlivYn, pdProd.soldOutYn, pdProd.dlivTmpltId,
@@ -396,7 +396,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         if (entity.getProdStatusCdBefore() != null) { update.set(pdProd.prodStatusCdBefore, entity.getProdStatusCdBefore()); hasAny = true; }
         if (entity.getProdNm()             != null) { update.set(pdProd.prodNm,             entity.getProdNm());             hasAny = true; }
         if (entity.getSalePrice()          != null) { update.set(pdProd.salePrice,          entity.getSalePrice());          hasAny = true; }
-        if (entity.getProdStock()          != null) { update.set(pdProd.prodStock,          entity.getProdStock());          hasAny = true; }
         if (entity.getThumbnailUrl()       != null) { update.set(pdProd.thumbnailUrl,       entity.getThumbnailUrl());       hasAny = true; }
         if (entity.getIsBest()             != null) { update.set(pdProd.isBest,             entity.getIsBest());             hasAny = true; }
         if (entity.getIsNew()              != null) { update.set(pdProd.isNew,              entity.getIsNew());              hasAny = true; }

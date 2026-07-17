@@ -15,7 +15,6 @@ CREATE TABLE shopjoy_2604.pd_prod (
     sale_price            BIGINT        DEFAULT 0,
     purchase_price        BIGINT       ,
     margin_rate           NUMERIC(5,2) ,
-    prod_stock            INTEGER       DEFAULT 0,
     prod_status_cd        VARCHAR(20)   DEFAULT 'ACTIVE'::character varying,
     prod_status_cd_before VARCHAR(20)  ,
     thumbnail_url         VARCHAR(500) ,
@@ -25,7 +24,6 @@ CREATE TABLE shopjoy_2604.pd_prod (
     is_new                VARCHAR(1)    DEFAULT 'N'::bpchar,
     is_best               VARCHAR(1)    DEFAULT 'N'::bpchar,
     view_count            INTEGER       DEFAULT 0,
-    sale_count            INTEGER       DEFAULT 0,
     sale_start_date       TIMESTAMP    ,
     sale_end_date         TIMESTAMP    ,
     min_buy_qty           INTEGER       DEFAULT 1,
@@ -65,7 +63,6 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.list_price IS '정가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.sale_price IS '판매가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.purchase_price IS '매입가(원가) — 내부 관리용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.margin_rate IS '마진율 (%) — 내부 관리용';
-COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_stock IS '재고수량';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_status_cd IS '상태 (코드: PRODUCT_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_status_cd_before IS '변경 전 상품상태 (코드: PRODUCT_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.thumbnail_url IS '썸네일URL';
@@ -75,7 +72,6 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.size_info_cd IS '사이즈 (코드: PRODU
 COMMENT ON COLUMN shopjoy_2604.pd_prod.is_new IS '신상품여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.is_best IS '베스트여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.view_count IS '조회수';
-COMMENT ON COLUMN shopjoy_2604.pd_prod.sale_count IS '판매수';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.sale_start_date IS '판매기간 시작 (NULL=즉시)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.sale_end_date IS '판매기간 종료 (NULL=무기한)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.min_buy_qty IS '최소구매수량 (기본 1)';

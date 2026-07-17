@@ -331,7 +331,7 @@
           _firstBody.bbsTitle || _firstBody.title || _firstBody.name
         );
         const _previewDesc = _titleVal ? (_titleVal + ' — 미리보기 생성 완료') : '미리보기 생성 완료';
-        _addLog(domain, '미리보기생성', '성공', _previewDesc, '', { id: _createdId || undefined }, userNm, uiNm || label);
+        _addLog(domain, '미리보기생성', '성공', _previewDesc, '', { id: _createdId || undefined, params: _lastPreviewPayloads }, userNm, uiNm || label);
         setTimeout(() => _fetchLogs(1), 300);
         window.dispatchEvent(new CustomEvent('zd-preview-created', {}));
         if (typeof showToast === 'function') showToast('미리보기 생성이 완료되었습니다.', 'success');

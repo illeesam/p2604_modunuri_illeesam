@@ -249,7 +249,6 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         if (entity.getProdOptId2()   != null) { update.set(pdProdSku.prodOptId2,   entity.getProdOptId2());   hasAny = true; }
         if (entity.getProdSkuCode()  != null) { update.set(pdProdSku.prodSkuCode,  entity.getProdSkuCode());  hasAny = true; }
         if (entity.getAddPrice()     != null) { update.set(pdProdSku.addPrice,     entity.getAddPrice());     hasAny = true; }
-        if (entity.getProdOptStock() != null) { update.set(pdProdSku.prodOptStock, entity.getProdOptStock()); hasAny = true; }
         if (entity.getUseYn()        != null) { update.set(pdProdSku.useYn,        entity.getUseYn());        hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(pdProdSku.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */

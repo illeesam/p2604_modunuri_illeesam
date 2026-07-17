@@ -9,7 +9,6 @@ CREATE TABLE shopjoy_2604.pd_prod_sku (
     prod_opt_id_2  VARCHAR(21),
     prod_sku_code  VARCHAR(50),
     add_price      BIGINT      DEFAULT 0,
-    prod_opt_stock INTEGER     DEFAULT 0,
     use_yn         VARCHAR(1)  DEFAULT 'Y'::bpchar,
     reg_by         VARCHAR(30),
     reg_date       TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -25,7 +24,6 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_opt_id_1 IS '옵션1 값ID (pd_p
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_opt_id_2 IS '옵션2 값ID (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_sku_code IS '자체 SKU 코드';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.add_price IS '옵션 추가금액 (기본가 대비)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_opt_stock IS '해당 옵션 조합 재고수량';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.use_yn IS '사용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.reg_date IS '등록일';

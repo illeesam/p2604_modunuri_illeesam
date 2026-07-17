@@ -44,7 +44,6 @@ public class PdProdDto {
         private BigDecimal marginRate;
         private BigDecimal platformFeeRate;
         private Long platformFeeAmount;
-        private Integer prodStock;
         private String prodStatusCd;
         private String prodStatusCdBefore;
         private String thumbnailUrl;
@@ -54,7 +53,6 @@ public class PdProdDto {
         private String isNew;
         private String isBest;
         private Integer viewCount;
-        private Integer saleCount;
         private LocalDateTime saleStartDate;
         private LocalDateTime saleEndDate;
         private Integer minBuyQty;

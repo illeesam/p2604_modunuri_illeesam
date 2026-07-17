@@ -20,6 +20,11 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdStock;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdImgRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdSkuRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdStockRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdDlivTmpltService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdImgService;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdOptService;
@@ -86,6 +91,10 @@ public class ZdSimulController {
     private final PdProdOptService     pdProdOptService;
     private final PdProdSkuService     pdProdSkuService;
     private final PdProdImgService     pdProdImgService;
+    private final PdProdOptRepository  pdProdOptRepository;
+    private final PdProdSkuRepository      pdProdSkuRepository;
+    private final PdProdImgRepository      pdProdImgRepository;
+    private final PdProdStockRepository    pdProdStockRepository;
     private final PdDlivTmpltService   pdDlivTmpltService;
     private final MbMemberService      mbMemberService;
     private final MbMemberGradeService mbMemberGradeService;
@@ -212,6 +221,14 @@ public class ZdSimulController {
         /* 프론트 제공 prodId(tmp-prod-01 등) 우선 사용 — 없으면 서비스에서 자동생성 */
         String tmpProdId = str(body, "prodId");
         if (tmpProdId != null && !tmpProdId.isBlank()) prod.setProdId(tmpProdId);
+
+        /* 같은 prodId 재생성 시: 기존 opt/sku/img 먼저 전부 삭제 (누적 방지) */
+        if (tmpProdId != null && !tmpProdId.isBlank()) {
+            pdProdImgRepository.deleteByProdId(tmpProdId);
+            pdProdSkuRepository.deleteByProdId(tmpProdId);
+            pdProdOptRepository.deleteByProdId(tmpProdId);
+        }
+
         PdProd saved = pdProdService.create(prod);
         String prodId = saved.getProdId();
 
@@ -274,28 +291,30 @@ public class ZdSimulController {
                 if (grp2ItemIds.isEmpty()) {
                     for (int i = 0; i < grp1ItemIds.size(); i++) {
                         PdProdSku sku = new PdProdSku();
-                        sku.setProdSkuId("tmp-sku-" + pad2(skuIdx++));
+                        String skuId = "tmp-sku-" + pad2(skuIdx++);
+                        sku.setProdSkuId(skuId);
                         sku.setSiteId(siteId);
                         sku.setProdId(prodId);
                         sku.setProdOptId1(grp1ItemIds.get(i));
                         sku.setAddPrice((long) (i * 1000));
-                        sku.setProdOptStock(10);
                         sku.setUseYn("Y");
                         pdProdSkuService.create(sku);
+                        createSimulStockCode(skuId, prodId, siteId, 10);
                     }
                 } else {
                     for (int i = 0; i < grp1ItemIds.size(); i++) {
                         for (int j = 0; j < grp2ItemIds.size(); j++) {
                             PdProdSku sku = new PdProdSku();
-                            sku.setProdSkuId("tmp-sku-" + pad2(skuIdx++));
+                            String skuId = "tmp-sku-" + pad2(skuIdx++);
+                            sku.setProdSkuId(skuId);
                             sku.setSiteId(siteId);
                             sku.setProdId(prodId);
                             sku.setProdOptId1(grp1ItemIds.get(i));
                             sku.setProdOptId2(grp2ItemIds.get(j));
                             sku.setAddPrice((long) (i * 1000));
-                            sku.setProdOptStock(10);
                             sku.setUseYn("Y");
                             pdProdSkuService.create(sku);
+                            createSimulStockCode(skuId, prodId, siteId, 10);
                         }
                     }
                 }
@@ -412,7 +431,7 @@ public class ZdSimulController {
             "prodId",    p.getProdId() != null ? p.getProdId() : "",
             "prodNm",    p.getProdNm()    != null ? p.getProdNm()    : "",
             "salePrice", p.getSalePrice() != null ? p.getSalePrice() : 0L,
-            "prodStock", p.getProdStock() != null ? p.getProdStock() : 0
+            "prodStock", 0
         )).toList();
 
         return ResponseEntity.ok(ApiResponse.ok(Map.of("prods", prods)));
@@ -933,5 +952,23 @@ public class ZdSimulController {
             if (s.length() >= 10) return LocalDate.parse(s.substring(0, 10));
         } catch (DateTimeParseException ignored) {}
         return null;
+    }
+
+    /** 시뮬용 pd_prod_stock 생성 (stockCode = prodSkuId, 이미 존재하면 재생성하지 않음) */
+    private void createSimulStockCode(String prodSkuId, String prodId, String siteId, int stockQty) {
+        if (pdProdStockRepository.findByStockCode(prodSkuId).isPresent()) return;
+        LocalDateTime now = LocalDateTime.now();
+        PdProdStock sc = new PdProdStock();
+        sc.setProdStockId("PS" + now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + String.format("%06d", (int)(Math.random() * 1000000)));
+        sc.setStockCode(prodSkuId);
+        sc.setSiteId(siteId);
+        sc.setProdId(prodId);
+        sc.setStockQty(stockQty);
+        sc.setSaleCount(0);
+        sc.setRegBy("simul");
+        sc.setRegDate(now);
+        sc.setUpdBy("simul");
+        sc.setUpdDate(now);
+        pdProdStockRepository.save(sc);
     }
 }

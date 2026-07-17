@@ -81,10 +81,6 @@ public class PdProd extends BaseEntity {
     @Column(name = "platform_fee_amount")
     private Long platformFeeAmount;
 
-    @Comment("재고수량")
-    @Column(name = "prod_stock")
-    private Integer prodStock;
-
     @Comment("상태 (코드: PRODUCT_STATUS)")
     @Column(name = "prod_status_cd", length = 20)
     private String prodStatusCd;
@@ -120,10 +116,6 @@ public class PdProd extends BaseEntity {
     @Comment("조회수")
     @Column(name = "view_count")
     private Integer viewCount;
-
-    @Comment("판매수")
-    @Column(name = "sale_count")
-    private Integer saleCount;
 
     @Comment("판매기간 시작 (NULL=즉시)")
     @Column(name = "sale_start_date")

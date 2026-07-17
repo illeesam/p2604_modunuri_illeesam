@@ -958,24 +958,36 @@
     var opt1Nm = (groups.length > 0 && lv1 && (lv1.prodOptTypeNm || lv1.optTypeNm || lv1.optGrpNm || lv1.grpNm) || '').trim() || '색상';
     var opt2Nm = (groups.length > 0 && lv2 && (lv2.prodOptTypeNm || lv2.optTypeNm || lv2.optGrpNm || lv2.grpNm) || '').trim() || '사이즈';
 
-    // opt1s: 중복 이름 제거 (시뮬 재생성 등으로 같은 이름이 여러 번 들어올 수 있음)
+    // opt1s: 중복 이름 제거 — 같은 이름이 여러 개일 때 style(hex) 있는 것 우선, 없으면 이미지 매핑 있는 것 우선
+    // (시뮬 재실행 누적 시 최신 것에만 style/img가 있으므로 우선순위 필요)
+    var opt1ByNm = {};
+    lv1Items.forEach(function (it) {
+      var nm = it.prodOptNm || it.prodOptVal || '';
+      if (!nm) { return; }
+      var style = (it.prodOptStyle || '').trim();
+      var hex = cofHexColor(style);
+      var optImgs = imgs.filter(function (im) { return im.prodOptId1 === it.prodOptId; });
+      var hasStyle = !!hex;
+      var hasImgs = optImgs.length > 0;
+      var prev = opt1ByNm[nm];
+      // 첫 등장이거나, 현재 항목이 더 나을 때 교체: style 우선 > 이미지 우선 > 첫 등장 유지
+      if (!prev || (hasStyle && !prev._hasStyle) || (!prev._hasStyle && hasImgs && !prev._hasImgs)) {
+        opt1ByNm[nm] = { optId: it.prodOptId, name: nm, val: it.prodOptVal || '',
+          priceDelta: 0,
+          imgUrl: cofImgSrc((optImgs[0] && (optImgs[0].cdnImgUrl || optImgs[0].cdnThumbUrl)) || ''),
+          optStyle: style, hex: hex, _hasStyle: hasStyle, _hasImgs: hasImgs };
+      }
+    });
+    // 원래 순서 보존 (lv1Items 첫 등장 순)
     var seenOpt1Nm = new Set();
     var opt1s = [];
     lv1Items.forEach(function (it) {
       var nm = it.prodOptNm || it.prodOptVal || '';
       if (!nm || seenOpt1Nm.has(nm)) { return; }
       seenOpt1Nm.add(nm);
-      var optImgs = imgs.filter(function (im) { return im.prodOptId1 === it.prodOptId; });
-      var style = (it.prodOptStyle || '').trim();
-      opt1s.push({
-        optId: it.prodOptId,
-        name: nm,
-        val: it.prodOptVal || '',
-        priceDelta: 0,
-        imgUrl: cofImgSrc((optImgs[0] && (optImgs[0].cdnImgUrl || optImgs[0].cdnThumbUrl)) || ''),
-        optStyle: style,
-        hex: cofHexColor(style),
-      });
+      var best = opt1ByNm[nm];
+      opt1s.push({ optId: best.optId, name: best.name, val: best.val,
+        priceDelta: best.priceDelta, imgUrl: best.imgUrl, optStyle: best.optStyle, hex: best.hex });
     });
 
     var opt2sAll = lv2Items.map(function (it) {

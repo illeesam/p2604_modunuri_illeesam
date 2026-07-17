@@ -47,10 +47,6 @@ public class PdProdSku extends BaseEntity {
     @Column(name = "add_price")
     private Long addPrice;
 
-    @Comment("해당 옵션 조합 재고수량")
-    @Column(name = "prod_opt_stock")
-    private Integer prodOptStock;
-
     @Comment("사용여부 Y/N")
     @Column(name = "use_yn", length = 1)
     private String useYn;

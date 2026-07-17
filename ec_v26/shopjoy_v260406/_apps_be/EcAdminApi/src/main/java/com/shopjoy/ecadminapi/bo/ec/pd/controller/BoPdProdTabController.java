@@ -9,8 +9,10 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdContentRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdImgRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdStock;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdSkuRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdStockRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -50,6 +52,7 @@ public class BoPdProdTabController {
     private final PdProdOptRepository      pdProdOptRepository;
     private final PdProdImgRepository      pdProdImgRepository;
     private final PdProdSkuRepository      pdProdSkuRepository;
+    private final PdProdStockRepository    pdProdStockRepository;
 
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
@@ -108,12 +111,13 @@ public class BoPdProdTabController {
      * SKU 저장 (전체 교체).
      * body 예: {
      *   "skus": [
-     *     { "prodOptId1": "PI...", "prodOptId2": "PI...", "addPrice": 0, "prodOptStock": 100, "skuCode": "", "useYn": "Y" },
+     *     { "prodOptId1": "PI...", "prodOptId2": "PI...", "addPrice": 0, "stockQty": 100, "prodSkuCode": "", "useYn": "Y" },
      *     ...
      *   ]
      * }
      * 처리: 기존 pd_prod_sku 전체 삭제 → 페이로드 순서대로 INSERT.
-     *        skuCode 미전달 시 자동 생성 (prodId 뒤 3자리 인덱스). useYn 미전달 시 "Y".
+     *        prodSkuCode 미전달 시 자동 생성 (prodId-001 형식). useYn 미전달 시 "Y".
+     *        재고는 pd_prod_stock 에 prodSkuId 로 연결 (upsert).
      */
     @PutMapping("/skus")
     @Transactional
@@ -127,14 +131,22 @@ public class BoPdProdTabController {
         String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
         LocalDateTime now = LocalDateTime.now();
 
-        // 1) 기존 데이터 전체 삭제
+        // 1) 기존 SKU 전체 삭제 (연결된 pd_prod_stock 도 stockCode 기준으로 삭제)
+        List<PdProdSku> existingSkus = pdProdSkuRepository.findByProdId(prodId);
+        for (PdProdSku existSku : existingSkus) {
+            if (existSku.getProdSkuCode() != null) {
+                pdProdStockRepository.findByStockCode(existSku.getProdSkuCode())
+                    .ifPresent(sc -> pdProdStockRepository.delete(sc));
+            }
+        }
         pdProdSkuRepository.deleteByProdId(prodId);
 
         // 2) 신규 INSERT
         int idx = 0;
         for (Map<String, Object> row : skuRows) {
             PdProdSku sku = new PdProdSku();
-            sku.setProdSkuId("SK" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + idx);
+            String skuId = "SK" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + idx;
+            sku.setProdSkuId(skuId);
             sku.setSiteId(siteId);
             sku.setProdId(prodId);
             sku.setProdOptId1(row.get("prodOptId1") != null ? String.valueOf(row.get("prodOptId1")) : null);
@@ -143,8 +155,6 @@ public class BoPdProdTabController {
             sku.setProdSkuCode(skuCode.isBlank() ? prodId + "-" + String.format("%03d", idx + 1) : skuCode);
             Object addPriceObj = row.get("addPrice");
             sku.setAddPrice(addPriceObj != null ? Long.parseLong(String.valueOf(addPriceObj)) : 0L);
-            Object stockObj = row.get("prodOptStock");
-            sku.setProdOptStock(stockObj != null ? Integer.parseInt(String.valueOf(stockObj)) : 0);
             String useYn = row.get("useYn") != null ? String.valueOf(row.get("useYn")) : "Y";
             sku.setUseYn(useYn.isBlank() ? "Y" : useYn);
             sku.setRegBy(authId);
@@ -152,6 +162,32 @@ public class BoPdProdTabController {
             sku.setUpdBy(authId);
             sku.setUpdDate(now);
             pdProdSkuRepository.save(sku);
+
+            // pd_prod_stock upsert — stockCode = prodSkuCode
+            Object stockObj = row.get("stockQty");
+            int stockQty = stockObj != null ? Integer.parseInt(String.valueOf(stockObj)) : 0;
+            String stockCode = sku.getProdSkuCode();
+            PdProdStock sc = pdProdStockRepository.findByStockCode(stockCode).orElse(null);
+            if (sc != null) {
+                sc.setStockQty(stockQty);
+                sc.setUpdBy(authId);
+                sc.setUpdDate(now);
+                pdProdStockRepository.save(sc);
+            } else {
+                PdProdStock newSc = new PdProdStock();
+                newSc.setProdStockId("PS" + now.format(ID_FMT) + String.format("%06d", idx));
+                newSc.setStockCode(stockCode);
+                newSc.setSiteId(siteId);
+                newSc.setProdId(prodId);
+                newSc.setStockQty(stockQty);
+                newSc.setSaleCount(0);
+                newSc.setRegBy(authId);
+                newSc.setRegDate(now);
+                newSc.setUpdBy(authId);
+                newSc.setUpdDate(now);
+                pdProdStockRepository.save(newSc);
+            }
+
             idx++;
         }
 
