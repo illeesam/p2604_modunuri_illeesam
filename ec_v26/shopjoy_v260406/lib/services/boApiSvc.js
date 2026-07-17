@@ -293,6 +293,8 @@
     saveOpts(_id, body, uiNm, cmdNm)     { return chkId(_id, uiNm, cmdNm) || global.boApi.put(`/bo/ec/pd/prod/${_id}/opts`,     body, hdr(uiNm, cmdNm)); },
     saveImages(_id, body, uiNm, cmdNm)   { return chkId(_id, uiNm, cmdNm) || global.boApi.put(`/bo/ec/pd/prod/${_id}/images`,   body, hdr(uiNm, cmdNm)); },
     getRels(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod/${_id}/rels`,     hdr(uiNm, cmdNm)); },
+    getPlans(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod/${_id}/plans`,    hdr(uiNm, cmdNm)); },
+    savePlans(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(`/bo/ec/pd/prod/${_id}/plans`,    body, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/pd/prod', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/pd/prod/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/pd/prod/${_id}`, hdr(uiNm, cmdNm)); },

@@ -77,16 +77,22 @@ window.Order = {
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
-    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답(null=닫기, 값=선택) */
+    /* fnCallbackModal — 모든 모달 통합 dispatch.
+     *   cmd    = 모달명
+     *   param  = 호출 파라미터 (미사용 시 null)
+     *   result = 'close' → X닫기(선택 없음) / null → 쿠폰 해제(미선택) / 객체 → 쿠폰 적용
+     */
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ Order.js : fnCallbackModal -> ', cmd, param, result);
-      // 상품 쿠폰 모달 (result=쿠폰객체 적용 / null=닫기)
+      // 상품 쿠폰 모달
       if (cmd === 'coupon') {
-        if (result === undefined) { closeCouponPopup(); return; }
-        return applyCoupon(result);   // result=null 이면 쿠폰 미적용(해제)
+        couponPopup.show = false;
+        if (result === 'close') return;             // X 닫기 — 선택 그대로 유지
+        return applyCoupon(result);                 // null=해제, 쿠폰객체=적용
       // 배송비 쿠폰 모달
       } else if (cmd === 'shipCoupon') {
-        if (result === undefined) { uiState.shipCouponPopup = false; return; }
+        uiState.shipCouponPopup = false;
+        if (result === 'close') return;
         return applyShipCoupon(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
@@ -160,9 +166,6 @@ window.Order = {
 
     /* openCouponPopup — 열기 */
     const openCouponPopup  = idx => { couponPopup.targetIdx = idx; couponPopup.show = true; };
-
-    /* closeCouponPopup — 닫기 */
-    const closeCouponPopup = () => { couponPopup.show = false; };
 
     /* applyCoupon — 적용 */
     const applyCoupon      = c => {
@@ -823,141 +826,104 @@ window.Order = {
 <!-- ===== □.□. 페이지 타이틀 배너 ============================================ -->
 <!-- ===== □. ══ 주문 입력 화면 ══ ========================================== -->
 <!-- ===== ■. ══ 상품 쿠폰 팝업 ══ ========================================== -->
-<div v-if="couponPopup.show" class="modal-overlay" @click.self="fnCallbackModal('coupon', {})" style="z-index:200;">
-  <div class="modal-box" style="max-width:480px;width:92%;padding:0;max-height:82vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
-    <!-- ===== ■.■.■. 헤더 ================================================== -->
-    <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:8px;">
-          🎟️ 상품 쿠폰 선택
-        </div>
-        <div style="font-size:0.76rem;opacity:0.85;margin-top:4px;">
-          할인(정률/정액) 쿠폰 · 상품 1개당 1개 적용
-        </div>
-      </div>
-      <button @click="fnCallbackModal('coupon', {})" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-        ✕
-      </button>
-    </div>
-    <!-- ===== ■.■.■. 리스트 ================================================= -->
-    <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
-      <!-- ===== ■.■.■.■. 쿠폰 없음 ============================================= -->
-      <div @click="fnCallbackModal('coupon', {}, null)"
-          style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
-          :style="!selectedCoupons[couponPopup.targetIdx]?'border-color:#9ca3af;background:#f3f4f6;':''"
-          @mouseenter="!selectedCoupons[couponPopup.targetIdx] || $event.currentTarget.style.setProperty('border-color','#d0d7de')"
-          @mouseleave="$event.currentTarget.style.removeProperty('border-color')">
-        <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">
-          🚫
-        </div>
-        <div style="flex:1;">
-          <div style="font-size:0.9rem;font-weight:600;color:#6b7280;">
-            쿠폰 사용 안 함
-          </div>
-        </div>
-      </div>
-      <template v-if="couponPopup.targetIdx!==null">
-        <div v-for="c in productCoupons(cfOrderItems[couponPopup.targetIdx])" :key="c.couponId"
-            @click="fnCallbackModal('coupon', {}, c)"
-            :style="{
-            padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
-            display:'flex',alignItems:'center',gap:'12px',transition:'all .15s',
-            border: selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId ? '2px solid #e8587a' : '1.5px solid #e4e7ec',
-            background: selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId ? '#fff5f7' : '#fff',
-            boxShadow: selectedCoupons[couponPopup.targetIdx]?.couponId===c.couponId ? '0 2px 8px rgba(232,88,122,0.15)' : 'none',
-            }">
-          <!-- ===== ■.■.■.■.■.■. 쿠폰 티켓 스타일 아이콘 ================================= -->
-          <div style="position:relative;width:44px;height:44px;background:linear-gradient(135deg,#fce4ec,#f8bbd0);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
-            🎟️
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:0.9rem;font-weight:700;color:#222;">
-              {{ c.name }}
-            </div>
-            <div style="font-size:0.74rem;color:#9ca3af;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;">
-              <span>
-                {{ c.minOrder>0 ? fmt(c.minOrder)+' 이상' : '최소금액 없음' }}
-              </span>
-              <span>
-                ·
-              </span>
-              <span>
-                ~ {{ c.expiry }}
-              </span>
-            </div>
-          </div>
-          <div style="font-size:1rem;font-weight:800;color:#e8587a;flex-shrink:0;background:#fff5f7;border:1px solid #fbcfe8;border-radius:8px;padding:4px 10px;">
-            {{ discountLabel(c) }}
-          </div>
-        </div>
-        <div v-if="!productCoupons(cfOrderItems[couponPopup.targetIdx]).length"
-            style="text-align:center;padding:40px 20px;color:#9ca3af;font-size:0.88rem;background:#fff;border-radius:10px;border:1px dashed #e4e7ec;">
-          🪙 이 상품에 적용 가능한 쿠폰이 없습니다.
-        </div>
-      </template>
-    </div>
+<fo-modal :show="couponPopup.show" title="🎟️ 상품 쿠폰 선택" max-width="480px" max-height="82vh"
+  @close="fnCallbackModal('coupon', null, 'close')">
+  <div style="font-size:0.76rem;color:var(--text-muted);margin-bottom:12px;">
+    할인(정률/정액) 쿠폰 · 상품 1개당 1개 적용
   </div>
-</div>
-<!-- ===== □. ══ 상품 쿠폰 팝업 ══ ========================================== -->
-<!-- ===== ■. ══ 배송비 쿠폰 팝업 ══ ========================================= -->
-<div v-if="uiState.shipCouponPopup" class="modal-overlay" @click.self="fnCallbackModal('shipCoupon', {})" style="z-index:200;">
-  <div class="modal-box" style="max-width:440px;width:92%;padding:0;max-height:72vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
-    <div style="background:linear-gradient(135deg,#22c55e 0%,#0ea5e9 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-size:1.05rem;font-weight:800;display:flex;align-items:center;gap:8px;">
-          🚚 배송비 쿠폰 선택
-        </div>
-        <div style="font-size:0.76rem;opacity:0.85;margin-top:4px;">
-          배송비 할인 쿠폰만 표시됩니다
-        </div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <!-- 쿠폰 없음 -->
+    <div @click="fnCallbackModal('coupon', null, null)"
+        style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
+        :style="!selectedCoupons[couponPopup.targetIdx] ? 'border-color:#9ca3af;background:#f3f4f6;' : ''">
+      <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">
+        🚫
       </div>
-      <button @click="fnCallbackModal('shipCoupon', {})" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-        ✕
-      </button>
+      <div style="flex:1;font-size:0.9rem;font-weight:600;color:#6b7280;">
+        쿠폰 사용 안 함
+      </div>
     </div>
-    <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
-      <div @click="fnCallbackModal('shipCoupon', {}, null)"
-          style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
-          :style="!uiState.selectedShipCoupon?'border-color:#9ca3af;background:#f3f4f6;':''">
-        <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">
-          🚫
-        </div>
-        <div>
-          <div style="font-size:0.9rem;font-weight:600;color:#6b7280;">
-            쿠폰 사용 안 함
-          </div>
-        </div>
-      </div>
-      <div v-for="c in cfShippingCoupons" :key="c.couponId"
-          @click="fnCallbackModal('shipCoupon', {}, c)"
+    <template v-if="couponPopup.targetIdx !== null">
+      <div v-for="c in productCoupons(cfOrderItems[couponPopup.targetIdx])" :key="c.couponId"
+          @click="fnCallbackModal('coupon', null, c)"
           :style="{
-          padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
-          display:'flex',alignItems:'center',gap:'12px',transition:'all .15s',
-          border: uiState.selectedShipCoupon?.couponId===c.couponId ? '2px solid #22c55e' : '1.5px solid #e4e7ec',
-          background: uiState.selectedShipCoupon?.couponId===c.couponId ? '#ecfdf5' : '#fff',
-          boxShadow: uiState.selectedShipCoupon?.couponId===c.couponId ? '0 2px 8px rgba(34,197,94,0.15)' : 'none',
+            padding:'14px 16px', borderRadius:'10px', cursor:'pointer',
+            display:'flex', alignItems:'center', gap:'12px', transition:'all .15s',
+            border: selectedCoupons[couponPopup.targetIdx] ? (selectedCoupons[couponPopup.targetIdx].couponId===c.couponId ? '2px solid #e8587a' : '1.5px solid #e4e7ec') : '1.5px solid #e4e7ec',
+            background: selectedCoupons[couponPopup.targetIdx] ? (selectedCoupons[couponPopup.targetIdx].couponId===c.couponId ? '#fff5f7' : '#fff') : '#fff',
           }">
-        <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
-          🚚
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#fce4ec,#f8bbd0);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
+          🎟️
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:0.9rem;font-weight:700;color:#222;">
             {{ c.name }}
           </div>
-          <div style="font-size:0.74rem;color:#9ca3af;margin-top:3px;">
-            ~ {{ c.expiry }}
+          <div style="font-size:0.74rem;color:#9ca3af;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;">
+            <span>{{ c.minOrder > 0 ? fmt(c.minOrder) + ' 이상' : '최소금액 없음' }}</span>
+            <span>·</span>
+            <span>~ {{ c.expiry }}</span>
           </div>
         </div>
-        <div style="font-size:0.9rem;font-weight:800;color:#16a34a;flex-shrink:0;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:4px 10px;">
-          무료배송
+        <div style="font-size:1rem;font-weight:800;color:#e8587a;flex-shrink:0;background:#fff5f7;border:1px solid #fbcfe8;border-radius:8px;padding:4px 10px;">
+          {{ discountLabel(c) }}
         </div>
       </div>
-      <div v-if="!cfShippingCoupons.length" style="text-align:center;padding:40px 20px;color:#9ca3af;font-size:0.88rem;background:#fff;border-radius:10px;border:1px dashed #e4e7ec;">
-        🪙 보유한 배송비 쿠폰이 없습니다.
+      <div v-if="!productCoupons(cfOrderItems[couponPopup.targetIdx]).length"
+          style="text-align:center;padding:40px 20px;color:#9ca3af;font-size:0.88rem;background:#fff;border-radius:10px;border:1px dashed #e4e7ec;">
+        🪙 이 상품에 적용 가능한 쿠폰이 없습니다.
+      </div>
+    </template>
+  </div>
+</fo-modal>
+<!-- ===== □. ══ 상품 쿠폰 팝업 ══ ========================================== -->
+<!-- ===== ■. ══ 배송비 쿠폰 팝업 ══ ========================================= -->
+<fo-modal :show="uiState.shipCouponPopup" title="🚚 배송비 쿠폰 선택" max-width="440px" max-height="72vh"
+  @close="fnCallbackModal('shipCoupon', null, 'close')">
+  <div style="font-size:0.76rem;color:var(--text-muted);margin-bottom:12px;">
+    배송비 할인 쿠폰만 표시됩니다
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <!-- 쿠폰 없음 -->
+    <div @click="fnCallbackModal('shipCoupon', null, null)"
+        style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
+        :style="!uiState.selectedShipCoupon ? 'border-color:#9ca3af;background:#f3f4f6;' : ''">
+      <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">
+        🚫
+      </div>
+      <div style="font-size:0.9rem;font-weight:600;color:#6b7280;">
+        쿠폰 사용 안 함
       </div>
     </div>
+    <div v-for="c in cfShippingCoupons" :key="c.couponId"
+        @click="fnCallbackModal('shipCoupon', null, c)"
+        :style="{
+          padding:'14px 16px', borderRadius:'10px', cursor:'pointer',
+          display:'flex', alignItems:'center', gap:'12px', transition:'all .15s',
+          border: uiState.selectedShipCoupon ? (uiState.selectedShipCoupon.couponId===c.couponId ? '2px solid #22c55e' : '1.5px solid #e4e7ec') : '1.5px solid #e4e7ec',
+          background: uiState.selectedShipCoupon ? (uiState.selectedShipCoupon.couponId===c.couponId ? '#ecfdf5' : '#fff') : '#fff',
+        }">
+      <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
+        🚚
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.9rem;font-weight:700;color:#222;">
+          {{ c.name }}
+        </div>
+        <div style="font-size:0.74rem;color:#9ca3af;margin-top:3px;">
+          ~ {{ c.expiry }}
+        </div>
+      </div>
+      <div style="font-size:0.9rem;font-weight:800;color:#16a34a;flex-shrink:0;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:4px 10px;">
+        무료배송
+      </div>
+    </div>
+    <div v-if="!cfShippingCoupons.length"
+        style="text-align:center;padding:40px 20px;color:#9ca3af;font-size:0.88rem;background:#fff;border-radius:10px;border:1px dashed #e4e7ec;">
+      🪙 보유한 배송비 쿠폰이 없습니다.
+    </div>
   </div>
-</div>
+</fo-modal>
 </fo-page>
 <!-- ===== □. ══ 배송비 쿠폰 팝업 ══ ========================================= -->
 `

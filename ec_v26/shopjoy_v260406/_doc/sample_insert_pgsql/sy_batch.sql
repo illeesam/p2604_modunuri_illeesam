@@ -15,4 +15,5 @@ VALUES
 ('BT000003', '2604010000000001', 'EVENT_STATUS_SYNC',   '이벤트 상태 동기화',    '이벤트 시작/종료일 기준 상태 자동 동기화',      '0 0 * * *',    'DAILY',   0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP),
 ('BT000002', '2604010000000001', 'COUPON_EXPIRE',        '쿠폰 만료 처리',        '만료일 경과 쿠폰 상태 변경',                   '0 1 * * *',    'DAILY',   0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP),
 ('BT000008', '2604010000000001', 'DLIV_STATUS_SYNC',    '배송조회 상태 업데이트','택배사 API 연동 배송 상태 업데이트',            '0 */2 * * *',  'HOURLY',  0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP),
-('BT000010', '2604010000000001', 'DEV_10MINUTE_LOG',    '개발용 10분 주기 로그', '개발 환경 배치 스케줄 동작 확인용',             '*/10 * * * *', 'HOURLY',  0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP);
+('BT000010', '2604010000000001', 'DEV_10MINUTE_LOG',    '개발용 10분 주기 로그', '개발 환경 배치 스케줄 동작 확인용',             '*/10 * * * *', 'HOURLY',  0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP),
+('BT000011', '2604010000000001', 'PROD_SALE_PLAN_SYNC','상품 판매계획 동기화',  '판매계획 시작/종료 시각 기준 pd_prod 가격 자동 반영', '0 * * * *',   'HOURLY',  0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP);

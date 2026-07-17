@@ -823,7 +823,8 @@ window.BoGrid = {
                   @update:date="v => { row[col.dateTimePick.dateKey] = v; handleSelectAction('grid-row-cell-change', { row, col }); }"
                   @update:time="v => { row[col.dateTimePick.timeKey] = v; handleSelectAction('grid-row-cell-change', { row, col }); }"
                   :show-now="col.dateTimePick.showNow !== false" :show-clear="col.dateTimePick.showClear !== false"
-                  :date-width="col.dateTimePick.dateWidth || '104px'" :time-width="col.dateTimePick.timeWidth || '64px'" />
+                  :date-width="col.dateTimePick.dateWidth || '104px'" :time-width="col.dateTimePick.timeWidth || '64px'"
+                  input-class="" />
                   <!-- 인라인 path-button (라벨 + ✕ 비우기 + 🔍 버튼 + onOpen 콜백) -->
                   <div v-else-if="col.pathLabelOpen" :style="{padding:'1px 4px 1px 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'22px',background:'#f5f5f7',color:row[col.key]!=null?'#374151':'#9ca3af',fontWeight:row[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'4px'}">
                     <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"

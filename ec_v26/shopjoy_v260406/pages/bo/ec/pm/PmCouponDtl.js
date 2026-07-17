@@ -18,7 +18,7 @@ window.PmCouponDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
+    const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({
@@ -120,6 +120,18 @@ window.PmCouponDtl = {
         form.vendorId = '';
         form.chargeStaff = '';
         return;
+      // 발급대상 추가 (상품피커 모달 오픈)
+      } else if (cmd === 'target-add') {
+        uiState.showTargetPicker = true;
+        return;
+      // 발급대상 삭제
+      } else if (cmd === 'target-remove') {
+        form.issueTargets.splice(param, 1);
+        return;
+      // 발급대상 피커 닫기
+      } else if (cmd === 'target-close') {
+        uiState.showTargetPicker = false;
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -137,15 +149,30 @@ window.PmCouponDtl = {
     };
 
 
+    /* _addTarget — 발급대상 추가 공통 헬퍼 (idKey/nmKey 지정) */
+    const _addTarget = (row, idKey, nmKey) => {
+      uiState.showTargetPicker = false;
+      if (!row) return;
+      const id = String(row[idKey] || '');
+      if (!id) return;
+      if (form.issueTargets.some(t => t.targetId === id)) { showToast('이미 추가된 대상입니다.', 'error'); return; }
+      form.issueTargets.push({ targetId: id, targetNm: row[nmKey] || id });
+    };
+
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ PmCouponDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'vendor-pick') {
-        if (result == null) {
-            uiState.showVendorModal = false;
-            return;
-        }
+        if (result == null) { uiState.showVendorModal = false; return; }
         return selectVendor(result.vendorId, result.vendorNm);
+      } else if (cmd === 'target-prod-pick') {
+        return _addTarget(result, 'prodId', 'prodNm');
+      } else if (cmd === 'target-brand-pick') {
+        return _addTarget(result, 'brandId', 'brandNm');
+      } else if (cmd === 'target-category-pick') {
+        return _addTarget(result, 'categoryId', 'categoryNm');
+      } else if (cmd === 'vendor-target-pick') {
+        return _addTarget(result, 'vendorId', 'vendorNm');
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
@@ -382,6 +409,7 @@ window.PmCouponDtl = {
     const previewTab = Vue.toRef(uiState, 'previewTab');
     const qrcodeContainer = Vue.toRef(uiState, 'qrcodeContainer');
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+    const showTargetPicker = Vue.toRef(uiState, 'showTargetPicker');
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -459,7 +487,7 @@ window.PmCouponDtl = {
       codes, form, errors, vendors,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
-      tab, tabMode2, barcodeContainer, qrcodeContainer, showVendorModal,            // toRef
+      tab, tabMode2, barcodeContainer, qrcodeContainer, showVendorModal, showTargetPicker, // toRef
       showTab, coUtil, // 헬퍼 / 전역
     };
   },
@@ -664,24 +692,45 @@ window.PmCouponDtl = {
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🎁 발급대상</h3>
         <div class="form-group">
           <label class="form-label">발급 대상 종류</label>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <label v-for="t in codes.issue_targets" :key="Math.random()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:form.targetTypeCd===t?'#e3f2fd':'#fff';">
-              <input type="radio" :value="t" v-model="form.targetTypeCd" />
-              {{ t }}
-            </label>
-          </div>
+          <select class="form-control" style="width:200px;" v-model="form.targetTypeCd" :disabled="cfDtlMode">
+            <option v-for="t in codes.issue_targets" :key="t" :value="t">{{ t }}</option>
+          </select>
         </div>
-        <div style="margin-top:16px;padding:12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
-          <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">
-            선택된 대상:
-            <span style="color:#e8587a;">{{ form.targetTypeCd }}</span>
+        <!-- 대상 목록 추가/삭제 -->
+        <div style="margin-top:12px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:12px;font-weight:700;color:#555;">
+              선택 대상 목록
+              <span style="color:#e8587a;margin-left:4px;">{{ form.issueTargets.length }}건</span>
+            </span>
+            <button v-if="!cfDtlMode" class="btn btn-sm" style="background:#e8587a;color:#fff;border:none;padding:3px 10px;border-radius:4px;font-size:12px;"
+              @click="handleBtnAction('target-add')">+ 대상 추가</button>
           </div>
-          <div style="font-size:13px;color:#888;">
-            <template v-if="form.targetTypeCd==='상품'">선택한 상품에만 쿠폰을 발급합니다. 상품 추가 버튼으로 대상 상품을 선택하세요.</template>
-            <template v-else-if="form.targetTypeCd==='판매업체'">선택한 판매업체의 상품에만 적용되는 쿠폰입니다.</template>
-            <template v-else-if="form.targetTypeCd==='브랜드'">선택한 브랜드의 상품에만 적용되는 쿠폰입니다.</template>
-            <template v-else-if="form.targetTypeCd==='카테고리'">선택한 카테고리의 상품에만 적용되는 쿠폰입니다.</template>
+          <div v-if="form.issueTargets.length === 0" style="padding:10px 14px;background:#f9f9f9;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;color:#aaa;">
+            <template v-if="form.targetTypeCd==='상품'">선택한 상품에만 쿠폰을 발급합니다. [+ 대상 추가] 버튼으로 상품을 선택하세요.</template>
+            <template v-else-if="form.targetTypeCd==='판매업체'">선택한 판매업체의 상품에만 적용됩니다.</template>
+            <template v-else-if="form.targetTypeCd==='브랜드'">선택한 브랜드의 상품에만 적용됩니다.</template>
+            <template v-else-if="form.targetTypeCd==='카테고리'">선택한 카테고리의 상품에만 적용됩니다.</template>
+            <template v-else>대상을 추가해주세요.</template>
           </div>
+          <table v-else class="admin-table" style="margin-top:0;">
+            <thead><tr>
+              <th style="width:36px;text-align:center;">번호</th>
+              <th>대상 ID</th>
+              <th>대상명</th>
+              <th v-if="!cfDtlMode" style="width:60px;text-align:center;">삭제</th>
+            </tr></thead>
+            <tbody>
+              <tr v-for="(t, idx) in form.issueTargets" :key="t.targetId">
+                <td style="text-align:center;">{{ idx + 1 }}</td>
+                <td style="font-family:monospace;font-size:11px;">{{ t.targetId }}</td>
+                <td>{{ t.targetNm || '-' }}</td>
+                <td v-if="!cfDtlMode" style="text-align:center;">
+                  <button class="btn btn_row_delete" @click="handleBtnAction('target-remove', idx)">✕</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
       <!-- ===== ■.■.■. 지급방법/조건 (BoFormArea 자동 렌더) ========================== -->
@@ -690,16 +739,15 @@ window.PmCouponDtl = {
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="columns.detailIssueForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
-        <!-- ===== ■.■.■.■. 적용 회원 등급 (체크박스 그룹, KEEP) ========================== -->
+        <!-- ===== ■.■.■.■. 적용 회원 등급 (멀티체크 select) ========================= -->
         <div class="form-group" style="margin-top:12px;">
           <label class="form-label">적용 회원 등급</label>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <label v-for="g in ['전체', '일반', '실버', '골드', 'VIP']" :key="Math.random()" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;">
-              <input type="checkbox" :value="g" v-model="form.issueGrades" />
-              {{ g }}
-            </label>
-          </div>
-          <span v-if="form.issueGrades.length===0" style="font-size:12px;color:#aaa;">선택하지 않으면 전체 등급에 적용</span>
+          <bo-multi-check-select
+            v-model="form.issueGrades"
+            :options="[{value:'일반',label:'일반'},{value:'실버',label:'실버'},{value:'골드',label:'골드'},{value:'VIP',label:'VIP'}]"
+            placeholder="전체 등급 (미선택 시 전체)"
+            :disabled="cfDtlMode" />
+          <span style="font-size:12px;color:#aaa;margin-top:4px;display:block;">선택하지 않으면 전체 등급에 적용</span>
         </div>
       </div>
       <!-- ===== ■.■.■. 사용방법 (BoFormArea 자동 렌더) ============================= -->
@@ -742,6 +790,16 @@ window.PmCouponDtl = {
     </button>
     <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')" style="min-width:120px;">취소</button>
   </div>
+<!-- 발급대상 피커 모달 -->
+<bo-prod-cate-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='상품')"
+  :exclude-ids="form.issueTargets.map(t => t.targetId)"
+  modal-name="target-prod-pick" :on-callback="fnCallbackModal" />
+<simple-vendor-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='판매업체')"
+  :show="true" :vendors="vendors" modal-name="vendor-target-pick" :on-callback="fnCallbackModal" />
+<pm-brand-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='브랜드')"
+  modal-name="target-brand-pick" :on-callback="fnCallbackModal" />
+<pm-category-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='카테고리')"
+  modal-name="target-category-pick" :on-callback="fnCallbackModal" />
 </bo-container>
 <!-- ===== □. 본문 영역 =================================================== -->
 `

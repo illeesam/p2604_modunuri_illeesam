@@ -375,6 +375,20 @@ window.PdProdDtl = {
           } catch (_) {
             tabData.promoCoupons.splice(0); tabData.promoSaves.splice(0); tabData.promoDiscnts.splice(0); tabData.promoGifts.splice(0);
           }
+          // 판매계획 로드
+          try {
+            const pr = await boApiSvc.pdProd.getPlans(props.dtlId, '상품관리', '판매계획조회');
+            const planList = pr.data?.data || [];
+            salePlans.splice(0, salePlans.length, ...planList.map(r => ({
+              ...r,
+              _id: planIdSeq++, _row_status: 'N', _checked: false,
+              startDate: r.startDatetime ? String(r.startDatetime).slice(0, 10) : '',
+              startTime: r.startDatetime ? String(r.startDatetime).slice(11, 16) : '00:00',
+              endDate:   r.endDatetime   ? String(r.endDatetime).slice(0, 10)   : '',
+              endTime:   r.endDatetime   ? String(r.endDatetime).slice(11, 16)  : '23:59',
+              planStatus: r.planStatusCd || 'SCHEDULED',
+            })));
+          } catch (_) { salePlans.splice(0); }
         }
         uiState.error = null;
       } catch (err) {
@@ -401,12 +415,6 @@ window.PdProdDtl = {
     });
 
     watch(tabMode2, v => { uiState.tabMode2 = v; window._pdProdDtlState.tabMode = v; });
-
-    /* prodTypeCd 변경 시 현재 탭이 숨겨지면 info 로 자동 이탈 */
-    watch(() => form.prodTypeCd, () => {
-      const cur = tabs.find(t => t.id === topTab.value);
-      if (cur && cur.visible === false) { topTab.value = 'info'; }
-    });
 
     /* showTab — 표시 */
     const showTab = id => tabMode2.value !== 'tab' || topTab.value === id;
@@ -455,6 +463,12 @@ window.PdProdDtl = {
       prodNm:    yup.string().required('상품명을 입력해주세요.'),
       listPrice: yup.number().typeError('숫자 입력').min(0).required('정가를 입력해주세요.'),
       salePrice: yup.number().typeError('숫자 입력').min(0).required('판매가를 입력해주세요.'),
+    });
+
+    /* prodTypeCd 변경 시 현재 탭이 숨겨지면 info 로 자동 이탈 */
+    watch(() => form.prodTypeCd, () => {
+      const cur = tabs.find(t => t.id === topTab.value);
+      if (cur && cur.visible === false) { topTab.value = 'info'; }
     });
 
     // -- 옵션 설정
@@ -1265,9 +1279,23 @@ window.PdProdDtl = {
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) { return; }
 
-      const TAB_LABEL = { content: '상품설명', option: '옵션설정', price: '옵션(가격/재고)', bundle: '묶음구성', setitems: '세트구성', promo: '프로모션', image: '이미지', related: '연관상품' };
+      const TAB_LABEL = { content: '상품설명', option: '옵션설정', price: '옵션(가격/재고)', bundle: '묶음구성', setitems: '세트구성', promo: '프로모션', image: '이미지', related: '연관상품', plan: '판매계획' };
       let payload = null;
       switch (tabId) {
+        case 'plan': {
+          payload = {
+            plans: salePlans
+              .filter(r => r._row_status !== 'D')
+              .map(r => ({
+                startDate: r.startDate || '', startTime: r.startTime || '00:00',
+                endDate: r.endDate || '',     endTime: r.endTime || '23:59',
+                planStatus: r.planStatus || 'SCHEDULED',
+                listPrice: r.listPrice || null, salePrice: r.salePrice || null,
+                purchasePrice: r.purchasePrice || null,
+              })),
+          };
+          break;
+        }
         case 'content':  payload = { contentBlocks: [...contentBlocks] }; break;
         case 'option': {
           // 옵션명 누락 자동 보정 (DB pd_prod_opt.prod_opt_nm 은 NOT NULL)
@@ -1319,6 +1347,8 @@ window.PdProdDtl = {
           res = await boApiSvc.pdBundle.updateItems(cfCurProdId.value, payload, '상품관리', '묶음구성저장');
         } else if (tabId === 'setitems') {
           res = await boApiSvc.pdSet.updateItems(cfCurProdId.value, payload, '상품관리', '세트구성저장');
+        } else if (tabId === 'plan') {
+          res = await boApiSvc.pdProd.savePlans(cfCurProdId.value, payload, '상품관리', '판매계획저장');
         } else {
           res = await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', `${TAB_LABEL[tabId] || tabId}저장`);
         }
@@ -1541,10 +1571,10 @@ window.PdProdDtl = {
      * planStatus/listPrice/salePrice/purchasePrice: BoGrid edit 자동 렌더 (@cell-change 미사용, change 시 onPlanChange 호출 위해 슬롯 유지)
      */
     columns.planGrid = [
-      { key: '_start',       label: '시작일시', style: 'width:140px;',
-        dateTimePick: { dateKey: 'startDate', timeKey: 'startTime', showNow: false, showClear: false } },
-      { key: '_end',         label: '종료일시', style: 'width:140px;',
-        dateTimePick: { dateKey: 'endDate', timeKey: 'endTime', showNow: false, showClear: false } },
+      { key: '_start',       label: '시작일시', style: 'width:196px;',
+        dateTimePick: { dateKey: 'startDate', timeKey: 'startTime', showNow: false, showClear: false, dateWidth: '116px', timeWidth: '72px' } },
+      { key: '_end',         label: '종료일시', style: 'width:196px;',
+        dateTimePick: { dateKey: 'endDate', timeKey: 'endTime', showNow: false, showClear: false, dateWidth: '116px', timeWidth: '72px' } },
       { key: 'planStatus',   label: '상태',    style: 'width:80px;',
         edit: 'select', options: () => grpCodes.prod_plan_statuses },
       { key: 'listPrice',    label: '정가',    style: 'width:90px;', edit: 'number', align: 'right' },
@@ -1622,44 +1652,44 @@ window.PdProdDtl = {
     columns.singleStockForm = [];
     // 프로모션 탭 — 쿠폰 목록 그리드 (pm_coupon_item 행)
     columns.promoCouponGrid = [
-      { key: 'couponItemId', label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
+      { key: '_no',          label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
         fmt: (v, row, idx) => idx + 1 },
-      { key: 'couponId',     label: '쿠폰 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
-      { key: 'targetTypeCd', label: '대상유형', style: 'width:80px;', align: 'center',
+      { key: 'couponId',     label: '쿠폰 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
-      { key: 'regDate',      label: '연결일시', style: 'width:130px;', align: 'center',
+      { key: 'regDate',      label: '연결일시', align: 'center',
         fmt: v => v ? String(v).slice(0, 16) : '' },
     ];
     // 프로모션 탭 — 적립금 목록 그리드 (pm_save_item 행)
     columns.promoSaveGrid = [
-      { key: 'saveItemId', label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
+      { key: '_no',        label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
         fmt: (v, row, idx) => idx + 1 },
-      { key: 'saveId',     label: '적립금 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
-      { key: 'targetTypeCd', label: '대상유형', style: 'width:80px;', align: 'center',
+      { key: 'saveId',     label: '적립금 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
-      { key: 'regDate',    label: '연결일시', style: 'width:130px;', align: 'center',
+      { key: 'regDate',    label: '연결일시', align: 'center',
         fmt: v => v ? String(v).slice(0, 16) : '' },
     ];
     // 프로모션 탭 — 할인 목록 그리드 (pm_discnt_item 행)
     columns.promoDiscntGrid = [
-      { key: 'discntItemId', label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
+      { key: '_no',          label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
         fmt: (v, row, idx) => idx + 1 },
-      { key: 'discntId',     label: '할인 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
-      { key: 'targetTypeCd', label: '대상유형', style: 'width:80px;', align: 'center',
+      { key: 'discntId',     label: '할인 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
-      { key: 'regDate',      label: '연결일시', style: 'width:130px;', align: 'center',
+      { key: 'regDate',      label: '연결일시', align: 'center',
         fmt: v => v ? String(v).slice(0, 16) : '' },
     ];
     // 프로모션 탭 — 사은품 조건 그리드 (pm_gift_cond 행)
     columns.promoGiftGrid = [
-      { key: 'giftCondId',   label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
+      { key: '_no',          label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
         fmt: (v, row, idx) => idx + 1 },
-      { key: 'giftId',       label: '사은품 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
-      { key: 'targetTypeCd', label: '대상유형', style: 'width:80px;', align: 'center',
+      { key: 'giftId',       label: '사은품 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
+      { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-green', fmt: v => v || 'PRODUCT' },
       { key: 'condTypeCd',   label: '조건유형', style: 'width:100px;', align: 'center',
         fmt: v => v || '-' },
-      { key: 'regDate',      label: '연결일시', style: 'width:130px;', align: 'center',
+      { key: 'regDate',      label: '연결일시', align: 'center',
         fmt: v => v ? String(v).slice(0, 16) : '' },
     ];
 

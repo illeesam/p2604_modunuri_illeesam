@@ -1130,29 +1130,11 @@ window.BoDateTimePicker = {
   setup(props, { emit }) {
     const { computed } = Vue;
 
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ BoDateTimePicker : handleBtnAction -> ', cmd, param);
-      if (cmd === 'picker-now') {
-        return onNow();
-      } else if (cmd === 'picker-clear') {
-        return onClear();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
+    const handleBtnAction = (cmd) => {
+      if (cmd === 'picker-now') return onNow();
+      if (cmd === 'picker-clear') return onClear();
     };
 
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ BoDateTimePicker : handleSelectAction -> ', cmd, param);
-      if (cmd === 'picker-date-change') {
-        return onDateChange(param);
-      } else if (cmd === 'picker-time-change') {
-        return onTimeChange(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
 
     /* 분리 모드 여부 — date/time prop 이 바인딩됐거나 splitMode 강제 시 */
     const cfSplit = computed(() => props.splitMode || props.date != null || props.time != null);
@@ -1185,8 +1167,11 @@ window.BoDateTimePicker = {
     /* onDateChange */
     const onDateChange = (e) => emitParts(e.target.value, cfParts.value.time);
 
-    /* onTimeChange */
-    const onTimeChange = (e) => emitParts(cfParts.value.date, e.target.value);
+    /* onHourChange / onMinChange — select 기반 시분 */
+    const cfHour = computed(() => (cfParts.value.time || '').slice(0, 2) || '00');
+    const cfMin  = computed(() => (cfParts.value.time || '').slice(3, 5) || '00');
+    const onHourChange = (e) => emitParts(cfParts.value.date, e.target.value + ':' + cfMin.value);
+    const onMinChange  = (e) => emitParts(cfParts.value.date, cfHour.value + ':' + e.target.value);
 
     /* onNow — 현재 일시로 채움 */
     const onNow = () => {
@@ -1199,29 +1184,42 @@ window.BoDateTimePicker = {
 
     /* inputClass 가 비면 최소 테두리 스타일을 인라인으로 보강 */
     const cfBaseStyle = computed(() =>
-      props.inputClass ? '' : 'font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;');
+      props.inputClass ? '' : 'font-size:11px;padding:2px 4px;border:1px solid #d0d0d0;border-radius:6px;height:28px;box-sizing:border-box;');
+
+    /* 시/분 select 옵션 */
+    const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+    const MINS  = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
     return {
-      cfParts, cfBaseStyle,                  // computed
-      handleBtnAction, handleSelectAction,   // dispatch
+      cfParts, cfBaseStyle, cfHour, cfMin, HOURS, MINS,  // computed + data
+      handleBtnAction,                                    // dispatch
+      onDateChange, onHourChange, onMinChange,
     };
   },
   template: /* html */`
-<div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;">
+<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;">
   <input type="date" :class="inputClass" :value="cfParts.date"
-    :disabled="readonly" @change="handleSelectAction('picker-date-change', $event)"
+    :disabled="readonly" @change="onDateChange($event)"
     :style="cfBaseStyle+'width:'+dateWidth+';margin:0;flex-shrink:0;'" />
-  <input type="time" :class="inputClass" :value="cfParts.time"
-    :disabled="readonly" @change="handleSelectAction('picker-time-change', $event)"
-    :style="cfBaseStyle+'width:'+timeWidth+';margin:0;flex-shrink:0;'" />
+  <select :class="inputClass" :value="cfHour" :disabled="readonly"
+    @change="onHourChange($event)"
+    :style="cfBaseStyle+'width:52px;margin:0;flex-shrink:0;padding:2px 2px;'">
+    <option v-for="h in HOURS" :key="h" :value="h">{{ h }}</option>
+  </select>
+  <span style="font-size:12px;color:#888;flex-shrink:0;">:</span>
+  <select :class="inputClass" :value="cfMin" :disabled="readonly"
+    @change="onMinChange($event)"
+    :style="cfBaseStyle+'width:52px;margin:0;flex-shrink:0;padding:2px 2px;'">
+    <option v-for="m in MINS" :key="m" :value="m">{{ m }}</option>
+  </select>
   <span v-if="placeholderDate ? (!cfParts.date ? (!cfParts.time) : false) : false" style="font-size:11px;color:#aaa;white-space:nowrap;">
   {{ placeholderDate }}
 </span>
-<button v-if="showNow ? (!readonly) : false" type="button" @click="handleBtnAction('picker-now')" style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">
-🕐 현재
+<button v-if="showNow ? (!readonly) : false" type="button" @click="handleBtnAction('picker-now')" style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">
+현재
 </button>
-<button v-if="showClear ? (!readonly ? ((cfParts.date || cfParts.time)) : false) : false" type="button" @click="handleBtnAction('picker-clear')" style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">
-✕ 지움
+<button v-if="showClear ? (!readonly ? ((cfParts.date || cfParts.time)) : false) : false" type="button" @click="handleBtnAction('picker-clear')" style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">
+✕
 </button>
 </div>
 `,

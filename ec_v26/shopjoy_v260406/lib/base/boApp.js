@@ -3259,6 +3259,8 @@
     .component('PmCouponPickModal', window.PmCouponPickModal)
     .component('PmSavePickModal', window.PmSavePickModal)
     .component('PmDiscntPickModal', window.PmDiscntPickModal)
+    .component('PmBrandPickModal', window.PmBrandPickModal)
+    .component('PmCategoryPickModal', window.PmCategoryPickModal)
     .component('PmGiftPickModal', window.PmGiftPickModal)
     .component('PathPickTreeNode', window.PathPickTreeNode)
     .component('BoPropTreeNode', window.BoPropTreeNode)

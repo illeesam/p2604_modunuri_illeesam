@@ -40,6 +40,19 @@ window.PmCacheDtl = {
       } else if (cmd === 'tab-mode') {
         uiState.tabMode2 = param;
         return;
+      // 발급대상 추가 모달 열기
+      } else if (cmd === 'target-add') {
+        uiState.showTargetPicker = true;
+        return;
+      // 발급대상 삭제
+      } else if (cmd === 'target-remove') {
+        const idx = form.issueTargets.findIndex(t => t.targetId === param);
+        if (idx >= 0) { form.issueTargets.splice(idx, 1); }
+        return;
+      // 발급대상 피커 닫기
+      } else if (cmd === 'target-close') {
+        uiState.showTargetPicker = false;
+        return;
       // 판매업체 모달 열기
       } else if (cmd === 'vendorModal-open') {
         uiState.showVendorModal = true;
@@ -76,15 +89,30 @@ window.PmCacheDtl = {
     };
 
 
+    /* _addTarget — 발급대상 추가 공통 헬퍼 */
+    const _addTarget = (row, idKey, nmKey) => {
+      uiState.showTargetPicker = false;
+      if (!row) return;
+      const id = String(row[idKey] || '');
+      if (!id) return;
+      if (form.issueTargets.some(t => t.targetId === id)) { showToast('이미 추가된 대상입니다.', 'error'); return; }
+      form.issueTargets.push({ targetId: id, targetNm: row[nmKey] || id });
+    };
+
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ PmCacheDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'vendor-pick') {
-        if (result == null) {
-            uiState.showVendorModal = false;
-            return;
-        }
+        if (result == null) { uiState.showVendorModal = false; return; }
         return selectVendor(result.vendorId, result.vendorNm);
+      } else if (cmd === 'target-prod-pick') {
+        return _addTarget(result, 'prodId', 'prodNm');
+      } else if (cmd === 'target-brand-pick') {
+        return _addTarget(result, 'brandId', 'brandNm');
+      } else if (cmd === 'target-category-pick') {
+        return _addTarget(result, 'categoryId', 'categoryNm');
+      } else if (cmd === 'vendor-target-pick') {
+        return _addTarget(result, 'vendorId', 'vendorNm');
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
@@ -98,7 +126,7 @@ window.PmCacheDtl = {
 
     // ===== 상태(reactive) 선언 =============================================
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
+    const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ cache_trans_types: [] });
@@ -142,7 +170,8 @@ window.PmCacheDtl = {
 
     /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
     const tabs = reactive([
-      { id: 'info', label: '기본정보', icon: '📋' },
+      { id: 'info',   label: '기본정보', icon: '📋' },
+      { id: 'target', label: '발급대상', icon: '🎯' },
     ]);
     // ===== 공통코드 로딩 ===================================================
     /* 캐시(충전금) fnLoadCodes */
@@ -163,6 +192,7 @@ window.PmCacheDtl = {
     const form = reactive({
       cacheId: null, memberId: '', memberNm: '', cacheDate: '', cacheTypeCd: '', cacheAmt: '', balanceAmt: '', cacheDesc: '',
       refId: '', procUserId: '',
+      targetTypeCd: '상품', issueTargets: [], issueGrades: [],
     });
     /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
     const _applyNewDefaults = () => {
@@ -256,7 +286,8 @@ window.PmCacheDtl = {
     const fnTypeBadge = t => coUtil.cofCodeBadge('CACHE_TYPE_KR', t, _CACHE_TYPE_FB[t] || 'badge-gray');
 
     // ===== 모달 토글 / 읽기전용 판정 =======================================
-    const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+    const showVendorModal   = Vue.toRef(uiState, 'showVendorModal');
+    const showTargetPicker  = Vue.toRef(uiState, 'showTargetPicker');
 
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
@@ -303,7 +334,7 @@ window.PmCacheDtl = {
       vendors, uiState, codes, form, errors,                                        // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, // computed
-      tabs, tab, tabMode2, showVendorModal,                                                // toRef
+      tabs, tab, tabMode2, showVendorModal, showTargetPicker,                          // toRef
       showTab, fnTypeBadge,                                                          // 헬퍼
       coUtil,                                                                        // 템플릿 내 cofAnd 사용
     };
@@ -381,6 +412,49 @@ window.PmCacheDtl = {
     </div>
   </div>
   <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+  <!-- ===== ■.■. 발급대상 탭 ================================================== -->
+  <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 발급대상</div>
+    <div class="form-row" style="align-items:flex-start;gap:16px;margin-bottom:12px;">
+      <div class="form-group" style="flex:0 0 auto;">
+        <label class="form-label">발급대상 종류</label>
+        <select class="form-control" v-model="form.targetTypeCd" :disabled="cfDtlMode" style="width:140px;">
+          <option value="상품">상품</option>
+          <option value="카테고리">카테고리</option>
+          <option value="브랜드">브랜드</option>
+          <option value="판매업체">판매업체</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label class="form-label">&nbsp;</label>
+        <button v-if="!cfDtlMode" class="btn btn_new" type="button" @click="handleBtnAction('target-add')">+ 대상 추가</button>
+      </div>
+    </div>
+    <table class="admin-table" style="margin-bottom:16px;">
+      <thead><tr>
+        <th style="width:40px;text-align:center;">번호</th>
+        <th>대상 ID</th>
+        <th>대상명</th>
+        <th v-if="!cfDtlMode" style="width:60px;text-align:center;">삭제</th>
+      </tr></thead>
+      <tbody>
+        <tr v-if="form.issueTargets.length===0"><td :colspan="cfDtlMode ? 3 : 4" style="text-align:center;color:#aaa;padding:16px;">추가된 대상이 없습니다.</td></tr>
+        <tr v-for="(t, idx) in form.issueTargets" :key="t.targetId">
+          <td style="text-align:center;">{{ idx+1 }}</td>
+          <td>{{ t.targetId }}</td>
+          <td>{{ t.targetNm }}</td>
+          <td v-if="!cfDtlMode" style="text-align:center;">
+            <button class="btn btn_row_delete" type="button" @click="handleBtnAction('target-remove', t.targetId)">✕</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="form-group">
+      <label class="form-label">적용 회원 등급</label>
+      <bo-multi-check-select v-model="form.issueGrades" :options="[{value:'일반',label:'일반'},{value:'실버',label:'실버'},{value:'골드',label:'골드'},{value:'VIP',label:'VIP'}]" placeholder="등급 선택 (미선택=전체)" :disabled="cfDtlMode" />
+    </div>
+  </div>
+  <!-- ===== □.□. 발급대상 탭 ================================================== -->
   <!-- ===== ■.■. 회원 캐쉬 내역 탭 ============================================ -->
   <div class="dtl-pane" v-show="showTab('history')" style="margin:0;">
     <!-- ===== ■.■.■. 조건부 영역 ============================================== -->
@@ -412,5 +486,15 @@ window.PmCacheDtl = {
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
 <!-- ===== ■. 판매업체 선택 모달 (카드 밖) ====================================== -->
 <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+<!-- ===== ■. 발급대상 피커 모달들 ============================================== -->
+<bo-prod-cate-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='상품')"
+  :exclude-ids="form.issueTargets.map(t => t.targetId)"
+  modal-name="target-prod-pick" :on-callback="fnCallbackModal" />
+<simple-vendor-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='판매업체')"
+  :show="true" :vendors="vendors" modal-name="vendor-target-pick" :on-callback="fnCallbackModal" />
+<pm-brand-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='브랜드')"
+  modal-name="target-brand-pick" :on-callback="fnCallbackModal" />
+<pm-category-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='카테고리')"
+  modal-name="target-category-pick" :on-callback="fnCallbackModal" />
 `
 };
