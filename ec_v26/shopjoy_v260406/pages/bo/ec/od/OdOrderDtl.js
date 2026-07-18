@@ -30,7 +30,7 @@ window.OdOrderDtl = {
 
     const cfIsNew = computed(() => !props.dtlId);
 
-    const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];
+    const ORDER_STEPS = boConsts.ORDER_STEPS.map(function (c) { return c.codeLabel; });
 
     const form = reactive({
       orderId: '', memberId: '', memberNm: '', orderDate: '', prodNm: '',
@@ -349,15 +349,8 @@ window.OdOrderDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    const PAY_STATUS_FALLBACK = ['미결제','부분결제','결제완료','결제실패','환불중','부분환불','환불완료'];
-
-    /* 주문 fnPayStatusBadge — 공통코드 PAY_STATUS 우선, 미매칭 시 로컬 fallback */
-    const _PAY_STATUS_FB = {
-      '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
-      '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
-    };
-    /* fnPayStatusBadge — 유틸 */
-    const fnPayStatusBadge = s => coUtil.cofCodeBadge('PAY_STATUS', s, _PAY_STATUS_FB[s] || 'badge-gray');
+    /* fnPayStatusBadge — 공통코드 PAY_STATUS 우선, 미매칭 시 boConsts fallback */
+    const fnPayStatusBadge = s => coUtil.cofCodeBadge('PAY_STATUS', s, boConsts.PAY_STATUS_FALLBACK_BADGE[s] || 'badge-gray');
 
     const cfCurrentStepIdx = computed(() => {
       const idx = ORDER_STEPS.indexOf(form.orderStatusCd);
@@ -457,29 +450,22 @@ window.OdOrderDtl = {
       (deliveries).find(d => d.orderId === props.dtlId)
     );
     /* 클레임 정보 (이 주문에 연결된 클레임) — DB 필드명 → 표시용 필드로 정규화 */
-    const CLAIM_TYPE_LABEL  = { CANCEL: '취소', RETURN: '반품', EXCHANGE: '교환' };
-    const CLAIM_STATUS_LABEL = {
-      REQUESTED: '요청', APPROVED: '승인', IN_PICKUP: '수거중',
-      PROCESSING: '처리중', COMPLT: '완료', REJECTED: '거절', CANCELLED: '철회', REFUND_WAIT: '환불대기',
-    };
+    const CLAIM_TYPE_COLOR  = coConsts.CLAIM_TYPE_COLOR;
+    /* CLAIM_FLOWS: 한글 유형키 → 단계 라벨[]. coConsts.CLAIM_STEP_MAP(영문키)에서 파생 */
+    const CLAIM_FLOWS = { '취소': coConsts.CLAIM_STEP_MAP.CANCEL, '반품': coConsts.CLAIM_STEP_MAP.RETURN, '교환': coConsts.CLAIM_STEP_MAP.EXCHANGE };
+    /* CLAIM_TYPE_LABEL_REV: 영문코드 → 한글. CLAIM_TYPE_CD_MAP의 역방향 */
+    const _CLAIM_TYPE_KR = { CANCEL: '취소', RETURN: '반품', EXCHANGE: '교환' };
     const cfRelatedClaim = computed(() => {
       const raw = (claims).find(c => c.orderId === props.dtlId);
       if (!raw) return null;
       return Object.assign({}, raw, {
-        type:   CLAIM_TYPE_LABEL[raw.claimTypeCd]  || raw.claimTypeCd  || raw.type  || '-',
-        status: CLAIM_STATUS_LABEL[raw.claimStatusCd] || raw.claimStatusCd || raw.status || '-',
+        type:   _CLAIM_TYPE_KR[raw.claimTypeCd]  || raw.claimTypeCd  || raw.type  || '-',
+        status: boConsts.CLAIM_STATUS_LABEL[raw.claimStatusCd] || raw.claimStatusCd || raw.status || '-',
       });
     });
-    /* CLAIM_FLOWS: 정책서 1-C 기준 static 흐름 (parentCodeValues DB 동기 불필요) */
-    const CLAIM_FLOWS = {
-      '취소':   ['취소요청', '취소처리중', '취소완료'],
-      '반품':   ['반품요청', '수거예정', '수거중', '검수중', '환불대기', '환불완료'],
-      '교환':   ['교환요청', '수거예정', '수거중', '교환완료'],
-    };
     const cfClaimStatusCodes = computed(() =>
       (codes.claim_statuses || []).filter(c => c.useYn === 'Y').sort((a, b) => a.sortOrd - b.sortOrd)
     );
-    const CLAIM_TYPE_COLOR = { '취소': '#ef4444', '반품': '#FFBB00', '교환': '#3b82f6' };
 
     /* trackingUrl — 추적 URL */
     const trackingUrl = (courier, no) => {
@@ -625,7 +611,7 @@ window.OdOrderDtl = {
     // pay_statuses 폴백 옵션 — sy_code 로딩 전엔 PAY_STATUS_FALLBACK 사용
     const cfPayStatusOptions = computed(() => {
       if (codes.pay_statuses && codes.pay_statuses.length) { return codes.pay_statuses; }
-      return PAY_STATUS_FALLBACK.map(v => ({ codeValue: v, codeLabel: v }));
+      return boConsts.PAY_STATUS_FALLBACK.map(function (c) { return { codeValue: c.codeValue, codeLabel: c.codeLabel }; });
     });
     // 기본 폼
     columns.baseForm = [
@@ -865,17 +851,17 @@ window.OdOrderDtl = {
         <div style="display:flex;gap:24px;align-items:flex-start;">
           <!-- 좌: 금액 요약 -->
           <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;flex:1;">
-            <div class="form-group" style="margin:0;">
+            <div style="margin:0;">
               <label class="form-label">상품 합계</label>
               <div class="form-control" style="background:#fff;text-align:right;font-weight:700;min-width:120px;">{{ fmt(orderItems.reduce((s,x)=>s+(Number(x.price)||0),0)) }}</div>
             </div>
             <div style="font-size:18px;color:#bbb;padding-bottom:6px;">+</div>
-            <div class="form-group" style="margin:0;">
+            <div style="margin:0;">
               <label class="form-label">배송비 <span style="font-size:10px;color:#e8587a;">(추가요청 가능)</span></label>
               <input class="form-control" type="number" v-model.number="form.dlivFee" style="text-align:right;min-width:120px;" @input="handleSelectAction('dlivFee-change')" />
             </div>
             <div style="font-size:18px;color:#bbb;padding-bottom:6px;">=</div>
-            <div class="form-group" style="margin:0;">
+            <div style="margin:0;">
               <label class="form-label">결제 금액</label>
               <div class="form-control" style="background:#fff8f9;border-color:#f3c6d4;text-align:right;font-weight:800;color:#e8587a;min-width:140px;">{{ fmt(form.totalAmt) }}</div>
             </div>
@@ -894,11 +880,11 @@ window.OdOrderDtl = {
       <div v-if="!cfDtlMode" style="margin-bottom:18px;padding:14px 18px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;">
         <div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:8px;">➕ 추가결제 요청 <span style="font-weight:400;color:#9a6a4a;">— 배송비 등 추가 비용을 고객에게 요청</span></div>
         <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
-          <div class="form-group" style="margin:0;">
+          <div style="margin:0;">
             <label class="form-label">요청 금액</label>
             <input class="form-control" type="number" v-model.number="form.extraReqAmt" placeholder="0" style="text-align:right;min-width:120px;" />
           </div>
-          <div class="form-group" style="margin:0;flex:1;min-width:200px;">
+          <div style="margin:0;flex:1;min-width:200px;">
             <label class="form-label">사유</label>
             <input class="form-control" v-model="form.extraReqReason" placeholder="예: 도서산간 추가 배송비" />
           </div>

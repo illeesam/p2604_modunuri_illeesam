@@ -262,12 +262,8 @@ window.XsSample11 = {
           상태
         </span>
         <select v-model="searchParam.status" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:76px;">
-          <option value="">
-            전체
-          </option>
-          <option v-for="o in codes.active_status_opts" :key="o.value" :value="o.value">
-            {{ o.label }}
-          </option>
+          <option value="">전체</option>
+          <option v-for="o in codes.active_status_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <!-- ===== ■.■.■. 노출조건 ================================================ -->
@@ -276,12 +272,8 @@ window.XsSample11 = {
           노출조건
         </span>
         <select v-model="searchParam.condition" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:112px;">
-          <option value="">
-            전체
-          </option>
-          <option v-for="c in codes.condition_opts" :key="c" :value="c">
-            {{ c }}
-          </option>
+          <option value="">전체</option>
+          <option v-for="c in codes.condition_opts" :key="c" :value="c">{{ c }}</option>
         </select>
       </div>
       <!-- ===== ■.■.■. 인증필요 ================================================ -->
@@ -290,12 +282,8 @@ window.XsSample11 = {
           인증필요
         </span>
         <select v-model="searchParam.authrequired" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:72px;">
-          <option value="">
-            전체
-          </option>
-          <option v-for="o in codes.need_yn_opts" :key="o.value" :value="o.value">
-            {{ o.label }}
-          </option>
+          <option value="">전체</option>
+          <option v-for="o in codes.need_yn_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
       <!-- ===== ■.■.■. 등급제한 ================================================ -->
@@ -304,12 +292,8 @@ window.XsSample11 = {
           등급제한
         </span>
         <select v-model="searchParam.authgrade" style="font-size:12px;padding:3px 5px;border:1px solid #ddd;border-radius:4px;width:72px;">
-          <option value="">
-            전체
-          </option>
-          <option v-for="g in codes.auth_grade_opts" :key="g" :value="g">
-            {{ g }}↑
-          </option>
+          <option value="">전체</option>
+          <option v-for="g in codes.auth_grade_opts" :key="g" :value="g">{{ g }}↑</option>
         </select>
       </div>
       <!-- ===== ■.■.■. 카테고리 ================================================ -->

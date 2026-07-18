@@ -23,12 +23,13 @@ window.PmCouponDtl = {
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({
       coupon_statuses_dtl: [],
+      pm_prod_targets: [],
+      pm_issue_grades: [],
       coupon_use_limit_opts: [{value:'unlimited',label:'무제한'},{value:'once',label:'1회만'},{value:'month',label:'월 1회'}],
       coupon_issue_type_opts: [{value:'auto',label:'자동 발급'},{value:'manual',label:'수동 발급'},{value:'event',label:'이벤트 발급'}],
       coupon_target_opts: [{value:'all',label:'전체 회원'},{value:'newMember',label:'신규 회원'},{value:'subscribe',label:'구독자'},{value:'purchase',label:'구매 고객'}],
       coupon_apply_opts: [{value:'all',label:'모든 상품'},{value:'category',label:'카테고리 제한'},{value:'product',label:'특정 상품만'},{value:'exclude',label:'제외 상품'}],
       coupon_types: ['상품할인쿠폰','주문할인쿠폰','배송비할인쿠폰','무료배송쿠폰','회원가입축하쿠폰','VIP쿠폰','클레임관리자지급쿠폰'],
-      issue_targets: ['상품','판매업체','브랜드','카테고리'],
       discount_types: [{value:'amount',label:'정액'},{value:'percent',label:'정률'}],
     });
 
@@ -69,6 +70,13 @@ window.PmCouponDtl = {
 
     const cfIsNew = computed(() => !props.dtlId);
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // view 모드 = 읽기전용 플래그
+    const cfIssueTargetsColumns = computed(() => [
+      { key: '_no', label: '번호', style: 'width:36px;', align: 'center', fmt: (v, row, idx) => idx + 1 },
+      { key: 'targetId', label: '대상 ID', mono: true, cellStyle: 'font-size:11px;' },
+      { key: 'targetNm', label: '대상명', fmt: v => v || '-' },
+      ...(!cfDtlMode.value ? [{ key: '_del', label: '삭제', style: 'width:60px;', align: 'center',
+        fmt: () => '✕', link: true, cellStyle: 'color:#e8587a;cursor:pointer;font-weight:700;' }] : []),
+    ]);
     const cfCurId       = computed(() => props.dtlId || form.couponId || null);
     const cfHasId       = computed(() => !!cfCurId.value);
     /* 신규: info 탭만 활성. 수정: info/detail 만 저장 의미 있음 (issued/used/preview 는 조회전용 → 비활성) */
@@ -146,6 +154,11 @@ window.PmCouponDtl = {
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 */
+    const handleGridCellAction = (gcmd, colKey, row, e = {}) => {
+      if (colKey === '_del') { return handleBtnAction('target-remove', e.rowIndex); }
     };
 
 
@@ -234,6 +247,8 @@ window.PmCouponDtl = {
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.coupon_statuses_dtl = codeStore.sgGetGrpCodes('COUPON_STATUS_DTL');
+      codes.pm_prod_targets     = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
+      codes.pm_issue_grades     = codeStore.sgGetGrpCodes('PM_ISSUE_GRADE');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
@@ -464,10 +479,13 @@ window.PmCouponDtl = {
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 일부 =================
     // 발행 상세 폼
     columns.detailIssueForm = [
+      { key: 'targetTypeCd',  label: '발급 대상 종류', type: 'select',
+        options: () => codes.pm_prod_targets },
       { key: 'issueMethods',   label: '지급 방법', type: 'select', nullable: false,
         options: () => codes.coupon_issue_type_opts },
       { key: 'issueCondition', label: '지급 조건', type: 'select', nullable: false,
         options: () => codes.coupon_target_opts },
+      { key: 'issueGrades', label: '적용 회원 등급', type: 'slot', name: 'issueGrades', colSpan: 3 },
     ];
     // 사용 상세 폼
     columns.detailUseForm = [
@@ -485,8 +503,8 @@ window.PmCouponDtl = {
       coUtil, // 템플릿 cofAnd 접근용
       columns,
       codes, form, errors, vendors,         // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfDtlMode, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, cfIssueTargetsColumns, tabs, // computed / reactive(tabs)
       tab, tabMode2, barcodeContainer, qrcodeContainer, showVendorModal, showTargetPicker, // toRef
       showTab, coUtil, // 헬퍼 / 전역
     };
@@ -690,12 +708,6 @@ window.PmCouponDtl = {
       <!-- ===== ■.■.■. 발급대상 ================================================ -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🎁 발급대상</h3>
-        <div class="form-group">
-          <label class="form-label">발급 대상 종류</label>
-          <select class="form-control" style="width:200px;" v-model="form.targetTypeCd" :disabled="cfDtlMode">
-            <option v-for="t in codes.issue_targets" :key="t" :value="t">{{ t }}</option>
-          </select>
-        </div>
         <!-- 대상 목록 추가/삭제 -->
         <div style="margin-top:12px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
@@ -706,31 +718,9 @@ window.PmCouponDtl = {
             <button v-if="!cfDtlMode" class="btn btn-sm" style="background:#e8587a;color:#fff;border:none;padding:3px 10px;border-radius:4px;font-size:12px;"
               @click="handleBtnAction('target-add')">+ 대상 추가</button>
           </div>
-          <div v-if="form.issueTargets.length === 0" style="padding:10px 14px;background:#f9f9f9;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;color:#aaa;">
-            <template v-if="form.targetTypeCd==='상품'">선택한 상품에만 쿠폰을 발급합니다. [+ 대상 추가] 버튼으로 상품을 선택하세요.</template>
-            <template v-else-if="form.targetTypeCd==='판매업체'">선택한 판매업체의 상품에만 적용됩니다.</template>
-            <template v-else-if="form.targetTypeCd==='브랜드'">선택한 브랜드의 상품에만 적용됩니다.</template>
-            <template v-else-if="form.targetTypeCd==='카테고리'">선택한 카테고리의 상품에만 적용됩니다.</template>
-            <template v-else>대상을 추가해주세요.</template>
-          </div>
-          <table v-else class="admin-table" style="margin-top:0;">
-            <thead><tr>
-              <th style="width:36px;text-align:center;">번호</th>
-              <th>대상 ID</th>
-              <th>대상명</th>
-              <th v-if="!cfDtlMode" style="width:60px;text-align:center;">삭제</th>
-            </tr></thead>
-            <tbody>
-              <tr v-for="(t, idx) in form.issueTargets" :key="t.targetId">
-                <td style="text-align:center;">{{ idx + 1 }}</td>
-                <td style="font-family:monospace;font-size:11px;">{{ t.targetId }}</td>
-                <td>{{ t.targetNm || '-' }}</td>
-                <td v-if="!cfDtlMode" style="text-align:center;">
-                  <button class="btn btn_row_delete" @click="handleBtnAction('target-remove', idx)">✕</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <bo-grid bare :columns="cfIssueTargetsColumns" :rows="form.issueTargets" row-key="targetId"
+            empty-text="대상을 추가해주세요."
+            @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
         </div>
       </div>
       <!-- ===== ■.■.■. 지급방법/조건 (BoFormArea 자동 렌더) ========================== -->
@@ -738,17 +728,16 @@ window.PmCouponDtl = {
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">📤 지급방법/조건</h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="columns.detailIssueForm" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
-        <!-- ===== ■.■.■.■. 적용 회원 등급 (멀티체크 select) ========================= -->
-        <div class="form-group" style="margin-top:12px;">
-          <label class="form-label">적용 회원 등급</label>
-          <bo-multi-check-select
-            v-model="form.issueGrades"
-            :options="[{value:'일반',label:'일반'},{value:'실버',label:'실버'},{value:'골드',label:'골드'},{value:'VIP',label:'VIP'}]"
-            placeholder="전체 등급 (미선택 시 전체)"
-            :disabled="cfDtlMode" />
-          <span style="font-size:12px;color:#aaa;margin-top:4px;display:block;">선택하지 않으면 전체 등급에 적용</span>
-        </div>
+          :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+          <template #issueGrades>
+            <bo-multi-check-select
+              v-model="form.issueGrades"
+              :options="codes.pm_issue_grades"
+              placeholder="전체 등급 (미선택 시 전체)"
+              :disabled="cfDtlMode" />
+            <span style="font-size:12px;color:#aaa;margin-top:4px;display:block;">선택하지 않으면 전체 등급에 적용</span>
+          </template>
+        </bo-form-area>
       </div>
       <!-- ===== ■.■.■. 사용방법 (BoFormArea 자동 렌더) ============================= -->
       <div>

@@ -210,6 +210,13 @@ window.PdQnaMng = {
       { key: 'answYn', label: '상태', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
     ];
 
+    // 답변 폼
+    columns.answerForm = [
+      { key: '_qnaContent', label: '질문 내용', type: 'slot', name: 'qnaContent', colSpan: 3 },
+      { key: 'answContent', label: '답변',      type: 'textarea', rows: 6, colSpan: 3,
+        placeholder: '답변을 입력하세요' },
+    ];
+
     // 기본 그리드
     columns.baseGrid = [
       { key: 'siteNm',   label: '사이트', fmt: () => cfSiteNm.value },
@@ -280,19 +287,15 @@ window.PdQnaMng = {
           </div>
           <div style="grid-column:1/-1;"><span style="color:#999;">제목: </span><b>{{ form.qnaTitle }}</b></div>
         </div>
-        <!-- 질문 본문 -->
-        <div class="form-group">
-          <label class="form-label">질문 내용</label>
-          <div style="padding:12px;background:#fafafa;border:1px solid #e5e7eb;border-radius:6px;min-height:80px;white-space:pre-wrap;">
-            {{ form.qnaContent || '(내용 없음)' }}
-          </div>
-        </div>
-        <!-- 답변 입력 -->
-        <div class="form-group" style="margin-top:14px;">
-          <label class="form-label">답변</label>
-          <textarea v-model="form.answContent" class="form-control" rows="6"
-            placeholder="답변을 입력하세요"></textarea>
-        </div>
+        <!-- 답변 폼 -->
+        <bo-form-area :columns="columns.answerForm" :form="form" :errors="{}"
+          :cols="3" :show-actions="false">
+          <template #qnaContent>
+            <div style="padding:12px;background:#fafafa;border:1px solid #e5e7eb;border-radius:6px;min-height:80px;white-space:pre-wrap;">
+              {{ form.qnaContent || '(내용 없음)' }}
+            </div>
+          </template>
+        </bo-form-area>
         <!-- 하단 액션 -->
         <div class="form-actions">
           <button class="btn btn_save" @click="handleBtnAction('form-save')">

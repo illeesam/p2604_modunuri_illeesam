@@ -62,6 +62,11 @@ window.SyUserDtl = {
       // 카카오 우편번호 팝업 열기
       } else if (cmd === 'addr-search') {
         return openKakaoPostcode();
+      // 주소 초기화
+      } else if (cmd === 'addr-clear') {
+        form.zipcode = '';
+        form.address = '';
+        return;
       // 부서 선택 모달 열기
       } else if (cmd === 'deptModal-open') {
         deptModal.show = true;
@@ -287,7 +292,7 @@ window.SyUserDtl = {
           <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')" style="white-space:nowrap;">
             🔍 주소 검색
           </button>
-          <button v-if="form.zipcode || form.address" type="button" title="주소 초기화" @click="form.zipcode=''; form.address='';"
+          <button v-if="form.zipcode || form.address" type="button" title="주소 초기화" @click="handleBtnAction('addr-clear')"
             style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
             x
           </button>

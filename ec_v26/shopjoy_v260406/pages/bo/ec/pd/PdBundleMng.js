@@ -16,7 +16,7 @@ window.PdBundleMng = {
     const brands = reactive([]);
     const bundles = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dtlMode: 'new', detailActive: false, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearchType: '', pickerSearch: '', dragIdx: null, dragoverIdx: null, brandModalOpen: false, vendorModalOpen: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dtlMode: 'new', detailActive: false, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, dragIdx: null, dragoverIdx: null, brandModalOpen: false, vendorModalOpen: false });
     const codes = reactive({
       product_statuses: [],
       bundle_types: [],
@@ -51,9 +51,17 @@ window.PdBundleMng = {
       } else if (cmd === 'brandModal-open') {
         uiState.brandModalOpen = true;
         return;
+      // 브랜드 선택 해제
+      } else if (cmd === 'brand-clear') {
+        newForm.brandId = '';
+        return;
       // 판매업체 선택 모달 열기
       } else if (cmd === 'vendorModal-open') {
         uiState.vendorModalOpen = true;
+        return;
+      // 판매업체 선택 해제
+      } else if (cmd === 'vendor-clear') {
+        newForm.vendorId = '';
         return;
       // 카테고리 피커 모달 열기
       } else if (cmd === 'categoryModal-open') {
@@ -65,14 +73,8 @@ window.PdBundleMng = {
         return;
       // 구성품 피커 모달 열기
       } else if (cmd === 'prodPickModal-open') {
-        return openPicker();
-      // 구성품 피커 모달 닫기
-      } else if (cmd === 'prodPickModal-close') {
-        uiState.pickerOpen = false;
+        uiState.pickerOpen = true;
         return;
-      // 구성품 피커 검색
-      } else if (cmd === 'prodPickModal-search') {
-        return onPickerSearch();
       // 페이지 번호 클릭
       } else if (cmd === 'bundles-pager-setPage') {
         return setPage(param);
@@ -113,7 +115,7 @@ window.PdBundleMng = {
       // 카테고리 모달에서 선택
       } else if (cmd === 'categoryModal-select') {
         return addCategory(param);
-      // 구성품 피커 모달에서 선택
+      // 구성품 피커 모달에서 선택 → fnCallbackModal로 위임
       } else if (cmd === 'prodPickModal-add') {
         return addItem(param);
       } else {
@@ -131,6 +133,11 @@ window.PdBundleMng = {
             return;
         }
           return addCategory(result);
+      // 구성품 상품 피커 콜백
+      } else if (cmd === 'prod-pick') {
+        uiState.pickerOpen = false;
+        if (result) return addItem(result);
+        return;
       // 브랜드 선택 모달 콜백
       } else if (cmd === 'brand-select') {
         uiState.brandModalOpen = false;
@@ -411,36 +418,11 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
 
     /* -- 피커 목록 -- */
     const cfCurrentBundleId = computed(() => uiState.dtlMode === 'edit' ? uiState.editBundleId : -1);
-    /* 피커 상품 서버검색 — 검색어/검색대상을 pdProd.getPage 에 전달(상위 50건).
-       이미 담긴 항목·자기자신은 서버결과에서 클라이언트 제외(소량). 모달열기/Enter/[조회] 시점에만 호출. */
-    const pickerResults = reactive([]);
-    /* onPickerSearch — 이벤트 */
-    const onPickerSearch = async () => {
-      try {
-        const params = { pageNo: 1, pageSize: 50 };
-        const sv = (uiState.pickerSearch || '').trim();
-        if (sv) {
-          params.searchValue = sv;
-          if (uiState.pickerSearchType) { params.searchType = uiState.pickerSearchType; }
-        }
-        const res = await boApiSvc.pdProd.getPage(params, '상품번들관리', '상품검색');
-        const list = (res.data?.data?.pageList || res.data?.data?.list || [])
-          .map(p => ({ ...p, productId: p.prodId ?? p.productId }));
-        pickerResults.splice(0, pickerResults.length, ...list);
-      } catch (e) {
-        console.error('[onPickerSearch]', e);
-        pickerResults.splice(0, pickerResults.length);
-      }
-    };
-    /* openPicker — 열기 */
-    const openPicker = () => {
-      uiState.pickerOpen = true; uiState.pickerSearchType = ''; uiState.pickerSearch = '';
-      onPickerSearch();
-    };
-    /* 서버결과에서 이미 담긴 항목·자기자신 제외 */
-    const cfPickerList = computed(() => {
-      const used = new Set(dtlItems.map(d => d.itemProdId));
-      return pickerResults.filter(p => p.productId !== cfCurrentBundleId.value && !used.has(p.productId));
+    /* cfExcludeProdIds — PdProdPickModal excludeIds 전달: 이미 담긴 항목 + 자기자신 제외 */
+    const cfExcludeProdIds = computed(() => {
+      const ids = dtlItems.map(d => d.itemProdId);
+      if (cfCurrentBundleId.value && cfCurrentBundleId.value !== -1) ids.push(cfCurrentBundleId.value);
+      return ids;
     });
 
     /* addItem — 추가 */
@@ -449,10 +431,9 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
       dtlItems.push({
         _id: _seq++, bundleItemId: null,
         bundleProdId: uiState.editBundleId,
-        itemProdId: prod.productId, itemSkuId: null,
+        itemProdId: prod.prodId ?? prod.productId, itemSkuId: null,
         itemQty: 1, priceRate: 0, sortOrd: maxSort + 1, useYn: 'Y',
       });
-      uiState.pickerOpen = false; uiState.pickerSearchType = ''; uiState.pickerSearch = '';
     };
 
     /* removeItem — 제거 */
@@ -626,7 +607,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
       codes, uiState, bundles, bundleList, searchParam, bundleGridPager, // 상태 / 데이터
       dtlCategories, dtlItems, newForm, newErrors,                                             // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                       // dispatch (모든 이벤트 / 액션 라우팅)
-      cfCatExcludeSet, cfDtlRateSum, cfDtlRateOk, cfDtlRateDiff, cfDtlProdNm, cfDtlBundleId, cfPickerList, // computed
+      cfCatExcludeSet, cfDtlRateSum, cfDtlRateOk, cfDtlRateDiff, cfDtlProdNm, cfDtlBundleId, cfExcludeProdIds, // computed
       fnBundleRowStyle,                                                                  // 헬퍼
       getProdNm, getProdPrice, getBrandNm, getVendorNm,                                 // 헬퍼
     };
@@ -742,7 +723,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
           <button class="btn btn-secondary btn-sm" type="button" style="flex-shrink:0" @click="handleBtnAction('brandModal-open')">
             선택
           </button>
-          <button v-if="newForm.brandId" type="button" title="선택 해제" @click="newForm.brandId=''"
+          <button v-if="newForm.brandId" type="button" title="선택 해제" @click="handleBtnAction('brand-clear')"
             style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
             x
           </button>
@@ -756,7 +737,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
           <button class="btn btn-secondary btn-sm" type="button" style="flex-shrink:0" @click="handleBtnAction('vendorModal-open')">
             선택
           </button>
-          <button v-if="newForm.vendorId" type="button" title="선택 해제" @click="newForm.vendorId=''"
+          <button v-if="newForm.vendorId" type="button" title="선택 해제" @click="handleBtnAction('vendor-clear')"
             style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
             x
           </button>
@@ -766,8 +747,8 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
 </div>
 <!-- ===== □.□. 신규 묶음상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) ============= -->
 <!-- ===== ■.■. ② 카테고리 N개 (신규/편집 공통) ================================== -->
-<div class="form-row" style="margin-bottom:16px">
-  <div class="form-group">
+<div style="margin-bottom:16px">
+  <div>
     <label class="form-label">
       카테고리
       <span style="font-size:11px;color:#aaa;font-weight:400">
@@ -940,89 +921,11 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
 <!-- ===== □.□. 구성품 추가 / 안분율 안내 ======================================= -->
 <!-- ===== □. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
 <!-- ===== ■. 구성품 Picker Modal ======================================== -->
-<teleport to="body" v-if="uiState.pickerOpen">
-  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-      @click.self="handleBtnAction('prodPickModal-close')">
-    <div style="background:#fff;border-radius:14px;padding:24px;width:580px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <strong style="font-size:15px">
-          구성품 상품 선택
-        </strong>
-        <button class="btn btn_close" @click="handleBtnAction('prodPickModal-close')">
-          닫기
-        </button>
-      </div>
-      <bo-multi-check-select
-          v-model="uiState.pickerSearchType"
-          :options="[
-          { value: 'prodNm', label: '상품명' },
-          { value: 'prodId', label: 'ID' },
-          ]"
-          placeholder="검색대상 전체"
-          all-label="전체 선택"
-          min-width="100%" />
-      <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
-        <input class="form-control" v-model="uiState.pickerSearch"
-            placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
-            @keyup.enter="handleBtnAction('prodPickModal-search')">
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('prodPickModal-search')">
-          조회
-        </button>
-      </div>
-      <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-        <!-- ===== ■.■.■.■.■. 테이블 ============================================= -->
-        <table class="bo-table" style="margin:0">
-          <thead>
-            <tr>
-              <th style="width:44px">
-                ID
-              </th>
-              <th>
-                상품명
-              </th>
-              <th style="width:70px;text-align:center">
-                카테고리
-              </th>
-              <th style="width:90px;text-align:right">
-                판매가
-              </th>
-              <th style="width:56px;text-align:center">
-                선택
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="p in cfPickerList" :key="(p?.productId)">
-            <td style="color:#aaa;font-size:12px">
-              {{ p.productId }}
-            </td>
-            <td>
-              {{ p.prodNm || p.productName }}
-            </td>
-            <td style="text-align:center;font-size:12px;color:#888">
-              {{ p.category || '-' }}
-            </td>
-            <td style="text-align:right">
-              {{ (p.salePrice || p.price || 0).toLocaleString() }}원
-            </td>
-            <td style="text-align:center">
-              <button class="btn btn_select" @click="handleSelectAction('prodPickModal-add', p)">
-                선택
-              </button>
-            </td>
-          </tr>
-          <tr v-if="!cfPickerList.length">
-            <td colspan="5" style="text-align:center;padding:24px;color:#aaa">
-              검색 결과가 없습니다.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-</teleport>
-<!-- ===== □. 구성품 Picker Modal ======================================== -->
+<!-- ===== ■. 구성품 상품 선택 모달 (BoModals.js / PdProdPickModal) ============ -->
+<pd-prod-pick-modal :show="uiState.pickerOpen" title="구성품 상품 선택"
+  :exclude-ids="cfExcludeProdIds" ui-nm="묶음상품관리"
+  modal-name="prod-pick" :on-callback="fnCallbackModal" />
+<!-- ===== □. 구성품 상품 선택 모달 =========================================== -->
 <!-- ===== ■. 카테고리 피커 모달 ============================================== -->
 <bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet" modal-name="category-pick" :on-callback="fnCallbackModal" />
 <!-- ===== □. 카테고리 피커 모달 ============================================== -->

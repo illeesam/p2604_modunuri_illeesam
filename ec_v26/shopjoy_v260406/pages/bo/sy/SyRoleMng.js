@@ -876,9 +876,7 @@ window.SyRoleMng = {
         @select="path => handleSelectAction('pathTree-select', path)" @expand-all="handleBtnAction('pathTree-expandAll')" @collapse-all="handleBtnAction('pathTree-collapseAll')">
         <template #filter>
           <select v-model="searchParam.treeCatFilter" @change="handleBtnAction('pathTree-catChange')" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
-            <option value="">
-              역할구분 전체
-            </option>
+            <option value="">역할구분 전체</option>
             <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">
               {{ c[1] }}
             </option>

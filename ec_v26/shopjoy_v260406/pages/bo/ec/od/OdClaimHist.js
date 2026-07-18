@@ -102,11 +102,10 @@ window.OdClaimHist = {
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     /* 클레임 유형별 단계 — parentCodeValues 기반 동적 파생 */
-    const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
     const cfClaimSteps = computed(() => cfCodes.value
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd)
-      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[uiState.claimType] || uiState.claimType) + '^'))
+      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (coConsts.CLAIM_TYPE_CD_MAP[uiState.claimType] || uiState.claimType) + '^'))
       .map(c => c.codeLabel)
       .filter(l => !['거부','철회'].includes(l)));
     const cfStatusOptions = computed(() => cfClaimSteps.value);

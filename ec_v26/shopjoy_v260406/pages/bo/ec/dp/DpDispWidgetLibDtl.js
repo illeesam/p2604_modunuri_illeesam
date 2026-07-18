@@ -819,7 +819,7 @@ window.DpDispWidgetLibDtl = {
         </div>
         <!-- ===== ■.■.■.■. 공통 동적 행 =========================================== -->
         <div v-if="cfDisplayRows.length" style="display:flex;flex-direction:column;gap:10px;">
-          <div v-for="row in cfDisplayRows" :key="row?.key" class="form-group" style="margin:0;">
+          <div v-for="row in cfDisplayRows" :key="row?.key" style="margin:0;">
             <label class="form-label">{{ row.label }}</label>
             <input  v-if="row.type==='input'"    v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
             <input  v-else-if="row.type==='number'"  v-model.number="form[row.key]" type="number" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
@@ -832,7 +832,7 @@ window.DpDispWidgetLibDtl = {
           </div>
         </div>
         <!-- ===== ■.■.■.■. HTML 에디터 (공통 BaseHtmlEditor — Toast UI Editor) ===== -->
-        <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
+        <div v-else-if="cfIsHtmlEditor" style="margin:0;">
           <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.htmlContent || '<span style=color:#bbb>-</span>'"></div>
           <base-html-editor v-else v-model="form.htmlContent" height="320px" />
         </div>

@@ -256,17 +256,13 @@ window.SyBatchHist = {
       ▲ 전체접기
     </button>
     <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
-      <option value="">
-        배치 전체
-      </option>
+      <option value="">배치 전체</option>
       <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">
         {{ b.label }}
       </option>
     </select>
     <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus">
-      <option value="">
-        상태 전체
-      </option>
+      <option value="">상태 전체</option>
       <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">
         {{ c.codeLabel }}
       </option>

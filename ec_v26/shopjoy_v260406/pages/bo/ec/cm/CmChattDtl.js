@@ -74,6 +74,9 @@ window.CmChattDtl = {
       // 참조 모달 닫기 (상품/주문/클레임)
       } else if (cmd === 'refModal-close') {
         return closeRefModal();
+      // 채팅 회원 검색
+      } else if (cmd === 'userChats-search') {
+        return handleSearchUserChats();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -561,8 +564,8 @@ window.CmChattDtl = {
       <!-- ===== ■.■.■. 고객 채팅 조회 탭 ========================================== -->
       <div v-show="uiState.tab==='search'">
         <div style="display:flex;gap:8px;margin-bottom:14px;">
-          <input class="form-control" style="max-width:240px;" v-model="uiState.searchUserId" placeholder="회원 ID 입력" @keyup.enter="handleSearchUserChats" />
-          <button class="btn btn_search" @click="handleSearchUserChats">조회</button>
+          <input class="form-control" style="max-width:240px;" v-model="uiState.searchUserId" placeholder="회원 ID 입력" @keyup.enter="handleBtnAction('userChats-search')" />
+          <button class="btn btn_search" @click="handleBtnAction('userChats-search')">조회</button>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
         <bo-grid bare :columns="columns.userChatGrid" :rows="cfUserChats" row-key="chattRoomId" :empty-text="uiState.searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>

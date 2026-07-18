@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 클레임관리 목록 + 하단 ClaimDtl 임베드 */
+﻿/* ShopJoy Admin - 클레임관리 목록 + 하단 ClaimDtl 임베드 */
 window.OdClaimMng = {
   name: 'OdClaimMng',
   props: {
@@ -94,6 +94,9 @@ window.OdClaimMng = {
       } else if (cmd === 'claims-pager-setPage') {
         if (param >= 1 && param <= listGridPager.pageTotalPage) { listGridPager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
+      // 관리계산 다이얼로그 열기
+      } else if (cmd === 'mngCalc-open') {
+        return handleOpenMngCalc(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -562,6 +565,9 @@ window.OdClaimMng = {
 
     // 결재 문의 폼
     columns.apprContactForm = [
+      { key: 'apprToUserId', label: '추가결재자', type: 'select', colSpan: 2, nullLabel: '선택하세요',
+        options: () => members.map(m => ({ value: m.memberId, label: `${m.memberNm} (${m.memberId})` })),
+        onChange: () => handleBtnAction('actionsModal-apprToChange') },
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
       { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
     ];
@@ -729,7 +735,7 @@ window.OdClaimMng = {
               삭제
             </button>
             <button class="btn btn-xs" style="background:#059669;color:#fff;border:none;"
-              @click="handleOpenMngCalc(row)">
+              @click="handleBtnAction('mngCalc-open', row)">
               💰 계산
             </button>
             <button v-if="row.orderId" class="btn btn-xs" style="background:#3b82f6;color:#fff;border:none;"
@@ -758,19 +764,8 @@ window.OdClaimMng = {
     />
   <!-- ===== □. 하단 상세: ClaimDtl 임베드 ===================================== -->
   <!-- ===== ■. 변경작업 모달 (actionsModal) ===================================== -->
-  <div v-if="bulkOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;" @click.self="handleBtnAction('actionsModal-close')">
-    <div style="background:#fff;border-radius:12px;width:640px;max-width:94vw;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;max-height:90vh;display:flex;flex-direction:column;">
-      <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
-        <b style="font-size:14px;">
-          변경작업
-          <span style="color:#1565c0;">
-            ({{ checked.size }}건 선택)
-          </span>
-        </b>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('actionsModal-close')">
-          ✕
-        </button>
-      </div>
+  <bo-modal :show="bulkOpen" :title="'📝 변경작업 (' + checked.size + '건 선택)'" width="640px" max-height="90vh" box-pad="0" @close="handleBtnAction('actionsModal-close')">
+    <div style="display:flex;flex-direction:column;max-height:76vh;">
       <div style="display:flex;gap:6px;padding:10px 14px 0;background:#fafafa;">
         <button v-for="t in [{id:'status',label:'클레임상태'},{id:'type',label:'클레임유형'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t?.id"
           @click="handleBtnAction('actionsModal-tabChange', t.id)"
@@ -780,7 +775,7 @@ window.OdClaimMng = {
       </div>
       <div style="padding:20px 18px;flex:1;overflow-y:auto;min-height:280px;">
         <div v-if="uiState.bulkTab==='status'">
-          <div v-for="t in codes.claim_types.map(c=>c.codeValue)" :key="Math.random()" class="form-group" :style="{opacity: (cfCheckedByType[t]||[]).length ? 1 : 0.4}">
+          <div v-for="t in codes.claim_types.map(c=>c.codeValue)" :key="Math.random()" :style="{opacity: (cfCheckedByType[t]||[]).length ? 1 : 0.4, marginBottom:'12px'}">
             <label class="form-label">
               <span :style="{display:'inline-block',fontSize:'10px',padding:'2px 8px',borderRadius:'10px',color:'#fff',fontWeight:700,marginRight:'6px',background: t==='취소'?'#ef4444':t==='반품'?'#FFBB00':'#3b82f6'}">
                 {{ t }}
@@ -791,9 +786,7 @@ window.OdClaimMng = {
               </span>
             </label>
             <select class="form-control" v-model="bulkForm.statusByType[t]" :disabled="!(cfCheckedByType[t]||[]).length">
-              <option value="">
-                {{ (cfCheckedByType[t]||[]).length ? '선택하세요 (미선택시 변경안함)' : '선택된 항목 없음' }}
-              </option>
+              <option value="">{{ (cfCheckedByType[t]||[]).length ? '선택하세요 (미선택시 변경안함)' : '선택된 항목 없음' }}</option>
               <option v-for="s in CLAIM_STATUS_BY_TYPE[t]" :key="Math.random()" :value="s">
                 {{ s }}
               </option>
@@ -805,9 +798,7 @@ window.OdClaimMng = {
             변경할 클레임유형
           </label>
           <select class="form-control" v-model="bulkForm.type">
-            <option value="">
-              선택하세요
-            </option>
+            <option value="">선택하세요</option>
             <option v-for="c in codes.claim_types" :key="c.codeValue" :value="c.codeValue">
               {{ c.codeLabel }}
             </option>
@@ -820,21 +811,6 @@ window.OdClaimMng = {
             :cols="2" :show-actions="false" />
         </div>
         <div v-if="uiState.bulkTab==='approvalReq'">
-          <div class="form-group">
-            <label class="form-label">
-              추가결재자 (회원선택)
-            </label>
-            <select class="form-control" v-model="bulkForm.apprToUserId" @change="handleBtnAction('actionsModal-apprToChange')">
-              <option value="">
-                선택하세요
-              </option>
-              <option v-for="m in members" :key="m?.memberId" :value="m.memberId">
-                {{ m.memberNm }} ({{ m.memberId }})
-              </option>
-            </select>
-          </div>
-          <!-- ===== ■.■.■.■.■. 전화번호/이메일 (BoFormArea 자동 렌더, readonly) =========== -->
-          <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="columns.apprContactForm" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 요청대상/요청대상명 (BoFormArea 자동 렌더) =================== -->
@@ -871,401 +847,13 @@ window.OdClaimMng = {
         </button>
       </div>
     </div>
-  </div>
-  <!-- ===== □. 변경작업 모달 ================================================= -->
-  <!-- ===== ■. 회원 선택 팝업 ================================================ -->
+  </bo-modal>
+  <!-- ===== □. 회원 선택 팝업 ================================================ -->
   <od-member-pick-modal :show="memberPick.open" ui-nm="클레임관리"
     subtitle="클레임 조회 기준 회원을 선택해주세요" modal-name="member-pick" :on-callback="fnCallbackModal" />
-  <!-- ===== □. 회원 선택 팝업 ================================================ -->
+  <!-- ===== □. 회원 선택 팝업 (end) ========================================== -->
   <!-- ===== ■. 클레임 금액 계산 모달 ========================================= -->
   <od-claim-calc-modal :show="mngCalcDialog.show" :claim-id="mngCalcDialog.claimId" @close="handleCloseMngCalc" />
-  <!-- ===== (구 인라인 모달 — OdClaimCalcModal 컴포넌트로 대체됨) -->
-  <bo-modal :show="false" title="환불 (예정) 계산" width="760px" @close="handleCloseMngCalc">
-    <template #default>
-      <div v-if="mngCalcDialog.loading" style="text-align:center;padding:40px;color:#94a3b8;">⏳ 계산 중...</div>
-      <template v-else-if="mngCalcDialog.data">
-        <!-- ① 메타 바: 회원·주문·클레임·신청일·상태 한 줄 -->
-        <div style="display:grid;grid-template-columns:auto auto 1fr auto auto;gap:0;align-items:stretch;margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;font-size:11px;">
-          <div style="padding:8px 14px;background:#f1f5f9;border-right:1px solid #e2e8f0;">
-            <div style="color:#94a3b8;margin-bottom:2px;">회원</div>
-            <div style="font-weight:700;color:#111;white-space:nowrap;">{{ mngCalcDialog.data.claim.memberNm || mngCalcDialog.data.claim.member_nm || '-' }}</div>
-          </div>
-          <div style="padding:8px 14px;background:#f1f5f9;border-right:1px solid #e2e8f0;">
-            <div style="color:#94a3b8;margin-bottom:2px;">주문번호</div>
-            <div style="font-weight:700;color:#1d4ed8;font-family:monospace;white-space:nowrap;">{{ mngCalcDialog.data.claim.orderId || mngCalcDialog.data.order.orderId || '-' }}</div>
-          </div>
-          <div style="padding:8px 14px;background:#f1f5f9;border-right:1px solid #e2e8f0;">
-            <div style="color:#94a3b8;margin-bottom:2px;">클레임번호</div>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-weight:700;font-family:monospace;color:#111;">{{ mngCalcDialog.claimId }}</span>
-              <span style="padding:1px 8px;border-radius:8px;font-size:10px;font-weight:700;"
-                :style="mngCalcDialog.claimType==='CANCEL'?'background:#fee2e2;color:#b91c1c':mngCalcDialog.claimType==='RETURN'?'background:#fff7ed;color:#9a3412':'background:#dbeafe;color:#1d4ed8'">
-                {{ mngCalcDialog.claimType==='CANCEL'?'취소':mngCalcDialog.claimType==='RETURN'?'반품':'교환' }}
-              </span>
-            </div>
-          </div>
-          <div style="padding:8px 14px;background:#f1f5f9;border-right:1px solid #e2e8f0;">
-            <div style="color:#94a3b8;margin-bottom:2px;">신청일</div>
-            <div style="font-weight:600;color:#111;white-space:nowrap;">{{ (mngCalcDialog.data.claim.requestDate || mngCalcDialog.data.claim.request_date || '').replace('T',' ').slice(0,10) || '-' }}</div>
-          </div>
-          <div style="padding:8px 14px;background:#f1f5f9;">
-            <div style="color:#94a3b8;margin-bottom:2px;">상태</div>
-            <div style="font-weight:700;">
-              <span style="padding:2px 8px;border-radius:6px;font-size:10px;"
-                :style="(mngCalcDialog.data.claim.claimStatusCd||'').includes('COMPLT')?'background:#dcfce7;color:#15803d':(mngCalcDialog.data.claim.claimStatusCd||'').includes('CANCEL')?'background:#fee2e2;color:#b91c1c':'background:#fef9c3;color:#92400e'">
-                {{ {'REQUEST':'접수','PROCESS':'처리중','COMPLT':'완료','CANCEL':'취소'}[mngCalcDialog.data.claim.claimStatusCd] || mngCalcDialog.data.claim.claimStatusCd || '-' }}
-              </span>
-            </div>
-          </div>
-        </div>
-        <!-- ② 클레임 전환 선택바 -->
-        <div v-if="mngCalcDialog.orderClaims.length >= 1" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;font-size:11px;">
-          <span style="color:#6b7280;white-space:nowrap;">이 주문의 클레임</span>
-          <span style="font-weight:700;color:#1d4ed8;">{{ mngCalcDialog.orderClaims.length }}건</span>
-          <select :value="mngCalcDialog.claimId" @change="handleMngCalcSwitch($event.target.value)" :disabled="mngCalcDialog.switchLoading"
-            style="flex:1;padding:4px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:11px;background:#fff;cursor:pointer;">
-            <option v-for="c in mngCalcDialog.orderClaims" :key="c.claimId" :value="c.claimId">
-              {{ c.claimId }} — {{ c.claimTypeCd==='CANCEL'?'취소':c.claimTypeCd==='RETURN'?'반품':'교환' }} / {{ c.claimStatusCd==='REQUEST'?'접수':c.claimStatusCd==='PROCESS'?'처리중':c.claimStatusCd==='COMPLT'?'완료':c.claimStatusCd==='CANCEL'?'취소':c.claimStatusCd }}
-            </option>
-          </select>
-          <span v-if="mngCalcDialog.switchLoading" style="color:#94a3b8;">⏳</span>
-        </div>
-        <!-- ③ 상품 정보 카드 (3열: 현재 주문상품 정보 | 클레임 신청 후 (환불 예정) | 최종 정보) -->
-        <div style="border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;">
-          <div style="padding:8px 12px;background:#f1f5f9;font-size:11px;font-weight:800;color:#374151;border-bottom:1px solid #e2e8f0;">🛍 상품 정보</div>
-          <div style="padding:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start;">
-          <!-- 1열: 현재 주문상품 정보 -->
-          <div style="border-radius:8px;border:1px solid #e2e8f0;overflow:hidden;">
-            <div style="padding:7px 10px;background:#f8fafc;font-size:11px;font-weight:700;color:#374151;border-bottom:1px solid #e2e8f0;">🛒 현재 주문상품 정보</div>
-            <div style="padding:10px 12px;">
-              <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">
-                <thead><tr style="background:#f8fafc;">
-                  <th style="padding:4px 6px;text-align:left;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0;">상품명</th>
-                  <th style="padding:4px 6px;text-align:center;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0;white-space:nowrap;">수량</th>
-                  <th style="padding:4px 6px;text-align:right;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0;white-space:nowrap;">금액</th>
-                </tr></thead>
-                <tbody>
-                  <tr v-for="(it, i) in (mngCalcDialog.data.order.orderItems || mngCalcDialog.data.claim.claimItems || [])" :key="i">
-                    <td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px;" :title="it.prodNm || it.prod_nm">{{ it.prodNm || it.prod_nm || '-' }}</td>
-                    <td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;text-align:center;">{{ it.orderQty || it.order_qty || it.claimQty || 1 }}</td>
-                    <td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;text-align:right;font-family:monospace;">{{ ((it.itemAmt || it.item_amt || (it.salePrice || it.sale_price || 0) * (it.orderQty || it.order_qty || 1)) || 0).toLocaleString() }}원</td>
-                  </tr>
-                  <tr v-if="!(mngCalcDialog.data.order.orderItems || mngCalcDialog.data.claim.claimItems || []).length">
-                    <td colspan="3" style="text-align:center;padding:8px;color:#94a3b8;">-</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div style="border-top:1px solid #e5e7eb;padding-top:6px;font-size:11px;">
-                <div style="display:flex;justify-content:space-between;padding:2px 0;color:#6b7280;">
-                  <span>상품 합계</span><span style="font-family:monospace;">{{ (mngCalcDialog.data.calc.orderTotalAmt || 0).toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.order.shippingFee || mngCalcDialog.data.order.dlivFee" style="display:flex;justify-content:space-between;padding:2px 0;color:#6b7280;">
-                  <span>배송비</span><span style="font-family:monospace;">{{ (mngCalcDialog.data.order.shippingFee || mngCalcDialog.data.order.dlivFee || 0).toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.order.couponDiscntAmt || mngCalcDialog.data.order.couponDiscAmt" style="display:flex;justify-content:space-between;padding:2px 0;color:#dc2626;">
-                  <span>쿠폰 할인</span><span style="font-family:monospace;">- {{ (mngCalcDialog.data.order.couponDiscntAmt || mngCalcDialog.data.order.couponDiscAmt || 0).toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.order.saveUseAmt || mngCalcDialog.data.order.saveUsedAmt" style="display:flex;justify-content:space-between;padding:2px 0;color:#dc2626;">
-                  <span>적립금 사용</span><span style="font-family:monospace;">- {{ (mngCalcDialog.data.order.saveUseAmt || mngCalcDialog.data.order.saveUsedAmt || 0).toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.order.cacheUsedAmt" style="display:flex;justify-content:space-between;padding:2px 0;color:#dc2626;">
-                  <span>충전금 사용</span><span style="font-family:monospace;">- {{ (mngCalcDialog.data.order.cacheUsedAmt || 0).toLocaleString() }}원</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:5px 0 1px;font-weight:800;border-top:1px solid #e2e8f0;margin-top:3px;">
-                  <span>실 결제액</span>
-                  <span style="font-family:monospace;color:#1d4ed8;">{{ (mngCalcDialog.data.order.payAmt || mngCalcDialog.data.calc.orderTotalAmt || 0).toLocaleString() }}원</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- 2열: 클레임 신청 후 (환불 예정) -->
-          <div style="border-radius:8px;border:1px solid #bbf7d0;overflow:hidden;">
-            <div style="padding:7px 10px;background:#f0fdf4;font-size:11px;font-weight:700;color:#14532d;border-bottom:1px solid #bbf7d0;">♻️ 클레임 신청 후 (환불 예정)</div>
-            <div style="padding:10px 12px;">
-              <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">
-                <thead><tr style="background:#f0fdf4;">
-                  <th style="padding:4px 6px;text-align:left;color:#15803d;font-weight:600;border-bottom:1px solid #bbf7d0;">상품명</th>
-                  <th style="padding:4px 6px;text-align:center;color:#15803d;font-weight:600;border-bottom:1px solid #bbf7d0;white-space:nowrap;">수량</th>
-                  <th style="padding:4px 6px;text-align:right;color:#15803d;font-weight:600;border-bottom:1px solid #bbf7d0;white-space:nowrap;">항목금액</th>
-                </tr></thead>
-                <tbody>
-                  <tr v-for="(it, i) in (mngCalcDialog.data.claim.claimItems || [])" :key="i">
-                    <td style="padding:4px 6px;border-bottom:1px solid #f0fdf4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px;" :title="it.prodNm || it.prod_nm">{{ it.prodNm || it.prod_nm || '-' }}</td>
-                    <td style="padding:4px 6px;border-bottom:1px solid #f0fdf4;text-align:center;">{{ it.claimQty || it.claim_qty || 1 }}</td>
-                    <td style="padding:4px 6px;border-bottom:1px solid #f0fdf4;text-align:right;font-family:monospace;">{{ (it.itemAmt || it.item_amt || 0).toLocaleString() }}원</td>
-                  </tr>
-                  <tr v-if="!(mngCalcDialog.data.claim.claimItems || []).length">
-                    <td colspan="3" style="text-align:center;padding:8px;color:#94a3b8;">항목 없음</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div style="border-top:1px solid #bbf7d0;padding-top:6px;font-size:11px;">
-                <div style="display:flex;justify-content:space-between;padding:2px 0;color:#6b7280;">
-                  <span>클레임 항목 금액</span><span style="font-family:monospace;">{{ (mngCalcDialog.data.calc.itemAmt || 0).toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.calc.dlivFeeRefund > 0" style="display:flex;justify-content:space-between;padding:2px 0;color:#059669;">
-                  <span>배송비 환불 (전체취소)</span><span style="font-family:monospace;">+ {{ mngCalcDialog.data.calc.dlivFeeRefund.toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.calc.couponDiscAmt > 0" style="display:flex;justify-content:space-between;padding:2px 0;color:#dc2626;">
-                  <span>쿠폰 차감 (비례)</span><span style="font-family:monospace;">- {{ mngCalcDialog.data.calc.couponDiscAmt.toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.calc.saveUsedAmt > 0" style="display:flex;justify-content:space-between;padding:2px 0;color:#dc2626;">
-                  <span>적립금 차감 (비례)</span><span style="font-family:monospace;">- {{ mngCalcDialog.data.calc.saveUsedAmt.toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.calc.cacheUsedAmt > 0" style="display:flex;justify-content:space-between;padding:2px 0;color:#dc2626;">
-                  <span>충전금 차감 (비례)</span><span style="font-family:monospace;">- {{ mngCalcDialog.data.calc.cacheUsedAmt.toLocaleString() }}원</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:5px 0 1px;font-size:13px;font-weight:800;border-top:1px solid #bbf7d0;margin-top:3px;">
-                  <span>환불 예정액</span>
-                  <span style="font-family:monospace;color:#059669;">{{ (mngCalcDialog.data.calc.refundBase || 0).toLocaleString() }}원</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- 3열: 최종 정보 -->
-          <div style="border-radius:8px;border:1px solid #a5b4fc;overflow:hidden;">
-            <div style="padding:7px 10px;background:#eef2ff;font-size:11px;font-weight:700;color:#3730a3;border-bottom:1px solid #a5b4fc;">✅ 최종 정보</div>
-            <div style="padding:10px 12px;font-size:11px;">
-              <!-- 유지되는 상품 목록 -->
-              <div style="font-size:10px;font-weight:700;color:#4f46e5;margin-bottom:4px;">유지되는 주문상품</div>
-              <div style="background:#f5f3ff;border-radius:6px;padding:6px 8px;margin-bottom:8px;">
-                <template v-if="(mngCalcDialog.data.order.orderItems || []).length > (mngCalcDialog.data.claim.claimItems || []).length">
-                  <div v-for="(it, i) in (mngCalcDialog.data.order.orderItems || [])" :key="i"
-                    style="display:flex;justify-content:space-between;padding:2px 0;color:#374151;">
-                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;" :title="it.prodNm || it.prod_nm">{{ it.prodNm || it.prod_nm || '-' }}</span>
-                    <span style="font-family:monospace;white-space:nowrap;margin-left:4px;">{{ it.orderQty || it.order_qty || 1 }}개</span>
-                  </div>
-                </template>
-                <div v-else style="color:#94a3b8;font-size:11px;text-align:center;padding:4px 0;">전량 클레임 처리</div>
-              </div>
-              <!-- 최종 금액 요약 -->
-              <div style="font-size:10px;font-weight:700;color:#4f46e5;margin-bottom:4px;">최종 금액 요약</div>
-              <div style="display:flex;flex-direction:column;gap:3px;">
-                <div style="display:flex;justify-content:space-between;padding:2px 0;color:#6b7280;">
-                  <span>원 결제액</span>
-                  <span style="font-family:monospace;">{{ (mngCalcDialog.data.order.payAmt || mngCalcDialog.data.calc.orderTotalAmt || 0).toLocaleString() }}원</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:2px 0;color:#059669;">
-                  <span>환불 예정액</span>
-                  <span style="font-family:monospace;font-weight:700;">- {{ (mngCalcDialog.data.calc.refundBase || 0).toLocaleString() }}원</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:5px 0 2px;font-weight:800;border-top:1px solid #a5b4fc;margin-top:2px;">
-                  <span style="color:#3730a3;">최종 부담액</span>
-                  <span style="font-family:monospace;color:#1d4ed8;">
-                    {{ ((mngCalcDialog.data.order.payAmt || mngCalcDialog.data.calc.orderTotalAmt || 0) - (mngCalcDialog.data.calc.refundBase || 0)).toLocaleString() }}원
-                  </span>
-                </div>
-                <div style="margin-top:6px;padding:5px 8px;background:#e0e7ff;border-radius:6px;text-align:center;font-size:10px;color:#4338ca;font-weight:700;">
-                  비례율 {{ Math.round((mngCalcDialog.data.calc.ratio || 0) * 100) }}% 적용
-                </div>
-              </div>
-            </div>
-          </div>
-        </div><!-- /grid -->
-        </div><!-- /상품 정보 카드 -->
-        <!-- ③ 결제 정보 카드 (3열: 결제 상세 | 환불 예정 결제수단 | 최종 결제 요약) -->
-        <div style="margin-top:12px;border-radius:10px;border:1px solid #bfdbfe;overflow:hidden;">
-          <div style="padding:8px 12px;background:#eff6ff;font-size:11px;font-weight:800;color:#1e40af;border-bottom:1px solid #bfdbfe;">💳 결제 정보</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
-            <!-- 결제 상세 -->
-            <div style="padding:10px 14px;border-right:1px solid #bfdbfe;">
-              <div style="font-size:10px;font-weight:700;color:#1d4ed8;margin-bottom:6px;">📌 결제 상세</div>
-              <template v-if="(mngCalcDialog.data.order.orderPays || []).length">
-                <div v-for="(pay, pi) in (mngCalcDialog.data.order.orderPays || [])" :key="pi"
-                  style="font-size:11px;padding:5px 8px;margin-bottom:4px;background:#fff;border-radius:6px;border:1px solid #dbeafe;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span style="color:#374151;font-weight:700;">{{ pay.payMethodCdNm || pay.payMethodCd || '-' }}</span>
-                    <span style="font-family:monospace;color:#1d4ed8;font-weight:700;">{{ (pay.payAmt || 0).toLocaleString() }}원</span>
-                  </div>
-                  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:3px;color:#94a3b8;font-size:10px;">
-                    <span>{{ pay.payStatusCdNm || pay.payStatusCd || '' }}</span>
-                    <span>{{ (pay.payDate || '').replace('T',' ').slice(0,16) }}</span>
-                    <span v-if="pay.cardNo">카드 {{ pay.cardNo }}</span>
-                    <span v-if="pay.pgTransactionId" style="font-family:monospace;">PG {{ pay.pgTransactionId }}</span>
-                  </div>
-                </div>
-              </template>
-              <div v-else style="font-size:11px;color:#94a3b8;padding:6px 8px;background:#f8fafc;border-radius:6px;text-align:center;">결제 데이터 없음</div>
-            </div>
-            <!-- 환불 예정 결제수단 -->
-            <div style="padding:10px 14px;border-right:1px solid #bfdbfe;">
-              <div style="font-size:10px;font-weight:700;color:#059669;margin-bottom:6px;">♻️ 환불 예정 결제수단</div>
-              <template v-if="(mngCalcDialog.data.order.orderPays || []).length">
-                <div v-for="(pay, pi) in (mngCalcDialog.data.order.orderPays || [])" :key="pi"
-                  style="font-size:11px;padding:5px 8px;margin-bottom:4px;background:#fff;border-radius:6px;border:1px solid #bbf7d0;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span style="color:#374151;font-weight:700;">{{ pay.payMethodCdNm || pay.payMethodCd || '-' }}</span>
-                    <span style="font-family:monospace;color:#059669;font-weight:700;">
-                      {{ Math.round((pay.payAmt || 0) * (mngCalcDialog.data.calc.ratio || 0)).toLocaleString() }}원 예정
-                    </span>
-                  </div>
-                  <div style="font-size:10px;color:#6b9b7a;margin-top:2px;">
-                    원결제 {{ (pay.payAmt || 0).toLocaleString() }}원의 {{ Math.round((mngCalcDialog.data.calc.ratio || 0) * 100) }}%
-                  </div>
-                </div>
-              </template>
-              <div v-else style="font-size:11px;color:#94a3b8;padding:6px 8px;background:#f0fdf4;border-radius:6px;text-align:center;">결제 데이터 없음</div>
-            </div>
-            <!-- 최종 결제 요약 -->
-            <div style="padding:10px 14px;background:#f8faff;">
-              <div style="font-size:10px;font-weight:700;color:#6366f1;margin-bottom:6px;">✅ 최종 결제 요약</div>
-              <div style="font-size:11px;display:flex;flex-direction:column;gap:4px;">
-                <div style="display:flex;justify-content:space-between;padding:3px 0;color:#6b7280;">
-                  <span>원 결제액</span>
-                  <span style="font-family:monospace;">{{ (mngCalcDialog.data.order.payAmt || mngCalcDialog.data.calc.orderTotalAmt || 0).toLocaleString() }}원</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:3px 0;color:#059669;">
-                  <span>환불 예정액</span>
-                  <span style="font-family:monospace;font-weight:700;">{{ (mngCalcDialog.data.calc.refundBase || 0).toLocaleString() }}원</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid #e2e8f0;margin-top:2px;font-weight:800;">
-                  <span style="color:#374151;">최종 부담액</span>
-                  <span style="font-family:monospace;color:#1d4ed8;">
-                    {{ ((mngCalcDialog.data.order.payAmt || mngCalcDialog.data.calc.orderTotalAmt || 0) - (mngCalcDialog.data.calc.refundBase || 0)).toLocaleString() }}원
-                  </span>
-                </div>
-                <div style="margin-top:6px;padding:5px 8px;background:#e0e7ff;border-radius:6px;text-align:center;font-size:10px;color:#4338ca;font-weight:700;">
-                  비례율 {{ Math.round((mngCalcDialog.data.calc.ratio || 0) * 100) }}% 적용
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- ④ 프로모션 정보 카드 (3열: 사용된 | 복구되는 | 최종 프로모션 현황) -->
-        <div style="margin-top:12px;border-radius:10px;border:1px solid #e9d5ff;overflow:hidden;">
-          <div style="padding:8px 12px;background:#f5f3ff;font-size:11px;font-weight:800;color:#6d28d9;border-bottom:1px solid #e9d5ff;">🎁 프로모션 정보</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
-            <!-- 사용된 프로모션 (주문 시) -->
-            <div style="padding:10px 14px;border-right:1px solid #e9d5ff;">
-              <div style="font-size:10px;font-weight:700;color:#7c3aed;margin-bottom:8px;">📌 사용된 프로모션 (주문 시)</div>
-              <div v-if="!(mngCalcDialog.data.order.couponDiscntAmt || mngCalcDialog.data.order.couponDiscAmt) &amp;&amp; !(mngCalcDialog.data.order.saveUseAmt || mngCalcDialog.data.order.saveUsedAmt) &amp;&amp; !mngCalcDialog.data.order.cacheUsedAmt"
-                style="font-size:11px;color:#94a3b8;padding:4px 0;">사용된 프로모션 없음</div>
-              <template v-else>
-                <div v-if="mngCalcDialog.data.order.couponDiscntAmt || mngCalcDialog.data.order.couponDiscAmt"
-                  style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;margin-bottom:4px;background:#fff;border-radius:6px;border:1px solid #e9d5ff;font-size:11px;">
-                  <div>
-                    <span style="color:#7c3aed;font-weight:700;">🎟 쿠폰 할인</span>
-                    <span v-if="mngCalcDialog.data.calc.couponNm" style="color:#94a3b8;font-size:10px;margin-left:4px;">{{ mngCalcDialog.data.calc.couponNm }}</span>
-                  </div>
-                  <span style="font-family:monospace;color:#dc2626;font-weight:700;">-{{ (mngCalcDialog.data.order.couponDiscntAmt || mngCalcDialog.data.order.couponDiscAmt || 0).toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.order.saveUseAmt || mngCalcDialog.data.order.saveUsedAmt"
-                  style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;margin-bottom:4px;background:#fff;border-radius:6px;border:1px solid #e9d5ff;font-size:11px;">
-                  <span style="color:#7c3aed;font-weight:700;">⭐ 적립금 사용</span>
-                  <span style="font-family:monospace;color:#dc2626;font-weight:700;">-{{ (mngCalcDialog.data.order.saveUseAmt || mngCalcDialog.data.order.saveUsedAmt || 0).toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.order.cacheUsedAmt"
-                  style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;margin-bottom:4px;background:#fff;border-radius:6px;border:1px solid #e9d5ff;font-size:11px;">
-                  <span style="color:#7c3aed;font-weight:700;">💰 충전금 사용</span>
-                  <span style="font-family:monospace;color:#dc2626;font-weight:700;">-{{ (mngCalcDialog.data.order.cacheUsedAmt || 0).toLocaleString() }}원</span>
-                </div>
-              </template>
-            </div>
-            <!-- 복구되는 프로모션 (클레임 완료 후) -->
-            <div style="padding:10px 14px;border-right:1px solid #e9d5ff;">
-              <div style="font-size:10px;font-weight:700;color:#059669;margin-bottom:8px;">♻️ 복구되는 프로모션 (클레임 완료 후)</div>
-              <div v-if="!(mngCalcDialog.data.calc.couponDiscAmt > 0) &amp;&amp; !(mngCalcDialog.data.calc.saveUsedAmt > 0) &amp;&amp; !(mngCalcDialog.data.calc.cacheUsedAmt > 0)"
-                style="font-size:11px;color:#94a3b8;padding:4px 0;">복구되는 프로모션 없음</div>
-              <template v-else>
-                <div v-if="mngCalcDialog.data.calc.couponDiscAmt > 0"
-                  style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;margin-bottom:4px;background:#fff;border-radius:6px;border:1px solid #bbf7d0;font-size:11px;">
-                  <div>
-                    <span style="color:#059669;font-weight:700;">🎟 쿠폰</span>
-                    <span v-if="mngCalcDialog.data.calc.couponNm" style="color:#94a3b8;font-size:10px;margin-left:4px;">{{ mngCalcDialog.data.calc.couponNm }}</span>
-                  </div>
-                  <span style="background:#ffedd5;color:#c2410c;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:700;">재발급 필요</span>
-                </div>
-                <div v-if="mngCalcDialog.data.calc.saveUsedAmt > 0"
-                  style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;margin-bottom:4px;background:#fff;border-radius:6px;border:1px solid #bbf7d0;font-size:11px;">
-                  <span style="color:#059669;font-weight:700;">⭐ 적립금 복구</span>
-                  <span style="font-family:monospace;color:#059669;font-weight:700;">+{{ mngCalcDialog.data.calc.saveUsedAmt.toLocaleString() }}원</span>
-                </div>
-                <div v-if="mngCalcDialog.data.calc.cacheUsedAmt > 0"
-                  style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;margin-bottom:4px;background:#fff;border-radius:6px;border:1px solid #bbf7d0;font-size:11px;">
-                  <span style="color:#059669;font-weight:700;">💰 충전금 복구</span>
-                  <span style="font-family:monospace;color:#1d4ed8;font-weight:700;">+{{ mngCalcDialog.data.calc.cacheUsedAmt.toLocaleString() }}원</span>
-                </div>
-              </template>
-            </div>
-            <!-- 최종 프로모션 현황 -->
-            <div style="padding:10px 14px;background:#faf5ff;">
-              <div style="font-size:10px;font-weight:700;color:#6d28d9;margin-bottom:8px;">✅ 최종 프로모션 현황</div>
-              <div style="font-size:11px;display:flex;flex-direction:column;gap:4px;">
-                <!-- 쿠폰 최종 -->
-                <div v-if="mngCalcDialog.data.order.couponDiscntAmt || mngCalcDialog.data.order.couponDiscAmt"
-                  style="padding:4px 8px;background:#fff;border-radius:6px;border:1px solid #e9d5ff;font-size:11px;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span style="color:#6b7280;">🎟 쿠폰 잔여</span>
-                    <span v-if="mngCalcDialog.data.calc.couponDiscAmt > 0" style="background:#ffedd5;color:#c2410c;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;">재발급 필요</span>
-                    <span v-else style="color:#94a3b8;font-size:10px;">해당없음</span>
-                  </div>
-                </div>
-                <!-- 적립금 최종 -->
-                <div v-if="mngCalcDialog.data.order.saveUseAmt || mngCalcDialog.data.order.saveUsedAmt"
-                  style="padding:4px 8px;background:#fff;border-radius:6px;border:1px solid #e9d5ff;font-size:11px;">
-                  <div style="display:flex;justify-content:space-between;color:#6b7280;">
-                    <span>⭐ 적립금</span>
-                    <div style="text-align:right;">
-                      <div style="color:#dc2626;">사용 -{{ (mngCalcDialog.data.order.saveUseAmt || mngCalcDialog.data.order.saveUsedAmt || 0).toLocaleString() }}원</div>
-                      <div v-if="mngCalcDialog.data.calc.saveUsedAmt > 0" style="color:#059669;">복구 +{{ mngCalcDialog.data.calc.saveUsedAmt.toLocaleString() }}원</div>
-                      <div style="font-weight:700;color:#374151;border-top:1px solid #e9d5ff;margin-top:2px;padding-top:2px;">
-                        순차감 {{ ((mngCalcDialog.data.order.saveUseAmt || mngCalcDialog.data.order.saveUsedAmt || 0) - (mngCalcDialog.data.calc.saveUsedAmt || 0)).toLocaleString() }}원
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- 충전금 최종 -->
-                <div v-if="mngCalcDialog.data.order.cacheUsedAmt"
-                  style="padding:4px 8px;background:#fff;border-radius:6px;border:1px solid #e9d5ff;font-size:11px;">
-                  <div style="display:flex;justify-content:space-between;color:#6b7280;">
-                    <span>💰 충전금</span>
-                    <div style="text-align:right;">
-                      <div style="color:#dc2626;">사용 -{{ (mngCalcDialog.data.order.cacheUsedAmt || 0).toLocaleString() }}원</div>
-                      <div v-if="mngCalcDialog.data.calc.cacheUsedAmt > 0" style="color:#059669;">복구 +{{ mngCalcDialog.data.calc.cacheUsedAmt.toLocaleString() }}원</div>
-                      <div style="font-weight:700;color:#374151;border-top:1px solid #e9d5ff;margin-top:2px;padding-top:2px;">
-                        순차감 {{ ((mngCalcDialog.data.order.cacheUsedAmt || 0) - (mngCalcDialog.data.calc.cacheUsedAmt || 0)).toLocaleString() }}원
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div v-if="!(mngCalcDialog.data.order.couponDiscntAmt || mngCalcDialog.data.order.couponDiscAmt) &amp;&amp; !(mngCalcDialog.data.order.saveUseAmt || mngCalcDialog.data.order.saveUsedAmt) &amp;&amp; !mngCalcDialog.data.order.cacheUsedAmt"
-                  style="font-size:11px;color:#94a3b8;padding:4px 0;">프로모션 없음</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- ③ 사유 (있을 때만) -->
-        <div v-if="mngCalcDialog.data.claim.reasonDetail || mngCalcDialog.data.claim.reason_detail"
-          style="margin-top:10px;padding:8px 12px;background:#fafafa;border-radius:8px;border:1px solid #e5e7eb;font-size:11px;">
-          <span style="color:#9ca3af;margin-right:8px;">상세 사유</span>
-          <span style="color:#374151;">{{ mngCalcDialog.data.claim.reasonDetail || mngCalcDialog.data.claim.reason_detail }}</span>
-        </div>
-        <!-- ④ 진행 이력 타임라인 -->
-        <div v-if="(mngCalcDialog.data.statusHist || []).length"
-          style="margin-top:10px;padding:10px 14px;background:#fafafa;border-radius:8px;border:1px solid #e5e7eb;">
-          <div style="font-size:10px;color:#6b7280;font-weight:700;margin-bottom:10px;">📋 진행 이력</div>
-          <div style="display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding-bottom:4px;">
-            <template v-for="(h, i) in (mngCalcDialog.data.statusHist || [])" :key="i">
-              <div style="display:flex;flex-direction:column;align-items:center;min-width:90px;max-width:110px;">
-                <div style="padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;white-space:nowrap;margin-bottom:4px;"
-                  :style="(h.claimStatusCd||'').indexOf('COMPLT')>=0?'background:#dcfce7;color:#15803d':(h.claimStatusCd||'').indexOf('CANCEL')>=0?'background:#fee2e2;color:#b91c1c':'background:#dbeafe;color:#1d4ed8'">
-                  {{ {'REQUEST':'접수','RECEIPT':'접수','PROCESS':'처리중','INSPECT':'검수중','COMPLT':'완료','CANCEL':'취소','REJECT':'반려','HOLD':'보류'}[h.claimStatusCd] || h.claimStatusCd }}
-                </div>
-                <div style="font-size:9px;color:#9ca3af;text-align:center;">{{ (h.chgDate||'').replace('T',' ').slice(0,16) }}</div>
-                <div v-if="h.chgUserId" style="font-size:9px;color:#cbd5e1;text-align:center;margin-top:1px;">{{ h.chgUserId }}</div>
-              </div>
-              <div v-if="i < (mngCalcDialog.data.statusHist||[]).length - 1"
-                style="flex-shrink:0;padding:0 4px;color:#d1d5db;font-size:14px;margin-top:6px;">›</div>
-            </template>
-          </div>
-        </div>
-        <!-- ⑤ 안내 -->
-        <div style="margin-top:8px;font-size:10px;color:#9ca3af;padding:5px 10px;background:#f9fafb;border-radius:6px;border-left:3px solid #e5e7eb;">
-          ※ 실제 환불액은 결제 수단별 환불 정책에 따라 달라질 수 있습니다. 비례율 {{ Math.round(mngCalcDialog.data.calc.ratio * 100) }}% 적용
-        </div>
-      </template>
-    </template>
-  </bo-modal>
   <!-- ===== □. 클레임 금액 계산 모달 ========================================= -->
 </bo-page>
 `

@@ -37,6 +37,17 @@ window.StRawMng = {
       } else if (cmd === 'rawData-pager-setPage') {
         if (param >= 1 && param <= rawGridPager.pageTotalPage) { rawGridPager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
+      // 전체 펼치기
+      } else if (cmd === 'raws-expand-all') {
+        raws.forEach(r => { if (!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); });
+        return;
+      // 전체 접기
+      } else if (cmd === 'raws-collapse-all') {
+        raws.forEach(r => { if (isExpanded(r.settleRawId)) toggleRow(r.settleRawId); });
+        return;
+      // 정산 수집 실행
+      } else if (cmd === 'collect-run') {
+        return doCollect();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -396,13 +407,13 @@ const raws = reactive([]);
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="정산수집원장" :count-text="rawGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-secondary btn-sm" @click="() => { raws.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('raws-expand-all')">
         ▼ 전체펼치기
       </button>
-      <button class="btn btn-secondary btn-sm" @click="() => { raws.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('raws-collapse-all')">
         ▲ 전체접기
       </button>
-      <button class="btn btn-blue btn-sm" @click="doCollect">
+      <button class="btn btn-blue btn-sm" @click="handleBtnAction('collect-run')">
         🔄 재수집
       </button>
     </template>

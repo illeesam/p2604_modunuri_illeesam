@@ -211,18 +211,16 @@ window.SyBbsDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    // 사이트명 폼 (cols=3, 1열만 차지 — 다른 필드와 동일 폭)
     const columns = {};
-    columns.siteForm = [
-      { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value },
-    ];
 
-    // 기본 폼 (cols=3, 1열씩)
+    // 통합 폼 (cols=3)
     columns.baseForm = [
-      { key: 'bbsTitle',    label: '제목', type: 'text', required: true,
+      { key: '_siteNm',    label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value },
+      { key: 'bbsTitle',   label: '제목',     type: 'text', required: true, colSpan: 2,
         placeholder: '게시글 제목' },
-      { key: 'authorNm',    label: '작성자', type: 'text', placeholder: '작성자명' },
-      { key: 'bbsStatusCd', label: '상태', type: 'select', options: () => codes.bbs_post_statuses },
+      { key: '_bbmPick',   label: '게시판',   type: 'slot', name: 'bbmPick', colSpan: 3 },
+      { key: 'authorNm',    label: '작성자',  type: 'text', placeholder: '작성자명' },
+      { key: 'bbsStatusCd', label: '상태',    type: 'select', options: () => codes.bbs_post_statuses },
     ];
 
     // 내용 입력 폼 (한 줄 전체 폭, colSpan=3)
@@ -236,6 +234,8 @@ window.SyBbsDtl = {
         visible: () => uiState.selectedBbm && cfContentType.value === 'textarea' },
       { key: '_htmlEditor', label: '내용', type: 'slot', name: 'contentHtmlEditor', colSpan: 3,
         visible: () => uiState.selectedBbm && cfContentType.value === 'htmleditor' },
+      { key: '_attach', label: '첨부파일', type: 'slot', name: 'attachGrp', colSpan: 3,
+        visible: () => !!(uiState.selectedBbm) },
     ];
 
     // 게시판 상세보기 모달
@@ -268,41 +268,29 @@ window.SyBbsDtl = {
   template: /* html */`
 <bo-container :title="!active ? '게시글 상세' : (cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.bbsId)">
-  <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더, 1열 폭) ========================= -->
-  <bo-form-area :columns="columns.siteForm" :form="form" :errors="{}"
-    :cols="3" compact :show-actions="false" />
-  <!-- ===== ■.■. 게시판 선택 ================================================ -->
-  <div class="form-group">
-    <label class="form-label">게시판 <span v-if="!cfDtlMode" class="req"> * </span></label>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <!-- ===== ■.■.■. 신규: 선택 버튼 =========================================== -->
-      <template v-if="cfIsNew ? (!cfDtlMode) : false">
-        <button class="btn btn-secondary btn-sm" type="button" @click="handleBtnAction('bbmModal-open')">📋 게시판 선택</button>
-        <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="handleBtnAction('bbmDetail-open')" title="게시판 상세보기">
-          🔍
-        </button>
-      </template>
-      <!-- ===== ■.■.■. 수정 또는 cfDtlMode: 변경 불가 ============================== -->
-      <template v-else>
-        <button class="btn btn-secondary btn-sm" type="button" disabled style="opacity:.5;cursor:not-allowed;">📋 게시판 선택</button>
-        <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="handleBtnAction('bbmDetail-open')" title="게시판 상세보기">
-          🔍
-        </button>
-      </template>
-      <!-- ===== ■.■.■. 선택된 게시판 표시 ========================================= -->
-      <span v-if="selectedBbm" style="display:flex;align-items:center;gap:6px;font-size:13px;">
-        <b style="color:#1a1a2e;">{{ selectedBbm.bbmNm }}</b>
-        <code style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 6px;border-radius:4px;">{{ selectedBbm.bbmCode }}</code>
-        <span style="font-size:11px;color:#bbb;">ID: {{ selectedBbm.bbmId }}</span>
-      </span>
-      <span v-else style="font-size:12px;color:#bbb;">게시판을 선택해주세요.</span>
-    </div>
-    <span v-if="errors.bbmId" class="field-error">{{ errors.bbmId }}</span>
-  </div>
-  <!-- ===== □.□. 게시판 선택 ================================================ -->
-  <!-- ===== ■.■. 기본 정보 (BoFormArea 자동 렌더) ============================== -->
+  <!-- ===== ■.■. 기본 정보 + 게시판 선택 ===================================== -->
   <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-    :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+    <template #bbmPick>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <template v-if="cfIsNew ? (!cfDtlMode) : false">
+          <button class="btn btn-secondary btn-sm" type="button" @click="handleBtnAction('bbmModal-open')">📋 게시판 선택</button>
+          <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="handleBtnAction('bbmDetail-open')" title="게시판 상세보기">🔍</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-secondary btn-sm" type="button" disabled style="opacity:.5;cursor:not-allowed;">📋 게시판 선택</button>
+          <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="handleBtnAction('bbmDetail-open')" title="게시판 상세보기">🔍</button>
+        </template>
+        <span v-if="selectedBbm" style="display:flex;align-items:center;gap:6px;font-size:13px;">
+          <b style="color:#1a1a2e;">{{ selectedBbm.bbmNm }}</b>
+          <code style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 6px;border-radius:4px;">{{ selectedBbm.bbmCode }}</code>
+          <span style="font-size:11px;color:#bbb;">ID: {{ selectedBbm.bbmId }}</span>
+        </span>
+        <span v-else style="font-size:12px;color:#bbb;">게시판을 선택해주세요.</span>
+      </div>
+      <span v-if="errors.bbmId" class="field-error">{{ errors.bbmId }}</span>
+    </template>
+  </bo-form-area>
   <!-- ===== ■.■. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
   <bo-form-area :columns="columns.contentForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
@@ -318,31 +306,18 @@ window.SyBbsDtl = {
         v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
       <base-html-editor v-else v-model="form.contentHtml" height="320px" />
     </template>
+    <template #attachGrp>
+      <div v-if="cfAttachMaxCount > 0">
+        <span style="font-size:11px;color:#bbb;margin-bottom:6px;display:block;">({{ cfAllowAttach }})</span>
+        <base-attach-grp
+          :model-value="form.attachGrpId" @update:model-value="form.attachGrpId = $event"
+          :ref-id="dtlId ? 'BBS-'+dtlId : ''" :show-toast="showToast" :readonly="cfDtlMode"
+          grp-code="BBS_ATTACH" grp-nm="게시글 첨부파일"
+          :max-count="cfAttachMaxCount" :max-size-mb="10" allow-ext="*" />
+      </div>
+      <div v-else style="color:#bbb;font-size:13px;padding:4px 0;">이 게시판은 첨부파일을 지원하지 않습니다.</div>
+    </template>
   </bo-form-area>
-  <!-- ===== □.□. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
-  <!-- ===== ■.■. 첨부파일 ================================================== -->
-  <div v-if="selectedBbm ? (cfAttachMaxCount > 0) : false" class="form-group">
-    <label class="form-label">
-      첨부파일
-      <span style="font-size:11px;font-weight:400;color:#bbb;margin-left:4px;">({{ cfAllowAttach }})</span>
-      <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">첨부그룹ID: {{ form.attachGrpId }}</span>
-    </label>
-    <base-attach-grp
-      :model-value="form.attachGrpId"
-      @update:model-value="form.attachGrpId = $event" :ref-id="dtlId ? 'BBS-'+dtlId : ''"
-      :show-toast="showToast"
-      :readonly="cfDtlMode"
-      grp-code="BBS_ATTACH"
-      grp-nm="게시글 첨부파일"
-      :max-count="cfAttachMaxCount"
-      :max-size-mb="10"
-      allow-ext="*" />
-  </div>
-  <div v-else-if="selectedBbm ? (cfAllowAttach==='불가') : false" class="form-group">
-    <label class="form-label">첨부파일</label>
-    <div style="color:#bbb;font-size:13px;padding:4px 0;">이 게시판은 첨부파일을 지원하지 않습니다.</div>
-  </div>
-  <!-- ===== □.□. 첨부파일 ================================================== -->
   <!-- ===== ■.■. 폼 액션 (보기모드: 수정/닫기 · 수정모드: 저장/취소) ================== -->
   <div class="form-actions" v-if="active ? (cfDtlMode) : false">
     <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>

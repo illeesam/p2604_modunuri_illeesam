@@ -39,14 +39,8 @@ window.PdCategoryProdMng = {
         return onSave();
       // 상품추가 피커 모달 열기
       } else if (cmd === 'prodPickModal-open') {
-        return openPicker();
-      // 상품추가 피커 모달 닫기
-      } else if (cmd === 'prodPickModal-close') {
-        pickerOpen.value = false;
+        pickerOpen.value = true;
         return;
-      // 피커 내 상품 검색
-      } else if (cmd === 'prodPickModal-search') {
-        return onPickerSearch();
       // 좌측 트리 전체 보기 (선택 해제)
       } else if (cmd === 'categoryTree-clear') {
         cfSelectedCatId.value = null;
@@ -389,7 +383,8 @@ window.PdCategoryProdMng = {
 
     /* addProd — 추가 */
     const addProd = (prod) => {
-      const exists = categoryProds.some(cp => cp.prodId === prod.prodId && cp.categoryId === cfSelectedCatId.value && cp.categoryProdTypeCd === uiState.activeTypeCd);
+      const prodId = prod.prodId ?? prod.productId;
+      const exists = categoryProds.some(cp => cp.prodId === prodId && cp.categoryId === cfSelectedCatId.value && cp.categoryProdTypeCd === uiState.activeTypeCd);
       if (exists) {
         if (showToast) { showToast('이미 추가된 상품입니다.', 'warning'); }
         return;
@@ -398,7 +393,7 @@ window.PdCategoryProdMng = {
         _id: Math.random(),
         _isNew: true,
         rowStatus: 'I',
-        prodId: prod.prodId,
+        prodId,
         categoryId: cfSelectedCatId.value,
         categoryProdTypeCd: uiState.activeTypeCd,
         emphasisCd: '',
@@ -407,43 +402,28 @@ window.PdCategoryProdMng = {
         dispYn: 'Y'
       };
       categoryProds.push(newRow);
-      pickerOpen.value = false;
       if (showToast) { showToast('상품이 추가되었습니다.', 'success'); }
     };
 
-    /* -- 피커 검색 (서버 조회) -- */
-    const pickerResults = reactive([]);
     const pickerOpen = ref(false);
-    const pickerSearchType = ref('');
-    const pickerSearch = ref('');
 
-    /* 피커 상품 서버검색 — 검색어/검색대상을 pdProd.getPage 에 전달 (상위 50건).
-       검색대상은 백엔드 지원범위(prodNm/prodId)만 사용. [조회]/Enter/모달열기 시점에만 호출. */
-    /* onPickerSearch — 이벤트 */
-    const onPickerSearch = async () => {
-      try {
-        const params = { pageNo: 1, pageSize: 50 };
-        const sv = pickerSearch.value.trim();
-        if (sv) {
-          params.searchValue = sv;
-          if (pickerSearchType.value) { params.searchType = pickerSearchType.value; }
-        }
-        const res = await boApiSvc.pdProd.getPage(params, '카테고리상품관리', '상품검색');
-        const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        pickerResults.splice(0, pickerResults.length, ...list);
-      } catch (e) {
-        console.error('[onPickerSearch]', e);
-        pickerResults.splice(0, pickerResults.length);
+    /* fnCallbackModal — 모달 통합 콜백 */
+    const fnCallbackModal = (cmd, param, result) => {
+      if (cmd === 'prod-pick') {
+        pickerOpen.value = false;
+        if (result) return addProd(result);
+        return;
       }
     };
 
-    /* openPicker — 열기 */
-    const openPicker = () => {
-      pickerSearchType.value = '';
-      pickerSearch.value = '';
-      pickerOpen.value = true;
-      onPickerSearch();
-    };
+    /* cfExcludeProdIds — 이미 현재 카테고리에 담긴 상품 제외 */
+    const cfExcludeProdIds = computed(() => {
+      if (!cfSelectedCatId.value) return [];
+      return categoryProds
+        .filter(cp => cp.categoryId === cfSelectedCatId.value && cp.categoryProdTypeCd === uiState.activeTypeCd && cp.rowStatus !== 'D')
+        .map(cp => cp.prodId)
+        .filter(Boolean);
+    });
 
     /* onSave — 이벤트 */
     const onSave = async () => {
@@ -516,13 +496,14 @@ window.PdCategoryProdMng = {
 
     return {
       columns,
-      codes, uiState, categoryProds, cfVisibleCategoryProds, searchParam, pickerResults,                   // 상태 / 데이터
+      codes, uiState, categoryProds, cfVisibleCategoryProds, searchParam,                    // 상태 / 데이터
       cfCatProdGridColumns, // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs, cfActiveTypeNm,      // computed / reactive(tabs)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                  // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs, cfActiveTypeNm,     // computed / reactive(tabs)
+      cfExcludeProdIds,                                                                       // computed (피커 제외 목록)
       fnCatProdRowStyle, fnDepthColor, fnDepthBullet, totalProdCount, // 헬퍼
       TYPE_TABS, EMPHASIS_OPTS, hasEmphasis, getProdNm, getProd, getCatPath, // 헬퍼
-      dragoverIdx, pickerOpen, pickerSearchType, pickerSearch, // ref
+      dragoverIdx, pickerOpen, // ref
     };
   },
 
@@ -710,55 +691,12 @@ window.PdCategoryProdMng = {
 <!-- ===== □.□. 우측 상품 목록 ============================================== -->
 <!-- ===== □. 좌 트리 + 우 상품목록 =========================================== -->
 <!-- ===== ■. 상품 추가 피커 모달 ============================================= -->
-<teleport to="body">
-  <div v-if="pickerOpen"
-      style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-      @click.self="handleBtnAction('prodPickModal-close')">
-    <div style="background:#fff;border-radius:14px;padding:24px;width:620px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div>
-          <strong style="font-size:15px">
-            상품 추가
-          </strong>
-          <span style="font-size:12px;color:#aaa;margin-left:8px">
-            → {{ cfSelectedCat?.categoryNm }} / {{ cfActiveTypeNm }}
-          </span>
-        </div>
-        <button class="btn btn_close" @click="handleBtnAction('prodPickModal-close')">
-          닫기
-        </button>
-      </div>
-      <bo-multi-check-select
-          v-model="pickerSearchType"
-          :options="[
-          { value: 'prodNm', label: '상품명' },
-          { value: 'prodId', label: 'ID' },
-          ]"
-          placeholder="검색대상 전체"
-          all-label="전체 선택"
-          min-width="100%" />
-      <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
-        <input class="form-control" v-model="pickerSearch"
-            placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
-            @keyup.enter="handleBtnAction('prodPickModal-search')">
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('prodPickModal-search')">
-          조회
-        </button>
-      </div>
-      <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-        <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
-        <bo-grid bare :columns="columns.catProdPickerGrid" :rows="pickerResults" row-key="prodId"
-            empty-text="검색 결과가 없습니다." row-actions>
-          <template #row-actions="{ row }">
-            <button class="btn btn-blue btn-xs" @click="handleSelectAction('prodPickModal-add', row)">
-              추가
-            </button>
-          </template>
-        </bo-grid>
-      </div>
-    </div>
-  </div>
-</teleport>
+<!-- ===== ■. 상품 추가 모달 (BoModals.js / PdProdPickModal) ================== -->
+<pd-prod-pick-modal :show="pickerOpen"
+  :title="'상품 추가' + (cfSelectedCat ? ' → ' + cfSelectedCat.categoryNm : '')"
+  :exclude-ids="cfExcludeProdIds" ui-nm="카테고리상품관리"
+  modal-name="prod-pick" :on-callback="fnCallbackModal" />
+<!-- ===== □. 상품 추가 모달 ================================================= -->
 </bo-page>
 <!-- ===== □. 상품 추가 피커 모달 ============================================= -->
 `

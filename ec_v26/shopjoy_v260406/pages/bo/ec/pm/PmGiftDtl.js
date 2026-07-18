@@ -20,7 +20,7 @@ window.PmGiftDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, isPageCodeLoad: false, tab: window._pmGiftDtlState.tab || 'info', tabMode2: window._pmGiftDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
-    const codes = reactive({ gift_cond_types: [], gift_statuses: [] });
+    const codes = reactive({ gift_cond_types: [], gift_statuses: [], pm_prod_targets: [] });
 
     const _today = new Date();
 
@@ -128,6 +128,11 @@ window.PmGiftDtl = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 */
+    const handleGridCellAction = (gcmd, colKey, row, e = {}) => {
+      if (colKey === '_del') { return handleBtnAction('target-remove', e.rowIndex); }
+    };
+
 
     /* _addTarget — 발급대상 추가 공통 헬퍼 */
     const _addTarget = (row, idKey, nmKey) => {
@@ -212,6 +217,7 @@ window.PmGiftDtl = {
       const codeStore = window.sfGetBoCodeStore();
       codes.gift_cond_types = codeStore.sgGetGrpCodes('GIFT_COND_KR');
       codes.gift_statuses = codeStore.sgGetGrpCodes('GIFT_STATUS');
+      codes.pm_prod_targets = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
@@ -328,12 +334,24 @@ window.PmGiftDtl = {
 
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfIsView = computed(() => props.dtlMode === 'view');
+    const cfIssueTargetsColumns = computed(() => [
+      { key: '_no', label: '번호', style: 'width:36px;', align: 'center', fmt: (v, row, idx) => idx + 1 },
+      { key: 'targetId', label: '대상 ID', mono: true, cellStyle: 'font-size:11px;' },
+      { key: 'targetNm', label: '대상명', fmt: v => v || '-' },
+      ...(!cfIsView.value ? [{ key: '_del', label: '삭제', style: 'width:60px;', align: 'center',
+        fmt: () => '✕', link: true, cellStyle: 'color:#e8587a;cursor:pointer;font-weight:700;' }] : []),
+    ]);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
     // 정보 영역 폼
     const columns = {};
+    columns.targetForm = [
+      { key: 'targetTypeCd', label: '대상 구분', type: 'select',
+        options: () => codes.pm_prod_targets, nullLabel: null },
+      { key: 'issueGrades', label: '적용 회원 등급', type: 'slot', name: 'issueGrades', colSpan: 2 },
+    ];
     columns.infoForm = [
       { key: 'giftNm',       label: '사은품명', type: 'text', required: true,
         placeholder: '사은품명 입력' },
@@ -355,8 +373,8 @@ window.PmGiftDtl = {
     return {
       columns,
       vendors, form, errors,                // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfSaveDisabled, cfIsView, cfVisibilityOptions, cfSelectedVendorNm,                         // computed
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfSaveDisabled, cfIsView, cfVisibilityOptions, cfSelectedVendorNm, cfIssueTargetsColumns,                         // computed
       tabs, tab, tabMode2, showVendorModal, showTargetPicker, // toRef
       showTab, hasVisibility, coUtil,                                                  // 헬퍼 (coUtil: 템플릿 cofAnd 접근용)
     };
@@ -410,59 +428,30 @@ window.PmGiftDtl = {
     <!-- ===== ■.■. 발급대상 ================================================== -->
     <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 발급대상</div>
-      <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">📋 발급대상 종류</h3>
-        <div class="form-group">
-          <label class="form-label">대상 구분</label>
-          <select class="form-control" style="width:200px;" v-model="form.targetTypeCd" :disabled="cfIsView">
-            <option value="상품">상품</option>
-            <option value="판매업체">판매업체</option>
-            <option value="브랜드">브랜드</option>
-            <option value="카테고리">카테고리</option>
-          </select>
-        </div>
-        <div style="margin-top:12px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <span style="font-size:12px;font-weight:700;color:#555;">
-              선택 대상 목록
-              <span style="color:#e8587a;margin-left:4px;">{{ form.issueTargets.length }}건</span>
-            </span>
-            <button v-if="!cfIsView" class="btn btn-sm" style="background:#e8587a;color:#fff;border:none;padding:3px 10px;border-radius:4px;font-size:12px;"
-              @click="handleBtnAction('target-add')">+ 대상 추가</button>
-          </div>
-          <div v-if="form.issueTargets.length === 0" style="padding:10px 14px;background:#f9f9f9;border:1px solid #e0e0e0;border-radius:6px;font-size:12px;color:#aaa;">
-            [+ 대상 추가] 버튼으로 {{ form.targetTypeCd }}을(를) 선택하세요.
-          </div>
-          <table v-else class="admin-table" style="margin-top:0;">
-            <thead><tr>
-              <th style="width:36px;text-align:center;">번호</th>
-              <th>대상 ID</th>
-              <th>대상명</th>
-              <th v-if="!cfIsView" style="width:60px;text-align:center;">삭제</th>
-            </tr></thead>
-            <tbody>
-              <tr v-for="(t, idx) in form.issueTargets" :key="t.targetId">
-                <td style="text-align:center;">{{ idx + 1 }}</td>
-                <td style="font-family:monospace;font-size:11px;">{{ t.targetId }}</td>
-                <td>{{ t.targetNm || '-' }}</td>
-                <td v-if="!cfIsView" style="text-align:center;">
-                  <button class="btn btn_row_delete" @click="handleBtnAction('target-remove', idx)">✕</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div>
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">👥 적용 회원 등급</h3>
-        <div class="form-group">
+      <bo-form-area :columns="columns.targetForm" :form="form" :errors="{}" :cols="3"
+        :show-actions="false" :readonly="cfIsView">
+        <template #issueGrades>
           <bo-multi-check-select
             v-model="form.issueGrades"
             :options="[{value:'일반',label:'일반'},{value:'실버',label:'실버'},{value:'골드',label:'골드'},{value:'VIP',label:'VIP'}]"
             placeholder="전체 등급 (미선택 시 전체)"
             :disabled="cfIsView" />
           <span style="font-size:12px;color:#aaa;margin-top:4px;display:block;">선택하지 않으면 전체 등급에 적용</span>
+        </template>
+      </bo-form-area>
+      <!-- 발급대상 목록 추가/삭제 -->
+      <div style="margin-top:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:#555;">
+            선택 대상 목록
+            <span style="color:#e8587a;margin-left:4px;">{{ form.issueTargets.length }}건</span>
+          </span>
+          <button v-if="!cfIsView" class="btn btn-sm" style="background:#e8587a;color:#fff;border:none;padding:3px 10px;border-radius:4px;font-size:12px;"
+            @click="handleBtnAction('target-add')">+ 대상 추가</button>
         </div>
+        <bo-grid bare :columns="cfIssueTargetsColumns" :rows="form.issueTargets" row-key="targetId"
+          empty-text="[+ 대상 추가] 버튼으로 대상을 선택하세요."
+          @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
       </div>
       <div class="form-actions" v-if="coUtil.cofAnd(active, cfIsView)">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>

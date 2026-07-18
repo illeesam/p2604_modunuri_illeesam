@@ -56,6 +56,11 @@ window.SyVendorDtl = {
       // 카카오 우편번호 팝업 열기
       } else if (cmd === 'addr-search') {
         return openKakaoPostcode();
+      // 주소 초기화
+      } else if (cmd === 'addr-clear') {
+        form.vendorZipCode = '';
+        form.vendorAddr = '';
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -203,7 +208,7 @@ window.SyVendorDtl = {
           🔍 주소 검색
         </button>
         <button v-if="!cfDtlMode ? ((form.vendorZipCode || form.vendorAddr)) : false" type="button" title="주소 초기화"
-          @click="form.vendorZipCode=''; form.vendorAddr='';"
+          @click="handleBtnAction('addr-clear')"
           style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
           x
         </button>

@@ -159,6 +159,33 @@ window.PdProdDtl = {
           .then(() => { uiState.promoPicker = null; showToast('추가되었습니다.', 'success'); handleBtnAction('promo-gift-reload'); })
           .catch(err => showToast(err.response?.data?.message || '추가 실패', 'error', 0));
         return;
+      // 카테고리 피커 열기
+      } else if (cmd === 'catPicker-open') {
+        uiState.catPickerOpen = true;
+        return;
+      // 카테고리 항목 삭제
+      } else if (cmd === 'category-remove') {
+        return removeCategory(param);
+      // 담당MD 선택 모달 열기
+      } else if (cmd === 'mdModal-open') {
+        return openMdModal();
+      // 담당MD 선택 해제
+      } else if (cmd === 'md-clear') {
+        form.mdUserId = '';
+        return;
+      // 담당MD 선택 확정
+      } else if (cmd === 'md-select') {
+        return selectMdUser(param);
+      // 담당MD 선택 모달 닫기
+      } else if (cmd === 'mdModal-close') {
+        uiState.mdModalOpen = false;
+        return;
+      // 도움말 팝업 열기
+      } else if (cmd === 'help-open') {
+        return openHelp(param);
+      // 코드그룹 모달 열기
+      } else if (cmd === 'codeGrpModal-open') {
+        return openCodeGrpModal(param.codeGrp, param.title);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -1626,6 +1653,8 @@ window.PdProdDtl = {
     ];
     // 상세설정 통합 (광고 노출 기간 + 구매 제한) — cols=3 한 행 3필드 채움
     columns.detailForm = [
+      // 0행: 홍보문구 (전체 폭)
+      { key: 'advrtStmt', label: '홍보문구', type: 'slot', name: 'advrtStmt', colSpan: 3 },
       // 1행: 광고 시작 / 광고 종료 / 최소구매수량
       { key: 'advrtStartDate', label: '광고 노출 시작', type: 'slot', name: 'advrtStart' },
       { key: 'advrtEndDate',   label: '광고 노출 종료', type: 'slot', name: 'advrtEnd' },
@@ -1773,11 +1802,11 @@ window.PdProdDtl = {
                 <span v-if="cat.depth>=1" style="font-size:10px;">{{ ['','대','중','소'][cat.depth]||cat.depth }}▸</span>
               </span>
               <span style="font-size:13px;flex:1;">{{ cat.categoryNm }}</span>
-              <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;font-size:13px;padding:0 2px;flex-shrink:0;">
+              <button type="button" @click="handleBtnAction('category-remove', idx)" style="border:none;background:none;color:#f87171;font-size:13px;padding:0 2px;flex-shrink:0;">
                 ✕
               </button>
             </div>
-            <button type="button" @click="catPickerOpen=true"
+            <button type="button" @click="handleBtnAction('catPicker-open')"
               style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;width:100%;">
               + 카테고리 추가
             </button>
@@ -1798,9 +1827,9 @@ window.PdProdDtl = {
         <template #mdUser>
           <div style="display:flex;gap:6px;align-items:flex-end;">
             <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
-              style="flex:1;background:#fafafa;" @click="openMdModal" />
-            <button class="btn btn-secondary btn-sm" type="button" @click="openMdModal" style="flex-shrink:0;padding:2px 7px;" title="선택">🔍</button>
-            <button v-if="form.mdUserId" type="button" title="선택 해제" @click="form.mdUserId=''"
+              style="flex:1;background:#fafafa;" @click="handleBtnAction('mdModal-open')" />
+            <button class="btn btn-secondary btn-sm" type="button" @click="handleBtnAction('mdModal-open')" style="flex-shrink:0;padding:2px 7px;" title="선택">🔍</button>
+            <button v-if="form.mdUserId" type="button" title="선택 해제" @click="handleBtnAction('md-clear')"
               style="padding:1px 5px;font-size:10px;line-height:1;color:#aaa;background:none;border:1px solid #e0e0e0;border-radius:3px;cursor:pointer;flex-shrink:0;">
               ✕
             </button>
@@ -1822,18 +1851,8 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
       <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet" modal-name="category-pick" :on-callback="fnCallbackModal" />
       <!-- ===== ■.■.■. 담당MD 선택 모달 ========================================== -->
-      <teleport to="body">
-        <div v-if="mdModalOpen"
-          style="position:fixed;inset:0;background:rgba(10,20,40,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
-          @click.self="mdModalOpen=false">
-          <div class="modal-box" style="width:480px;max-height:560px;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
-            <!-- ===== ■.■.■.■.■.■. 헤더 ============================================ -->
-            <div class="tree-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;">
-              <span style="font-size:15px;font-weight:700;">담당MD 선택</span>
-              <button @click="mdModalOpen=false" style="background:none;border:none;font-size:20px;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;" class="modal-close-btn">
-                ✕
-              </button>
-            </div>
+      <bo-modal :show="mdModalOpen" title="담당MD 선택" width="480px" box-pad="0" @close="handleBtnAction('mdModal-close')">
+        <div style="display:flex;flex-direction:column;max-height:500px;">
             <!-- ===== ■.■.■.■.■.■. 검색 ============================================ -->
             <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
               <bo-multi-check-select
@@ -1852,15 +1871,14 @@ window.PdProdDtl = {
             <div style="overflow-y:auto;flex:1;padding:8px 12px;">
               <!-- ===== ■.■.■.■.■.■.■. 목록 영역 ======================================= -->
               <bo-grid bare :columns="columns.mdUserGrid" :rows="cfMdUserListFiltered" row-key="userId" :selected-key="form.mdUserId"
-                :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." @cell-click="e => selectMdUser(e.row)"></bo-grid>
+                :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." @cell-click="e => handleBtnAction('md-select', e.row)"></bo-grid>
             </div>
             <!-- ===== ■.■.■.■.■.■. 푸터 ============================================ -->
             <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;">
-              <button class="btn btn-secondary btn-sm" @click="mdModalOpen=false">닫기</button>
+              <button class="btn btn_close" @click="handleBtnAction('mdModal-close')">닫기</button>
             </div>
-          </div>
         </div>
-      </teleport>
+      </bo-modal>
       <!-- ===== ■.■.■. 체크박스 그룹 (세로 슬림) ===================================== -->
       <div style="display:flex;flex-wrap:wrap;gap:16px;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
@@ -1954,7 +1972,7 @@ window.PdProdDtl = {
           옵션 사용
         </label>
         <!-- ===== ■.■.■.■. 도움말 아이콘 =========================================== -->
-        <span @click="openHelp('prodOpt')"
+        <span @click="handleBtnAction('help-open', 'prodOpt')"
           style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1677ff;color:#fff;font-size:11px;font-weight:700;user-select:none;flex-shrink:0;"
           title="옵션설정 도움말">
           ?
@@ -1982,7 +2000,7 @@ window.PdProdDtl = {
           <button type="button" class="btn btn-xs"
             style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:13px;padding:2px 8px;margin-top:4px;"
             title="옵션 카테고리 공통코드 미리보기 (PROD_OPT_CATEGORY)"
-            @click="openCodeGrpModal('PROD_OPT_CATEGORY', '옵션 카테고리 공통코드')">
+            @click="handleBtnAction('codeGrpModal-open', {codeGrp:'PROD_OPT_CATEGORY', title:'옵션 카테고리 공통코드'})">
             📋
           </button>
         </div>
@@ -2281,15 +2299,13 @@ window.PdProdDtl = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상세설정</div>
       <!-- 보기모드: fieldset disabled 로 홍보문구·날짜픽커·혜택 체크박스 자동 비활성 (편집 잠금) -->
       <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
-      <!-- ===== ■.■.■. 홍보문구 ================================================ -->
-      <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">홍보문구 (advrt_stmt)</div>
-      <div class="form-group">
-        <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
-        <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.advrtStmt||'').length }} / 500</div>
-      </div>
-      <!-- ===== ■.■.■. 상세설정 통합 폼 (광고 노출 + 구매 제한, cols=3 한 줄 3필드) ===== -->
+      <!-- ===== ■.■.■. 상세설정 통합 폼 (홍보문구 + 광고 노출 + 구매 제한, cols=3 한 줄 3필드) ===== -->
       <bo-form-area :columns="columns.detailForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+        <template #advrtStmt>
+          <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
+          <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.advrtStmt||'').length }} / 500</div>
+        </template>
         <template #advrtStart>
           <bo-date-time-picker v-model="form.advrtStartDate" />
         </template>
@@ -2499,7 +2515,7 @@ window.PdProdDtl = {
           </div>
           <!-- ===== ■.■.■.■.■. 입력 영역 =========================================== -->
           <div style="flex:1;min-width:0;">
-            <div v-if="!img.previewUrl||img.previewUrl.startsWith('http')" class="form-group" style="margin-bottom:4px;">
+            <div v-if="!img.previewUrl||img.previewUrl.startsWith('http')" style="margin-bottom:4px;">
               <label class="form-label" style="font-size:11px;">이미지 URL</label>
               <input class="form-control" v-model="img.previewUrl" placeholder="https://..." style="font-size:12px;" :readonly="cfDtlMode" />
             </div>
@@ -2508,7 +2524,7 @@ window.PdProdDtl = {
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
               <!-- ===== ■.■.■.■.■.■.■. opt_id_1: 옵션 1단 select ================= -->
-              <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
+              <div style="flex:1;min-width:140px;margin-bottom:4px;">
                 <label class="form-label" style="font-size:11px;">opt_id_1 <span style="color:#aaa;"> (NULL=공통) </span></label>
                 <select class="form-control" v-model="img.prodOptId1" style="font-size:12px;" @change="img.prodOptId2=''" :disabled="cfDtlMode">
                   <option value="">-- 공통 (NULL) --</option>
@@ -2521,7 +2537,7 @@ window.PdProdDtl = {
                 </select>
               </div>
               <!-- ===== ■.■.■.■.■.■.■. opt_id_2: 옵션 2단 select (1단 선택 후 연동) ===== -->
-              <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
+              <div style="flex:1;min-width:140px;margin-bottom:4px;">
                 <label class="form-label" style="font-size:11px;">opt_id_2 <span style="color:#aaa;"> (NULL=옵션1 공통) </span></label>
                 <select class="form-control" v-model="img.prodOptId2" style="font-size:12px;" :disabled="cfDtlMode || (!img.prodOptId1 ? optGroups.length<2 : false)">
                   <option value="">-- 공통 (NULL) --</option>

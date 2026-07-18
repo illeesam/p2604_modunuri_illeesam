@@ -313,30 +313,20 @@ window.BoSearchArea = {
   <!-- select (col.onChange: fn 지원) -->
   <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
         @change="handleSelectAction('field-select-change', { col, event: $event })">
-    <option v-if="col.nullable !== false" value="">
-      {{ col.nullLabel || '전체' }}
-    </option>
-    <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">
-      {{ o.label }}
-    </option>
+    <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
+    <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
   </select>
   <!-- 단일 날짜 -->
   <input v-else-if="col.type==='date'" type="date" v-model="po(col)[col.key]" class="date-range-input" />
   <!-- 날짜 범위 + (옵션) 기간유형 + (옵션) 옵션선택 select -->
   <template v-else-if="col.type==='dateRange'">
     <select v-if="col.typeKey" v-model="po(col)[col.typeKey]">
-      <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">
-        {{ c.label }}
-      </option>
+      <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">{{ c.label }}</option>
     </select>
     <!-- rangeFirst: true → rangeOptions select 를 date 앞에 표시 (옵션선택 placeholder는 col.rangeFirstLabel) -->
     <select v-if="col.rangeFirst ? (col.rangeOptions) : false" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })" :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
-    <option value="">
-      {{ col.rangeFirstLabel || '기간 선택' }}
-    </option>
-    <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">
-      {{ o.label }}
-    </option>
+    <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
+    <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
   </select>
   <input type="date" v-model="po(col)[col.startKey || 'dateStart']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
@@ -346,12 +336,8 @@ window.BoSearchArea = {
   <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
   <select v-if="!col.rangeFirst ? (col.rangeOptions) : false" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })">
-  <option value="">
-    옵션선택
-  </option>
-  <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">
-    {{ o.label }}
-  </option>
+  <option value="">옵션선택</option>
+  <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
 </select>
 </template>
   </div>
@@ -766,12 +752,8 @@ window.BoGrid = {
                   <select v-else-if="col.edit==='select'" class="form-control" v-model="row[col.key]"
                   style="padding:2px 4px;font-size:12px;"
                   @click.stop @change="handleSelectAction('grid-row-cell-change', { row, col })">
-                    <option v-if="col.nullable" :value="null">
-                      {{ col.nullLabel || '-- 선택 --' }}
-                    </option>
-                    <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">
-                      {{ o.label }}
-                    </option>
+                    <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
+                    <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                   </select>
                   <!-- 표시경로 picker (bo-path-pick-field 자동 임베드) — bare: 셀 td 안에 div 로(중첩 td 방지, 폭 통일) -->
                   <bo-path-pick-field v-else-if="col.pathPick" bare :biz-cd="col.pathPick" :row="row" :disabled="row._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row, col })" />
@@ -780,12 +762,8 @@ window.BoGrid = {
                   :value="typeof col.selectIntercept.value==='function' ? col.selectIntercept.value(row) : row[col.selectIntercept.valueKey]"
                   :disabled="typeof col.selectIntercept.disabled==='function' ? col.selectIntercept.disabled(row) : false"
                   @click.stop @change="col.selectIntercept.onChange(row, $event.target.value, $event)">
-                    <option v-if="col.selectIntercept.nullable" value="">
-                      {{ col.selectIntercept.nullLabel || '-' }}
-                    </option>
-                    <option v-for="o in U.normOptions(col.selectIntercept.options)" :key="o.value" :value="o.value">
-                      {{ o.label }}
-                    </option>
+                    <option v-if="col.selectIntercept.nullable" value="">{{ col.selectIntercept.nullLabel || '-' }}</option>
+                    <option v-for="o in U.normOptions(col.selectIntercept.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                   </select>
                   <!-- 외부 setter 인터셉트 input (col.editIntercept: { type:'text'|'number'|'date', placeholder, onInput:fn(row,newVal,idx,$event) }) — v-model 미사용 -->
                   <input v-else-if="col.editIntercept" class="form-control" :type="col.editIntercept.type || 'text'"
@@ -1188,12 +1166,8 @@ window.BoGridCrud = {
             <select v-else-if="col.edit==='select'" class="grid-select"
                   v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
                   @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })">
-              <option v-if="col.nullable" :value="null">
-                {{ col.nullLabel || '-- 선택 --' }}
-              </option>
-              <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">
-                {{ o.label }}
-              </option>
+              <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
+              <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
             </select>
             <bo-path-pick-field v-else-if="col.pathPick" bare :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
             <div v-else-if="col.pathLabelOpen" :style="{padding:'1px 4px 1px 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'22px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'4px'}">
@@ -2235,12 +2209,8 @@ window.BoFormArea = {
         v-model="form[col.key]" :disabled="readonly"
         :class="errors[col.key] ? 'is-invalid' : ''"
         @change="handleSelectAction('field-change', { col, event: $event })">
-    <option v-if="col.nullable !== false ? (col.nullLabel) : false" value="">
-    {{ col.nullLabel }}
-  </option>
-  <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">
-    {{ o.label }}
-  </option>
+    <option v-if="col.nullable !== false ? (col.nullLabel) : false" value="">{{ col.nullLabel }}</option>
+  <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
 </select>
 <!-- pathPick (표시경로 선택 박스) -->
 <div v-else-if="col.type === 'pathPick'" style="display:flex;align-items:center;gap:8px;">

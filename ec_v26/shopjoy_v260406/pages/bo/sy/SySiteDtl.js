@@ -63,6 +63,11 @@ window.SySiteDtl = {
       // 카카오 우편번호 팝업 열기
       } else if (cmd === 'addr-search') {
         return openKakaoPostcode();
+      // 주소 초기화
+      } else if (cmd === 'addr-clear') {
+        form.siteZipCode = '';
+        form.siteAddress = '';
+        return;
       // 표시경로 picker 열기
       } else if (cmd === 'pathModal-open') {
         pathPickModal.show = true;
@@ -240,7 +245,7 @@ window.SySiteDtl = {
           🔍 주소 검색
         </button>
         <button v-if="!cfDtlMode ? ((form.siteZipCode || form.siteAddress)) : false" type="button"
-          title="주소 초기화" @click="form.siteZipCode=''; form.siteAddress='';"
+          title="주소 초기화" @click="handleBtnAction('addr-clear')"
           style="background:none;border:none;padding:0 2px 2px;margin-left:-6px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
           x
         </button>

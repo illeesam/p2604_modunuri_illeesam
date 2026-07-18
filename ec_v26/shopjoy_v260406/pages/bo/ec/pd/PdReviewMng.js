@@ -40,12 +40,9 @@ window.PdReviewMng = {
       // 상품별 리뷰 목록 닫기 (선택 해제)
       } else if (cmd === 'prodReviews-close') {
         return onProdIdClick(selectedProdId.value);
-      // 상태변경 모달 닫기 (취소)
+      // 상태변경 모달 닫기 (취소) — PdReviewStatusModal onCallback null
       } else if (cmd === 'statusModal-close') {
         return closeStatusModal();
-      // 상태변경 모달 저장
-      } else if (cmd === 'statusModal-confirm') {
-        return confirmStatusChange();
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'reviews-sort') {
         return onSort(param);
@@ -253,7 +250,6 @@ window.PdReviewMng = {
       show: false,
       row: null,
       newStatus: '',
-      reason: '',
     });
 
     /* openStatusModal — 열기 */
@@ -261,7 +257,6 @@ window.PdReviewMng = {
       if (!newStatus || newStatus === row.reviewStatusCd) { return; }
       statusModal.row = row;
       statusModal.newStatus = newStatus;
-      statusModal.reason = '';
       statusModal.show = true;
     };
 
@@ -279,20 +274,24 @@ window.PdReviewMng = {
     /* closeStatusModal — 닫기 */
     const closeStatusModal = () => {
       statusModal.show = false;
-      /* select 가 미리 새 값으로 바뀌었을 수 있으므로 원복용 트리거 */
-      // row.reviewStatusCd 는 그대로 — UI 의 select 가 다음 렌더에서 동기화됨
       statusModal.row = null;
       statusModal.newStatus = '';
-      statusModal.reason = '';
     };
 
-    /* confirmStatusChange — 확인 상태 변경 */
-    const confirmStatusChange = async () => {
+    /* fnCallbackModal — 모달 통합 콜백 */
+    const fnCallbackModal = (cmd, param, result) => {
+      if (cmd === 'review-status') {
+        if (!result) return closeStatusModal();
+        return confirmStatusChange(result.reason);
+      }
+    };
+
+    /* confirmStatusChange — 확인 상태 변경. reason은 PdReviewStatusModal 콜백으로 수신 */
+    const confirmStatusChange = async (reason) => {
       const row = statusModal.row;
       const newStatus = statusModal.newStatus;
-      const reason = (statusModal.reason || '').trim();
       if (!row) { return; }
-      if (!reason) { showToast('변경 사유를 입력해주세요.', 'error'); return; }
+      if (!(reason || '').trim()) { showToast('변경 사유를 입력해주세요.', 'error'); return; }
       try {
         const res = await boApiSvc.pdReview.updateStatus(
           row.reviewId,
@@ -406,6 +405,7 @@ window.PdReviewMng = {
       prodReviews, prodReviewPager, statusModal, // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                              // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow, cfStatusModalRowTitle, cfStatusModalCurrentCd, // computed
+      fnCallbackModal, // 모달 통합 콜백
       fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm,                   // 헬퍼
       fnGridRowClass, fnProdReviewRowClass, // 그리드 row 헬퍼
       selectedId, selectedProdId, // ref
@@ -524,63 +524,15 @@ window.PdReviewMng = {
   </bo-container>
   <!-- ===== □. 상세 패널 =================================================== -->
   <!-- ===== ■. 상태변경 사유 입력 모달 =========================================== -->
-  <div v-if="statusModal.show"
-    style="position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);z-index:1500;display:flex;align-items:center;justify-content:center;"
-    @click.self="handleBtnAction('statusModal-close')">
-    <div class="modal-box" style="background:#fff;border-radius:16px;width:480px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);overflow:hidden;">
-      <div class="tree-modal-header" style="padding:14px 20px;border-bottom:1px solid #f0e0e7;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);">
-        <div style="font-size:14px;font-weight:700;color:#222;">
-          리뷰 상태 변경
-        </div>
-        <button @click="handleBtnAction('statusModal-close')" style="border:none;background:transparent;color:#888;font-size:18px;">
-          ✕
-        </button>
-      </div>
-      <div style="padding:18px 20px;">
-        <div style="margin-bottom:14px;font-size:13px;color:#444;line-height:1.7;">
-          <div>
-            <b>
-              리뷰
-            </b>
-            : {{ cfStatusModalRowTitle }}
-          </div>
-          <div style="margin-top:4px;">
-            <b>
-              상태 변경
-            </b>
-            :
-            <span :class="['badge', fnStatusBadge(cfStatusModalCurrentCd)]" style="margin-left:6px;">
-              {{ STATUS_LABEL[cfStatusModalCurrentCd] }}
-            </span>
-            <span style="margin:0 6px;color:#888;">
-              →
-            </span>
-            <span :class="['badge', fnStatusBadge(statusModal.newStatus)]">
-              {{ STATUS_LABEL[statusModal.newStatus] }}
-            </span>
-          </div>
-        </div>
-        <label class="form-label" style="font-size:12px;font-weight:600;color:#555;display:block;">
-          변경 사유
-          <span style="color:#e57373;">
-            *
-          </span>
-        </label>
-        <textarea class="form-control" v-model="statusModal.reason" rows="4"
-          placeholder="상태 변경 사유를 입력해주세요. (필수)"
-          style="margin:6px 0 0;width:100%;font-size:13px;box-sizing:border-box;"></textarea>
-        </div>
-        <div style="padding:12px 20px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:flex-end;gap:8px;">
-          <button class="btn btn_cancel" @click="handleBtnAction('statusModal-close')">
-            취소
-          </button>
-          <button class="btn btn_save" @click="handleBtnAction('statusModal-confirm')">
-            저장
-          </button>
-        </div>
-      </div>
-    </div>
-  <!-- ===== □. 상태변경 사유 입력 모달 =========================================== -->
+  <!-- ===== ■. 리뷰 상태 변경 모달 (BoModals.js / PdReviewStatusModal) ========== -->
+  <pd-review-status-modal :show="statusModal.show"
+    :review-title="cfStatusModalRowTitle"
+    :current-status="cfStatusModalCurrentCd"
+    :new-status="statusModal.newStatus"
+    :status-label="STATUS_LABEL"
+    :badge-fn="fnStatusBadge"
+    modal-name="review-status" :on-callback="fnCallbackModal" />
+  <!-- ===== □. 리뷰 상태 변경 모달 ============================================== -->
 </bo-page>
 `
 };

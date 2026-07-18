@@ -371,9 +371,7 @@ window.CmChattKanban = {
       <select v-model="searchParam.chattStatusCd"
         style="height:30px;width:88px;border:1px solid #d1d5db;border-radius:6px;padding:0 6px;font-size:12px;background:#fff;outline:none;">
         <option value="">상태 전체</option>
-        <option value="OPEN">대기중</option>
-        <option value="PENDING">상담중</option>
-        <option value="CLOSED">종료</option>
+        <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
       <input type="date" v-model="searchParam.dateStart"
         style="height:30px;width:126px;border:1px solid #d1d5db;border-radius:6px;padding:0 6px;font-size:12px;outline:none;" />

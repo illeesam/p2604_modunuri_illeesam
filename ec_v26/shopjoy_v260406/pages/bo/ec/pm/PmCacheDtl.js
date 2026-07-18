@@ -88,6 +88,11 @@ window.PmCacheDtl = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 */
+    const handleGridCellAction = (gcmd, colKey, row, e = {}) => {
+      if (colKey === '_del') { return handleBtnAction('target-remove', e.row.targetId); }
+    };
+
 
     /* _addTarget — 발급대상 추가 공통 헬퍼 */
     const _addTarget = (row, idKey, nmKey) => {
@@ -129,7 +134,7 @@ window.PmCacheDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
-    const codes = reactive({ cache_trans_types: [] });
+    const codes = reactive({ cache_trans_types: [], pm_prod_targets: [], pm_issue_grades: [] });
 
     // ===== 업체 목록 로드 / 단건 상세 조회 =================================
     /* loadVendors — 로드 */
@@ -182,6 +187,8 @@ window.PmCacheDtl = {
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.cache_trans_types = codeStore.sgGetGrpCodes('CACHE_TRANS_TYPE');
+      codes.pm_prod_targets   = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
+      codes.pm_issue_grades   = codeStore.sgGetGrpCodes('PM_ISSUE_GRADE');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
@@ -280,10 +287,9 @@ window.PmCacheDtl = {
     };
 
     // ===== 배지(badge) 헬퍼 ================================================
-    /* 캐시(충전금) fnTypeBadge — sy_code CACHE_TYPE_KR code_opt1 우선, 없으면 FB */
+    /* fnTypeBadge — CACHE_TRANS_TYPE code_opt1 배지클래스 우선, 없으면 한글 값 기반 fallback */
     const _CACHE_TYPE_FB = { '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' };
-    /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge = t => coUtil.cofCodeBadge('CACHE_TYPE_KR', t, _CACHE_TYPE_FB[t] || 'badge-gray');
+    const fnTypeBadge = t => coUtil.cofCodeBadge('CACHE_TRANS_TYPE', t, _CACHE_TYPE_FB[t] || 'badge-gray');
 
     // ===== 모달 토글 / 읽기전용 판정 =======================================
     const showVendorModal   = Vue.toRef(uiState, 'showVendorModal');
@@ -291,6 +297,13 @@ window.PmCacheDtl = {
 
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
+    const cfIssueTargetsColumns = computed(() => [
+      { key: '_no', label: '번호', style: 'width:40px;', align: 'center', fmt: (v, row, idx) => idx + 1 },
+      { key: 'targetId', label: '대상 ID', mono: true },
+      { key: 'targetNm', label: '대상명' },
+      ...(!cfDtlMode.value ? [{ key: '_del', label: '삭제', style: 'width:60px;', align: 'center',
+        fmt: () => '✕', link: true, cellStyle: 'color:#e8587a;cursor:pointer;font-weight:700;' }] : []),
+    ]);
 
     // ===== 그리드 컬럼 정의 (회원 캐쉬 내역) ===============================
     /* BoGrid(bare) 컬럼 정의 — 회원 캐쉬 내역 */
@@ -323,6 +336,11 @@ window.PmCacheDtl = {
       { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
+    columns.targetForm = [
+      { key: 'targetTypeCd', label: '발급대상 종류', type: 'select',
+        options: () => codes.pm_prod_targets, nullLabel: null },
+      { key: 'issueGrades', label: '적용 회원 등급', type: 'slot', name: 'issueGrades', colSpan: 2 },
+    ];
 
     // ===== setup() return =================================================
 
@@ -332,8 +350,8 @@ window.PmCacheDtl = {
       coUtil,  // 템플릿 cofAnd 접근용
       columns,
       vendors, uiState, codes, form, errors,                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, // computed
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, cfIssueTargetsColumns, // computed
       tabs, tab, tabMode2, showVendorModal, showTargetPicker,                          // toRef
       showTab, fnTypeBadge,                                                          // 헬퍼
       coUtil,                                                                        // 템플릿 내 cofAnd 사용
@@ -415,44 +433,21 @@ window.PmCacheDtl = {
   <!-- ===== ■.■. 발급대상 탭 ================================================== -->
   <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 발급대상</div>
-    <div class="form-row" style="align-items:flex-start;gap:16px;margin-bottom:12px;">
-      <div class="form-group" style="flex:0 0 auto;">
-        <label class="form-label">발급대상 종류</label>
-        <select class="form-control" v-model="form.targetTypeCd" :disabled="cfDtlMode" style="width:140px;">
-          <option value="상품">상품</option>
-          <option value="카테고리">카테고리</option>
-          <option value="브랜드">브랜드</option>
-          <option value="판매업체">판매업체</option>
-        </select>
-      </div>
-      <div class="form-group" style="flex:1;">
-        <label class="form-label">&nbsp;</label>
-        <button v-if="!cfDtlMode" class="btn btn_new" type="button" @click="handleBtnAction('target-add')">+ 대상 추가</button>
-      </div>
+    <bo-form-area :columns="columns.targetForm" :form="form" :errors="{}" :cols="3"
+      :show-actions="false" :readonly="cfDtlMode">
+      <template #issueGrades>
+        <bo-multi-check-select v-model="form.issueGrades"
+          :options="codes.pm_issue_grades"
+          placeholder="등급 선택 (미선택=전체)" :disabled="cfDtlMode" />
+      </template>
+    </bo-form-area>
+    <!-- 발급대상 목록 -->
+    <div style="display:flex;align-items:center;gap:8px;margin:8px 0;">
+      <button v-if="!cfDtlMode" class="btn btn_new" type="button" @click="handleBtnAction('target-add')">+ 대상 추가</button>
     </div>
-    <table class="admin-table" style="margin-bottom:16px;">
-      <thead><tr>
-        <th style="width:40px;text-align:center;">번호</th>
-        <th>대상 ID</th>
-        <th>대상명</th>
-        <th v-if="!cfDtlMode" style="width:60px;text-align:center;">삭제</th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="form.issueTargets.length===0"><td :colspan="cfDtlMode ? 3 : 4" style="text-align:center;color:#aaa;padding:16px;">추가된 대상이 없습니다.</td></tr>
-        <tr v-for="(t, idx) in form.issueTargets" :key="t.targetId">
-          <td style="text-align:center;">{{ idx+1 }}</td>
-          <td>{{ t.targetId }}</td>
-          <td>{{ t.targetNm }}</td>
-          <td v-if="!cfDtlMode" style="text-align:center;">
-            <button class="btn btn_row_delete" type="button" @click="handleBtnAction('target-remove', t.targetId)">✕</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="form-group">
-      <label class="form-label">적용 회원 등급</label>
-      <bo-multi-check-select v-model="form.issueGrades" :options="[{value:'일반',label:'일반'},{value:'실버',label:'실버'},{value:'골드',label:'골드'},{value:'VIP',label:'VIP'}]" placeholder="등급 선택 (미선택=전체)" :disabled="cfDtlMode" />
-    </div>
+    <bo-grid bare :columns="cfIssueTargetsColumns" :rows="form.issueTargets" row-key="targetId"
+      empty-text="추가된 대상이 없습니다." style="margin-bottom:16px;"
+      @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
   </div>
   <!-- ===== □.□. 발급대상 탭 ================================================== -->
   <!-- ===== ■.■. 회원 캐쉬 내역 탭 ============================================ -->

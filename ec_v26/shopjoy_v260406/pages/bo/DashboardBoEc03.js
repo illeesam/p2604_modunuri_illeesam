@@ -18,17 +18,12 @@ window.DashboardBoEc03 = {
     const endDef   = toYmd(endOfMonth(today));
     const startDef = toYmd(new Date(addMonths(today, -13).getFullYear(), addMonths(today, -13).getMonth(), 1));
 
-    const CHANNELS      = ['자사몰','네이버 스마트스토어','쿠팡','11번가','G마켓','Auction','GS샵','TMON','위메프','롯데온','홈앤쇼핑','현대H몰'];
-    const AGES          = ['10대','20대','30대','40대','50대','60대+'];
-    const GENDERS       = ['남','여'];
-    const MEMBER_TYPES  = ['일반','VIP','VVIP','휴면','탈퇴'];
-    const CATEGORIES    = ['패션의류','패션잡화','뷰티','가전','식품','가구','리빙','스포츠','도서','기타'];
-
-    const CHANNEL_COLORS = {
-      '자사몰':'#e8587a','네이버 스마트스토어':'#10b981','쿠팡':'#ef4444','11번가':'#f97316',
-      'G마켓':'#3b82f6','Auction':'#6366f1','GS샵':'#a855f7','TMON':'#e11d48',
-      '위메프':'#f59e0b','롯데온':'#9333ea','홈앤쇼핑':'#0891b2','현대H몰':'#c2410c',
-    };
+    const CHANNELS     = boConsts.DASHBOARD_CHANNELS.map(c => c.codeLabel);
+    const AGES         = boConsts.DASHBOARD_AGES.map(c => c.codeLabel);
+    const GENDERS      = boConsts.DASHBOARD_GENDERS.map(c => c.codeLabel);
+    const MEMBER_TYPES = boConsts.DASHBOARD_MEMBER_TYPES.map(c => c.codeLabel);
+    const CATEGORIES   = boConsts.DASHBOARD_CATEGORIES.map(c => c.codeLabel);
+    const CHANNEL_COLORS = boConsts.DASHBOARD_CHANNEL_COLORS;
 
     const filters = reactive({
       startDt: startDef, endDt: endDef,
@@ -726,10 +721,27 @@ window.DashboardBoEc03 = {
       document.removeEventListener('click', _onDocClick);
     });
 
+    const xviewDrillColumns = [
+      { key: 'time',   label: '시각',   style: 'width:72px;', cellStyle: 'white-space:nowrap;' },
+      { key: 'rt',     label: '응답시간', style: 'width:88px;', align: 'right',
+        fmt: v => v + 'ms', cellStyle: 'font-weight:700;' },
+      { key: 'status', label: '상태',   style: 'width:76px;', align: 'center',
+        badge: row => ({ text: row.status, style: `background:${row.statusColor};color:#fff;font-size:10px;` }) },
+      { key: 'url',    label: 'URL',    cellStyle: 'font-family:monospace;font-size:10.5px;color:#3b82f6;white-space:nowrap;' },
+      { key: 'uiNm',  label: 'X-UI-Nm',  style: 'width:90px;', cellStyle: 'font-size:10.5px;color:#6366f1;white-space:nowrap;' },
+      { key: 'cmdNm', label: 'X-Cmd-Nm', style: 'width:90px;', cellStyle: 'font-size:10.5px;color:#10b981;white-space:nowrap;' },
+    ];
+
+    const attrsGridColumns = [
+      { key: 'k', label: '속성', style: 'width:38%;', cellStyle: 'color:#7dd3fc;font-size:10.5px;white-space:nowrap;font-weight:700;' },
+      { key: 'v', label: '값',   style: 'width:28%;', cellStyle: 'color:#fbbf24;font-size:10.5px;white-space:nowrap;' },
+      { key: 'd', label: '설명', cellStyle: 'color:#9ca3af;font-size:10px;' },
+    ];
+
     return {
       uiState, filters, dash,
       handleBtnAction, handleSelectAction,
-      cfBaseGridColumns, showPanel, isSel,
+      cfBaseGridColumns, showPanel, isSel, xviewDrillColumns, attrsGridColumns,
       TABS, VIEW_MODES, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
       fmt, pct,
       cfMonthLabels, cfTotalSales, cfTotalQtyComp, marginRate, cfAvgOrderValue,
@@ -978,29 +990,9 @@ window.DashboardBoEc03 = {
           <button class="btn btn_close" @click="handleBtnAction('xview-drill-close')" style="font-size:11px;padding:3px 10px;">✕ 닫기</button>
         </div>
         <div style="max-height:260px;overflow-y:auto;overflow-x:auto;">
-          <table class="admin-table" style="width:100%;font-size:11px;min-width:640px;">
-            <thead><tr>
-              <th style="width:72px;">시각</th>
-              <th style="width:88px;">응답시간</th>
-              <th style="width:76px;">상태</th>
-              <th style="min-width:180px;">URL</th>
-              <th style="width:90px;">X-UI-Nm</th>
-              <th style="width:90px;">X-Cmd-Nm</th>
-            </tr></thead>
-            <tbody>
-              <tr v-for="(row,i) in uiState.xviewDrillRows" :key="i">
-                <td style="white-space:nowrap;">{{ row.time }}</td>
-                <td style="font-weight:700;text-align:right;">{{ row.rt }}ms</td>
-                <td style="text-align:center;"><span class="badge" :style="{background:row.statusColor,color:'#fff',fontSize:'10px'}">{{ row.status }}</span></td>
-                <td style="font-family:monospace;font-size:10.5px;color:#3b82f6;white-space:nowrap;">{{ row.url }}</td>
-                <td style="font-size:10.5px;color:#6366f1;white-space:nowrap;">{{ row.uiNm }}</td>
-                <td style="font-size:10.5px;color:#10b981;white-space:nowrap;">{{ row.cmdNm }}</td>
-              </tr>
-              <tr v-if="!uiState.xviewDrillRows.length">
-                <td colspan="6" style="text-align:center;color:#aaa;padding:16px;">선택 범위에 데이터가 없습니다.</td>
-              </tr>
-            </tbody>
-          </table>
+          <bo-grid bare :columns="xviewDrillColumns" :rows="uiState.xviewDrillRows"
+            empty-text="선택 범위에 데이터가 없습니다."
+            style="font-size:11px;min-width:640px;" />
         </div>
       </div>
     </bo-container>
@@ -1081,13 +1073,7 @@ window.DashboardBoEc03 = {
             <!-- 속성 매핑 테이블 -->
             <div v-if="uiState.infoPanel.src.attrs" style="margin-top:8px;background:#1e1e2e;border-radius:6px;overflow:hidden;">
               <div style="padding:5px 12px;background:rgba(255,255,255,0.05);font-size:9.5px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;">속성 매핑</div>
-              <table style="width:100%;border-collapse:collapse;">
-                <tr v-for="a in uiState.infoPanel.src.attrs" :key="a.k">
-                  <td style="padding:5px 10px;color:#7dd3fc;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.05);white-space:nowrap;width:38%;font-weight:700;">{{ a.k }}</td>
-                  <td style="padding:5px 10px;color:#fbbf24;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.05);white-space:nowrap;width:28%;">{{ a.v }}</td>
-                  <td style="padding:5px 10px;color:#9ca3af;font-size:10px;border-bottom:1px solid rgba(255,255,255,0.05);">{{ a.d }}</td>
-                </tr>
-              </table>
+              <bo-grid bare :columns="attrsGridColumns" :rows="uiState.infoPanel.src.attrs" row-key="k" />
             </div>
           </div>
         </template>

@@ -648,6 +648,26 @@ window.SyPostman = {
       return [];
     });
 
+    /* lsItemsGridColumns — localStorage 항목 */
+    const lsItemsGridColumns = [
+      { key: 'k', label: '키',  cellStyle: 'color:#555;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' },
+      { key: 'v', label: '값',  cellStyle: 'color:#888;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' },
+    ];
+
+    /* historyGridColumns — 전송 이력 */
+    const historyGridColumns = [
+      { key: '_no',    label: '#',    style: 'width:32px;', align: 'center',
+        fmt: (v, row, i) => history.length - i, cellStyle: 'font-size:10px;color:#999;' },
+      { key: 'method', label: '메서드', style: 'width:68px;', align: 'center',
+        badge: row => ({ text: row.method, style: methodStyle(row.method) + 'font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;' }) },
+      { key: 'tabLabel', label: '탭명',   style: 'width:110px;', cellStyle: 'color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;' },
+      { key: 'url',    label: 'URL',  cellStyle: 'font-family:monospace;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;' },
+      { key: 'status', label: '상태', style: 'width:50px;', align: 'center',
+        fmt: (v, row) => row.status || '-', cellStyle: (v, row) => statusStyle(row.status) },
+      { key: 'time',  label: '응답시간', style: 'width:64px;', align: 'center', fmt: v => (v || '-') + (v ? 'ms' : ''), cellStyle: 'color:#888;' },
+      { key: 'ts',    label: '요청시간', style: 'width:68px;', align: 'center', cellStyle: 'color:#aaa;' },
+    ];
+
     /* quickRun — quick 실행 */
     const quickRun = (node, evt) => {
       evt.stopPropagation();
@@ -706,6 +726,7 @@ window.SyPostman = {
       handleBtnAction, handleSelectAction,                                                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
       appFilter, APP_META, POPUP_ROWS,                   // 정적/상수
       methodStyle, statusStyle, histResJson, histResStatus, histResTime, histResTs,           // 헬퍼
+      lsItemsGridColumns, historyGridColumns,            // 그리드 컬럼
     };
   },
 
@@ -990,17 +1011,7 @@ window.SyPostman = {
             </button>
           </div>
           <div style="max-height:80px;overflow-y:auto;border:1px solid #eee;border-radius:4px;background:#fff;">
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse;font-size:10px;">
-              <tr v-for="item in lsItems" :key="item.k" style="border-bottom:1px solid #f5f5f5;">
-                <td style="padding:2px 5px;color:#555;font-weight:600;width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="item.k">
-                  {{ item.k }}
-                </td>
-                <td style="padding:2px 5px;color:#888;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="item.v">
-                  {{ item.v }}
-                </td>
-              </tr>
-            </table>
+            <bo-grid bare :columns="lsItemsGridColumns" :rows="lsItems" row-key="k" empty-text="(비어 있음)" style="font-size:10px;" />
           </div>
         </div>
       </div>
@@ -1181,85 +1192,17 @@ window.SyPostman = {
           </button>
         </div>
         <div style="max-height:120px;overflow-y:auto;">
-          <!-- ===== ■.■.■.■. 테이블 =============================================== -->
-          <table style="width:100%;border-collapse:collapse;font-size:11px;">
-            <thead style="position:sticky;top:0;background:#f8f9fa;z-index:1;">
-              <tr style="border-bottom:1px solid #e0e0e0;">
-                <th style="padding:3px 6px;width:32px;text-align:center;font-weight:600;color:#bbb;font-size:10px;">
-                  #
-                </th>
-                <th style="padding:3px 8px;width:68px;text-align:center;font-weight:600;color:#666;">
-                  메서드
-                </th>
-                <th style="padding:3px 8px;width:110px;text-align:left;font-weight:600;color:#666;">
-                  탭명
-                </th>
-                <th style="padding:3px 8px;text-align:left;font-weight:600;color:#666;">
-                  URL
-                </th>
-                <th style="padding:3px 8px;width:50px;text-align:center;font-weight:600;color:#666;">
-                  상태
-                </th>
-                <th style="padding:3px 8px;width:64px;text-align:center;font-weight:600;color:#666;">
-                  응답시간
-                </th>
-                <th style="padding:3px 8px;width:68px;text-align:center;font-weight:600;color:#666;">
-                  요청시간
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="!history.length">
-                <td colspan="7" style="text-align:center;padding:12px;color:#ccc;">
-                  전송 이력이 없습니다
-                </td>
-              </tr>
-              <tr v-for="(h,i) in history" :key="h.id"
-              @click="handleSelectAction('history-rowSelect', { h: h, i: i })"
-              style="border-bottom:1px solid #f5f5f5;transition:background .1s;"
-              :style="histSelIdx===i?'background:#e8f0fe;':''"
-              @mouseenter="e=>{ if(histSelIdx!==i) e.currentTarget.style.background='#f5f5f5'; }"
-              @mouseleave="e=>{ e.currentTarget.style.background=histSelIdx===i?'#e8f0fe':''; }">
-                <td style="text-align:center;padding:2px 6px;">
-                  <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#999;">
-                    <span v-if="h.status ? (h.status<300) : false" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#22c55e;">
-                  </span>
-                  <span v-else-if="h.status ? (h.status>=300) : false" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#ef4444;">
-                </span>
-                {{ history.length - i }}
-              </span>
-            </td>
-            <td style="text-align:center;padding:2px 8px;">
-              <span style="font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;" :style="methodStyle(h.method)">
-                {{ h.method }}
-              </span>
-            </td>
-            <td style="padding:2px 8px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;font-size:10px;" :title="h.tabLabel">
-              {{ h.tabLabel }}
-            </td>
-            <td style="padding:2px 8px;font-family:monospace;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:0;">
-              {{ h.url }}
-            </td>
-            <td style="text-align:center;padding:2px 8px;" :style="statusStyle(h.status)">
-              {{ h.status||'-' }}
-            </td>
-            <td style="text-align:center;padding:2px 8px;color:#888;">
-              {{ h.time }}ms
-            </td>
-            <td style="text-align:center;padding:2px 8px;color:#aaa;">
-              {{ h.ts }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+          <bo-grid bare :columns="historyGridColumns" :rows="history" row-key="id"
+            :row-class="(row, i) => histSelIdx===i ? 'selected-row' : ''"
+            empty-text="전송 이력이 없습니다"
+            style="font-size:11px;"
+            @cell-click="e => handleSelectAction('history-rowSelect', { h: e.row, i: e.rowIndex })" />
     </div>
   </div>
   <!-- ===== □.□. History =============================================== -->
   <!-- ===== ■.■. History 상세 모달 ========================================= -->
-  <template v-if="histModal">
-    <div @click="handleBtnAction('histModal-close')" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);">
-    </div>
-    <div style="position:fixed;z-index:9001;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;max-width:96vw;max-height:86vh;background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;">
+  <bo-modal :show="!!histModal" width="900px" box-pad="0" @close="handleBtnAction('histModal-close')">
+    <div v-if="histModal" style="display:flex;flex-direction:column;max-height:80vh;overflow:hidden;">
       <div style="padding:10px 16px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px;flex-shrink:0;background:#f8f9fa;">
         <span style="font-size:12px;font-weight:800;color:#555;">
           전송이력상세
@@ -1455,9 +1398,8 @@ window.SyPostman = {
       </div>
     </div>
   </div>
-</div>
-</div>
-</template>
+    </div>
+  </bo-modal>
 </div>
 <!-- ===== /Main Panel ================================================ -->
 <!-- ===== □.□. History 상세 모달 ========================================= -->

@@ -168,7 +168,22 @@ window.OdClaimCalcModal = {
 
     const debugOpen = Vue.ref(false);
 
-    return { state, handleSwitch, handleClose, debugOpen };
+    const orderItemsColumns = [
+      { key: 'prodNm',   label: '상품명', fmt: (v, row) => row.prodNm || row.prod_nm || '-' },
+      { key: 'orderQty', label: '수량', align: 'center',
+        fmt: (v, row) => row.orderQty || row.order_qty || row.claimQty || 1 },
+      { key: 'itemAmt',  label: '금액', align: 'right',
+        fmt: (v, row) => ((row.itemAmt || row.item_amt || (row.salePrice || row.sale_price || 0) * (row.orderQty || row.order_qty || 1)) || 0).toLocaleString() + '원' },
+    ];
+    const claimItemsColumns = [
+      { key: 'prodNm',   label: '상품명', fmt: (v, row) => row.prodNm || row.prod_nm || '-' },
+      { key: 'claimQty', label: '수량', align: 'center',
+        fmt: (v, row) => row.claimQty || row.claim_qty || 1 },
+      { key: 'itemAmt',  label: '항목금액', align: 'right',
+        fmt: (v, row) => (row.itemAmt || row.item_amt || 0).toLocaleString() + '원' },
+    ];
+
+    return { state, handleSwitch, handleClose, debugOpen, orderItemsColumns, claimItemsColumns };
   },
   template: /* html */`
 <bo-modal :show="show" :title="state.claimType==='CANCEL'?'취소 클레임 계산 (예정)':state.claimType==='RETURN'?'반품 클레임 계산 (예정)':state.claimType==='EXCHANGE'?'교환 클레임 계산 (예정)':'클레임 계산 (예정)'" width="680px" box-pad="12px" body-pad="12px" :z-index="zIndex" @close="handleClose">
@@ -275,23 +290,9 @@ window.OdClaimCalcModal = {
           <div style="border-radius:8px;border:1px solid #e2e8f0;overflow:hidden;">
             <div style="padding:7px 10px;background:#f8fafc;font-size:11px;font-weight:700;color:#374151;border-bottom:1px solid #e2e8f0;">🛒 현재 주문상품 정보</div>
             <div style="padding:10px 12px;">
-              <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">
-                <thead><tr style="background:#f8fafc;">
-                  <th style="padding:4px 6px;text-align:left;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0;">상품명</th>
-                  <th style="padding:4px 6px;text-align:center;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0;white-space:nowrap;">수량</th>
-                  <th style="padding:4px 6px;text-align:right;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0;white-space:nowrap;">금액</th>
-                </tr></thead>
-                <tbody>
-                  <tr v-for="(it, i) in (state.data.order.orderItems || state.data.claim.claimItems || [])" :key="i">
-                    <td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px;" :title="it.prodNm || it.prod_nm">{{ it.prodNm || it.prod_nm || '-' }}</td>
-                    <td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;text-align:center;">{{ it.orderQty || it.order_qty || it.claimQty || 1 }}</td>
-                    <td style="padding:4px 6px;border-bottom:1px solid #f1f5f9;text-align:right;font-family:monospace;">{{ ((it.itemAmt || it.item_amt || (it.salePrice || it.sale_price || 0) * (it.orderQty || it.order_qty || 1)) || 0).toLocaleString() }}원</td>
-                  </tr>
-                  <tr v-if="!(state.data.order.orderItems || state.data.claim.claimItems || []).length">
-                    <td colspan="3" style="text-align:center;padding:8px;color:#94a3b8;">-</td>
-                  </tr>
-                </tbody>
-              </table>
+              <bo-grid bare :columns="orderItemsColumns"
+                :rows="state.data.order.orderItems || state.data.claim.claimItems || []"
+                empty-text="-" style="margin-bottom:8px;font-size:11px;" />
               <div style="border-top:1px solid #e5e7eb;padding-top:6px;font-size:11px;">
                 <div style="display:flex;justify-content:space-between;padding:2px 0;color:#6b7280;">
                   <span>상품 합계</span><span style="font-family:monospace;">{{ (state.data.calc.orderTotalAmt || 0).toLocaleString() }}원</span>
@@ -319,23 +320,9 @@ window.OdClaimCalcModal = {
           <div style="border-radius:8px;border:1px solid #bbf7d0;overflow:hidden;">
             <div style="padding:7px 10px;background:#f0fdf4;font-size:11px;font-weight:700;color:#14532d;border-bottom:1px solid #bbf7d0;">♻️ 클레임 신청 후 (환불 예정)</div>
             <div style="padding:10px 12px;">
-              <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px;">
-                <thead><tr style="background:#f0fdf4;">
-                  <th style="padding:4px 6px;text-align:left;color:#15803d;font-weight:600;border-bottom:1px solid #bbf7d0;">상품명</th>
-                  <th style="padding:4px 6px;text-align:center;color:#15803d;font-weight:600;border-bottom:1px solid #bbf7d0;white-space:nowrap;">수량</th>
-                  <th style="padding:4px 6px;text-align:right;color:#15803d;font-weight:600;border-bottom:1px solid #bbf7d0;white-space:nowrap;">항목금액</th>
-                </tr></thead>
-                <tbody>
-                  <tr v-for="(it, i) in (state.data.claim.claimItems || [])" :key="i">
-                    <td style="padding:4px 6px;border-bottom:1px solid #f0fdf4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px;" :title="it.prodNm || it.prod_nm">{{ it.prodNm || it.prod_nm || '-' }}</td>
-                    <td style="padding:4px 6px;border-bottom:1px solid #f0fdf4;text-align:center;">{{ it.claimQty || it.claim_qty || 1 }}</td>
-                    <td style="padding:4px 6px;border-bottom:1px solid #f0fdf4;text-align:right;font-family:monospace;">{{ (it.itemAmt || it.item_amt || 0).toLocaleString() }}원</td>
-                  </tr>
-                  <tr v-if="!(state.data.claim.claimItems || []).length">
-                    <td colspan="3" style="text-align:center;padding:8px;color:#94a3b8;">항목 없음</td>
-                  </tr>
-                </tbody>
-              </table>
+              <bo-grid bare :columns="claimItemsColumns"
+                :rows="state.data.claim.claimItems || []"
+                empty-text="항목 없음" style="margin-bottom:8px;font-size:11px;" />
               <div style="border-top:1px solid #bbf7d0;padding-top:6px;font-size:11px;">
                 <div style="display:flex;justify-content:space-between;padding:2px 0;color:#6b7280;">
                   <span>클레임 항목 금액</span><span style="font-family:monospace;">{{ (state.data.calc.itemAmt || 0).toLocaleString() }}원</span>

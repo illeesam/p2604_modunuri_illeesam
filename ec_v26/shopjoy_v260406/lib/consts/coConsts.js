@@ -54,5 +54,16 @@
     { codeValue: 'LOGEN',  codeLabel: '로젠택배' },
   ];
 
+  /* 클레임 유형 한글 → 영문 코드. OdClaimDtl/OdClaimHist 중복 */
+  coConsts.CLAIM_TYPE_CD_MAP = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
+
+  /* 클레임 단계별 상태 라벨(한글). 영문키 기준 — OdClaimDtl CLAIM_STEP_MAP 동일.
+   * OdOrderDtl 의 CLAIM_FLOWS(한글키)는 이 맵에서 파생: CLAIM_TYPE_CD_MAP[한글] → 여기 조회 */
+  coConsts.CLAIM_STEP_MAP = {
+    CANCEL:   ['취소요청', '취소처리중', '취소완료'],
+    RETURN:   ['반품요청', '수거예정', '수거중', '검수중', '환불대기', '환불완료'],
+    EXCHANGE: ['교환요청', '수거예정', '수거중', '교환완료'],
+  };
+
   global.coConsts = global.coConsts || coConsts;
 })(window);

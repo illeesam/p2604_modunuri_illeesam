@@ -136,6 +136,7 @@ window.CmNoticeDtl = {
         checkboxLabel: '상단고정', hideLabel: true,
         checkedValue: 'Y', uncheckedValue: 'N' },
       { key: 'contentHtml',    label: '내용',    type: 'slot', name: 'content', colSpan: 3 },
+      { key: 'attachGrpId',   label: '첨부파일', type: 'slot', name: 'attachGrp', colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -163,15 +164,13 @@ window.CmNoticeDtl = {
       </div>
       <base-html-editor v-else v-model="baseForm.contentHtml" height="280px" />
     </template>
+    <template #attachGrp>
+      <base-attach-grp :model-value="baseForm.attachGrpId" @update:model-value="baseForm.attachGrpId = $event"
+        :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfReadonly"
+        grp-code="NOTICE_ATTACH" grp-nm="공지 첨부파일"
+        :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />
+    </template>
   </bo-form-area>
-  <!-- 첨부파일 -->
-  <div class="form-group" style="margin-top:12px;">
-    <label class="form-label">첨부파일</label>
-    <base-attach-grp :model-value="baseForm.attachGrpId" @update:model-value="baseForm.attachGrpId = $event"
-      :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfReadonly"
-      grp-code="NOTICE_ATTACH" grp-nm="공지 첨부파일"
-      :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />
-  </div>
   <!-- 폼 액션 (행 선택/신규 시에만 노출) -->
   <div class="form-actions" v-if="active">
     <template v-if="cfReadonly">

@@ -128,5 +128,116 @@
     { codeValue: 'ETC',             codeLabel: '기타' },
   ];
 
+  /* ── 주문/배송/결제 흐름 상수 ── */
+
+  /* 주문 진행 단계. OdOrderDtl ORDER_STEPS(한글). OdOrderKanban은 구조 다름(별도)
+   * .map(c=>c.codeLabel) 로 string[] 파생, indexOf(한글) 사용처는 파생 배열 사용 */
+  boConsts.ORDER_STEPS = [
+    { codeValue: 'WAIT_PAYMENT', codeLabel: '입금대기' },
+    { codeValue: 'PAID',        codeLabel: '결제완료' },
+    { codeValue: 'PREPARING',   codeLabel: '상품준비중' },
+    { codeValue: 'SHIPPING',    codeLabel: '배송중' },
+    { codeValue: 'DELIVERED',   codeLabel: '배송완료' },
+    { codeValue: 'CONFIRMED',   codeLabel: '구매확정' },
+  ];
+
+  /* 배송 진행 단계. OdDlivDtl DLIV_STEPS */
+  boConsts.DLIV_STEPS = [
+    { codeValue: 'READY',     codeLabel: '준비중' },
+    { codeValue: 'SHIPPED',   codeLabel: '출고완료' },
+    { codeValue: 'SHIPPING',  codeLabel: '배송중' },
+    { codeValue: 'DELIVERED', codeLabel: '배송완료' },
+  ];
+
+  /* 결제상태 fallback. cofCodeBadge 미매칭 시 표시용. codeOpt1 = badge-class */
+  boConsts.PAY_STATUS_FALLBACK = [
+    { codeValue: 'UNPAID',          codeLabel: '미결제',   codeOpt1: 'badge-gray' },
+    { codeValue: 'PARTIAL_PAID',    codeLabel: '부분결제', codeOpt1: 'badge-orange' },
+    { codeValue: 'PAID',            codeLabel: '결제완료', codeOpt1: 'badge-green' },
+    { codeValue: 'FAILED',          codeLabel: '결제실패', codeOpt1: 'badge-red' },
+    { codeValue: 'REFUNDING',       codeLabel: '환불중',   codeOpt1: 'badge-orange' },
+    { codeValue: 'PARTIAL_REFUND',  codeLabel: '부분환불', codeOpt1: 'badge-orange' },
+    { codeValue: 'REFUNDED',        codeLabel: '환불완료', codeOpt1: 'badge-purple' },
+  ];
+  /* PAY_STATUS_FALLBACK_BADGE — 한글라벨 → badge-class 빠른 조회 헬퍼 */
+  boConsts.PAY_STATUS_FALLBACK_BADGE = (function (list) {
+    return list.reduce(function (m, c) { m[c.codeLabel] = c.codeOpt1; return m; }, {});
+  })(boConsts.PAY_STATUS_FALLBACK);
+
+  /* 클레임 상태 코드 → 한글 라벨. OdOrderDtl CLAIM_STATUS_LABEL */
+  boConsts.CLAIM_STATUS = [
+    { codeValue: 'REQUESTED',   codeLabel: '요청' },
+    { codeValue: 'APPROVED',    codeLabel: '승인' },
+    { codeValue: 'IN_PICKUP',   codeLabel: '수거중' },
+    { codeValue: 'PROCESSING',  codeLabel: '처리중' },
+    { codeValue: 'COMPLT',      codeLabel: '완료' },
+    { codeValue: 'REJECTED',    codeLabel: '거절' },
+    { codeValue: 'CANCELLED',   codeLabel: '철회' },
+    { codeValue: 'REFUND_WAIT', codeLabel: '환불대기' },
+  ];
+  /* CLAIM_STATUS_LABEL — codeValue → codeLabel 빠른 조회 헬퍼 */
+  boConsts.CLAIM_STATUS_LABEL = (function (list) {
+    return list.reduce(function (m, c) { m[c.codeValue] = c.codeLabel; return m; }, {});
+  })(boConsts.CLAIM_STATUS);
+
+  /* ── 업체 유형 ── */
+  boConsts.VENDOR_TYPES = [
+    { codeValue: 'SALES',    codeLabel: '판매업체' },
+    { codeValue: 'DELIVERY', codeLabel: '배송업체' },
+    { codeValue: 'PARTNER',  codeLabel: '제휴사' },
+    { codeValue: 'INTERNAL', codeLabel: '내부법인' },
+  ];
+  /* vendorTypeLabel(cd) — 편의 함수 */
+  boConsts.vendorTypeLabel = function (cd) {
+    var found = boConsts.VENDOR_TYPES.find(function (v) { return v.codeValue === cd; });
+    return found ? found.codeLabel : cd;
+  };
+
+  /* ── 전시 위젯 유형 라벨 ── */
+  /* WIDGET_TYPES — BoModals.js 에 동일 내용 2곳 중복 정의된 것 통합 */
+  boConsts.WIDGET_TYPES = [
+    { codeValue: 'image_banner',     codeLabel: '이미지 배너' },
+    { codeValue: 'product_slider',   codeLabel: '상품 슬라이더' },
+    { codeValue: 'product',          codeLabel: '상품' },
+    { codeValue: 'cond_product',     codeLabel: '조건상품' },
+    { codeValue: 'chart_bar',        codeLabel: '차트(Bar)' },
+    { codeValue: 'chart_line',       codeLabel: '차트(Line)' },
+    { codeValue: 'chart_pie',        codeLabel: '차트(Pie)' },
+    { codeValue: 'text_banner',      codeLabel: '텍스트 배너' },
+    { codeValue: 'info_card',        codeLabel: '정보 카드' },
+    { codeValue: 'popup',            codeLabel: '팝업' },
+    { codeValue: 'file',             codeLabel: '파일' },
+    { codeValue: 'file_list',        codeLabel: '파일 목록' },
+    { codeValue: 'coupon',           codeLabel: '쿠폰' },
+    { codeValue: 'html_editor',      codeLabel: 'HTML 에디터' },
+    { codeValue: 'textarea',         codeLabel: '텍스트' },
+    { codeValue: 'markdown',         codeLabel: 'Markdown' },
+    { codeValue: 'barcode',          codeLabel: '바코드' },
+    { codeValue: 'qrcode',           codeLabel: 'QR코드' },
+    { codeValue: 'barcode_qrcode',   codeLabel: '바코드+QR' },
+    { codeValue: 'video_player',     codeLabel: '동영상' },
+    { codeValue: 'countdown',        codeLabel: '카운트다운' },
+    { codeValue: 'payment_widget',   codeLabel: '결제위젯' },
+    { codeValue: 'approval_widget',  codeLabel: '결재위젯' },
+    { codeValue: 'event_banner',     codeLabel: '이벤트' },
+    { codeValue: 'cache_banner',     codeLabel: '캐쉬' },
+    { codeValue: 'widget_embed',     codeLabel: '위젯 임베드' },
+    { codeValue: 'map_widget',       codeLabel: '지도' },
+  ];
+  /* WIDGET_LABEL — codeValue → codeLabel 빠른 조회 헬퍼 (기존 코드 호환) */
+  boConsts.WIDGET_LABEL = (function (list) {
+    return list.reduce(function (m, c) { m[c.codeValue] = c.codeLabel; return m; }, {});
+  })(boConsts.WIDGET_TYPES);
+
+  /* ── 대시보드: 채널 색상 ── codeOpt1 = hex 색상 */
+  boConsts.DASHBOARD_CHANNELS = boConsts.DASHBOARD_CHANNELS.map(function (c, i) {
+    var colors = ['#e8587a','#10b981','#ef4444','#f97316','#3b82f6','#6366f1','#a855f7','#e11d48','#f59e0b','#9333ea','#0891b2','#c2410c'];
+    return { codeValue: c.codeValue, codeLabel: c.codeLabel, codeOpt1: colors[i] || '#999' };
+  });
+  /* DASHBOARD_CHANNEL_COLORS — codeLabel → hex 빠른 조회 헬퍼 */
+  boConsts.DASHBOARD_CHANNEL_COLORS = (function (list) {
+    return list.reduce(function (m, c) { m[c.codeLabel] = c.codeOpt1; return m; }, {});
+  })(boConsts.DASHBOARD_CHANNELS);
+
   global.boConsts = global.boConsts || boConsts;
 })(window);

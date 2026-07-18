@@ -113,10 +113,9 @@
       const loginPager    = _newPager();
       const couponPager   = _newPager();
       const sendPager     = _newPager();
-      const modalPager    = _newPager();
 
       /* ===== 고객 검색 모달 ===== */
-      const memberModal = reactive({ show: false, searchType: '', keyword: '', list: [] }); // 고객 검색 모달
+      const memberModalOpen = ref(false); // 고객 검색 모달 열림 여부 (MemberSelectModal 제어용)
 
       /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -140,14 +139,8 @@
           return;
         // 고객 검색 모달 열기
         } else if (cmd === 'memberModal-open') {
-          return openMemberModal();
-        // 고객 검색 모달 닫기
-        } else if (cmd === 'memberModal-close') {
-          memberModal.show = false;
+          memberModalOpen.value = true;
           return;
-        // 고객 검색 모달 내 검색 실행
-        } else if (cmd === 'memberModal-search') {
-          return searchMemberModal();
         } else {
           console.warn('[handleBtnAction] unknown cmd:', cmd);
         }
@@ -172,26 +165,19 @@
         }
       };
 
-      /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 (회원 모달 picker) */
+      /* handleGridCellAction — 그리드 셀 클릭 라우터 */
       const handleGridCellAction = (cmd, colKey, row, e = {}) => {
         console.log(' ■■ MbCustInfoMng : handleGridCellAction -> ', cmd, colKey, row);
-        if (cmd === 'memberModal-cellClick') {
-          // 회원 picker — 행 아무 셀이나 클릭 시 선택
-          return selectMember(row);
-        } else {
-          console.warn('[handleGridCellAction] unknown cmd:', cmd);
-        }
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       };
 
       /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
       const fnCallbackModal = (cmd, param, result) => {
         console.log(' ■■ MbCustInfoMng : fnCallbackModal -> ', cmd, param, result);
         if (cmd === 'member-pick') {
-          if (result == null) {
-              memberModal.show = false;
-              return;
-          }
-            return selectMember(result);
+          memberModalOpen.value = false;
+          if (result) selectMember(result);
+          return;
         } else {
           console.warn('[fnCallbackModal] unknown cmd:', cmd);
         }
@@ -213,7 +199,7 @@
       };
 
       /* fnPagerOf — which → pager 객체 */
-      const fnPagerOf = (which) => HIST_META[which]?.pager || (which === 'modal' ? modalPager : null);
+      const fnPagerOf = (which) => HIST_META[which]?.pager || null;
 
       /* fnDateParams — 기간 검색 파라미터 (period='all' 면 미전달) */
       const fnDateParams = (dateType) => {
@@ -272,24 +258,7 @@
       /* onSearch — 검색 (선택 고객 있으면 9개 영역 재조회) */
       const onSearch = async () => {
         if (uiState.customer) { await handleSearchData(); }
-        else { await loadMembersForModal(); }
-      };
-
-      /* loadMembersForModal — 모달 picker 서버사이드 조회 (검색어/검색대상 + pageNo/pageSize 서버 전달) */
-      const loadMembersForModal = async () => {
-        try {
-          const params = {
-            pageNo: modalPager.pageNo, pageSize: modalPager.pageSize,
-            ...(memberModal.keyword.trim() ? { searchValue: memberModal.keyword.trim() } : {}),
-            ...(memberModal.searchType ? { searchType: memberModal.searchType } : {}),
-          };
-          const r = await boApiSvc.mbMember.getPage(params, '고객종합정보', '회원조회');
-          const d = r.data?.data || {};
-          memberModal.list = d.pageList ?? [];
-          modalPager.pageTotalCount = d.pageTotalCount || 0;
-          modalPager.pageTotalPage = d.pageTotalPage || 1;
-          coUtil.cofBuildPagerNums(modalPager);
-        } catch (e) { console.error('[loadMembersForModal]', e); }
+        else { memberModalOpen.value = true; }
       };
 
       /* clearCustomer — 선택 고객 초기화 */
@@ -299,24 +268,10 @@
         Object.values(HIST_META).forEach(m => { m.rows.splice(0, m.rows.length); m.pager.pageTotalCount = 0; });
       };
 
-      /* openMemberModal — 고객 검색 모달 열기 (회원 목록 picker) */
-      const openMemberModal = async () => {
-        memberModal.keyword = '';
-        modalPager.pageNo = 1;
-        await loadMembersForModal();
-        memberModal.show = true;
-      };
-
-      /* searchMemberModal — 모달 내 검색 실행 (서버 재조회) */
-      const searchMemberModal = async () => {
-        modalPager.pageNo = 1;
-        await loadMembersForModal();
-      };
-
-      /* selectMember — 회원 선택 (모달에서) */
+      /* selectMember — 회원 선택 (MemberSelectModal 콜백에서) */
       const selectMember = (m) => {
         uiState.customer = m;
-        memberModal.show = false;
+        memberModalOpen.value = false;
         uiState.searchInput = '';
       };
 
@@ -333,12 +288,10 @@
       };
       const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-      // ★ onMounted — 진입 시 코드 로드 + 회원 목록 (picker 용)
-      onMounted(async () => {
+      // ★ onMounted — 진입 시 코드 로드
+      onMounted(() => {
         if (isAppReady.value) { fnLoadCodes(); }
         Object.assign(searchParamOrg, searchParam);
-        // 진입 시 회원 목록만 로드 (고객 선택 모달 picker 용). 9개 영역은 고객 선택 후 조회.
-        await loadMembersForModal();
       });
 
       /* watch — 고객 선택 시 9개 영역 서버 조회 */
@@ -392,18 +345,13 @@
       const onSetPage = (which, n) => {
         const p = fnPagerOf(which); if (!p || n < 1 || n > p.pageTotalPage) { return; }
         p.pageNo = n;
-        if (which === 'modal') { loadMembersForModal(); return; }
         fnLoadHist(which);
       };
       const onSizeChange = (which) => {
         const p = fnPagerOf(which); if (!p) { return; }
         p.pageNo = 1;
-        if (which === 'modal') { loadMembersForModal(); return; }
         fnLoadHist(which);
       };
-
-      /* cfPageModalList — 서버사이드 picker: 응답 page 행 그대로 (클라이언트 슬라이싱 제거) */
-      const cfPageModalList = computed(() => memberModal.list || []);
 
       /* _ellipsis — 말줄임 스타일 */
       const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');
@@ -513,15 +461,6 @@
         { key: 'title', label: '제목/내용', cellStyle: _ellipsis(220, 'color:#333;'), cellTitle: true },
         { key: 'statusCd', label: '결과', badge: (row) => fnBadgeCls(row.statusCd) },
       ];
-      // 회원 선택 모달 그리드
-      columns.memberModalGrid = [
-        { key: 'userId', label: 'ID', style: 'width:50px;text-align:center;', align: 'center', cellStyle: 'color:#aaa;' },
-        { key: 'memberNm', label: '이름', style: 'width:90px;', cellStyle: 'font-weight:600;color:#1a1a2e;' },
-        { key: 'email', label: '이메일', cellStyle: 'color:#555;' },
-        { key: 'phone', label: '전화', style: 'width:130px;', cellStyle: 'color:#666;font-family:monospace;', fmt: (v) => v || '-' },
-        { key: 'grade', label: '등급', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.grade === 'VIP' ? 'badge-purple' : row.grade === '우수' ? 'badge-blue' : 'badge-gray') },
-        { key: 'status', label: '상태', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.status === '활성' ? 'badge-green' : 'badge-red') },
-      ];
 
       /* 행 펼침 BoFormArea 컬럼 (그리드에 안 보이던 추가/상세 필드, readonly) */
       columns.orderGridRowDetail = [
@@ -599,27 +538,14 @@
         { key: 'customTo',   type: 'date', label: '종료일', visible: (p) => p.period === 'custom' },
       ];
 
-      /* memberModalSearchColumns — 고객 검색 모달 BoSearchArea 컬럼 */
-      columns.memberModalSearch = [
-        { key: 'searchType', type: 'multiCheck',
-          options: [
-            { value: 'memberNm', label: '이름' },
-            { value: 'email',    label: '이메일' },
-            { value: 'phone',    label: '전화번호' },
-          ],
-          placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-        { key: 'keyword', type: 'text', placeholder: '검색어 입력' },
-      ];
-
       /* ##### [06] return (템플릿 노출) ############################################## */
 
       return {
         columns,
-        uiState, searchParam, memberModal,       // 상태 / 데이터
-        orders, claims, deliveries, caches, contacts, chats, loginHistories, couponUsages, sendHistories,                           // 9개 이력 데이터 (서버사이드 페이지별)
+        uiState, searchParam, memberModalOpen,   // 상태 / 데이터
+        orders, claims, deliveries, caches, contacts, chats, loginHistories, couponUsages, sendHistories, // 9개 이력 데이터
         SEARCH_MODES, PERIOD_OPTS, // 정적 옵션
-        ordersPager, claimsPager, dlivPager, cachePager, contactsPager, chatsPager, loginPager, couponPager, sendPager, modalPager, // 페이저
-        cfPageModalList,                                                                                                            // 모달용 클라이언트 슬라이스 (picker)
+        ordersPager, claimsPager, dlivPager, cachePager, contactsPager, chatsPager, loginPager, couponPager, sendPager, // 페이저
         onSetPage, onSizeChange, // BoGrid pager 콜백
         handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal, // dispatch + 모달 통합 콜백
         cfDateFrom, cfDateTo, cfCustCacheBalance, tabs, // computed
@@ -1023,25 +949,8 @@
   </template>
   <!-- ===== □. 고객 정보 영역 ================================================ -->
   <!-- ===== ■. 고객 선택 모달 ================================================ -->
-  <bo-modal :show="memberModal.show" title="고객 검색" width="760px" max-width="96vw"
-    max-height="85vh" modal-name="member-pick" :on-callback="fnCallbackModal"
-    @close="handleBtnAction('memberModal-close')">
-    <bo-search-area :columns="columns.memberModalSearch" :param="memberModal" :show-reset="false"
-      @search="handleBtnAction('memberModal-search')" />
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid bare grid-id="memberModal-cellClick" :columns="columns.memberModalGrid" :rows="cfPageModalList" :pager="modalPager"
-      row-key="userId" empty-text="검색 결과가 없습니다."
-      @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
- row-actions>
-      <template #row-actions="{ row, gridId }">
-        <button class="btn btn-primary btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_pick_modal', row)">
-          선택
-        </button>
-      </template>
-    </bo-grid>
-    <bo-pager v-if="modalPager.pageTotalCount > 0" :pager="modalPager" :on-set-page="n => onSetPage('modal', n)" :on-size-change="() => onSizeChange('modal')" />
-    <!-- ===== □.■. 목록 영역 ================================================= -->
-  </bo-modal>
+  <member-select-modal v-if="memberModalOpen"
+    modal-name="member-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 고객 선택 모달 ================================================ -->
 </bo-page>
 `,

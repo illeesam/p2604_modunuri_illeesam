@@ -330,6 +330,103 @@ window.HelpBoModal = {
 
     // ===== [06] return (템플릿 노출) ==============================================
 
+    /* 인라인 데이터 (setup 안으로 이동하여 setup return으로 노출) */
+    const RAW_TYPE_BASE_ROWS = [
+      { type: 'ORDER',          col: 'od_order_item.confirmed_date',  desc: '구매확정 완료 시각' },
+      { type: 'CANCEL / RETURN', col: 'od_claim_item.complt_date',    desc: '클레임 처리 완료 시각' },
+      { type: 'EXCHANGE',       col: 'od_dliv.delivered_date (교환배송)', desc: '교환 배송 완료 시각' },
+      { type: 'SHIP',           col: 'od_dliv.delivered_date',        desc: '배송 완료 시각' },
+    ];
+    const ADJ_AMT_ROWS = [
+      { col: 'adj_amt',     reason: '배송료 조정 (착불→선불 전환)',       amt: '+3,000',   how: '배송 담당자 승인 후 자동 반영' },
+      { col: 'adj_amt',     reason: '이의신청 인정 (과다 수수료 보정)',   amt: '+5,000',   how: '정산팀 인정 처리 후 adj_amt 추가' },
+      { col: 'adj_amt',     reason: '마이너스 정산 이월 (전월 적자 회수)', amt: '-12,000', how: '전월 final_settle_amt < 0 이월' },
+      { col: 'etc_adj_amt', reason: '분쟁 보정 (배상 합의)',             amt: '+8,000',   how: '법무팀 확인 후 수동 입력' },
+      { col: 'etc_adj_amt', reason: '환수 (페널티 부과)',                 amt: '-20,000', how: '운영팀 승인 후 수동 차감' },
+    ];
+    const HOLD_REASON_ROWS = [
+      { reason: '정산계좌 미확인 / 오류',         release: '업체가 계좌 재등록 → 다음 정산 지급' },
+      { reason: '거래 분쟁 진행 중',              release: '분쟁 종결 후 법무팀 해제 승인' },
+      { reason: '서류 미제출 (사업자등록증 등)',   release: '서류 제출 확인 후 즉시 해제 가능' },
+      { reason: '펌뱅킹 오류 (3회 재시도 실패)',  release: '담당자 수동 송금 처리 후 PAID 전환' },
+      { reason: '마이너스 정산 (환수 대기)',       release: '다음 달 adj_amt 이월로 자동 상계' },
+    ];
+    const ERP_VOUCHER_COLOR = { SETTLE_CLOSE: '#10b981', SETTLE_PAY: '#3b82f6', COMMISSION: '#f59e0b', REFUND_ADJ: '#ef4444' };
+    const ERP_VOUCHER_ROWS = [
+      { type: 'SETTLE_CLOSE', when: '정산 CLOSED 시',       dr: '미지급금(부채)',   cr: '매입채무 정산', amt: 'final_settle_amt' },
+      { type: 'SETTLE_PAY',   when: '지급 PAID 시',         dr: '미지급금 감소',   cr: '보통예금(자산)', amt: 'pay_amt' },
+      { type: 'COMMISSION',   when: '정산 CONFIRMED 시',    dr: '수수료수익(수익)', cr: '미지급금 감소', amt: 'commission_amt' },
+      { type: 'REFUND_ADJ',   when: '환불 반영 시',          dr: '반품손실(비용)',   cr: '미지급금 증가', amt: 'total_return_amt' },
+    ];
+
+    /* 그리드 컬럼 정의 */
+    const productTabsColumns = [
+      { key: 'tab',  label: '탭',   style: 'width:110px;', cellStyle: 'font-weight:600;color:#333;white-space:nowrap;' },
+      { key: 'desc', label: '내용', cellStyle: 'color:#555;' },
+    ];
+    const optOverviewColumns = [
+      { key: 'cat', label: '카테고리', style: 'width:120px;' },
+      { key: 'd1',  label: '1단',     style: 'width:80px;', align: 'center' },
+      { key: 'd2',  label: '2단',     style: 'width:80px;', align: 'center' },
+      { key: 'ex',  label: 'SKU 예시', cellStyle: 'color:#888;font-size:11px;' },
+    ];
+    const optSkuColumns = [
+      { key: 'd1',  label: '1단', align: 'center' },
+      { key: 'd2',  label: '2단', align: 'center' },
+      { key: 'sku', label: '생성되는 SKU', cellStyle: 'font-weight:600;' },
+    ];
+    const optClothingColumns = [
+      { key: 'd1',  label: '색상 (1단)', align: 'center' },
+      { key: 'd2',  label: '사이즈 (2단)', align: 'center' },
+      { key: 'sku', label: '생성되는 SKU', cellStyle: 'font-weight:600;' },
+    ];
+    const optShoesColumns = [
+      { key: 'd1',  label: '사이즈 (1단)', align: 'center' },
+      { key: 'd2',  label: '색상 (2단)', align: 'center' },
+      { key: 'sku', label: '생성되는 SKU', cellStyle: 'font-weight:600;' },
+    ];
+    const optElecColumns = [
+      { key: 'd1',  label: '색상 (1단)', align: 'center' },
+      { key: 'd2',  label: '용량 (2단/커스텀)', align: 'center' },
+      { key: 'sku', label: '생성되는 SKU', cellStyle: 'font-weight:600;' },
+    ];
+    const optSingleColumns = [
+      { key: 'cat',  label: '카테고리',  style: 'width:160px;', cellStyle: 'font-size:11px;' },
+      { key: 'type', label: '사용 유형', style: 'width:130px;' },
+      { key: 'ex',   label: '예시 값',   cellStyle: 'color:#888;' },
+    ];
+    const returnFeeColumns = [
+      { key: 'reason', label: '반품 사유', cellStyle: 'font-weight:600;' },
+      { key: 'buyer',  label: '고객',  style: 'width:70px;', align: 'center',
+        cellStyle: (v, row) => row.buyer !== '-' ? 'color:#ef4444;font-weight:700;' : '' },
+      { key: 'seller', label: '판매자', style: 'width:70px;', align: 'center',
+        cellStyle: (v, row) => row.seller === '100%' ? 'color:#3b82f6;font-weight:700;' : '' },
+      { key: 'note',   label: '비고', cellStyle: 'font-size:11px;color:#666;' },
+    ];
+    const rawTypeBaseColumns = [
+      { key: 'type', label: '원장 유형', style: 'width:160px;' },
+      { key: 'col',  label: '귀속 기준 컬럼', cellStyle: 'font-family:monospace;font-size:10px;' },
+      { key: 'desc', label: '설명', cellStyle: 'color:#555;' },
+    ];
+    const adjAdjColumns = [
+      { key: 'col',    label: '조정 컬럼',  style: 'width:100px;', cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'reason', label: '발생 원인' },
+      { key: 'amt',    label: '금액 예시', style: 'width:90px;', align: 'right' },
+      { key: 'how',    label: '처리 방식', cellStyle: 'color:#555;' },
+    ];
+    const holdReasonColumns = [
+      { key: 'reason',  label: '보류 사유' },
+      { key: 'release', label: '해제 조건', cellStyle: 'color:#555;' },
+    ];
+    const erpVoucherColumns = [
+      { key: 'type', label: 'voucher_type_cd', style: 'width:150px;',
+        badge: row => ({ text: row.type, style: 'background:' + (ERP_VOUCHER_COLOR[row.type] || '#666') + ';color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;' }) },
+      { key: 'when', label: '발생 시점', cellStyle: 'color:#555;' },
+      { key: 'dr',   label: '차변(DR)', cellStyle: 'color:#555;' },
+      { key: 'cr',   label: '대변(CR)', cellStyle: 'color:#555;' },
+      { key: 'amt',  label: '금액', align: 'right', cellStyle: 'font-family:monospace;font-size:11px;color:#374151;' },
+    ];
+
     return {
       handleBtnAction, handleSelectAction,                                  // dispatch
       activeTab, optSubTab, orderSubTab, settleSubTab, showExtHelp,        // 탭 상태
@@ -341,6 +438,10 @@ window.HelpBoModal = {
       CLAIM_TYPES, PROMO_ITEMS, DISP_LEVELS, DISP_WIDGETS,                    // 클레임/프로모/전시
       SETTLE_STATUS_STEPS, SETTLE_CALC_ROWS, SETTLE_RAW_TYPES, SETTLE_POLICY_ROWS,  // 정산
       SYS_ITEMS,                                                             // 시스템
+      RAW_TYPE_BASE_ROWS, ADJ_AMT_ROWS, HOLD_REASON_ROWS, ERP_VOUCHER_ROWS,        // 인라인 데이터
+      productTabsColumns, optOverviewColumns, optSkuColumns,                     // 그리드 컬럼
+      optClothingColumns, optShoesColumns, optElecColumns, optSingleColumns,
+      returnFeeColumns, rawTypeBaseColumns, adjAdjColumns, holdReasonColumns, erpVoucherColumns,
     };
   },
   template: `
@@ -510,17 +611,7 @@ window.HelpBoModal = {
               <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
                 상품 상세 탭
               </div>
-              <!-- ===== ■.■.■.■.■.■.■. 테이블 ========================================= -->
-              <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                <tr v-for="row in PRODUCT_TABS" :key="row.tab" style="border-bottom:1px solid #f0f0f0;">
-                  <td style="padding:5px 8px;font-weight:600;color:#333;white-space:nowrap;width:110px;">
-                    {{ row.tab }}
-                  </td>
-                  <td style="padding:5px 8px;color:#555;">
-                    {{ row.desc }}
-                  </td>
-                </tr>
-              </table>
+              <bo-grid bare :columns="productTabsColumns" :rows="PRODUCT_TABS" row-key="tab" style="font-size:12px;" />
             </div>
           </div>
         </template>
@@ -548,41 +639,7 @@ window.HelpBoModal = {
                 <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
                   카테고리별 옵션 차원 구성
                 </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
-                <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                  <thead>
-                    <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
-                        카테고리
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        1단
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        2단
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
-                        SKU 예시
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="r in OPT_OVERVIEW_ROWS" :key="r.cat" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;">
-                        {{ r.cat }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
-                        {{ r.d1 }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
-                        {{ r.d2 }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;color:#888;font-size:11px;">
-                        {{ r.ex }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <bo-grid bare :columns="optOverviewColumns" :rows="OPT_OVERVIEW_ROWS" row-key="cat" style="font-size:12px;" />
               </div>
               <div style="border:1px solid #b7eb8f;border-radius:8px;padding:14px;background:#f6ffed;">
                 <div style="font-weight:700;color:#389e0d;margin-bottom:8px;font-size:13px;">
@@ -622,35 +679,7 @@ window.HelpBoModal = {
                 <div style="font-size:11px;color:#888;margin-bottom:10px;">
                   카테고리: CLOTHING
                 </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
-                <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                  <thead>
-                    <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        색상 (1단)
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        사이즈 (2단)
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        생성되는 SKU
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="r in OPT_CLOTHING_ROWS" :key="r.sku" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
-                        {{ r.d1 }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
-                        {{ r.d2 }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-weight:600;">
-                        {{ r.sku }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <bo-grid bare :columns="optClothingColumns" :rows="OPT_CLOTHING_ROWS" row-key="sku" style="font-size:12px;" />
               </div>
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;font-size:12px;line-height:1.9;">
                 <div style="font-weight:700;margin-bottom:6px;">
@@ -684,35 +713,7 @@ window.HelpBoModal = {
                 <div style="font-size:11px;color:#888;margin-bottom:10px;">
                   카테고리: SHOES
                 </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
-                <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                  <thead>
-                    <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        사이즈 (1단)
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        색상 (2단)
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        생성되는 SKU
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="r in OPT_SHOES_ROWS" :key="r.sku" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
-                        {{ r.d1 }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
-                        {{ r.d2 }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-weight:600;">
-                        {{ r.sku }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <bo-grid bare :columns="optShoesColumns" :rows="OPT_SHOES_ROWS" row-key="sku" style="font-size:12px;" />
               </div>
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;font-size:12px;line-height:1.9;">
                 <div style="font-weight:700;margin-bottom:6px;">
@@ -743,35 +744,7 @@ window.HelpBoModal = {
                 <div style="font-size:11px;color:#888;margin-bottom:10px;">
                   카테고리: 색상+커스텀 (CUSTOM_GRP)
                 </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
-                <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                  <thead>
-                    <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        색상 (1단)
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        용량 (2단/커스텀)
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
-                        생성되는 SKU
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="r in OPT_ELEC_ROWS" :key="r.sku" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
-                        {{ r.d1 }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
-                        {{ r.d2 }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-weight:600;">
-                        {{ r.sku }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <bo-grid bare :columns="optElecColumns" :rows="OPT_ELEC_ROWS" row-key="sku" style="font-size:12px;" />
               </div>
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;font-size:12px;line-height:1.9;">
                 <div style="font-weight:700;margin-bottom:6px;">
@@ -799,35 +772,7 @@ window.HelpBoModal = {
                 <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
                   단독 옵션 — 1차원만 사용
                 </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
-                <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                  <thead>
-                    <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
-                        카테고리
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
-                        사용 유형
-                      </th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
-                        예시 값
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="r in OPT_SINGLE_ROWS" :key="r.cat" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-size:11px;">
-                        {{ r.cat }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;">
-                        {{ r.type }}
-                      </td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;color:#888;">
-                        {{ r.ex }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <bo-grid bare :columns="optSingleColumns" :rows="OPT_SINGLE_ROWS" row-key="cat" style="font-size:12px;" />
               </div>
               <div style="border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;line-height:1.8;">
                 단독 옵션은 2단 차원 없이 1차원 SKU만 생성됩니다.
@@ -1200,41 +1145,7 @@ window.HelpBoModal = {
                 <div style="font-weight:700;color:#ef4444;margin-bottom:10px;font-size:13px;">
                   반품 배송비 부담 기준
                 </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
-                <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                  <thead>
-                    <tr style="background:#fee2e2;">
-                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:left;">
-                        반품 사유
-                      </th>
-                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:center;">
-                        고객
-                      </th>
-                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:center;">
-                        판매자
-                      </th>
-                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:left;">
-                        비고
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="row in RETURN_FEE_ROWS" :key="row.reason" style="border-bottom:1px solid #fecaca;">
-                      <td style="padding:5px 8px;border:1px solid #fecaca;font-weight:600;">
-                        {{ row.reason }}
-                      </td>
-                      <td style="padding:5px 8px;border:1px solid #fecaca;text-align:center;" :style="row.buyer!=='-'?'color:#ef4444;font-weight:700;':''">
-                        {{ row.buyer }}
-                      </td>
-                      <td style="padding:5px 8px;border:1px solid #fecaca;text-align:center;" :style="row.seller==='100%'?'color:#3b82f6;font-weight:700;':''">
-                        {{ row.seller }}
-                      </td>
-                      <td style="padding:5px 8px;border:1px solid #fecaca;font-size:11px;color:#666;">
-                        {{ row.note }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <bo-grid bare :columns="returnFeeColumns" :rows="RETURN_FEE_ROWS" row-key="reason" style="font-size:12px;" />
               </div>
               <!-- ===== ■.■.■.■.■.■.■. 쿠폰/할인 환불 처리 ================================= -->
               <div style="border:1px solid #d1fae5;border-radius:8px;padding:14px;background:#f0fdf4;">
@@ -1814,21 +1725,7 @@ window.HelpBoModal = {
                 <div style="font-weight:700;color:#d97706;font-size:13px;">정산 조정 항목 (adj_amt / etc_adj_amt)</div>
                 <span style="font-size:10px;font-family:monospace;color:#92400e;background:#fff;border:1px solid #fde68a;border-radius:4px;padding:2px 7px;">테이블: st_settle</span>
               </div>
-              <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                <thead><tr style="background:#fef3c7;">
-                  <th style="padding:7px 10px;border:1px solid #fde68a;text-align:left;">조정 컬럼</th>
-                  <th style="padding:7px 10px;border:1px solid #fde68a;text-align:left;">발생 원인</th>
-                  <th style="padding:7px 10px;border:1px solid #fde68a;text-align:right;">금액 예시</th>
-                  <th style="padding:7px 10px;border:1px solid #fde68a;text-align:left;">처리 방식</th>
-                </tr></thead>
-                <tbody>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">배송료 조정 (착불→선불 전환)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">+3,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">배송 담당자 승인 후 자동 반영</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">이의신청 인정 (과다 수수료 보정)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">+5,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">정산팀 인정 처리 후 adj_amt 추가</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">마이너스 정산 이월 (전월 적자 회수)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">-12,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">전월 final_settle_amt &lt; 0 이월</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">etc_adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">분쟁 보정 (배상 합의)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">+8,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">법무팀 확인 후 수동 입력</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">etc_adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">환수 (페널티 부과)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">-20,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">운영팀 승인 후 수동 차감</td></tr>
-                </tbody>
-              </table>
+              <bo-grid bare :columns="adjAdjColumns" :rows="ADJ_AMT_ROWS" style="font-size:12px;" />
               <div style="font-size:11px;color:#92400e;margin-top:10px;padding:8px 10px;background:#fef3c7;border-radius:5px;line-height:1.7;">
                 • <strong>adj_amt</strong>: 시스템 연동 조정 (배송료·이월·이의신청). 정산 집계 배치가 자동 계산.<br>
                 • <strong>etc_adj_amt</strong>: 수동 조정 (분쟁·환수·기타). 담당자가 직접 st_settle에 입력. 이력 필수.
@@ -1852,15 +1749,7 @@ window.HelpBoModal = {
                 </div>
                 <div style="padding:10px 12px;background:#fff;border:1px solid #91caff;border-radius:6px;font-size:12px;">
                   <div style="font-weight:700;color:#0958d9;margin-bottom:4px;">📋 귀속 월 결정 기준</div>
-                  <table style="width:100%;border-collapse:collapse;margin-top:4px;">
-                    <thead><tr style="background:#e6f4ff;"><th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">원장 유형</th><th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">귀속 기준 컬럼</th><th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">설명</th></tr></thead>
-                    <tbody>
-                      <tr><td style="padding:5px 8px;border:1px solid #e8e8e8;">ORDER</td><td style="padding:5px 8px;border:1px solid #e8e8e8;font-family:monospace;font-size:10px;">od_order_item.confirmed_date</td><td style="padding:5px 8px;border:1px solid #e8e8e8;">구매확정 완료 시각</td></tr>
-                      <tr><td style="padding:5px 8px;border:1px solid #e8e8e8;">CANCEL / RETURN</td><td style="padding:5px 8px;border:1px solid #e8e8e8;font-family:monospace;font-size:10px;">od_claim_item.complt_date</td><td style="padding:5px 8px;border:1px solid #e8e8e8;">클레임 처리 완료 시각</td></tr>
-                      <tr><td style="padding:5px 8px;border:1px solid #e8e8e8;">EXCHANGE</td><td style="padding:5px 8px;border:1px solid #e8e8e8;font-family:monospace;font-size:10px;">od_dliv.delivered_date (교환배송)</td><td style="padding:5px 8px;border:1px solid #e8e8e8;">교환 배송 완료 시각</td></tr>
-                      <tr><td style="padding:5px 8px;border:1px solid #e8e8e8;">SHIP</td><td style="padding:5px 8px;border:1px solid #e8e8e8;font-family:monospace;font-size:10px;">od_dliv.delivered_date</td><td style="padding:5px 8px;border:1px solid #e8e8e8;">배송 완료 시각</td></tr>
-                    </tbody>
-                  </table>
+                  <bo-grid bare :columns="rawTypeBaseColumns" :rows="RAW_TYPE_BASE_ROWS" row-key="type" style="font-size:11px;margin-top:4px;" />
                 </div>
                 <div style="padding:10px 12px;background:#fff;border:1px solid #91caff;border-radius:6px;font-size:12px;">
                   <div style="font-weight:700;color:#0958d9;margin-bottom:4px;">⚠️ 마감 후 조정 규칙</div>
@@ -1877,21 +1766,7 @@ window.HelpBoModal = {
           <template v-else-if="settleSubTab==='erp'">
             <div style="border:1px solid #e0e7ff;border-radius:8px;padding:14px;background:#eef2ff;margin-bottom:12px;">
               <div style="font-weight:700;color:#4338ca;margin-bottom:10px;font-size:13px;">ERP 전표 처리 예시 (st_erp_voucher)</div>
-              <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                <thead><tr style="background:#e0e7ff;">
-                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:left;">voucher_type_cd</th>
-                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:left;">발생 시점</th>
-                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:left;">차변(DR)</th>
-                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:left;">대변(CR)</th>
-                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:right;">금액</th>
-                </tr></thead>
-                <tbody>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#10b981;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">SETTLE_CLOSE</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;">정산 CLOSED 시</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">미지급금(부채)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">매입채무 정산</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">final_settle_amt</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#3b82f6;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">SETTLE_PAY</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;">지급 PAID 시</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">미지급금 감소</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">보통예금(자산)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">pay_amt</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#f59e0b;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">COMMISSION</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;">정산 CONFIRMED 시</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">수수료수익(수익)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">미지급금 감소</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">commission_amt</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#ef4444;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">REFUND_ADJ</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;">환불 반영 시</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">반품손실(비용)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">미지급금 증가</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">total_return_amt</td></tr>
-                </tbody>
-              </table>
+              <bo-grid bare :columns="erpVoucherColumns" :rows="ERP_VOUCHER_ROWS" row-key="type" style="font-size:12px;" />
               <div style="font-size:11px;color:#3730a3;margin-top:10px;padding:8px 10px;background:#e0e7ff;border-radius:5px;line-height:1.7;">
                 • ERP 전송 상태: <code style="background:#c7d2fe;padding:1px 4px;border-radius:3px;">erp_status_cd</code> — PENDING → SENT → CONFIRMED → ERROR<br>
                 • 전송 실패 시 3회 재시도 후 ERROR 상태 전환. 담당자 수동 확인 필요.<br>
@@ -1930,16 +1805,7 @@ window.HelpBoModal = {
                 <div style="font-weight:700;color:#333;font-size:13px;">지급 보류(HOLD) 사유 및 처리</div>
                 <span style="font-size:10px;font-family:monospace;color:#555;background:#fff;border:1px solid #ddd;border-radius:4px;padding:2px 7px;">st_settle_pay.pay_status_cd</span>
               </div>
-              <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                <thead><tr style="background:#f3f4f6;"><th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:left;">보류 사유</th><th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:left;">해제 조건</th></tr></thead>
-                <tbody>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">정산계좌 미확인 / 오류</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">업체가 계좌 재등록 → 다음 정산 지급</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">거래 분쟁 진행 중</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">분쟁 종결 후 법무팀 해제 승인</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">서류 미제출 (사업자등록증 등)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">서류 제출 확인 후 즉시 해제 가능</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">펌뱅킹 오류 (3회 재시도 실패)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">담당자 수동 송금 처리 후 PAID 전환</td></tr>
-                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">마이너스 정산 (환수 대기)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">다음 달 adj_amt 이월로 자동 상계</td></tr>
-                </tbody>
-              </table>
+              <bo-grid bare :columns="holdReasonColumns" :rows="HOLD_REASON_ROWS" row-key="reason" style="font-size:12px;" />
             </div>
           </template>
         </template>

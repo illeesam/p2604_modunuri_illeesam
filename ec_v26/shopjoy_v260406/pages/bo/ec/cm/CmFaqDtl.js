@@ -175,8 +175,9 @@ window.CmFaqDtl = {
         onOpen: () => handleBtnAction('pathModal-open') },
       { key: 'useYn',       label: '노출여부',  type: 'select', options: () => codes.use_yn },
       { key: 'faqQuestion', label: '질문',      type: 'text', required: true, colSpan: 3, placeholder: '질문을 입력하세요' },
-      { key: 'faqAnswer',   label: '답변',      type: 'slot', name: 'answer', colSpan: 3 },
-      { key: 'sortOrd',     label: '정렬순서',  type: 'number', min: 1 },
+      { key: 'faqAnswer',        label: '답변',          type: 'slot', name: 'answer',    colSpan: 3 },
+      { key: 'answerAttachGrpId', label: '답변 첨부파일', type: 'slot', name: 'attachGrp', colSpan: 3 },
+      { key: 'sortOrd',          label: '정렬순서',       type: 'number', min: 1 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -203,15 +204,13 @@ window.CmFaqDtl = {
       </div>
       <base-html-editor v-else v-model="form.faqAnswer" height="260px" />
     </template>
+    <template #attachGrp>
+      <base-attach-grp :model-value="form.answerAttachGrpId" @update:model-value="form.answerAttachGrpId = $event"
+        :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
+        grp-code="FAQ_ANSWER_ATTACH" grp-nm="FAQ 답변 첨부파일"
+        :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />
+    </template>
   </bo-form-area>
-  <!-- ===== ■.■. 답변 첨부파일 ============================================== -->
-  <div class="form-group" style="margin-top:12px;">
-    <label class="form-label">답변 첨부파일</label>
-    <base-attach-grp :model-value="form.answerAttachGrpId" @update:model-value="form.answerAttachGrpId = $event"
-      :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
-      grp-code="FAQ_ANSWER_ATTACH" grp-nm="FAQ 답변 첨부파일"
-      :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />
-  </div>
   <!-- ===== ■.■. 폼 액션 (행 선택/신규 시에만 노출) ============================ -->
   <div class="form-actions" v-if="active">
     <template v-if="cfDtlMode">

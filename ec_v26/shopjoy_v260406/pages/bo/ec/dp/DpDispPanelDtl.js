@@ -1127,8 +1127,8 @@ window.DpDispPanelDtl = {
                   </template>
                 </bo-form-area>
                 <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">🔲 위젯 레이아웃</div>
-                <div class="form-row" style="align-items:flex-end;margin-bottom:8px;">
-                  <div class="form-group" style="flex:0 0 auto;">
+                <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:8px;">
+                  <div style="flex:0 0 auto;">
                     <label class="form-label">표시방식</label>
                     <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
                       <button v-for="o in codes.layout_types" :key="o?.codeValue"
@@ -1140,8 +1140,7 @@ window.DpDispPanelDtl = {
                       </button>
                     </div>
                   </div>
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 조건부 영역 ================================== -->
-                  <div class="form-group" style="flex:0 0 auto;" v-if="form.layoutType==='grid'">
+                  <div style="flex:0 0 auto;" v-if="form.layoutType==='grid'">
                     <label class="form-label">열수 <span style="font-size:10px;color:#aaa;"> (위젯 배치 열 개수) </span></label>
                     <div style="display:flex;align-items:center;gap:6px;">
                       <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
@@ -1158,8 +1157,7 @@ window.DpDispPanelDtl = {
                       <span style="font-size:12px;color:#aaa;">열</span>
                     </div>
                   </div>
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 영역 ====================================== -->
-                  <div class="form-group" style="flex:0 0 auto;" v-else>
+                  <div style="flex:0 0 auto;" v-else>
                     <label class="form-label">배치</label>
                     <span style="font-size:12px;color:#6b7280;padding:6px 0;display:block;">자유 배치 (열수 없음)</span>
                   </div>
@@ -1659,7 +1657,7 @@ window.DpDispPanelDtl = {
                 </div>
               </template>
             </bo-form-area>
-            <div class="form-group">
+            <div style="margin-bottom:12px;">
               <label class="form-label">상태</label>
               <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="cfDtlMode">
                 <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
@@ -1911,15 +1909,8 @@ window.DpDispPanelDtl = {
     :widget="cfPreviewWidget" modal-name="disp-preview" :on-callback="fnCallbackModal" />
   <!-- ===== □. 위젯미리보기 모달 =============================================== -->
   <!-- ===== ■. 패널미리보기 오버레이 ============================================= -->
-  <div v-if="cardPreview ? (cardPreview.show) : false" @click.self="closeCardPreview" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:14px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.35);">
-      <!-- ===== ■.■.■. 헤더 ================================================== -->
-      <div style="background:linear-gradient(135deg,#e8587a,#c0395e);color:#fff;padding:15px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:14px;font-weight:700;">🖼 패널미리보기</span>
-        <button @click="closeCardPreview" style="background:none;border:none;color:#fff;font-size:22px;opacity:0.85;line-height:1;padding:0;">
-          ×
-        </button>
-      </div>
+  <bo-modal :show="cardPreview ? cardPreview.show : false" title="🖼 패널미리보기" width="520px" box-pad="0" @close="closeCardPreview">
+    <div>
       <!-- ===== ■.■.■. 카드 본문 =============================================== -->
       <div style="padding:24px;">
         <!-- ===== ■.■.■.■. 영역 + 상태 배지 ======================================== -->
@@ -1947,11 +1938,11 @@ window.DpDispPanelDtl = {
         </div>
       </div>
       <!-- ===== ■.■.■. 푸터 ================================================== -->
-      <div style="padding:12px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;text-align:right;">
+      <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;">
         <button @click="closeCardPreview" class="btn btn_close">닫기</button>
       </div>
     </div>
-  </div>
+  </bo-modal>
   <!-- ===== □. 패널미리보기 오버레이 ============================================= -->
   <!-- ===== ■. 전시위젯Lib 선택 팝업 =========================================== -->
   <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"

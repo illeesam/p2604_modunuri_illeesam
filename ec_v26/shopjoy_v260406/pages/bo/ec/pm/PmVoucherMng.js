@@ -64,6 +64,9 @@ window.PmVoucherMng = {
       // 페이지 번호 클릭
       } else if (cmd === 'vouchers-pager-setPage') {
         return setPage(param);
+      // 카드뷰 — 보기 모드로 열기
+      } else if (cmd === 'vouchers-card-view') {
+        return loadView(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -355,12 +358,12 @@ window.PmVoucherMng = {
       </div>
       <div v-for="(v, idx) in vouchers" :key="v?.voucherId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;"
         :style="detailPanel.selectedId===v.voucherId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="loadView(v.voucherId)">
+        @click="handleBtnAction('vouchers-card-view', v.voucherId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             상품권 #{{ v.voucherId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="loadView(v.voucherId)" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleBtnAction('vouchers-card-view', v.voucherId)" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
             {{ v.voucherNm }}
             <span v-if="detailPanel.selectedId===v.voucherId" style="font-size:10px;margin-left:4px;">
               ▼

@@ -822,34 +822,28 @@ window.MyOrder = {
 <!-- ===== ■. Teleport 모달들 ============================================ -->
 <Teleport to="body">
   <!-- ===== ■.■. 리뷰 작성/수정 모달 =========================================== -->
-  <div v-if="reviewModal.show" @click.self="handleBtnAction('review-modalClose')"
-      style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;">
-    <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);" @click.stop>
+  <fo-modal :show="reviewModal.show" max-width="480px" box-pad="0" @close="handleBtnAction('review-modalClose')">
+    <div>
       <!-- ===== ■.■.■.■. 헤더 ================================================ -->
-      <div style="padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">
-            {{ reviewModal.isEdit ? '리뷰 수정' : '리뷰 작성' }}
-          </div>
-          <div v-if="reviewModal.item" style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
-            <span>
-              {{ reviewModal.item.emoji }} {{ reviewModal.item.prodNm }}
-            </span>
-            <span v-if="findProd(reviewModal.item.prodNm)"
-                style="font-size:0.7rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);font-weight:600;line-height:1.7;">
-              #{{ findProd(reviewModal.item.prodNm).prodId }}
-            </span>
-            <span style="color:var(--border);">
-              ·
-            </span>
-            <span>
-              {{ reviewModal.item.color }} / {{ reviewModal.item.size }}
-            </span>
-          </div>
+      <div style="padding:18px 20px 14px;border-bottom:1px solid var(--border);">
+        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">
+          {{ reviewModal.isEdit ? '리뷰 수정' : '리뷰 작성' }}
         </div>
-        <button @click="handleBtnAction('review-modalClose')" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);">
-          ✕
-        </button>
+        <div v-if="reviewModal.item" style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+          <span>
+            {{ reviewModal.item.emoji }} {{ reviewModal.item.prodNm }}
+          </span>
+          <span v-if="findProd(reviewModal.item.prodNm)"
+              style="font-size:0.7rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);font-weight:600;line-height:1.7;">
+            #{{ findProd(reviewModal.item.prodNm).prodId }}
+          </span>
+          <span style="color:var(--border);">
+            ·
+          </span>
+          <span>
+            {{ reviewModal.item.color }} / {{ reviewModal.item.size }}
+          </span>
+        </div>
       </div>
       <!-- ===== ■.■.■.■. 별점 ================================================ -->
       <div style="padding:18px 20px 0;">
@@ -913,24 +907,12 @@ window.MyOrder = {
         </div>
       </div>
     </div>
-    <!-- ===== □.□. 리뷰 작성/수정 모달 =========================================== -->
+  </fo-modal>
+  <!-- ===== □.□. 리뷰 작성/수정 모달 =========================================== -->
     <!-- ===== ■.■. 도움말 모달 ================================================ -->
-    <div v-if="uiState.flowHelpOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="handleBtnAction('orders-helpClose')">
-      <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);overflow:hidden;" @click.stop>
-        <div style="padding:18px 20px 0;flex-shrink:0;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span>
-                📋
-              </span>
-              <span style="font-size:1.05rem;font-weight:800;color:var(--text-primary);">
-                주문 · 클레임 도움말
-              </span>
-            </div>
-            <button @click="handleBtnAction('orders-helpClose')" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">
-              ✕
-            </button>
-          </div>
+    <fo-modal :show="uiState.flowHelpOpen" title="📋 주문 · 클레임 도움말" max-width="520px" box-pad="0" @close="handleBtnAction('orders-helpClose')">
+      <div style="display:flex;flex-direction:column;max-height:80vh;">
+        <div style="padding:12px 20px 0;flex-shrink:0;">
           <div style="display:flex;border-bottom:2px solid var(--border);">
             <button v-for="t in [{id:'order',label:'주문',icon:'📦'},{id:'cancel',label:'취소',icon:'🚫'},{id:'return',label:'반품',icon:'↩️'},{id:'exchange',label:'교환',icon:'🔄'}]"
               :key="t.id" @click="handleBtnAction('orders-helpTab', t.id)"
@@ -1056,23 +1038,15 @@ window.MyOrder = {
           </button>
         </div>
       </div>
-    </div>
+    </fo-modal>
     <!-- ===== □.□. 도움말 모달 ================================================ -->
     <!-- ===== ■.■. 교환·반품 신청 모달 =========================================== -->
-    <div v-if="claimModal.show" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="handleBtnAction('claim-modalClose')">
-      <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:480px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);overflow:hidden;" @click.stop>
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-          <div>
-            <span style="font-size:1rem;font-weight:800;color:var(--text-primary);">
-              {{ claimModal.type==='exchange' ? '🔄 교환 신청' : '↩️ 반품 신청' }}
-            </span>
-            <span style="margin-left:8px;font-size:0.75rem;color:var(--text-muted);">
-              {{ claimModal.orderId }}
-            </span>
-          </div>
-          <button @click="handleBtnAction('claim-modalClose')" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">
-            ✕
-          </button>
+    <fo-modal :show="claimModal.show" :title="claimModal.type==='exchange' ? '🔄 교환 신청' : '↩️ 반품 신청'" max-width="480px" box-pad="0" @close="handleBtnAction('claim-modalClose')">
+      <div style="display:flex;flex-direction:column;max-height:80vh;">
+        <div style="padding:4px 20px 8px;border-bottom:1px solid var(--border);flex-shrink:0;">
+          <span style="font-size:0.75rem;color:var(--text-muted);">
+            {{ claimModal.orderId }}
+          </span>
         </div>
         <div style="padding:18px 20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:18px;">
           <div>
@@ -1261,8 +1235,8 @@ window.MyOrder = {
         {{ claimModal.type==='exchange' ? '교환 신청하기' : '반품 신청하기' }}
       </button>
     </div>
-  </div>
-</div>
+      </div>
+    </fo-modal>
 <!-- ===== □.□. 교환·반품 신청 모달 =========================================== -->
 <!-- ===== ■.■. 주문 상세 모달 ============================================== -->
 <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" modal-name="order-detail" :on-callback="fnCallbackModal" />

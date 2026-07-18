@@ -53,6 +53,7 @@ window.PdCategoryMng = {
       } else if (cmd === 'parentModal-close') {
         catPickerModal.show = false;
         return;
+
       // 페이지 번호 클릭
       } else if (cmd === 'categories-pager-setPage') {
         return setPage(param);
@@ -100,7 +101,7 @@ window.PdCategoryMng = {
       // 상위카테고리 모달 열기
       } else if (cmd === 'parentModal-open') {
         return openParentModal(param);
-      // 상위카테고리 모달에서 선택
+      // 상위카테고리 모달에서 선택 → fnCallbackModal로 위임
       } else if (cmd === 'parentModal-select') {
         return onParentSelect(param);
       // 사이트 변경
@@ -272,11 +273,7 @@ window.PdCategoryMng = {
       return count;
     };
 
-    const catPickerModal = reactive({ show: false, search: '', forCategoryId: null, forRowIdx: null });
-    const cfCatPickerList = computed(() => {
-      const searchVal = (catPickerModal.search || '').toLowerCase();
-      return (categories || []).filter(c => !searchVal || (c.categoryNm || '').toLowerCase().includes(searchVal));
-    });
+    const catPickerModal = reactive({ show: false, forCategoryId: null, forRowIdx: null });
 
     /* onParentSelect — 이벤트 */
     const onParentSelect = (c) => {
@@ -291,9 +288,18 @@ window.PdCategoryMng = {
     /* openParentModal — 열기 */
     const openParentModal = async (row) => {
       catPickerModal.forRowIdx = gridRows.indexOf(row);
-      catPickerModal.search = '';
+      catPickerModal.forCategoryId = row.categoryId;
       catPickerModal.show = true;
       await handleSearchList(); // 팝업 오픈 시 최신 카테고리 목록 재조회
+    };
+
+    /* fnCallbackModal — 모달 통합 콜백 */
+    const fnCallbackModal = (cmd, param, result) => {
+      if (cmd === 'cat-parent-pick') {
+        catPickerModal.show = false;
+        if (result !== undefined) return onParentSelect(result);
+        return;
+      }
     };
 
     /* fnDepthColor — 유틸 */
@@ -513,9 +519,8 @@ window.PdCategoryMng = {
 
     return {
       columns,
-      codes, uiState, searchParam, gridRows, categoriesGridPager, catPickerModal,       // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
-      cfCatPickerList, // computed
+      codes, uiState, searchParam, gridRows, categoriesGridPager, catPickerModal, categories, // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal,                           // dispatch (모든 이벤트 / 액션 라우팅)
       fnDepthColor, fnDepthBullet, parentNm, fnStatusClass, getRealIdx, fnCategoryDescCount, // 헬퍼
       focusedIdx, checkAll, dragoverRowIdx, // ref
     };
@@ -730,31 +735,11 @@ window.PdCategoryMng = {
   </div>
 <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->
 <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
-<!-- ===== ■. 상위카테고리 선택 모달 ============================================ -->
-<bo-modal :show="catPickerModal.show" title="상위 카테고리 선택" width="460px" max-height="70vh"
-    @close="handleBtnAction('parentModal-close')">
-  <input class="form-control" v-model="catPickerModal.search" placeholder="카테고리명 검색" style="margin-bottom:10px">
-  <div style="overflow-y:auto;border:1px solid #eee;border-radius:8px;max-height:48vh">
-    <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;color:#1677ff"
-        @click="handleSelectAction('parentModal-select', null)">
-      최상위 (상위없음)
-    </div>
-    <div v-for="c in cfCatPickerList" :key="(c?.categoryId)" style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;display:flex;align-items:center;gap:6px" :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }" @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''" @click="handleSelectAction('parentModal-select', c)">
-      <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
-        {{ fnDepthBullet((c.categoryDepth||1)-1) }}
-      </span>
-      <span>
-        {{ c.categoryNm }}
-      </span>
-      <span style="font-size:11px;color:#aaa;margin-left:auto">
-        depth {{ c.categoryDepth }}
-      </span>
-    </div>
-    <div v-if="!cfCatPickerList.length" style="text-align:center;padding:20px;color:#aaa">
-      검색 결과 없음
-    </div>
-  </div>
-</bo-modal>
+<!-- ===== ■. 상위카테고리 선택 모달 (BoModals.js / PdCatParentPickModal) ======== -->
+<pd-cat-parent-pick-modal :show="catPickerModal.show"
+  :categories="categories" :exclude-id="catPickerModal.forCategoryId"
+  modal-name="cat-parent-pick" :on-callback="fnCallbackModal" />
+<!-- ===== □. 상위카테고리 선택 모달 ============================================ -->
 </bo-page>
 <!-- ===== □. 상위카테고리 선택 모달 ============================================ -->
 `

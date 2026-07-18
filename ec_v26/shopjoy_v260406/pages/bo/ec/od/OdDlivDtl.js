@@ -150,7 +150,8 @@ window.OdDlivDtl = {
       }
     };
 
-    const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
+    const CLAIM_TYPE_COLOR = coConsts.CLAIM_TYPE_COLOR;
+    const DLIV_STEPS       = boConsts.DLIV_STEPS.map(function (c) { return c.codeLabel; });
     const cfFirstClaim = computed(() => relatedClaims[0] || null);
 
     /* handleSave — 저장 */
@@ -215,7 +216,6 @@ window.OdDlivDtl = {
       if (!url) { showToast && showToast('운송장 정보가 없습니다.', 'error'); return; }
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
-    const DLIV_STEPS = ['준비중', '출고완료', '배송중', '배송완료'];
     const cfCurrentStepIdx = computed(() => DLIV_STEPS.indexOf(form.dlivStatusCd));
     const cfPaymentList = computed(() => form.orderId ? [{
       orderId: form.orderId, dlivFee: form.shippingFee || 0,

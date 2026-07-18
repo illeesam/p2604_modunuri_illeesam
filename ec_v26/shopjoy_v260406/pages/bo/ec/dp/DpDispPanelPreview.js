@@ -790,9 +790,7 @@ window.DpDispPanelPreview = {
           상태
         </span>
         <select v-model="searchParam.filterStatus" class="form-control" style="width:76px;margin:0;font-size:12px;">
-          <option value="">
-            전체
-          </option>
+          <option value="">전체</option>
           <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">
             {{ c.codeLabel }}
           </option>

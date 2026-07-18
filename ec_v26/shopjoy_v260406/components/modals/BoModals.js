@@ -3,7 +3,7 @@
    FO 모달은 components/modals/FoModals.js 참조.
 
    ───────────────────────────────────────────────────────────────────────
-   정의된 컴포넌트 (33개) — 태그는 kebab-case (예: <site-select-modal>)
+   정의된 컴포넌트 (36개) — 태그는 kebab-case (예: <site-select-modal>)
    ※ 모든 모달의 template 최상위는 <bo-modal> 사용 (BoAreaComp.js)
 
    [인증 모달] — boApp.js 로그인/마이 화면용. 상태/액션은 parent(boApp.js) 소유, 모달은 dumb-view
@@ -28,6 +28,20 @@
      SimpleVendorPickModal  — 간단 판매업체 선택 (prop vendors 배열, 단건 라디오)
      SimpleProdPickModal    — 간단 상품 선택 (prop prods 배열, 다중 체크박스)
      OdMemberPickModal      — 주문/클레임/배송/장바구니 회원 선택 (서버 페이지 + multiCheck)
+
+   [상품 관련 모달]
+     PdProdPickModal        — 상품 검색/단건 선택 (서버 페이징 + 다중 검색타입)
+                              사용: PdBundleMng(구성품 추가), PdSetMng(구성품 추가), PdCategoryProdMng(카테고리 상품 추가)
+                              props: show, title, excludeIds, uiNm, modalName, onCallback
+                              콜백 payload: 선택한 상품 row 객체 (prodId / prodNm / salePrice 등)
+     PdCatParentPickModal   — 카테고리 상위 카테고리 선택 (계층 인덴트 목록, 클라이언트 필터)
+                              사용: PdCategoryMng(상위 카테고리 변경)
+                              props: show, categories, excludeId, modalName, onCallback
+                              콜백 payload: 선택한 category row (null = 최상위)
+     PdReviewStatusModal    — 리뷰 상태 변경 사유 입력
+                              사용: PdReviewMng(상태 변경 확인)
+                              props: show, reviewTitle, currentStatus, newStatus, statusLabel, badgeFn, modalName, onCallback
+                              콜백 payload: { reason } — 사유 입력 후 저장 시, null = 취소
 
    [트리 모달]
      RoleTreeModal          — 역할 트리
@@ -2654,14 +2668,7 @@ window.DispPreviewModal = {
     /* mode=single: form 스냅샷에 status='활성' 강제 적용하여 렌더 */
     const cfPreviewWidget = computed(() => ({ ...props.widget, status: '활성' }));
 
-    const WIDGET_LABEL = {
-      image_banner: '이미지 배너', product_slider: '상품 슬라이더', product: '상품',
-      chart_bar: '차트(Bar)', chart_line: '차트(Line)', chart_pie: '차트(Pie)',
-      text_banner: '텍스트 배너', info_card: '정보 카드', popup: '팝업',
-      file: '파일', coupon: '쿠폰', html_editor: 'HTML 에디터',
-      event_banner: '이벤트', cache_banner: '캐쉬', widget_embed: '위젯 임베드',
-    };
-    const cfWidgetLabel = computed(() => WIDGET_LABEL[props.widget?.widgetType] || props.widget?.widgetType || '');
+    const cfWidgetLabel = computed(() => boConsts.WIDGET_LABEL[props.widget && props.widget.widgetType] || (props.widget && props.widget.widgetType) || '');
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
@@ -3227,15 +3234,8 @@ window.RowPickModal = {
     /* statusCls */
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
 
-    const WIDGET_LABEL = {
-      image_banner:'이미지배너', product_slider:'상품슬라이더', product:'상품',
-      chart_bar:'차트', chart_line:'차트', chart_pie:'차트', text_banner:'텍스트',
-      info_card:'정보카드', popup:'팝업', file:'파일', coupon:'쿠폰',
-      html_editor:'HTML', event_banner:'이벤트', cache_banner:'캐쉬', widget_embed:'위젯',
-    };
-
     /* wLabel */
-    const wLabel = (t) => WIDGET_LABEL[t] || t || '-';
+    const wLabel = (t) => boConsts.WIDGET_LABEL[t] || t || '-';
 
     Vue.onMounted(() => {
       /* 상태 = 어댑터 '활성'/'비활성' 값 (구 ACTIVE_STATUS 코드그룹 미사용) */
@@ -3324,12 +3324,8 @@ window.RowPickModal = {
         min-width="160px" />
       <input v-model="searchValue" placeholder="검색어 입력" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
       <select v-model="searchStatus" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
-        <option value="">
-          패널상태 전체
-        </option>
-        <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">
-          {{ c.codeLabel }}
-        </option>
+        <option value="">패널상태 전체</option>
+        <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </div>
     <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
@@ -3472,9 +3468,7 @@ window.RowPickModal = {
         </div>
         <div class="pager-right">
           <select class="size-select" :value="pager.size" @change="handleBtnAction('pager-size', Number($event.target.value))">
-            <option v-for="s in PAGE_SIZES" :key="s" :value="s">
-              {{ s }}개
-            </option>
+            <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
           </select>
         </div>
       </div>
@@ -3659,17 +3653,11 @@ window.WidgetLibPickModal = {
         min-width="160px" />
       <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
       <select v-model="searchParam.type" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
-        <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">
-          {{ t.label }}
-        </option>
+        <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
       </select>
       <select v-model="searchParam.status" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
-        <option value="">
-          상태 전체
-        </option>
-        <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">
-          {{ c.codeLabel }}
-        </option>
+        <option value="">상태 전체</option>
+        <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </div>
     <!-- 본문: 좌측 트리 + 우측 목록 -->
@@ -3798,9 +3786,7 @@ window.WidgetLibPickModal = {
         </div>
         <div class="pager-right">
           <select class="size-select" :value="pager.size" @change="handleBtnAction('pager-size', Number($event.target.value))">
-            <option v-for="s in PAGE_SIZES" :key="s" :value="s">
-              {{ s }}개
-            </option>
+            <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
           </select>
         </div>
       </div>
@@ -4392,10 +4378,8 @@ window.BizPickModal = {
     });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
 
-    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
-
     /* vtLabel */
-    const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
+    const vtLabel = (cd) => boConsts.vendorTypeLabel(cd);
 
     /* vtBadge */
     const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
@@ -7017,6 +7001,43 @@ window.BoExcelUploadModal = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
+    const inspectItemsColumns = [
+      { key: '_lvl', label: '', style: 'width:24px;', align: 'center',
+        fmt: (v, row) => row.level === 'ok' ? '●' : row.level === 'warn' ? '▲' : row.level === 'error' ? '✖' : '·',
+        cellStyle: (v, row) => row.level === 'ok' ? 'color:#16a34a;' : row.level === 'warn' ? 'color:#f59e0b;' : row.level === 'error' ? 'color:#dc2626;' : 'color:#64748b;' },
+      { key: 'label',  label: '항목', style: 'width:130px;', cellStyle: 'font-weight:600;color:#334155;' },
+      { key: 'detail', label: '내용', cellStyle: 'color:#475569;' },
+    ];
+    const codesGridColumns = [
+      { key: 'value', label: '코드값', style: 'width:120px;', cellStyle: 'font-family:monospace;' },
+      { key: 'label', label: '코드명' },
+    ];
+    const descColsColumns = [
+      { key: '_no',       label: '#',       style: 'width:36px;', align: 'center',
+        fmt: (v, row, i) => i + 1, cellStyle: 'color:#999;' },
+      { key: 'field',     label: '필드명',  style: 'width:160px;',
+        cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'label',     label: '한글명' },
+      { key: '_req',      label: '필수',    style: 'width:60px;', align: 'center',
+        fmt: (v, row) => row.required ? '●' : '',
+        cellStyle: (v, row) => row.required ? 'color:#dc2626;font-weight:700;' : '' },
+      { key: '_key',      label: '키컬럼',  style: 'width:80px;', align: 'center',
+        badge: row => row.field === cfDescKeyField.value
+          ? { text: '키', style: 'background:#fef3c7;color:#92400e;border-radius:3px;padding:1px 6px;font-size:11px;' }
+          : null },
+      { key: 'codeGrp',   label: '코드그룹', style: 'width:140px;',
+        fmt: v => v || '', cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: '_codeVals', label: '코드정보', style: 'width:220px;',
+        fmt: (v, row) => {
+          if (!row.codeGrp) return '';
+          const list = codesMap[row.codeGrp];
+          if (!list || !list.length) return '(로드 안 됨)';
+          return list.slice(0, 5).map(o => o.label + '(' + o.value + ')').join(' / ') + (list.length > 5 ? ' …' : '');
+        },
+        cellStyle: 'font-size:11px;color:#555;' },
+      { key: 'desc',      label: '비고', cellStyle: 'font-size:12px;' },
+    ];
+
     return {
       tab, rows, fileName, loading, codesMap, summary, inspect,            // 상태 / 데이터
       cfCols, cfKeyField, cfHasRows, cfValidRows, cfTitle, cfLabel,        // computed
@@ -7025,6 +7046,7 @@ window.BoExcelUploadModal = {
       searchParam, useYnOptions,                                           // 다운로드 검색조건
       selectedFile,                                                        // 원본 파일 보관 (엑셀업로드 버튼 활성 판단)
       handleBtnAction, handleSelectAction, onFileChange,                   // dispatch + 파일 입력 핸들러
+      inspectItemsColumns, codesGridColumns, descColsColumns,              // 그리드 컬럼
     };
   },
   template: `
@@ -7104,25 +7126,7 @@ if (props.onCallback) props.onCallback(props.modalName, null, null);
         <span style="font-size:11px;color:#94a3b8;">점검 {{ inspect.ranAt }}</span>
         <button class="btn btn-secondary btn-xs" @click="handleBtnAction('clear-inspect')" title="검증 정보 지우기">✕ 지우기</button>
       </div>
-      <table style="width:100%;font-size:11px;border-collapse:collapse;">
-        <colgroup>
-          <col style="width:24px;" />
-          <col style="width:130px;" />
-          <col />
-        </colgroup>
-        <tbody>
-          <tr v-for="(it, i) in inspect.items" :key="i" style="border-top:1px solid rgba(0,0,0,0.05);">
-            <td style="text-align:center;padding:3px 4px;">
-              <span v-if="it.level==='ok'"   style="color:#16a34a;">●</span>
-              <span v-else-if="it.level==='warn'"  style="color:#f59e0b;">▲</span>
-              <span v-else-if="it.level==='error'" style="color:#dc2626;">✖</span>
-              <span v-else style="color:#64748b;">·</span>
-            </td>
-            <td style="padding:3px 6px;font-weight:600;color:#334155;">{{ it.label }}</td>
-            <td style="padding:3px 6px;color:#475569;">{{ it.detail }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid bare :columns="inspectItemsColumns" :rows="inspect.items" style="font-size:11px;" />
     </div>
 
     <!-- 파일 안내 -->
@@ -7218,65 +7222,18 @@ if (props.onCallback) props.onCallback(props.modalName, null, null);
 
     <!-- 컬럼 정의 + 코드 그룹별 값 — 내부에서만 스크롤 -->
     <div v-if="cfDescCols.length" style="flex:1 1 auto;min-height:0;overflow:auto;">
-    <table class="admin-table" style="font-size:12px;">
-      <thead>
-        <tr>
-          <th style="width:36px;text-align:center;">#</th>
-          <th>필드명</th>
-          <th>한글명</th>
-          <th style="width:60px;text-align:center;">필수</th>
-          <th style="width:80px;text-align:center;">키컬럼</th>
-          <th style="width:140px;">코드그룹</th>
-          <th style="width:220px;">코드정보</th>
-          <th>비고</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(c, idx) in cfDescCols" :key="c.field"
-            :style="c.field===cfDescKeyField ? 'background:#fffbeb;' : ''">
-          <td style="text-align:center;color:#999;">{{ idx + 1 }}</td>
-          <td><code>{{ c.field }}</code></td>
-          <td>{{ c.label }}</td>
-          <td style="text-align:center;">
-            <span v-if="c.required" style="color:#dc2626;">●</span>
-          </td>
-          <td style="text-align:center;">
-            <span v-if="c.field===cfDescKeyField" class="badge" style="background:#fef3c7;color:#92400e;">키</span>
-          </td>
-          <td>
-            <span v-if="c.codeGrp"><code>{{ c.codeGrp }}</code></span>
-          </td>
-          <td>
-            <select v-if="c.codeGrp" class="form-control" style="font-size:11px;padding:2px 4px;width:100%;"
-                    :title="(codesMap[c.codeGrp] || []).length + '개 코드 — 표시 전용'">
-              <option v-if="!(codesMap[c.codeGrp] || []).length" value="">코드 그룹({{ c.codeGrp }}) 로드 안 됨</option>
-              <option v-for="o in (codesMap[c.codeGrp] || [])" :key="o.value" :value="o.value">{{ o.label }} ({{ o.value }})</option>
-            </select>
-          </td>
-          <td>{{ c.desc || '' }}</td>
-        </tr>
-      </tbody>
-    </table>
+      <bo-grid bare :columns="descColsColumns" :rows="cfDescCols" row-key="field"
+        :row-style="row => row.field === cfDescKeyField ? 'background:#fffbeb;' : ''"
+        empty-text="컬럼 정보 없음" style="font-size:12px;" />
 
     <!-- 코드 그룹별 값 목록 -->
     <div v-for="c in cfDescCols.filter(x => x.codeGrp)" :key="'code-' + c.codeGrp" style="margin-top:16px;">
       <div style="font-size:12px;font-weight:600;margin-bottom:6px;">
         📋 {{ c.label }} 코드값 (<code>{{ c.codeGrp }}</code>)
       </div>
-      <table class="admin-table" style="font-size:11px;">
-        <thead>
-          <tr><th style="width:120px;">코드값</th><th>코드명</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="o in (codesMap[c.codeGrp] || [])" :key="o.value">
-            <td><code>{{ o.value }}</code></td>
-            <td>{{ o.label }}</td>
-          </tr>
-          <tr v-if="!(codesMap[c.codeGrp] || []).length">
-            <td colspan="2" style="text-align:center;color:#94a3b8;">코드 그룹({{ c.codeGrp }}) 로드 안 됨</td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid bare :columns="codesGridColumns" :rows="codesMap[c.codeGrp] || []"
+        row-key="value" :empty-text="'코드 그룹(' + c.codeGrp + ') 로드 안 됨'"
+        style="font-size:11px;" />
     </div>
 
     </div>
@@ -7901,6 +7858,280 @@ window.PmBrandPickModal = {
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
     <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
   </div>
+</bo-modal>
+`,
+};
+
+/* ── PdProdPickModal — 상품 검색/단건 선택 모달 ─────────────────────────────
+   서버사이드 페이징 + 다중 검색타입(상품명/ID) 필터.
+   선택 시 onCallback(modalName, null, row) 또는 emit('select', row).
+   사용처:
+     - PdBundleMng.js  : 묶음 구성품 상품 추가
+     - PdSetMng.js     : 세트 구성품 상품 추가
+     - PdCategoryProdMng.js : 카테고리 내 상품 추가
+   props:
+     show        {Boolean}  - 모달 표시 여부
+     title       {String}   - 모달 제목 (기본: '상품 선택')
+     excludeIds  {Array}    - 선택 목록에서 제외할 prodId 배열
+     uiNm        {String}   - API 헤더 UI명 (기본: '상품피커')
+     modalName   {String}   - 콜백 식별자 (기본: 'prod-pick')
+     onCallback  {Function} - 콜백(modalName, null, row|null)
+   ─────────────────────────────────────────────────────────────────────── */
+window.PdProdPickModal = {
+  name: 'PdProdPickModal',
+  inheritAttrs: false,
+  props: {
+    show:       { type: Boolean,   default: false },
+    title:      { type: String,    default: '상품 선택' },
+    excludeIds: { type: Array,     default: () => [] },   // 제외할 prodId 목록
+    uiNm:       { type: String,    default: '상품피커' },
+    modalName:  { type: String,    default: 'prod-pick' },
+    onCallback: { type: Function,  default: null },
+    showToast:  { type: Function,  default: () => {} },
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { reactive, ref, computed, watch, onMounted } = Vue;
+    const searchType  = ref('');
+    const searchValue = ref('');
+    const rows        = ref([]);
+    const loading     = ref(false);
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1 });
+
+    const columns = [
+      { key: 'prodId',   label: 'ID',    style: 'width:130px;', cellStyle: 'font-family:monospace;font-size:11px;color:#aaa;' },
+      { key: 'prodNm',   label: '상품명' },
+      { key: 'salePrice', label: '판매가', style: 'width:100px;', align: 'right',
+        fmt: v => v ? Number(v).toLocaleString() + '원' : '-' },
+      { key: '_pick', label: '선택', style: 'width:70px;', align: 'center',
+        cellStyle: 'color:#e8587a;font-weight:700;cursor:pointer;', fmt: () => '✔ 선택', link: true },
+    ];
+
+    const fnLoad = async () => {
+      loading.value = true;
+      try {
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
+        const sv = (searchValue.value || '').trim();
+        if (sv) { params.searchValue = sv; }
+        if (sv && searchType.value) { params.searchType = searchType.value; }
+        const res = await boApiSvc.pdProd.getPage(params, props.uiNm, '조회');
+        const d = res.data?.data || {};
+        rows.value = (d.pageList || []).map(p => ({ ...p, prodId: p.prodId ?? p.productId }));
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage  = d.pageTotalPage  || 1;
+      } catch (err) {
+        props.showToast(err.response?.data?.message || '조회 실패', 'error', 0);
+      } finally { loading.value = false; }
+    };
+
+    const cfRows = computed(() => {
+      const excl = new Set(props.excludeIds || []);
+      return rows.value.filter(r => !excl.has(r.prodId));
+    });
+
+    const onSearch = () => { pager.pageNo = 1; fnLoad(); };
+    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
+    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
+
+    const onPick = (row) => {
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
+      else emit('select', row);
+    };
+    const onClose = () => {
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
+      else emit('close');
+    };
+
+    // 모달이 열릴 때마다 초기화 후 조회
+    watch(() => props.show, (v) => {
+      if (v) { searchType.value = ''; searchValue.value = ''; pager.pageNo = 1; fnLoad(); }
+    });
+
+    return { searchType, searchValue, rows, cfRows, loading, pager, columns,
+      fnLoad, onSearch, setPage, onSizeChange, onPick, onClose };
+  },
+  template: `
+<bo-modal :show="show" :title="title" width="620px" box-pad="0" @close="onClose">
+  <div style="padding:16px 20px;display:flex;flex-direction:column;gap:8px;">
+    <div style="display:flex;gap:6px;align-items:center;">
+      <select class="form-control" v-model="searchType" style="width:110px;flex-shrink:0;">
+        <option value="">전체</option>
+        <option value="prodNm">상품명</option>
+        <option value="prodId">ID</option>
+      </select>
+      <input class="form-control" v-model="searchValue" placeholder="검색어 입력 후 Enter"
+        style="flex:1;" @keyup.enter="onSearch" />
+      <button class="btn btn_search btn-sm" @click="onSearch">조회</button>
+    </div>
+    <bo-grid bare :columns="columns" :rows="cfRows" row-key="prodId"
+      :loading="loading" empty-text="조회 버튼으로 상품을 검색하세요."
+      @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
+      :page-sizes="[10,20,50]" style="margin-top:4px;" />
+  </div>
+  <template #footer>
+    <button class="btn btn_close" @click="onClose">닫기</button>
+  </template>
+</bo-modal>
+`,
+};
+
+/* ── PdCatParentPickModal — 상위 카테고리 선택 모달 ──────────────────────────
+   로드된 카테고리 목록을 계층 인덴트로 표시, 클라이언트 필터.
+   사용처:
+     - PdCategoryMng.js : 카테고리 상위 변경
+   props:
+     show        {Boolean}  - 모달 표시 여부
+     categories  {Array}    - 전체 카테고리 목록 (categoryId, categoryNm, categoryDepth)
+     excludeId   {String}   - 자기 자신 + 자손 제외용 ID (없으면 전체 표시)
+     modalName   {String}   - 콜백 식별자 (기본: 'cat-parent-pick')
+     onCallback  {Function} - 콜백(modalName, null, category|null)
+                              null = 최상위(상위없음) 선택
+   ─────────────────────────────────────────────────────────────────────── */
+window.PdCatParentPickModal = {
+  name: 'PdCatParentPickModal',
+  inheritAttrs: false,
+  props: {
+    show:       { type: Boolean,   default: false },
+    categories: { type: Array,     default: () => [] },
+    excludeId:  { type: String,    default: null },
+    modalName:  { type: String,    default: 'cat-parent-pick' },
+    onCallback: { type: Function,  default: null },
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { reactive, computed } = Vue;
+    const local = reactive({ search: '' });
+
+    const DEPTH_COLORS  = ['#1677ff', '#52c41a', '#fa8c16', '#722ed1'];
+    const DEPTH_BULLETS = ['■', '▶', '◆', '●'];
+    const fnDepthColor  = (d) => DEPTH_COLORS[d % DEPTH_COLORS.length];
+    const fnDepthBullet = (d) => DEPTH_BULLETS[d % DEPTH_BULLETS.length];
+
+    const cfList = computed(() => {
+      const kw = (local.search || '').trim().toLowerCase();
+      return (props.categories || []).filter(c => {
+        if (props.excludeId && c.categoryId === props.excludeId) return false;
+        if (kw && !(c.categoryNm || '').toLowerCase().includes(kw)) return false;
+        return true;
+      });
+    });
+
+    const onSelect = (cat) => {
+      if (props.onCallback) props.onCallback(props.modalName, null, cat);
+      else emit('select', cat);
+    };
+    const onClose = () => {
+      if (props.onCallback) props.onCallback(props.modalName, null, undefined);
+      else emit('close');
+    };
+
+    return { local, cfList, fnDepthColor, fnDepthBullet, onSelect, onClose };
+  },
+  template: `
+<bo-modal :show="show" title="상위 카테고리 선택" width="460px" max-height="70vh" @close="onClose">
+  <input class="form-control" v-model="local.search" placeholder="카테고리명 검색" style="margin-bottom:10px;" />
+  <div style="overflow-y:auto;border:1px solid #eee;border-radius:8px;max-height:48vh;">
+    <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;color:#1677ff;cursor:pointer;"
+      @click="onSelect(null)">
+      최상위 (상위없음)
+    </div>
+    <div v-for="c in cfList" :key="(c?.categoryId)"
+      style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;display:flex;align-items:center;gap:6px;cursor:pointer;"
+      :style="{ paddingLeft: ((c.categoryDepth||1) * 14 + 12) + 'px' }"
+      @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
+      @mouseleave="$event.currentTarget.style.background=''"
+      @click="onSelect(c)">
+      <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
+        {{ fnDepthBullet((c.categoryDepth||1)-1) }}
+      </span>
+      <span>{{ c.categoryNm }}</span>
+      <span style="font-size:11px;color:#aaa;margin-left:auto;">depth {{ c.categoryDepth }}</span>
+    </div>
+    <div v-if="!cfList.length" style="text-align:center;padding:20px;color:#aaa;">
+      검색 결과 없음
+    </div>
+  </div>
+  <template #footer>
+    <button class="btn btn_close" @click="onClose">닫기</button>
+  </template>
+</bo-modal>
+`,
+};
+
+/* ── PdReviewStatusModal — 리뷰 상태 변경 사유 입력 모달 ──────────────────────
+   상태 변경 전 사유를 입력받아 확인. 저장 시 onCallback(modalName, null, { reason }).
+   사용처:
+     - PdReviewMng.js : 리뷰 상태 변경 (승인/거부/블라인드 등)
+   props:
+     show          {Boolean}  - 모달 표시 여부
+     reviewTitle   {String}   - 대상 리뷰 요약 문자열
+     currentStatus {String}   - 변경 전 상태 코드
+     newStatus     {String}   - 변경 후 상태 코드
+     statusLabel   {Object}   - { [statusCd]: '라벨명' } 매핑
+     badgeFn       {Function} - (statusCd) => badge CSS 클래스
+     modalName     {String}   - 콜백 식별자 (기본: 'review-status')
+     onCallback    {Function} - 콜백(modalName, null, {reason}|null)
+   ─────────────────────────────────────────────────────────────────────── */
+window.PdReviewStatusModal = {
+  name: 'PdReviewStatusModal',
+  inheritAttrs: false,
+  props: {
+    show:          { type: Boolean,   default: false },
+    reviewTitle:   { type: String,    default: '' },
+    currentStatus: { type: String,    default: '' },
+    newStatus:     { type: String,    default: '' },
+    statusLabel:   { type: Object,    default: () => ({}) },
+    badgeFn:       { type: Function,  default: () => '' },
+    modalName:     { type: String,    default: 'review-status' },
+    onCallback:    { type: Function,  default: null },
+  },
+  emits: ['confirm', 'close'],
+  setup(props, { emit }) {
+    const { reactive, watch } = Vue;
+    const local = reactive({ reason: '' });
+
+    // 모달 열릴 때 사유 초기화
+    watch(() => props.show, (v) => { if (v) local.reason = ''; });
+
+    const onConfirm = () => {
+      if (props.onCallback) props.onCallback(props.modalName, null, { reason: local.reason });
+      else emit('confirm', { reason: local.reason });
+    };
+    const onClose = () => {
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
+      else emit('close');
+    };
+
+    return { local, onConfirm, onClose };
+  },
+  template: `
+<bo-modal :show="show" title="리뷰 상태 변경" width="480px" box-pad="0" @close="onClose">
+  <div style="padding:18px 20px;">
+    <div style="margin-bottom:14px;font-size:13px;color:#444;line-height:1.7;">
+      <div><b>리뷰</b>: {{ reviewTitle }}</div>
+      <div style="margin-top:4px;">
+        <b>상태 변경</b>:
+        <span :class="['badge', badgeFn(currentStatus)]" style="margin-left:6px;">
+          {{ statusLabel[currentStatus] || currentStatus }}
+        </span>
+        <span style="margin:0 6px;color:#888;">→</span>
+        <span :class="['badge', badgeFn(newStatus)]">
+          {{ statusLabel[newStatus] || newStatus }}
+        </span>
+      </div>
+    </div>
+    <label class="form-label" style="font-size:12px;font-weight:600;color:#555;display:block;">
+      변경 사유 <span style="color:#e57373;">*</span>
+    </label>
+    <textarea class="form-control" v-model="local.reason" rows="4"
+      placeholder="상태 변경 사유를 입력해주세요. (필수)"
+      style="margin:6px 0 0;width:100%;font-size:13px;box-sizing:border-box;"></textarea>
+  </div>
+  <template #footer>
+    <button class="btn btn_cancel" @click="onClose">취소</button>
+    <button class="btn btn_save" @click="onConfirm">저장</button>
+  </template>
 </bo-modal>
 `,
 };

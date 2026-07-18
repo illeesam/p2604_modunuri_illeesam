@@ -306,8 +306,44 @@
       });
 
       /* ##### [06] return (템플릿 노출) ###################################### */
+
+      /* 그리드 컬럼 — 도움말 모달 테이블 */
+      const guideKeysColumns = [
+        { key: 'what',    label: '무엇',         cellStyle: 'color:#555;' },
+        { key: '_propKey',label: '프로퍼티 키',  cellStyle: 'font-family:monospace;color:#1d4ed8;',
+          fmt: () => cfGuide.value ? cfGuide.value.propKey : '' },
+        { key: '_badge',  label: '상태',         style: 'width:90px;',
+          fmt: (v, row) => { const b = fnKeyBadge(row.store); return b.text; },
+          cellStyle: (v, row) => { const b = fnKeyBadge(row.store); return b.css; } },
+      ];
+      const guideFaqColumns = [
+        { key: 'q', label: '증상', style: 'width:38%;', cellStyle: 'border:1px solid #eee;color:#c0392b;' },
+        { key: 'a', label: '해결', cellStyle: 'border:1px solid #eee;color:#555;' },
+      ];
+      const propItemsColumns = [
+        { key: 'group', label: '분류', style: 'width:80px;',
+          badge: row => ({ text: row.group, style: 'background:#eef2ff;color:#1d4ed8;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700;' }) },
+        { key: 'key',   label: '프로퍼티 키 (propKey)', cellStyle: 'font-family:monospace;font-weight:700;color:#1d4ed8;' },
+        { key: 'label', label: '라벨' },
+        { key: 'note',  label: '비고', cellStyle: 'color:#777;font-size:11px;' },
+      ];
+      const cdnItemsColumns = [
+        { key: 'key',    label: '프로퍼티 키 (propKey)', cellStyle: 'font-family:monospace;font-weight:700;color:#276749;' },
+        { key: 'label',  label: '라벨' },
+        { key: 'sample', label: '예시 값', cellStyle: 'font-family:monospace;color:#888;' },
+        { key: 'note',   label: '설명', cellStyle: 'color:#777;font-size:11px;' },
+      ];
+      const allKeysColumns = [
+        { key: 'store', label: '키 이름', cellStyle: 'font-family:monospace;' },
+        { key: 'what',  label: '용도',    cellStyle: 'color:#555;' },
+        { key: '_badge',label: '상태',    style: 'width:90px;',
+          fmt: (v, row) => fnKeyBadge(row.store).text,
+          cellStyle: (v, row) => fnKeyBadge(row.store).css },
+      ];
+
       return { st, shell, tabs, handleBtnAction, fnKeyState, fnKeyBadge, cfGuide, cfTitle,
-               ALL_KEYS, PROP_ITEMS, CDN_ITEMS, ORIGIN, PAGE_URL };
+               ALL_KEYS, PROP_ITEMS, CDN_ITEMS, ORIGIN, PAGE_URL,
+               guideKeysColumns, guideFaqColumns, propItemsColumns, cdnItemsColumns, allKeysColumns };
     },
     template: /* html */`
 <component :is="shell" :show="st.show" :title="'🛠 ' + cfTitle" width="960px" max-height="88vh"
@@ -349,24 +385,7 @@
       <!-- 현재 키 상태 -->
       <div style="margin-bottom:12px;">
         <div style="font-weight:700;margin-bottom:6px;">① 현재 키 설정 상태</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead>
-            <tr style="background:#f8f9fa;">
-              <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">무엇</th>
-              <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">프로퍼티 키</th>
-              <th style="border:1px solid #eee;padding:6px 10px;text-align:left;width:90px;">상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="k in cfGuide.keys" :key="k.store">
-              <td style="border:1px solid #eee;padding:6px 10px;">{{ k.what }}</td>
-              <td style="border:1px solid #eee;padding:6px 10px;font-family:monospace;color:#1d4ed8;">{{ cfGuide.propKey }}</td>
-              <td style="border:1px solid #eee;padding:6px 10px;">
-                <span :style="fnKeyBadge(k.store).css">{{ fnKeyBadge(k.store).text }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <bo-grid bare :columns="guideKeysColumns" :rows="cfGuide.keys" row-key="store" style="font-size:12px;" />
         <div style="font-size:11px;color:#999;margin-top:4px;">
           예시 형식: <span style="font-family:monospace;">{{ cfGuide.keys[0].sample }}</span>
         </div>
@@ -417,20 +436,7 @@
       <!-- FAQ -->
       <div>
         <div style="font-weight:700;margin-bottom:6px;">③ 자주 발생하는 오류</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead>
-            <tr style="background:#f8f9fa;">
-              <th style="border:1px solid #eee;padding:6px 10px;text-align:left;width:38%;">증상</th>
-              <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">해결</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(f, i) in cfGuide.faq" :key="i">
-              <td style="border:1px solid #eee;padding:6px 10px;color:#c0392b;">{{ f.q }}</td>
-              <td style="border:1px solid #eee;padding:6px 10px;color:#555;">{{ f.a }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <bo-grid bare :columns="guideFaqColumns" :rows="cfGuide.faq" style="font-size:12px;" />
       </div>
     </template>
 
@@ -482,26 +488,7 @@
       </ol>
       <!-- 항목 목록 -->
       <div style="font-weight:700;margin-bottom:8px;">② 설정 가능한 항목 전체 목록</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
-        <thead>
-          <tr style="background:#f8f9fa;">
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;width:80px;">분류</th>
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">프로퍼티 키 (propKey)</th>
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">라벨</th>
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">비고</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, i) in PROP_ITEMS" :key="i">
-            <td style="border:1px solid #eee;padding:6px 10px;">
-              <span style="background:#eef2ff;color:#1d4ed8;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700;">{{ item.group }}</span>
-            </td>
-            <td style="border:1px solid #eee;padding:6px 10px;font-family:monospace;font-weight:700;color:#1d4ed8;">{{ item.key }}</td>
-            <td style="border:1px solid #eee;padding:6px 10px;">{{ item.label }}</td>
-            <td style="border:1px solid #eee;padding:6px 10px;color:#777;font-size:11px;">{{ item.note }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid bare :columns="propItemsColumns" :rows="PROP_ITEMS" style="font-size:12px;margin-bottom:14px;" />
       <!-- 팁 박스 -->
       <div style="background:#f8fafc;border:1px solid #e8edf3;border-radius:8px;padding:10px 14px;font-size:12px;color:#555;line-height:1.8;">
         <b>💡 알아두면 편한 점</b><br/>
@@ -523,24 +510,7 @@
       </div>
       <!-- CDN 항목 목록 -->
       <div style="font-weight:700;margin-bottom:8px;">CDN 관련 프로퍼티 항목</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
-        <thead>
-          <tr style="background:#f8f9fa;">
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">프로퍼티 키 (propKey)</th>
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">라벨</th>
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">예시 값</th>
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">설명</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, i) in CDN_ITEMS" :key="i">
-            <td style="border:1px solid #eee;padding:6px 10px;font-family:monospace;font-weight:700;color:#276749;">{{ item.key }}</td>
-            <td style="border:1px solid #eee;padding:6px 10px;">{{ item.label }}</td>
-            <td style="border:1px solid #eee;padding:6px 10px;font-family:monospace;color:#888;">{{ item.sample }}</td>
-            <td style="border:1px solid #eee;padding:6px 10px;color:#777;font-size:11px;">{{ item.note }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid bare :columns="cdnItemsColumns" :rows="CDN_ITEMS" style="font-size:12px;margin-bottom:14px;" />
       <!-- 등록 방법 -->
       <div style="font-weight:700;margin-bottom:8px;">프로퍼티관리에 CDN URL 등록하는 방법</div>
       <ol style="margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
@@ -616,24 +586,7 @@
       </div>
       <!-- 전체 키 상태 -->
       <div style="font-weight:700;margin-bottom:6px;">전체 키 설정 상태 (현재 화면 기준)</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px;">
-        <thead>
-          <tr style="background:#f8f9fa;">
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">키 이름</th>
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;">용도</th>
-            <th style="border:1px solid #eee;padding:6px 10px;text-align:left;width:90px;">상태</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="k in ALL_KEYS" :key="k.store">
-            <td style="border:1px solid #eee;padding:6px 10px;font-family:monospace;">{{ k.store }}</td>
-            <td style="border:1px solid #eee;padding:6px 10px;">{{ k.what }}</td>
-            <td style="border:1px solid #eee;padding:6px 10px;">
-              <span :style="fnKeyBadge(k.store).css">{{ fnKeyBadge(k.store).text }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <bo-grid bare :columns="allKeysColumns" :rows="ALL_KEYS" row-key="store" style="font-size:12px;margin-bottom:12px;" />
       <!-- 공통 점검 -->
       <div style="background:#f8fafc;border:1px solid #e8edf3;border-radius:8px;padding:10px 14px;font-size:12px;color:#555;line-height:1.8;">
         <b>키와 무관하게 함께 점검할 것</b><br/>

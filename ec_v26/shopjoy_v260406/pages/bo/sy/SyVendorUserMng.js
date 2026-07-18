@@ -519,6 +519,15 @@ window.SyVendorUserMng = {
       if (!uiState.roleModalTemp) { return null; }
       return roles.find(r=>r.roleCode===uiState.roleModalTemp) || null;
     });
+    const cfMenuPermColumns = [
+      { key: 'menuNm', label: '메뉴',
+        cellStyle: (v, row) => `padding:6px 12px 6px ${12 + row._depth * 16}px;font-weight:${row.menuType === '폴더' ? 700 : 400};border-bottom:1px solid #f3f4f6;` },
+      { key: '_perm', label: '권한', style: 'width:80px;', align: 'center',
+        fmt: (v) => v !== '없음' ? v : '—',
+        cellStyle: (v) => v !== '없음'
+          ? `text-align:center;padding:6px 12px;border-bottom:1px solid #f3f4f6;`
+          : `text-align:center;padding:6px 12px;border-bottom:1px solid #f3f4f6;color:#d1d5db;font-size:11px;` },
+    ];
     const cfModalMenuList = computed(() => {
       const role = cfSelectedModalRole.value;
       const rm = role ? roleMenus.filter(x=>x.roleId===role.roleId) : [];
@@ -647,7 +656,7 @@ window.SyVendorUserMng = {
       columns,
       uiState, vendorUsers, vendors, vendorGridPager, userGridPager, formData, userRoles, roleTreeExpanded,    // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                              // dispatch (모든 이벤트 / 액션 라우팅)
-      cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList,                             // computed
+      cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList, cfMenuPermColumns,           // computed
       fnVendorRowStyle, fnUserRowStyle, fnPermBadgeColor, roleNmByCode,                                        // 헬퍼
       onRoleRootHover, onRoleChildHover, onRoleChildLeave,                                                     // 헬퍼
     };
@@ -805,30 +814,22 @@ window.SyVendorUserMng = {
         <div style="font-size:28px;margin-bottom:8px;">👈</div>
         좌측에서 역할을 선택하세요
       </div>
-      <!-- ===== ■.■. 테이블 =================================================== -->
-      <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead>
-          <tr style="background:#f9fafb;">
-            <th style="text-align:left;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;">메뉴</th>
-            <th style="text-align:center;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;width:80px;">권한</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(m,i) in cfModalMenuList" :key="m.menuId" :style="{background:i%2===0?'#fff':'#fafbfc'}">
-            <td :style="{padding:'6px 12px 6px '+(12+m._depth*16)+'px',fontWeight:m.menuType==='폴더'?700:400,borderBottom:'1px solid #f3f4f6'}">
-              <span v-if="m.menuType==='폴더'" style="color:#f59e0b;margin-right:4px;">📁</span>
-              <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">·</span>
-              {{ m.menuNm }}
-            </td>
-            <td style="text-align:center;padding:6px 12px;border-bottom:1px solid #f3f4f6;">
-              <span v-if="m._perm!=='없음'" :style="{background:fnPermBadgeColor(m._perm),color:'#fff',fontSize:'10px',padding:'2px 8px',borderRadius:'9px',fontWeight:700}">
-                {{ m._perm }}
-              </span>
-              <span v-else style="color:#d1d5db;font-size:11px;">—</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- ===== ■.■. 그리드 =================================================== -->
+      <bo-grid v-else bare :columns="cfMenuPermColumns" :rows="cfModalMenuList" row-key="menuId"
+        :row-style="(row, i) => ({background: i%2===0 ? '#fff' : '#fafbfc'})"
+        style="font-size:12px;">
+        <template #cell-menuNm="{ row }">
+          <span v-if="row.menuType==='폴더'" style="color:#f59e0b;margin-right:4px;">📁</span>
+          <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">·</span>
+          {{ row.menuNm }}
+        </template>
+        <template #cell-_perm="{ row }">
+          <span v-if="row._perm!=='없음'" :style="{background:fnPermBadgeColor(row._perm),color:'#fff',fontSize:'10px',padding:'2px 8px',borderRadius:'9px',fontWeight:700}">
+            {{ row._perm }}
+          </span>
+          <span v-else style="color:#d1d5db;font-size:11px;">—</span>
+        </template>
+      </bo-grid>
     </template>
     <!-- ===== □.□. 테이블 =================================================== -->
     <!-- ===== □. 영역 ====================================================== -->

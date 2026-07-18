@@ -515,6 +515,9 @@ window.OdDlivMng = {
 
     // 결재 문의 폼
     columns.apprContactForm = [
+      { key: 'apprToUserId', label: '추가결재자', type: 'select', colSpan: 2, nullLabel: '선택하세요',
+        options: () => members.map(m => ({ value: m.memberId, label: `${m.memberNm} (${m.memberId})` })),
+        onChange: () => handleBtnAction('actionsModal-apprToChange') },
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
       { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
     ];
@@ -630,19 +633,8 @@ window.OdDlivMng = {
     :reload-trigger="detailPanel.reloadTrigger"
     />
   <!-- ===== ■. 변경작업 모달 (actionsModal) ===================================== -->
-  <div v-if="bulkOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;" @click.self="handleBtnAction('actionsModal-close')">
-    <div style="background:#fff;border-radius:12px;width:480px;max-width:92vw;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;">
-      <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
-        <b style="font-size:14px;">
-          변경작업
-          <span style="color:#1565c0;">
-            ({{ checked.size }}건 선택)
-          </span>
-        </b>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('actionsModal-close')">
-          ✕
-        </button>
-      </div>
+  <bo-modal :show="bulkOpen" :title="'📝 변경작업 (' + checked.size + '건 선택)'" width="480px" box-pad="0" @close="handleBtnAction('actionsModal-close')">
+    <div>
       <div style="display:flex;gap:6px;padding:10px 14px 0;background:#fafafa;">
         <button v-for="t in [{id:'status',label:'배송상태'},{id:'courier',label:'택배사·운송장'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t?.id"
           @click="handleBtnAction('actionsModal-tabChange', t.id)"
@@ -656,9 +648,7 @@ window.OdDlivMng = {
             변경할 배송상태
           </label>
           <select class="form-control" v-model="bulkForm.status">
-            <option value="">
-              선택하세요
-            </option>
+            <option value="">선택하세요</option>
             <option v-for="c in codes.dliv_statuses" :key="c.codeValue" :value="c.codeValue">
               {{ c.codeLabel }}
             </option>
@@ -677,21 +667,6 @@ window.OdDlivMng = {
             :cols="2" :show-actions="false" />
         </div>
         <div v-if="uiState.bulkTab==='approvalReq'">
-          <div class="form-group">
-            <label class="form-label">
-              추가결재자 (회원선택)
-            </label>
-            <select class="form-control" v-model="bulkForm.apprToUserId" @change="handleBtnAction('actionsModal-apprToChange')">
-              <option value="">
-                선택하세요
-              </option>
-              <option v-for="m in members" :key="m?.memberId" :value="m.memberId">
-                {{ m.memberNm }} ({{ m.memberId }})
-              </option>
-            </select>
-          </div>
-          <!-- ===== ■.■.■.■.■. 전화번호/이메일 (BoFormArea 자동 렌더, readonly) =========== -->
-          <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="columns.apprContactForm" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 요청대상/요청대상명 (BoFormArea 자동 렌더) =================== -->
@@ -728,7 +703,7 @@ window.OdDlivMng = {
         </button>
       </div>
     </div>
-  </div>
+  </bo-modal>
   <!-- ===== □. 변경작업 모달 ================================================= -->
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
   <od-member-pick-modal :show="memberPick.open" ui-nm="배송관리"

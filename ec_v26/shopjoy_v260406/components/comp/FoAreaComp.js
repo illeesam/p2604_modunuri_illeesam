@@ -325,31 +325,21 @@ window.FoSearchArea = {
     <!-- select -->
     <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
         @change="handleSelectAction('field-select-change', { col, event: $event })">
-      <option v-if="col.nullable !== false" value="">
-        {{ col.nullLabel || '전체' }}
-      </option>
-      <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">
-        {{ o.label }}
-      </option>
+      <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
+      <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
     </select>
     <!-- 단일 날짜 -->
     <input v-else-if="col.type==='date'" type="date" v-model="po(col)[col.key]" />
     <!-- 날짜 범위 + (옵션) 기간유형 + (옵션) 옵션선택 select -->
     <template v-else-if="col.type==='dateRange'">
       <select v-if="col.typeKey" v-model="po(col)[col.typeKey]">
-        <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">
-          {{ c.label }}
-        </option>
+        <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">{{ c.label }}</option>
       </select>
       <select v-if="fnHasRange1(col)" v-model="po(col)[col.key]"
           @change="handleSelectAction('field-range-change', { col, event: $event })"
           :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
-        <option value="">
-          {{ col.rangeFirstLabel || '기간 선택' }}
-        </option>
-        <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">
-          {{ o.label }}
-        </option>
+        <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
+        <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
       <input type="date" v-model="po(col)[col.startKey || 'dateStart']"
           :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
@@ -360,12 +350,8 @@ window.FoSearchArea = {
           :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
       <select v-if="fnHasRange2(col)" v-model="po(col)[col.key]"
           @change="handleSelectAction('field-range-change', { col, event: $event })">
-        <option value="">
-          옵션선택
-        </option>
-        <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">
-          {{ o.label }}
-        </option>
+        <option value="">옵션선택</option>
+        <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
     </template>
   </template>
@@ -711,9 +697,7 @@ window.FoGrid = {
                   <input v-else-if="col.edit==='date'" type="date" class="fo-grid-input"
                     v-model="row[col.key]" />
                   <select v-else-if="col.edit==='select'" class="fo-grid-select" v-model="row[col.key]">
-                    <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">
-                      {{ o.label }}
-                    </option>
+                    <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                   </select>
                   <span v-else-if="col.link" class="fo-grid-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx })">
                     {{ U.cellText(col, row) }}
@@ -988,9 +972,7 @@ window.FoGridCrud = {
                 <select v-else-if="col.edit==='select'" class="fo-grid-select"
                   v-model="row[col.key]" :disabled="row._row_status==='D'"
                   @change="handleSelectAction('grid-row-cell-change', { row, col })">
-                  <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">
-                    {{ o.label }}
-                  </option>
+                  <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
                 <span v-else-if="col.link" class="fo-grid-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx })">
                   {{ U.cellText(col, row) }}
@@ -1299,12 +1281,8 @@ window.FoFormArea = {
         v-model="form[col.key]" :disabled="col.readonly"
         :class="errors[col.key] ? 'is-invalid' : ''"
         @change="handleSelectAction('field-change', { col, event: $event })">
-      <option v-if="col.nullable !== false" value="">
-        {{ col.nullLabel || '선택해주세요' }}
-      </option>
-      <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">
-        {{ o.label }}
-      </option>
+      <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '선택해주세요' }}</option>
+      <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
     </select>
     <!-- slot 탈출구 -->
     <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col">

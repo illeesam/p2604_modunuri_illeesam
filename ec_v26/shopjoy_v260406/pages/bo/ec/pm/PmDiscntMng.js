@@ -44,6 +44,15 @@ window.PmDiscntMng = {
       // 페이지 번호 클릭
       } else if (cmd === 'discnts-pager-setPage') {
         return setPage(param);
+      // 카드뷰 — 보기 모드로 열기
+      } else if (cmd === 'discnts-card-view') {
+        return loadView(param);
+      // 카드뷰 — 수정 모드로 열기
+      } else if (cmd === 'discnts-card-edit') {
+        return handleLoadDetail(param);
+      // 카드뷰 — 삭제
+      } else if (cmd === 'discnts-card-delete') {
+        return handleDelete(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -344,19 +353,19 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
-          <button @click="tabMode='list'" style="font-size:11px;padding:4px 10px;border:none;transition:all .15s;"
+          <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;transition:all .15s;"
             :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ☰ 리스트
           </button>
-          <button @click="tabMode='card'" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;transition:all .15s;"
+          <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;transition:all .15s;"
             :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊞ 카드
           </button>
         </div>
-        <button class="btn btn_excel" @click="exportExcel">
+        <button class="btn btn_excel" @click="handleBtnAction('discnts-excel')">
           📥 엑셀
         </button>
-        <button class="btn btn-primary btn-sm" @click="openNew">
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('discnts-add')">
           + 신규
         </button>
       </div>
@@ -374,10 +383,10 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       </template>
       <template #row-actions="{ row: d }">
         <div class="actions">
-          <button class="btn btn_row_edit" @click.stop="handleLoadDetail(d.discntId)">
+          <button class="btn btn_row_edit" @click.stop="handleBtnAction('discnts-card-edit', d.discntId)">
             수정
           </button>
-          <button class="btn btn_delete" @click.stop="handleDelete(d)">
+          <button class="btn btn_delete" @click.stop="handleBtnAction('discnts-card-delete', d)">
             삭제
           </button>
         </div>
@@ -391,12 +400,12 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       </div>
       <div v-for="(d, idx) in discounts" :key="d?.discntId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;"
         :style="selectedId===d.discntId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="loadView(d.discntId)">
+        @click="handleBtnAction('discnts-card-view', d.discntId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (baseGridPager.pageNo-1)*baseGridPager.pageSize + idx + 1 }}</span> 할인 #{{ d.discntId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="loadView(d.discntId)" :style="selectedId===d.discntId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleBtnAction('discnts-card-view', d.discntId)" :style="selectedId===d.discntId?{color:'#e8587a'}:{}">
             {{ d.discntNm }}
             <span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:4px;">
               ▼
@@ -423,10 +432,10 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn_row_edit" @click="handleLoadDetail(d.discntId)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_edit" @click.stop="handleBtnAction('discnts-card-edit', d.discntId)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn_delete" @click="handleDelete(d)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_delete" @click.stop="handleBtnAction('discnts-card-delete', d)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

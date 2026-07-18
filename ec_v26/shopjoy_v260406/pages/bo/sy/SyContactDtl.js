@@ -241,7 +241,15 @@ window.SyContactDtl = {
       { key: 'categoryCd',      label: '카테고리', type: 'select', options: () => codes.contact_categories },
       { key: 'contactStatusCd', label: '상태',     type: 'select', options: () => codes.contact_statuses },
       { key: 'contactTitle',    label: '제목', type: 'text', required: true, colSpan: 2 },
-      { key: 'contactContent',  label: '문의 내용', type: 'slot', name: 'contactContent', colSpan: 3 },
+      { key: 'contactContent',      label: '문의 내용', type: 'slot', name: 'contactContent', colSpan: 3 },
+      { key: 'contentAttachGrpId',  label: '첨부파일',  type: 'slot', name: 'contentAttach', colSpan: 3,
+        visible: () => !cfIsNew.value },
+    ];
+    // answer 탭 영역
+    columns.answerForm = [
+      { key: 'contactAnswer',    label: '답변 내용', type: 'slot', name: 'answerContent', colSpan: 3 },
+      { key: 'answerAttachGrpId', label: '첨부파일', type: 'slot', name: 'answerAttach',  colSpan: 3,
+        visible: () => !cfIsNew.value },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -286,21 +294,14 @@ window.SyContactDtl = {
           <base-html-editor v-else v-model="form.contactContent" height="220px" />
           <span v-if="errors.contactContent" class="field-error">{{ errors.contactContent }}</span>
         </template>
+        <template #contentAttach>
+          <base-attach-grp :model-value="form.contentAttachGrpId"
+            @update:model-value="form.contentAttachGrpId = $event"
+            :ref-id="cfContentAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
+            grp-code="CONTACT_CONTENT_ATTACH" grp-nm="문의 내용 첨부파일"
+            :max-count="5" :max-size-mb="10" allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
+        </template>
       </bo-form-area>
-      <!-- ===== ■.■.■.■. 문의 내용 첨부 ======================================== -->
-      <div v-if="!cfIsNew" class="form-group" style="margin-top:12px;">
-        <label class="form-label">첨부파일</label>
-        <base-attach-grp :model-value="form.contentAttachGrpId"
-          @update:model-value="form.contentAttachGrpId = $event"
-          :ref-id="cfContentAttachRefId"
-          :show-toast="showToast"
-          :readonly="cfDtlMode"
-          grp-code="CONTACT_CONTENT_ATTACH"
-          grp-nm="문의 내용 첨부파일"
-          :max-count="5"
-          :max-size-mb="10"
-          allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
-      </div>
       <div class="form-actions" v-if="active">
         <template v-if="cfDtlMode">
           <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
@@ -322,28 +323,23 @@ window.SyContactDtl = {
         <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.contactTitle }}</div>
         <div style="font-size:13px;color:#555;white-space:pre-line;">{{ form.contactContent }}</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">
-          답변 내용
-          <span v-if="!form.contactAnswer" class="badge badge-orange" style="margin-left:4px;">미답변</span>
-        </label>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.contactAnswer || '<span style=color:#bbb>-</span>'"></div>
-        <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
-      </div>
-      <!-- ===== ■.■.■.■. 답변 첨부 ========================================== -->
-      <div v-if="!cfIsNew" class="form-group" style="margin-top:12px;">
-        <label class="form-label">첨부파일</label>
-        <base-attach-grp :model-value="form.answerAttachGrpId"
-          @update:model-value="form.answerAttachGrpId = $event"
-          :ref-id="cfAnswerAttachRefId"
-          :show-toast="showToast"
-          :readonly="cfDtlMode"
-          grp-code="CONTACT_ANSWER_ATTACH"
-          grp-nm="문의 답변 첨부파일"
-          :max-count="5"
-          :max-size-mb="10"
-          allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
-      </div>
+      <bo-form-area :columns="columns.answerForm" :form="form" :errors="{}"
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+        <template #answerContent>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <span v-if="!form.contactAnswer" class="badge badge-orange">미답변</span>
+          </div>
+          <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.contactAnswer || '<span style=color:#bbb>-</span>'"></div>
+          <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
+        </template>
+        <template #answerAttach>
+          <base-attach-grp :model-value="form.answerAttachGrpId"
+            @update:model-value="form.answerAttachGrpId = $event"
+            :ref-id="cfAnswerAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
+            grp-code="CONTACT_ANSWER_ATTACH" grp-nm="문의 답변 첨부파일"
+            :max-count="5" :max-size-mb="10" allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
+        </template>
+      </bo-form-area>
       <div class="form-actions" v-if="active">
         <template v-if="cfDtlMode">
           <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
