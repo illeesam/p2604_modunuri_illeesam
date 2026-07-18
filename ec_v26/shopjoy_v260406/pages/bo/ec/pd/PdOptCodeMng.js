@@ -378,7 +378,7 @@ window.PdOptCodeMng = {
     <div class="card" style="min-width:210px;max-width:230px;overflow:hidden;display:flex;flex-direction:column;height:calc(100vh - 94px);">
 
       <!-- 트리 헤더 -->
-      <div class="toolbar" style="padding:6px 10px;border-bottom:1px solid #f0f0f0;flex-shrink:0;display:flex;align-items:center;gap:4px;">
+      <div class="toolbar" style="padding:6px 10px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
         <span class="list-title" style="font-size:12px;flex:1;">코드 트리</span>
         <button class="btn btn-xs btn-secondary" style="padding:2px 5px;font-size:13px;line-height:1;"
           @click="handleBtnAction('tree-expand-all')" title="전체펼치기">⊞</button>

@@ -594,10 +594,8 @@
         </button>
       </div>
     </template>
-    <span style="flex:1;">
-    </span>
     <button v-if="uiState.customer" @click="handleBtnAction('searchParam-clearCustomer')"
-      style="background:#f5f5f5;border:1px solid #ddd;color:#666;border-radius:8px;padding:7px 16px;font-size:12px;">
+      style="margin-left:auto;background:#f5f5f5;border:1px solid #ddd;color:#666;border-radius:8px;padding:7px 16px;font-size:12px;">
       ✕ 초기화
     </button>
     <!-- ===== □.■. 번호 입력 ================================================= -->

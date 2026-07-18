@@ -115,6 +115,8 @@ window.DpDispWidgetMng = {
       // 페이지 번호 클릭
       } else if (cmd === 'widgets-pager-setPage') {
         return setPage(param);
+      } else if (cmd === 'treeNode-toggle') {
+        openTopNodes.has(param) ? openTopNodes.delete(param) : openTopNodes.add(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -478,7 +480,7 @@ window.DpDispWidgetMng = {
     <bo-search-area :loading="uiState.loading" :show-actions="false"
       :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
-      <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
+      <div class="search-actions">
         <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;align-self:center;">
           변경됨 →
         </span>
@@ -516,7 +518,7 @@ window.DpDispWidgetMng = {
         </div>
         <!-- 카테고리 트리 -->
         <div v-for="top in cfWidgetTree" :key="top.label" style="margin-top:2px;">
-          <div @click="openTopNodes.has(top.label) ? openTopNodes.delete(top.label) : openTopNodes.add(top.label)"
+          <div @click="handleBtnAction('treeNode-toggle', top.label)"
             style="display:flex;align-items:center;gap:4px;padding:4px 10px;cursor:pointer;font-weight:600;font-size:13px;color:#555;user-select:none;">
             <span>{{ openTopNodes.has(top.label) ? '▼' : '▶' }}</span>
             <span>{{ top.label }}</span>
@@ -541,21 +543,17 @@ window.DpDispWidgetMng = {
         <span v-if="uiState.selectedType != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           {{ Array.isArray(uiState.selectedType) ? uiState.selectedType.join(', ') : uiState.selectedType }}
         </span>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
-          <span v-if="cfNoFilter" style="color:#bbb;">
-            필터 없음
-          </span>
-          <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
-            검색: {{ applied.searchValue }}
-          </span>
-          <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
-            유형: {{ wTypeLabel(applied.type) }}
-          </span>
-          <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
-            상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
-          </span>
-        </div>
-        <button @click="handleBtnAction('widgets-add')" class="btn btn_new" style="height:30px;padding:0 14px;">
+        <span v-if="cfNoFilter" style="color:#bbb;font-size:11px;">필터 없음</span>
+        <span v-if="applied.searchValue" style="font-size:11px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
+          검색: {{ applied.searchValue }}
+        </span>
+        <span v-if="applied.type" style="font-size:11px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
+          유형: {{ wTypeLabel(applied.type) }}
+        </span>
+        <span v-if="applied.status" style="font-size:11px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
+          상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
+        </span>
+        <button @click="handleBtnAction('widgets-add')" class="btn btn_new" style="margin-left:auto;height:30px;padding:0 14px;">
           + 신규등록
         </button>
       </template>

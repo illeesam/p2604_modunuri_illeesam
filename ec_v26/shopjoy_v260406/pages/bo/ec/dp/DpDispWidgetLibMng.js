@@ -345,7 +345,7 @@ window.DpDispWidgetLibMng = {
     <bo-search-area :loading="uiState.loading" :show-actions="false"
     :columns="columns.baseSearch" :param="searchParam"
     @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
-      <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
+      <div class="search-actions">
         <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">
           변경됨 →
         </span>

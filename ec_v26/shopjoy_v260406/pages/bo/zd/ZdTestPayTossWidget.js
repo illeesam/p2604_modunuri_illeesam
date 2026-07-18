@@ -339,14 +339,19 @@ window.ZdTestPayTossWidget = {
 
     /* ##### [04] 액션 dispatch #################################################### */
 
-    const handleBtnAction = (cmd) => {
-      if (cmd === 'widget-mount')   return mountWidget();
-      if (cmd === 'pay-test')       return testPay();
-      if (cmd === 'confirm-auto')   return testConfirmAuto();
-      if (cmd === 'confirm-manual') return testConfirmManual();
-      if (cmd === 'cancel-test')    return testCancel();
-      if (cmd === 'keys-save')      return saveKeys();
+    const handleBtnAction = (cmd, param = {}) => {
+      if (cmd === 'widget-mount')    return mountWidget();
+      if (cmd === 'pay-test')        return testPay();
+      if (cmd === 'confirm-auto')    return testConfirmAuto();
+      if (cmd === 'confirm-manual')  return testConfirmManual();
+      if (cmd === 'cancel-test')     return testCancel();
+      if (cmd === 'keys-save')       return saveKeys();
       if (cmd === 'orderid-refresh') return refreshOrderId();
+      if (cmd === 'panel-toggle')    { uiState[param] = !uiState[param]; return; }
+      if (cmd === 'receipt-open') {
+        if (param) window.open(param, '_blank');
+        return;
+      }
     };
 
     /* ##### [05] 폼 컬럼 정의 #################################################### */
@@ -478,7 +483,7 @@ window.ZdTestPayTossWidget = {
 
   <!-- 프로세스 다이어그램 -->
   <div class="card" style="margin-bottom:12px">
-    <div class="toolbar" style="cursor:pointer" @click="uiState.diagramOpen=!uiState.diagramOpen">
+    <div class="toolbar" style="cursor:pointer" @click="handleBtnAction('panel-toggle', 'diagramOpen')">
       <span class="list-title">버튼별 프로세스 다이어그램</span>
       <span style="font-size:11px;color:#888;margin-left:8px">위젯렌더링 · 결제하기 · 수동승인 · 결제취소 — 클릭하여 {{ uiState.diagramOpen ? '접기' : '펼치기' }}</span>
       <span style="margin-left:auto;font-size:16px;color:#aaa">{{ uiState.diagramOpen ? '▲' : '▼' }}</span>
@@ -496,7 +501,7 @@ window.ZdTestPayTossWidget = {
       <!-- 🗂 ERD — 주문/결제/클레임/배송 테이블 관계도 -->
       <div>
         <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
-          @click="uiState.erdOpen=!uiState.erdOpen">
+          @click="handleBtnAction('panel-toggle', 'erdOpen')">
           <span style="background:#374151;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px">🗂</span>
           주문 · 결제 · 클레임 · 배송 ERD (접기/펼치기)
           <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.erdOpen ? '▲' : '▼' }}</span>
@@ -926,7 +931,7 @@ claim_type_cd:
         <div style="width:320px;flex-shrink:0">
           <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;overflow:hidden">
             <div style="padding:6px 10px;background:#dbeafe;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
-              @click="uiState.apiPanel1Open=!uiState.apiPanel1Open">
+              @click="handleBtnAction('panel-toggle', 'apiPanel1Open')">
               <span style="font-size:11px;font-weight:700;color:#1e40af">📡 API 상세 (접기/펼치기)</span>
               <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel1Open ? '▲' : '▼' }}</span>
             </div>
@@ -1160,7 +1165,7 @@ customerKey: "ANONYMOUS"  // 비회원 고정
         <div style="width:320px;flex-shrink:0">
           <div style="background:#faf5ff;border:1px solid #d8b4fe;border-radius:6px;overflow:hidden">
             <div style="padding:6px 10px;background:#f3e8ff;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
-              @click="uiState.apiPanel2Open=!uiState.apiPanel2Open">
+              @click="handleBtnAction('panel-toggle', 'apiPanel2Open')">
               <span style="font-size:11px;font-weight:700;color:#7c3aed">📡 API 상세 (접기/펼치기)</span>
               <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel2Open ? '▲' : '▼' }}</span>
             </div>
@@ -1323,7 +1328,7 @@ amount=1000                  // ⚠ 위변조 가능 — 서버에서 od_pay.pay
         <div style="width:320px;flex-shrink:0">
           <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;overflow:hidden">
             <div style="padding:6px 10px;background:#dcfce7;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
-              @click="uiState.apiPanel3Open=!uiState.apiPanel3Open">
+              @click="handleBtnAction('panel-toggle', 'apiPanel3Open')">
               <span style="font-size:11px;font-weight:700;color:#0f766e">📡 API 상세 (접기/펼치기)</span>
               <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel3Open ? '▲' : '▼' }}</span>
             </div>
@@ -1493,7 +1498,7 @@ Content-Type: application/json
         <div style="width:320px;flex-shrink:0">
           <div style="background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;overflow:hidden">
             <div style="padding:6px 10px;background:#fee2e2;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
-              @click="uiState.apiPanel4Open=!uiState.apiPanel4Open">
+              @click="handleBtnAction('panel-toggle', 'apiPanel4Open')">
               <span style="font-size:11px;font-weight:700;color:#dc2626">📡 API 상세 (접기/펼치기)</span>
               <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel4Open ? '▲' : '▼' }}</span>
             </div>
@@ -1690,7 +1695,7 @@ Authorization: Basic {Base64(secretKey:)}
         <div style="width:320px;flex-shrink:0">
           <div style="background:#f0f9ff;border:1px solid #7dd3fc;border-radius:6px;overflow:hidden">
             <div style="padding:6px 10px;background:#e0f2fe;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
-              @click="uiState.apiPanel5Open=!uiState.apiPanel5Open">
+              @click="handleBtnAction('panel-toggle', 'apiPanel5Open')">
               <span style="font-size:11px;font-weight:700;color:#0369a1">📡 API 상세 (접기/펼치기)</span>
               <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel5Open ? '▲' : '▼' }}</span>
             </div>
@@ -2457,7 +2462,7 @@ od_order:
           <span class="badge badge-green" style="margin-left:6px;font-size:10px">DONE</span>
         </div>
         <bo-grid :columns="confirmGridColumns" :rows="[result.confirmResult]" :show-row-num="false"
-          @cell-click="(e) => { if (e.colKey==='receiptUrl' && result.confirmResult.receiptUrl) window.open(result.confirmResult.receiptUrl, '_blank'); }" />
+          @cell-click="e => handleBtnAction('receipt-open', e.colKey==='receiptUrl' ? result.confirmResult.receiptUrl : null)" />
         <!-- 승인 응답 핵심 3필드 설명 -->
         <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:11px;padding:8px 10px;background:#ecfdf5;border-radius:5px;border:1px solid #a7f3d0">
           <div style="display:flex;gap:8px;align-items:baseline">

@@ -186,6 +186,83 @@ window.PdProdDtl = {
       // 코드그룹 모달 열기
       } else if (cmd === 'codeGrpModal-open') {
         return openCodeGrpModal(param.codeGrp, param.title);
+      // 옵션 그룹 추가
+      } else if (cmd === 'optGroup-add') {
+        return addOptGroup();
+      // 옵션 그룹 삭제
+      } else if (cmd === 'optGroup-remove') {
+        return removeOptGroup(param);
+      // 옵션 값 추가
+      } else if (cmd === 'optItem-add') {
+        return addOptItem(param);
+      // 옵션 값 삭제
+      } else if (cmd === 'optItem-remove') {
+        return removeOptItem(param.grp, param.ii);
+      // 콘텐츠 블록 추가
+      } else if (cmd === 'contentBlock-add') {
+        return addContentBlock(param);
+      // 콘텐츠 블록 삭제
+      } else if (cmd === 'contentBlock-remove') {
+        return removeContentBlock(param);
+      // 콘텐츠 블록 파일 초기화
+      } else if (cmd === 'contentBlock-clearFile') {
+        param.content = ''; param.fileName = '';
+        return;
+      // 미리보기 디바이스 변경
+      } else if (cmd === 'preview-setDevice') {
+        uiState.previewDevice = param;
+        return;
+      // 플랜 체크 삭제
+      } else if (cmd === 'plan-deleteChecked') {
+        return deletePlanChecked();
+      // 플랜 행 추가
+      } else if (cmd === 'plan-addRow') {
+        return addPlanRow();
+      // 이미지 파일 선택 (파일 input 트리거)
+      } else if (cmd === 'img-triggerFile') {
+        return triggerFileInput();
+      // 이미지 URL 입력 추가
+      } else if (cmd === 'img-addByUrl') {
+        return addImageByUrl();
+      // 이미지 대표 설정
+      } else if (cmd === 'img-setMain') {
+        return setMain(param);
+      // 이미지 삭제
+      } else if (cmd === 'img-remove') {
+        return removeImage(param);
+      // 연관상품/세트 피커 열기
+      } else if (cmd === 'prodPicker-open') {
+        return openProdPicker(param);
+      } else if (cmd === 'rel-remove') {
+        return removeRelProd(param);
+      } else if (cmd === 'codeProd-remove') {
+        return removeCodeProd(param);
+      } else if (cmd === 'sku-filterReset') {
+        uiState.skuFilter1 = ''; uiState.skuFilter2 = ''; uiState.skuFilterStock = '';
+      } else if (cmd === 'sku-generate') {
+        return generateSkus();
+      } else if (cmd === 'sku-move') {
+        return moveSku(param.sku, param.dir);
+      } else if (cmd === 'tabPage-change') {
+        return onTabPageChange(param.key, param.pageNo);
+      } else if (cmd === 'bundlePicker-open') {
+        bundlePickerOpen.value = true;
+      } else if (cmd === 'bundleItem-remove') {
+        return removeBundleItem(param);
+      } else if (cmd === 'bundlePicker-search') {
+        return fnLoadBundlePicker();
+      } else if (cmd === 'bundlePicker-select') {
+        return addBundleItem(param);
+      } else if (cmd === 'setPicker-open') {
+        setPickerOpen.value = true;
+      } else if (cmd === 'setItem-addEmpty') {
+        return addSetItem(null);
+      } else if (cmd === 'setItem-remove') {
+        return removeSetItem(param);
+      } else if (cmd === 'setPicker-search') {
+        return fnLoadSetPicker();
+      } else if (cmd === 'setPicker-select') {
+        return addSetItem(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -2041,7 +2118,7 @@ window.PdProdDtl = {
             옵션 차원
             <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_opt, 최대 2단)</span>
           </div>
-          <button class="btn btn-sm btn-secondary" @click="addOptGroup" :disabled="optGroups.length>=2">+ 차원 추가</button>
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('optGroup-add')" :disabled="optGroups.length>=2">+ 차원 추가</button>
         </div>
         <!-- ===== ■.■.■.■. 차원별 블록 ============================================ -->
         <div v-for="(grp, gi) in optGroups" :key="grp?._id"
@@ -2054,7 +2131,7 @@ window.PdProdDtl = {
             </span>
             <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
               style="flex:1;min-width:100px;font-size:13px;" />
-            <button class="btn btn-xs btn-danger" @click="removeOptGroup(gi)">삭제</button>
+            <button class="btn btn-xs btn-danger" @click="handleBtnAction('optGroup-remove', gi)">삭제</button>
           </div>
           <!-- ===== ■.■.■.■.■. 옵션 값 테이블 (pd_prod_opt_item) ===================== -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -2067,7 +2144,7 @@ window.PdProdDtl = {
               </span>
               <span v-else-if="!grp.level2Cd" style="color:#888;margin-left:6px;">직접 입력 모드</span>
             </div>
-            <button class="btn btn-xs btn-secondary" @click="addOptItem(grp)" style="flex-shrink:0;">+ 값 추가</button>
+            <button class="btn btn-xs btn-secondary" @click="handleBtnAction('optItem-add', grp)" style="flex-shrink:0;">+ 값 추가</button>
           </div>
           <!-- ===== ■.■.■.■.■. 옵션 값 스크롤 컨테이너 — 1단=5행, 2단=10행 정도 보이고 그 이상은 세로 스크롤 ===== -->
           <div :style="'max-height:'+(grp.level===1?'200px':'340px')+';overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;margin-bottom:6px;background:#fff;'">
@@ -2131,7 +2208,7 @@ window.PdProdDtl = {
                   </td>
                   <td style="padding:2px 4px;text-align:center;">
                     <button style="background:#ff4d4f;color:#fff;border:none;border-radius:3px;width:20px;height:20px;font-size:11px;line-height:1;padding:0;"
-                      @click="removeOptItem(grp, ii)">
+                      @click="handleBtnAction('optItem-remove', {grp:grp, ii:ii})">
                       ✕
                     </button>
                   </td>
@@ -2172,9 +2249,9 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 상단 툴바: 블록 추가 버튼 (수정모드 전용) ========================= -->
       <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;">
         <span style="font-size:13px;font-weight:700;color:#333;margin-right:4px;">상품설명 블록</span>
-        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="addContentBlock('file')">+ 첨부 이미지</button>
-        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="addContentBlock('url')">+ URL 이미지</button>
-        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="addContentBlock('html')">+ HTML 에디터</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('contentBlock-add', 'file')">+ 첨부 이미지</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('contentBlock-add', 'url')">+ URL 이미지</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('contentBlock-add', 'html')">+ HTML 에디터</button>
         <span style="font-size:12px;color:#aaa;margin-left:4px;">{{ contentBlocks.length }}개 블록<span v-if="!cfDtlMode"> · 좌측 ≡ 드래그로 순서 변경</span></span>
       </div>
       <!-- ===== ■.■.■. 스플릿 패널 (편집 좌 + 미리보기 우) ============================== -->
@@ -2197,7 +2274,7 @@ window.PdProdDtl = {
                 {{ block.type==='file' ? '📎 첨부' : block.type==='url' ? '🔗 URL' : '✏ HTML' }}
               </span>
               <span style="font-size:12px;color:#888;flex:1;">블록 {{ bi+1 }}</span>
-              <button v-if="!cfDtlMode" class="btn btn-xs btn-danger" @click="removeContentBlock(bi)" title="삭제">✕</button>
+              <button v-if="!cfDtlMode" class="btn btn-xs btn-danger" @click="handleBtnAction('contentBlock-remove', bi)" title="삭제">✕</button>
             </div>
             <!-- ===== ■.■.■.■.■.■. 첨부 방식 ========================================= -->
             <div v-if="block.type==='file'" style="padding:12px;">
@@ -2209,7 +2286,7 @@ window.PdProdDtl = {
                 📎 파일 선택
                 <input type="file" accept="image/*" style="display:none;" @change="onBlockFileChange(block, $event)" />
               </label>
-              <button v-if="!cfDtlMode ? (block.content) : false" class="btn btn-xs btn-danger" @click="block.content='';block.fileName=''" style="margin-left:6px;">
+              <button v-if="!cfDtlMode ? (block.content) : false" class="btn btn-xs btn-danger" @click="handleBtnAction('contentBlock-clearFile', block)" style="margin-left:6px;">
                 삭제
               </button>
               <span v-if="cfDtlMode ? (!block.content) : false" style="font-size:12px;color:#bbb;">이미지 없음</span>
@@ -2244,13 +2321,13 @@ window.PdProdDtl = {
           <!-- ===== ■.■.■.■.■. 디바이스 탭 ========================================== -->
           <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;">
             <span style="font-size:11px;color:#aaa;margin-right:4px;">미리보기</span>
-            <button class="btn btn-xs" :class="previewDevice==='pc'?'btn-primary':'btn-secondary'" @click="previewDevice='pc'" style="font-size:11px;padding:2px 8px;">
+            <button class="btn btn-xs" :class="previewDevice==='pc'?'btn-primary':'btn-secondary'" @click="handleBtnAction('preview-setDevice', 'pc')" style="font-size:11px;padding:2px 8px;">
               🖥 PC
             </button>
-            <button class="btn btn-xs" :class="previewDevice==='tablet'?'btn-primary':'btn-secondary'" @click="previewDevice='tablet'" style="font-size:11px;padding:2px 8px;">
+            <button class="btn btn-xs" :class="previewDevice==='tablet'?'btn-primary':'btn-secondary'" @click="handleBtnAction('preview-setDevice', 'tablet')" style="font-size:11px;padding:2px 8px;">
               📱 태블릿
             </button>
-            <button class="btn btn-xs" :class="previewDevice==='mobile'?'btn-primary':'btn-secondary'" @click="previewDevice='mobile'" style="font-size:11px;padding:2px 8px;">
+            <button class="btn btn-xs" :class="previewDevice==='mobile'?'btn-primary':'btn-secondary'" @click="handleBtnAction('preview-setDevice', 'mobile')" style="font-size:11px;padding:2px 8px;">
               📲 모바일
             </button>
           </div>
@@ -2271,12 +2348,12 @@ window.PdProdDtl = {
               <div v-if="contentBlocks.length===0" style="color:#bbb;text-align:center;padding:40px;font-size:13px;">
                 블록을 추가하면 여기에 미리보기가 표시됩니다.
               </div>
-              <template v-for="block in contentBlocks" :key="block?._id">
-                <div v-if="block.type==='file'||block.type==='url'" style="margin-bottom:12px;">
-                  <img v-if="block.content" :src="block.content" style="max-width:100%;height:auto;display:block;border-radius:4px;" />
-                </div>
-                <div v-else-if="block.type==='html'" style="margin-bottom:12px;" v-html="block.content||''"></div>
-              </template>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <template v-for="block in contentBlocks" :key="block?._id">
+                  <img v-if="(block.type==='file'||block.type==='url') && block.content" :src="block.content" style="max-width:100%;height:auto;display:block;border-radius:4px;" />
+                  <div v-else-if="block.type==='html'" v-html="block.content||''"></div>
+                </template>
+              </div>
             </div>
           </div>
         </div>
@@ -2321,8 +2398,8 @@ window.PdProdDtl = {
           <span style="font-size:12px;font-weight:400;color:#888;">{{ cfPlanVisible.length }}건</span>
         </div>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn-sm btn-danger"    @click="deletePlanChecked">체크삭제</button>
-          <button class="btn btn-sm btn-secondary" @click="addPlanRow">행추가</button>
+          <button class="btn btn-sm btn-danger"    @click="handleBtnAction('plan-deleteChecked')">체크삭제</button>
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('plan-addRow')">행추가</button>
         </div>
       </div>
       <div style="overflow-x:auto;">
@@ -2492,13 +2569,13 @@ window.PdProdDtl = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🖼 이미지</div>
       <input type="file" ref="fileInputRef" multiple accept="image/*" style="display:none" @change="onFileChange" />
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
-        <button v-if="!cfDtlMode" class="btn btn-secondary" @click="triggerFileInput">+ 파일 선택</button>
-        <button v-if="!cfDtlMode" class="btn btn-secondary" @click="addImageByUrl">+ URL 입력</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary" @click="handleBtnAction('img-triggerFile')">+ 파일 선택</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary" @click="handleBtnAction('img-addByUrl')">+ URL 입력</button>
         <span style="font-size:12px;color:#aaa;">{{ images.length }}개</span>
       </div>
       <div v-if="images.length===0"
         :style="'border:2px dashed #e0e0e0;border-radius:10px;padding:22px;text-align:center;color:#bbb;font-size:13px;' + (cfDtlMode ? '' : 'cursor:pointer;')"
-        @click="cfDtlMode ? null : triggerFileInput()">
+        @click="cfDtlMode ? null : handleBtnAction('img-triggerFile')">
         {{ cfDtlMode ? '등록된 이미지가 없습니다.' : '클릭하거나 파일을 끌어다 놓으세요' }}
       </div>
       <!-- ===== ■.■.■. 이미지 5행 보이는 스크롤 컨테이너 (행 ≈ 116px × 5 + 여유 → 620px) ===== -->
@@ -2551,11 +2628,11 @@ window.PdProdDtl = {
           </div>
           <!-- ===== ■.■.■.■.■. 우측 버튼 =========================================== -->
           <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-            <button v-if="!cfDtlMode ? (!img.isMain) : false" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
+            <button v-if="!cfDtlMode ? (!img.isMain) : false" class="btn btn-sm btn-secondary" @click="handleBtnAction('img-setMain', img.id)" style="font-size:11px;">대표 설정</button>
             <span v-if="img.isMain" style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">
               ★ 대표
             </span>
-            <button v-if="!cfDtlMode" class="btn btn-sm btn-danger" @click="removeImage(img.id)" style="font-size:11px;">삭제</button>
+            <button v-if="!cfDtlMode" class="btn btn-sm btn-danger" @click="handleBtnAction('img-remove', img.id)" style="font-size:11px;">삭제</button>
             <span style="font-size:11px;color:#bbb;">{{ idx+1 }}/{{ images.length }}</span>
           </div>
         </div>
@@ -2578,9 +2655,9 @@ window.PdProdDtl = {
     <div class="dtl-pane" v-show="showTab('related')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔗 연관상품</div>
       <!-- 보기모드: fieldset disabled 로 추가/삭제/선택 버튼·input 자동 비활성 (편집 잠금) -->
-      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
+      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;display:flex;flex-direction:column;gap:24px;">
       <!-- ===== ■.■.■. 섹션1: 연관상품 =========================================== -->
-      <div style="margin-bottom:28px;">
+      <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div style="font-size:13px;font-weight:700;">
             연관상품
@@ -2591,7 +2668,7 @@ window.PdProdDtl = {
             </span>
             <span class="badge badge-blue" style="margin-left:6px;">{{ relProds.length }}건</span>
           </div>
-          <button class="btn btn-sm btn-secondary" @click="openProdPicker('rel')">+ 추가</button>
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('prodPicker-open', 'rel')">+ 추가</button>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
         <bo-grid bare :columns="columns.relProdGrid" :rows="relProds" row-key="_id"
@@ -2599,13 +2676,13 @@ window.PdProdDtl = {
           @reorder="onRelDrop"
           @ref-click="({id}) => navigate('pdProdDtl', { id })">
           <template #row-actions="{ idx }">
-            <button class="btn btn-xs btn-danger" @click="removeRelProd(idx)">삭제</button>
+            <button class="btn btn-xs btn-danger" @click="handleBtnAction('rel-remove', idx)">삭제</button>
           </template>
         </bo-grid>
       </div>
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;" />
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:0;" />
       <!-- ===== ■.■.■. 섹션2: 코디상품 =========================================== -->
-      <div style="margin-bottom:20px;">
+      <div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div style="font-size:13px;font-weight:700;">
             코디상품
@@ -2616,7 +2693,7 @@ window.PdProdDtl = {
             </span>
             <span class="badge badge-purple" style="margin-left:6px;">{{ codeProds.length }}건</span>
           </div>
-          <button class="btn btn-sm btn-secondary" @click="openProdPicker('code')">+ 추가</button>
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('prodPicker-open', 'code')">+ 추가</button>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
         <bo-grid bare :columns="columns.codeProdGrid" :rows="codeProds" row-key="_id"
@@ -2625,7 +2702,7 @@ window.PdProdDtl = {
           @ref-click="({id}) => navigate('pdProdDtl', { id })">
           <template #row-actions="{ idx }">
             <td style="text-align:center;;white-space:nowrap;">
-              <button class="btn btn-xs btn-danger" @click="removeCodeProd(idx)">삭제</button>
+              <button class="btn btn-xs btn-danger" @click="handleBtnAction('codeProd-remove', idx)">삭제</button>
             </td>
           </template>
         </bo-grid>
@@ -2693,11 +2770,11 @@ window.PdProdDtl = {
               </select>
             </div>
             <button v-if="skuFilter1||skuFilter2||skuFilterStock" class="btn btn-xs btn-secondary"
-              @click="skuFilter1='';skuFilter2='';skuFilterStock=''">
+              @click="handleBtnAction('sku-filterReset')">
               ✕ 초기화
             </button>
             <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong> {{ cfTotalStock }} </strong> 개</span>
-            <button class="btn btn-sm btn-secondary" @click="generateSkus">🔄 SKU 재생성</button>
+            <button class="btn btn-sm btn-secondary" @click="handleBtnAction('sku-generate')">🔄 SKU 재생성</button>
           </div>
         </div>
         <!-- 컴팩트 SKU 테이블 — 페이지 없이 약 10행 보이는 스크롤 컨테이너 (행 높이 24px × 10 + 헤더 ≈ 280px) -->
@@ -2731,12 +2808,12 @@ window.PdProdDtl = {
                 :style="(sku.useYn==='N' ? 'opacity:0.45;background:#f5f5f5;' : (sku.statusCd==='SOLD_OUT'||sku.stock===0 ? 'background:#fffbe6;' : sku.statusCd==='SUSPENDED'?'background:#fff1f0;':(ii%2===1?'background:#fafafa;':'')))+'border-bottom:1px solid #f0f0f0;transition:background 0.1s;'">
                 <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
                 <td style="padding:2px 2px;text-align:center;white-space:nowrap;">
-                  <button type="button" @click="moveSku(sku,'up')"   :disabled="ii===0"
+                  <button type="button" @click="handleBtnAction('sku-move', {sku, dir:'up'})"   :disabled="ii===0"
                     style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;color:#666;margin-right:1px;"
                     title="위로">
                     ▲
                   </button>
-                  <button type="button" @click="moveSku(sku,'down')" :disabled="ii===cfSkusFiltered.length-1"
+                  <button type="button" @click="handleBtnAction('sku-move', {sku, dir:'down'})" :disabled="ii===cfSkusFiltered.length-1"
                     style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;color:#666;"
                     title="아래로">
                     ▼
@@ -2784,7 +2861,7 @@ window.PdProdDtl = {
               <tr v-else-if="cfSkusFiltered.length===0">
                 <td :colspan="optGroups.length>1?11:10" style="text-align:center;color:#f5a623;padding:12px;font-size:12px;">
                   필터 조건에 맞는 SKU가 없습니다.
-                  <button class="btn btn-xs btn-secondary" @click="skuFilter1='';skuFilter2='';skuFilterStock=''">필터 초기화</button>
+                  <button class="btn btn-xs btn-secondary" @click="handleBtnAction('sku-filterReset')">필터 초기화</button>
                 </td>
               </tr>
             </tbody>
@@ -2831,15 +2908,15 @@ window.PdProdDtl = {
               row-key="prodSkuId" :row-style="fnRemainSkuRowStyle" empty-text="잔존 SKU 데이터가 없습니다."></bo-grid>
           </div>
           <div v-if="tabData.skus.length > tabPage.skus.pageSize" class="pagination" style="margin:8px 0 16px;">
-            <button class="pager" @click="onTabPageChange('skus',1)" :disabled="tabPage.skus.pageNo===1">«</button>
-            <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo-1)" :disabled="tabPage.skus.pageNo===1">‹</button>
-            <button v-for="n in fnTabPageNos('skus')" :key="n" class="pager" :class="{active:tabPage.skus.pageNo===n}" @click="onTabPageChange('skus',n)">
+            <button class="pager" @click="handleBtnAction('tabPage-change', {key:'skus', pageNo:1})" :disabled="tabPage.skus.pageNo===1">«</button>
+            <button class="pager" @click="handleBtnAction('tabPage-change', {key:'skus', pageNo:tabPage.skus.pageNo-1})" :disabled="tabPage.skus.pageNo===1">‹</button>
+            <button v-for="n in fnTabPageNos('skus')" :key="n" class="pager" :class="{active:tabPage.skus.pageNo===n}" @click="handleBtnAction('tabPage-change', {key:'skus', pageNo:n})">
               {{ n }}
             </button>
-            <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo+1)" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">
+            <button class="pager" @click="handleBtnAction('tabPage-change', {key:'skus', pageNo:tabPage.skus.pageNo+1})" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">
               ›
             </button>
-            <button class="pager" @click="onTabPageChange('skus',cfTabTotalPages('skus'))" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">
+            <button class="pager" @click="handleBtnAction('tabPage-change', {key:'skus', pageNo:cfTabTotalPages('skus')})" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">
               »
             </button>
             <span class="pager-right">{{ tabData.skus.length }}건 / {{ tabPage.skus.pageSize }}개씩</span>
@@ -2876,7 +2953,7 @@ window.PdProdDtl = {
           <span v-if="!cfBundleRateOk" style="font-size:11px;font-weight:400;margin-left:4px;">(100% 가 되어야 합니다)</span>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;">
-          <button class="btn btn-sm btn-secondary" @click="bundlePickerOpen=true">+ 상품 추가</button>
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('bundlePicker-open')">+ 상품 추가</button>
         </div>
       </div>
       <!-- ===== ■.■.■. 구성 목록 ================================================ -->
@@ -2885,7 +2962,7 @@ window.PdProdDtl = {
         @cell-change="e => { e.row[e.col.key] = e.value; }">
         <template #row-actions="{ row, idx }">
           <td style="text-align:center;white-space:nowrap;">
-            <button class="btn btn-xs btn-danger" @click="removeBundleItem(idx)">삭제</button>
+            <button class="btn btn-xs btn-danger" @click="handleBtnAction('bundleItem-remove', idx)">삭제</button>
           </td>
         </template>
       </bo-grid>
@@ -2904,11 +2981,11 @@ window.PdProdDtl = {
       <bo-modal :show="bundlePickerOpen" title="묶음 상품 선택" box-style="width:640px;max-height:80vh;" @close="bundlePickerOpen=false">
         <div style="display:flex;gap:8px;margin-bottom:12px;">
           <input class="form-control" v-model="bundlePickerSearch" placeholder="상품명 검색" style="flex:1;" @keyup.enter="fnLoadBundlePicker" />
-          <button class="btn btn_search" @click="fnLoadBundlePicker">조회</button>
+          <button class="btn btn_search" @click="handleBtnAction('bundlePicker-search')">조회</button>
         </div>
         <bo-grid bare :columns="columns.bundlePickerGrid" :rows="bundlePickerRows" row-key="prodId"
           :loading="bundlePickerLoading" empty-text="조회 버튼으로 상품을 검색하세요."
-          @cell-click="e => addBundleItem(e.row)" />
+          @cell-click="e => handleBtnAction('bundlePicker-select', e.row)" />
         <bo-pager :pager="bundlePickerPager" @set-page="n => { bundlePickerPager.pageNo=n; fnLoadBundlePicker(); }" style="margin-top:8px;" />
       </bo-modal>
     </div>
@@ -2925,8 +3002,8 @@ window.PdProdDtl = {
           <br><span style="font-size:11px;color:#888;">비상품 구성품은 [빈 행 추가] 후 설명을 입력하세요.</span>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;">
-          <button class="btn btn-sm btn-secondary" @click="addSetItem(null)">+ 빈 행 추가</button>
-          <button class="btn btn-sm btn-secondary" @click="setPickerOpen=true">+ 상품 추가</button>
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('setItem-addEmpty')">+ 빈 행 추가</button>
+          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('setPicker-open')">+ 상품 추가</button>
         </div>
       </div>
       <!-- ===== ■.■.■. 구성 목록 ================================================ -->
@@ -2935,7 +3012,7 @@ window.PdProdDtl = {
         @cell-change="e => { e.row[e.col.key] = e.value; }">
         <template #row-actions="{ row, idx }">
           <td style="text-align:center;white-space:nowrap;">
-            <button class="btn btn-xs btn-danger" @click="removeSetItem(idx)">삭제</button>
+            <button class="btn btn-xs btn-danger" @click="handleBtnAction('setItem-remove', idx)">삭제</button>
           </td>
         </template>
       </bo-grid>
@@ -2954,11 +3031,11 @@ window.PdProdDtl = {
       <bo-modal :show="setPickerOpen" title="세트 구성 상품 선택" box-style="width:640px;max-height:80vh;" @close="setPickerOpen=false">
         <div style="display:flex;gap:8px;margin-bottom:12px;">
           <input class="form-control" v-model="setPickerSearch" placeholder="상품명 검색" style="flex:1;" @keyup.enter="fnLoadSetPicker" />
-          <button class="btn btn_search" @click="fnLoadSetPicker">조회</button>
+          <button class="btn btn_search" @click="handleBtnAction('setPicker-search')">조회</button>
         </div>
         <bo-grid bare :columns="columns.bundlePickerGrid" :rows="setPickerRows" row-key="prodId"
           :loading="setPickerLoading" empty-text="조회 버튼으로 상품을 검색하세요."
-          @cell-click="e => addSetItem(e.row)" />
+          @cell-click="e => handleBtnAction('setPicker-select', e.row)" />
         <bo-pager :pager="setPickerPager" @set-page="n => { setPickerPager.pageNo=n; fnLoadSetPicker(); }" style="margin-top:8px;" />
       </bo-modal>
     </div>

@@ -89,6 +89,8 @@ window.DashboardBoEc02 = {
       if (cmd === 'filters-toggle')            return toggle(filters[param.key], param.v);
       if (cmd === 'xview-drill-close')         { uiState.xviewDrillVisible = false; return; }
       if (cmd === 'info-close')                { uiState.infoPanel = null; return; }
+      if (cmd === 'infoTab-set')               { if (uiState.infoPanel) uiState.infoPanel.tab = param; return; }
+      if (cmd === 'clipboard-copy')            { if (param) navigator.clipboard.writeText(param); return; }
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -1013,29 +1015,29 @@ window.DashboardBoEc02 = {
       </div>
       <!-- 탭 바 (3탭) -->
       <div style="display:flex;border-bottom:1px solid #e5e7eb;background:#f8fafc;">
-        <button @click="fnInfoTab('src')"
+        <button @click="handleBtnAction('infoTab-set', 'src')"
           :style="{flex:1,padding:'7px 4px',fontSize:'11px',fontWeight:700,border:'none',cursor:'pointer',borderBottom:uiState.infoPanel.tab==='src'?'2px solid #10b981':'2px solid transparent',color:uiState.infoPanel.tab==='src'?'#10b981':'#666',background:'transparent'}">
           📝 소스정보
         </button>
-        <button @click="fnInfoTab('opt')"
+        <button @click="handleBtnAction('infoTab-set', 'opt')"
           :style="{flex:1,padding:'7px 4px',fontSize:'11px',fontWeight:700,border:'none',cursor:'pointer',borderBottom:uiState.infoPanel.tab==='opt'?'2px solid #e8587a':'2px solid transparent',color:uiState.infoPanel.tab==='opt'?'#e8587a':'#666',background:'transparent'}">
           ⚙ ECharts Option
         </button>
-        <button @click="fnInfoTab('data')"
+        <button @click="handleBtnAction('infoTab-set', 'data')"
           :style="{flex:1,padding:'7px 4px',fontSize:'11px',fontWeight:700,border:'none',cursor:'pointer',borderBottom:uiState.infoPanel.tab==='data'?'2px solid #3b82f6':'2px solid transparent',color:uiState.infoPanel.tab==='data'?'#3b82f6':'#666',background:'transparent'}">
           📊 원시 데이터
         </button>
       </div>
       <!-- 소스정보 탭 본문 -->
-      <div v-if="uiState.infoPanel.tab==='src'" style="padding:14px 16px;font-size:11px;line-height:1.7;max-height:400px;overflow-y:auto;background:#fafbfc;">
+      <div v-if="uiState.infoPanel.tab==='src'" style="padding:14px 16px;font-size:11px;line-height:1.7;max-height:400px;overflow-y:auto;background:#fafbfc;display:flex;flex-direction:column;gap:12px;">
         <template v-if="uiState.infoPanel.src">
           <!-- API 섹션 -->
-          <div style="margin-bottom:12px;">
+          <div>
             <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">API 엔드포인트</div>
             <div style="background:#1e1e2e;color:#7dd3fc;border-radius:6px;padding:8px 12px;font-size:11px;">{{ uiState.infoPanel.src.url }}</div>
           </div>
           <!-- 요청 파라미터 -->
-          <div style="margin-bottom:12px;">
+          <div>
             <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">요청 파라미터 (현재 필터 기준)</div>
             <div v-if="uiState.infoPanel.apiParams" style="background:#1e1e2e;border-radius:6px;overflow:hidden;">
               <table style="width:100%;border-collapse:collapse;">
@@ -1048,19 +1050,19 @@ window.DashboardBoEc02 = {
             <div v-else style="color:#aaa;font-size:11px;padding:6px 0;">(실시간 로컬 생성 — API 미사용)</div>
           </div>
           <!-- 차트 유형 -->
-          <div style="margin-bottom:12px;">
+          <div>
             <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">차트 유형</div>
             <div style="display:inline-flex;align-items:center;gap:6px;background:#fff0f4;border:1px solid #fecdd3;border-radius:6px;padding:5px 12px;color:#e8587a;font-size:11px;font-weight:700;">
               📊 {{ uiState.infoPanel.src.chartType }}
             </div>
           </div>
           <!-- 데이터 필드 -->
-          <div style="margin-bottom:12px;">
+          <div>
             <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">응답 데이터 필드 (data.{{ uiState.infoPanel.src.dataKey }})</div>
             <div style="background:#1e1e2e;color:#86efac;border-radius:6px;padding:8px 12px;font-size:10.5px;line-height:1.8;">{{ uiState.infoPanel.src.fields }}</div>
           </div>
           <!-- 설명 -->
-          <div style="margin-bottom:12px;">
+          <div>
             <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">위젯 설명</div>
             <div style="background:#f0fdf4;border-left:3px solid #10b981;border-radius:0 6px 6px 0;padding:8px 12px;color:#065f46;font-size:11px;line-height:1.7;font-family:sans-serif;">{{ uiState.infoPanel.src.desc }}</div>
           </div>
@@ -1089,7 +1091,7 @@ window.DashboardBoEc02 = {
           <span style="color:#10b981;font-weight:700;">data.{{ uiState.infoPanel.src.dataKey }}</span>
         </div>
         <pre :style="{margin:0,padding:'12px 14px',fontSize:'10.5px',lineHeight:'1.55',maxHeight:'360px',overflowY:'auto',overflowX:'auto',background:'#1e1e2e',color:'#cdd6f4',whiteSpace:'pre',tabSize:2}">{{ uiState.infoPanel.tab==='opt' ? uiState.infoPanel.optJson : uiState.infoPanel.dataJson }}</pre>
-        <button @click="navigator.clipboard.writeText(uiState.infoPanel.tab==='opt'?uiState.infoPanel.optJson:uiState.infoPanel.dataJson)"
+        <button @click="handleBtnAction('clipboard-copy', uiState.infoPanel.tab==='opt'?uiState.infoPanel.optJson:uiState.infoPanel.dataJson)"
           title="클립보드 복사"
           style="position:absolute;top:8px;right:10px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#aaa;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">
           📋 복사

@@ -81,6 +81,36 @@ window.DpDispPanelDtl = {
       // 참조 모달
       } else if (cmd === 'refModal-open') {
         return showRefModal(param.type, param.id);
+      // 경로 picker 열기
+      } else if (cmd === 'pathPick-open') {
+        return openPathPick(param || 'form');
+      // 경로 선택 해제
+      } else if (cmd === 'path-clear') {
+        form.pathId = null;
+        return;
+      // 레이아웃 타입 변경
+      } else if (cmd === 'layout-setType') {
+        if (!cfDtlMode.value) form.layoutType = param;
+        return;
+      // 그리드 열 수 변경
+      } else if (cmd === 'layout-setGridCols') {
+        if (!cfDtlMode.value) form.gridCols = param;
+        return;
+      // 파일 항목 추가
+      } else if (cmd === 'fileList-add') {
+        return addFileItem();
+      // 파일 항목 삭제
+      } else if (cmd === 'fileList-remove') {
+        return removeFileItem(param);
+      // 행별 파일 항목 삭제
+      } else if (cmd === 'fileListRow-remove') {
+        return fnRemoveFileItemAt(param.row, param.idx);
+      // 행별 파일 항목 추가
+      } else if (cmd === 'fileListRow-add') {
+        return fnAddFileItemAt(param);
+      // 카드 미리보기 닫기
+      } else if (cmd === 'cardPreview-close') {
+        return closeCardPreview();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -1113,7 +1143,7 @@ window.DpDispPanelDtl = {
                   <template #pathPick>
                     <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'flex-end',gap:'6px',fontFamily:'monospace'}">
                       <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
-                      <button v-if="form.pathId != null" type="button" title="선택 해제" @click="form.pathId=null"
+                      <button v-if="form.pathId != null" type="button" title="선택 해제" @click="handleBtnAction('path-clear')"
                         style="background:none;border:none;padding:0 2px 2px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
                         x
                       </button>
@@ -1132,7 +1162,7 @@ window.DpDispPanelDtl = {
                     <label class="form-label">표시방식</label>
                     <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
                       <button v-for="o in codes.layout_types" :key="o?.codeValue"
-                        @click="!cfDtlMode ? (form.layoutType = o.codeValue) : null"
+                        @click="handleBtnAction('layout-setType', o.codeValue)"
                         type="button"
                         style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;transition:all .15s;"
                         :style="[o.codeValue==='grid'?'border-left:none;':'', form.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
@@ -1145,7 +1175,7 @@ window.DpDispPanelDtl = {
                     <div style="display:flex;align-items:center;gap:6px;">
                       <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
                         <button v-for="n in [1,2,3,4]" :key="n" type="button"
-                          @click="!cfDtlMode ? (form.gridCols = n) : null"
+                          @click="handleBtnAction('layout-setGridCols', n)"
                           style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;transition:all .15s;"
                           :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
                           {{ n }}
@@ -1403,13 +1433,13 @@ window.DpDispPanelDtl = {
                       empty-text="첨부파일이 없습니다. 아래 [+ 파일 추가] 버튼을 클릭하세요."
                       style="margin-bottom:8px;">
                       <template #row-actions="{ idx }">
-                        <button @click="removeFileItem(idx)"
+                        <button @click="handleBtnAction('fileList-remove', idx)"
                           style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;padding:2px 7px;font-size:12px;line-height:1.4;">
                           ✕
                         </button>
                       </template>
                     </bo-grid>
-                    <button @click="addFileItem"
+                    <button @click="handleBtnAction('fileList-add')"
                       style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;color:#555;">
                       + 파일 추가
                     </button>
@@ -1439,7 +1469,7 @@ window.DpDispPanelDtl = {
                     <div v-else-if="row.type==='event'">
                       <div style="display:flex;gap:8px;align-items:center;">
                         <input class="form-control" v-model="cfActiveRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="cfDtlMode" />
-                        <span v-if="cfActiveRow.eventId" class="ref-link" @click="showRefModal('event', Number(cfActiveRow.eventId))">
+                        <span v-if="cfActiveRow.eventId" class="ref-link" @click="handleBtnAction('refModal-open', {type:'event', id:Number(cfActiveRow.eventId)})">
                           보기
                         </span>
                       </div>
@@ -1466,7 +1496,7 @@ window.DpDispPanelDtl = {
                     <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">상품 링크</div>
                     <div style="display:flex;flex-wrap:wrap;gap:6px;">
                       <span v-for="pid in cfActiveRow.productIds.split(',').map(s=>s.trim()).filter(Boolean)" :key="pid"
-                        class="ref-link" @click="showRefModal('product', Number(pid))"
+                        class="ref-link" @click="handleBtnAction('refModal-open', {type:'product', id:Number(pid)})"
                         style="padding:2px 10px;background:#e6f4ff;border-radius:12px;font-size:12px;">
                         상품 #{{ pid }}
                       </span>
@@ -1648,7 +1678,7 @@ window.DpDispPanelDtl = {
               <template #pathPick2>
                 <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                   <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
-                  <button type="button" v-if="!cfDtlMode" @click="openPathPick('form')" title="표시경로 선택"
+                  <button type="button" v-if="!cfDtlMode" @click="handleBtnAction('pathPick-open', 'form')" title="표시경로 선택"
                     :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
                     @mouseover="$event.currentTarget.style.background='#eef2ff'"
                     @mouseout="$event.currentTarget.style.background='#fff'">
@@ -1758,12 +1788,12 @@ window.DpDispPanelDtl = {
                   <bo-grid bare :columns="fnFileListColsForRow(r)" :rows="fnGetFileListItems(r)" row-actions
                     empty-text="첨부파일이 없습니다." style="margin-bottom:8px;">
                     <template #row-actions="{ idx }">
-                      <button @click="fnRemoveFileItemAt(r,idx)" style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;padding:2px 7px;font-size:12px;line-height:1.4;">
+                      <button @click="handleBtnAction('fileListRow-remove', {row:r, idx:idx})" style="background:none;border:1px solid #fca5a5;border-radius:4px;color:#ef4444;padding:2px 7px;font-size:12px;line-height:1.4;">
                         ✕
                       </button>
                     </template>
                   </bo-grid>
-                  <button @click="fnAddFileItemAt(r)" style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;color:#555;">
+                  <button @click="handleBtnAction('fileListRow-add', r)" style="font-size:12px;padding:5px 12px;border:1px dashed #aaa;border-radius:5px;background:#fafafa;color:#555;">
                     + 파일 추가
                   </button>
                 </div>
@@ -1800,7 +1830,7 @@ window.DpDispPanelDtl = {
                       <div v-else-if="drow.type==='event'">
                         <div style="display:flex;gap:8px;align-items:center;">
                           <input class="form-control" v-model="r.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="cfDtlMode" />
-                          <span v-if="r.eventId" class="ref-link" @click="showRefModal('event', Number(r.eventId))">보기</span>
+                          <span v-if="r.eventId" class="ref-link" @click="handleBtnAction('refModal-open', {type:'event', id:Number(r.eventId)})">보기</span>
                         </div>
                         <div v-if="fnGetRelatedEvent(r)" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
                           <b>{{ fnGetRelatedEvent(r).title }}</b>
@@ -1831,7 +1861,7 @@ window.DpDispPanelDtl = {
                     <td style="padding:6px 8px;">
                       <div style="display:flex;flex-wrap:wrap;gap:6px;">
                         <span v-for="pid in r.productIds.split(',').map(s=>s.trim()).filter(Boolean)" :key="pid"
-                          class="ref-link" @click="showRefModal('product', Number(pid))"
+                          class="ref-link" @click="handleBtnAction('refModal-open', {type:'product', id:Number(pid)})"
                           style="padding:2px 10px;background:#e6f4ff;border-radius:12px;font-size:12px;">
                           상품 #{{ pid }}
                         </span>
@@ -1939,7 +1969,7 @@ window.DpDispPanelDtl = {
       </div>
       <!-- ===== ■.■.■. 푸터 ================================================== -->
       <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;">
-        <button @click="closeCardPreview" class="btn btn_close">닫기</button>
+        <button @click="handleBtnAction('cardPreview-close')" class="btn btn_close">닫기</button>
       </div>
     </div>
   </bo-modal>
