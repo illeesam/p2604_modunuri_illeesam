@@ -907,7 +907,7 @@ window.OrderPickModal = {
           </div>
         </div>
         <button type="button" @click="fnCallbackModal('self', {}, o)"
-          class="btn-blue btn-sm" style="flex-shrink:0;white-space:nowrap;">
+          class="btn btn_select" style="flex-shrink:0;white-space:nowrap;">
           선택
         </button>
       </div>

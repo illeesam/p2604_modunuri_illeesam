@@ -2986,7 +2986,7 @@ window.PdProdDtl = {
         <bo-grid bare :columns="columns.bundlePickerGrid" :rows="bundlePickerRows" row-key="prodId"
           :loading="bundlePickerLoading" empty-text="조회 버튼으로 상품을 검색하세요."
           @cell-click="e => handleBtnAction('bundlePicker-select', e.row)" />
-        <bo-pager :pager="bundlePickerPager" @set-page="n => { bundlePickerPager.pageNo=n; fnLoadBundlePicker(); }" style="margin-top:8px;" />
+        <bo-pager :pager="bundlePickerPager" :on-set-page="n => { bundlePickerPager.pageNo=n; fnLoadBundlePicker(); }" :on-size-change="() => { bundlePickerPager.pageNo=1; fnLoadBundlePicker(); }" style="margin-top:8px;" />
       </bo-modal>
     </div>
     <!-- ══════════════════════════════════════
@@ -3036,7 +3036,7 @@ window.PdProdDtl = {
         <bo-grid bare :columns="columns.bundlePickerGrid" :rows="setPickerRows" row-key="prodId"
           :loading="setPickerLoading" empty-text="조회 버튼으로 상품을 검색하세요."
           @cell-click="e => handleBtnAction('setPicker-select', e.row)" />
-        <bo-pager :pager="setPickerPager" @set-page="n => { setPickerPager.pageNo=n; fnLoadSetPicker(); }" style="margin-top:8px;" />
+        <bo-pager :pager="setPickerPager" :on-set-page="n => { setPickerPager.pageNo=n; fnLoadSetPicker(); }" :on-size-change="() => { setPickerPager.pageNo=1; fnLoadSetPicker(); }" style="margin-top:8px;" />
       </bo-modal>
     </div>
   </div>

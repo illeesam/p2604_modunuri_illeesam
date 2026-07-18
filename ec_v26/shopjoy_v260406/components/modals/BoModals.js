@@ -253,7 +253,8 @@ window.SiteSelectModal = {
   <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="siteId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)">
+    @row-click="row => handleSelectAction('list-select', row)"
+    @row-dblclick="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
       <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -384,7 +385,8 @@ window.VendorSelectModal = {
   <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="vendorId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)">
+    @row-click="row => handleSelectAction('list-select', row)"
+    @row-dblclick="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
       <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -517,7 +519,8 @@ window.BrandSelectModal = {
   <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="brandId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)">
+    @row-click="row => handleSelectAction('list-select', row)"
+    @row-dblclick="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
       <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -724,7 +727,7 @@ window.BoUserSelectModal = {
       { key: 'userPhone',    label: '연락처' },
       { key: 'deptNm',       label: '부서', cellStyle: 'color:#666;' },
       { key: '_act',         label: '선택', style: 'width:80px;text-align:center;', html: true,
-        fmt: () => `<button class="btn btn-primary btn-xs" data-act="pick" style="font-weight:600;">선택</button>` },
+        fmt: () => `<button class="btn btn_select" data-act="pick">선택</button>` },
     ];
 
     return {
@@ -800,6 +803,7 @@ window.BoUserSelectModal = {
             row-clickable
             :empty-text="uiState.loading ? '로딩 중...' : '🔍 검색 결과가 없습니다.'"
             @row-click="row => handleSelectAction('users-pick', row)"
+            @row-dblclick="row => handleSelectAction('users-pick', row)"
  />
           <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
         </div>
@@ -931,7 +935,8 @@ window.MemberSelectModal = {
   <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="memberId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)">
+    @row-click="row => handleSelectAction('list-select', row)"
+    @row-dblclick="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
       <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -1064,7 +1069,8 @@ window.OrderSelectModal = {
   <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="orderId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)">
+    @row-click="row => handleSelectAction('list-select', row)"
+    @row-dblclick="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
       <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -1206,7 +1212,8 @@ window.BbmSelectModal = {
   <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="bbmId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)">
+    @row-click="row => handleSelectAction('list-select', row)"
+    @row-dblclick="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
       <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -4494,7 +4501,8 @@ window.BizPickModal = {
           :list-title="'총 ' + pager.pageTotalCount + '건'"
           :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
           row-clickable :row-actions="true"
-          @row-click="row => handleSelectAction('list-pick', row)">
+          @row-click="row => handleSelectAction('list-pick', row)"
+    @row-dblclick="row => handleSelectAction('list-pick', row)">
           <template #row-actions="{ row }">
             <button class="btn btn_select" @click.stop="handleSelectAction('list-pick', row)">
               선택
@@ -4664,7 +4672,8 @@ window.SimpleUserPickModal = {
         :list-title="'총 ' + pager.pageTotalCount + '건'"
         :empty-text="loading ? '로딩 중...' : '결과가 없습니다.'"
         row-clickable :row-actions="true"
-        @row-click="row => handleSelectAction('list-pick', row)">
+        @row-click="row => handleSelectAction('list-pick', row)"
+    @row-dblclick="row => handleSelectAction('list-pick', row)">
         <template #row-actions="{ row }">
           <button class="btn btn_select" @click.stop="handleSelectAction('list-pick', row)">
             선택
@@ -4792,6 +4801,7 @@ window.SimpleVendorPickModal = {
       :list-title="'총 ' + pager.pageTotalCount + '건'" :row-style="fnRowStyle"
       empty-text="판매업체가 없습니다." row-clickable
       @row-click="row => handleSelectAction('vendors-pick', row)"
+      @row-dblclick="row => handleSelectAction('vendors-pick', row)"
  />
     <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
   </div>
@@ -4953,6 +4963,7 @@ window.OdMemberPickModal = {
         :row-style="() => 'cursor:pointer;'"
         :empty-text="state.loading ? '조회 중...' : '조회 결과가 없습니다.'"
         @row-click="(row) => handleSelectAction('members-pick', row)"
+        @row-dblclick="(row) => handleSelectAction('members-pick', row)"
  row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn_select" @click.stop="handleSelectAction('members-pick', row)" style="border-radius:6px;font-size:11px;">
@@ -5081,6 +5092,7 @@ window.SimpleProdPickModal = {
       :list-title="'총 ' + pager.pageTotalCount + '건'" :row-style="fnRowStyle"
       empty-text="상품이 없습니다." row-clickable
       @row-click="row => handleSelectAction('prods-toggle', row)"
+      @row-dblclick="row => handleSelectAction('prods-toggle', row)"
  />
     <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
   </div>
@@ -7521,6 +7533,7 @@ window.BoProdCatePickModal = {
           <bo-grid :columns="prodGridColumns" :rows="prodList" :pager="pager" row-key="prodId"
             :empty-text="uiState.loading ? '로딩 중...' : '🔍 검색 결과가 없습니다.'"
             @cell-click="e => handleSelectAction('prods-pick', e.row)"
+            @row-dblclick="row => handleSelectAction('prods-pick', row)"
  />
           <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
         </div>
@@ -7595,10 +7608,10 @@ window.PmCouponPickModal = {
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="couponId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+    <button class="btn btn_close" @click="onClose">닫기</button>
   </div>
 </bo-modal>
 `,
@@ -7662,10 +7675,10 @@ window.PmSavePickModal = {
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="saveId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+    <button class="btn btn_close" @click="onClose">닫기</button>
   </div>
 </bo-modal>
 `,
@@ -7729,10 +7742,10 @@ window.PmDiscntPickModal = {
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="discntId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+    <button class="btn btn_close" @click="onClose">닫기</button>
   </div>
 </bo-modal>
 `,
@@ -7790,10 +7803,10 @@ window.PmCategoryPickModal = {
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="categoryId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+    <button class="btn btn_close" @click="onClose">닫기</button>
   </div>
 </bo-modal>
 `,
@@ -7853,10 +7866,10 @@ window.PmBrandPickModal = {
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="brandId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+    <button class="btn btn_close" @click="onClose">닫기</button>
   </div>
 </bo-modal>
 `,
@@ -7965,6 +7978,7 @@ window.PdProdPickModal = {
     </div>
     <bo-grid bare :columns="columns" :rows="cfRows" row-key="prodId"
       :loading="loading" empty-text="조회 버튼으로 상품을 검색하세요."
+      @row-dblclick="onPick"
       @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
       :page-sizes="[10,20,50]" style="margin-top:4px;" />
@@ -8041,7 +8055,7 @@ window.PdCatParentPickModal = {
       :style="{ paddingLeft: ((c.categoryDepth||1) * 14 + 12) + 'px' }"
       @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
       @mouseleave="$event.currentTarget.style.background=''"
-      @click="onSelect(c)">
+      @click="onSelect(c)" @dblclick="onSelect(c)">
       <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
         {{ fnDepthBullet((c.categoryDepth||1)-1) }}
       </span>
@@ -8194,10 +8208,10 @@ window.PmGiftPickModal = {
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="giftId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
+    <button class="btn btn_close" @click="onClose">닫기</button>
   </div>
 </bo-modal>
 `,
