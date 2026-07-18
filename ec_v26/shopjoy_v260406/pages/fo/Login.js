@@ -13,7 +13,6 @@ window.Login = {
 
     /* -- UI 상태 -- */
     const uiState = reactive({ snsPhoneVerified: false, loading: false, error: null, isPageCodeLoad: false, step: 'login', snsProvider: null, loginErr: '', signupErr: '', _ec: '', _pc: '', snsNickname: '', snsPhoneCode: '', snsPhoneCodeSent: false, _spc: '', snsErr: ''});;
-    const codes = reactive({});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -114,18 +113,10 @@ window.Login = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     // login | terms | signup | sns-signup  → uiState.step 사용
 

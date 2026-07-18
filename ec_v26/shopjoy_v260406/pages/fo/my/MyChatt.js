@@ -9,9 +9,9 @@ window.MyChatt = {
     /* ##### [01] 초기 변수 정의 ################################################## */
 
     const { reactive, computed, onMounted, watch } = Vue;
+    const cart                 = window.foApp.cart;  // 장바구니
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
 
 
     const myStore = window.useFoMyStore();
@@ -42,16 +42,10 @@ window.MyChatt = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-        handleSearchData();
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => {
+      uiState.isPageCodeLoad = true;
+      handleSearchData();
+    });
 
     const { chats, expandedChat } = Pinia.storeToRefs(myStore);
 
@@ -85,13 +79,15 @@ window.MyChatt = {
     /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
     const onSizeChange = async () => { await handleLoadPage(); };
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; handleSearchData(); } });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
+    const cartCount = computed(() => cart.length);
+
     return {
       handleBtnAction, handleSelectAction, // dispatch
-      chats, expandedChat, chatPager, onPageChange, onSizeChange,
+      chats, expandedChat, chatPager, onPageChange, onSizeChange, cartCount,
     };
   },
   template: /* html */ `
@@ -99,7 +95,7 @@ window.MyChatt = {
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
   <MyDateFilter @search="handleBtnAction('searchParam-dateSearch', $event)" />
   <!-- ===== ■. 영역 ====================================================== -->
-  <PagerHeader :total="chats.length" :pager="chatPager" @size-change="onSizeChange" />
+  <PagerHeader :total="chatPager.pageTotalCount" :pager="chatPager" @size-change="onSizeChange" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="!chats.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     채팅 내역이 없습니다.
@@ -151,7 +147,7 @@ window.MyChatt = {
   </div>
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <Pagination :total="chats.length" :pager="chatPager" @set-page="onPageChange" />
+  <Pagination :total="chatPager.pageTotalCount" :pager="chatPager" @set-page="onPageChange" />
 </fo-my-layout>
 <!-- ===== □. 영역 ====================================================== -->
 </fo-page>

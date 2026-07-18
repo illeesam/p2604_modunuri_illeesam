@@ -8,11 +8,11 @@ window.MyCoupon = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
+    const cart                 = window.foApp.cart;  // 장바구니
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'unused'});
-    const codes = reactive({});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -33,15 +33,7 @@ window.MyCoupon = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     const myStore = window.useFoMyStore();
     const { coupons, couponCode } = Pinia.storeToRefs(myStore);
@@ -108,7 +100,7 @@ window.MyCoupon = {
     const onSizeChange = async () => { await handleLoadPage(); };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     onMounted(async () => {
       await handleLoadPage();
@@ -117,12 +109,14 @@ window.MyCoupon = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
+    const cartCount = computed(() => cart.length);
+
     return {
       uiState,       // 상태 / 데이터
       handleBtnAction, // dispatch
       myStore, coupons, couponCode, pager,
       cfPageCoupons, cfUnusedCount, cfUsedCount,
-      onSearch, onPageChange, onSizeChange,
+      onSearch, onPageChange, onSizeChange, cartCount,
     };
   },
   template: /* html */ `
@@ -170,7 +164,7 @@ window.MyCoupon = {
   </div>
   <!-- ===== □. 탭 ======================================================= -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <PagerHeader :total="coupons.length" :pager="pager" @size-change="onSizeChange" />
+  <PagerHeader :total="pager.pageTotalCount" :pager="pager" @size-change="onSizeChange" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="!cfPageCoupons.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     {{ uiState.activeTab==='unused' ? '사용 가능한 쿠폰이 없습니다.' : '사용된 쿠폰이 없습니다.' }}
@@ -290,7 +284,7 @@ window.MyCoupon = {
 <!-- ===== □.□. 할인금액 + 상태 ============================================= -->
 <!-- ===== □. 영역 ====================================================== -->
 <!-- ===== ■. 영역 ====================================================== -->
-<Pagination :total="coupons.length" :pager="pager" @set-page="onPageChange" />
+<Pagination :total="pager.pageTotalCount" :pager="pager" @set-page="onPageChange" />
 </fo-my-layout>
 </fo-page>
 <!-- ===== □. 영역 ====================================================== -->

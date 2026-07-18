@@ -411,21 +411,49 @@ window.SyBatchMng = {
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
+    /* fnIsRecent24h — 최근 24시간 실행 여부 */
+    const fnIsRecent24h = (row) => {
+      if (!row.batchLastRun) { return false; }
+      const d = new Date(row.batchLastRun);
+      return !isNaN(d) && (Date.now() - d.getTime()) < 86400000;
+    };
+
+    /* fnFmtLastRun — 최종실행 포맷 YYYY-MM-DD HH:mm:ss */
+    const fnFmtLastRun = (v) => {
+      if (!v) { return '-'; }
+      const s = String(v).replace('T', ' ').slice(0, 19);
+      return s || '-';
+    };
+
+    /* fnRunStatusLabel — 실행상태 한글 */
+    const _RUN_STATUS_LABEL = { IDLE: '대기', RUNNING: '실행중', SUCCESS: '성공', FAIL: '실패', NO_HANDLER: '핸들러없음', PENDING: '대기중' };
+    const fnRunStatusLabel = (v) => _RUN_STATUS_LABEL[v] || v || '-';
+
+    /* fnRunStatusBadge — 최근상태 배지 */
+    const fnRunStatusBadge = (v) => {
+      const lbl = fnRunStatusLabel(v);
+      const cls = ({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray', '핸들러없음': 'badge-orange', '대기중': 'badge-gray' })[lbl] || 'badge-gray';
+      return `<span class="badge badge-xs ${cls}">${lbl}</span>`;
+    };
+
     // 기본 그리드
     columns.baseGrid = [
       { key: 'pathId',        label: '표시경로',     style: 'width:170px;max-width:170px;',
         pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row),
           clear: (row) => { row.pathId = null; onCellChange(row); }, placeholder: '경로 선택...' } },
-      { key: 'batchNm',       label: '배치명',       style: 'min-width:120px;', edit: 'text', placeholder: '배치명' },
+      { key: 'batchNm',       label: '배치명',       style: 'min-width:120px;', edit: 'text', placeholder: '배치명',
+        cellStyle: (v, row) => fnIsRecent24h(row) ? 'font-weight:700;' : '' },
       { key: 'batchCode',     label: '배치코드',     style: 'min-width:160px;', edit: 'text', mono: true, placeholder: 'BATCH_CODE' },
       { key: 'cronExpr',      label: 'Cron 표현식',  style: 'min-width:170px;' },
-      { key: 'batchStatusCd', label: '활성',         style: 'width:62px;',
-        edit: 'select', options: () => codes.active_statuses },
+      { key: 'batchStatusCd', label: '활성',         style: 'width:74px;', align: 'center',
+        edit: 'select', options: () => codes.active_statuses,
+        badge: (row) => row._row_status === 'N' ? ('badge-xs ' + (row.batchStatusCd === 'ACTIVE' || row.batchStatusCd === '활성' ? 'badge-green' : 'badge-gray')) : null },
       { key: 'batchDesc',     label: '설명',         style: 'min-width:130px;', edit: 'text', placeholder: '설명' },
-      { key: 'batchLastRun',  label: '최근실행',     style: 'width:110px;', align: 'center',
-        cellStyle: 'font-size:11px;color:#555;white-space:nowrap;' },
-      { key: 'batchRunStatus',label: '실행상태',     style: 'width:72px;', align: 'center',
-        badge: (row) => 'badge-xs ' + (({ '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' }[row.batchRunStatus]) || 'badge-gray') },
+      { key: 'batchLastRun',  label: '최종실행',     style: 'width:136px;', align: 'center',
+        cellStyle: 'font-size:11px;color:#555;white-space:nowrap;font-family:monospace;',
+        fmt: (v) => fnFmtLastRun(v) },
+      { key: 'batchRunStatus',label: '최근상태',     style: 'width:80px;', align: 'center',
+        html: true, fmt: (v, row) => row._row_status === 'N' ? fnRunStatusBadge(row.batchRunStatus) : '' },
       { key: 'siteNm',        label: '사이트',       style: 'width:55px;', align: 'center',
         cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
@@ -437,6 +465,7 @@ window.SyBatchMng = {
       batches, uiState, batchCounts, searchParam, gridRows, pathPickModal, cronModal, histReloadTrigger, histFilterBatchId,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfShowRunNow,          // computed / 헬퍼
+      fnIsRecent24h, fnFmtLastRun, fnRunStatusLabel, fnRunStatusBadge,
     };
   },
   template: /* html */`

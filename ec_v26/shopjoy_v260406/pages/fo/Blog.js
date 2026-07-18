@@ -9,9 +9,8 @@ window.Blog = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { reactive, computed, onMounted } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
 
     /* 검색조건: blogCateId='' = 전체, searchValue = 검색어 */
     const _initSearchParam = () => ({ searchValue: '', blogCateId: '' });
@@ -146,15 +145,7 @@ window.Blog = {
       }
     };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* onSearch — [조회] 클릭 / Enter (1페이지부터 서버 재조회) */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
@@ -175,7 +166,7 @@ window.Blog = {
 
     // ★ onMounted — 카테고리/최신글/목록 초기 조회 (진입 시 dtlId 있으면 해당 카테고리로 필터)
     onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
       if (props.dtlId) { searchParam.blogCateId = props.dtlId; }
       loadCategories();
       loadLatestPosts();

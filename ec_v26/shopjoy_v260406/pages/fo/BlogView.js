@@ -11,8 +11,7 @@ window.BlogView = {
 
     const { ref, reactive, computed, onMounted, watch } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, commentText: ''});
-    const codes = reactive({});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
 
     const posts = reactive([]);                   // 현재 상세글(1건)
     const categories = reactive([]);              // 우측 카테고리 (실 cm_blog_cate + count)
@@ -134,15 +133,7 @@ window.BlogView = {
       }
     };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* 백엔드 CmBlogDto.Item → 화면 표준 형태로 정규화 (replies/tags/files 연관정보 포함) */
     const cfPost   = computed(() => {
@@ -181,21 +172,21 @@ window.BlogView = {
 
     /* addComment — 추가 */
     const handleAddComment = () => {
-      const t = searchParam.commentText.trim();
+      const t = commentText.value.trim();
       if (!t) { return; }
       localComments.push({ id: Date.now(), author: '홍길동', date: new Date().toISOString().slice(0,10).replace(/-/g,'.'), text: t });
-      uiState.commentText = '';
+      commentText.value = '';
     };
 
     /* 사이드바 검색 입력 */
-    const searchParam = reactive({ searchValue: '', commentText: ''});
+    const searchParam = reactive({ searchValue: ''});
 
     /* 우측 Recent Comments — 현재 글 댓글 최근 3건 (cfPost.comments 기준) */
     const cfRecentComments = computed(() => (cfPost.value.comments || []).slice(-3).reverse());
 
     // ★ onMounted — 상세 + 카테고리 + 최신글 병렬 로드 (관련글은 상세 후 카테고리로 로드)
     onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
       handleSearchData();
       loadCategories();
       loadLatest();

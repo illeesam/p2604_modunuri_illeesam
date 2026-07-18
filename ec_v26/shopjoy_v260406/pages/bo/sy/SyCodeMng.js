@@ -747,18 +747,18 @@ window.SyCodeMng = {
   </bo-container>
   <!-- ===== □. 검색 영역 =================================================== -->
   <!-- ===== ■. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
-  <div class="bo-2col" style="margin-bottom:16px;">
+  <div class="bo-2col" style="margin-bottom:12px;">
     <!-- ===== ■.■. 경로 트리 (bo-container bare → 자체 카드) ====================== -->
     <bo-container bare>
       <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="false" :counts="codeGrpCounts"
-        max-height="calc(100vh - 320px)"
+        max-height="calc(50vh - 130px)"
         :selected="uiState.grpSelectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■. CRUD 그리드 (bo-container bare → 자체 카드) ==================== -->
     <bo-container bare>
     <bo-grid-crud
       :columns="columns.grpGrid" :rows="uiState.grpRows" row-key="codeGrp" :selected-key="uiState.selectedGrp"
-      list-title="공통코드그룹관리" max-height="calc(100vh - 320px)"
+      list-title="공통코드그룹관리" max-height="calc(50vh - 130px)"
       :show-row-id="false" :show-row-check="false" :draggable="false"
       :show-add="false" :show-save="false"
       :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"
@@ -820,7 +820,7 @@ window.SyCodeMng = {
       <bo-grid-crud
         :columns="cfCodeGridColumns" :rows="uiState.gridRows" row-key="codeId" :selected-key="uiState.selectedCodeId"
         :list-title="fnCodeListTitle()" :show-export="true" :draggable="true"
-        max-height="400px"
+        max-height="calc(50vh - 130px)"
         :empty-text="uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.'"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"

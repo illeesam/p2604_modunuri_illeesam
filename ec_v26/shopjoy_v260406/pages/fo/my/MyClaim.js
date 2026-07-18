@@ -8,12 +8,12 @@ window.MyClaim = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
+    const cart                 = window.foApp.cart;  // 장바구니
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -80,15 +80,7 @@ window.MyClaim = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     const myStore = window.useFoMyStore();
     const { claims, claimFilter, orders } = Pinia.storeToRefs(myStore);
@@ -187,7 +179,7 @@ window.MyClaim = {
     /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
     const onSizeChange = async () => { await handleLoadPage(); };
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     onMounted(async () => {
       await handleLoadPage();
@@ -214,13 +206,15 @@ window.MyClaim = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
+    const cartCount = computed(() => cart.length);
+
     return {
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       myStore, claims, claimFilter, orders,
       pager, cfDateFilteredClaims, claimStatusFilter,
       onSearch, onPageChange, onSizeChange,
       // ===== shared (헬퍼) ====================================================
-      cfAuthUser, findProd, fnClaimStepCount, fnShowPickupTrack, fnShowShipTrack,
+      cfAuthUser, findProd, fnClaimStepCount, fnShowPickupTrack, fnShowShipTrack, cartCount,
     };
   },
   template: /* html */ `
@@ -285,7 +279,7 @@ window.MyClaim = {
 </template>
 <!-- ===== □. 처리 흐름 (취소/반품/교환) ======================================== -->
 <!-- ===== ■. 영역 ====================================================== -->
-<PagerHeader :total="cfDateFilteredClaims.length" :pager="pager" @size-change="onSizeChange" />
+<PagerHeader :total="pager.pageTotalCount" :pager="pager" @size-change="onSizeChange" />
 <!-- ===== ■. 조건부 영역 ================================================== -->
 <div v-if="!cfDateFilteredClaims.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
   해당 내역이 없습니다.
@@ -483,7 +477,7 @@ window.MyClaim = {
 </div>
 </div>
 </div>
-<Pagination :total="claims.length" :pager="pager" @set-page="onPageChange" />
+<Pagination :total="pager.pageTotalCount" :pager="pager" @set-page="onPageChange" />
 <!-- ===== □.□. 사유 + 교환 정보 ============================================ -->
 <!-- ===== □. 영역 ====================================================== -->
 <!-- ===== ■. 영역 ====================================================== -->

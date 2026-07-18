@@ -9,14 +9,13 @@ window.Home03 = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
+    const { reactive, computed, onMounted, onBeforeUnmount } = Vue;
     const prods             = window.foApp.prods;  // 상품 목록
     const selectProd        = (p) => window.foApp.selectProd(p);
     const toggleLike        = (id) => window.foApp.toggleLike(id);
     const isLiked           = (id) => window.foApp.isLiked?.(id) ?? false;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, quickViewProduct: null, bannerIdx: 0, cartModalMode: false});
-    const codes = reactive({});
 
 
     /* -- 배너 슬라이더 -- */
@@ -98,22 +97,14 @@ window.Home03 = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* setBanner — 인디케이터 클릭 시 해당 배너로 + 타이머 리셋 */
     const handleSetBanner = (i) => bannerCtl.set(i);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
       if (!document.getElementById('home-grid-styles')) {
         const s = document.createElement('style');
         s.id = 'home-grid-styles';
@@ -130,16 +121,6 @@ window.Home03 = {
     onBeforeUnmount(() => bannerCtl.stop());
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-
-    /* fnCategoryLabel — coUtil.cofCategoryLabel 위임 (categoryId → categoryNm) */
-    const fnCategoryLabel = (p) => coUtil.cofCategoryLabel(p);
-
-    function fnCatEmoji(id) {
-      const map = { tops: '👕', bottoms: '👖', outer: '🧥', dress: '👗', acc: '💍' };
-      return map[id] || '🏷️';
-    }
-
-
 
 
 

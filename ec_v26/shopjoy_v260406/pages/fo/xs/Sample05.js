@@ -9,7 +9,7 @@ window.XsSample05 = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { ref, reactive, onMounted, watch } = Vue;
+    const { reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
@@ -129,19 +129,11 @@ window.XsSample05 = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
       handleSearchList();
     });
 

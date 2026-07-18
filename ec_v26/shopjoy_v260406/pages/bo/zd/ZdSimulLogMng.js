@@ -71,8 +71,6 @@
       onMounted(handleSearchList);
 
       /* ── [03] 파생 ──────────────────────────────────── */
-      const cfFiltered = computed(() => allLogs.value);
-      const cfPageList = computed(() => allLogs.value);
 
       /* ── [04] 통계 ──────────────────────────────────── */
       const cfStats = computed(() => {
@@ -146,7 +144,7 @@
       /* ── [08] 반환 ──────────────────────────────────── */
       return {
         searchParam, pager, allLogs, codes,
-        cfFiltered, cfPageList, cfStats,
+        cfStats,
         baseGridColumns, statGridColumns, baseSearchColumns,
         onSearch, onReset, onClearAll, onGoSimul, onSetPage,
         handleSearchList,
@@ -192,9 +190,9 @@
       <div v-if="pager.pageTotalCount === 0" style="font-size:12px;color:#94a3b8;">각 시뮬레이터에서 실행하면 이곳에 기록됩니다.</div>
     </div>
 
-    <bo-grid v-else :rows="cfPageList" :columns="baseGridColumns" :pager="pager" style="font-size:11px;" />
+    <bo-grid v-else :rows="allLogs" :columns="baseGridColumns" :pager="pager" style="font-size:11px;" />
 
-    <bo-pager :pager="pager" @set-page="onSetPage" @size-change="onSearch" />
+    <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSearch" />
   </div>
 </div>`,
   };

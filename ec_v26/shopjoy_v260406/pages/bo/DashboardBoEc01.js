@@ -1175,7 +1175,7 @@ window.DashboardBoEc01 = {
       <!-- ECharts Option / 원시 데이터 탭 본문 -->
       <div v-if="uiState.infoPanel.tab==='opt' || uiState.infoPanel.tab==='data'" style="position:relative;">
         <!-- 원시 데이터 탭일 때 API 정보 헤더 -->
-        <div v-if="uiState.infoPanel.tab==='data' && uiState.infoPanel.src" style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:10.5px;">
+        <div v-if="coUtil.cofAnd(uiState.infoPanel.tab==='data', uiState.infoPanel.src)" style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:10.5px;">
           <span style="color:#888;">URL</span>
           <span style="color:#3b82f6;font-weight:700;">{{ uiState.infoPanel.src.url }}</span>
           <span style="color:#aaa;margin-left:4px;">→</span>

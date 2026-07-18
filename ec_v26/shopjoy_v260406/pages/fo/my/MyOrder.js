@@ -8,14 +8,12 @@ window.MyOrder = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
     const cart                 = window.foApp.cart;  // 장바구니 목록
-    const removeFromCart       = window.foApp.removeFromCart;  // 장바구니 삭제
-    const updateCartQty        = window.foApp.updateCartQty;  // 장바구니 수량변경
+
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });
-    const codes = reactive({});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -139,15 +137,7 @@ window.MyOrder = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     const myStore = window.useFoMyStore();
     const { orders, cfClaimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
@@ -354,7 +344,7 @@ window.MyOrder = {
     /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
     const onSizeChange = async () => { await handleLoadPage(); };
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     onMounted(() => {
       handleLoadPage();
@@ -402,7 +392,8 @@ window.MyOrder = {
       // ===== review 영역 (모달) ===============================================
       reviewModal, getReview, onReviewFileChange,
       // ===== shared (헬퍼) ====================================================
-      cfAuthUser, findProd,
+      cfAuthUser, findProd, SITE_CONFIG: window.SITE_CONFIG,
+      cartCount: computed(() => cart.length),
     };
   },
   template: /* html */ `
@@ -451,7 +442,7 @@ window.MyOrder = {
 </div>
 <!-- ===== □. 주문 처리 흐름 (토글 필터) ======================================== -->
 <!-- ===== ■. 영역 ====================================================== -->
-<PagerHeader :total="orders.length" :pager="pager" @size-change="onSizeChange" />
+<PagerHeader :total="pager.pageTotalCount" :pager="pager" @size-change="onSizeChange" />
 <!-- ===== ■. 조건부 영역 ================================================== -->
 <div v-if="!cfDateFilteredOrders.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
   주문 내역이 없습니다.
@@ -460,8 +451,7 @@ window.MyOrder = {
 <div v-for="o in cfDateFilteredOrders" :key="o.orderId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
   <!-- ===== ■.■. 주문 헤더 ================================================= -->
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:-16px -16px 12px;padding:12px 16px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;"
-      style="background:linear-gradient(135deg,rgba(34,197,94,0.15) 0%,rgba(255,255,255,0.6) 60%,rgba(255,255,255,0) 100%);">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:-16px -16px 12px;padding:12px 16px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;background:linear-gradient(135deg,rgba(34,197,94,0.15) 0%,rgba(255,255,255,0.6) 60%,rgba(255,255,255,0) 100%);">
     <div>
       <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">
         {{ o.orderId }}
@@ -818,7 +808,7 @@ window.MyOrder = {
 <!-- ===== □.□. 합계 + 택배 =============================================== -->
 <!-- ===== □. 영역 ====================================================== -->
 <!-- ===== ■. 영역 ====================================================== -->
-<Pagination :total="orders.length" :pager="pager" @set-page="onPageChange" />
+<Pagination :total="pager.pageTotalCount" :pager="pager" @set-page="onPageChange" />
 <!-- ===== ■. Teleport 모달들 ============================================ -->
 <Teleport to="body">
   <!-- ===== ■.■. 리뷰 작성/수정 모달 =========================================== -->
@@ -1215,10 +1205,10 @@ window.MyOrder = {
                 🏦 배송비 입금 안내
               </div>
               <div style="font-size:0.8rem;color:#1e40af;font-weight:700;margin-bottom:2px;">
-                {{ config.bank.name }} {{ config.bank.account }}
+                {{ (SITE_CONFIG.bank || {}).name }} {{ (SITE_CONFIG.bank || {}).account }}
               </div>
               <div style="font-size:0.75rem;color:#3730a3;">
-                예금주: {{ config.bank.holder }}
+                예금주: {{ (SITE_CONFIG.bank || {}).holder }}
               </div>
             </div>
           </div>

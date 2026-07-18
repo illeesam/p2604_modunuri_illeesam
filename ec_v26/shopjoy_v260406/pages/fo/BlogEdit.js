@@ -9,11 +9,10 @@ window.BlogEdit = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, computed, reactive, onMounted, watch } = Vue;
+    const { computed, reactive, onMounted } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
 
 
     const cfIsEdit = computed(() => !!props.dtlId);
@@ -101,18 +100,10 @@ window.BlogEdit = {
       }
     };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* handleSave — 저장 */
     const handleSave = () => {

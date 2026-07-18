@@ -255,12 +255,15 @@ window.SyBatchHist = {
     <button class="btn btn_collapse_all" @click="handleBtnAction('batchLogs-collapseAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
       ▲ 전체접기
     </button>
-    <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
+    <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:180px;" v-model="uiState.searchBatchId">
       <option value="">배치 전체</option>
       <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">
         {{ b.label }}
       </option>
     </select>
+    <input class="form-control" v-model="uiState.searchBatchId" placeholder="배치ID 입력"
+      style="height:30px;font-size:12px;padding:2px 8px;width:90px;font-family:monospace;"
+      title="배치ID 직접 입력 (행 클릭 시 자동 설정됨)" @keyup.enter="handleBtnAction('searchParam-list')" />
     <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus">
       <option value="">상태 전체</option>
       <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">

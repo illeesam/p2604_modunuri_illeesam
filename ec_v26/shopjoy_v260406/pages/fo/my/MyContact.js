@@ -11,9 +11,9 @@ window.MyContact = {
     const { reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
+    const cart                 = window.foApp.cart;  // 장바구니
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
 
 
     const myStore = window.useFoMyStore();
@@ -47,16 +47,10 @@ window.MyContact = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-        handleSearchData();
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => {
+      uiState.isPageCodeLoad = true;
+      handleSearchData();
+    });
 
     const { inquiries, expandedInquiry } = Pinia.storeToRefs(myStore);
 
@@ -99,14 +93,16 @@ window.MyContact = {
     /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
     const onSizeChange = async () => { await handleLoadPage(); };
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; handleSearchData(); } });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
+    const cartCount = computed(() => cart.length);
 
     return {
       handleBtnAction, handleSelectAction, // dispatch
       myStore, inquiries, expandedInquiry,
-      inquiryPager, onPageChange, onSizeChange,
+      inquiryPager, onPageChange, onSizeChange, cartCount,
     };
   },
   template: /* html */ `
@@ -114,7 +110,7 @@ window.MyContact = {
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
   <MyDateFilter @search="handleBtnAction('searchParam-dateSearch', $event)" />
   <!-- ===== ■. 영역 ====================================================== -->
-  <PagerHeader :total="inquiries.length" :pager="inquiryPager" @size-change="onSizeChange" />
+  <PagerHeader :total="inquiryPager.pageTotalCount" :pager="inquiryPager" @size-change="onSizeChange" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="!inquiries.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     문의 내역이 없습니다.
@@ -177,7 +173,7 @@ window.MyContact = {
   </div>
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <Pagination :total="inquiries.length" :pager="inquiryPager" @set-page="onPageChange" />
+  <Pagination :total="inquiryPager.pageTotalCount" :pager="inquiryPager" @set-page="onPageChange" />
 </fo-my-layout>
 <!-- ===== □. 영역 ====================================================== -->
 </fo-page>

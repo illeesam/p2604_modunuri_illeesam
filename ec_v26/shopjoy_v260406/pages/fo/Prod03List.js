@@ -8,8 +8,8 @@ window.Prod03List = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
-    const prods             = window.foApp.prods;  // 상품 목록
+    const { reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
+
     const selectProd        = (p) => window.foApp.selectProd(p);
     const toggleLike        = (id) => window.foApp.toggleLike(id);
     const isLiked           = (id) => window.foApp.isLiked?.(id) ?? false;
@@ -17,7 +17,6 @@ window.Prod03List = {
     /* pager — FO 무한스크롤 페이저 (PC 페이지네이션 + 모바일 무한스크롤) */
     const pager = reactive({ pageType: 'INFINITE_SCROLL', pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [12, 24, 48], pageNums: [], pageList: [], pageCond: {} });
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768, filterOpen: false });
-    const codes = reactive({});
 
 
     /* -- 상품 데이터 -- */
@@ -99,15 +98,7 @@ window.Prod03List = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* -- 상품 이미지 자동 할당 -- coUtil.cofAssignProdImage 위임 (thumbnailUrl→image + 폴백 + priceNum) */
     const assignImage = (p) => coUtil.cofAssignProdImage(p);
@@ -258,7 +249,7 @@ window.Prod03List = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
     onBeforeUnmount(() => {
       if (observer) { observer.disconnect(); }
       window.removeEventListener('resize', onResize);

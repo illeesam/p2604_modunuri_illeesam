@@ -11,7 +11,6 @@ window.EventPage = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest', broadened: false });
-    const codes = reactive({});
 
     const searchValue = ref('');
 
@@ -147,21 +146,13 @@ window.EventPage = {
       coUtil.cofBuildPagerNums(pager);
     };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     watch(() => uiState.activeTab, () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
     watch(() => uiState.sortBy,    () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* cfOngoingCount — 진행중 탭이면 서버 총건수(단, 전체 폴백 시 진행중은 0건),
      *   그 외 탭이면 현재 페이지 내 진행중 수 */

@@ -11,9 +11,8 @@ window.XsStore = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, computed, reactive, onMounted, watch } = Vue;
+    const { computed, reactive, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, storeInfo: '', selectedStore: null, tabMode: 'col5'});
-    const codes = reactive({});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -62,16 +61,7 @@ window.XsStore = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-        loadAllStoreData();
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; loadAllStoreData(); });
 
             const openStores = reactive([]);
         const editedStoreInfo = reactive({});
@@ -213,7 +203,7 @@ window.XsStore = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+      if (isAppReady.value) { uiState.isPageCodeLoad = true; loadAllStoreData(); }
       selectStore(cfStoreList.value[0].name);
     });
 

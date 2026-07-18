@@ -8,9 +8,8 @@ window.Location = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, onMounted, watch } = Vue;
+    const { reactive, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: '' });
-    const codes = reactive({});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -28,15 +27,7 @@ window.Location = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     const LAT  = 37.4407;
     const LNG  = 127.1468;
@@ -73,7 +64,7 @@ window.Location = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
       const appKey = (window.SITE_CONFIG && window.SITE_CONFIG.kakaoMapKey) || '';
       if (appKey) {
       const s = document.createElement('script');

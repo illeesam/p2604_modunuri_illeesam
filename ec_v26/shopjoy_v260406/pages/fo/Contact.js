@@ -10,10 +10,9 @@ window.Contact = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { reactive, ref, computed, watch, onMounted } = Vue;
+    const { reactive, computed, watch, onMounted } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
     /* config: props 우선, 없으면 window.SITE_CONFIG fallback (템플릿 config.tel/email/faqs 안전 접근) */
     const config = computed(() => (props.config && Object.keys(props.config).length ? props.config : (window.SITE_CONFIG || {})));
 
@@ -81,18 +80,10 @@ window.Contact = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
     const cfInquiryCodes = computed(() =>
       coUtil.cofCodesByGroup(window.SITE_CONFIG || {}, 'shopjoy_contact_inquiry')
     );

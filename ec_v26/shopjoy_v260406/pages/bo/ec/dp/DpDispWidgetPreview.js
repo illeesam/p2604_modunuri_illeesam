@@ -1185,8 +1185,8 @@ window.DpDispWidgetPreview = {
                     : slot
                       ? (gridState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;')
                       : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;',
-                  slot && (slot.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {},
-                  slot && (slot.rowSpan||1) > 1 ? { gridRow:    'span ' + slot.rowSpan } : {},
+                  coUtil.cofAnd(slot, (slot.colSpan||1) > 1) ? { gridColumn: 'span ' + slot.colSpan } : {},
+                  coUtil.cofAnd(slot, (slot.rowSpan||1) > 1) ? { gridRow:    'span ' + slot.rowSpan } : {},
                 ]">
 
                 <!-- ===== ■.■.■.■.■.■.■.■. 비어있음 ====================================== -->

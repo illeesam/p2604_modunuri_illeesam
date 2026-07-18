@@ -9,7 +9,7 @@ window.Cart = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { computed, ref, reactive, watch, onMounted } = Vue;
+    const { computed, reactive, onMounted } = Vue;
     const showConfirm    = window.foApp.showConfirm;     // 확인 모달
     const clearCart      = window.foApp.clearCart;       // 장바구니 비우기
     const removeFromCart = window.foApp.removeFromCart;  // 장바구니 삭제
@@ -20,7 +20,6 @@ window.Cart = {
       loading: false, error: null, isPageCodeLoad: false,
       checkedIdxs: new Set(), sortKey: '', sortDir: 'asc',
     });
-    const codes = reactive({});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -70,18 +69,10 @@ window.Cart = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted
-    onMounted(() => { if (isAppReady.value) { fnLoadCodes(); } });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* onCartSort — 정렬 토글 */
     const onCartSort = (key) => {
@@ -185,7 +176,7 @@ window.Cart = {
     );
 
     const cfTotalPrice = computed(() =>
-      cfSummaryItems.value.reduce((s, item) => s + parsePrice(item.prod.price) * item.qty, 0)
+      cfSummaryItems.value.reduce((s, item) => s + parsePrice(item.prod?.price) * item.qty, 0)
     );
 
     const cfTotalPriceStr = computed(() =>

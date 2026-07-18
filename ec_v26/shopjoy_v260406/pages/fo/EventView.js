@@ -9,10 +9,9 @@ window.EventView = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const { reactive, computed, onMounted } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 0});
-    const codes = reactive({});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
 
     /* -- 이벤트 데이터 -- */
     const events = reactive([]);
@@ -58,18 +57,10 @@ window.EventView = {
       }
     };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* 백엔드 PmEventDto.Item → 화면 표준 형태로 정규화 (benefits/eventItems 연관정보 포함) */
     const cfEvent    = computed(() => {
@@ -103,9 +94,6 @@ window.EventView = {
     });
 
 
-    /* 더 많은 프로모션: 단건 상세 응답이라 목록 없음 → 빈 배열 */
-    const cfPromoEvents = computed(() => []);
-
     onMounted(() => {
       handleSearchData();
     });
@@ -114,7 +102,7 @@ window.EventView = {
 
     return {
       handleBtnAction, handleSelectAction, // dispatch
-      cfEvent, cfPromoEvents, // computed
+      cfEvent, // computed
     };
   },
 
@@ -216,45 +204,7 @@ window.EventView = {
     </div>
   </div>
   <!-- ===== □.□. ④ 이벤트 대상 (eventItems) ================================= -->
-  <!-- ===== ■.■. ⑤ 더 많은 프로모션 =========================================== -->
-  <div v-if="cfPromoEvents.length" style="margin-bottom:36px;">
-    <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">
-      더 많은 프로모션 보기
-    </h2>
-    <div style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;">
-      <div v-for="ev in cfPromoEvents" :key="ev.id"
-          @click="handleSelectAction('relatedEvents-rowView', ev.id)"
-          style="flex:0 0 260px;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:transform .15s,box-shadow .15s;"
-          @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
-          @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">
-        <div :style="{
-            height:'120px', background: ev.heroBg,
-            display:'flex', flexDirection:'column',
-            justifyContent:'flex-end', padding:'14px',
-            }">
-          <div style="font-size:0.65rem;font-weight:700;letter-spacing:1px;margin-bottom:3px;opacity:0.75;"
-              :style="{ color: ev.heroTextColor }">
-            {{ ev.heroEyebrow }}
-          </div>
-          <div style="font-size:0.88rem;font-weight:800;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"
-              :style="{ color: ev.heroTextColor }">
-            {{ ev.title }}
-          </div>
-        </div>
-        <div style="padding:10px 14px 12px;background:var(--bg-card);">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <span :style="{ padding:'2px 8px', borderRadius:'4px', fontSize:'0.68rem', fontWeight:'700', color:'#fff', background: ev.tagColor }">
-              {{ ev.tag }}
-            </span>
-            <span style="font-size:0.72rem;color:var(--text-muted);">
-              ~ {{ ev.endDate }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- ===== □.□. ⑤ 더 많은 프로모션 =========================================== -->
+  <!-- ===== □.□. ⑤ 더 많은 프로모션 (단건 상세만 제공, 미사용) =================== -->
   <!-- ===== ■.■. ⑥ 유의사항 ================================================ -->
   <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:clamp(16px,3vw,24px) clamp(16px,3vw,28px);margin-bottom:32px;">
     <h3 style="font-size:0.85rem;font-weight:700;color:var(--text-secondary);margin-bottom:14px;">

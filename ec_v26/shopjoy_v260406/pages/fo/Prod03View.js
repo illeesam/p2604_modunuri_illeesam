@@ -252,15 +252,7 @@ window.Prod03View = {
       } catch (e) { console.error('[handleSearchList:getPromotions]', e); }
     };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* -- 탭 -- */
     const TABS = [
@@ -587,7 +579,7 @@ window.Prod03View = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
       const main = getScrollEl();
       main.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('keydown', onKeydown);

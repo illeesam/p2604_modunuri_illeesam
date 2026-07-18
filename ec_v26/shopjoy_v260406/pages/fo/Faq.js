@@ -11,7 +11,6 @@ window.Faq = {
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null });
-    const codes = reactive({});
     /* faqs — 우측 목록(선택 분류로 서버 필터된 결과). {q, a, pathId, cate} 정규화 */
     const faqs = reactive([]);
     /* faqAll — 좌측 트리 뱃지 카운트용 전체 스냅샷(분류 무관, 1회 로드) */
@@ -74,15 +73,7 @@ window.Faq = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* handleLoadTree — FAQ 분류 표시경로(sy_path, biz_cd=cm_faq) 로드 */
     const handleLoadTree = async () => {
@@ -160,7 +151,7 @@ window.Faq = {
 
     // ★ onMounted — 진입 시 코드 로드 + 분류 트리 + 카운트(전체) + FAQ(선택분류) 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
       handleLoadTree();
       handleLoadFaqCounts();
       handleLoadFaqs();

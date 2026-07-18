@@ -6,7 +6,7 @@ window.XsSample14 = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, computed, onMounted, watch } = Vue;
+    const { reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
     const codes = reactive({
       active_status_opts: [{value:'활성',label:'활성'},{value:'비활성',label:'비활성'}],
@@ -184,18 +184,10 @@ window.XsSample14 = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {

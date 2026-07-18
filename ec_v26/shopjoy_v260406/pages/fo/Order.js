@@ -8,7 +8,7 @@ window.Order = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { reactive, computed, ref, onMounted, watch } = Vue;
+    const { reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const clearCart            = window.foApp.clearCart;  // 장바구니 비우기
     const cart                 = window.foApp.cart;  // 장바구니 목록
@@ -101,15 +101,7 @@ window.Order = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* parsePrice — 파싱 가격 */
     const parsePrice = s => parseInt(String(s || '').replace(/[^0-9]/g, ''), 10) || 0;
@@ -244,7 +236,7 @@ window.Order = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     const errors   = reactive({});
 

@@ -8,11 +8,10 @@ window.Like = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { reactive, computed, watch, onMounted } = Vue;
+    const { reactive, computed, onMounted } = Vue;
     const prods             = window.foApp.prods;  // 상품 목록
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -47,18 +46,10 @@ window.Like = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
     const cfLikedProds = computed(() => {
       return (prods || []).filter(p => window.foApp.isLiked(p.prodId));
     });

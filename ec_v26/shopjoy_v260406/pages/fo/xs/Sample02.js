@@ -38,7 +38,6 @@ window.XsSample02 = {
     });
 
     /* ===== 무한스크롤 ===== */
-    const visibleCount  = ref(10);
     const sentinelEl    = ref(null);               // 템플릿 ref: "더 불러오기" 요소
 
     const cfHasMore     = computed(() => uiState.visibleCount < gridRows.length);
@@ -138,19 +137,11 @@ window.XsSample02 = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
       handleSearchList();
     });
 

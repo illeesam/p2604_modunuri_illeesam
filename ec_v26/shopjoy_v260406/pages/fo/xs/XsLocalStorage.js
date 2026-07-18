@@ -11,9 +11,8 @@ window.XsLocalStorage = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, computed, onMounted, onUnmounted, watch } = Vue;
+    const { reactive, computed, onMounted, onUnmounted, watch } = Vue;
     const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
-    const codes = reactive({});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -60,18 +59,10 @@ window.XsLocalStorage = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        uiStateGlobal.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
     const storageData = reactive([]);
-                    const uiState = reactive({ isResizing: false });
+    const uiState = reactive({ isResizing: false });
+
+    const isAppReady = coUtil.cofUseAppCodeReady(uiStateGlobal, () => { uiStateGlobal.isPageCodeLoad = true; });
 
     /* loadStorageData — 로드 */
     const loadStorageData = () => {
@@ -186,7 +177,7 @@ window.XsLocalStorage = {
     };
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+      if (isAppReady.value) { uiStateGlobal.isPageCodeLoad = true; }
       window.addEventListener('mouseup', stopResize);
     });
 
