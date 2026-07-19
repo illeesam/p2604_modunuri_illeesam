@@ -98,7 +98,7 @@ window.SyVendorUserMng = {
         return pickVendorRow(param);
       // 업체 그리드 페이지 크기 변경
       } else if (cmd === 'vendors-pager-sizeChange') {
-        vendorGridPager.pageNo = 1; return fnBuildBizPagerNums();
+        vendorGridPager.pageNo = 1; return handleLoadDetail();
       // 사용자 그리드 행 삭제
       } else if (cmd === 'vendorUsers-rowDelete') {
         return handleDeleteRow(param);
@@ -177,27 +177,25 @@ window.SyVendorUserMng = {
     const expandAll = () => { expanded.add(null); roles.forEach(r => expanded.add(r.roleCode)); };
 
 
-    /* fnBuildBizPagerNums — 유틸 */
-    const fnBuildBizPagerNums = () => { vendorGridPager.pageTotalCount=vendors.length; vendorGridPager.pageTotalPage=Math.max(1,Math.ceil(vendors.length/vendorGridPager.pageSize)); vendorGridPager.pageList=vendors.slice((vendorGridPager.pageNo-1)*vendorGridPager.pageSize,vendorGridPager.pageNo*vendorGridPager.pageSize); const c=vendorGridPager.pageNo,l=vendorGridPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); vendorGridPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* handleLoadDetail — 상세 조회 */
+    /* handleLoadDetail — 업체 목록 조회 (서버사이드 페이징) */
     const handleLoadDetail = async () => {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: 1, pageSize: 10000,
-          ...(uiState.bizSearchValue        ? { searchValue: uiState.bizSearchValue.trim() }          : {}),
-          ...(uiState.bizSearchType        ? { searchType: uiState.bizSearchType }                  : {}),
-          ...(uiState.bizVendorFlt ? { vendorType: uiState.bizVendorFlt } : {}),
+          pageNo: vendorGridPager.pageNo, pageSize: vendorGridPager.pageSize,
+          ...(uiState.bizSearchValue ? { searchValue: uiState.bizSearchValue.trim() } : {}),
+          ...(uiState.bizSearchType  ? { searchType: uiState.bizSearchType }           : {}),
+          ...(uiState.bizVendorFlt   ? { vendorType: uiState.bizVendorFlt }            : {}),
         };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'vendorNm,corpNo,vendorId';
         }
         const res = await boApiSvc.syVendor.getPage(params, '업체사용자관리', '조회');
-        const list = res.data?.data?.pageList || res.data?.data || [];
-        vendors.splice(0, vendors.length, ...list);
-        fnBuildBizPagerNums();
+        const d = res.data?.data || {};
+        vendors.splice(0, vendors.length, ...(d.pageList || d.list || []));
+        vendorGridPager.pageTotalCount = d.pageTotalCount || 0;
+        vendorGridPager.pageTotalPage  = d.pageTotalPage  || 1;
+        coUtil.cofBuildPagerNums(vendorGridPager);
       } catch(e) {
         console.error('[SyVendorUserMng] vendor load failed', e);
       } finally {
@@ -238,7 +236,7 @@ window.SyVendorUserMng = {
     };
 
     /* setBizPage — 설정 */
-    const setBizPage    = n => { if(n>=1&&n<=vendorGridPager.pageTotalPage) { vendorGridPager.pageNo=n; fnBuildBizPagerNums(); } };
+    const setBizPage = n => { if (n >= 1 && n <= vendorGridPager.pageTotalPage) { vendorGridPager.pageNo = n; handleLoadDetail(); } };
 
 
 
@@ -297,12 +295,13 @@ window.SyVendorUserMng = {
     /* onVendorPicked — 이벤트 */
     const onVendorPicked = (v) => { uiState.vendorPickOpen=false; pickVendorRow(v); };
 
-    /* loadVendorUsers — 로드 (사용자 검색조건 적용) */
+    /* loadVendorUsers — 로드 (사용자 검색조건 적용, 서버사이드 페이징) */
     const loadVendorUsers = async (vendorId) => {
+      if (!vendorId) { return; }
       uiState.loading = true;
       try {
         const params = {
-          vendorId, pageSize: 10000,
+          vendorId, pageNo: userGridPager.pageNo, pageSize: userGridPager.pageSize,
           ...(uiState.userSearchValue ? { searchValue: uiState.userSearchValue.trim() } : {}),
           ...(uiState.userSearchType  ? { searchType: uiState.userSearchType }         : {}),
           ...(uiState.userStatusFlt   ? { status: uiState.userStatusFlt }              : {}),
@@ -310,25 +309,24 @@ window.SyVendorUserMng = {
         if (params.searchValue && !params.searchType) {
           params.searchType = 'memberNm,vendorUserEmail,vendorUserMobile';
         }
-        const res = await boApiSvc.syVendorUser.getList(params, '사업자사용자관리', '조회');
-        const list = res.data?.data || [];
-        vendorUsers.splice(0, vendorUsers.length, ...list);
-        fnBuildPagerNums();
+        const res = await boApiSvc.syVendorUser.getPage(params, '사업자사용자관리', '조회');
+        const d = res.data?.data || {};
+        vendorUsers.splice(0, vendorUsers.length, ...(d.pageList || d.list || []));
+        userGridPager.pageTotalCount = d.pageTotalCount || 0;
+        userGridPager.pageTotalPage  = d.pageTotalPage  || 1;
+        coUtil.cofBuildPagerNums(userGridPager);
       } catch(e) {
+        console.error('[SyVendorUserMng] user load failed', e);
       } finally {
         uiState.loading = false;
       }
     };
 
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { userGridPager.pageTotalCount=vendorUsers.length; userGridPager.pageTotalPage=Math.max(1,Math.ceil(vendorUsers.length/userGridPager.pageSize)); userGridPager.pageList=vendorUsers.slice((userGridPager.pageNo-1)*userGridPager.pageSize,userGridPager.pageNo*userGridPager.pageSize); const c=userGridPager.pageNo,l=userGridPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); userGridPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
     /* setPage — 설정 */
-    const setPage    = n => { if(n>=1&&n<=userGridPager.pageTotalPage) { userGridPager.pageNo=n; fnBuildPagerNums(); } };
+    const setPage = n => { if (n >= 1 && n <= userGridPager.pageTotalPage) { userGridPager.pageNo = n; loadVendorUsers(uiState.searchVendorId); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { userGridPager.pageNo=1; fnBuildPagerNums(); };
+    const onSizeChange = () => { userGridPager.pageNo = 1; loadVendorUsers(uiState.searchVendorId); };
 
     /* blank — 빈 폼 데이터 생성 */
     const blank = () => ({
@@ -675,7 +673,7 @@ window.SyVendorUserMng = {
       <!-- ===== ■.■.■. 업체 목록 ============================================= -->
       <bo-container title="업체목록" :count-text="vendors.length + '건'">
         <bo-grid bare
-          :columns="columns.vendorGrid" :rows="vendorGridPager.pageList||[]" :pager="vendorGridPager" row-key="vendorId" :selected-key="uiState.searchVendorId"
+          :columns="columns.vendorGrid" :rows="vendors" :pager="vendorGridPager" row-key="vendorId" :selected-key="uiState.searchVendorId"
           :row-style="fnVendorRowStyle"
           grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
           <template #row-actions="{ row }">
@@ -703,7 +701,7 @@ window.SyVendorUserMng = {
           </button>
         </template>
         <bo-grid bare
-          :columns="columns.userGrid" :rows="userGridPager.pageList||[]" :pager="userGridPager" row-key="vendorUserId" :selected-key="formData.vendorUserId"
+          :columns="columns.userGrid" :rows="vendorUsers" :pager="userGridPager" row-key="vendorUserId" :selected-key="formData.vendorUserId"
           :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true"
           :empty-text="uiState.searchVendorId != null ? '사용자가 없습니다.' : '좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.'"
           grid-id="vendorUsers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">

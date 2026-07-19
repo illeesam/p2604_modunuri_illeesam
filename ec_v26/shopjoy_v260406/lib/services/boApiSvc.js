@@ -327,6 +327,7 @@
 
   /* ── pd: 세트상품 ───────────────────────────────────────────── */
   boApiSvc.pdSet = {
+    getPage(params, uiNm, cmdNm)         { return global.boApi.get(   '/bo/ec/pd/prod-set/page', { params, ...hdr(uiNm, cmdNm) }); },
     getItems(_id, uiNm, cmdNm)          { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod-set/${_id}/items`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)           { return global.boApi.post(  '/bo/ec/pd/prod-set', body, hdr(uiNm, cmdNm)); },
     updateItems(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/pd/prod-set/${_id}/items`, body, hdr(uiNm, cmdNm)); },
@@ -746,6 +747,7 @@
 
   /* ── sy: 업체사용자 ─────────────────────────────────────────── */
   boApiSvc.syVendorUser = {
+    getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/vendor-user/page', { params, ...hdr(uiNm, cmdNm) }); },
     getList(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/vendor-user', { params, ...hdr(uiNm, cmdNm) }); },
     getRoles(params, uiNm, cmdNm)  { return global.boApi.get(   '/bo/sy/vendor-user-role', { params, ...hdr(uiNm, cmdNm) }); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/vendor-user', body, hdr(uiNm, cmdNm)); },

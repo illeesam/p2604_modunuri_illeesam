@@ -172,19 +172,21 @@ window.PdSetMng = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* handleSearchData — 처리 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    /* handleSearchData — 세트상품 목록 서버사이드 페이징 조회 */
+    const handleSearchData = async () => {
       uiState.loading = true;
       try {
-        // Backend mappers not implemented - use mock data
-        const [prodsRes, catsRes] = await Promise.all([
-          boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '상품세트관리', '목록조회').catch(() => ({ data: { data: { pageList: [] } } })),
-          boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '상품세트관리', '목록조회').catch(() => ({ data: { data: { pageList: [] } } })),
-        ]);
-        sets.splice(0, sets.length);
-        products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));
-        categories.splice(0, categories.length, ...(catsRes.data?.data?.pageList || catsRes.data?.data?.list || []));
-        fnBuildSetList();
+        const params = {
+          pageNo: setGridPager.pageNo, pageSize: setGridPager.pageSize,
+          ...(searchParam.nm ? { searchValue: searchParam.nm } : {}),
+        };
+        const res = await boApiSvc.pdSet.getPage(params, '세트상품관리', '목록조회')
+          .catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0, pageTotalPage: 1 } } }));
+        const d = res.data?.data || {};
+        setList.splice(0, setList.length, ...(d.pageList || d.list || []));
+        setGridPager.pageTotalCount = d.pageTotalCount || 0;
+        setGridPager.pageTotalPage  = d.pageTotalPage  || 1;
+        coUtil.cofBuildPagerNums(setGridPager);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -322,10 +324,10 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
     };
 
     /* setPage — 설정 */
-    const setPage  = n => { if (n >= 1 && n <= setGridPager.pageTotalPage) setGridPager.pageNo = n; };
+    const setPage = n => { if (n >= 1 && n <= setGridPager.pageTotalPage) { setGridPager.pageNo = n; handleSearchData(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { setGridPager.pageNo = 1; };
+    const onSizeChange = () => { setGridPager.pageNo = 1; handleSearchData(); };
 
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
      *   detailActive=false → 저장/닫기 등 버튼 숨김 (행 미선택 안내 상태) */
@@ -430,41 +432,6 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
 
       const ok = await showConfirm(isNewSet ? '등록' : '저장', isNewSet ? '세트상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
       if (!ok) { return; }
-      if (isNewSet) {
-        products.push({
-          productId: newProdId, prodNm: newForm.prodNm,
-          brandId: newForm.brandId, vendorId: newForm.vendorId,
-          listPrice: newForm.listPrice, salePrice: newForm.salePrice,
-          price: newForm.salePrice, stock: newForm.stock,
-          prodTypeCd: 'SET', prodStatusCd: newForm.prodStatusCd,
-          status: newForm.prodStatusCd === 'ACTIVE' ? '판매중' : '준비중',
-          regDate: new Date().toISOString().slice(0, 10),
-        });
-      }
-      const others = (sets).filter(s => s.setProdId !== setProdId);
-      const newSets = [
-        ...others,
-        ...dtlItems.map((d, i) => ({
-          setItemId:       d.setItemId || `SI_${setProdId}_${i + 1}`,
-          siteId:          '1',
-          setProdId,
-          itemProdId:      d.itemProdId || null,
-          componentProdId: d.itemProdId || null,
-          itemSkuId:       d.itemSkuId || null,
-          itemNm:          d.itemNm,
-          itemQty:         d.itemQty,
-          itemDesc:        d.itemDesc,
-          sortOrd:         d.sortOrd,
-          useYn:           d.useYn,
-        })),
-      ];
-      sets.splice(0, sets.length, ...newSets);
-      const filteredCatProds = window.safeArrayUtils.safeFilter(categoryProds, cp => String(cp.prodId) !== String(setProdId));
-      categoryProds.splice(0, categoryProds.length, ...filteredCatProds);
-      window.safeArrayUtils.safeForEach(dtlCategories, (cat, i) => {
-        categoryProds.push({ categoryProdId: `CP_SET_${setProdId}_${i}`, siteId: '1', categoryId: cat.categoryId, prodId: setProdId, sortOrd: i + 1 });
-      });
-      if (isNewSet) { uiState.dtlMode = 'edit'; uiState.editSetId = newProdId; }
       try {
         /* PdProdSetSaveDto: CreateRequest {prodNm, siteId, items[]}, UpdateItemsRequest {items[]}, Item {prodId, qty, sortOrd} */
         const setItems = dtlItems.map(d => ({ prodId: d.itemProdId || null, qty: d.itemQty, sortOrd: d.sortOrd }));
@@ -472,8 +439,7 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
           ? boApiSvc.pdSet.create({ prodNm: newForm.prodNm, siteId: newForm.siteId || null, items: setItems }, '세트상품관리', '등록')
           : boApiSvc.pdSet.updateItems(setProdId, { items: setItems }, '세트상품관리', '저장'));
         if (showToast) { showToast(isNewSet ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
-        /* 저장 완료: 목록 재조회 후 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
-        await handleSearchData('RELOAD');
+        await handleSearchData();
         resetDetailToNew();
       } catch (err) {
         console.error('[catch-info]', err);
@@ -486,20 +452,18 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
     const handleDelete = async setProdId => {
       const ok = await showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) { return; }
-      const remaining = (sets).filter(s => s.setProdId !== setProdId);
-      sets.splice(0, sets.length, ...remaining);
       if (uiState.editSetId === setProdId) { closeDtl(); }
       try {
-        const res = await boApiSvc.pdSet.remove(setProdId, '세트상품관리', '삭제');
+        await boApiSvc.pdSet.remove(setProdId, '세트상품관리', '삭제');
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
+        await handleSearchData();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
-    /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
-    const cfSetPageRows = computed(() => setList.slice((setGridPager.pageNo - 1) * setGridPager.pageSize, setGridPager.pageNo * setGridPager.pageSize));
+    /* setList — 서버에서 받은 현재 페이지 세트목록 (computed 제거, 서버사이드 직접 사용) */
         // --- [컬럼 정의] ---
         const columns = {};
         columns.baseSearch = [
@@ -566,7 +530,7 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
       uiState, searchParam, setGridPager,                // 상태 / 데이터
       dtlCategories, dtlItems, newForm, newErrors,               // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      cfCatExcludeSet, cfDtlProdNm, cfSetPageRows, cfExcludeProdIds, // computed
+      cfCatExcludeSet, cfDtlProdNm, cfExcludeProdIds, setList, // computed / data
       fnSetRowStyle, fnSetItemRowStyle, // 헬퍼
       getProdNm, getBrandNm, getVendorNm,                                          // 헬퍼
       onItemReorder,                                                                        // BoGrid 콜백 (closure 필요)
@@ -591,7 +555,7 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="columns.setGrid" :rows="cfSetPageRows"
+      <bo-grid bare :columns="columns.setGrid" :rows="setList"
         row-key="setProdId" :selected-key="uiState.editSetId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
         <template #cell-prodNm="{ row }">
           <td>
