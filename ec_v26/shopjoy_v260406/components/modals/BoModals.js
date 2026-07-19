@@ -31,7 +31,7 @@
 
    [상품 관련 모달]
      PdProdPickModal        — 상품 검색/단건 선택 (서버 페이징 + 다중 검색타입)
-                              사용: PdBundleMng(구성품 추가), PdSetMng(구성품 추가), PdCategoryProdMng(카테고리 상품 추가)
+                              사용: PdCategoryProdMng(카테고리 상품 추가)
                               props: show, title, excludeIds, uiNm, modalName, onCallback
                               콜백 payload: 선택한 상품 row 객체 (prodId / prodNm / salePrice 등)
      PdCatParentPickModal   — 카테고리 상위 카테고리 선택 (계층 인덴트 목록, 클라이언트 필터)
@@ -7889,8 +7889,6 @@ window.PmBrandPickModal = {
    서버사이드 페이징 + 다중 검색타입(상품명/ID) 필터.
    선택 시 onCallback(modalName, null, row) 또는 emit('select', row).
    사용처:
-     - PdBundleMng.js  : 묶음 구성품 상품 추가
-     - PdSetMng.js     : 세트 구성품 상품 추가
      - PdCategoryProdMng.js : 카테고리 내 상품 추가
    props:
      show        {Boolean}  - 모달 표시 여부

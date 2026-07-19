@@ -4,6 +4,7 @@ window.PdProdMng = {
   props: {
     navigate:          { type: Function, required: true }, // 페이지 이동
     initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
+    fixedProdTypeCd:   { type: String,   default: null },  // 상품유형 고정 (단품/옵션/묶음/세트/사은품 개별 메뉴 진입 시)
   },
   setup(props) {
 
@@ -14,11 +15,13 @@ window.PdProdMng = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
     const products = reactive([]);                 // 상품 목록 (메인 그리드 데이터)
+    const vendors  = reactive([]);                 // 판매업체 목록 (검색조건 select)
+    const mdUsers  = reactive([]);                 // 담당MD(관리자) 목록 (검색조건 select)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
       sortKey: '', sortDir: 'asc',
     });
-    const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], prod_date_types: [], date_range_opts: [] });
+    const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], prod_date_types: [], date_range_opts: [], prod_types: [] });
     const SORT_MAP = { nm: { asc: 'prodNm asc', desc: 'prodNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
     /* ===== 검색조건 ===== */
@@ -135,7 +138,12 @@ window.PdProdMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, cate: '', status: '' };
+      return {
+        searchType: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, cate: '', status: '',
+        prodTypeCd: props.fixedProdTypeCd || '',
+        vendorId: '',   // onMounted 에서 로그인 사용자의 소속 업체로 기본값 설정
+        mdUserId: '',   // onMounted 에서 로그인 사용자로 기본값 설정
+      };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -300,17 +308,47 @@ window.PdProdMng = {
       codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
       codes.prod_date_types = codeStore.sgGetGrpCodes('PROD_DATE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      codes.prod_types = codeStore.sgGetGrpCodes('PROD_TYPE');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* fnLoadVendorsAndMdUsers — 검색조건 판매업체/담당MD select 목록 로드 */
+    const fnLoadVendorsAndMdUsers = async () => {
+      try {
+        const [vendorRes, userRes] = await Promise.all([
+          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 500 }, '상품관리', '업체목록조회'),
+          boApiSvc.syUser.getList({}, '상품관리', 'MD목록조회'),
+        ]);
+        vendors.splice(0, vendors.length, ...(vendorRes.data?.data?.pageList || []));
+        mdUsers.splice(0, mdUsers.length, ...(userRes.data?.data || []));
+      } catch (err) {
+        console.error('[catch-info]', err);
+      }
+    };
+
+    /* fnApplyLoginDefaults — 로그인 사용자의 소속 업체·담당MD 를 검색조건 기본값으로 설정 (fixedProdTypeCd 진입 시에도 유지) */
+    const fnApplyLoginDefaults = async () => {
+      const authUser = window.useBoAuthStore?.().sgCurrentUser;
+      if (!authUser?.authId) return;
+      searchParam.mdUserId = authUser.authId;
+      try {
+        const res = await boApiSvc.syVendorUser.getList({ userId: authUser.authId }, '상품관리', '소속업체조회');
+        const rows = res.data?.data || [];
+        if (rows[0]?.vendorId) { searchParam.vendorId = rows[0].vendorId; }
+      } catch (err) {
+        console.error('[catch-info]', err);
+      }
+    };
+
     // ★ onMounted
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
         searchParam.dateStart = ''; searchParam.dateEnd = '';
       }
+      await Promise.all([fnLoadVendorsAndMdUsers(), fnApplyLoginDefaults()]);
       handleSearchList('DEFAULT');
     });
 
@@ -318,6 +356,10 @@ window.PdProdMng = {
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+
+    /* cfPageTitle — 유형별 개별 메뉴 진입 시 화면 제목 (fixedProdTypeCd 지정) */
+    const _PROD_TYPE_TITLE = { SINGLE: '단품상품등록', OPTION: '옵션상품등록', GROUP: '묶음상품등록', SET: '세트상품등록', GIFT: '사은상품등록' };
+    const cfPageTitle = computed(() => _PROD_TYPE_TITLE[props.fixedProdTypeCd] || '상품관리');
 
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
@@ -336,6 +378,14 @@ window.PdProdMng = {
       { key: 'cate', label: '카테고리', type: 'pick',
         display: (p) => p.cate, placeholder: '카테고리 선택', width: '120px',
         openLabel: '선택', onOpen: () => handleBtnAction('catModal-open'), onClear: () => handleBtnAction('searchParam-cateClear') },
+      // 상품유형 — 유형별 개별 메뉴(fixedProdTypeCd 지정)에서는 이미 고정이므로 검색조건에서 숨김
+      ...(props.fixedProdTypeCd ? [] : [
+        { key: 'prodTypeCd', label: '상품유형', type: 'select', options: () => codes.prod_types, nullLabel: '유형 전체' },
+      ]),
+      { key: 'vendorId', label: '판매업체', type: 'select',
+        options: () => vendors.map(v => ({ value: v.vendorId, label: v.vendorNm })), nullLabel: '업체 전체' },
+      { key: 'mdUserId', label: '담당MD', type: 'select',
+        options: () => mdUsers.map(u => ({ value: u.userId, label: u.userNm })), nullLabel: 'MD 전체' },
       { key: 'status', label: '상태', type: 'select', options: () => codes.product_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', label: '등록일', type: 'dateRange',
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
@@ -372,10 +422,12 @@ window.PdProdMng = {
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
       handleSearchList,                                      // Dtl 임베드 전달용
       fnOpenOptCodeMng,
+      fixedProdTypeCd: props.fixedProdTypeCd,             // 유형별 개별 메뉴 진입 시 Dtl 신규등록 초기값 전달용
+      cfPageTitle,
     };
   },
   template: /* html */`
-<bo-page title="상품관리"
+<bo-page :title="cfPageTitle"
   desc-summary="상품관리 는 판매 상품의 기본정보·가격·재고·옵션을 등록하고 관리합니다."
   :desc-detail="['✔ 단품/묶음/세트 상품 유형별 등록·수정·삭제를 처리합니다.','✔ 옵션(1단/2단) 및 SKU별 가격·재고를 설정합니다.','✔ 상품 상태(임시저장→검수→판매중→품절·중단)를 관리합니다.','예) 단품 의류 등록, 옵션(색상·사이즈) 설정, 재고 이력 확인'].join(String.fromCharCode(10))">
   <template #actions>
@@ -440,6 +492,7 @@ window.PdProdMng = {
     :active="detailPanel.active"
     :reload-trigger="detailPanel.reloadTrigger"
     :on-list-reload="handleSearchList"
+    :fixed-prod-type-cd="fixedProdTypeCd"
     />
   <!-- ===== □. 하단 상세: ProdDtl 임베드 ====================================== -->
 </bo-page>

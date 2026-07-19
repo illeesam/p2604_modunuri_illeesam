@@ -36,8 +36,11 @@
     product: [
       { group: '상품' },
       { id: 'pdProdMng', label: '상품관리' },
-      { id: 'pdBundleMng', label: '묶음상품관리' },
-      { id: 'pdSetMng', label: '세트상품관리' },
+      { id: 'pdSingleProdMng', label: '단품상품등록' },
+      { id: 'pdOptionProdMng', label: '옵션상품등록' },
+      { id: 'pdGroupProdMng', label: '묶음상품등록' },
+      { id: 'pdSetProdMng', label: '세트상품등록' },
+      { id: 'pdGiftProdMng', label: '사은상품등록' },
       { group: '카테고리' },
       { id: 'pdCategoryMng', label: '카테고리관리' },
       { id: 'pdCategoryProdMng', label: '카테고리상품관리' },
@@ -425,8 +428,11 @@
         pdProdMng: 'pd-prod-mng',
         pdProdDtl: 'pd-prod-dtl',
         pdDlivTmpltMng: 'pd-dliv-tmplt-mng',
-        pdBundleMng: 'pd-bundle-mng',
-        pdSetMng: 'pd-set-mng',
+        pdSingleProdMng: 'pd-single-prod-mng',
+        pdOptionProdMng: 'pd-option-prod-mng',
+        pdGroupProdMng: 'pd-group-prod-mng',
+        pdSetProdMng: 'pd-set-prod-mng',
+        pdGiftProdMng: 'pd-gift-prod-mng',
         pdReviewMng: 'pd-review-mng',
         pdQnaMng: 'pd-qna-mng',
         pdRestockNotiMng: 'pd-restock-noti-mng',
@@ -2671,8 +2677,11 @@
             <mb-mem-group-mng  v-else-if="page==='mbMemGroupMng'"  :navigate="navigate" />
             <!-- ── 상품 추가 ── -->
             <pd-dliv-tmplt-mng  v-else-if="page==='pdDlivTmpltMng'"  :navigate="navigate" />
-            <pd-bundle-mng  v-else-if="page==='pdBundleMng'"  :navigate="navigate" />
-            <pd-set-mng  v-else-if="page==='pdSetMng'"  :navigate="navigate" />
+            <pd-single-prod-mng  v-else-if="page==='pdSingleProdMng'"  :navigate="navigate" />
+            <pd-option-prod-mng  v-else-if="page==='pdOptionProdMng'"  :navigate="navigate" />
+            <pd-group-prod-mng  v-else-if="page==='pdGroupProdMng'"  :navigate="navigate" />
+            <pd-set-prod-mng  v-else-if="page==='pdSetProdMng'"  :navigate="navigate" />
+            <pd-gift-prod-mng  v-else-if="page==='pdGiftProdMng'"  :navigate="navigate" />
             <pd-review-mng  v-else-if="page==='pdReviewMng'"  :navigate="navigate" />
             <pd-qna-mng  v-else-if="page==='pdQnaMng'"  :navigate="navigate" />
             <pd-restock-noti-mng v-else-if="page==='pdRestockNotiMng'" :navigate="navigate" />
@@ -3107,8 +3116,11 @@
     .component('PdProdDtl', window.PdProdDtl)
     .component('PdProdHist', window.PdProdHist)
     .component('PdDlivTmpltMng', window.PdDlivTmpltMng)
-    .component('PdBundleMng', window.PdBundleMng)
-    .component('PdSetMng', window.PdSetMng)
+    .component('PdSingleProdMng', window.PdSingleProdMng)
+    .component('PdOptionProdMng', window.PdOptionProdMng)
+    .component('PdGroupProdMng', window.PdGroupProdMng)
+    .component('PdSetProdMng', window.PdSetProdMng)
+    .component('PdGiftProdMng', window.PdGiftProdMng)
     .component('PdReviewMng', window.PdReviewMng)
     .component('PdQnaMng', window.PdQnaMng)
     .component('PdRestockNotiMng', window.PdRestockNotiMng)

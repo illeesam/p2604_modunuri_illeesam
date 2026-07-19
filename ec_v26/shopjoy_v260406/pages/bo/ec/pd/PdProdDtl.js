@@ -9,6 +9,7 @@ window.PdProdDtl = {
     active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     onListReload: { type: Function, default: () => {} },
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-bo §18)
+    fixedProdTypeCd: { type: String, default: null }, // 신규 등록 시 상품유형 초기값 (유형별 개별 메뉴 진입 시)
   },
   setup(props) {
 
@@ -1181,6 +1182,7 @@ window.PdProdDtl = {
     const handleInitForm = async () => {
       if (cfIsNew.value) {
         form.mdUserId = cfMdUserList.value[0]?.userId || '';
+        if (props.fixedProdTypeCd) { form.prodTypeCd = props.fixedProdTypeCd; }
       }
       if (!cfIsNew.value) {
         const p = products[0] || null;
