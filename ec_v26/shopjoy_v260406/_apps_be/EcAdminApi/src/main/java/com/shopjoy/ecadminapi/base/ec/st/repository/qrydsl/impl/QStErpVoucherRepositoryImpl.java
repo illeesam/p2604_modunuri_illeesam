@@ -76,12 +76,12 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         JPAQuery<StErpVoucherDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndErpVoucherId(search),
-                    baseAndErpVoucherTypeCd(search),
-                    baseAndErpVoucherStatusCd(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andErpVoucherIdEq(search),
+                    andErpVoucherTypeCdEq(search),
+                    andErpVoucherStatusCdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -104,12 +104,12 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndErpVoucherId(search),
-                baseAndErpVoucherTypeCd(search),
-                baseAndErpVoucherStatusCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andErpVoucherIdEq(search),
+                andErpVoucherTypeCdEq(search),
+                andErpVoucherStatusCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -139,36 +139,36 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     /* ERP 전표 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(StErpVoucherDto.Request search) {
+    private BooleanExpression andSiteIdEq(StErpVoucherDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? stErpVoucher.siteId.eq(search.getSiteId()) : null;
     }
 
     /* erpVoucherId 정확 일치 */
-    private BooleanExpression baseAndErpVoucherId(StErpVoucherDto.Request search) {
+    private BooleanExpression andErpVoucherIdEq(StErpVoucherDto.Request search) {
         return search != null && StringUtils.hasText(search.getErpVoucherId())
                 ? stErpVoucher.erpVoucherId.eq(search.getErpVoucherId()) : null;
     }
 
     /* erpVoucherTypeCd 정확 일치 */
-    private BooleanExpression baseAndErpVoucherTypeCd(StErpVoucherDto.Request search) {
+    private BooleanExpression andErpVoucherTypeCdEq(StErpVoucherDto.Request search) {
         return search != null && StringUtils.hasText(search.getErpVoucherTypeCd())
                 ? stErpVoucher.erpVoucherTypeCd.eq(search.getErpVoucherTypeCd()) : null;
     }
 
     /* erpVoucherStatusCd 정확 일치 */
-    private BooleanExpression baseAndErpVoucherStatusCd(StErpVoucherDto.Request search) {
+    private BooleanExpression andErpVoucherStatusCdEq(StErpVoucherDto.Request search) {
         return search != null && StringUtils.hasText(search.getErpVoucherStatusCd())
                 ? stErpVoucher.erpVoucherStatusCd.eq(search.getErpVoucherStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(StErpVoucherDto.Request search) {
+    private BooleanExpression andDateRangeBetween(StErpVoucherDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -187,7 +187,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(StErpVoucherDto.Request search) {
+    private BooleanExpression andSearchValueLike(StErpVoucherDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

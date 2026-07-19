@@ -57,13 +57,13 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         JPAQuery<PmCouponItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndCouponItemId(search),
-                    baseAndCouponId(search),
-                    baseAndTargetId(search),
-                    baseAndTargetTypeCd(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andCouponItemIdEq(search),
+                    andCouponIdEq(search),
+                    andTargetIdEq(search),
+                    andTargetTypeCdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -86,13 +86,13 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndCouponItemId(search),
-                baseAndCouponId(search),
-                baseAndTargetId(search),
-                baseAndTargetTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andCouponItemIdEq(search),
+                andCouponIdEq(search),
+                andTargetIdEq(search),
+                andTargetTypeCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -119,42 +119,42 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     /* 쿠폰 대상 상품 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PmCouponItemDto.Request search) {
+    private BooleanExpression andSiteIdEq(PmCouponItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pmCouponItem.siteId.eq(search.getSiteId()) : null;
     }
 
     /* couponItemId 정확 일치 */
-    private BooleanExpression baseAndCouponItemId(PmCouponItemDto.Request search) {
+    private BooleanExpression andCouponItemIdEq(PmCouponItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getCouponItemId())
                 ? pmCouponItem.couponItemId.eq(search.getCouponItemId()) : null;
     }
 
     /* couponId 정확 일치 */
-    private BooleanExpression baseAndCouponId(PmCouponItemDto.Request search) {
+    private BooleanExpression andCouponIdEq(PmCouponItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getCouponId())
                 ? pmCouponItem.couponId.eq(search.getCouponId()) : null;
     }
 
     /* targetId 정확 일치 */
-    private BooleanExpression baseAndTargetId(PmCouponItemDto.Request search) {
+    private BooleanExpression andTargetIdEq(PmCouponItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetId())
                 ? pmCouponItem.targetId.eq(search.getTargetId()) : null;
     }
 
     /* targetTypeCd 정확 일치 */
-    private BooleanExpression baseAndTargetTypeCd(PmCouponItemDto.Request search) {
+    private BooleanExpression andTargetTypeCdEq(PmCouponItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetTypeCd())
                 ? pmCouponItem.targetTypeCd.eq(search.getTargetTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PmCouponItemDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PmCouponItemDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -170,7 +170,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PmCouponItemDto.Request search) {
+    private BooleanExpression andSearchValueLike(PmCouponItemDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

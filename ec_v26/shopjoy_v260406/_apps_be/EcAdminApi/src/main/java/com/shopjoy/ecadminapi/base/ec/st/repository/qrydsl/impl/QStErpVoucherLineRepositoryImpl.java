@@ -60,9 +60,9 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndErpVoucherLineId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andErpVoucherLineIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -85,9 +85,9 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndErpVoucherLineId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andErpVoucherLineIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -122,13 +122,13 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
      * ============================================================ */
 
     /* erpVoucherLineId 정확 일치 */
-    private BooleanExpression baseAndErpVoucherLineId(StErpVoucherLineDto.Request search) {
+    private BooleanExpression andErpVoucherLineIdEq(StErpVoucherLineDto.Request search) {
         return search != null && StringUtils.hasText(search.getErpVoucherLineId())
                 ? stErpVoucherLine.erpVoucherLineId.eq(search.getErpVoucherLineId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(StErpVoucherLineDto.Request search) {
+    private BooleanExpression andDateRangeBetween(StErpVoucherLineDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -144,7 +144,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(StErpVoucherLineDto.Request search) {
+    private BooleanExpression andSearchValueLike(StErpVoucherLineDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

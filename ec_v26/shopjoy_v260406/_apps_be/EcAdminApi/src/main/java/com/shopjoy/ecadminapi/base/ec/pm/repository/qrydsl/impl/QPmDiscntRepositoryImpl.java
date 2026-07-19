@@ -65,14 +65,14 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndDiscntIds(search),
-                    baseAndDiscntId(search),
-                    baseAndUseYn(search),
-                    baseAndDiscntTypeCd(search),
-                    baseAndDiscntStatusCd(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andDiscntIdsIn(search),
+                    andDiscntIdEq(search),
+                    andUseYnEq(search),
+                    andDiscntTypeCdEq(search),
+                    andDiscntStatusCdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -95,14 +95,14 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndDiscntIds(search),
-                baseAndDiscntId(search),
-                baseAndUseYn(search),
-                baseAndDiscntTypeCd(search),
-                baseAndDiscntStatusCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andDiscntIdsIn(search),
+                andDiscntIdEq(search),
+                andUseYnEq(search),
+                andDiscntTypeCdEq(search),
+                andDiscntStatusCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -129,48 +129,48 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PmDiscntDto.Request search) {
+    private BooleanExpression andSiteIdEq(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pmDiscnt.siteId.eq(search.getSiteId()) : null;
     }
 
     /* discntId IN */
-    private BooleanExpression baseAndDiscntIds(PmDiscntDto.Request search) {
+    private BooleanExpression andDiscntIdsIn(PmDiscntDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getDiscntIds())
                 ? pmDiscnt.discntId.in(search.getDiscntIds()) : null;
     }
 
     /* discntId 정확 일치 */
-    private BooleanExpression baseAndDiscntId(PmDiscntDto.Request search) {
+    private BooleanExpression andDiscntIdEq(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getDiscntId())
                 ? pmDiscnt.discntId.eq(search.getDiscntId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(PmDiscntDto.Request search) {
+    private BooleanExpression andUseYnEq(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? pmDiscnt.useYn.eq(search.getUseYn()) : null;
     }
 
     /* discntTypeCd 정확 일치 */
-    private BooleanExpression baseAndDiscntTypeCd(PmDiscntDto.Request search) {
+    private BooleanExpression andDiscntTypeCdEq(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getDiscntTypeCd())
                 ? pmDiscnt.discntTypeCd.eq(search.getDiscntTypeCd()) : null;
     }
 
     /* discntStatusCd 정확 일치 */
-    private BooleanExpression baseAndDiscntStatusCd(PmDiscntDto.Request search) {
+    private BooleanExpression andDiscntStatusCdEq(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getDiscntStatusCd())
                 ? pmDiscnt.discntStatusCd.eq(search.getDiscntStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PmDiscntDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PmDiscntDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -186,7 +186,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PmDiscntDto.Request search) {
+    private BooleanExpression andSearchValueLike(PmDiscntDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

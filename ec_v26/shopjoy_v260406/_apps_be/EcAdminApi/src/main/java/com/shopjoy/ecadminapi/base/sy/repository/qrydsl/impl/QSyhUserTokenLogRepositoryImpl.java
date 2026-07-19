@@ -90,13 +90,13 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
 
         JPAQuery<SyhUserTokenLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndSiteId(search),
-                baseAndLogId(search),
-                baseAndUserId(search),
-                baseAndActionCd(search),
-                baseAndTokenTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andLogIdEq(search),
+                andUserIdEq(search),
+                andActionCdEq(search),
+                andTokenTypeCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -119,13 +119,13 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndLogId(search),
-                baseAndUserId(search),
-                baseAndActionCd(search),
-                baseAndTokenTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andLogIdEq(search),
+                andUserIdEq(search),
+                andActionCdEq(search),
+                andTokenTypeCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -153,42 +153,42 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyhUserTokenLogDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyhUserTokenLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syhUserTokenLog.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
-    private BooleanExpression baseAndLogId(SyhUserTokenLogDto.Request search) {
+    private BooleanExpression andLogIdEq(SyhUserTokenLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
                 ? syhUserTokenLog.logId.eq(search.getLogId()) : null;
     }
 
     /* userId 정확 일치 */
-    private BooleanExpression baseAndUserId(SyhUserTokenLogDto.Request search) {
+    private BooleanExpression andUserIdEq(SyhUserTokenLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
                 ? syhUserTokenLog.userId.eq(search.getUserId()) : null;
     }
 
     /* actionCd 정확 일치 */
-    private BooleanExpression baseAndActionCd(SyhUserTokenLogDto.Request search) {
+    private BooleanExpression andActionCdEq(SyhUserTokenLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getActionCd())
                 ? syhUserTokenLog.actionCd.eq(search.getActionCd()) : null;
     }
 
     /* tokenTypeCd 정확 일치 */
-    private BooleanExpression baseAndTokenTypeCd(SyhUserTokenLogDto.Request search) {
+    private BooleanExpression andTokenTypeCdEq(SyhUserTokenLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTokenTypeCd())
                 ? syhUserTokenLog.tokenTypeCd.eq(search.getTokenTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SyhUserTokenLogDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyhUserTokenLogDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -203,7 +203,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyhUserTokenLogDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyhUserTokenLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

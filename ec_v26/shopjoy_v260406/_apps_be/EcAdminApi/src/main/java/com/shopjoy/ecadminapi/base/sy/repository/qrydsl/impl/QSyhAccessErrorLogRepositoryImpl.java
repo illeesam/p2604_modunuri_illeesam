@@ -109,13 +109,13 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndMethod(search),
-                baseAndPath(search),
-                baseAndUiNm(search),
-                baseAndTraceId(search),
-                baseAndAppTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andMethodEq(search),
+                andPathLike(search),
+                andUiNmLike(search),
+                andTraceIdEq(search),
+                andAppTypeCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -148,37 +148,37 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
      * ============================================================ */
 
     /* reqMethod 정확 일치 */
-    private BooleanExpression baseAndMethod(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression andMethodEq(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getMethod())
                 ? syhAccessErrorLog.reqMethod.eq(search.getMethod()) : null;
     }
 
     /* reqPath LIKE (경로 부분 검색) */
-    private BooleanExpression baseAndPath(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression andPathLike(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getPath())
                 ? syhAccessErrorLog.reqPath.likeIgnoreCase("%" + search.getPath().trim() + "%") : null;
     }
 
     /* uiNm LIKE (x-ui-nm 화면명) */
-    private BooleanExpression baseAndUiNm(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression andUiNmLike(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUiNm())
                 ? syhAccessErrorLog.uiNm.likeIgnoreCase("%" + search.getUiNm().trim() + "%") : null;
     }
 
     /* traceId 정확 일치 */
-    private BooleanExpression baseAndTraceId(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression andTraceIdEq(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTraceId())
                 ? syhAccessErrorLog.traceId.eq(search.getTraceId().trim()) : null;
     }
 
     /* appTypeCd 정확 일치 */
-    private BooleanExpression baseAndAppTypeCd(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression andAppTypeCdEq(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getAppTypeCd())
                 ? syhAccessErrorLog.appTypeCd.eq(search.getAppTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyhAccessErrorLogDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -193,7 +193,7 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyhAccessErrorLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

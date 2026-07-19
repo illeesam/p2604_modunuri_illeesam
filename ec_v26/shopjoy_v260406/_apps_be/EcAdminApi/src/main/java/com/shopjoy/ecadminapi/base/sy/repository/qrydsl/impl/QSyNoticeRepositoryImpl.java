@@ -62,12 +62,12 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndNoticeId(search),
-                    baseAndStatus(search),
-                    baseAndNoticeTypeCd(search),
-                    baseAndIsFixed(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andNoticeIdEq(search),
+                    andStatusEq(search),
+                    andNoticeTypeCdEq(search),
+                    andIsFixedEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -90,12 +90,12 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndNoticeId(search),
-                baseAndStatus(search),
-                baseAndNoticeTypeCd(search),
-                baseAndIsFixed(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andNoticeIdEq(search),
+                andStatusEq(search),
+                andNoticeTypeCdEq(search),
+                andIsFixedEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -122,42 +122,42 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyNoticeDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syNotice.siteId.eq(search.getSiteId()) : null;
     }
 
     /* noticeId 정확 일치 */
-    private BooleanExpression baseAndNoticeId(SyNoticeDto.Request search) {
+    private BooleanExpression andNoticeIdEq(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getNoticeId())
                 ? syNotice.noticeId.eq(search.getNoticeId()) : null;
     }
 
     /* noticeStatusCd 정확 일치 */
-    private BooleanExpression baseAndStatus(SyNoticeDto.Request search) {
+    private BooleanExpression andStatusEq(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? syNotice.noticeStatusCd.eq(search.getStatus()) : null;
     }
 
     /* noticeTypeCd 정확 일치 */
-    private BooleanExpression baseAndNoticeTypeCd(SyNoticeDto.Request search) {
+    private BooleanExpression andNoticeTypeCdEq(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getNoticeTypeCd())
                 ? syNotice.noticeTypeCd.eq(search.getNoticeTypeCd()) : null;
     }
 
     /* isFixed 정확 일치 */
-    private BooleanExpression baseAndIsFixed(SyNoticeDto.Request search) {
+    private BooleanExpression andIsFixedEq(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getIsFixed())
                 ? syNotice.isFixed.eq(search.getIsFixed()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyNoticeDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyNoticeDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

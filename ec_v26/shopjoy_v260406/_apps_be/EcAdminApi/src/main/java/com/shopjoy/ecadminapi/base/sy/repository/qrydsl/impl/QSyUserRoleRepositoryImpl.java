@@ -70,11 +70,11 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyUserRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndUserRoleId(search),
-                baseAndUserId(search),
-                baseAndRoleId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andUserRoleIdEq(search),
+                andUserIdEq(search),
+                andRoleIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -97,11 +97,11 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndUserRoleId(search),
-                baseAndUserId(search),
-                baseAndRoleId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andUserRoleIdEq(search),
+                andUserIdEq(search),
+                andRoleIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -134,25 +134,25 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
      * ============================================================ */
 
     /* userRoleId 정확 일치 */
-    private BooleanExpression baseAndUserRoleId(SyUserRoleDto.Request search) {
+    private BooleanExpression andUserRoleIdEq(SyUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserRoleId())
                 ? syUserRole.userRoleId.eq(search.getUserRoleId()) : null;
     }
 
     /* userId 정확 일치 */
-    private BooleanExpression baseAndUserId(SyUserRoleDto.Request search) {
+    private BooleanExpression andUserIdEq(SyUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
                 ? syUserRole.userId.eq(search.getUserId()) : null;
     }
 
     /* roleId 정확 일치 */
-    private BooleanExpression baseAndRoleId(SyUserRoleDto.Request search) {
+    private BooleanExpression andRoleIdEq(SyUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleId())
                 ? syUserRole.roleId.eq(search.getRoleId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SyUserRoleDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyUserRoleDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -168,7 +168,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyUserRoleDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyUserRoleDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

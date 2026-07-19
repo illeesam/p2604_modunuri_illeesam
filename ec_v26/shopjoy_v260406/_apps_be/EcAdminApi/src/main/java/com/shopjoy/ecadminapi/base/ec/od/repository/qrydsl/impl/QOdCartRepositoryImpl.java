@@ -78,11 +78,11 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         JPAQuery<OdCartDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndCartId(search),
-                    baseAndMemberId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andCartIdEq(search),
+                    andMemberIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -105,11 +105,11 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndCartId(search),
-                baseAndMemberId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andCartIdEq(search),
+                andMemberIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -139,30 +139,30 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(OdCartDto.Request search) {
+    private BooleanExpression andSiteIdEq(OdCartDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? odCart.siteId.eq(search.getSiteId()) : null;
     }
 
     /* cartId 정확 일치 */
-    private BooleanExpression baseAndCartId(OdCartDto.Request search) {
+    private BooleanExpression andCartIdEq(OdCartDto.Request search) {
         return search != null && StringUtils.hasText(search.getCartId())
                 ? odCart.cartId.eq(search.getCartId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression baseAndMemberId(OdCartDto.Request search) {
+    private BooleanExpression andMemberIdEq(OdCartDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? odCart.memberId.eq(search.getMemberId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(OdCartDto.Request search) {
+    private BooleanExpression andDateRangeBetween(OdCartDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -178,7 +178,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(OdCartDto.Request search) {
+    private BooleanExpression andSearchValueLike(OdCartDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

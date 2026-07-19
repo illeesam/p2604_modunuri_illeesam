@@ -61,13 +61,13 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndPathId(search),
-                    baseAndWidgetLibId(search),
-                    baseAndWidgetTypeCd(search),
-                    baseAndUseYn(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andPathIdIn(search),
+                    andWidgetLibIdEq(search),
+                    andWidgetTypeCdEq(search),
+                    andUseYnEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -89,13 +89,13 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndWidgetLibId(search),
-                baseAndWidgetTypeCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andPathIdIn(search),
+                andWidgetLibIdEq(search),
+                andWidgetTypeCdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery();
@@ -122,43 +122,43 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(DpWidgetLibDto.Request search) {
+    private BooleanExpression andSiteIdEq(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? dpWidgetLib.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression baseAndPathId(DpWidgetLibDto.Request search) {
+    private BooleanExpression andPathIdIn(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? dpWidgetLib.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_widget_lib"))
                 : null;
     }
 
     /* widgetLibId 정확 일치 */
-    private BooleanExpression baseAndWidgetLibId(DpWidgetLibDto.Request search) {
+    private BooleanExpression andWidgetLibIdEq(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getWidgetLibId())
                 ? dpWidgetLib.widgetLibId.eq(search.getWidgetLibId()) : null;
     }
 
     /* widgetTypeCd 정확 일치 */
-    private BooleanExpression baseAndWidgetTypeCd(DpWidgetLibDto.Request search) {
+    private BooleanExpression andWidgetTypeCdEq(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getWidgetTypeCd())
                 ? dpWidgetLib.widgetTypeCd.eq(search.getWidgetTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(DpWidgetLibDto.Request search) {
+    private BooleanExpression andUseYnEq(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? dpWidgetLib.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(DpWidgetLibDto.Request search) {
+    private BooleanExpression andDateRangeBetween(DpWidgetLibDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -174,7 +174,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(DpWidgetLibDto.Request search) {
+    private BooleanExpression andSearchValueLike(DpWidgetLibDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

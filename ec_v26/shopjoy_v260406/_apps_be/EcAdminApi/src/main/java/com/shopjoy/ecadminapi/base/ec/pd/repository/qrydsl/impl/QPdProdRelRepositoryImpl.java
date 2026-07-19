@@ -57,11 +57,11 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         JPAQuery<PdProdRelDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndProdRelId(search),
-                    baseAndProdId(search),
-                    baseAndUseYn(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andProdRelIdEq(search),
+                    andProdIdEq(search),
+                    andUseYnEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -84,11 +84,11 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndProdRelId(search),
-                baseAndProdId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andProdRelIdEq(search),
+                andProdIdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -122,25 +122,25 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
      * ============================================================ */
 
     /* prodRelId 정확 일치 */
-    private BooleanExpression baseAndProdRelId(PdProdRelDto.Request search) {
+    private BooleanExpression andProdRelIdEq(PdProdRelDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdRelId())
                 ? pdProdRel.prodRelId.eq(search.getProdRelId()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression baseAndProdId(PdProdRelDto.Request search) {
+    private BooleanExpression andProdIdEq(PdProdRelDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? pdProdRel.prodId.eq(search.getProdId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(PdProdRelDto.Request search) {
+    private BooleanExpression andUseYnEq(PdProdRelDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? pdProdRel.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PdProdRelDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PdProdRelDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -156,7 +156,7 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PdProdRelDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdProdRelDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

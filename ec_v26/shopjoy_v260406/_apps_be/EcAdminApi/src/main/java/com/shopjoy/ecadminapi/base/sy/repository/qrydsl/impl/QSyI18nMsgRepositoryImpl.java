@@ -56,10 +56,10 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         JPAQuery<SyI18nMsgDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndI18nMsgId(search),
-                    baseAndI18nId(search),
-                    baseAndLangCd(search),
-                    baseAndSearchValue(search)
+                    andI18nMsgIdEq(search),
+                    andI18nIdEq(search),
+                    andLangCdEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -82,10 +82,10 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndI18nMsgId(search),
-                baseAndI18nId(search),
-                baseAndLangCd(search),
-                baseAndSearchValue(search)
+                andI18nMsgIdEq(search),
+                andI18nIdEq(search),
+                andLangCdEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -117,25 +117,25 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
      * ============================================================ */
 
     /* i18nMsgId 정확 일치 */
-    private BooleanExpression baseAndI18nMsgId(SyI18nMsgDto.Request search) {
+    private BooleanExpression andI18nMsgIdEq(SyI18nMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nMsgId())
                 ? syI18nMsg.i18nMsgId.eq(search.getI18nMsgId()) : null;
     }
 
     /* i18nId 정확 일치 */
-    private BooleanExpression baseAndI18nId(SyI18nMsgDto.Request search) {
+    private BooleanExpression andI18nIdEq(SyI18nMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nId())
                 ? syI18nMsg.i18nId.eq(search.getI18nId()) : null;
     }
 
     /* langCd 정확 일치 */
-    private BooleanExpression baseAndLangCd(SyI18nMsgDto.Request search) {
+    private BooleanExpression andLangCdEq(SyI18nMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getLangCd())
                 ? syI18nMsg.langCd.eq(search.getLangCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyI18nMsgDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyI18nMsgDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

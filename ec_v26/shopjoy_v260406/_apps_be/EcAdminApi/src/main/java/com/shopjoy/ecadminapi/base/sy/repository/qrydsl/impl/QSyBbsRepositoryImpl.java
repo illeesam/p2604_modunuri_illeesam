@@ -66,12 +66,12 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndBbsId(search),
-                    baseAndBbmId(search),
-                    baseAndStatus(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andBbsIdEq(search),
+                    andBbmIdEq(search),
+                    andStatusEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -94,12 +94,12 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndBbsId(search),
-                baseAndBbmId(search),
-                baseAndStatus(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andBbsIdEq(search),
+                andBbmIdEq(search),
+                andStatusEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -126,30 +126,30 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyBbsDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syBbs.siteId.eq(search.getSiteId()) : null;
     }
 
     /* bbsId 정확 일치 */
-    private BooleanExpression baseAndBbsId(SyBbsDto.Request search) {
+    private BooleanExpression andBbsIdEq(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getBbsId())
                 ? syBbs.bbsId.eq(search.getBbsId()) : null;
     }
 
     /* bbmId(게시판) 정확 일치 */
-    private BooleanExpression baseAndBbmId(SyBbsDto.Request search) {
+    private BooleanExpression andBbmIdEq(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getBbmId())
                 ? syBbs.bbmId.eq(search.getBbmId()) : null;
     }
 
     /* 등록일(regDate) 기간 검색 — dateStart/dateEnd (yyyy-MM-dd) 포함 범위 */
-    private BooleanExpression baseAndDateRange(SyBbsDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyBbsDto.Request search) {
         if (search == null) return null;
         BooleanExpression expr = null;
         if (StringUtils.hasText(search.getDateStart())) {
@@ -165,13 +165,13 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     }
 
     /* bbsStatusCd 정확 일치 */
-    private BooleanExpression baseAndStatus(SyBbsDto.Request search) {
+    private BooleanExpression andStatusEq(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? syBbs.bbsStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyBbsDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyBbsDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

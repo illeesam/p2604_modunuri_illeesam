@@ -73,13 +73,13 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         JPAQuery<PdProdOptDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndOptTypeId(search),
-                    baseAndProdIds(search),
-                    baseAndProdId(search),
-                    baseAndSiteId(search),
-                    baseAndProdOptId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andOptTypeId(search),
+                    andProdIdsIn(search),
+                    andProdIdEq(search),
+                    andSiteIdEq(search),
+                    andProdOptIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -100,13 +100,13 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndOptTypeId(search),
-                baseAndProdIds(search),
-                baseAndProdId(search),
-                baseAndSiteId(search),
-                baseAndProdOptId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andOptTypeId(search),
+                andProdIdsIn(search),
+                andProdIdEq(search),
+                andSiteIdEq(search),
+                andProdOptIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         JPAQuery<PdProdOptDto.Item> query = baseSelColumnQuery();
@@ -132,31 +132,31 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
      * ============================================================ */
 
-    private BooleanExpression baseAndOptTypeId(PdProdOptDto.Request search) {
+    private BooleanExpression andOptTypeId(PdProdOptDto.Request search) {
         return null; // prod_opt_type_id 컬럼 제거됨 — pd_prod 플랫 컬럼으로 대체
     }
 
-    private BooleanExpression baseAndProdIds(PdProdOptDto.Request search) {
+    private BooleanExpression andProdIdsIn(PdProdOptDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getProdIds())
                 ? pdProdOpt.prodId.in(search.getProdIds()) : null;
     }
 
-    private BooleanExpression baseAndProdId(PdProdOptDto.Request search) {
+    private BooleanExpression andProdIdEq(PdProdOptDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? pdProdOpt.prodId.eq(search.getProdId()) : null;
     }
 
-    private BooleanExpression baseAndSiteId(PdProdOptDto.Request search) {
+    private BooleanExpression andSiteIdEq(PdProdOptDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pdProdOpt.siteId.eq(search.getSiteId()) : null;
     }
 
-    private BooleanExpression baseAndProdOptId(PdProdOptDto.Request search) {
+    private BooleanExpression andProdOptIdEq(PdProdOptDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdOptId())
                 ? pdProdOpt.prodOptId.eq(search.getProdOptId()) : null;
     }
 
-    private BooleanExpression baseAndDateRange(PdProdOptDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PdProdOptDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -171,7 +171,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         }
     }
 
-    private BooleanExpression baseAndSearchValue(PdProdOptDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdProdOptDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

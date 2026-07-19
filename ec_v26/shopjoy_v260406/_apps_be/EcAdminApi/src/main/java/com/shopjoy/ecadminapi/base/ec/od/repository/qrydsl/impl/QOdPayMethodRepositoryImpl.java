@@ -65,9 +65,9 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         JPAQuery<OdPayMethodDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndPayMethodId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andPayMethodIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -90,9 +90,9 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndPayMethodId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andPayMethodIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -127,13 +127,13 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
      * ============================================================ */
 
     /* payMethodId 정확 일치 */
-    private BooleanExpression baseAndPayMethodId(OdPayMethodDto.Request search) {
+    private BooleanExpression andPayMethodIdEq(OdPayMethodDto.Request search) {
         return search != null && StringUtils.hasText(search.getPayMethodId())
                 ? odPayMethod.payMethodId.eq(search.getPayMethodId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(OdPayMethodDto.Request search) {
+    private BooleanExpression andDateRangeBetween(OdPayMethodDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -149,7 +149,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(OdPayMethodDto.Request search) {
+    private BooleanExpression andSearchValueLike(OdPayMethodDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

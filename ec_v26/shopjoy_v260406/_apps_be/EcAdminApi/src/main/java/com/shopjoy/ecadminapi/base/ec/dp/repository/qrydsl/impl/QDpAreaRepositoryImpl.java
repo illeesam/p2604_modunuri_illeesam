@@ -60,14 +60,14 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         JPAQuery<DpAreaDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndUiIds(search),
-                    baseAndSiteId(search),
-                    baseAndPathId(search),
-                    baseAndUseYn(search),
-                    baseAndAreaId(search),
-                    baseAndUiId(search),
-                    baseAndAreaTypeCd(search),
-                    baseAndSearchValue(search)
+                    andUiIdsIn(search),
+                    andSiteIdEq(search),
+                    andPathIdIn(search),
+                    andUseYnEq(search),
+                    andAreaIdEq(search),
+                    andUiIdEq(search),
+                    andAreaTypeCdEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -88,14 +88,14 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndUiIds(search),
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndUseYn(search),
-                baseAndAreaId(search),
-                baseAndUiId(search),
-                baseAndAreaTypeCd(search),
-                baseAndSearchValue(search)
+                andUiIdsIn(search),
+                andSiteIdEq(search),
+                andPathIdIn(search),
+                andUseYnEq(search),
+                andAreaIdEq(search),
+                andUiIdEq(search),
+                andAreaTypeCdEq(search),
+                andSearchValueLike(search)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpAreaDto.Item> query = baseQuery();
@@ -122,55 +122,55 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* uiId IN */
-    private BooleanExpression baseAndUiIds(DpAreaDto.Request search) {
+    private BooleanExpression andUiIdsIn(DpAreaDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getUiIds())
                 ? dpArea.uiId.in(search.getUiIds()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(DpAreaDto.Request search) {
+    private BooleanExpression andSiteIdEq(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? dpArea.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression baseAndPathId(DpAreaDto.Request search) {
+    private BooleanExpression andPathIdIn(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? dpArea.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_area"))
                 : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(DpAreaDto.Request search) {
+    private BooleanExpression andUseYnEq(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? dpArea.useYn.eq(search.getUseYn()) : null;
     }
 
     /* areaId 정확 일치 */
-    private BooleanExpression baseAndAreaId(DpAreaDto.Request search) {
+    private BooleanExpression andAreaIdEq(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getAreaId())
                 ? dpArea.areaId.eq(search.getAreaId()) : null;
     }
 
     /* uiId 정확 일치 */
-    private BooleanExpression baseAndUiId(DpAreaDto.Request search) {
+    private BooleanExpression andUiIdEq(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUiId())
                 ? dpArea.uiId.eq(search.getUiId()) : null;
     }
 
     /* areaTypeCd 정확 일치 */
-    private BooleanExpression baseAndAreaTypeCd(DpAreaDto.Request search) {
+    private BooleanExpression andAreaTypeCdEq(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getAreaTypeCd())
                 ? dpArea.areaTypeCd.eq(search.getAreaTypeCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(DpAreaDto.Request search) {
+    private BooleanExpression andSearchValueLike(DpAreaDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

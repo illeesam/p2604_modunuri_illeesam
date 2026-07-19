@@ -66,16 +66,16 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndAreaId(search),
-                    baseAndAreaIds(search),
-                    baseAndPathId(search),
-                    baseAndPanelId(search),
-                    baseAndDispPanelStatusCd(search),
-                    baseAndPanelTypeCd(search),
-                    baseAndUseYn(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andAreaIdEq(search),
+                    andAreaIdsIn(search),
+                    andPathIdIn(search),
+                    andPanelIdEq(search),
+                    andDispPanelStatusCdEq(search),
+                    andPanelTypeCdEq(search),
+                    andUseYnEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -97,16 +97,16 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndAreaId(search),
-                baseAndAreaIds(search),
-                baseAndPathId(search),
-                baseAndPanelId(search),
-                baseAndDispPanelStatusCd(search),
-                baseAndPanelTypeCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andAreaIdEq(search),
+                andAreaIdsIn(search),
+                andPathIdIn(search),
+                andPanelIdEq(search),
+                andDispPanelStatusCdEq(search),
+                andPanelTypeCdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery();
@@ -130,61 +130,61 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(DpPanelDto.Request search) {
+    private BooleanExpression andSiteIdEq(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? dpPanel.siteId.eq(search.getSiteId()) : null;
     }
 
     /* areaId 정확 일치 (소속 영역) */
-    private BooleanExpression baseAndAreaId(DpPanelDto.Request search) {
+    private BooleanExpression andAreaIdEq(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getAreaId())
                 ? dpPanel.areaId.eq(search.getAreaId()) : null;
     }
 
     /* areaIds 다건 IN (상위 영역 일괄조회) */
-    private BooleanExpression baseAndAreaIds(DpPanelDto.Request search) {
+    private BooleanExpression andAreaIdsIn(DpPanelDto.Request search) {
         return search != null && search.getAreaIds() != null && !search.getAreaIds().isEmpty()
                 ? dpPanel.areaId.in(search.getAreaIds()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression baseAndPathId(DpPanelDto.Request search) {
+    private BooleanExpression andPathIdIn(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? dpPanel.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_panel"))
                 : null;
     }
 
     /* panelId 정확 일치 */
-    private BooleanExpression baseAndPanelId(DpPanelDto.Request search) {
+    private BooleanExpression andPanelIdEq(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPanelId())
                 ? dpPanel.panelId.eq(search.getPanelId()) : null;
     }
 
     /* dispPanelStatusCd 정확 일치 */
-    private BooleanExpression baseAndDispPanelStatusCd(DpPanelDto.Request search) {
+    private BooleanExpression andDispPanelStatusCdEq(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getDispPanelStatusCd())
                 ? dpPanel.dispPanelStatusCd.eq(search.getDispPanelStatusCd()) : null;
     }
 
     /* panelTypeCd 정확 일치 */
-    private BooleanExpression baseAndPanelTypeCd(DpPanelDto.Request search) {
+    private BooleanExpression andPanelTypeCdEq(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPanelTypeCd())
                 ? dpPanel.panelTypeCd.eq(search.getPanelTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(DpPanelDto.Request search) {
+    private BooleanExpression andUseYnEq(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? dpPanel.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(DpPanelDto.Request search) {
+    private BooleanExpression andDateRangeBetween(DpPanelDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -200,7 +200,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(DpPanelDto.Request search) {
+    private BooleanExpression andSearchValueLike(DpPanelDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -360,7 +360,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
 
     /* ============================================================
      * selectPathTreePanelCnts 전용 SQL 조건 헬퍼 (fpdp prefix)
-     *   - QueryDSL baseAnd*() (BooleanExpression 반환) 과 구분
+     *   - QueryDSL andXxx() (BooleanExpression 반환) 과 구분
      *   - 각 메서드는 SQL 조각을 sql 에 추가하고 동시에 params 에 바인딩
      * ============================================================ */
 

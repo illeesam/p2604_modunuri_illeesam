@@ -59,14 +59,14 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmBlogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndSiteId(search),
-                baseAndBlogId(search),
-                baseAndBlogTypeCd(search),
-                baseAndBlogCateId(search),
-                baseAndUseYn(search),
-                baseAndIsNotice(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andBlogIdEq(search),
+                andBlogTypeCdEq(search),
+                andBlogCateIdEq(search),
+                andUseYnEq(search),
+                andIsNoticeEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -89,14 +89,14 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndBlogId(search),
-                baseAndBlogTypeCd(search),
-                baseAndBlogCateId(search),
-                baseAndUseYn(search),
-                baseAndIsNotice(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andBlogIdEq(search),
+                andBlogTypeCdEq(search),
+                andBlogCateIdEq(search),
+                andUseYnEq(search),
+                andIsNoticeEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -125,48 +125,48 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(CmBlogDto.Request search) {
+    private BooleanExpression andSiteIdEq(CmBlogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? cmBlog.siteId.eq(search.getSiteId()) : null;
     }
 
     /* blogId 정확 일치 */
-    private BooleanExpression baseAndBlogId(CmBlogDto.Request search) {
+    private BooleanExpression andBlogIdEq(CmBlogDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogId())
                 ? cmBlog.blogId.eq(search.getBlogId()) : null;
     }
 
     /* blogTypeCd 정확 일치 (NEWS/BLOG) */
-    private BooleanExpression baseAndBlogTypeCd(CmBlogDto.Request search) {
+    private BooleanExpression andBlogTypeCdEq(CmBlogDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogTypeCd())
                 ? cmBlog.blogTypeCd.eq(search.getBlogTypeCd()) : null;
     }
 
     /* blogCateId 정확 일치 (카테고리 필터) */
-    private BooleanExpression baseAndBlogCateId(CmBlogDto.Request search) {
+    private BooleanExpression andBlogCateIdEq(CmBlogDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogCateId())
                 ? cmBlog.blogCateId.eq(search.getBlogCateId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(CmBlogDto.Request search) {
+    private BooleanExpression andUseYnEq(CmBlogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? cmBlog.useYn.eq(search.getUseYn()) : null;
     }
 
     /* isNotice 정확 일치 */
-    private BooleanExpression baseAndIsNotice(CmBlogDto.Request search) {
+    private BooleanExpression andIsNoticeEq(CmBlogDto.Request search) {
         return search != null && StringUtils.hasText(search.getIsNotice())
                 ? cmBlog.isNotice.eq(search.getIsNotice()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(CmBlogDto.Request search) {
+    private BooleanExpression andDateRangeBetween(CmBlogDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -182,7 +182,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(CmBlogDto.Request search) {
+    private BooleanExpression andSearchValueLike(CmBlogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

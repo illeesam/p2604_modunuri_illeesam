@@ -78,13 +78,13 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndSiteId(search),
-                baseAndRoleId(search),
-                baseAndParentRoleId(search),
-                baseAndRoleTypeCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andRoleIdEq(search),
+                andParentRoleIdIn(search),
+                andRoleTypeCdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -107,13 +107,13 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndRoleId(search),
-                baseAndParentRoleId(search),
-                baseAndRoleTypeCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andRoleIdEq(search),
+                andParentRoleIdIn(search),
+                andRoleTypeCdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -142,13 +142,13 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     @Override
     public long selectCount(SyRoleDto.Request search) {
         Long total = queryFactory.select(syRole.count()).setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syRole).where(
-                baseAndSiteId(search),
-                baseAndRoleId(search),
-                baseAndParentRoleId(search),
-                baseAndRoleTypeCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andRoleIdEq(search),
+                andParentRoleIdIn(search),
+                andRoleTypeCdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         ).fetchOne();
         return total == null ? 0L : total;
     }
@@ -156,25 +156,25 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyRoleDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syRole.siteId.eq(search.getSiteId()) : null;
     }
 
     /* roleId 정확 일치 */
-    private BooleanExpression baseAndRoleId(SyRoleDto.Request search) {
+    private BooleanExpression andRoleIdEq(SyRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleId())
                 ? syRole.roleId.eq(search.getRoleId()) : null;
     }
 
     /* parentRoleId 트리 — 선택 노드 + 모든 자손 역할 포함 (sy_role 자기참조 재귀 CTE 인라인) */
     @SuppressWarnings("unchecked")
-    private BooleanExpression baseAndParentRoleId(SyRoleDto.Request search) {
+    private BooleanExpression andParentRoleIdIn(SyRoleDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getParentRoleId())) return null;
         String sql = "WITH RECURSIVE t AS ( "
                   + "  SELECT role_id FROM sy_role WHERE role_id = :rootRoleId "
@@ -188,19 +188,19 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     }
 
     /* roleTypeCd 정확 일치 */
-    private BooleanExpression baseAndRoleTypeCd(SyRoleDto.Request search) {
+    private BooleanExpression andRoleTypeCdEq(SyRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleTypeCd())
                 ? syRole.roleTypeCd.eq(search.getRoleTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(SyRoleDto.Request search) {
+    private BooleanExpression andUseYnEq(SyRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? syRole.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SyRoleDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyRoleDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -216,7 +216,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyRoleDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyRoleDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -61,11 +61,11 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndI18nId(search),
-                    baseAndI18nScopeCd(search),
-                    baseAndUseYn(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andI18nIdEq(search),
+                    andI18nScopeCdEq(search),
+                    andUseYnEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -88,11 +88,11 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndI18nId(search),
-                baseAndI18nScopeCd(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andI18nIdEq(search),
+                andI18nScopeCdEq(search),
+                andUseYnEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -119,36 +119,36 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     /* 다국어 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyI18nDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyI18nDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syI18n.siteId.eq(search.getSiteId()) : null;
     }
 
     /* i18nId 정확 일치 */
-    private BooleanExpression baseAndI18nId(SyI18nDto.Request search) {
+    private BooleanExpression andI18nIdEq(SyI18nDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nId())
                 ? syI18n.i18nId.eq(search.getI18nId()) : null;
     }
 
     /* i18nScopeCd 정확 일치 (범위 select) */
-    private BooleanExpression baseAndI18nScopeCd(SyI18nDto.Request search) {
+    private BooleanExpression andI18nScopeCdEq(SyI18nDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nScopeCd())
                 ? syI18n.i18nScopeCd.eq(search.getI18nScopeCd()) : null;
     }
 
     /* useYn 정확 일치 (사용여부 select) */
-    private BooleanExpression baseAndUseYn(SyI18nDto.Request search) {
+    private BooleanExpression andUseYnEq(SyI18nDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? syI18n.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyI18nDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyI18nDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -60,12 +60,12 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmChattRoomDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndSiteId(search),
-                baseAndChattRoomId(search),
-                baseAndMemberId(search),
-                baseAndChattStatusCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andChattRoomIdEq(search),
+                andMemberIdEq(search),
+                andChattStatusCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -88,12 +88,12 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndChattRoomId(search),
-                baseAndMemberId(search),
-                baseAndChattStatusCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andChattRoomIdEq(search),
+                andMemberIdEq(search),
+                andChattStatusCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -122,36 +122,36 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(CmChattRoomDto.Request search) {
+    private BooleanExpression andSiteIdEq(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? cmChattRoom.siteId.eq(search.getSiteId()) : null;
     }
 
     /* chattRoomId 정확 일치 */
-    private BooleanExpression baseAndChattRoomId(CmChattRoomDto.Request search) {
+    private BooleanExpression andChattRoomIdEq(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getChattRoomId())
                 ? cmChattRoom.chattRoomId.eq(search.getChattRoomId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression baseAndMemberId(CmChattRoomDto.Request search) {
+    private BooleanExpression andMemberIdEq(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? cmChattRoom.memberId.eq(search.getMemberId()) : null;
     }
 
     /* chattStatusCd 정확 일치 */
-    private BooleanExpression baseAndChattStatusCd(CmChattRoomDto.Request search) {
+    private BooleanExpression andChattStatusCdEq(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getChattStatusCd())
                 ? cmChattRoom.chattStatusCd.eq(search.getChattStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(CmChattRoomDto.Request search) {
+    private BooleanExpression andDateRangeBetween(CmChattRoomDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -167,7 +167,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(CmChattRoomDto.Request search) {
+    private BooleanExpression andSearchValueLike(CmChattRoomDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

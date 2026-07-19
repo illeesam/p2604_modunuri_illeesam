@@ -57,8 +57,8 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         JPAQuery<SyAttachGrpDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndAttachGrpId(search),
-                    baseAndSearchValue(search)
+                    andAttachGrpIdEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -81,8 +81,8 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndAttachGrpId(search),
-                baseAndSearchValue(search)
+                andAttachGrpIdEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -114,13 +114,13 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
      * ============================================================ */
 
     /* attachGrpId 정확 일치 */
-    private BooleanExpression baseAndAttachGrpId(SyAttachGrpDto.Request search) {
+    private BooleanExpression andAttachGrpIdEq(SyAttachGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getAttachGrpId())
                 ? syAttachGrp.attachGrpId.eq(search.getAttachGrpId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyAttachGrpDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyAttachGrpDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

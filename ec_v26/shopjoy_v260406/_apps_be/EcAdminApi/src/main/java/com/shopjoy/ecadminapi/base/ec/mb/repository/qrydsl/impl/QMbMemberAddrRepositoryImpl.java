@@ -65,11 +65,11 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         JPAQuery<MbMemberAddrDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndMemberIds(search),
-                    baseAndMemberAddrId(search),
-                    baseAndMemberId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andMemberIdsIn(search),
+                    andMemberAddrIdEq(search),
+                    andMemberIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -91,11 +91,11 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndMemberIds(search),
-                baseAndMemberAddrId(search),
-                baseAndMemberId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andMemberIdsIn(search),
+                andMemberAddrIdEq(search),
+                andMemberIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -127,25 +127,25 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
      * ============================================================ */
 
     /* memberId IN */
-    private BooleanExpression baseAndMemberIds(MbMemberAddrDto.Request search) {
+    private BooleanExpression andMemberIdsIn(MbMemberAddrDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getMemberIds())
                 ? mbMemberAddr.memberId.in(search.getMemberIds()) : null;
     }
 
     /* memberAddrId 정확 일치 */
-    private BooleanExpression baseAndMemberAddrId(MbMemberAddrDto.Request search) {
+    private BooleanExpression andMemberAddrIdEq(MbMemberAddrDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberAddrId())
                 ? mbMemberAddr.memberAddrId.eq(search.getMemberAddrId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression baseAndMemberId(MbMemberAddrDto.Request search) {
+    private BooleanExpression andMemberIdEq(MbMemberAddrDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? mbMemberAddr.memberId.eq(search.getMemberId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(MbMemberAddrDto.Request search) {
+    private BooleanExpression andDateRangeBetween(MbMemberAddrDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -161,7 +161,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(MbMemberAddrDto.Request search) {
+    private BooleanExpression andSearchValueLike(MbMemberAddrDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

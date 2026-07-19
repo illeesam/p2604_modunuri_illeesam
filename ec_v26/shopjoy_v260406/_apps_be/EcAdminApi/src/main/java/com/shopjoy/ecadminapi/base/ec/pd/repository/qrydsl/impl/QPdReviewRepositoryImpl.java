@@ -62,13 +62,13 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         JPAQuery<PdReviewDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndReviewId(search),
-                    baseAndProdId(search),
-                    baseAndReviewStatusCd(search),
-                    baseAndRating(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andReviewIdEq(search),
+                    andProdIdEq(search),
+                    andReviewStatusCdEq(search),
+                    andRatingGoe(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -91,13 +91,13 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndReviewId(search),
-                baseAndProdId(search),
-                baseAndReviewStatusCd(search),
-                baseAndRating(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andReviewIdEq(search),
+                andProdIdEq(search),
+                andReviewStatusCdEq(search),
+                andRatingGoe(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -127,36 +127,36 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PdReviewDto.Request search) {
+    private BooleanExpression andSiteIdEq(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pdReview.siteId.eq(search.getSiteId()) : null;
     }
 
     /* reviewId 정확 일치 */
-    private BooleanExpression baseAndReviewId(PdReviewDto.Request search) {
+    private BooleanExpression andReviewIdEq(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewId())
                 ? pdReview.reviewId.eq(search.getReviewId()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression baseAndProdId(PdReviewDto.Request search) {
+    private BooleanExpression andProdIdEq(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? pdReview.prodId.eq(search.getProdId()) : null;
     }
 
     /* reviewStatusCd 정확 일치 (REVIEW_STATUS 코드) */
-    private BooleanExpression baseAndReviewStatusCd(PdReviewDto.Request search) {
+    private BooleanExpression andReviewStatusCdEq(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewStatusCd())
                 ? pdReview.reviewStatusCd.eq(search.getReviewStatusCd()) : null;
     }
 
     /* rating — 점수대(floor) 범위 (예: "4" => 4.0 이상 5.0 미만) */
-    private BooleanExpression baseAndRating(PdReviewDto.Request search) {
+    private BooleanExpression andRatingGoe(PdReviewDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getRating())) return null;
         int floor;
         try {
@@ -170,7 +170,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PdReviewDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PdReviewDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -186,7 +186,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PdReviewDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdReviewDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

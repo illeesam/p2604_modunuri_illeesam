@@ -56,9 +56,9 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         JPAQuery<OdhDlivChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndDlivChgHistId(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andDlivChgHistIdEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -81,9 +81,9 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndDlivChgHistId(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andDlivChgHistIdEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -111,24 +111,24 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
     /* 배송 변경 이력 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(OdhDlivChgHistDto.Request search) {
+    private BooleanExpression andSiteIdEq(OdhDlivChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? odhDlivChgHist.siteId.eq(search.getSiteId()) : null;
     }
 
     /* dlivChgHistId 정확 일치 */
-    private BooleanExpression baseAndDlivChgHistId(OdhDlivChgHistDto.Request search) {
+    private BooleanExpression andDlivChgHistIdEq(OdhDlivChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivChgHistId())
                 ? odhDlivChgHist.dlivChgHistId.eq(search.getDlivChgHistId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(OdhDlivChgHistDto.Request search) {
+    private BooleanExpression andSearchValueLike(OdhDlivChgHistDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -147,25 +147,25 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         JPAQuery<StSettleRawDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndSettleRawId(search),
-                    baseAndOrderId(search),
-                    baseAndOrderItemId(search),
-                    baseAndClaimId(search),
-                    baseAndClaimItemId(search),
-                    baseAndRawTypeCd(search),
-                    baseAndRawStatusCd(search),
-                    baseAndVendorTypeCd(search),
-                    baseAndPayMethodCd(search),
-                    baseAndBuyConfirmYn(search),
-                    baseAndCloseYn(search),
-                    baseAndErpSendYn(search),
-                    baseAndSettlePeriod(search),
-                    baseAndOrderItemStatusCd(search),
-                    baseAndAmtFrom(search),
-                    baseAndAmtTo(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andSettleRawIdEq(search),
+                    andOrderIdEq(search),
+                    andOrderItemIdEq(search),
+                    andClaimIdEq(search),
+                    andClaimItemIdEq(search),
+                    andRawTypeCdEq(search),
+                    andRawStatusCdEq(search),
+                    andVendorTypeCdEq(search),
+                    andPayMethodCdEq(search),
+                    andBuyConfirmYnEq(search),
+                    andCloseYnEq(search),
+                    andErpSendYnEq(search),
+                    andSettlePeriodEq(search),
+                    andOrderItemStatusCdEq(search),
+                    andAmtFromGoe(search),
+                    andAmtToLoe(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -188,25 +188,25 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndSettleRawId(search),
-                baseAndOrderId(search),
-                baseAndOrderItemId(search),
-                baseAndClaimId(search),
-                baseAndClaimItemId(search),
-                baseAndRawTypeCd(search),
-                baseAndRawStatusCd(search),
-                baseAndVendorTypeCd(search),
-                baseAndPayMethodCd(search),
-                baseAndBuyConfirmYn(search),
-                baseAndCloseYn(search),
-                baseAndErpSendYn(search),
-                baseAndSettlePeriod(search),
-                baseAndOrderItemStatusCd(search),
-                baseAndAmtFrom(search),
-                baseAndAmtTo(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andSettleRawIdEq(search),
+                andOrderIdEq(search),
+                andOrderItemIdEq(search),
+                andClaimIdEq(search),
+                andClaimItemIdEq(search),
+                andRawTypeCdEq(search),
+                andRawStatusCdEq(search),
+                andVendorTypeCdEq(search),
+                andPayMethodCdEq(search),
+                andBuyConfirmYnEq(search),
+                andCloseYnEq(search),
+                andErpSendYnEq(search),
+                andSettlePeriodEq(search),
+                andOrderItemStatusCdEq(search),
+                andAmtFromGoe(search),
+                andAmtToLoe(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -236,114 +236,114 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(StSettleRawDto.Request search) {
+    private BooleanExpression andSiteIdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? stSettleRaw.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settleRawId 정확 일치 */
-    private BooleanExpression baseAndSettleRawId(StSettleRawDto.Request search) {
+    private BooleanExpression andSettleRawIdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleRawId())
                 ? stSettleRaw.settleRawId.eq(search.getSettleRawId()) : null;
     }
 
     /* orderId 정확 일치 — 주문 기준 정산원장 조회 */
-    private BooleanExpression baseAndOrderId(StSettleRawDto.Request search) {
+    private BooleanExpression andOrderIdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderId())
                 ? stSettleRaw.orderId.eq(search.getOrderId()) : null;
     }
 
     /* orderItemId 정확 일치 */
-    private BooleanExpression baseAndOrderItemId(StSettleRawDto.Request search) {
+    private BooleanExpression andOrderItemIdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderItemId())
                 ? stSettleRaw.orderItemId.eq(search.getOrderItemId()) : null;
     }
 
     /* claimId 정확 일치 — 클레임 기준 정산원장 조회 */
-    private BooleanExpression baseAndClaimId(StSettleRawDto.Request search) {
+    private BooleanExpression andClaimIdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getClaimId())
                 ? stSettleRaw.claimId.eq(search.getClaimId()) : null;
     }
 
     /* claimItemId 정확 일치 */
-    private BooleanExpression baseAndClaimItemId(StSettleRawDto.Request search) {
+    private BooleanExpression andClaimItemIdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getClaimItemId())
                 ? stSettleRaw.claimItemId.eq(search.getClaimItemId()) : null;
     }
 
     /* rawTypeCd 정확 일치 (검색 필터) */
-    private BooleanExpression baseAndRawTypeCd(StSettleRawDto.Request search) {
+    private BooleanExpression andRawTypeCdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getRawTypeCd())
                 ? stSettleRaw.rawTypeCd.eq(search.getRawTypeCd()) : null;
     }
 
     /* rawStatusCd 정확 일치 (검색 필터) */
-    private BooleanExpression baseAndRawStatusCd(StSettleRawDto.Request search) {
+    private BooleanExpression andRawStatusCdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getRawStatusCd())
                 ? stSettleRaw.rawStatusCd.eq(search.getRawStatusCd()) : null;
     }
 
     /* vendorTypeCd 정확 일치 (검색 필터) */
-    private BooleanExpression baseAndVendorTypeCd(StSettleRawDto.Request search) {
+    private BooleanExpression andVendorTypeCdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorTypeCd())
                 ? stSettleRaw.vendorTypeCd.eq(search.getVendorTypeCd()) : null;
     }
 
     /* payMethodCd 정확 일치 (검색 필터) */
-    private BooleanExpression baseAndPayMethodCd(StSettleRawDto.Request search) {
+    private BooleanExpression andPayMethodCdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getPayMethodCd())
                 ? stSettleRaw.payMethodCd.eq(search.getPayMethodCd()) : null;
     }
 
     /* buyConfirmYn 정확 일치 (검색 필터) */
-    private BooleanExpression baseAndBuyConfirmYn(StSettleRawDto.Request search) {
+    private BooleanExpression andBuyConfirmYnEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getBuyConfirmYn())
                 ? stSettleRaw.buyConfirmYn.eq(search.getBuyConfirmYn()) : null;
     }
 
     /* closeYn 정확 일치 (검색 필터) */
-    private BooleanExpression baseAndCloseYn(StSettleRawDto.Request search) {
+    private BooleanExpression andCloseYnEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getCloseYn())
                 ? stSettleRaw.closeYn.eq(search.getCloseYn()) : null;
     }
 
     /* erpSendYn 정확 일치 (검색 필터) */
-    private BooleanExpression baseAndErpSendYn(StSettleRawDto.Request search) {
+    private BooleanExpression andErpSendYnEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getErpSendYn())
                 ? stSettleRaw.erpSendYn.eq(search.getErpSendYn()) : null;
     }
 
     /* settlePeriod 정확 일치 (검색 필터, YYYY-MM) */
-    private BooleanExpression baseAndSettlePeriod(StSettleRawDto.Request search) {
+    private BooleanExpression andSettlePeriodEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettlePeriod())
                 ? stSettleRaw.settlePeriod.eq(search.getSettlePeriod()) : null;
     }
 
     /* orderItemStatusCd 정확 일치 (검색 필터) */
-    private BooleanExpression baseAndOrderItemStatusCd(StSettleRawDto.Request search) {
+    private BooleanExpression andOrderItemStatusCdEq(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderItemStatusCd())
                 ? stSettleRaw.orderItemStatusCd.eq(search.getOrderItemStatusCd()) : null;
     }
 
     /* settleTargetAmt 최솟값 (검색 필터, 이상) */
-    private BooleanExpression baseAndAmtFrom(StSettleRawDto.Request search) {
+    private BooleanExpression andAmtFromGoe(StSettleRawDto.Request search) {
         return search != null && search.getAmtFrom() != null
                 ? stSettleRaw.settleTargetAmt.goe(search.getAmtFrom()) : null;
     }
 
     /* settleTargetAmt 최댓값 (검색 필터, 이하) */
-    private BooleanExpression baseAndAmtTo(StSettleRawDto.Request search) {
+    private BooleanExpression andAmtToLoe(StSettleRawDto.Request search) {
         return search != null && search.getAmtTo() != null
                 ? stSettleRaw.settleTargetAmt.loe(search.getAmtTo()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(StSettleRawDto.Request search) {
+    private BooleanExpression andDateRangeBetween(StSettleRawDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -360,7 +360,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(StSettleRawDto.Request search) {
+    private BooleanExpression andSearchValueLike(StSettleRawDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

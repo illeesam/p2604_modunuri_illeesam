@@ -81,12 +81,12 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         JPAQuery<SyAlarmDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndPathId(search),
-                    baseAndAlarmId(search),
-                    baseAndStatus(search),
-                    baseAndTypeCd(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andPathIdIn(search),
+                    andAlarmIdEq(search),
+                    andStatusEq(search),
+                    andTypeCdEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -109,12 +109,12 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndAlarmId(search),
-                baseAndStatus(search),
-                baseAndTypeCd(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andPathIdIn(search),
+                andAlarmIdEq(search),
+                andStatusEq(search),
+                andTypeCdEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -144,43 +144,43 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyAlarmDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syAlarm.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression baseAndPathId(SyAlarmDto.Request search) {
+    private BooleanExpression andPathIdIn(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syAlarm.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_alarm"))
                 : null;
     }
 
     /* alarmId 정확 일치 */
-    private BooleanExpression baseAndAlarmId(SyAlarmDto.Request search) {
+    private BooleanExpression andAlarmIdEq(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getAlarmId())
                 ? syAlarm.alarmId.eq(search.getAlarmId()) : null;
     }
 
     /* alarmStatusCd 정확 일치 */
-    private BooleanExpression baseAndStatus(SyAlarmDto.Request search) {
+    private BooleanExpression andStatusEq(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? syAlarm.alarmStatusCd.eq(search.getStatus()) : null;
     }
 
     /* alarmTypeCd 정확 일치 */
-    private BooleanExpression baseAndTypeCd(SyAlarmDto.Request search) {
+    private BooleanExpression andTypeCdEq(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
                 ? syAlarm.alarmTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyAlarmDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyAlarmDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

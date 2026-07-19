@@ -75,13 +75,13 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorUserDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndSiteId(search),
-                baseAndVendorUserId(search),
-                baseAndUserId(search),
-                baseAndVendorId(search),
-                baseAndStatus(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andVendorUserIdEq(search),
+                andUserIdEq(search),
+                andVendorIdEq(search),
+                andStatusEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -104,13 +104,13 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndVendorUserId(search),
-                baseAndUserId(search),
-                baseAndVendorId(search),
-                baseAndStatus(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andVendorUserIdEq(search),
+                andUserIdEq(search),
+                andVendorIdEq(search),
+                andStatusEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -138,42 +138,42 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyVendorUserDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syVendorUser.siteId.eq(search.getSiteId()) : null;
     }
 
     /* vendorUserId 정확 일치 */
-    private BooleanExpression baseAndVendorUserId(SyVendorUserDto.Request search) {
+    private BooleanExpression andVendorUserIdEq(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorUserId())
                 ? syVendorUser.vendorUserId.eq(search.getVendorUserId()) : null;
     }
 
     /* userId 정확 일치 */
-    private BooleanExpression baseAndUserId(SyVendorUserDto.Request search) {
+    private BooleanExpression andUserIdEq(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
                 ? syVendorUser.userId.eq(search.getUserId()) : null;
     }
 
     /* vendorId 정확 일치 */
-    private BooleanExpression baseAndVendorId(SyVendorUserDto.Request search) {
+    private BooleanExpression andVendorIdEq(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
                 ? syVendorUser.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* vendorUserStatusCd 정확 일치 */
-    private BooleanExpression baseAndStatus(SyVendorUserDto.Request search) {
+    private BooleanExpression andStatusEq(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? syVendorUser.vendorUserStatusCd.eq(search.getStatus()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SyVendorUserDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyVendorUserDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -189,7 +189,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyVendorUserDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyVendorUserDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

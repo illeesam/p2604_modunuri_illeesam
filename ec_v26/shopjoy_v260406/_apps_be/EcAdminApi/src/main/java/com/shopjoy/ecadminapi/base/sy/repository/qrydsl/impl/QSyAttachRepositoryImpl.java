@@ -63,11 +63,11 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndAttachId(search),
-                    baseAndAttachGrpId(search),
-                    baseAndMimeTypeCd(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andAttachIdEq(search),
+                    andAttachGrpIdEq(search),
+                    andMimeTypeCdEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -90,11 +90,11 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndAttachId(search),
-                baseAndAttachGrpId(search),
-                baseAndMimeTypeCd(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andAttachIdEq(search),
+                andAttachGrpIdEq(search),
+                andMimeTypeCdEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -121,36 +121,36 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyAttachDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syAttach.siteId.eq(search.getSiteId()) : null;
     }
 
     /* attachId 정확 일치 */
-    private BooleanExpression baseAndAttachId(SyAttachDto.Request search) {
+    private BooleanExpression andAttachIdEq(SyAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getAttachId())
                 ? syAttach.attachId.eq(search.getAttachId()) : null;
     }
 
     /* attachGrpId 정확 일치 */
-    private BooleanExpression baseAndAttachGrpId(SyAttachDto.Request search) {
+    private BooleanExpression andAttachGrpIdEq(SyAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getAttachGrpId())
                 ? syAttach.attachGrpId.eq(search.getAttachGrpId()) : null;
     }
 
     /* mimeTypeCd 정확 일치 */
-    private BooleanExpression baseAndMimeTypeCd(SyAttachDto.Request search) {
+    private BooleanExpression andMimeTypeCdEq(SyAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getMimeTypeCd())
                 ? syAttach.mimeTypeCd.eq(search.getMimeTypeCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyAttachDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyAttachDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

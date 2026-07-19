@@ -66,12 +66,12 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         JPAQuery<PdProdSkuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndProdIds(search),
-                    baseAndProdId(search),
-                    baseAndSiteId(search),
-                    baseAndSkuId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andProdIdsIn(search),
+                    andProdIdEq(search),
+                    andSiteIdEq(search),
+                    andSkuIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -94,12 +94,12 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndProdIds(search),
-                baseAndProdId(search),
-                baseAndSiteId(search),
-                baseAndSkuId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andProdIdsIn(search),
+                andProdIdEq(search),
+                andSiteIdEq(search),
+                andSkuIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -128,36 +128,36 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     /* 상품 SKU buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(a), andDeptId(a), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(a), andDeptId(a), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* prodId IN */
-    private BooleanExpression baseAndProdIds(PdProdSkuDto.Request search) {
+    private BooleanExpression andProdIdsIn(PdProdSkuDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getProdIds())
                 ? pdProdSku.prodId.in(search.getProdIds()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression baseAndProdId(PdProdSkuDto.Request search) {
+    private BooleanExpression andProdIdEq(PdProdSkuDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? pdProdSku.prodId.eq(search.getProdId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PdProdSkuDto.Request search) {
+    private BooleanExpression andSiteIdEq(PdProdSkuDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pdProdSku.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodSkuId 정확 일치 */
-    private BooleanExpression baseAndSkuId(PdProdSkuDto.Request search) {
+    private BooleanExpression andSkuIdEq(PdProdSkuDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdSkuId())
                 ? pdProdSku.prodSkuId.eq(search.getProdSkuId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PdProdSkuDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PdProdSkuDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -173,7 +173,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PdProdSkuDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdProdSkuDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

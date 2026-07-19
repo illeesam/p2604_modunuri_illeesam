@@ -72,11 +72,11 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndCategoryId(search),
-                    baseAndParentCategoryId(search),
-                    baseAndStatus(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andCategoryIdEq(search),
+                    andParentCategoryIdIn(search),
+                    andStatusEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -99,11 +99,11 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndCategoryId(search),
-                baseAndParentCategoryId(search),
-                baseAndStatus(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andCategoryIdEq(search),
+                andParentCategoryIdIn(search),
+                andStatusEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -132,37 +132,37 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PdCategoryDto.Request search) {
+    private BooleanExpression andSiteIdEq(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pdCategory.siteId.eq(search.getSiteId()) : null;
     }
 
     /* categoryId 정확 일치 */
-    private BooleanExpression baseAndCategoryId(PdCategoryDto.Request search) {
+    private BooleanExpression andCategoryIdEq(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getCategoryId())
                 ? pdCategory.categoryId.eq(search.getCategoryId()) : null;
     }
 
     /* 카테고리 트리 — 선택 노드 + 모든 자손 카테고리 포함 */
-    private BooleanExpression baseAndParentCategoryId(PdCategoryDto.Request search) {
+    private BooleanExpression andParentCategoryIdIn(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentCategoryId())
                 ? pdCategory.categoryId.in(pdCategoryRepository.findTreeCategoryIds(search.getParentCategoryId()))
                 : null;
     }
 
     /* categoryStatusCd 정확 일치 */
-    private BooleanExpression baseAndStatus(PdCategoryDto.Request search) {
+    private BooleanExpression andStatusEq(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? pdCategory.categoryStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PdCategoryDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdCategoryDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

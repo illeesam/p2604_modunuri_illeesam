@@ -67,12 +67,12 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         JPAQuery<PmVoucherDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndVoucherId(search),
-                    baseAndVoucherStatusCd(search),
-                    baseAndUseYn(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andVoucherIdEq(search),
+                    andVoucherStatusCdEq(search),
+                    andUseYnEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -95,12 +95,12 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndVoucherId(search),
-                baseAndVoucherStatusCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andVoucherIdEq(search),
+                andVoucherStatusCdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -128,36 +128,36 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PmVoucherDto.Request search) {
+    private BooleanExpression andSiteIdEq(PmVoucherDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pmVoucher.siteId.eq(search.getSiteId()) : null;
     }
 
     /* voucherId 정확 일치 */
-    private BooleanExpression baseAndVoucherId(PmVoucherDto.Request search) {
+    private BooleanExpression andVoucherIdEq(PmVoucherDto.Request search) {
         return search != null && StringUtils.hasText(search.getVoucherId())
                 ? pmVoucher.voucherId.eq(search.getVoucherId()) : null;
     }
 
     /* voucherStatusCd 정확 일치 */
-    private BooleanExpression baseAndVoucherStatusCd(PmVoucherDto.Request search) {
+    private BooleanExpression andVoucherStatusCdEq(PmVoucherDto.Request search) {
         return search != null && StringUtils.hasText(search.getVoucherStatusCd())
                 ? pmVoucher.voucherStatusCd.eq(search.getVoucherStatusCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(PmVoucherDto.Request search) {
+    private BooleanExpression andUseYnEq(PmVoucherDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? pmVoucher.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PmVoucherDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PmVoucherDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -173,7 +173,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PmVoucherDto.Request search) {
+    private BooleanExpression andSearchValueLike(PmVoucherDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -1964,7 +1964,7 @@ window.RoleTreeModal = {
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="560px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="720px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
@@ -2166,7 +2166,7 @@ window.MenuTreeModal = {
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="560px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="720px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- ── 헤더 ── -->
     <div class="tree-modal-header">
@@ -2370,7 +2370,7 @@ window.DeptTreeModal = {
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="560px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="720px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- ── 헤더 ── -->
     <div class="tree-modal-header">
@@ -2579,7 +2579,7 @@ window.CategoryTreeModal = {
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="560px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="720px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
@@ -2702,7 +2702,7 @@ window.DispPreviewModal = {
     };
   },
   template: /* html */`
-<bo-modal :show="show" max-width="560px" max-height="88vh" box-pad="0" body-pad="0" :z-index="500" @close="handleBtnAction('modal-close')">
+<bo-modal :show="show" max-width="720px" max-height="88vh" box-pad="0" body-pad="0" :z-index="500" @close="handleBtnAction('modal-close')">
   <div style="background:#fff;border-radius:12px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- 헤더 -->
     <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fafafa;">
@@ -4643,7 +4643,7 @@ window.SimpleUserPickModal = {
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="600px" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="760px" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="overflow:hidden;border-radius:14px;display:flex;flex-direction:column;height:100%;">
     <div style="background:#fff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
       <div style="display:flex;align-items:center;gap:10px;">
@@ -7572,8 +7572,6 @@ window.PmCouponPickModal = {
       { key: 'useYn',    label: '사용', style: 'width:60px;', align: 'center',
         badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: v => v === 'Y' ? '사용' : '미사용' },
-      { key: '_pick', label: '선택', style: 'width:70px;text-align:center;',
-        cellStyle: 'color:#e8587a;font-weight:700;cursor:pointer;', fmt: () => '✔ 선택', link: true },
     ];
     const fnLoad = async () => {
       loading.value = true;
@@ -7601,14 +7599,18 @@ window.PmCouponPickModal = {
     return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
   },
   template: `
-<bo-modal :show="true" title="쿠폰 선택" width="620px" @close="onClose">
+<bo-modal :show="true" title="쿠폰 선택" width="780px" @close="onClose">
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="form-control" v-model="searchParam.searchValue" placeholder="쿠폰명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
     <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="couponId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-dblclick="onPick">
+    <template #row-actions="{ row }">
+      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
+    </template>
+  </bo-grid>
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
     <button class="btn btn_close" @click="onClose">닫기</button>
@@ -7639,8 +7641,6 @@ window.PmSavePickModal = {
       { key: 'useYn',  label: '사용', style: 'width:60px;', align: 'center',
         badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: v => v === 'Y' ? '사용' : '미사용' },
-      { key: '_pick', label: '선택', style: 'width:70px;text-align:center;',
-        cellStyle: 'color:#e8587a;font-weight:700;cursor:pointer;', fmt: () => '✔ 선택', link: true },
     ];
     const fnLoad = async () => {
       loading.value = true;
@@ -7668,14 +7668,18 @@ window.PmSavePickModal = {
     return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
   },
   template: `
-<bo-modal :show="true" title="적립금 선택" width="620px" @close="onClose">
+<bo-modal :show="true" title="적립금 선택" width="780px" @close="onClose">
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="form-control" v-model="searchParam.searchValue" placeholder="적립금명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
     <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="saveId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-dblclick="onPick">
+    <template #row-actions="{ row }">
+      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
+    </template>
+  </bo-grid>
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
     <button class="btn btn_close" @click="onClose">닫기</button>
@@ -7706,8 +7710,6 @@ window.PmDiscntPickModal = {
       { key: 'useYn',    label: '사용', style: 'width:60px;', align: 'center',
         badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: v => v === 'Y' ? '사용' : '미사용' },
-      { key: '_pick', label: '선택', style: 'width:70px;text-align:center;',
-        cellStyle: 'color:#e8587a;font-weight:700;cursor:pointer;', fmt: () => '✔ 선택', link: true },
     ];
     const fnLoad = async () => {
       loading.value = true;
@@ -7735,14 +7737,18 @@ window.PmDiscntPickModal = {
     return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
   },
   template: `
-<bo-modal :show="true" title="할인 선택" width="620px" @close="onClose">
+<bo-modal :show="true" title="할인 선택" width="780px" @close="onClose">
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="form-control" v-model="searchParam.searchValue" placeholder="할인명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
     <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="discntId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-dblclick="onPick">
+    <template #row-actions="{ row }">
+      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
+    </template>
+  </bo-grid>
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
     <button class="btn btn_close" @click="onClose">닫기</button>
@@ -7769,8 +7775,6 @@ window.PmCategoryPickModal = {
       { key: 'categoryId', label: 'ID', width: '80px', align: 'center', mono: true },
       { key: 'categoryNm', label: '카테고리명' },
       { key: 'categoryLevel', label: '레벨', width: '50px', align: 'center' },
-      { key: '_pick', label: '선택', style: 'width:70px;text-align:center;',
-        cellStyle: 'color:#e8587a;font-weight:700;cursor:pointer;', fmt: () => '✔ 선택', link: true },
     ];
     const fnLoad = async () => {
       loading.value = true;
@@ -7796,14 +7800,18 @@ window.PmCategoryPickModal = {
     return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
   },
   template: `
-<bo-modal :show="true" title="카테고리 선택" width="620px" @close="onClose">
+<bo-modal :show="true" title="카테고리 선택" width="780px" @close="onClose">
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="form-control" v-model="searchParam.searchValue" placeholder="카테고리명 검색" @keyup.enter="fnLoad" style="flex:1;" />
     <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="categoryId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-dblclick="onPick">
+    <template #row-actions="{ row }">
+      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
+    </template>
+  </bo-grid>
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
     <button class="btn btn_close" @click="onClose">닫기</button>
@@ -7832,8 +7840,6 @@ window.PmBrandPickModal = {
       { key: 'useYn', label: '사용', width: '60px', align: 'center',
         badge: (r) => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: (v) => v === 'Y' ? '사용' : '미사용' },
-      { key: '_pick', label: '선택', style: 'width:70px;text-align:center;',
-        cellStyle: 'color:#e8587a;font-weight:700;cursor:pointer;', fmt: () => '✔ 선택', link: true },
     ];
     const fnLoad = async () => {
       loading.value = true;
@@ -7859,14 +7865,18 @@ window.PmBrandPickModal = {
     return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
   },
   template: `
-<bo-modal :show="true" title="브랜드 선택" width="620px" @close="onClose">
+<bo-modal :show="true" title="브랜드 선택" width="780px" @close="onClose">
   <div style="display:flex;gap:8px;margin-bottom:12px;">
     <input class="form-control" v-model="searchParam.searchValue" placeholder="브랜드명 검색" @keyup.enter="fnLoad" style="flex:1;" />
     <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
   </div>
   <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="brandId"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+    @row-dblclick="onPick">
+    <template #row-actions="{ row }">
+      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
+    </template>
+  </bo-grid>
   <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
   <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
     <button class="btn btn_close" @click="onClose">닫기</button>
@@ -7916,8 +7926,6 @@ window.PdProdPickModal = {
       { key: 'prodNm',   label: '상품명' },
       { key: 'salePrice', label: '판매가', style: 'width:100px;', align: 'right',
         fmt: v => v ? Number(v).toLocaleString() + '원' : '-' },
-      { key: '_pick', label: '선택', style: 'width:70px;', align: 'center',
-        cellStyle: 'color:#e8587a;font-weight:700;cursor:pointer;', fmt: () => '✔ 선택', link: true },
     ];
 
     const fnLoad = async () => {
@@ -7964,7 +7972,7 @@ window.PdProdPickModal = {
       fnLoad, onSearch, setPage, onSizeChange, onPick, onClose };
   },
   template: `
-<bo-modal :show="show" :title="title" width="620px" box-pad="0" @close="onClose">
+<bo-modal :show="show" :title="title" width="780px" box-pad="0" @close="onClose">
   <div style="padding:16px 20px;display:flex;flex-direction:column;gap:8px;">
     <div style="display:flex;gap:6px;align-items:center;">
       <select class="form-control" v-model="searchType" style="width:110px;flex-shrink:0;">
@@ -7978,8 +7986,11 @@ window.PdProdPickModal = {
     </div>
     <bo-grid bare :columns="columns" :rows="cfRows" row-key="prodId"
       :loading="loading" empty-text="조회 버튼으로 상품을 검색하세요."
-      @row-dblclick="onPick"
-      @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
+      @row-dblclick="onPick">
+      <template #row-actions="{ row }">
+        <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
+      </template>
+    </bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
       :page-sizes="[10,20,50]" style="margin-top:4px;" />
   </div>

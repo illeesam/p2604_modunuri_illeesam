@@ -57,11 +57,11 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmBlogFileDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndBlogIds(search),
-                baseAndBlogId(search),
-                baseAndBlogImgId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andBlogIdsIn(search),
+                andBlogIdEq(search),
+                andBlogImgIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -84,11 +84,11 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndBlogIds(search),
-                baseAndBlogId(search),
-                baseAndBlogImgId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andBlogIdsIn(search),
+                andBlogIdEq(search),
+                andBlogImgIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -121,25 +121,25 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
      * ============================================================ */
 
     /* blogId IN */
-    private BooleanExpression baseAndBlogIds(CmBlogFileDto.Request search) {
+    private BooleanExpression andBlogIdsIn(CmBlogFileDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getBlogIds())
                 ? cmBlogFile.blogId.in(search.getBlogIds()) : null;
     }
 
     /* blogId 정확 일치 */
-    private BooleanExpression baseAndBlogId(CmBlogFileDto.Request search) {
+    private BooleanExpression andBlogIdEq(CmBlogFileDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogId())
                 ? cmBlogFile.blogId.eq(search.getBlogId()) : null;
     }
 
     /* blogImgId 정확 일치 */
-    private BooleanExpression baseAndBlogImgId(CmBlogFileDto.Request search) {
+    private BooleanExpression andBlogImgIdEq(CmBlogFileDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogImgId())
                 ? cmBlogFile.blogImgId.eq(search.getBlogImgId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(CmBlogFileDto.Request search) {
+    private BooleanExpression andDateRangeBetween(CmBlogFileDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -155,7 +155,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(CmBlogFileDto.Request search) {
+    private BooleanExpression andSearchValueLike(CmBlogFileDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

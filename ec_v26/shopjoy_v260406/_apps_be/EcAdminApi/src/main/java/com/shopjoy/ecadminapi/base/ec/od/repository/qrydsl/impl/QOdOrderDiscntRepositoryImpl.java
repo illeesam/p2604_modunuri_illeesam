@@ -72,12 +72,12 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         JPAQuery<OdOrderDiscntDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndOrderIds(search),
-                    baseAndOrderId(search),
-                    baseAndSiteId(search),
-                    baseAndOrderDiscntId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andOrderIdsIn(search),
+                    andOrderIdEq(search),
+                    andSiteIdEq(search),
+                    andOrderDiscntIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -100,12 +100,12 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndOrderIds(search),
-                baseAndOrderId(search),
-                baseAndSiteId(search),
-                baseAndOrderDiscntId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andOrderIdsIn(search),
+                andOrderIdEq(search),
+                andSiteIdEq(search),
+                andOrderDiscntIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -135,36 +135,36 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     /* 주문 할인 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* orderId IN */
-    private BooleanExpression baseAndOrderIds(OdOrderDiscntDto.Request search) {
+    private BooleanExpression andOrderIdsIn(OdOrderDiscntDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getOrderIds())
                 ? odOrderDiscnt.orderId.in(search.getOrderIds()) : null;
     }
 
     /* orderId 정확 일치 */
-    private BooleanExpression baseAndOrderId(OdOrderDiscntDto.Request search) {
+    private BooleanExpression andOrderIdEq(OdOrderDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderId())
                 ? odOrderDiscnt.orderId.eq(search.getOrderId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(OdOrderDiscntDto.Request search) {
+    private BooleanExpression andSiteIdEq(OdOrderDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? odOrderDiscnt.siteId.eq(search.getSiteId()) : null;
     }
 
     /* orderDiscntId 정확 일치 */
-    private BooleanExpression baseAndOrderDiscntId(OdOrderDiscntDto.Request search) {
+    private BooleanExpression andOrderDiscntIdEq(OdOrderDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderDiscntId())
                 ? odOrderDiscnt.orderDiscntId.eq(search.getOrderDiscntId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(OdOrderDiscntDto.Request search) {
+    private BooleanExpression andDateRangeBetween(OdOrderDiscntDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -180,7 +180,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(OdOrderDiscntDto.Request search) {
+    private BooleanExpression andSearchValueLike(OdOrderDiscntDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

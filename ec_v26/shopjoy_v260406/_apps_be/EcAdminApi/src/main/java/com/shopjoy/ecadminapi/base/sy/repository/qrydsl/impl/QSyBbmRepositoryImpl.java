@@ -70,12 +70,12 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         JPAQuery<SyBbmDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndBbmId(search),
-                    baseAndPathId(search),
-                    baseAndTypeCd(search),
-                    baseAndUseYn(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andBbmIdEq(search),
+                    andPathIdIn(search),
+                    andTypeCdEq(search),
+                    andUseYnEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -98,12 +98,12 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndBbmId(search),
-                baseAndPathId(search),
-                baseAndTypeCd(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andBbmIdEq(search),
+                andPathIdIn(search),
+                andTypeCdEq(search),
+                andUseYnEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -133,43 +133,43 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyBbmDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syBbm.siteId.eq(search.getSiteId()) : null;
     }
 
     /* bbmId 정확 일치 */
-    private BooleanExpression baseAndBbmId(SyBbmDto.Request search) {
+    private BooleanExpression andBbmIdEq(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getBbmId())
                 ? syBbm.bbmId.eq(search.getBbmId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로의 게시판까지 포함 */
-    private BooleanExpression baseAndPathId(SyBbmDto.Request search) {
+    private BooleanExpression andPathIdIn(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syBbm.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_bbm"))
                 : null;
     }
 
     /* bbmTypeCd 정확 일치 */
-    private BooleanExpression baseAndTypeCd(SyBbmDto.Request search) {
+    private BooleanExpression andTypeCdEq(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
                 ? syBbm.bbmTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(SyBbmDto.Request search) {
+    private BooleanExpression andUseYnEq(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? syBbm.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyBbmDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyBbmDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

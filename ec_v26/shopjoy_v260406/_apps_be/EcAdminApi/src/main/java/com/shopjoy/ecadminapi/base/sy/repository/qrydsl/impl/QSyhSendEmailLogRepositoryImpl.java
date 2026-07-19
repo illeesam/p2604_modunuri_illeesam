@@ -93,13 +93,13 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
         JPAQuery<SyhSendEmailLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndSiteId(search),
-                baseAndLogId(search),
-                baseAndUserId(search),
-                baseAndTemplateId(search),
-                baseAndTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andLogIdEq(search),
+                andUserIdEq(search),
+                andTemplateIdEq(search),
+                andTypeCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -122,13 +122,13 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndLogId(search),
-                baseAndUserId(search),
-                baseAndTemplateId(search),
-                baseAndTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andLogIdEq(search),
+                andUserIdEq(search),
+                andTemplateIdEq(search),
+                andTypeCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -156,42 +156,42 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     /* 이메일 발송 로그 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyhSendEmailLogDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syhSendEmailLog.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
-    private BooleanExpression baseAndLogId(SyhSendEmailLogDto.Request search) {
+    private BooleanExpression andLogIdEq(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
                 ? syhSendEmailLog.logId.eq(search.getLogId()) : null;
     }
 
     /* userId 정확 일치 */
-    private BooleanExpression baseAndUserId(SyhSendEmailLogDto.Request search) {
+    private BooleanExpression andUserIdEq(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
                 ? syhSendEmailLog.userId.eq(search.getUserId()) : null;
     }
 
     /* templateId 정확 일치 */
-    private BooleanExpression baseAndTemplateId(SyhSendEmailLogDto.Request search) {
+    private BooleanExpression andTemplateIdEq(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTemplateId())
                 ? syhSendEmailLog.templateId.eq(search.getTemplateId()) : null;
     }
 
     /* refTypeCd 정확 일치 */
-    private BooleanExpression baseAndTypeCd(SyhSendEmailLogDto.Request search) {
+    private BooleanExpression andTypeCdEq(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
                 ? syhSendEmailLog.refTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SyhSendEmailLogDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyhSendEmailLogDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -208,7 +208,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyhSendEmailLogDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyhSendEmailLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

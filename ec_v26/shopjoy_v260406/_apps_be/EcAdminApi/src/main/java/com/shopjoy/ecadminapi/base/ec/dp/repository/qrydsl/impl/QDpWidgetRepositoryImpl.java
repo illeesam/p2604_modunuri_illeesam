@@ -58,10 +58,10 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         JPAQuery<DpWidgetDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndWidgetTypeCd(search),
-                    baseAndUseYn(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andWidgetTypeCdEq(search),
+                    andUseYnEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -83,10 +83,10 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndWidgetTypeCd(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andWidgetTypeCdEq(search),
+                andUseYnEq(search),
+                andSearchValueLike(search)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpWidgetDto.Item> query = baseQuery();
@@ -118,25 +118,25 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
      * ============================================================ */
 
     /* widgetTypeCd 정확 일치 (위젯 유형 드롭다운) */
-    private BooleanExpression baseAndWidgetTypeCd(DpWidgetDto.Request search) {
+    private BooleanExpression andWidgetTypeCdEq(DpWidgetDto.Request search) {
         return search != null && StringUtils.hasText(search.getWidgetTypeCd())
                 ? dpWidget.widgetTypeCd.eq(search.getWidgetTypeCd()) : null;
     }
 
     /* useYn 정확 일치 (상태 드롭다운 Y/N) */
-    private BooleanExpression baseAndUseYn(DpWidgetDto.Request search) {
+    private BooleanExpression andUseYnEq(DpWidgetDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? dpWidget.useYn.eq(search.getUseYn()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(DpWidgetDto.Request search) {
+    private BooleanExpression andSiteIdEq(DpWidgetDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? dpWidget.siteId.eq(search.getSiteId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(DpWidgetDto.Request search) {
+    private BooleanExpression andSearchValueLike(DpWidgetDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

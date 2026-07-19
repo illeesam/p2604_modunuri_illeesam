@@ -108,14 +108,14 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndMethod(search),
-                baseAndStatus(search),
-                baseAndPath(search),
-                baseAndUiNm(search),
-                baseAndTraceId(search),
-                baseAndAppTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andMethodEq(search),
+                andStatusEq(search),
+                andPathLike(search),
+                andUiNmLike(search),
+                andTraceIdEq(search),
+                andAppTypeCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -148,13 +148,13 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
      * ============================================================ */
 
     /* reqMethod 정확 일치 */
-    private BooleanExpression baseAndMethod(SyhAccessLogDto.Request search) {
+    private BooleanExpression andMethodEq(SyhAccessLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getMethod())
                 ? syhAccessLog.reqMethod.eq(search.getMethod()) : null;
     }
 
     /* respStatus 정확 일치 (숫자만 파싱, 비숫자면 무시) */
-    private BooleanExpression baseAndStatus(SyhAccessLogDto.Request search) {
+    private BooleanExpression andStatusEq(SyhAccessLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getStatus())) return null;
         try {
             return syhAccessLog.respStatus.eq(Integer.valueOf(search.getStatus().trim()));
@@ -164,31 +164,31 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     }
 
     /* reqPath LIKE (앞 일치 시작 부분 검색) */
-    private BooleanExpression baseAndPath(SyhAccessLogDto.Request search) {
+    private BooleanExpression andPathLike(SyhAccessLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getPath())
                 ? syhAccessLog.reqPath.likeIgnoreCase("%" + search.getPath().trim() + "%") : null;
     }
 
     /* uiNm LIKE (x-ui-nm 화면명) */
-    private BooleanExpression baseAndUiNm(SyhAccessLogDto.Request search) {
+    private BooleanExpression andUiNmLike(SyhAccessLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUiNm())
                 ? syhAccessLog.uiNm.likeIgnoreCase("%" + search.getUiNm().trim() + "%") : null;
     }
 
     /* traceId 정확 일치 */
-    private BooleanExpression baseAndTraceId(SyhAccessLogDto.Request search) {
+    private BooleanExpression andTraceIdEq(SyhAccessLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTraceId())
                 ? syhAccessLog.traceId.eq(search.getTraceId().trim()) : null;
     }
 
     /* appTypeCd 정확 일치 */
-    private BooleanExpression baseAndAppTypeCd(SyhAccessLogDto.Request search) {
+    private BooleanExpression andAppTypeCdEq(SyhAccessLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getAppTypeCd())
                 ? syhAccessLog.appTypeCd.eq(search.getAppTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SyhAccessLogDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyhAccessLogDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -203,7 +203,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyhAccessLogDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyhAccessLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

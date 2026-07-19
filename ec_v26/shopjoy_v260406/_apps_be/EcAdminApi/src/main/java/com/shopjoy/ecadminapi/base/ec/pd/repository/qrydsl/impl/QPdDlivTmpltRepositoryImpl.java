@@ -73,12 +73,12 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndDlivTmpltId(search),
-                    baseAndDlivMethodCd(search),
-                    baseAndUseYn(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andDlivTmpltIdEq(search),
+                    andDlivMethodCdEq(search),
+                    andUseYnEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -101,12 +101,12 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndDlivTmpltId(search),
-                baseAndDlivMethodCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andDlivTmpltIdEq(search),
+                andDlivMethodCdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -133,36 +133,36 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PdDlivTmpltDto.Request search) {
+    private BooleanExpression andSiteIdEq(PdDlivTmpltDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pdDlivTmplt.siteId.eq(search.getSiteId()) : null;
     }
 
     /* dlivTmpltId 정확 일치 */
-    private BooleanExpression baseAndDlivTmpltId(PdDlivTmpltDto.Request search) {
+    private BooleanExpression andDlivTmpltIdEq(PdDlivTmpltDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivTmpltId())
                 ? pdDlivTmplt.dlivTmpltId.eq(search.getDlivTmpltId()) : null;
     }
 
     /* dlivMethodCd 정확 일치 */
-    private BooleanExpression baseAndDlivMethodCd(PdDlivTmpltDto.Request search) {
+    private BooleanExpression andDlivMethodCdEq(PdDlivTmpltDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivMethodCd())
                 ? pdDlivTmplt.dlivMethodCd.eq(search.getDlivMethodCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(PdDlivTmpltDto.Request search) {
+    private BooleanExpression andUseYnEq(PdDlivTmpltDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? pdDlivTmplt.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PdDlivTmpltDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PdDlivTmpltDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -178,7 +178,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PdDlivTmpltDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdDlivTmpltDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

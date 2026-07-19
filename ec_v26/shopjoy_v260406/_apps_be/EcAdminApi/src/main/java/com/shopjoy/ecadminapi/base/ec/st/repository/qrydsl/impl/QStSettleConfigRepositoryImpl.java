@@ -75,10 +75,10 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         JPAQuery<StSettleConfigDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndSettleConfigId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andSettleConfigIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -101,10 +101,10 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndSettleConfigId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andSettleConfigIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -134,24 +134,24 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     /* 정산 설정 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(StSettleConfigDto.Request search) {
+    private BooleanExpression andSiteIdEq(StSettleConfigDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? stSettleConfig.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settleConfigId 정확 일치 */
-    private BooleanExpression baseAndSettleConfigId(StSettleConfigDto.Request search) {
+    private BooleanExpression andSettleConfigIdEq(StSettleConfigDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleConfigId())
                 ? stSettleConfig.settleConfigId.eq(search.getSettleConfigId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(StSettleConfigDto.Request search) {
+    private BooleanExpression andDateRangeBetween(StSettleConfigDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -167,7 +167,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(StSettleConfigDto.Request search) {
+    private BooleanExpression andSearchValueLike(StSettleConfigDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

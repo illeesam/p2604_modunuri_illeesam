@@ -70,13 +70,13 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndBrandId(search),
-                baseAndVendorId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andPathIdIn(search),
+                andBrandIdEq(search),
+                andVendorIdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -99,13 +99,13 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndBrandId(search),
-                baseAndVendorId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andPathIdIn(search),
+                andBrandIdEq(search),
+                andVendorIdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -133,43 +133,43 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyBrandDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syBrand.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression baseAndPathId(SyBrandDto.Request search) {
+    private BooleanExpression andPathIdIn(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syBrand.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_brand"))
                 : null;
     }
 
     /* brandId 정확 일치 */
-    private BooleanExpression baseAndBrandId(SyBrandDto.Request search) {
+    private BooleanExpression andBrandIdEq(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getBrandId())
                 ? syBrand.brandId.eq(search.getBrandId()) : null;
     }
 
     /* vendorId 정확 일치 */
-    private BooleanExpression baseAndVendorId(SyBrandDto.Request search) {
+    private BooleanExpression andVendorIdEq(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
                 ? syBrand.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* useYn 정확 일치 (Y/N) */
-    private BooleanExpression baseAndUseYn(SyBrandDto.Request search) {
+    private BooleanExpression andUseYnEq(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? syBrand.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SyBrandDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyBrandDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -185,7 +185,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyBrandDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyBrandDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

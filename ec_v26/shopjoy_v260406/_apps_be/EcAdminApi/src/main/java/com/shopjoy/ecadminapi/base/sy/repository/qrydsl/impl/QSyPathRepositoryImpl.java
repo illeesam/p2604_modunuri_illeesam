@@ -55,10 +55,10 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         JPAQuery<SyPathDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndBizCd(search),
-                    baseAndParentPathId(search),
-                    baseAndUseYn(search),
-                    baseAndSearchValue(search)
+                    andBizCdEq(search),
+                    andParentPathIdEq(search),
+                    andUseYnEq(search),
+                    andSearchValueLike(search)
                 );
         // default order: sort_ord ASC, path_id ASC
         query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
@@ -81,10 +81,10 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         int limit    = pageSize;
 
         BooleanExpression[] wheres = {
-                baseAndBizCd(search),
-                baseAndParentPathId(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
+                andBizCdEq(search),
+                andParentPathIdEq(search),
+                andUseYnEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -116,25 +116,25 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
      * ============================================================ */
 
     /* bizCd 정확 일치 */
-    private BooleanExpression baseAndBizCd(SyPathDto.Request search) {
+    private BooleanExpression andBizCdEq(SyPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getBizCd())
                 ? syPath.bizCd.eq(search.getBizCd()) : null;
     }
 
     /* parentPathId 정확 일치 (좌측 트리 노드 선택 → 자식 필터) */
-    private BooleanExpression baseAndParentPathId(SyPathDto.Request search) {
+    private BooleanExpression andParentPathIdEq(SyPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentPathId())
                 ? syPath.parentPathId.eq(search.getParentPathId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(SyPathDto.Request search) {
+    private BooleanExpression andUseYnEq(SyPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? syPath.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyPathDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyPathDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -61,12 +61,12 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndDlivIds(search),
-                    baseAndDlivId(search),
-                    baseAndSiteId(search),
-                    baseAndDlivItemId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andDlivIdsIn(search),
+                    andDlivIdEq(search),
+                    andSiteIdEq(search),
+                    andDlivItemIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -89,12 +89,12 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndDlivIds(search),
-                baseAndDlivId(search),
-                baseAndSiteId(search),
-                baseAndDlivItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andDlivIdsIn(search),
+                andDlivIdEq(search),
+                andSiteIdEq(search),
+                andDlivItemIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -121,36 +121,36 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     /* 배송 아이템 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* dlivId IN */
-    private BooleanExpression baseAndDlivIds(OdDlivItemDto.Request search) {
+    private BooleanExpression andDlivIdsIn(OdDlivItemDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getDlivIds())
                 ? odDlivItem.dlivId.in(search.getDlivIds()) : null;
     }
 
     /* dlivId 정확 일치 */
-    private BooleanExpression baseAndDlivId(OdDlivItemDto.Request search) {
+    private BooleanExpression andDlivIdEq(OdDlivItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivId())
                 ? odDlivItem.dlivId.eq(search.getDlivId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(OdDlivItemDto.Request search) {
+    private BooleanExpression andSiteIdEq(OdDlivItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? odDlivItem.siteId.eq(search.getSiteId()) : null;
     }
 
     /* dlivItemId 정확 일치 */
-    private BooleanExpression baseAndDlivItemId(OdDlivItemDto.Request search) {
+    private BooleanExpression andDlivItemIdEq(OdDlivItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivItemId())
                 ? odDlivItem.dlivItemId.eq(search.getDlivItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(OdDlivItemDto.Request search) {
+    private BooleanExpression andDateRangeBetween(OdDlivItemDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -166,7 +166,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(OdDlivItemDto.Request search) {
+    private BooleanExpression andSearchValueLike(OdDlivItemDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

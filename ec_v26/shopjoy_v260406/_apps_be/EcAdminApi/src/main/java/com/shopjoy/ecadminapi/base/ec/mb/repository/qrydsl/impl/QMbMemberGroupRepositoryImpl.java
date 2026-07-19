@@ -57,11 +57,11 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndMemberGroupId(search),
-                    baseAndUseYn(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andMemberGroupIdEq(search),
+                    andUseYnEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -83,11 +83,11 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndMemberGroupId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andMemberGroupIdEq(search),
+                andUseYnEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -114,30 +114,30 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     /* searchType 사용 예  searchType = "groupNm" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(MbMemberGroupDto.Request search) {
+    private BooleanExpression andSiteIdEq(MbMemberGroupDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? mbMemberGroup.siteId.eq(search.getSiteId()) : null;
     }
 
     /* memberGroupId 정확 일치 */
-    private BooleanExpression baseAndMemberGroupId(MbMemberGroupDto.Request search) {
+    private BooleanExpression andMemberGroupIdEq(MbMemberGroupDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberGroupId())
                 ? mbMemberGroup.memberGroupId.eq(search.getMemberGroupId()) : null;
     }
 
     /* useYn 정확 일치 (사용여부 드롭다운) */
-    private BooleanExpression baseAndUseYn(MbMemberGroupDto.Request search) {
+    private BooleanExpression andUseYnEq(MbMemberGroupDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? mbMemberGroup.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(MbMemberGroupDto.Request search) {
+    private BooleanExpression andDateRangeBetween(MbMemberGroupDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -153,7 +153,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(MbMemberGroupDto.Request search) {
+    private BooleanExpression andSearchValueLike(MbMemberGroupDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

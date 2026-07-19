@@ -60,12 +60,12 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmBlogReplyDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndBlogIds(search),
-                baseAndBlogId(search),
-                baseAndSiteId(search),
-                baseAndCommentId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andBlogIdsIn(search),
+                andBlogIdEq(search),
+                andSiteIdEq(search),
+                andCommentIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -88,12 +88,12 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndBlogIds(search),
-                baseAndBlogId(search),
-                baseAndSiteId(search),
-                baseAndCommentId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andBlogIdsIn(search),
+                andBlogIdEq(search),
+                andSiteIdEq(search),
+                andCommentIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -122,36 +122,36 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* blogId IN */
-    private BooleanExpression baseAndBlogIds(CmBlogReplyDto.Request search) {
+    private BooleanExpression andBlogIdsIn(CmBlogReplyDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getBlogIds())
                 ? cmBlogReply.blogId.in(search.getBlogIds()) : null;
     }
 
     /* blogId 정확 일치 */
-    private BooleanExpression baseAndBlogId(CmBlogReplyDto.Request search) {
+    private BooleanExpression andBlogIdEq(CmBlogReplyDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogId())
                 ? cmBlogReply.blogId.eq(search.getBlogId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(CmBlogReplyDto.Request search) {
+    private BooleanExpression andSiteIdEq(CmBlogReplyDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? cmBlogReply.siteId.eq(search.getSiteId()) : null;
     }
 
     /* commentId 정확 일치 */
-    private BooleanExpression baseAndCommentId(CmBlogReplyDto.Request search) {
+    private BooleanExpression andCommentIdEq(CmBlogReplyDto.Request search) {
         return search != null && StringUtils.hasText(search.getCommentId())
                 ? cmBlogReply.commentId.eq(search.getCommentId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(CmBlogReplyDto.Request search) {
+    private BooleanExpression andDateRangeBetween(CmBlogReplyDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -167,7 +167,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(CmBlogReplyDto.Request search) {
+    private BooleanExpression andSearchValueLike(CmBlogReplyDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

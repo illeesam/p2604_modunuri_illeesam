@@ -63,13 +63,13 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndEventIds(search),
-                    baseAndEventId(search),
-                    baseAndUseYn(search),
-                    baseAndEventStatusCd(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andEventIdsIn(search),
+                    andEventIdEq(search),
+                    andUseYnEq(search),
+                    andEventStatusCdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -92,13 +92,13 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndEventIds(search),
-                baseAndEventId(search),
-                baseAndUseYn(search),
-                baseAndEventStatusCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andEventIdsIn(search),
+                andEventIdEq(search),
+                andUseYnEq(search),
+                andEventStatusCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -125,42 +125,42 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PmEventDto.Request search) {
+    private BooleanExpression andSiteIdEq(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pmEvent.siteId.eq(search.getSiteId()) : null;
     }
 
     /* eventId IN */
-    private BooleanExpression baseAndEventIds(PmEventDto.Request search) {
+    private BooleanExpression andEventIdsIn(PmEventDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getEventIds())
                 ? pmEvent.eventId.in(search.getEventIds()) : null;
     }
 
     /* eventId 정확 일치 */
-    private BooleanExpression baseAndEventId(PmEventDto.Request search) {
+    private BooleanExpression andEventIdEq(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getEventId())
                 ? pmEvent.eventId.eq(search.getEventId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(PmEventDto.Request search) {
+    private BooleanExpression andUseYnEq(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? pmEvent.useYn.eq(search.getUseYn()) : null;
     }
 
     /* eventStatusCd 정확 일치 */
-    private BooleanExpression baseAndEventStatusCd(PmEventDto.Request search) {
+    private BooleanExpression andEventStatusCdEq(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getEventStatusCd())
                 ? pmEvent.eventStatusCd.eq(search.getEventStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PmEventDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PmEventDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -176,7 +176,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PmEventDto.Request search) {
+    private BooleanExpression andSearchValueLike(PmEventDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

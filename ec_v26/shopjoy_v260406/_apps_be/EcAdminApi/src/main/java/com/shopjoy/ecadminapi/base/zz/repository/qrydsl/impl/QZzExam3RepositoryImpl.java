@@ -67,11 +67,11 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
         JPAQuery<ZzExam3Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndExam1Ids(search),
-                baseAndExam1Id(search),
-                baseAndExam2Id(search),
-                baseAndExam3Id(search),
-                baseAndSearchValue(search)
+                andExam1IdsIn(search),
+                andExam1IdEq(search),
+                andExam2IdEq(search),
+                andExam3IdEq(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -94,11 +94,11 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndExam1Ids(search),
-                baseAndExam1Id(search),
-                baseAndExam2Id(search),
-                baseAndExam3Id(search),
-                baseAndSearchValue(search)
+                andExam1IdsIn(search),
+                andExam1IdEq(search),
+                andExam2IdEq(search),
+                andExam3IdEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -131,31 +131,31 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
      * ============================================================ */
 
     /* exam1Id IN */
-    private BooleanExpression baseAndExam1Ids(ZzExam3Dto.Request search) {
+    private BooleanExpression andExam1IdsIn(ZzExam3Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getExam1Ids())
                 ? zzExam3.exam1Id.in(search.getExam1Ids()) : null;
     }
 
     /* exam1Id 정확 일치 */
-    private BooleanExpression baseAndExam1Id(ZzExam3Dto.Request search) {
+    private BooleanExpression andExam1IdEq(ZzExam3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam1Id())
                 ? zzExam3.exam1Id.eq(search.getExam1Id()) : null;
     }
 
     /* exam2Id 정확 일치 */
-    private BooleanExpression baseAndExam2Id(ZzExam3Dto.Request search) {
+    private BooleanExpression andExam2IdEq(ZzExam3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam2Id())
                 ? zzExam3.exam2Id.eq(search.getExam2Id()) : null;
     }
 
     /* exam3Id 정확 일치 */
-    private BooleanExpression baseAndExam3Id(ZzExam3Dto.Request search) {
+    private BooleanExpression andExam3IdEq(ZzExam3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam3Id())
                 ? zzExam3.exam3Id.eq(search.getExam3Id()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(ZzExam3Dto.Request search) {
+    private BooleanExpression andSearchValueLike(ZzExam3Dto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

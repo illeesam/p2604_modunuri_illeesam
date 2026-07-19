@@ -66,13 +66,13 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndGiftCondId(search),
-                    baseAndGiftId(search),
-                    baseAndTargetTypeCd(search),
-                    baseAndTargetId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andGiftCondIdEq(search),
+                    andGiftIdEq(search),
+                    andTargetTypeCdEq(search),
+                    andTargetIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -95,13 +95,13 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndGiftCondId(search),
-                baseAndGiftId(search),
-                baseAndTargetTypeCd(search),
-                baseAndTargetId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andGiftCondIdEq(search),
+                andGiftIdEq(search),
+                andTargetTypeCdEq(search),
+                andTargetIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -129,42 +129,42 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     /* 사은품 지급 조건 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PmGiftCondDto.Request search) {
+    private BooleanExpression andSiteIdEq(PmGiftCondDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pmGiftCond.siteId.eq(search.getSiteId()) : null;
     }
 
     /* giftCondId 정확 일치 */
-    private BooleanExpression baseAndGiftCondId(PmGiftCondDto.Request search) {
+    private BooleanExpression andGiftCondIdEq(PmGiftCondDto.Request search) {
         return search != null && StringUtils.hasText(search.getGiftCondId())
                 ? pmGiftCond.giftCondId.eq(search.getGiftCondId()) : null;
     }
 
     /* giftId 정확 일치 */
-    private BooleanExpression baseAndGiftId(PmGiftCondDto.Request search) {
+    private BooleanExpression andGiftIdEq(PmGiftCondDto.Request search) {
         return search != null && StringUtils.hasText(search.getGiftId())
                 ? pmGiftCond.giftId.eq(search.getGiftId()) : null;
     }
 
     /* targetTypeCd 정확 일치 */
-    private BooleanExpression baseAndTargetTypeCd(PmGiftCondDto.Request search) {
+    private BooleanExpression andTargetTypeCdEq(PmGiftCondDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetTypeCd())
                 ? pmGiftCond.targetTypeCd.eq(search.getTargetTypeCd()) : null;
     }
 
     /* targetId 정확 일치 */
-    private BooleanExpression baseAndTargetId(PmGiftCondDto.Request search) {
+    private BooleanExpression andTargetIdEq(PmGiftCondDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetId())
                 ? pmGiftCond.targetId.eq(search.getTargetId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PmGiftCondDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PmGiftCondDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -180,7 +180,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PmGiftCondDto.Request search) {
+    private BooleanExpression andSearchValueLike(PmGiftCondDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

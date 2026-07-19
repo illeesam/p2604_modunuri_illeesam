@@ -70,9 +70,9 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         JPAQuery<ZzSample0Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndSample0Id(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
+                andSample0IdEq(search),
+                andUseYnEq(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -95,9 +95,9 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSample0Id(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
+                andSample0IdEq(search),
+                andUseYnEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -130,19 +130,19 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
      * ============================================================ */
 
     /* sample0Id 정확 일치 */
-    private BooleanExpression baseAndSample0Id(ZzSample0Dto.Request search) {
+    private BooleanExpression andSample0IdEq(ZzSample0Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample0Id())
                 ? zzSample0.sample0Id.eq(search.getSample0Id()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(ZzSample0Dto.Request search) {
+    private BooleanExpression andUseYnEq(ZzSample0Dto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? zzSample0.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(ZzSample0Dto.Request search) {
+    private BooleanExpression andSearchValueLike(ZzSample0Dto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

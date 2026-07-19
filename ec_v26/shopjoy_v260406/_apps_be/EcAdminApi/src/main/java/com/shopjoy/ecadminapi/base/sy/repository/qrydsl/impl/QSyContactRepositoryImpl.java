@@ -63,13 +63,13 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         JPAQuery<SyContactDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndContactId(search),
-                    baseAndMemberId(search),
-                    baseAndCategoryCd(search),
-                    baseAndStatus(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andContactIdEq(search),
+                    andMemberIdEq(search),
+                    andCategoryCdEq(search),
+                    andStatusEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -92,13 +92,13 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndContactId(search),
-                baseAndMemberId(search),
-                baseAndCategoryCd(search),
-                baseAndStatus(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andContactIdEq(search),
+                andMemberIdEq(search),
+                andCategoryCdEq(search),
+                andStatusEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -125,36 +125,36 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyContactDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syContact.siteId.eq(search.getSiteId()) : null;
     }
 
     /* contactId 정확 일치 */
-    private BooleanExpression baseAndContactId(SyContactDto.Request search) {
+    private BooleanExpression andContactIdEq(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getContactId())
                 ? syContact.contactId.eq(search.getContactId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression baseAndMemberId(SyContactDto.Request search) {
+    private BooleanExpression andMemberIdEq(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? syContact.memberId.eq(search.getMemberId()) : null;
     }
 
     /* categoryCd(문의유형) 정확 일치 */
-    private BooleanExpression baseAndCategoryCd(SyContactDto.Request search) {
+    private BooleanExpression andCategoryCdEq(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getCategoryCd())
                 ? syContact.categoryCd.eq(search.getCategoryCd()) : null;
     }
 
     /* 등록일(regDate) 기간 검색 — dateStart/dateEnd (yyyy-MM-dd) 포함 범위 */
-    private BooleanExpression baseAndDateRange(SyContactDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyContactDto.Request search) {
         if (search == null) return null;
         BooleanExpression expr = null;
         if (StringUtils.hasText(search.getDateStart())) {
@@ -170,13 +170,13 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     }
 
     /* contactStatusCd 정확 일치 */
-    private BooleanExpression baseAndStatus(SyContactDto.Request search) {
+    private BooleanExpression andStatusEq(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? syContact.contactStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyContactDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyContactDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

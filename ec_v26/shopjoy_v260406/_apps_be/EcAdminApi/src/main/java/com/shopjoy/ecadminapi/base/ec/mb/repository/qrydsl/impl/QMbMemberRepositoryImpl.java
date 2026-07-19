@@ -72,12 +72,12 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndMemberId(search),
-                    baseAndGradeCd(search),
-                    baseAndMemberStatusCd(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andMemberIdEq(search),
+                    andGradeCdEq(search),
+                    andMemberStatusCdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -100,12 +100,12 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndMemberId(search),
-                baseAndGradeCd(search),
-                baseAndMemberStatusCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andMemberIdEq(search),
+                andGradeCdEq(search),
+                andMemberStatusCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -134,36 +134,36 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     /* searchType 사용 예  searchType = "memberId,memberNm,loginId,memberPhone" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(MbMemberDto.Request search) {
+    private BooleanExpression andSiteIdEq(MbMemberDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? mbMember.siteId.eq(search.getSiteId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression baseAndMemberId(MbMemberDto.Request search) {
+    private BooleanExpression andMemberIdEq(MbMemberDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? mbMember.memberId.eq(search.getMemberId()) : null;
     }
 
     /* gradeCd 정확 일치 (등급 드롭다운) */
-    private BooleanExpression baseAndGradeCd(MbMemberDto.Request search) {
+    private BooleanExpression andGradeCdEq(MbMemberDto.Request search) {
         return search != null && StringUtils.hasText(search.getGradeCd())
                 ? mbMember.gradeCd.eq(search.getGradeCd()) : null;
     }
 
     /* memberStatusCd 정확 일치 (상태 드롭다운) */
-    private BooleanExpression baseAndMemberStatusCd(MbMemberDto.Request search) {
+    private BooleanExpression andMemberStatusCdEq(MbMemberDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberStatusCd())
                 ? mbMember.memberStatusCd.eq(search.getMemberStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(MbMemberDto.Request search) {
+    private BooleanExpression andDateRangeBetween(MbMemberDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -180,7 +180,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(MbMemberDto.Request search) {
+    private BooleanExpression andSearchValueLike(MbMemberDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

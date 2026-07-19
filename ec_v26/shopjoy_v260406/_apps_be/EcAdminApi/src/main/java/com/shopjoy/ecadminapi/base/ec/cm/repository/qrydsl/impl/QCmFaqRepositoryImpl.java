@@ -76,11 +76,11 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndFaqId(search),
-                    baseAndPathTree(search),
-                    baseAndUseYn(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andFaqIdEq(search),
+                    andPathTreeIn(search),
+                    andUseYnEq(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -101,11 +101,11 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndFaqId(search),
-                baseAndPathTree(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andFaqIdEq(search),
+                andPathTreeIn(search),
+                andUseYnEq(search),
+                andSearchValueLike(search)
         };
 
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery();
@@ -132,32 +132,32 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(CmFaqDto.Request search) {
+    private BooleanExpression andSiteIdEq(CmFaqDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? cmFaq.siteId.eq(search.getSiteId()) : null;
     }
 
     /* faqId 정확 일치 */
-    private BooleanExpression baseAndFaqId(CmFaqDto.Request search) {
+    private BooleanExpression andFaqIdEq(CmFaqDto.Request search) {
         return search != null && StringUtils.hasText(search.getFaqId())
                 ? cmFaq.faqId.eq(search.getFaqId()) : null;
     }
 
     /* pathId — 선택 노드 + 모든 자손 path 포함 (트리 클릭 시 하위까지 조회) */
-    private BooleanExpression baseAndPathTree(CmFaqDto.Request search) {
+    private BooleanExpression andPathTreeIn(CmFaqDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPathId())) return null;
         List<String> ids = syPathRepository.findTreePathIds(search.getPathId(), "cm_faq");
         return (ids == null || ids.isEmpty()) ? cmFaq.pathId.eq(search.getPathId()) : cmFaq.pathId.in(ids);
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(CmFaqDto.Request search) {
+    private BooleanExpression andUseYnEq(CmFaqDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? cmFaq.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(CmFaqDto.Request search) {
+    private BooleanExpression andSearchValueLike(CmFaqDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

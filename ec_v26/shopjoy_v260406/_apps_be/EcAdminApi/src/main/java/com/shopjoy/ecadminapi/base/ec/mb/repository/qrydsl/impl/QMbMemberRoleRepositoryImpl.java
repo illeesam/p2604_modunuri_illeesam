@@ -67,9 +67,9 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndMemberRoleId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andMemberRoleIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -91,9 +91,9 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndMemberRoleId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andMemberRoleIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -125,13 +125,13 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
      * ============================================================ */
 
     /* memberRoleId 정확 일치 */
-    private BooleanExpression baseAndMemberRoleId(MbMemberRoleDto.Request search) {
+    private BooleanExpression andMemberRoleIdEq(MbMemberRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberRoleId())
                 ? mbMemberRole.memberRoleId.eq(search.getMemberRoleId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(MbMemberRoleDto.Request search) {
+    private BooleanExpression andDateRangeBetween(MbMemberRoleDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -147,7 +147,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(MbMemberRoleDto.Request search) {
+    private BooleanExpression andSearchValueLike(MbMemberRoleDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

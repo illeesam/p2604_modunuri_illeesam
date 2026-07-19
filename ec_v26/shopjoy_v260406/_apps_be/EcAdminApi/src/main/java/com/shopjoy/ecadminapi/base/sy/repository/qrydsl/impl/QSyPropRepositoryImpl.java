@@ -71,15 +71,15 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         JPAQuery<SyPropDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndPathId(search),
-                    baseAndPropKey(search),
-                    baseAndPropKeys(search),
-                    baseAndPropKeyPrefixes(search),
-                    baseAndPropTypeCd(search),
-                    baseAndUseYn(search),
-                    baseAndPropProfile(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andPathIdIn(search),
+                    andPropKeyEq(search),
+                    andPropKeysIn(search),
+                    andPropKeyPrefixesStartsWith(search),
+                    andPropTypeCdEq(search),
+                    andUseYnEq(search),
+                    andPropProfileLike(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -102,15 +102,15 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndPropKey(search),
-                baseAndPropKeys(search),
-                baseAndPropKeyPrefixes(search),
-                baseAndPropTypeCd(search),
-                baseAndUseYn(search),
-                baseAndPropProfile(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andPathIdIn(search),
+                andPropKeyEq(search),
+                andPropKeysIn(search),
+                andPropKeyPrefixesStartsWith(search),
+                andPropTypeCdEq(search),
+                andUseYnEq(search),
+                andPropProfileLike(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -140,19 +140,19 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     /* 시스템 속성 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyPropDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syProp.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함.
      * '__orphan__' 특수값: sy_path 에 등록되지 않은 path_id 를 가진 행 (또는 NULL) 필터. */
-    private BooleanExpression baseAndPathId(SyPropDto.Request search) {
+    private BooleanExpression andPathIdIn(SyPropDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPathId())) return null;
         if ("__orphan__".equals(search.getPathId())) {
             List<String> registeredPaths = syPathRepository.findAllPathIdsByBizCd("sy_prop");
@@ -163,13 +163,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     }
 
     /* propKey 정확 일치 (단건) */
-    private BooleanExpression baseAndPropKey(SyPropDto.Request search) {
+    private BooleanExpression andPropKeyEq(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getPropKey())
                 ? syProp.propKey.eq(search.getPropKey()) : null;
     }
 
     /* propKeys IN 조건 (쉼표 구분 복수 키) */
-    private BooleanExpression baseAndPropKeys(SyPropDto.Request search) {
+    private BooleanExpression andPropKeysIn(SyPropDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPropKeys())) return null;
         List<String> keys = Arrays.stream(search.getPropKeys().split(","))
                 .map(String::trim).filter(StringUtils::hasText).collect(Collectors.toList());
@@ -177,7 +177,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     }
 
     /* propKeyPrefixes — 쉼표 구분 prefix 목록 중 하나로 시작하는 행 (LIKE 'xxx%' OR) */
-    private BooleanExpression baseAndPropKeyPrefixes(SyPropDto.Request search) {
+    private BooleanExpression andPropKeyPrefixesStartsWith(SyPropDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPropKeyPrefixes())) return null;
         List<String> prefixes = Arrays.stream(search.getPropKeyPrefixes().split(","))
                 .map(String::trim).filter(StringUtils::hasText).collect(Collectors.toList());
@@ -191,19 +191,19 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     }
 
     /* propTypeCd 정확 일치 */
-    private BooleanExpression baseAndPropTypeCd(SyPropDto.Request search) {
+    private BooleanExpression andPropTypeCdEq(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getPropTypeCd())
                 ? syProp.propTypeCd.eq(search.getPropTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(SyPropDto.Request search) {
+    private BooleanExpression andUseYnEq(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? syProp.useYn.eq(search.getUseYn()) : null;
     }
 
     /* propProfile 필터 — ^{profile}^ 포함 OR all(빈값/^all^ 포함) 행도 함께 조회 */
-    private BooleanExpression baseAndPropProfile(SyPropDto.Request search) {
+    private BooleanExpression andPropProfileLike(SyPropDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPropProfile())) return null;
         String profile = search.getPropProfile().trim();
         StringPath col = syProp.propProfile;
@@ -215,7 +215,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyPropDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyPropDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

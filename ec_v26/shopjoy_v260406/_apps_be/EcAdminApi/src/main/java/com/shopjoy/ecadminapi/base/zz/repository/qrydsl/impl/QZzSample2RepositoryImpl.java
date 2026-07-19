@@ -84,12 +84,12 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
 
         JPAQuery<ZzSample2Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                baseAndSample1Ids(search),
-                baseAndSample2Ids(search),
-                baseAndSample2Id(search),
-                baseAndSample1Id(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
+                andSample1IdsIn(search),
+                andSample2IdsIn(search),
+                andSample2IdEq(search),
+                andSample1IdEq(search),
+                andUseYnEq(search),
+                andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -112,12 +112,12 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSample1Ids(search),
-                baseAndSample2Ids(search),
-                baseAndSample2Id(search),
-                baseAndSample1Id(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
+                andSample1IdsIn(search),
+                andSample2IdsIn(search),
+                andSample2IdEq(search),
+                andSample1IdEq(search),
+                andUseYnEq(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -150,37 +150,37 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
      * ============================================================ */
 
     /* sample1Id IN */
-    private BooleanExpression baseAndSample1Ids(ZzSample2Dto.Request search) {
+    private BooleanExpression andSample1IdsIn(ZzSample2Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getSample1Ids())
                 ? zzSample2.sample1Id.in(search.getSample1Ids()) : null;
     }
 
     /* sample2Id IN */
-    private BooleanExpression baseAndSample2Ids(ZzSample2Dto.Request search) {
+    private BooleanExpression andSample2IdsIn(ZzSample2Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getSample2Ids())
                 ? zzSample2.sample2Id.in(search.getSample2Ids()) : null;
     }
 
     /* sample2Id 정확 일치 */
-    private BooleanExpression baseAndSample2Id(ZzSample2Dto.Request search) {
+    private BooleanExpression andSample2IdEq(ZzSample2Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample2Id())
                 ? zzSample2.sample2Id.eq(search.getSample2Id()) : null;
     }
 
     /* sample1Id 정확 일치 */
-    private BooleanExpression baseAndSample1Id(ZzSample2Dto.Request search) {
+    private BooleanExpression andSample1IdEq(ZzSample2Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample1Id())
                 ? zzSample2.sample1Id.eq(search.getSample1Id()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression baseAndUseYn(ZzSample2Dto.Request search) {
+    private BooleanExpression andUseYnEq(ZzSample2Dto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? zzSample2.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(ZzSample2Dto.Request search) {
+    private BooleanExpression andSearchValueLike(ZzSample2Dto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

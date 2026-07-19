@@ -116,12 +116,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndDeptId(search),
-                    baseAndStatus(search),
-                    baseAndRole(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andDeptIdIn(search),
+                    andStatusEq(search),
+                    andRoleEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -144,12 +144,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndDeptId(search),
-                baseAndStatus(search),
-                baseAndRole(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andDeptIdIn(search),
+                andStatusEq(search),
+                andRoleEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -179,15 +179,15 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     public long selectCount(SyUserDto.Request search) {
         Long total = queryFactory.select(syUser.count())
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syUser)
-                /* baseAndRole 이 syRole 을 참조하므로 join 필요 (목록/페이징과 동일 필터 집합 유지) */
+                /* andRoleEq 이 syRole 을 참조하므로 join 필요 (목록/페이징과 동일 필터 집합 유지) */
                 .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId))
                 .where(
-                    baseAndSiteId(search),
-                    baseAndDeptId(search),
-                    baseAndStatus(search),
-                    baseAndRole(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andDeptIdIn(search),
+                    andStatusEq(search),
+                    andRoleEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .fetchOne();
         return total == null ? 0L : total;
@@ -195,37 +195,37 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), baseAndDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptIdIn(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SyUserDto.Request search) {
+    private BooleanExpression andSiteIdEq(SyUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syUser.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 부서 트리 — 선택 노드 + 모든 자손 부서 사용자까지 포함 */
-    private BooleanExpression baseAndDeptId(SyUserDto.Request search) {
+    private BooleanExpression andDeptIdIn(SyUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getDeptId())
                 ? syUser.deptId.in(syDeptRepository.findTreeDeptIds(search.getDeptId()))
                 : null;
     }
 
     /* userStatusCd 정확 일치 */
-    private BooleanExpression baseAndStatus(SyUserDto.Request search) {
+    private BooleanExpression andStatusEq(SyUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? syUser.userStatusCd.eq(search.getStatus()) : null;
     }
 
     /* 권한 — USER_ROLE 코드값(=역할명) 정확 일치 (조인된 sy_role.role_nm 기준) */
-    private BooleanExpression baseAndRole(SyUserDto.Request search) {
+    private BooleanExpression andRoleEq(SyUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getRole())
                 ? syRole.roleNm.eq(search.getRole()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SyUserDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SyUserDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -242,7 +242,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SyUserDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyUserDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -431,7 +431,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         p.put("statusCd", s.getStatus());
     }
 
-    /* 권한 — role_id → sy_role.role_nm 매칭 (목록 baseAndRole 과 동일 기준, 카운트 동기화) */
+    /* 권한 — role_id → sy_role.role_nm 매칭 (목록 andRoleEq 과 동일 기준, 카운트 동기화) */
     private void depttreeAndRole(SyUserDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null || !StringUtils.hasText(s.getRole())) return;
         sql.append("      AND EXISTS (SELECT 1 FROM sy_role r WHERE r.role_id = t.role_id AND r.role_nm = :roleNm)\n");

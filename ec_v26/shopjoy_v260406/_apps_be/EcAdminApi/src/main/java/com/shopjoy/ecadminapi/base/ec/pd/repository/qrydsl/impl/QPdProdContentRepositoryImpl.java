@@ -65,11 +65,11 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         JPAQuery<PdProdContentDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndProdId(search),
-                    baseAndSiteId(search),
-                    baseAndProdContentId(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andProdIdEq(search),
+                    andSiteIdEq(search),
+                    andProdContentIdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
@@ -92,11 +92,11 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndProdId(search),
-                baseAndSiteId(search),
-                baseAndProdContentId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andProdIdEq(search),
+                andSiteIdEq(search),
+                andProdContentIdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -125,30 +125,30 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
     /* 상품 상세 콘텐츠 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* prodId 정확 일치 */
-    private BooleanExpression baseAndProdId(PdProdContentDto.Request search) {
+    private BooleanExpression andProdIdEq(PdProdContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? pdProdContent.prodId.eq(search.getProdId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(PdProdContentDto.Request search) {
+    private BooleanExpression andSiteIdEq(PdProdContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? pdProdContent.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodContentId 정확 일치 */
-    private BooleanExpression baseAndProdContentId(PdProdContentDto.Request search) {
+    private BooleanExpression andProdContentIdEq(PdProdContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdContentId())
                 ? pdProdContent.prodContentId.eq(search.getProdContentId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(PdProdContentDto.Request search) {
+    private BooleanExpression andDateRangeBetween(PdProdContentDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -164,7 +164,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(PdProdContentDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdProdContentDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

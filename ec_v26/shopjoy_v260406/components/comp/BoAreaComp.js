@@ -535,7 +535,7 @@ window.BoGrid = {
     gridId:       { type: String,  default: '' },                // 그리드 식별자(=셀 클릭 라우터 cmd, 예: 'members-cellClick'). @cell-click emit 의 e.cmd + #row-actions 슬롯 gridId 로 전달 → cmd 한 곳 정의
     selectedKey: { type: [String, Number], default: null },      // 선택된 행의 rowKey 값. 일치하는 행에 .bo-row-selected (파란 테두리) 자동 부여
   },
-  emits: ['sort', 'row-click', 'cell-click', 'save', 'row-remove', 'reorder', 'cell-change',
+  emits: ['sort', 'row-click', 'row-dblclick', 'cell-click', 'save', 'row-remove', 'reorder', 'cell-change',
           'toggle-check', 'toggle-check-all', 'ref-click'],
   setup(props, { emit, slots }) {
     const U = window._boAreaCompUtil;
@@ -570,6 +570,8 @@ window.BoGrid = {
         if (param.col.sortKey) return emit('sort', param.col.sortKey);
       } else if (cmd === 'grid-row-click') {
         return emit('row-click', param.row);
+      } else if (cmd === 'grid-row-dblclick') {
+        return emit('row-dblclick', param.row);
       } else if (cmd === 'grid-cell-click') {
         return emit('cell-click', { cmd: props.gridId, row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
       } else if (cmd === 'grid-row-ref-click') {
@@ -722,6 +724,7 @@ window.BoGrid = {
         <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
           <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
           :draggable="draggable"
+          @dblclick="handleSelectAction('grid-row-dblclick', { row })"
           @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
           @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
           @dragend="handleSelectAction('grid-row-drag-end')">

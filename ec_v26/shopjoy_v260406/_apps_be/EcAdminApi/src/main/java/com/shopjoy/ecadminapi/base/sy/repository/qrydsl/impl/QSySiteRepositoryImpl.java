@@ -75,12 +75,12 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         JPAQuery<SySiteDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    baseAndSiteId(search),
-                    baseAndPathId(search),
-                    baseAndStatus(search),
-                    baseAndTypeCd(search),
-                    baseAndDateRange(search),
-                    baseAndSearchValue(search)
+                    andSiteIdEq(search),
+                    andPathIdIn(search),
+                    andStatusEq(search),
+                    andTypeCdEq(search),
+                    andDateRangeBetween(search),
+                    andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -103,12 +103,12 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndStatus(search),
-                baseAndTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
+                andSiteIdEq(search),
+                andPathIdIn(search),
+                andStatusEq(search),
+                andTypeCdEq(search),
+                andDateRangeBetween(search),
+                andSearchValueLike(search)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -136,37 +136,37 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(a), baseAndDeptId(a), ...) 형태로 직접 나열 사용
+     * .where(andSiteIdEq(a), andPathIdIn(a), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression baseAndSiteId(SySiteDto.Request search) {
+    private BooleanExpression andSiteIdEq(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? sySite.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression baseAndPathId(SySiteDto.Request search) {
+    private BooleanExpression andPathIdIn(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? sySite.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_site"))
                 : null;
     }
 
     /* siteStatusCd 정확 일치 */
-    private BooleanExpression baseAndStatus(SySiteDto.Request search) {
+    private BooleanExpression andStatusEq(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? sySite.siteStatusCd.eq(search.getStatus()) : null;
     }
 
     /* siteTypeCd 정확 일치 */
-    private BooleanExpression baseAndTypeCd(SySiteDto.Request search) {
+    private BooleanExpression andTypeCdEq(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
                 ? sySite.siteTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression baseAndDateRange(SySiteDto.Request search) {
+    private BooleanExpression andDateRangeBetween(SySiteDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -182,7 +182,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression baseAndSearchValue(SySiteDto.Request search) {
+    private BooleanExpression andSearchValueLike(SySiteDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
