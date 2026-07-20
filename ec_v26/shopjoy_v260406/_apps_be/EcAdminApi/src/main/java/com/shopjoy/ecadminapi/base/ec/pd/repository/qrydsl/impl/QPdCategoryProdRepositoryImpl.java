@@ -149,7 +149,6 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         PdCategoryProdDto.PageResponse res = new PdCategoryProdDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-    /* 카테고리-상품 매핑 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
      * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용

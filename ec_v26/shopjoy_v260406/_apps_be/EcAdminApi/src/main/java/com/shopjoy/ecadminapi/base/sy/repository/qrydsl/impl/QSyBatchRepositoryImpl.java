@@ -12,7 +12,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBatch;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBatch;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBatchRepository;
@@ -22,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,7 +50,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         Map.entry("pathId", syBatch.pathId),
         Map.entry("siteId", syBatch.siteId)
     );
-    private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 배치 baseQuery */
     private JPAQuery<SyBatchDto.Item> baseQuery() {

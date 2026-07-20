@@ -12,7 +12,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBbm;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBbm;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBbmRepository;
@@ -22,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,7 +52,6 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         Map.entry("siteId", syBbm.siteId),
         Map.entry("useYn", syBbm.useYn)
     );
-    private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 게시판 마스터 baseQuery */
     private JPAQuery<SyBbmDto.Item> baseQuery() {

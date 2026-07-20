@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +41,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         Map.entry("noticeTypeCd", syNotice.noticeTypeCd),
         Map.entry("siteId", syNotice.siteId)
     );
-    private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 공지사항 baseSelColumnQuery */
     private JPAQuery<SyNoticeDto.Item> baseSelColumnQuery() {

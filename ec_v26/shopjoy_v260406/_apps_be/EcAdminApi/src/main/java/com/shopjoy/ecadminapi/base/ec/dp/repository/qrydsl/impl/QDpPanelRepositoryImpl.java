@@ -13,7 +13,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
-import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpPanel;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpPanelRepository;
 import jakarta.persistence.EntityManager;

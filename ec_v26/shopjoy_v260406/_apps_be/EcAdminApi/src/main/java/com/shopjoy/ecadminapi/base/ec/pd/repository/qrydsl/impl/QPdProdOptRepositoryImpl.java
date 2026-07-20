@@ -86,7 +86,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         JPAQuery<PdProdOptDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andOptTypeId(search),
                     QdslUtil.strIn(pdProdOpt.prodId, search.getProdIds()),
                     QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProdOpt.siteId, search.getSiteId()),
@@ -113,7 +112,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andOptTypeId(search),
                 QdslUtil.strIn(pdProdOpt.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdOpt.siteId, search.getSiteId()),
@@ -144,10 +142,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
      * ============================================================ */
-
-    private BooleanExpression andOptTypeId(PdProdOptDto.Request search) {
-        return null; // prod_opt_type_id 컬럼 제거됨 — pd_prod 플랫 컬럼으로 대체
-    }
 
 private BooleanExpression andSearchValueLike(PdProdOptDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);

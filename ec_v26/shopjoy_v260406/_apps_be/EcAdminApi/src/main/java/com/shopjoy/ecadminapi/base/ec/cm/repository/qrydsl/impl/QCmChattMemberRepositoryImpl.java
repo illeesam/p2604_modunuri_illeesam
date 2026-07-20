@@ -13,7 +13,6 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMember;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmChattMember;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmChattMemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,8 +57,7 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
                         QdslUtil.strEq(cmChattMember.siteId, search.getSiteId()),
                         QdslUtil.strEq(cmChattMember.chattId, search.getChattId()),
                         QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()),
-                        QdslUtil.strEq(cmChattMember.refId, search.getRefId()),
-                        andActiveOnly(search)
+                        QdslUtil.strEq(cmChattMember.refId, search.getRefId())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -80,8 +78,7 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
                 QdslUtil.strEq(cmChattMember.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmChattMember.chattId, search.getChattId()),
                 QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()),
-                QdslUtil.strEq(cmChattMember.refId, search.getRefId()),
-                andActiveOnly(search)
+                QdslUtil.strEq(cmChattMember.refId, search.getRefId())
         };
 
         JPAQuery<CmChattMemberDto.Item> base = baseSelColumnQuery();
@@ -101,11 +98,6 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 
         CmChattMemberDto.PageResponse res = new CmChattMemberDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
-    }
-
-    /** leaveDate IS NULL = 현재 참여 중인 멤버만 */
-    private BooleanExpression andActiveOnly(CmChattMemberDto.Request s) {
-        return null; // 호출부에서 필요 시 cmChattMember.leaveDate.isNull() 직접 추가
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

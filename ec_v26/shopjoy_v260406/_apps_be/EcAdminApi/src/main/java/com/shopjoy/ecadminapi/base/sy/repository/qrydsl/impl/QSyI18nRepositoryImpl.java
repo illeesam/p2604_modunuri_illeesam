@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         Map.entry("siteId", syI18n.siteId),
         Map.entry("useYn", syI18n.useYn)
     );
-    private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 다국어 baseSelColumnQuery */
     private JPAQuery<SyI18nDto.Item> baseSelColumnQuery() {
@@ -127,7 +125,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         SyI18nDto.PageResponse res = new SyI18nDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-    /* 다국어 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
      * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용

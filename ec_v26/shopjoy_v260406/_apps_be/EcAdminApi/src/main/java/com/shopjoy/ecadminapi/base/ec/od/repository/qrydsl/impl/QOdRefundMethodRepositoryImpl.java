@@ -145,7 +145,6 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 환불수단 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
      * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용

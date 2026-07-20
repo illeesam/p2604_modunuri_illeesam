@@ -11,7 +11,6 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
@@ -37,7 +36,6 @@ import com.shopjoy.ecadminapi.common.util.QdslUtil;
 public class QPdProdRepositoryImpl implements QPdProdRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final PdCategoryRepository pdCategoryRepository;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdRepositoryImpl";
     private static final QPdProd     pdProd   = QPdProd.pdProd;
     private static final QPdCategory pdCategory = QPdCategory.pdCategory;

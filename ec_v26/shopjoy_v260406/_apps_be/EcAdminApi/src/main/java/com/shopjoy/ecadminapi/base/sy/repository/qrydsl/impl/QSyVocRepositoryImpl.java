@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         Map.entry("vocMasterCd", syVoc.vocMasterCd),
         Map.entry("vocNm", syVoc.vocNm)
     );
-    private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 고객의 소리(VOC) baseSelColumnQuery */
     private JPAQuery<SyVocDto.Item> baseSelColumnQuery() {

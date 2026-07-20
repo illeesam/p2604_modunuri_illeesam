@@ -12,7 +12,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
-import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpAreaRepository;
 import jakarta.persistence.EntityManager;

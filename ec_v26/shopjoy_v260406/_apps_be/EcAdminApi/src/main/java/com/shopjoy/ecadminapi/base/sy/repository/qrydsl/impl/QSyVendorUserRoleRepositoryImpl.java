@@ -10,7 +10,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
@@ -33,7 +32,6 @@ import com.shopjoy.ecadminapi.common.util.QdslUtil;
 public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final SyRoleRepository syRoleRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorUserRoleRepositoryImpl";
     private static final QSyVendorUserRole syVendorUserRole = QSyVendorUserRole.syVendorUserRole;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
@@ -146,7 +144,6 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 업체 사용자 역할 연결 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
      * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용

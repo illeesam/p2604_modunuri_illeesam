@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,6 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         Map.entry("storagePath", syAttachGrp.storagePath),
         Map.entry("useYn", syAttachGrp.useYn)
     );
-    private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 첨부파일 그룹 baseSelColumnQuery */
     private JPAQuery<SyAttachGrpDto.Item> baseSelColumnQuery() {

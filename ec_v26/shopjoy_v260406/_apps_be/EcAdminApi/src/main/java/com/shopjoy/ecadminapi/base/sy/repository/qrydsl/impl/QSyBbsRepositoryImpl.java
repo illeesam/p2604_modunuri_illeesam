@@ -9,9 +9,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
-import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbsDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBbs;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBbs;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbs;
@@ -32,7 +30,6 @@ import com.shopjoy.ecadminapi.common.util.QdslUtil;
 public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBbsRepositoryImpl";
     private static final QSyBbs syBbs = QSyBbs.syBbs;
     private static final QSySite sySite = QSySite.sySite;

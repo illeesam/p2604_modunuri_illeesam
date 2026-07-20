@@ -147,7 +147,6 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     }
 
     /** 단건/목록/페이지 공용 base query — DTO 필드만 프로젝션 */
-    /* 상품 이미지 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
      * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용

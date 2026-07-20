@@ -14,7 +14,6 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyPath;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyPath;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyPathRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
