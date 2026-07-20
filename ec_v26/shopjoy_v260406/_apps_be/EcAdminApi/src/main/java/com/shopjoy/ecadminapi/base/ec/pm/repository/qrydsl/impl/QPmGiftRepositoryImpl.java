@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,12 +20,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** PmGift QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -38,6 +39,22 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     private static final QSyCode  cdGt = new QSyCode("cd_gt");
     private static final QSyCode  cdGs = new QSyCode("cd_gs");
     private static final QSyCode  cdMg = new QSyCode("cd_mg");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pmGift.regDate,
+        "upd_date", pmGift.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("giftDesc", pmGift.giftDesc),
+        Map.entry("giftId", pmGift.giftId),
+        Map.entry("giftNm", pmGift.giftNm),
+        Map.entry("giftStatusCd", pmGift.giftStatusCd),
+        Map.entry("giftStatusCdBefore", pmGift.giftStatusCdBefore),
+        Map.entry("giftTypeCd", pmGift.giftTypeCd),
+        Map.entry("memGradeCd", pmGift.memGradeCd),
+        Map.entry("prodId", pmGift.prodId),
+        Map.entry("siteId", pmGift.siteId),
+        Map.entry("useYn", pmGift.useYn)
+    );
 
     /** 공통 base query — JOIN 일치, Item 필드만 projection */
     private JPAQuery<PmGiftDto.Item> baseSelColumnQuery() {
@@ -74,17 +91,17 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andGiftIdEq(search),
-                    andGiftTypeCdEq(search),
-                    andGiftStatusCdEq(search),
-                    andUseYnEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(pmGift.siteId, search.getSiteId()),
+                    QdslUtil.strEq(pmGift.giftId, search.getGiftId()),
+                    QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()),
+                    QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
+                    QdslUtil.strEq(pmGift.useYn, search.getUseYn()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -96,19 +113,19 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     /** 페이지 목록 */
     @Override
     public PmGiftDto.PageResponse selectPageData(PmGiftDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andGiftIdEq(search),
-                andGiftTypeCdEq(search),
-                andGiftStatusCdEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(pmGift.siteId, search.getSiteId()),
+                QdslUtil.strEq(pmGift.giftId, search.getGiftId()),
+                QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()),
+                QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
+                QdslUtil.strEq(pmGift.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -138,84 +155,14 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PmGiftDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pmGift.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(PmGiftDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* giftId 정확 일치 */
-    private BooleanExpression andGiftIdEq(PmGiftDto.Request search) {
-        return search != null && StringUtils.hasText(search.getGiftId())
-                ? pmGift.giftId.eq(search.getGiftId()) : null;
-    }
-
-    /* giftTypeCd 정확 일치 (조건유형 select) */
-    private BooleanExpression andGiftTypeCdEq(PmGiftDto.Request search) {
-        return search != null && StringUtils.hasText(search.getGiftTypeCd())
-                ? pmGift.giftTypeCd.eq(search.getGiftTypeCd()) : null;
-    }
-
-    /* giftStatusCd 정확 일치 (상태 select) */
-    private BooleanExpression andGiftStatusCdEq(PmGiftDto.Request search) {
-        return search != null && StringUtils.hasText(search.getGiftStatusCd())
-                ? pmGift.giftStatusCd.eq(search.getGiftStatusCd()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(PmGiftDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? pmGift.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PmGiftDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pmGift.regDate.goe(start).and(pmGift.regDate.lt(endExcl));
-            case "upd_date": return pmGift.updDate.goe(start).and(pmGift.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PmGiftDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",giftDesc,", pmGift.giftDesc, pattern);
-        or = orLike(or, all, types, ",giftId,", pmGift.giftId, pattern);
-        or = orLike(or, all, types, ",giftNm,", pmGift.giftNm, pattern);
-        or = orLike(or, all, types, ",giftStatusCd,", pmGift.giftStatusCd, pattern);
-        or = orLike(or, all, types, ",giftStatusCdBefore,", pmGift.giftStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",giftTypeCd,", pmGift.giftTypeCd, pattern);
-        or = orLike(or, all, types, ",memGradeCd,", pmGift.memGradeCd, pattern);
-        or = orLike(or, all, types, ",prodId,", pmGift.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", pmGift.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", pmGift.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

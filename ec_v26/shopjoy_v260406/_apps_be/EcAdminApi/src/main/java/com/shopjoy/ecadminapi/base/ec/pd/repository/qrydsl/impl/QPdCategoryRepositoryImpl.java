@@ -19,9 +19,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PdCategory QueryDSL Custom 구현체 */
 public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
@@ -37,6 +39,16 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     private static final QPdCategory p1  = new QPdCategory("p1");
     private static final QPdCategory p2  = new QPdCategory("p2");
     private static final QSyCode     cdCs = new QSyCode("cd_cs");
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("categoryDesc", pdCategory.categoryDesc),
+        Map.entry("categoryId", pdCategory.categoryId),
+        Map.entry("categoryNm", pdCategory.categoryNm),
+        Map.entry("categoryStatusCd", pdCategory.categoryStatusCd),
+        Map.entry("categoryStatusCdBefore", pdCategory.categoryStatusCdBefore),
+        Map.entry("imgUrl", pdCategory.imgUrl),
+        Map.entry("parentCategoryId", pdCategory.parentCategoryId),
+        Map.entry("siteId", pdCategory.siteId)
+    );
 
     private JPAQuery<PdCategoryDto.Item> baseSelColumnQuery() {
         return queryFactory
@@ -72,10 +84,10 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andCategoryIdEq(search),
+                    QdslUtil.strEq(pdCategory.siteId, search.getSiteId()),
+                    QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
                     andParentCategoryIdIn(search),
-                    andStatusEq(search),
+                    QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -99,10 +111,10 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andCategoryIdEq(search),
+                QdslUtil.strEq(pdCategory.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
                 andParentCategoryIdIn(search),
-                andStatusEq(search),
+                QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),
                 andSearchValueLike(search)
         };
 
@@ -132,21 +144,9 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PdCategoryDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pdCategory.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* categoryId 정확 일치 */
-    private BooleanExpression andCategoryIdEq(PdCategoryDto.Request search) {
-        return search != null && StringUtils.hasText(search.getCategoryId())
-                ? pdCategory.categoryId.eq(search.getCategoryId()) : null;
-    }
 
     /* 카테고리 트리 — 선택 노드 + 모든 자손 카테고리 포함 */
     private BooleanExpression andParentCategoryIdIn(PdCategoryDto.Request search) {
@@ -155,38 +155,10 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 : null;
     }
 
-    /* categoryStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(PdCategoryDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? pdCategory.categoryStatusCd.eq(search.getStatus()) : null;
+private BooleanExpression andSearchValueLike(PdCategoryDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PdCategoryDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",categoryDesc,", pdCategory.categoryDesc, pattern);
-        or = orLike(or, all, types, ",categoryId,", pdCategory.categoryId, pattern);
-        or = orLike(or, all, types, ",categoryNm,", pdCategory.categoryNm, pattern);
-        or = orLike(or, all, types, ",categoryStatusCd,", pdCategory.categoryStatusCd, pattern);
-        or = orLike(or, all, types, ",categoryStatusCdBefore,", pdCategory.categoryStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",imgUrl,", pdCategory.imgUrl, pattern);
-        or = orLike(or, all, types, ",parentCategoryId,", pdCategory.parentCategoryId, pattern);
-        or = orLike(or, all, types, ",siteId,", pdCategory.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

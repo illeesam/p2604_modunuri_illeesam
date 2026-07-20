@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,12 +21,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** StRecon QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStReconRepositoryImpl implements QStReconRepository {
@@ -38,6 +39,25 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     private static final QStSettleRaw stSettleRaw  = QStSettleRaw.stSettleRaw;
     private static final QSyCode      cdRt = new QSyCode("cd_rt");
     private static final QSyCode      cdRs = new QSyCode("cd_rs");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", stRecon.regDate,
+        "upd_date", stRecon.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("reconId", stRecon.reconId),
+        Map.entry("reconNote", stRecon.reconNote),
+        Map.entry("reconStatusCd", stRecon.reconStatusCd),
+        Map.entry("reconStatusCdBefore", stRecon.reconStatusCdBefore),
+        Map.entry("reconTypeCd", stRecon.reconTypeCd),
+        Map.entry("refId", stRecon.refId),
+        Map.entry("refNo", stRecon.refNo),
+        Map.entry("resolvedBy", stRecon.resolvedBy),
+        Map.entry("settleId", stRecon.settleId),
+        Map.entry("settlePeriod", stRecon.settlePeriod),
+        Map.entry("settleRawId", stRecon.settleRawId),
+        Map.entry("siteId", stRecon.siteId),
+        Map.entry("vendorId", stRecon.vendorId)
+    );
 
     /* 정산 대사(Reconciliation) baseListQuery */
     private JPAQuery<StReconDto.Item> baseListQuery() {
@@ -80,11 +100,11 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         JPAQuery<StReconDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andReconIdEq(search),
-                    andReconTypeCdEq(search),
-                    andReconStatusCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(stRecon.siteId, search.getSiteId()),
+                    QdslUtil.strEq(stRecon.reconId, search.getReconId()),
+                    QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()),
+                    QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -108,11 +128,11 @@ public class QStReconRepositoryImpl implements QStReconRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andReconIdEq(search),
-                andReconTypeCdEq(search),
-                andReconStatusCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(stRecon.siteId, search.getSiteId()),
+                QdslUtil.strEq(stRecon.reconId, search.getReconId()),
+                QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()),
+                QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -138,86 +158,17 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* 정산 대사(Reconciliation) buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(StReconDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? stRecon.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(StReconDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* reconId 정확 일치 */
-    private BooleanExpression andReconIdEq(StReconDto.Request search) {
-        return search != null && StringUtils.hasText(search.getReconId())
-                ? stRecon.reconId.eq(search.getReconId()) : null;
-    }
-
-    /* reconTypeCd 정확 일치 (유형 select 필터) */
-    private BooleanExpression andReconTypeCdEq(StReconDto.Request search) {
-        return search != null && StringUtils.hasText(search.getReconTypeCd())
-                ? stRecon.reconTypeCd.eq(search.getReconTypeCd()) : null;
-    }
-
-    /* reconStatusCd 정확 일치 (대사결과 select 필터) */
-    private BooleanExpression andReconStatusCdEq(StReconDto.Request search) {
-        return search != null && StringUtils.hasText(search.getReconStatusCd())
-                ? stRecon.reconStatusCd.eq(search.getReconStatusCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(StReconDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return stRecon.regDate.goe(start).and(stRecon.regDate.lt(endExcl));
-            case "upd_date": return stRecon.updDate.goe(start).and(stRecon.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(StReconDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",reconId,", stRecon.reconId, pattern);
-        or = orLike(or, all, types, ",reconNote,", stRecon.reconNote, pattern);
-        or = orLike(or, all, types, ",reconStatusCd,", stRecon.reconStatusCd, pattern);
-        or = orLike(or, all, types, ",reconStatusCdBefore,", stRecon.reconStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",reconTypeCd,", stRecon.reconTypeCd, pattern);
-        or = orLike(or, all, types, ",refId,", stRecon.refId, pattern);
-        or = orLike(or, all, types, ",refNo,", stRecon.refNo, pattern);
-        or = orLike(or, all, types, ",resolvedBy,", stRecon.resolvedBy, pattern);
-        or = orLike(or, all, types, ",settleId,", stRecon.settleId, pattern);
-        or = orLike(or, all, types, ",settlePeriod,", stRecon.settlePeriod, pattern);
-        or = orLike(or, all, types, ",settleRawId,", stRecon.settleRawId, pattern);
-        or = orLike(or, all, types, ",siteId,", stRecon.siteId, pattern);
-        or = orLike(or, all, types, ",vendorId,", stRecon.vendorId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

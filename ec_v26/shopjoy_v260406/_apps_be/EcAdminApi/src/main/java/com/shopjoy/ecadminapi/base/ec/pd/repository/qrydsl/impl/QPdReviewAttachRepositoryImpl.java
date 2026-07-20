@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -16,14 +17,13 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReviewAttach;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewAttachRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
-import org.springframework.util.CollectionUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PdReviewAttach QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository {
@@ -32,6 +32,18 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewAttachRepositoryImpl";
     private static final QPdReviewAttach pdReviewAttach = QPdReviewAttach.pdReviewAttach;
     private static final QPdReview       pdReview = QPdReview.pdReview;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pdReviewAttach.regDate,
+        "upd_date", pdReviewAttach.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("attachId", pdReviewAttach.attachId),
+        Map.entry("mediaTypeCd", pdReviewAttach.mediaTypeCd),
+        Map.entry("reviewAttachId", pdReviewAttach.reviewAttachId),
+        Map.entry("reviewId", pdReviewAttach.reviewId),
+        Map.entry("siteId", pdReviewAttach.siteId),
+        Map.entry("thumbUrl", pdReviewAttach.thumbUrl)
+    );
 
     /** selectById 용 base query — pd_review JOIN 없음 */
     private JPAQuery<PdReviewAttachDto.Item> baseQuerySingle() {
@@ -59,17 +71,17 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
 
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(
-                andReviewIdsIn(search),
-                andReviewIdEq(search),
-                andSiteIdEq(search),
-                andReviewAttachIdEq(search),
-                andProdIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()),
+                QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()),
+                QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()),
+                QdslUtil.strEq(pdReview.prodId, search.getProdId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -81,19 +93,19 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 페이지 목록 */
     @Override
     public PdReviewAttachDto.PageResponse selectPageData(PdReviewAttachDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
         BooleanExpression[] wheres = {
-                andReviewIdsIn(search),
-                andReviewIdEq(search),
-                andSiteIdEq(search),
-                andReviewAttachIdEq(search),
-                andProdIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()),
+                QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()),
+                QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()),
+                QdslUtil.strEq(pdReview.prodId, search.getProdId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -119,8 +131,6 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /** 목록/페이지 용 base query — pd_review LEFT JOIN 포함 (prodId 조건 지원) */
     private JPAQuery<PdReviewAttachDto.Item> baseQueryWithJoin() {
         return queryFactory
@@ -136,80 +146,14 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 검색조건 빌드 — Mapper XML pdReviewAttachCond 와 동일 동작 */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* reviewId IN */
-    private BooleanExpression andReviewIdsIn(PdReviewAttachDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getReviewIds())
-                ? pdReviewAttach.reviewId.in(search.getReviewIds()) : null;
+private BooleanExpression andSearchValueLike(PdReviewAttachDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* reviewId 정확 일치 */
-    private BooleanExpression andReviewIdEq(PdReviewAttachDto.Request search) {
-        return search != null && StringUtils.hasText(search.getReviewId())
-                ? pdReviewAttach.reviewId.eq(search.getReviewId()) : null;
-    }
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PdReviewAttachDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pdReviewAttach.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* reviewAttachId 정확 일치 */
-    private BooleanExpression andReviewAttachIdEq(PdReviewAttachDto.Request search) {
-        return search != null && StringUtils.hasText(search.getReviewAttachId())
-                ? pdReviewAttach.reviewAttachId.eq(search.getReviewAttachId()) : null;
-    }
-
-    /* prodId 정확 일치 */
-    private BooleanExpression andProdIdEq(PdReviewAttachDto.Request search) {
-        return search != null && StringUtils.hasText(search.getProdId())
-                ? pdReview.prodId.eq(search.getProdId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PdReviewAttachDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pdReviewAttach.regDate.goe(start).and(pdReviewAttach.regDate.lt(endExcl));
-            case "upd_date": return pdReviewAttach.updDate.goe(start).and(pdReviewAttach.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PdReviewAttachDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachId,", pdReviewAttach.attachId, pattern);
-        or = orLike(or, all, types, ",mediaTypeCd,", pdReviewAttach.mediaTypeCd, pattern);
-        or = orLike(or, all, types, ",reviewAttachId,", pdReviewAttach.reviewAttachId, pattern);
-        or = orLike(or, all, types, ",reviewId,", pdReviewAttach.reviewId, pattern);
-        or = orLike(or, all, types, ",siteId,", pdReviewAttach.siteId, pattern);
-        or = orLike(or, all, types, ",thumbUrl,", pdReviewAttach.thumbUrl, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

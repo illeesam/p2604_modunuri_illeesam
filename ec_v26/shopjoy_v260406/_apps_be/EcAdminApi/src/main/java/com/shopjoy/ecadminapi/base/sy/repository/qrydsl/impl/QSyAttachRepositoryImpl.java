@@ -18,9 +18,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyAttach QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyAttachRepositoryImpl implements QSyAttachRepository {
@@ -29,6 +31,28 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAttachRepositoryImpl";
     private static final QSyAttach syAttach = QSyAttach.syAttach;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("attachGrpId", syAttach.attachGrpId),
+        Map.entry("attachId", syAttach.attachId),
+        Map.entry("attachMemo", syAttach.attachMemo),
+        Map.entry("attachUrl", syAttach.attachUrl),
+        Map.entry("cdnHost", syAttach.cdnHost),
+        Map.entry("cdnImgUrl", syAttach.cdnImgUrl),
+        Map.entry("cdnThumbUrl", syAttach.cdnThumbUrl),
+        Map.entry("fileExt", syAttach.fileExt),
+        Map.entry("fileNm", syAttach.fileNm),
+        Map.entry("mimeTypeCd", syAttach.mimeTypeCd),
+        Map.entry("physicalPath", syAttach.physicalPath),
+        Map.entry("siteId", syAttach.siteId),
+        Map.entry("storagePath", syAttach.storagePath),
+        Map.entry("storageType", syAttach.storageType),
+        Map.entry("storedNm", syAttach.storedNm),
+        Map.entry("thumbCdnUrl", syAttach.thumbCdnUrl),
+        Map.entry("thumbFileNm", syAttach.thumbFileNm),
+        Map.entry("thumbGeneratedYn", syAttach.thumbGeneratedYn),
+        Map.entry("thumbStoredNm", syAttach.thumbStoredNm),
+        Map.entry("thumbUrl", syAttach.thumbUrl)
+    );
 
     /* 첨부파일 baseSelColumnQuery — Projections.bean 으로 SyAttachDto.Item 평면 매핑.
      * 그룹정보(attachGrp)가 필요한 화면은 호출측(서비스)에서 SyAttachGrp 를 별도 조회한다. */
@@ -63,10 +87,10 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andAttachIdEq(search),
-                    andAttachGrpIdEq(search),
-                    andMimeTypeCdEq(search),
+                    QdslUtil.strEq(syAttach.siteId, search.getSiteId()),
+                    QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
+                    QdslUtil.strEq(syAttach.attachGrpId, search.getAttachGrpId()),
+                    QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -90,10 +114,10 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andAttachIdEq(search),
-                andAttachGrpIdEq(search),
-                andMimeTypeCdEq(search),
+                QdslUtil.strEq(syAttach.siteId, search.getSiteId()),
+                QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
+                QdslUtil.strEq(syAttach.attachGrpId, search.getAttachGrpId()),
+                QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
                 andSearchValueLike(search)
         };
 
@@ -121,72 +145,14 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyAttachDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syAttach.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyAttachDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* attachId 정확 일치 */
-    private BooleanExpression andAttachIdEq(SyAttachDto.Request search) {
-        return search != null && StringUtils.hasText(search.getAttachId())
-                ? syAttach.attachId.eq(search.getAttachId()) : null;
-    }
-
-    /* attachGrpId 정확 일치 */
-    private BooleanExpression andAttachGrpIdEq(SyAttachDto.Request search) {
-        return search != null && StringUtils.hasText(search.getAttachGrpId())
-                ? syAttach.attachGrpId.eq(search.getAttachGrpId()) : null;
-    }
-
-    /* mimeTypeCd 정확 일치 */
-    private BooleanExpression andMimeTypeCdEq(SyAttachDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMimeTypeCd())
-                ? syAttach.mimeTypeCd.eq(search.getMimeTypeCd()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyAttachDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachGrpId,", syAttach.attachGrpId, pattern);
-        or = orLike(or, all, types, ",attachId,", syAttach.attachId, pattern);
-        or = orLike(or, all, types, ",attachMemo,", syAttach.attachMemo, pattern);
-        or = orLike(or, all, types, ",attachUrl,", syAttach.attachUrl, pattern);
-        or = orLike(or, all, types, ",cdnHost,", syAttach.cdnHost, pattern);
-        or = orLike(or, all, types, ",cdnImgUrl,", syAttach.cdnImgUrl, pattern);
-        or = orLike(or, all, types, ",cdnThumbUrl,", syAttach.cdnThumbUrl, pattern);
-        or = orLike(or, all, types, ",fileExt,", syAttach.fileExt, pattern);
-        or = orLike(or, all, types, ",fileNm,", syAttach.fileNm, pattern);
-        or = orLike(or, all, types, ",mimeTypeCd,", syAttach.mimeTypeCd, pattern);
-        or = orLike(or, all, types, ",physicalPath,", syAttach.physicalPath, pattern);
-        or = orLike(or, all, types, ",siteId,", syAttach.siteId, pattern);
-        or = orLike(or, all, types, ",storagePath,", syAttach.storagePath, pattern);
-        or = orLike(or, all, types, ",storageType,", syAttach.storageType, pattern);
-        or = orLike(or, all, types, ",storedNm,", syAttach.storedNm, pattern);
-        or = orLike(or, all, types, ",thumbCdnUrl,", syAttach.thumbCdnUrl, pattern);
-        or = orLike(or, all, types, ",thumbFileNm,", syAttach.thumbFileNm, pattern);
-        or = orLike(or, all, types, ",thumbGeneratedYn,", syAttach.thumbGeneratedYn, pattern);
-        or = orLike(or, all, types, ",thumbStoredNm,", syAttach.thumbStoredNm, pattern);
-        or = orLike(or, all, types, ",thumbUrl,", syAttach.thumbUrl, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -225,7 +191,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     }
 
     /* 첨부파일 수정 */
-
 
     @Override
     public int updateSelective(SyAttach entity) {

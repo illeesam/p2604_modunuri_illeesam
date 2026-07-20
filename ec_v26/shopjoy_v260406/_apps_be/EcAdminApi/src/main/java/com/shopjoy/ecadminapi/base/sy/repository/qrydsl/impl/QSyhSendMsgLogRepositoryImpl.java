@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,12 +21,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhSendMsgLogRepository
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyhSendMsgLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
@@ -38,6 +39,32 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     private static final QSyUser        syUser = QSyUser.syUser;
     private static final QSyCode        cd_mc = new QSyCode("cd_mc");
     private static final QSyCode        cd_sr = new QSyCode("cd_sr");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "send_date", syhSendMsgLog.sendDate,
+        "reg_date", syhSendMsgLog.regDate,
+        "upd_date", syhSendMsgLog.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("channelCd", syhSendMsgLog.channelCd),
+        Map.entry("content", syhSendMsgLog.content),
+        Map.entry("deviceToken", syhSendMsgLog.deviceToken),
+        Map.entry("failReason", syhSendMsgLog.failReason),
+        Map.entry("kakaoTplCode", syhSendMsgLog.kakaoTplCode),
+        Map.entry("logId", syhSendMsgLog.logId),
+        Map.entry("memberId", syhSendMsgLog.memberId),
+        Map.entry("params", syhSendMsgLog.params),
+        Map.entry("recvPhone", syhSendMsgLog.recvPhone),
+        Map.entry("refId", syhSendMsgLog.refId),
+        Map.entry("refTypeCd", syhSendMsgLog.refTypeCd),
+        Map.entry("resultCd", syhSendMsgLog.resultCd),
+        Map.entry("resultMsg", syhSendMsgLog.resultMsg),
+        Map.entry("senderPhone", syhSendMsgLog.senderPhone),
+        Map.entry("siteId", syhSendMsgLog.siteId),
+        Map.entry("templateCode", syhSendMsgLog.templateCode),
+        Map.entry("templateId", syhSendMsgLog.templateId),
+        Map.entry("title", syhSendMsgLog.title),
+        Map.entry("userId", syhSendMsgLog.userId)
+    );
 
     /* 메시지 발송 로그 baseSelColumnQuery */
     private JPAQuery<SyhSendMsgLogDto.Item> baseSelColumnQuery() {
@@ -98,17 +125,17 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
         JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
-                andLogIdEq(search),
-                andUserIdEq(search),
-                andTemplateIdEq(search),
-                andTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhSendMsgLog.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhSendMsgLog.logId, search.getLogId()),
+                QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId()),
+                QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()),
+                QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -127,12 +154,12 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andLogIdEq(search),
-                andUserIdEq(search),
-                andTemplateIdEq(search),
-                andTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhSendMsgLog.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhSendMsgLog.logId, search.getLogId()),
+                QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId()),
+                QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()),
+                QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -161,94 +188,14 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     /* 메시지 발송 로그 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyhSendMsgLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syhSendMsgLog.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyhSendMsgLogDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* logId 정확 일치 */
-    private BooleanExpression andLogIdEq(SyhSendMsgLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getLogId())
-                ? syhSendMsgLog.logId.eq(search.getLogId()) : null;
-    }
-
-    /* userId 정확 일치 */
-    private BooleanExpression andUserIdEq(SyhSendMsgLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUserId())
-                ? syhSendMsgLog.userId.eq(search.getUserId()) : null;
-    }
-
-    /* templateId 정확 일치 */
-    private BooleanExpression andTemplateIdEq(SyhSendMsgLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTemplateId())
-                ? syhSendMsgLog.templateId.eq(search.getTemplateId()) : null;
-    }
-
-    /* refTypeCd 정확 일치 */
-    private BooleanExpression andTypeCdEq(SyhSendMsgLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTypeCd())
-                ? syhSendMsgLog.refTypeCd.eq(search.getTypeCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyhSendMsgLogDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "send_date": return syhSendMsgLog.sendDate.goe(start).and(syhSendMsgLog.sendDate.lt(endExcl));
-            case "reg_date": return syhSendMsgLog.regDate.goe(start).and(syhSendMsgLog.regDate.lt(endExcl));
-            case "upd_date": return syhSendMsgLog.updDate.goe(start).and(syhSendMsgLog.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyhSendMsgLogDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",channelCd,", syhSendMsgLog.channelCd, pattern);
-        or = orLike(or, all, types, ",content,", syhSendMsgLog.content, pattern);
-        or = orLike(or, all, types, ",deviceToken,", syhSendMsgLog.deviceToken, pattern);
-        or = orLike(or, all, types, ",failReason,", syhSendMsgLog.failReason, pattern);
-        or = orLike(or, all, types, ",kakaoTplCode,", syhSendMsgLog.kakaoTplCode, pattern);
-        or = orLike(or, all, types, ",logId,", syhSendMsgLog.logId, pattern);
-        or = orLike(or, all, types, ",memberId,", syhSendMsgLog.memberId, pattern);
-        or = orLike(or, all, types, ",params,", syhSendMsgLog.params, pattern);
-        or = orLike(or, all, types, ",recvPhone,", syhSendMsgLog.recvPhone, pattern);
-        or = orLike(or, all, types, ",refId,", syhSendMsgLog.refId, pattern);
-        or = orLike(or, all, types, ",refTypeCd,", syhSendMsgLog.refTypeCd, pattern);
-        or = orLike(or, all, types, ",resultCd,", syhSendMsgLog.resultCd, pattern);
-        or = orLike(or, all, types, ",resultMsg,", syhSendMsgLog.resultMsg, pattern);
-        or = orLike(or, all, types, ",senderPhone,", syhSendMsgLog.senderPhone, pattern);
-        or = orLike(or, all, types, ",siteId,", syhSendMsgLog.siteId, pattern);
-        or = orLike(or, all, types, ",templateCode,", syhSendMsgLog.templateCode, pattern);
-        or = orLike(or, all, types, ",templateId,", syhSendMsgLog.templateId, pattern);
-        or = orLike(or, all, types, ",title,", syhSendMsgLog.title, pattern);
-        or = orLike(or, all, types, ",userId,", syhSendMsgLog.userId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

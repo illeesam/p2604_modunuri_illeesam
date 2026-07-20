@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,12 +18,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PdTag QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdTagRepositoryImpl implements QPdTagRepository {
@@ -31,6 +32,17 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdTagRepositoryImpl";
     private static final QPdTag  pdTag   = QPdTag.pdTag;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pdTag.regDate,
+        "upd_date", pdTag.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("siteId", pdTag.siteId),
+        Map.entry("tagDesc", pdTag.tagDesc),
+        Map.entry("tagId", pdTag.tagId),
+        Map.entry("tagNm", pdTag.tagNm),
+        Map.entry("useYn", pdTag.useYn)
+    );
 
     /* 태그 baseSelColumnQuery */
     private JPAQuery<PdTagDto.Item> baseSelColumnQuery() {
@@ -61,10 +73,10 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         JPAQuery<PdTagDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andTagIdEq(search),
-                    andUseYnEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(pdTag.siteId, search.getSiteId()),
+                    QdslUtil.strEq(pdTag.tagId, search.getTagId()),
+                    QdslUtil.strEq(pdTag.useYn, search.getUseYn()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,10 +100,10 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andTagIdEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(pdTag.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdTag.tagId, search.getTagId()),
+                QdslUtil.strEq(pdTag.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -119,67 +131,14 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PdTagDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pdTag.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(PdTagDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* tagId 정확 일치 */
-    private BooleanExpression andTagIdEq(PdTagDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTagId())
-                ? pdTag.tagId.eq(search.getTagId()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(PdTagDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? pdTag.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PdTagDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pdTag.regDate.goe(start).and(pdTag.regDate.lt(endExcl));
-            case "upd_date": return pdTag.updDate.goe(start).and(pdTag.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PdTagDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",siteId,", pdTag.siteId, pattern);
-        or = orLike(or, all, types, ",tagDesc,", pdTag.tagDesc, pattern);
-        or = orLike(or, all, types, ",tagId,", pdTag.tagId, pattern);
-        or = orLike(or, all, types, ",tagNm,", pdTag.tagNm, pattern);
-        or = orLike(or, all, types, ",useYn,", pdTag.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -225,7 +184,6 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     }
 
     /* 태그 수정 */
-
 
     @Override
     public int updateSelective(PdTag entity) {

@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,14 +22,13 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 @RequiredArgsConstructor
 public class QDpPanelRepositoryImpl implements QDpPanelRepository {
 
@@ -40,6 +40,22 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
 
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpPanelRepositoryImpl";
     private static final QDpPanel dpPanel = QDpPanel.dpPanel;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", dpPanel.regDate,
+        "upd_date", dpPanel.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("contentJson", dpPanel.contentJson),
+        Map.entry("dispPanelStatusCd", dpPanel.dispPanelStatusCd),
+        Map.entry("dispPanelStatusCdBefore", dpPanel.dispPanelStatusCdBefore),
+        Map.entry("panelId", dpPanel.panelId),
+        Map.entry("panelNm", dpPanel.panelNm),
+        Map.entry("panelTypeCd", dpPanel.panelTypeCd),
+        Map.entry("pathId", dpPanel.pathId),
+        Map.entry("siteId", dpPanel.siteId),
+        Map.entry("useYn", dpPanel.useYn),
+        Map.entry("visibilityTargets", dpPanel.visibilityTargets)
+    );
 
     /* 전시 패널 baseSelColumnQuery */
     private JPAQuery<DpPanelDto.Item> baseSelColumnQuery() {
@@ -66,20 +82,20 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andAreaIdEq(search),
-                    andAreaIdsIn(search),
+                    QdslUtil.strEq(dpPanel.siteId, search.getSiteId()),
+                    QdslUtil.strEq(dpPanel.areaId, search.getAreaId()),
+                    QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()),
                     andPathIdIn(search),
-                    andPanelIdEq(search),
-                    andDispPanelStatusCdEq(search),
-                    andPanelTypeCdEq(search),
-                    andUseYnEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(dpPanel.panelId, search.getPanelId()),
+                    QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd()),
+                    QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()),
+                    QdslUtil.strEq(dpPanel.useYn, search.getUseYn()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -91,21 +107,21 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     /* 전시 패널 페이지조회 */
     @Override
     public DpPanelDto.PageResponse selectPageData(DpPanelDto.Request search) {
-        int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo = search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andAreaIdEq(search),
-                andAreaIdsIn(search),
+                QdslUtil.strEq(dpPanel.siteId, search.getSiteId()),
+                QdslUtil.strEq(dpPanel.areaId, search.getAreaId()),
+                QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()),
                 andPathIdIn(search),
-                andPanelIdEq(search),
-                andDispPanelStatusCdEq(search),
-                andPanelTypeCdEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(dpPanel.panelId, search.getPanelId()),
+                QdslUtil.strEq(dpPanel.dispPanelStatusCd, search.getDispPanelStatusCd()),
+                QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()),
+                QdslUtil.strEq(dpPanel.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -130,27 +146,9 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(DpPanelDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? dpPanel.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* areaId 정확 일치 (소속 영역) */
-    private BooleanExpression andAreaIdEq(DpPanelDto.Request search) {
-        return search != null && StringUtils.hasText(search.getAreaId())
-                ? dpPanel.areaId.eq(search.getAreaId()) : null;
-    }
-
-    /* areaIds 다건 IN (상위 영역 일괄조회) */
-    private BooleanExpression andAreaIdsIn(DpPanelDto.Request search) {
-        return search != null && search.getAreaIds() != null && !search.getAreaIds().isEmpty()
-                ? dpPanel.areaId.in(search.getAreaIds()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpPanelDto.Request search) {
@@ -159,74 +157,10 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 : null;
     }
 
-    /* panelId 정확 일치 */
-    private BooleanExpression andPanelIdEq(DpPanelDto.Request search) {
-        return search != null && StringUtils.hasText(search.getPanelId())
-                ? dpPanel.panelId.eq(search.getPanelId()) : null;
+private BooleanExpression andSearchValueLike(DpPanelDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* dispPanelStatusCd 정확 일치 */
-    private BooleanExpression andDispPanelStatusCdEq(DpPanelDto.Request search) {
-        return search != null && StringUtils.hasText(search.getDispPanelStatusCd())
-                ? dpPanel.dispPanelStatusCd.eq(search.getDispPanelStatusCd()) : null;
-    }
-
-    /* panelTypeCd 정확 일치 */
-    private BooleanExpression andPanelTypeCdEq(DpPanelDto.Request search) {
-        return search != null && StringUtils.hasText(search.getPanelTypeCd())
-                ? dpPanel.panelTypeCd.eq(search.getPanelTypeCd()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(DpPanelDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? dpPanel.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(DpPanelDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return dpPanel.regDate.goe(start).and(dpPanel.regDate.lt(endExcl));
-            case "upd_date": return dpPanel.updDate.goe(start).and(dpPanel.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(DpPanelDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",contentJson,", dpPanel.contentJson, pattern);
-        or = orLike(or, all, types, ",dispPanelStatusCd,", dpPanel.dispPanelStatusCd, pattern);
-        or = orLike(or, all, types, ",dispPanelStatusCdBefore,", dpPanel.dispPanelStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",panelId,", dpPanel.panelId, pattern);
-        or = orLike(or, all, types, ",panelNm,", dpPanel.panelNm, pattern);
-        or = orLike(or, all, types, ",panelTypeCd,", dpPanel.panelTypeCd, pattern);
-        or = orLike(or, all, types, ",pathId,", dpPanel.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", dpPanel.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", dpPanel.useYn, pattern);
-        or = orLike(or, all, types, ",visibilityTargets,", dpPanel.visibilityTargets, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -267,7 +201,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     }
 
     /* 전시 패널 수정 */
-
 
     @Override
     public int updateSelective(DpPanel entity) {

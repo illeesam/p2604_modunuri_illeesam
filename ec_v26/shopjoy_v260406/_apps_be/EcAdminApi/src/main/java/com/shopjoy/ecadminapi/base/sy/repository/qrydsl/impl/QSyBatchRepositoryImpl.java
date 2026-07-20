@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyBatch QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyBatchRepositoryImpl implements QSyBatchRepository {
@@ -38,6 +39,19 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBatchRepositoryImpl";
     private static final QSyBatch syBatch = QSyBatch.syBatch;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("batchCode", syBatch.batchCode),
+        Map.entry("batchCycleCd", syBatch.batchCycleCd),
+        Map.entry("batchDesc", syBatch.batchDesc),
+        Map.entry("batchId", syBatch.batchId),
+        Map.entry("batchMemo", syBatch.batchMemo),
+        Map.entry("batchNm", syBatch.batchNm),
+        Map.entry("batchRunStatus", syBatch.batchRunStatus),
+        Map.entry("batchStatusCd", syBatch.batchStatusCd),
+        Map.entry("cronExpr", syBatch.cronExpr),
+        Map.entry("pathId", syBatch.pathId),
+        Map.entry("siteId", syBatch.siteId)
+    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 배치 baseQuery */
@@ -70,11 +84,11 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         JPAQuery<SyBatchDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
+                    QdslUtil.strEq(syBatch.siteId, search.getSiteId()),
                     andPathIdIn(search),
-                    andBatchIdEq(search),
-                    andStatusEq(search),
-                    andRunStatusEq(search),
+                    QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
+                    QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
+                    QdslUtil.strEq(syBatch.batchRunStatus, search.getRunStatus()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -98,11 +112,11 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(syBatch.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andBatchIdEq(search),
-                andStatusEq(search),
-                andRunStatusEq(search),
+                QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
+                QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
+                QdslUtil.strEq(syBatch.batchRunStatus, search.getRunStatus()),
                 andSearchValueLike(search)
         };
 
@@ -128,20 +142,12 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyBatchDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syBatch.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyBatchDto.Request search) {
@@ -150,53 +156,10 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 : null;
     }
 
-    /* batchId 정확 일치 */
-    private BooleanExpression andBatchIdEq(SyBatchDto.Request search) {
-        return search != null && StringUtils.hasText(search.getBatchId())
-                ? syBatch.batchId.eq(search.getBatchId()) : null;
+private BooleanExpression andSearchValueLike(SyBatchDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* batchStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SyBatchDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? syBatch.batchStatusCd.eq(search.getStatus()) : null;
-    }
-
-    /* batchRunStatus 정확 일치 (실행상태) */
-    private BooleanExpression andRunStatusEq(SyBatchDto.Request search) {
-        return search != null && StringUtils.hasText(search.getRunStatus())
-                ? syBatch.batchRunStatus.eq(search.getRunStatus()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyBatchDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",batchCode,", syBatch.batchCode, pattern);
-        or = orLike(or, all, types, ",batchCycleCd,", syBatch.batchCycleCd, pattern);
-        or = orLike(or, all, types, ",batchDesc,", syBatch.batchDesc, pattern);
-        or = orLike(or, all, types, ",batchId,", syBatch.batchId, pattern);
-        or = orLike(or, all, types, ",batchMemo,", syBatch.batchMemo, pattern);
-        or = orLike(or, all, types, ",batchNm,", syBatch.batchNm, pattern);
-        or = orLike(or, all, types, ",batchRunStatus,", syBatch.batchRunStatus, pattern);
-        or = orLike(or, all, types, ",batchStatusCd,", syBatch.batchStatusCd, pattern);
-        or = orLike(or, all, types, ",cronExpr,", syBatch.cronExpr, pattern);
-        or = orLike(or, all, types, ",pathId,", syBatch.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", syBatch.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,12 +19,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PmGiftCond QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
@@ -34,6 +35,18 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     private static final QPmGift     pmGift  = QPmGift.pmGift;
     private static final QSySite     sySite  = QSySite.sySite;
     private static final QSyCode     cdGct = new QSyCode("cd_gct");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pmGiftCond.regDate,
+        "upd_date", pmGiftCond.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("condTypeCd", pmGiftCond.condTypeCd),
+        Map.entry("giftCondId", pmGiftCond.giftCondId),
+        Map.entry("giftId", pmGiftCond.giftId),
+        Map.entry("siteId", pmGiftCond.siteId),
+        Map.entry("targetId", pmGiftCond.targetId),
+        Map.entry("targetTypeCd", pmGiftCond.targetTypeCd)
+    );
 
     /* 사은품 지급 조건 baseSelColumnQuery */
     private JPAQuery<PmGiftCondDto.Item> baseSelColumnQuery() {
@@ -66,17 +79,17 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andGiftCondIdEq(search),
-                    andGiftIdEq(search),
-                    andTargetTypeCdEq(search),
-                    andTargetIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId()),
+                    QdslUtil.strEq(pmGiftCond.giftCondId, search.getGiftCondId()),
+                    QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId()),
+                    QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()),
+                    QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -88,19 +101,19 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     /* 사은품 지급 조건 페이지조회 */
     @Override
     public PmGiftCondDto.PageResponse selectPageData(PmGiftCondDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andGiftCondIdEq(search),
-                andGiftIdEq(search),
-                andTargetTypeCdEq(search),
-                andTargetIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId()),
+                QdslUtil.strEq(pmGiftCond.giftCondId, search.getGiftCondId()),
+                QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId()),
+                QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()),
+                QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -129,80 +142,14 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     /* 사은품 지급 조건 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PmGiftCondDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pmGiftCond.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(PmGiftCondDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* giftCondId 정확 일치 */
-    private BooleanExpression andGiftCondIdEq(PmGiftCondDto.Request search) {
-        return search != null && StringUtils.hasText(search.getGiftCondId())
-                ? pmGiftCond.giftCondId.eq(search.getGiftCondId()) : null;
-    }
-
-    /* giftId 정확 일치 */
-    private BooleanExpression andGiftIdEq(PmGiftCondDto.Request search) {
-        return search != null && StringUtils.hasText(search.getGiftId())
-                ? pmGiftCond.giftId.eq(search.getGiftId()) : null;
-    }
-
-    /* targetTypeCd 정확 일치 */
-    private BooleanExpression andTargetTypeCdEq(PmGiftCondDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTargetTypeCd())
-                ? pmGiftCond.targetTypeCd.eq(search.getTargetTypeCd()) : null;
-    }
-
-    /* targetId 정확 일치 */
-    private BooleanExpression andTargetIdEq(PmGiftCondDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTargetId())
-                ? pmGiftCond.targetId.eq(search.getTargetId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PmGiftCondDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pmGiftCond.regDate.goe(start).and(pmGiftCond.regDate.lt(endExcl));
-            case "upd_date": return pmGiftCond.updDate.goe(start).and(pmGiftCond.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PmGiftCondDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",condTypeCd,", pmGiftCond.condTypeCd, pattern);
-        or = orLike(or, all, types, ",giftCondId,", pmGiftCond.giftCondId, pattern);
-        or = orLike(or, all, types, ",giftId,", pmGiftCond.giftId, pattern);
-        or = orLike(or, all, types, ",siteId,", pmGiftCond.siteId, pattern);
-        or = orLike(or, all, types, ",targetId,", pmGiftCond.targetId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", pmGiftCond.targetTypeCd, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

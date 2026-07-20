@@ -19,9 +19,11 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyVoc QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVocRepositoryImpl implements QSyVocRepository {
@@ -30,6 +32,15 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVocRepositoryImpl";
     private static final QSyVoc syVoc = QSyVoc.syVoc;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("siteId", syVoc.siteId),
+        Map.entry("useYn", syVoc.useYn),
+        Map.entry("vocContent", syVoc.vocContent),
+        Map.entry("vocDetailCd", syVoc.vocDetailCd),
+        Map.entry("vocId", syVoc.vocId),
+        Map.entry("vocMasterCd", syVoc.vocMasterCd),
+        Map.entry("vocNm", syVoc.vocNm)
+    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 고객의 소리(VOC) baseSelColumnQuery */
@@ -60,11 +71,11 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         JPAQuery<SyVocDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andVocIdEq(search),
-                    andVocMasterCdEq(search),
-                    andVocDetailCdEq(search),
-                    andUseYnEq(search),
+                    QdslUtil.strEq(syVoc.siteId, search.getSiteId()),
+                    QdslUtil.strEq(syVoc.vocId, search.getVocId()),
+                    QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()),
+                    QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()),
+                    QdslUtil.strEq(syVoc.useYn, search.getUseYn()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,11 +99,11 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andVocIdEq(search),
-                andVocMasterCdEq(search),
-                andVocDetailCdEq(search),
-                andUseYnEq(search),
+                QdslUtil.strEq(syVoc.siteId, search.getSiteId()),
+                QdslUtil.strEq(syVoc.vocId, search.getVocId()),
+                QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()),
+                QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()),
+                QdslUtil.strEq(syVoc.useYn, search.getUseYn()),
                 andSearchValueLike(search)
         };
 
@@ -120,65 +131,14 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyVocDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syVoc.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyVocDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* vocId 정확 일치 */
-    private BooleanExpression andVocIdEq(SyVocDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVocId())
-                ? syVoc.vocId.eq(search.getVocId()) : null;
-    }
-
-    /* vocMasterCd 정확 일치 */
-    private BooleanExpression andVocMasterCdEq(SyVocDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVocMasterCd())
-                ? syVoc.vocMasterCd.eq(search.getVocMasterCd()) : null;
-    }
-
-    /* vocDetailCd 정확 일치 */
-    private BooleanExpression andVocDetailCdEq(SyVocDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVocDetailCd())
-                ? syVoc.vocDetailCd.eq(search.getVocDetailCd()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(SyVocDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? syVoc.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyVocDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",siteId,", syVoc.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", syVoc.useYn, pattern);
-        or = orLike(or, all, types, ",vocContent,", syVoc.vocContent, pattern);
-        or = orLike(or, all, types, ",vocDetailCd,", syVoc.vocDetailCd, pattern);
-        or = orLike(or, all, types, ",vocId,", syVoc.vocId, pattern);
-        or = orLike(or, all, types, ",vocMasterCd,", syVoc.vocMasterCd, pattern);
-        or = orLike(or, all, types, ",vocNm,", syVoc.vocNm, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -219,7 +179,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     }
 
     /* 고객의 소리(VOC) 수정 */
-
 
     @Override
     public int updateSelective(SyVoc entity) {

@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,14 +22,13 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyCodeGrp QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
@@ -39,6 +39,19 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeGrpRepositoryImpl";
     private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syCodeGrp.regDate,
+        "upd_date", syCodeGrp.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("codeGrp", syCodeGrp.codeGrp),
+        Map.entry("codeGrpDesc", syCodeGrp.codeGrpDesc),
+        Map.entry("codeGrpId", syCodeGrp.codeGrpId),
+        Map.entry("grpNm", syCodeGrp.grpNm),
+        Map.entry("pathId", syCodeGrp.pathId),
+        Map.entry("siteId", syCodeGrp.siteId),
+        Map.entry("useYn", syCodeGrp.useYn)
+    );
 
     /* 공통 코드 그룹 baseSelColumnQuery */
     private JPAQuery<SyCodeGrpDto.Item> baseSelColumnQuery() {
@@ -69,17 +82,17 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyCodeGrpDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
+                QdslUtil.strEq(syCodeGrp.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andCodeGrpIdEq(search),
-                andCodeGrpEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()),
+                QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
+                QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -91,19 +104,19 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     /* 공통 코드 그룹 페이지조회 */
     @Override
     public SyCodeGrpDto.PageResponse selectPageData(SyCodeGrpDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(syCodeGrp.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andCodeGrpIdEq(search),
-                andCodeGrpEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()),
+                QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
+                QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -132,15 +145,9 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyCodeGrpDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syCodeGrp.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyCodeGrpDto.Request search) {
@@ -149,65 +156,10 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                 : null;
     }
 
-    /* codeGrpId 정확 일치 */
-    private BooleanExpression andCodeGrpIdEq(SyCodeGrpDto.Request search) {
-        return search != null && StringUtils.hasText(search.getCodeGrpId())
-                ? syCodeGrp.codeGrpId.eq(search.getCodeGrpId()) : null;
+private BooleanExpression andSearchValueLike(SyCodeGrpDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* codeGrp 정확 일치 */
-    private BooleanExpression andCodeGrpEq(SyCodeGrpDto.Request search) {
-        return search != null && StringUtils.hasText(search.getCodeGrp())
-                ? syCodeGrp.codeGrp.eq(search.getCodeGrp()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(SyCodeGrpDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? syCodeGrp.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyCodeGrpDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syCodeGrp.regDate.goe(start).and(syCodeGrp.regDate.lt(endExcl));
-            case "upd_date": return syCodeGrp.updDate.goe(start).and(syCodeGrp.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyCodeGrpDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",codeGrp,", syCodeGrp.codeGrp, pattern);
-        or = orLike(or, all, types, ",codeGrpDesc,", syCodeGrp.codeGrpDesc, pattern);
-        or = orLike(or, all, types, ",codeGrpId,", syCodeGrp.codeGrpId, pattern);
-        or = orLike(or, all, types, ",grpNm,", syCodeGrp.grpNm, pattern);
-        or = orLike(or, all, types, ",pathId,", syCodeGrp.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", syCodeGrp.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", syCodeGrp.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

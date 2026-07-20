@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -15,14 +16,13 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdClaimItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
-import org.springframework.util.CollectionUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** OdClaimItem QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -31,6 +31,21 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdClaimItemRepositoryImpl";
     private static final QOdClaimItem odClaimItem = QOdClaimItem.odClaimItem;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", odClaimItem.regDate,
+        "upd_date", odClaimItem.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("claimId", odClaimItem.claimId),
+        Map.entry("claimItemId", odClaimItem.claimItemId),
+        Map.entry("claimItemStatusCd", odClaimItem.claimItemStatusCd),
+        Map.entry("claimItemStatusCdBefore", odClaimItem.claimItemStatusCdBefore),
+        Map.entry("orderItemId", odClaimItem.orderItemId),
+        Map.entry("prodId", odClaimItem.prodId),
+        Map.entry("prodNm", odClaimItem.prodNm),
+        Map.entry("prodOption", odClaimItem.prodOption),
+        Map.entry("siteId", odClaimItem.siteId)
+    );
 
     /* 클레임 아이템 baseListQuery */
     private JPAQuery<OdClaimItemDto.Item> baseListQuery() {
@@ -68,11 +83,11 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         JPAQuery<OdClaimItemDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andClaimIdsIn(search),
-                    andClaimIdEq(search),
-                    andSiteIdEq(search),
-                    andClaimItemIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds()),
+                    QdslUtil.strEq(odClaimItem.claimId, search.getClaimId()),
+                    QdslUtil.strEq(odClaimItem.siteId, search.getSiteId()),
+                    QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,11 +111,11 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andClaimIdsIn(search),
-                andClaimIdEq(search),
-                andSiteIdEq(search),
-                andClaimItemIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds()),
+                QdslUtil.strEq(odClaimItem.claimId, search.getClaimId()),
+                QdslUtil.strEq(odClaimItem.siteId, search.getSiteId()),
+                QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -126,82 +141,17 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* claimId IN */
-    private BooleanExpression andClaimIdsIn(OdClaimItemDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getClaimIds())
-                ? odClaimItem.claimId.in(search.getClaimIds()) : null;
+private BooleanExpression andSearchValueLike(OdClaimItemDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* claimId 정확 일치 */
-    private BooleanExpression andClaimIdEq(OdClaimItemDto.Request search) {
-        return search != null && StringUtils.hasText(search.getClaimId())
-                ? odClaimItem.claimId.eq(search.getClaimId()) : null;
-    }
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(OdClaimItemDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? odClaimItem.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* claimItemId 정확 일치 */
-    private BooleanExpression andClaimItemIdEq(OdClaimItemDto.Request search) {
-        return search != null && StringUtils.hasText(search.getClaimItemId())
-                ? odClaimItem.claimItemId.eq(search.getClaimItemId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(OdClaimItemDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return odClaimItem.regDate.goe(start).and(odClaimItem.regDate.lt(endExcl));
-            case "upd_date": return odClaimItem.updDate.goe(start).and(odClaimItem.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(OdClaimItemDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",claimId,", odClaimItem.claimId, pattern);
-        or = orLike(or, all, types, ",claimItemId,", odClaimItem.claimItemId, pattern);
-        or = orLike(or, all, types, ",claimItemStatusCd,", odClaimItem.claimItemStatusCd, pattern);
-        or = orLike(or, all, types, ",claimItemStatusCdBefore,", odClaimItem.claimItemStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",orderItemId,", odClaimItem.orderItemId, pattern);
-        or = orLike(or, all, types, ",prodId,", odClaimItem.prodId, pattern);
-        or = orLike(or, all, types, ",prodNm,", odClaimItem.prodNm, pattern);
-        or = orLike(or, all, types, ",prodOption,", odClaimItem.prodOption, pattern);
-        or = orLike(or, all, types, ",siteId,", odClaimItem.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

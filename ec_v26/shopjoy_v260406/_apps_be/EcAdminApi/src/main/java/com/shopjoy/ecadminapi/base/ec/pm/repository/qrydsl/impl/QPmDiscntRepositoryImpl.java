@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -14,15 +15,14 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscnt;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmDiscntRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PmDiscnt QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
@@ -30,6 +30,25 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmDiscntRepositoryImpl";
     private static final QPmDiscnt pmDiscnt = QPmDiscnt.pmDiscnt;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pmDiscnt.regDate,
+        "upd_date", pmDiscnt.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("discntDesc", pmDiscnt.discntDesc),
+        Map.entry("discntId", pmDiscnt.discntId),
+        Map.entry("discntNm", pmDiscnt.discntNm),
+        Map.entry("discntStatusCd", pmDiscnt.discntStatusCd),
+        Map.entry("discntStatusCdBefore", pmDiscnt.discntStatusCdBefore),
+        Map.entry("discntTargetCd", pmDiscnt.discntTargetCd),
+        Map.entry("discntTypeCd", pmDiscnt.discntTypeCd),
+        Map.entry("dvcMappYn", pmDiscnt.dvcMappYn),
+        Map.entry("dvcMwebYn", pmDiscnt.dvcMwebYn),
+        Map.entry("dvcPcYn", pmDiscnt.dvcPcYn),
+        Map.entry("memGradeCd", pmDiscnt.memGradeCd),
+        Map.entry("siteId", pmDiscnt.siteId),
+        Map.entry("useYn", pmDiscnt.useYn)
+    );
 
     /* 할인 baseSelColumnQuery */
     private JPAQuery<PmDiscntDto.Item> baseSelColumnQuery() {
@@ -65,18 +84,18 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andDiscntIdsIn(search),
-                    andDiscntIdEq(search),
-                    andUseYnEq(search),
-                    andDiscntTypeCdEq(search),
-                    andDiscntStatusCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId()),
+                    QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()),
+                    QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()),
+                    QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()),
+                    QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()),
+                    QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -95,13 +114,13 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andDiscntIdsIn(search),
-                andDiscntIdEq(search),
-                andUseYnEq(search),
-                andDiscntTypeCdEq(search),
-                andDiscntStatusCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId()),
+                QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()),
+                QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()),
+                QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()),
+                QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()),
+                QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -129,93 +148,14 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PmDiscntDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pmDiscnt.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(PmDiscntDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* discntId IN */
-    private BooleanExpression andDiscntIdsIn(PmDiscntDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getDiscntIds())
-                ? pmDiscnt.discntId.in(search.getDiscntIds()) : null;
-    }
-
-    /* discntId 정확 일치 */
-    private BooleanExpression andDiscntIdEq(PmDiscntDto.Request search) {
-        return search != null && StringUtils.hasText(search.getDiscntId())
-                ? pmDiscnt.discntId.eq(search.getDiscntId()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(PmDiscntDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? pmDiscnt.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* discntTypeCd 정확 일치 */
-    private BooleanExpression andDiscntTypeCdEq(PmDiscntDto.Request search) {
-        return search != null && StringUtils.hasText(search.getDiscntTypeCd())
-                ? pmDiscnt.discntTypeCd.eq(search.getDiscntTypeCd()) : null;
-    }
-
-    /* discntStatusCd 정확 일치 */
-    private BooleanExpression andDiscntStatusCdEq(PmDiscntDto.Request search) {
-        return search != null && StringUtils.hasText(search.getDiscntStatusCd())
-                ? pmDiscnt.discntStatusCd.eq(search.getDiscntStatusCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PmDiscntDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pmDiscnt.regDate.goe(start).and(pmDiscnt.regDate.lt(endExcl));
-            case "upd_date": return pmDiscnt.updDate.goe(start).and(pmDiscnt.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PmDiscntDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",discntDesc,", pmDiscnt.discntDesc, pattern);
-        or = orLike(or, all, types, ",discntId,", pmDiscnt.discntId, pattern);
-        or = orLike(or, all, types, ",discntNm,", pmDiscnt.discntNm, pattern);
-        or = orLike(or, all, types, ",discntStatusCd,", pmDiscnt.discntStatusCd, pattern);
-        or = orLike(or, all, types, ",discntStatusCdBefore,", pmDiscnt.discntStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",discntTargetCd,", pmDiscnt.discntTargetCd, pattern);
-        or = orLike(or, all, types, ",discntTypeCd,", pmDiscnt.discntTypeCd, pattern);
-        or = orLike(or, all, types, ",dvcMappYn,", pmDiscnt.dvcMappYn, pattern);
-        or = orLike(or, all, types, ",dvcMwebYn,", pmDiscnt.dvcMwebYn, pattern);
-        or = orLike(or, all, types, ",dvcPcYn,", pmDiscnt.dvcPcYn, pattern);
-        or = orLike(or, all, types, ",memGradeCd,", pmDiscnt.memGradeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", pmDiscnt.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", pmDiscnt.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -256,7 +196,6 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     }
 
     /* 할인 수정 */
-
 
     @Override
     public int updateSelective(PmDiscnt entity) {

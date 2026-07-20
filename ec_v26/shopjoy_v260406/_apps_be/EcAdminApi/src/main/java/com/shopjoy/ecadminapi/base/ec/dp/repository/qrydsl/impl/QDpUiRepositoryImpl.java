@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,14 +22,13 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** DpUi QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QDpUiRepositoryImpl implements QDpUiRepository {
@@ -41,6 +41,20 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiRepositoryImpl";
     private static final QDpUi dpUi = QDpUi.dpUi;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", dpUi.regDate,
+        "upd_date", dpUi.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("deviceTypeCd", dpUi.deviceTypeCd),
+        Map.entry("pathId", dpUi.pathId),
+        Map.entry("siteId", dpUi.siteId),
+        Map.entry("uiCd", dpUi.uiCd),
+        Map.entry("uiDesc", dpUi.uiDesc),
+        Map.entry("uiId", dpUi.uiId),
+        Map.entry("uiNm", dpUi.uiNm),
+        Map.entry("useYn", dpUi.useYn)
+    );
 
     /* 전시 UI baseQuery */
     private JPAQuery<DpUiDto.Item> baseQuery() {
@@ -71,11 +85,11 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         JPAQuery<DpUiDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
+                    QdslUtil.strEq(dpUi.siteId, search.getSiteId()),
                     andPathIdIn(search),
-                    andUiIdEq(search),
-                    andDeviceTypeCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(dpUi.uiId, search.getUiId()),
+                    QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -99,11 +113,11 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(dpUi.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andUiIdEq(search),
-                andDeviceTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(dpUi.uiId, search.getUiId()),
+                QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -129,20 +143,12 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(DpUiDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? dpUi.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpUiDto.Request search) {
@@ -151,60 +157,10 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                 : null;
     }
 
-    /* uiId 정확 일치 */
-    private BooleanExpression andUiIdEq(DpUiDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUiId())
-                ? dpUi.uiId.eq(search.getUiId()) : null;
+private BooleanExpression andSearchValueLike(DpUiDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* deviceTypeCd 정확 일치 */
-    private BooleanExpression andDeviceTypeCdEq(DpUiDto.Request search) {
-        return search != null && StringUtils.hasText(search.getDeviceTypeCd())
-                ? dpUi.deviceTypeCd.eq(search.getDeviceTypeCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(DpUiDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return dpUi.regDate.goe(start).and(dpUi.regDate.lt(endExcl));
-            case "upd_date": return dpUi.updDate.goe(start).and(dpUi.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(DpUiDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",deviceTypeCd,", dpUi.deviceTypeCd, pattern);
-        or = orLike(or, all, types, ",pathId,", dpUi.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", dpUi.siteId, pattern);
-        or = orLike(or, all, types, ",uiCd,", dpUi.uiCd, pattern);
-        or = orLike(or, all, types, ",uiDesc,", dpUi.uiDesc, pattern);
-        or = orLike(or, all, types, ",uiId,", dpUi.uiId, pattern);
-        or = orLike(or, all, types, ",uiNm,", dpUi.uiNm, pattern);
-        or = orLike(or, all, types, ",useYn,", dpUi.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

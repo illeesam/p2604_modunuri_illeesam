@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,12 +19,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** StSettleEtcAdj QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository {
@@ -34,6 +35,19 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     private static final QSySite         sySite   = QSySite.sySite;
     private static final QSyCode         cdSeat = new QSyCode("cd_seat");
     private static final QSyCode         cdAd   = new QSyCode("cd_ad");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", stSettleEtcAdj.regDate,
+        "upd_date", stSettleEtcAdj.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("etcAdjDirCd", stSettleEtcAdj.etcAdjDirCd),
+        Map.entry("etcAdjReason", stSettleEtcAdj.etcAdjReason),
+        Map.entry("etcAdjTypeCd", stSettleEtcAdj.etcAdjTypeCd),
+        Map.entry("settleEtcAdjId", stSettleEtcAdj.settleEtcAdjId),
+        Map.entry("settleEtcAdjMemo", stSettleEtcAdj.settleEtcAdjMemo),
+        Map.entry("settleId", stSettleEtcAdj.settleId),
+        Map.entry("siteId", stSettleEtcAdj.siteId)
+    );
 
     /* 정산 기타 조정 baseListQuery */
     private JPAQuery<StSettleEtcAdjDto.Item> baseListQuery() {
@@ -70,10 +84,10 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andSettleEtcAdjIdEq(search),
-                    andEtcAdjTypeCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(stSettleEtcAdj.siteId, search.getSiteId()),
+                    QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()),
+                    QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -97,10 +111,10 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andSettleEtcAdjIdEq(search),
-                andEtcAdjTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(stSettleEtcAdj.siteId, search.getSiteId()),
+                QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()),
+                QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -126,74 +140,17 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* 정산 기타 조정 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(StSettleEtcAdjDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? stSettleEtcAdj.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(StSettleEtcAdjDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* settleEtcAdjId 정확 일치 */
-    private BooleanExpression andSettleEtcAdjIdEq(StSettleEtcAdjDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSettleEtcAdjId())
-                ? stSettleEtcAdj.settleEtcAdjId.eq(search.getSettleEtcAdjId()) : null;
-    }
-
-    /* etcAdjTypeCd 정확 일치 (유형 필터) */
-    private BooleanExpression andEtcAdjTypeCdEq(StSettleEtcAdjDto.Request search) {
-        return search != null && StringUtils.hasText(search.getEtcAdjTypeCd())
-                ? stSettleEtcAdj.etcAdjTypeCd.eq(search.getEtcAdjTypeCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(StSettleEtcAdjDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return stSettleEtcAdj.regDate.goe(start).and(stSettleEtcAdj.regDate.lt(endExcl));
-            case "upd_date": return stSettleEtcAdj.updDate.goe(start).and(stSettleEtcAdj.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(StSettleEtcAdjDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",etcAdjDirCd,", stSettleEtcAdj.etcAdjDirCd, pattern);
-        or = orLike(or, all, types, ",etcAdjReason,", stSettleEtcAdj.etcAdjReason, pattern);
-        or = orLike(or, all, types, ",etcAdjTypeCd,", stSettleEtcAdj.etcAdjTypeCd, pattern);
-        or = orLike(or, all, types, ",settleEtcAdjId,", stSettleEtcAdj.settleEtcAdjId, pattern);
-        or = orLike(or, all, types, ",settleEtcAdjMemo,", stSettleEtcAdj.settleEtcAdjMemo, pattern);
-        or = orLike(or, all, types, ",settleId,", stSettleEtcAdj.settleId, pattern);
-        or = orLike(or, all, types, ",siteId,", stSettleEtcAdj.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

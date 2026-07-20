@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,12 +20,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhUserTokenLogReposito
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyhUserTokenLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepository {
@@ -36,6 +37,26 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     private static final QSyUser          syUser = QSyUser.syUser;
     private static final QSyCode          cd_ta = new QSyCode("cd_ta");
     private static final QSyCode          cd_tt = new QSyCode("cd_tt");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syhUserTokenLog.regDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("accessToken", syhUserTokenLog.accessToken),
+        Map.entry("actionCd", syhUserTokenLog.actionCd),
+        Map.entry("authId", syhUserTokenLog.authId),
+        Map.entry("cmdNm", syhUserTokenLog.cmdNm),
+        Map.entry("deviceInfo", syhUserTokenLog.deviceInfo),
+        Map.entry("ip", syhUserTokenLog.ip),
+        Map.entry("logId", syhUserTokenLog.logId),
+        Map.entry("loginLogId", syhUserTokenLog.loginLogId),
+        Map.entry("prevToken", syhUserTokenLog.prevToken),
+        Map.entry("refreshToken", syhUserTokenLog.refreshToken),
+        Map.entry("revokeReason", syhUserTokenLog.revokeReason),
+        Map.entry("siteId", syhUserTokenLog.siteId),
+        Map.entry("tokenTypeCd", syhUserTokenLog.tokenTypeCd),
+        Map.entry("uiNm", syhUserTokenLog.uiNm),
+        Map.entry("userId", syhUserTokenLog.userId)
+    );
 
     /* baseSelColumnQuery */
     private JPAQuery<SyhUserTokenLogDto.Item> baseSelColumnQuery() {
@@ -90,17 +111,17 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
 
         JPAQuery<SyhUserTokenLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
-                andLogIdEq(search),
-                andUserIdEq(search),
-                andActionCdEq(search),
-                andTokenTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhUserTokenLog.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()),
+                QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
+                QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
+                QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -119,12 +140,12 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andLogIdEq(search),
-                andUserIdEq(search),
-                andActionCdEq(search),
-                andTokenTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhUserTokenLog.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()),
+                QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
+                QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
+                QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -153,88 +174,14 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyhUserTokenLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syhUserTokenLog.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyhUserTokenLogDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* logId 정확 일치 */
-    private BooleanExpression andLogIdEq(SyhUserTokenLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getLogId())
-                ? syhUserTokenLog.logId.eq(search.getLogId()) : null;
-    }
-
-    /* userId 정확 일치 */
-    private BooleanExpression andUserIdEq(SyhUserTokenLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUserId())
-                ? syhUserTokenLog.userId.eq(search.getUserId()) : null;
-    }
-
-    /* actionCd 정확 일치 */
-    private BooleanExpression andActionCdEq(SyhUserTokenLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getActionCd())
-                ? syhUserTokenLog.actionCd.eq(search.getActionCd()) : null;
-    }
-
-    /* tokenTypeCd 정확 일치 */
-    private BooleanExpression andTokenTypeCdEq(SyhUserTokenLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTokenTypeCd())
-                ? syhUserTokenLog.tokenTypeCd.eq(search.getTokenTypeCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyhUserTokenLogDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syhUserTokenLog.regDate.goe(start).and(syhUserTokenLog.regDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyhUserTokenLogDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",accessToken,", syhUserTokenLog.accessToken, pattern);
-        or = orLike(or, all, types, ",actionCd,", syhUserTokenLog.actionCd, pattern);
-        or = orLike(or, all, types, ",authId,", syhUserTokenLog.authId, pattern);
-        or = orLike(or, all, types, ",cmdNm,", syhUserTokenLog.cmdNm, pattern);
-        or = orLike(or, all, types, ",deviceInfo,", syhUserTokenLog.deviceInfo, pattern);
-        or = orLike(or, all, types, ",ip,", syhUserTokenLog.ip, pattern);
-        or = orLike(or, all, types, ",logId,", syhUserTokenLog.logId, pattern);
-        or = orLike(or, all, types, ",loginLogId,", syhUserTokenLog.loginLogId, pattern);
-        or = orLike(or, all, types, ",prevToken,", syhUserTokenLog.prevToken, pattern);
-        or = orLike(or, all, types, ",refreshToken,", syhUserTokenLog.refreshToken, pattern);
-        or = orLike(or, all, types, ",revokeReason,", syhUserTokenLog.revokeReason, pattern);
-        or = orLike(or, all, types, ",siteId,", syhUserTokenLog.siteId, pattern);
-        or = orLike(or, all, types, ",tokenTypeCd,", syhUserTokenLog.tokenTypeCd, pattern);
-        or = orLike(or, all, types, ",uiNm,", syhUserTokenLog.uiNm, pattern);
-        or = orLike(or, all, types, ",userId,", syhUserTokenLog.userId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

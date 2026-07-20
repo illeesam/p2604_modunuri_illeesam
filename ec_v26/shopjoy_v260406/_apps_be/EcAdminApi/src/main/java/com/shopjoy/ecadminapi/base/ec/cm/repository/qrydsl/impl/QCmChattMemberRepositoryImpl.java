@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** CmChattMember QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -54,15 +55,15 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
         JPAQuery<CmChattMemberDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                        andSiteId(search),
-                        andChattId(search),
-                        andMemberTypeCd(search),
-                        andRefId(search),
+                        QdslUtil.strEq(cmChattMember.siteId, search.getSiteId()),
+                        QdslUtil.strEq(cmChattMember.chattId, search.getChattId()),
+                        QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()),
+                        QdslUtil.strEq(cmChattMember.refId, search.getRefId()),
                         andActiveOnly(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             query.offset((long) (pageNo - 1) * pageSize).limit(pageSize);
         }
@@ -71,15 +72,15 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 
     @Override
     public CmChattMemberDto.PageResponse selectPageData(CmChattMemberDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteId(search),
-                andChattId(search),
-                andMemberTypeCd(search),
-                andRefId(search),
+                QdslUtil.strEq(cmChattMember.siteId, search.getSiteId()),
+                QdslUtil.strEq(cmChattMember.chattId, search.getChattId()),
+                QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()),
+                QdslUtil.strEq(cmChattMember.refId, search.getRefId()),
                 andActiveOnly(search)
         };
 
@@ -100,22 +101,6 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 
         CmChattMemberDto.PageResponse res = new CmChattMemberDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
-    }
-
-    private BooleanExpression andSiteId(CmChattMemberDto.Request s) {
-        return s != null && StringUtils.hasText(s.getSiteId()) ? cmChattMember.siteId.eq(s.getSiteId()) : null;
-    }
-
-    private BooleanExpression andChattId(CmChattMemberDto.Request s) {
-        return s != null && StringUtils.hasText(s.getChattId()) ? cmChattMember.chattId.eq(s.getChattId()) : null;
-    }
-
-    private BooleanExpression andMemberTypeCd(CmChattMemberDto.Request s) {
-        return s != null && StringUtils.hasText(s.getMemberTypeCd()) ? cmChattMember.memberTypeCd.eq(s.getMemberTypeCd()) : null;
-    }
-
-    private BooleanExpression andRefId(CmChattMemberDto.Request s) {
-        return s != null && StringUtils.hasText(s.getRefId()) ? cmChattMember.refId.eq(s.getRefId()) : null;
     }
 
     /** leaveDate IS NULL = 현재 참여 중인 멤버만 */

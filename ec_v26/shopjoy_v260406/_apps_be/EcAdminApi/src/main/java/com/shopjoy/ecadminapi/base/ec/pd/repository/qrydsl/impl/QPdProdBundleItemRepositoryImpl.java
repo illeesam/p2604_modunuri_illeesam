@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,12 +19,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PdProdBundleItem QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemRepository {
@@ -34,6 +35,18 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     private static final QSySite           sySite  = QSySite.sySite;
     private static final QPdProd           prd  = new QPdProd("prd");
     private static final QPdProd           prd2 = new QPdProd("prd2");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pdProdBundleItem.regDate,
+        "upd_date", pdProdBundleItem.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("bundleItemId", pdProdBundleItem.bundleItemId),
+        Map.entry("bundleProdId", pdProdBundleItem.bundleProdId),
+        Map.entry("itemProdId", pdProdBundleItem.itemProdId),
+        Map.entry("itemSkuId", pdProdBundleItem.itemSkuId),
+        Map.entry("siteId", pdProdBundleItem.siteId),
+        Map.entry("useYn", pdProdBundleItem.useYn)
+    );
 
     /* 묶음상품 구성 baseSelColumnQuery */
     private JPAQuery<PdProdBundleItemDto.Item> baseSelColumnQuery() {
@@ -66,9 +79,9 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         JPAQuery<PdProdBundleItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andBundleItemIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(pdProdBundleItem.siteId, search.getSiteId()),
+                    QdslUtil.strEq(pdProdBundleItem.bundleItemId, search.getBundleItemId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -92,9 +105,9 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andBundleItemIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(pdProdBundleItem.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdProdBundleItem.bundleItemId, search.getBundleItemId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -122,62 +135,14 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     /* 묶음상품 구성 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PdProdBundleItemDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pdProdBundleItem.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(PdProdBundleItemDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* bundleItemId 정확 일치 */
-    private BooleanExpression andBundleItemIdEq(PdProdBundleItemDto.Request search) {
-        return search != null && StringUtils.hasText(search.getBundleItemId())
-                ? pdProdBundleItem.bundleItemId.eq(search.getBundleItemId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PdProdBundleItemDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pdProdBundleItem.regDate.goe(start).and(pdProdBundleItem.regDate.lt(endExcl));
-            case "upd_date": return pdProdBundleItem.updDate.goe(start).and(pdProdBundleItem.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PdProdBundleItemDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",bundleItemId,", pdProdBundleItem.bundleItemId, pattern);
-        or = orLike(or, all, types, ",bundleProdId,", pdProdBundleItem.bundleProdId, pattern);
-        or = orLike(or, all, types, ",itemProdId,", pdProdBundleItem.itemProdId, pattern);
-        or = orLike(or, all, types, ",itemSkuId,", pdProdBundleItem.itemSkuId, pattern);
-        or = orLike(or, all, types, ",siteId,", pdProdBundleItem.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", pdProdBundleItem.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -221,7 +186,6 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     }
 
     /* 묶음상품 구성 수정 */
-
 
     @Override
     public int updateSelective(PdProdBundleItem entity) {

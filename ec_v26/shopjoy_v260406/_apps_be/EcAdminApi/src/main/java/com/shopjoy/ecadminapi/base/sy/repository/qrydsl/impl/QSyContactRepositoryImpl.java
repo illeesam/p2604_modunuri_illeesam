@@ -20,9 +20,11 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyContact QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyContactRepositoryImpl implements QSyContactRepository {
@@ -31,6 +33,20 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyContactRepositoryImpl";
     private static final QSyContact syContact = QSyContact.syContact;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("answerUserId", syContact.answerUserId),
+        Map.entry("contentAttachGrpId", syContact.contentAttachGrpId),
+        Map.entry("answerAttachGrpId", syContact.answerAttachGrpId),
+        Map.entry("categoryCd", syContact.categoryCd),
+        Map.entry("contactAnswer", syContact.contactAnswer),
+        Map.entry("contactContent", syContact.contactContent),
+        Map.entry("contactId", syContact.contactId),
+        Map.entry("contactStatusCd", syContact.contactStatusCd),
+        Map.entry("contactTitle", syContact.contactTitle),
+        Map.entry("memberId", syContact.memberId),
+        Map.entry("memberNm", syContact.memberNm),
+        Map.entry("siteId", syContact.siteId)
+    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 문의 baseSelColumnQuery */
@@ -63,11 +79,11 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         JPAQuery<SyContactDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andContactIdEq(search),
-                    andMemberIdEq(search),
-                    andCategoryCdEq(search),
-                    andStatusEq(search),
+                    QdslUtil.strEq(syContact.siteId, search.getSiteId()),
+                    QdslUtil.strEq(syContact.contactId, search.getContactId()),
+                    QdslUtil.strEq(syContact.memberId, search.getMemberId()),
+                    QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()),
+                    QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()),
                     andDateRangeBetween(search),
                     andSearchValueLike(search)
                 )
@@ -92,11 +108,11 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andContactIdEq(search),
-                andMemberIdEq(search),
-                andCategoryCdEq(search),
-                andStatusEq(search),
+                QdslUtil.strEq(syContact.siteId, search.getSiteId()),
+                QdslUtil.strEq(syContact.contactId, search.getContactId()),
+                QdslUtil.strEq(syContact.memberId, search.getMemberId()),
+                QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()),
+                QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()),
                 andDateRangeBetween(search),
                 andSearchValueLike(search)
         };
@@ -125,33 +141,9 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyContactDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syContact.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* contactId 정확 일치 */
-    private BooleanExpression andContactIdEq(SyContactDto.Request search) {
-        return search != null && StringUtils.hasText(search.getContactId())
-                ? syContact.contactId.eq(search.getContactId()) : null;
-    }
-
-    /* memberId 정확 일치 */
-    private BooleanExpression andMemberIdEq(SyContactDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMemberId())
-                ? syContact.memberId.eq(search.getMemberId()) : null;
-    }
-
-    /* categoryCd(문의유형) 정확 일치 */
-    private BooleanExpression andCategoryCdEq(SyContactDto.Request search) {
-        return search != null && StringUtils.hasText(search.getCategoryCd())
-                ? syContact.categoryCd.eq(search.getCategoryCd()) : null;
-    }
 
     /* 등록일(regDate) 기간 검색 — dateStart/dateEnd (yyyy-MM-dd) 포함 범위 */
     private BooleanExpression andDateRangeBetween(SyContactDto.Request search) {
@@ -169,42 +161,10 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         return expr;
     }
 
-    /* contactStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SyContactDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? syContact.contactStatusCd.eq(search.getStatus()) : null;
+private BooleanExpression andSearchValueLike(SyContactDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyContactDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",answerUserId,", syContact.answerUserId, pattern);
-        or = orLike(or, all, types, ",contentAttachGrpId,", syContact.contentAttachGrpId, pattern);
-        or = orLike(or, all, types, ",answerAttachGrpId,", syContact.answerAttachGrpId, pattern);
-        or = orLike(or, all, types, ",categoryCd,", syContact.categoryCd, pattern);
-        or = orLike(or, all, types, ",contactAnswer,", syContact.contactAnswer, pattern);
-        or = orLike(or, all, types, ",contactContent,", syContact.contactContent, pattern);
-        or = orLike(or, all, types, ",contactId,", syContact.contactId, pattern);
-        or = orLike(or, all, types, ",contactStatusCd,", syContact.contactStatusCd, pattern);
-        or = orLike(or, all, types, ",contactTitle,", syContact.contactTitle, pattern);
-        or = orLike(or, all, types, ",memberId,", syContact.memberId, pattern);
-        or = orLike(or, all, types, ",memberNm,", syContact.memberNm, pattern);
-        or = orLike(or, all, types, ",siteId,", syContact.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -245,7 +205,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     }
 
     /* 문의 수정 */
-
 
     @Override
     public int updateSelective(SyContact entity) {

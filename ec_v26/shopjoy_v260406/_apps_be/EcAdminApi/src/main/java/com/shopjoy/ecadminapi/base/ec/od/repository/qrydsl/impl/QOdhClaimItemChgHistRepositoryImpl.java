@@ -17,9 +17,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** OdhClaimItemChgHist QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistRepository {
@@ -27,6 +29,18 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhClaimItemChgHistRepositoryImpl";
     private static final QOdhClaimItemChgHist odhClaimItemChgHist = QOdhClaimItemChgHist.odhClaimItemChgHist;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("afterVal", odhClaimItemChgHist.afterVal),
+        Map.entry("beforeVal", odhClaimItemChgHist.beforeVal),
+        Map.entry("chgField", odhClaimItemChgHist.chgField),
+        Map.entry("chgReason", odhClaimItemChgHist.chgReason),
+        Map.entry("chgTypeCd", odhClaimItemChgHist.chgTypeCd),
+        Map.entry("chgUserId", odhClaimItemChgHist.chgUserId),
+        Map.entry("claimId", odhClaimItemChgHist.claimId),
+        Map.entry("claimItemChgHistId", odhClaimItemChgHist.claimItemChgHistId),
+        Map.entry("claimItemId", odhClaimItemChgHist.claimItemId),
+        Map.entry("siteId", odhClaimItemChgHist.siteId)
+    );
 
     /* 클레임 아이템 변경 이력 baseSelColumnQuery */
     private JPAQuery<OdhClaimItemChgHistDto.Item> baseSelColumnQuery() {
@@ -56,13 +70,13 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
         JPAQuery<OdhClaimItemChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andClaimItemChgHistIdEq(search),
+                    QdslUtil.strEq(odhClaimItemChgHist.siteId, search.getSiteId()),
+                    QdslUtil.strEq(odhClaimItemChgHist.claimItemChgHistId, search.getClaimItemChgHistId()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -74,15 +88,15 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
     /* 클레임 아이템 변경 이력 페이지조회 */
     @Override
     public OdhClaimItemChgHistDto.PageResponse selectPageData(OdhClaimItemChgHistDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andClaimItemChgHistIdEq(search),
+                QdslUtil.strEq(odhClaimItemChgHist.siteId, search.getSiteId()),
+                QdslUtil.strEq(odhClaimItemChgHist.claimItemChgHistId, search.getClaimItemChgHistId()),
                 andSearchValueLike(search)
         };
 
@@ -111,50 +125,14 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
     /* 클레임 아이템 변경 이력 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(OdhClaimItemChgHistDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? odhClaimItemChgHist.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(OdhClaimItemChgHistDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* claimItemChgHistId 정확 일치 */
-    private BooleanExpression andClaimItemChgHistIdEq(OdhClaimItemChgHistDto.Request search) {
-        return search != null && StringUtils.hasText(search.getClaimItemChgHistId())
-                ? odhClaimItemChgHist.claimItemChgHistId.eq(search.getClaimItemChgHistId()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(OdhClaimItemChgHistDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",afterVal,", odhClaimItemChgHist.afterVal, pattern);
-        or = orLike(or, all, types, ",beforeVal,", odhClaimItemChgHist.beforeVal, pattern);
-        or = orLike(or, all, types, ",chgField,", odhClaimItemChgHist.chgField, pattern);
-        or = orLike(or, all, types, ",chgReason,", odhClaimItemChgHist.chgReason, pattern);
-        or = orLike(or, all, types, ",chgTypeCd,", odhClaimItemChgHist.chgTypeCd, pattern);
-        or = orLike(or, all, types, ",chgUserId,", odhClaimItemChgHist.chgUserId, pattern);
-        or = orLike(or, all, types, ",claimId,", odhClaimItemChgHist.claimId, pattern);
-        or = orLike(or, all, types, ",claimItemChgHistId,", odhClaimItemChgHist.claimItemChgHistId, pattern);
-        or = orLike(or, all, types, ",claimItemId,", odhClaimItemChgHist.claimItemId, pattern);
-        or = orLike(or, all, types, ",siteId,", odhClaimItemChgHist.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,12 +18,12 @@ import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbDeviceTokenReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 @RequiredArgsConstructor
 public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
@@ -30,6 +31,18 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbDeviceTokenRepositoryImpl";
     private static final QMbDeviceToken mbDeviceToken   = QMbDeviceToken.mbDeviceToken;
     private static final QMbMember      mbMember = QMbMember.mbMember;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", mbDeviceToken.regDate,
+        "upd_date", mbDeviceToken.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("benefitNotiYn", mbDeviceToken.benefitNotiYn),
+        Map.entry("deviceToken", mbDeviceToken.deviceToken),
+        Map.entry("deviceTokenId", mbDeviceToken.deviceTokenId),
+        Map.entry("memberId", mbDeviceToken.memberId),
+        Map.entry("osType", mbDeviceToken.osType),
+        Map.entry("siteId", mbDeviceToken.siteId)
+    );
 
     /* baseSelColumnQuery */
     private JPAQuery<MbDeviceTokenDto.Item> baseSelColumnQuery() {
@@ -59,9 +72,9 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andDeviceTokenIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()),
+                    QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -84,9 +97,9 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andDeviceTokenIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()),
+                QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -114,62 +127,14 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     /* buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(MbDeviceTokenDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? mbDeviceToken.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(MbDeviceTokenDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* deviceTokenId 정확 일치 */
-    private BooleanExpression andDeviceTokenIdEq(MbDeviceTokenDto.Request search) {
-        return search != null && StringUtils.hasText(search.getDeviceTokenId())
-                ? mbDeviceToken.deviceTokenId.eq(search.getDeviceTokenId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(MbDeviceTokenDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return mbDeviceToken.regDate.goe(start).and(mbDeviceToken.regDate.lt(endExcl));
-            case "upd_date": return mbDeviceToken.updDate.goe(start).and(mbDeviceToken.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(MbDeviceTokenDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",benefitNotiYn,", mbDeviceToken.benefitNotiYn, pattern);
-        or = orLike(or, all, types, ",deviceToken,", mbDeviceToken.deviceToken, pattern);
-        or = orLike(or, all, types, ",deviceTokenId,", mbDeviceToken.deviceTokenId, pattern);
-        or = orLike(or, all, types, ",memberId,", mbDeviceToken.memberId, pattern);
-        or = orLike(or, all, types, ",osType,", mbDeviceToken.osType, pattern);
-        or = orLike(or, all, types, ",siteId,", mbDeviceToken.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -208,7 +173,6 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     }
 
     /* 수정 */
-
 
     @Override
     public int updateSelective(MbDeviceToken entity) {

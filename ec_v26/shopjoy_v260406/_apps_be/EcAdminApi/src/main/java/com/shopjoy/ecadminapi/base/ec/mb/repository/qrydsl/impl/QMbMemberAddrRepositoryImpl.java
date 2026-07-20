@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -16,15 +17,14 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberAddr;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberAddrRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 @RequiredArgsConstructor
 public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
 
@@ -33,6 +33,22 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     private static final QMbMemberAddr mbMemberAddr   = QMbMemberAddr.mbMemberAddr;
     private static final QMbMember     mbMember = QMbMember.mbMember;
     private static final QSySite       sySite = QSySite.sySite;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", mbMemberAddr.regDate,
+        "upd_date", mbMemberAddr.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("addr", mbMemberAddr.addr),
+        Map.entry("addrDetail", mbMemberAddr.addrDetail),
+        Map.entry("addrNm", mbMemberAddr.addrNm),
+        Map.entry("isDefault", mbMemberAddr.isDefault),
+        Map.entry("memberAddrId", mbMemberAddr.memberAddrId),
+        Map.entry("memberId", mbMemberAddr.memberId),
+        Map.entry("recvNm", mbMemberAddr.recvNm),
+        Map.entry("recvPhone", mbMemberAddr.recvPhone),
+        Map.entry("siteId", mbMemberAddr.siteId),
+        Map.entry("zipCd", mbMemberAddr.zipCd)
+    );
 
     /* 회원 주소 baseSelColumnQuery */
     private JPAQuery<MbMemberAddrDto.Item> baseSelColumnQuery() {
@@ -65,10 +81,10 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         JPAQuery<MbMemberAddrDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andMemberIdsIn(search),
-                    andMemberAddrIdEq(search),
-                    andMemberIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strIn(mbMemberAddr.memberId, search.getMemberIds()),
+                    QdslUtil.strEq(mbMemberAddr.memberAddrId, search.getMemberAddrId()),
+                    QdslUtil.strEq(mbMemberAddr.memberId, search.getMemberId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -91,10 +107,10 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andMemberIdsIn(search),
-                andMemberAddrIdEq(search),
-                andMemberIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strIn(mbMemberAddr.memberId, search.getMemberIds()),
+                QdslUtil.strEq(mbMemberAddr.memberAddrId, search.getMemberAddrId()),
+                QdslUtil.strEq(mbMemberAddr.memberId, search.getMemberId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -122,72 +138,14 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     /* searchType 사용 예  searchType = "addrNm,recvNm" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* memberId IN */
-    private BooleanExpression andMemberIdsIn(MbMemberAddrDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getMemberIds())
-                ? mbMemberAddr.memberId.in(search.getMemberIds()) : null;
+private BooleanExpression andSearchValueLike(MbMemberAddrDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* memberAddrId 정확 일치 */
-    private BooleanExpression andMemberAddrIdEq(MbMemberAddrDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMemberAddrId())
-                ? mbMemberAddr.memberAddrId.eq(search.getMemberAddrId()) : null;
-    }
-
-    /* memberId 정확 일치 */
-    private BooleanExpression andMemberIdEq(MbMemberAddrDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMemberId())
-                ? mbMemberAddr.memberId.eq(search.getMemberId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(MbMemberAddrDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return mbMemberAddr.regDate.goe(start).and(mbMemberAddr.regDate.lt(endExcl));
-            case "upd_date": return mbMemberAddr.updDate.goe(start).and(mbMemberAddr.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(MbMemberAddrDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",addr,", mbMemberAddr.addr, pattern);
-        or = orLike(or, all, types, ",addrDetail,", mbMemberAddr.addrDetail, pattern);
-        or = orLike(or, all, types, ",addrNm,", mbMemberAddr.addrNm, pattern);
-        or = orLike(or, all, types, ",isDefault,", mbMemberAddr.isDefault, pattern);
-        or = orLike(or, all, types, ",memberAddrId,", mbMemberAddr.memberAddrId, pattern);
-        or = orLike(or, all, types, ",memberId,", mbMemberAddr.memberId, pattern);
-        or = orLike(or, all, types, ",recvNm,", mbMemberAddr.recvNm, pattern);
-        or = orLike(or, all, types, ",recvPhone,", mbMemberAddr.recvPhone, pattern);
-        or = orLike(or, all, types, ",siteId,", mbMemberAddr.siteId, pattern);
-        or = orLike(or, all, types, ",zipCd,", mbMemberAddr.zipCd, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -228,7 +186,6 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     }
 
     /* 회원 주소 수정 */
-
 
     @Override
     public int updateSelective(MbMemberAddr entity) {

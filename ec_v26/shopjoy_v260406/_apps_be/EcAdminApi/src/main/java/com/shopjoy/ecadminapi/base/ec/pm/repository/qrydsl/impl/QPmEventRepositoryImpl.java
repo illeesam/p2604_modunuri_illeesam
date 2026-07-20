@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -14,15 +15,14 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEvent;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PmEvent QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmEventRepositoryImpl implements QPmEventRepository {
@@ -30,6 +30,24 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventRepositoryImpl";
     private static final QPmEvent pmEvent = QPmEvent.pmEvent;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pmEvent.regDate,
+        "upd_date", pmEvent.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("eventContent", pmEvent.eventContent),
+        Map.entry("eventDesc", pmEvent.eventDesc),
+        Map.entry("eventId", pmEvent.eventId),
+        Map.entry("eventNm", pmEvent.eventNm),
+        Map.entry("eventStatusCd", pmEvent.eventStatusCd),
+        Map.entry("eventStatusCdBefore", pmEvent.eventStatusCdBefore),
+        Map.entry("eventTitle", pmEvent.eventTitle),
+        Map.entry("eventTypeCd", pmEvent.eventTypeCd),
+        Map.entry("imgUrl", pmEvent.imgUrl),
+        Map.entry("siteId", pmEvent.siteId),
+        Map.entry("targetTypeCd", pmEvent.targetTypeCd),
+        Map.entry("useYn", pmEvent.useYn)
+    );
 
     /* 이벤트 baseSelColumnQuery */
     private JPAQuery<PmEventDto.Item> baseSelColumnQuery() {
@@ -63,17 +81,17 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andEventIdsIn(search),
-                    andEventIdEq(search),
-                    andUseYnEq(search),
-                    andEventStatusCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(pmEvent.siteId, search.getSiteId()),
+                    QdslUtil.strIn(pmEvent.eventId, search.getEventIds()),
+                    QdslUtil.strEq(pmEvent.eventId, search.getEventId()),
+                    QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
+                    QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -92,12 +110,12 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andEventIdsIn(search),
-                andEventIdEq(search),
-                andUseYnEq(search),
-                andEventStatusCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(pmEvent.siteId, search.getSiteId()),
+                QdslUtil.strIn(pmEvent.eventId, search.getEventIds()),
+                QdslUtil.strEq(pmEvent.eventId, search.getEventId()),
+                QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
+                QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -125,86 +143,14 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PmEventDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pmEvent.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(PmEventDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* eventId IN */
-    private BooleanExpression andEventIdsIn(PmEventDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getEventIds())
-                ? pmEvent.eventId.in(search.getEventIds()) : null;
-    }
-
-    /* eventId 정확 일치 */
-    private BooleanExpression andEventIdEq(PmEventDto.Request search) {
-        return search != null && StringUtils.hasText(search.getEventId())
-                ? pmEvent.eventId.eq(search.getEventId()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(PmEventDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? pmEvent.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* eventStatusCd 정확 일치 */
-    private BooleanExpression andEventStatusCdEq(PmEventDto.Request search) {
-        return search != null && StringUtils.hasText(search.getEventStatusCd())
-                ? pmEvent.eventStatusCd.eq(search.getEventStatusCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PmEventDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pmEvent.regDate.goe(start).and(pmEvent.regDate.lt(endExcl));
-            case "upd_date": return pmEvent.updDate.goe(start).and(pmEvent.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PmEventDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",eventContent,", pmEvent.eventContent, pattern);
-        or = orLike(or, all, types, ",eventDesc,", pmEvent.eventDesc, pattern);
-        or = orLike(or, all, types, ",eventId,", pmEvent.eventId, pattern);
-        or = orLike(or, all, types, ",eventNm,", pmEvent.eventNm, pattern);
-        or = orLike(or, all, types, ",eventStatusCd,", pmEvent.eventStatusCd, pattern);
-        or = orLike(or, all, types, ",eventStatusCdBefore,", pmEvent.eventStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",eventTitle,", pmEvent.eventTitle, pattern);
-        or = orLike(or, all, types, ",eventTypeCd,", pmEvent.eventTypeCd, pattern);
-        or = orLike(or, all, types, ",imgUrl,", pmEvent.imgUrl, pattern);
-        or = orLike(or, all, types, ",siteId,", pmEvent.siteId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", pmEvent.targetTypeCd, pattern);
-        or = orLike(or, all, types, ",useYn,", pmEvent.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -250,7 +196,6 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     }
 
     /* 이벤트 수정 */
-
 
     @Override
     public int updateSelective(PmEvent entity) {

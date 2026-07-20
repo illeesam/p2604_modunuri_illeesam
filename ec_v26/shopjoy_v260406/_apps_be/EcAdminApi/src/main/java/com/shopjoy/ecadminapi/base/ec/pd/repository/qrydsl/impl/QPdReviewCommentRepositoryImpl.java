@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -15,14 +16,13 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReviewComment;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewCommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
-import org.springframework.util.CollectionUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** PdReviewComment QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -31,6 +31,21 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewCommentRepositoryImpl";
     private static final QPdReviewComment pdReviewComment = QPdReviewComment.pdReviewComment;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pdReviewComment.regDate,
+        "upd_date", pdReviewComment.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("parentReplyId", pdReviewComment.parentReplyId),
+        Map.entry("replyStatusCd", pdReviewComment.replyStatusCd),
+        Map.entry("reviewCommentId", pdReviewComment.reviewCommentId),
+        Map.entry("reviewId", pdReviewComment.reviewId),
+        Map.entry("reviewReplyContent", pdReviewComment.reviewReplyContent),
+        Map.entry("siteId", pdReviewComment.siteId),
+        Map.entry("writerId", pdReviewComment.writerId),
+        Map.entry("writerNm", pdReviewComment.writerNm),
+        Map.entry("writerTypeCd", pdReviewComment.writerTypeCd)
+    );
 
     /** 단건 조회 */
     private JPAQuery<PdReviewCommentDto.Item> baseSelColumnQuery() {
@@ -60,16 +75,16 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andReviewIdsIn(search),
-                    andReviewIdEq(search),
-                    andSiteIdEq(search),
-                    andReviewCommentIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strIn(pdReviewComment.reviewId, search.getReviewIds()),
+                    QdslUtil.strEq(pdReviewComment.reviewId, search.getReviewId()),
+                    QdslUtil.strEq(pdReviewComment.siteId, search.getSiteId()),
+                    QdslUtil.strEq(pdReviewComment.reviewCommentId, search.getReviewCommentId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -81,18 +96,18 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     /** 페이지 목록 */
     @Override
     public PdReviewCommentDto.PageResponse selectPageData(PdReviewCommentDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andReviewIdsIn(search),
-                andReviewIdEq(search),
-                andSiteIdEq(search),
-                andReviewCommentIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strIn(pdReviewComment.reviewId, search.getReviewIds()),
+                QdslUtil.strEq(pdReviewComment.reviewId, search.getReviewId()),
+                QdslUtil.strEq(pdReviewComment.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdReviewComment.reviewCommentId, search.getReviewCommentId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -123,77 +138,14 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* reviewId IN */
-    private BooleanExpression andReviewIdsIn(PdReviewCommentDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getReviewIds())
-                ? pdReviewComment.reviewId.in(search.getReviewIds()) : null;
+private BooleanExpression andSearchValueLike(PdReviewCommentDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* reviewId 정확 일치 */
-    private BooleanExpression andReviewIdEq(PdReviewCommentDto.Request search) {
-        return search != null && StringUtils.hasText(search.getReviewId())
-                ? pdReviewComment.reviewId.eq(search.getReviewId()) : null;
-    }
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PdReviewCommentDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pdReviewComment.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* reviewCommentId 정확 일치 */
-    private BooleanExpression andReviewCommentIdEq(PdReviewCommentDto.Request search) {
-        return search != null && StringUtils.hasText(search.getReviewCommentId())
-                ? pdReviewComment.reviewCommentId.eq(search.getReviewCommentId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PdReviewCommentDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pdReviewComment.regDate.goe(start).and(pdReviewComment.regDate.lt(endExcl));
-            case "upd_date": return pdReviewComment.updDate.goe(start).and(pdReviewComment.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PdReviewCommentDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",parentReplyId,", pdReviewComment.parentReplyId, pattern);
-        or = orLike(or, all, types, ",replyStatusCd,", pdReviewComment.replyStatusCd, pattern);
-        or = orLike(or, all, types, ",reviewCommentId,", pdReviewComment.reviewCommentId, pattern);
-        or = orLike(or, all, types, ",reviewId,", pdReviewComment.reviewId, pattern);
-        or = orLike(or, all, types, ",reviewReplyContent,", pdReviewComment.reviewReplyContent, pattern);
-        or = orLike(or, all, types, ",siteId,", pdReviewComment.siteId, pattern);
-        or = orLike(or, all, types, ",writerId,", pdReviewComment.writerId, pattern);
-        or = orLike(or, all, types, ",writerNm,", pdReviewComment.writerNm, pattern);
-        or = orLike(or, all, types, ",writerTypeCd,", pdReviewComment.writerTypeCd, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

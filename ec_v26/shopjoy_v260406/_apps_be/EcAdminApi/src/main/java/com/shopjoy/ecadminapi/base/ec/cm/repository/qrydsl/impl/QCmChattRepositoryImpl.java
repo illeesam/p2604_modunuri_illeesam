@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -16,12 +17,12 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmChattRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** CmChatt QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -30,6 +31,16 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattRepositoryImpl";
     private static final QCmChatt cmChatt = QCmChatt.cmChatt;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", cmChatt.regDate,
+        "upd_date", cmChatt.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("chattId", cmChatt.chattId),
+        Map.entry("subject", cmChatt.subject),
+        Map.entry("chattMemo", cmChatt.chattMemo),
+        Map.entry("closeReason", cmChatt.closeReason)
+    );
 
     private JPAQuery<CmChattDto.Item> baseSelColumnQuery() {
         return queryFactory
@@ -58,15 +69,15 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
         JPAQuery<CmChattDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                        andSiteId(search),
-                        andChattId(search),
-                        andChattStatusCd(search),
-                        andDateRange(search),
+                        QdslUtil.strEq(cmChatt.siteId, search.getSiteId()),
+                        QdslUtil.strEq(cmChatt.chattId, search.getChattId()),
+                        QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd()),
+                        QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                         andSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             query.offset((long) (pageNo - 1) * pageSize).limit(pageSize);
         }
@@ -75,15 +86,15 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
 
     @Override
     public CmChattDto.PageResponse selectPageData(CmChattDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteId(search),
-                andChattId(search),
-                andChattStatusCd(search),
-                andDateRange(search),
+                QdslUtil.strEq(cmChatt.siteId, search.getSiteId()),
+                QdslUtil.strEq(cmChatt.chattId, search.getChattId()),
+                QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValue(search)
         };
 
@@ -106,51 +117,10 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    private BooleanExpression andSiteId(CmChattDto.Request s) {
-        return s != null && StringUtils.hasText(s.getSiteId()) ? cmChatt.siteId.eq(s.getSiteId()) : null;
+private BooleanExpression andSearchValue(CmChattDto.Request s) {
+        return s == null ? null : QdslUtil.searchValueLike(s.getSearchValue(), s.getSearchType(), SEARCH_FIELDS);
     }
 
-    private BooleanExpression andChattId(CmChattDto.Request s) {
-        return s != null && StringUtils.hasText(s.getChattId()) ? cmChatt.chattId.eq(s.getChattId()) : null;
-    }
-
-    private BooleanExpression andChattStatusCd(CmChattDto.Request s) {
-        return s != null && StringUtils.hasText(s.getChattStatusCd()) ? cmChatt.chattStatusCd.eq(s.getChattStatusCd()) : null;
-    }
-
-    private BooleanExpression andDateRange(CmChattDto.Request s) {
-        if (s == null || !StringUtils.hasText(s.getDateType())
-                || !StringUtils.hasText(s.getDateStart()) || !StringUtils.hasText(s.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        return switch (s.getDateType()) {
-            case "reg_date" -> cmChatt.regDate.goe(start).and(cmChatt.regDate.lt(endExcl));
-            case "upd_date" -> cmChatt.updDate.goe(start).and(cmChatt.updDate.lt(endExcl));
-            default -> null;
-        };
-    }
-
-    private BooleanExpression andSearchValue(CmChattDto.Request s) {
-        if (s == null || !StringUtils.hasText(s.getSearchValue())) return null;
-        String pattern = "%" + s.getSearchValue() + "%";
-        String typeRaw = s.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",chattId,",    cmChatt.chattId,    pattern);
-        or = orLike(or, all, types, ",subject,",    cmChatt.subject,    pattern);
-        or = orLike(or, all, types, ",chattMemo,",  cmChatt.chattMemo,  pattern);
-        or = orLike(or, all, types, ",closeReason,",cmChatt.closeReason,pattern);
-        return or;
-    }
-
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private List<OrderSpecifier<?>> buildOrder(CmChattDto.Request s) {

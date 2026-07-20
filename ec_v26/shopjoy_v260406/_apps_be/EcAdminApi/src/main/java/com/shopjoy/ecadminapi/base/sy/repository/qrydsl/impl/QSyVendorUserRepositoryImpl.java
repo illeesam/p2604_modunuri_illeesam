@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,12 +21,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyVendorUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyVendorUser QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
@@ -38,6 +39,26 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QSyCode cdP = new QSyCode("cd_p");
     private static final QSyCode cdVms = new QSyCode("cd_vms");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syVendorUser.regDate,
+        "upd_date", syVendorUser.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("authYn", syVendorUser.authYn),
+        Map.entry("isMain", syVendorUser.isMain),
+        Map.entry("memberNm", syVendorUser.memberNm),
+        Map.entry("positionCd", syVendorUser.positionCd),
+        Map.entry("siteId", syVendorUser.siteId),
+        Map.entry("userId", syVendorUser.userId),
+        Map.entry("vendorId", syVendorUser.vendorId),
+        Map.entry("vendorUserDeptNm", syVendorUser.vendorUserDeptNm),
+        Map.entry("vendorUserEmail", syVendorUser.vendorUserEmail),
+        Map.entry("vendorUserId", syVendorUser.vendorUserId),
+        Map.entry("vendorUserMobile", syVendorUser.vendorUserMobile),
+        Map.entry("vendorUserPhone", syVendorUser.vendorUserPhone),
+        Map.entry("vendorUserRemark", syVendorUser.vendorUserRemark),
+        Map.entry("vendorUserStatusCd", syVendorUser.vendorUserStatusCd)
+    );
 
     /* 업체 사용자 baseSelColumnQuery */
     private JPAQuery<SyVendorUserDto.Item> baseSelColumnQuery() {
@@ -75,17 +96,17 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorUserDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
-                andVendorUserIdEq(search),
-                andUserIdEq(search),
-                andVendorIdEq(search),
-                andStatusEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syVendorUser.siteId, search.getSiteId()),
+                QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId()),
+                QdslUtil.strEq(syVendorUser.userId, search.getUserId()),
+                QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId()),
+                QdslUtil.strEq(syVendorUser.vendorUserStatusCd, search.getStatus()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -97,19 +118,19 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     /* 업체 사용자 페이지조회 */
     @Override
     public SyVendorUserDto.PageResponse selectPageData(SyVendorUserDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andVendorUserIdEq(search),
-                andUserIdEq(search),
-                andVendorIdEq(search),
-                andStatusEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syVendorUser.siteId, search.getSiteId()),
+                QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId()),
+                QdslUtil.strEq(syVendorUser.userId, search.getUserId()),
+                QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId()),
+                QdslUtil.strEq(syVendorUser.vendorUserStatusCd, search.getStatus()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -138,88 +159,14 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyVendorUserDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syVendorUser.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyVendorUserDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* vendorUserId 정확 일치 */
-    private BooleanExpression andVendorUserIdEq(SyVendorUserDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorUserId())
-                ? syVendorUser.vendorUserId.eq(search.getVendorUserId()) : null;
-    }
-
-    /* userId 정확 일치 */
-    private BooleanExpression andUserIdEq(SyVendorUserDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUserId())
-                ? syVendorUser.userId.eq(search.getUserId()) : null;
-    }
-
-    /* vendorId 정확 일치 */
-    private BooleanExpression andVendorIdEq(SyVendorUserDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorId())
-                ? syVendorUser.vendorId.eq(search.getVendorId()) : null;
-    }
-
-    /* vendorUserStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SyVendorUserDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? syVendorUser.vendorUserStatusCd.eq(search.getStatus()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyVendorUserDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syVendorUser.regDate.goe(start).and(syVendorUser.regDate.lt(endExcl));
-            case "upd_date": return syVendorUser.updDate.goe(start).and(syVendorUser.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyVendorUserDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",authYn,", syVendorUser.authYn, pattern);
-        or = orLike(or, all, types, ",isMain,", syVendorUser.isMain, pattern);
-        or = orLike(or, all, types, ",memberNm,", syVendorUser.memberNm, pattern);
-        or = orLike(or, all, types, ",positionCd,", syVendorUser.positionCd, pattern);
-        or = orLike(or, all, types, ",siteId,", syVendorUser.siteId, pattern);
-        or = orLike(or, all, types, ",userId,", syVendorUser.userId, pattern);
-        or = orLike(or, all, types, ",vendorId,", syVendorUser.vendorId, pattern);
-        or = orLike(or, all, types, ",vendorUserDeptNm,", syVendorUser.vendorUserDeptNm, pattern);
-        or = orLike(or, all, types, ",vendorUserEmail,", syVendorUser.vendorUserEmail, pattern);
-        or = orLike(or, all, types, ",vendorUserId,", syVendorUser.vendorUserId, pattern);
-        or = orLike(or, all, types, ",vendorUserMobile,", syVendorUser.vendorUserMobile, pattern);
-        or = orLike(or, all, types, ",vendorUserPhone,", syVendorUser.vendorUserPhone, pattern);
-        or = orLike(or, all, types, ",vendorUserRemark,", syVendorUser.vendorUserRemark, pattern);
-        or = orLike(or, all, types, ",vendorUserStatusCd,", syVendorUser.vendorUserStatusCd, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

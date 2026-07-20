@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -16,12 +17,12 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmPathRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** CmPath QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmPathRepositoryImpl implements QCmPathRepository {
@@ -29,6 +30,17 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmPathRepositoryImpl";
     private static final QCmPath cmPath = QCmPath.cmPath;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", cmPath.regDate,
+        "upd_date", cmPath.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("bizCd", cmPath.bizCd),
+        Map.entry("pathLabel", cmPath.pathLabel),
+        Map.entry("pathRemark", cmPath.pathRemark),
+        Map.entry("siteId", cmPath.siteId),
+        Map.entry("useYn", cmPath.useYn)
+    );
 
     /** 기본 쿼리 빌드 */
     private JPAQuery<CmPathDto.Item> baseSelColumnQuery() {
@@ -57,14 +69,14 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmPathDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andUseYnEq(search),
-                andBizCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(cmPath.useYn, search.getUseYn()),
+                QdslUtil.strEq(cmPath.bizCd, search.getBizCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -76,16 +88,16 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     /** 페이지 목록 */
     @Override
     public CmPathDto.PageResponse selectPageData(CmPathDto.Request search) {
-        int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo = search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
         int limit = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andUseYnEq(search),
-                andBizCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(cmPath.useYn, search.getUseYn()),
+                QdslUtil.strEq(cmPath.bizCd, search.getBizCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -114,61 +126,14 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     /** 검색조건 빌드 */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(CmPathDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? cmPath.useYn.eq(search.getUseYn()) : null;
+private BooleanExpression andSearchValueLike(CmPathDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* bizCd 정확 일치 */
-    private BooleanExpression andBizCdEq(CmPathDto.Request search) {
-        return search != null && StringUtils.hasText(search.getBizCd())
-                ? cmPath.bizCd.eq(search.getBizCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(CmPathDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return cmPath.regDate.goe(start).and(cmPath.regDate.lt(endExcl));
-            case "upd_date": return cmPath.updDate.goe(start).and(cmPath.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(CmPathDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",bizCd,", cmPath.bizCd, pattern);
-        or = orLike(or, all, types, ",pathLabel,", cmPath.pathLabel, pattern);
-        or = orLike(or, all, types, ",pathRemark,", cmPath.pathRemark, pattern);
-        or = orLike(or, all, types, ",siteId,", cmPath.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", cmPath.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

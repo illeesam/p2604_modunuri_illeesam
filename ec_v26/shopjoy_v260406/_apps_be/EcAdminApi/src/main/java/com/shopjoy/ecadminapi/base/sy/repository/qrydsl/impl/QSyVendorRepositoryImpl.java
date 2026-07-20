@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -22,14 +23,13 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyVendor QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorRepositoryImpl implements QSyVendorRepository {
@@ -42,6 +42,36 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyCode cdVc = new QSyCode("cd_vc");
     private static final QSyCode cdVs = new QSyCode("cd_vs");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syVendor.regDate,
+        "upd_date", syVendor.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("ceoNm", syVendor.ceoNm),
+        Map.entry("corpNo", syVendor.corpNo),
+        Map.entry("pathId", syVendor.pathId),
+        Map.entry("siteId", syVendor.siteId),
+        Map.entry("vendorAddr", syVendor.vendorAddr),
+        Map.entry("vendorAddrDetail", syVendor.vendorAddrDetail),
+        Map.entry("vendorBankAccount", syVendor.vendorBankAccount),
+        Map.entry("vendorBankHolder", syVendor.vendorBankHolder),
+        Map.entry("vendorBankNm", syVendor.vendorBankNm),
+        Map.entry("vendorClassCd", syVendor.vendorClassCd),
+        Map.entry("vendorEmail", syVendor.vendorEmail),
+        Map.entry("vendorFax", syVendor.vendorFax),
+        Map.entry("vendorHomepage", syVendor.vendorHomepage),
+        Map.entry("vendorId", syVendor.vendorId),
+        Map.entry("vendorItem", syVendor.vendorItem),
+        Map.entry("vendorNm", syVendor.vendorNm),
+        Map.entry("vendorNmEn", syVendor.vendorNmEn),
+        Map.entry("vendorNo", syVendor.vendorNo),
+        Map.entry("vendorPhone", syVendor.vendorPhone),
+        Map.entry("vendorRegUrl", syVendor.vendorRegUrl),
+        Map.entry("vendorRemark", syVendor.vendorRemark),
+        Map.entry("vendorStatusCd", syVendor.vendorStatusCd),
+        Map.entry("vendorType", syVendor.vendorType),
+        Map.entry("vendorZipCode", syVendor.vendorZipCode)
+    );
 
     /* 업체(판매자) baseSelColumnQuery */
     private JPAQuery<SyVendorDto.Item> baseSelColumnQuery() {
@@ -78,18 +108,18 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
+                QdslUtil.strEq(syVendor.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andVendorIdEq(search),
-                andStatusEq(search),
-                andVendorClassCdEq(search),
-                andVendorTypeEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syVendor.vendorId, search.getVendorId()),
+                QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()),
+                QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()),
+                QdslUtil.strEq(syVendor.vendorType, search.getVendorType()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -101,20 +131,20 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* 업체(판매자) 페이지조회 */
     @Override
     public SyVendorDto.PageResponse selectPageData(SyVendorDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(syVendor.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andVendorIdEq(search),
-                andStatusEq(search),
-                andVendorClassCdEq(search),
-                andVendorTypeEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syVendor.vendorId, search.getVendorId()),
+                QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()),
+                QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()),
+                QdslUtil.strEq(syVendor.vendorType, search.getVendorType()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -143,15 +173,9 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyVendorDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syVendor.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyVendorDto.Request search) {
@@ -160,88 +184,10 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 : null;
     }
 
-    /* vendorId 정확 일치 */
-    private BooleanExpression andVendorIdEq(SyVendorDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorId())
-                ? syVendor.vendorId.eq(search.getVendorId()) : null;
+private BooleanExpression andSearchValueLike(SyVendorDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* vendorStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SyVendorDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? syVendor.vendorStatusCd.eq(search.getStatus()) : null;
-    }
-
-    /* vendorClassCd 정확 일치 */
-    private BooleanExpression andVendorClassCdEq(SyVendorDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorClassCd())
-                ? syVendor.vendorClassCd.eq(search.getVendorClassCd()) : null;
-    }
-
-    /* vendorType 정확 일치 (유형: 판매업체/배송업체 등) */
-    private BooleanExpression andVendorTypeEq(SyVendorDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorType())
-                ? syVendor.vendorType.eq(search.getVendorType()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyVendorDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syVendor.regDate.goe(start).and(syVendor.regDate.lt(endExcl));
-            case "upd_date": return syVendor.updDate.goe(start).and(syVendor.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyVendorDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",ceoNm,", syVendor.ceoNm, pattern);
-        or = orLike(or, all, types, ",corpNo,", syVendor.corpNo, pattern);
-        or = orLike(or, all, types, ",pathId,", syVendor.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", syVendor.siteId, pattern);
-        or = orLike(or, all, types, ",vendorAddr,", syVendor.vendorAddr, pattern);
-        or = orLike(or, all, types, ",vendorAddrDetail,", syVendor.vendorAddrDetail, pattern);
-        or = orLike(or, all, types, ",vendorBankAccount,", syVendor.vendorBankAccount, pattern);
-        or = orLike(or, all, types, ",vendorBankHolder,", syVendor.vendorBankHolder, pattern);
-        or = orLike(or, all, types, ",vendorBankNm,", syVendor.vendorBankNm, pattern);
-        or = orLike(or, all, types, ",vendorClassCd,", syVendor.vendorClassCd, pattern);
-        or = orLike(or, all, types, ",vendorEmail,", syVendor.vendorEmail, pattern);
-        or = orLike(or, all, types, ",vendorFax,", syVendor.vendorFax, pattern);
-        or = orLike(or, all, types, ",vendorHomepage,", syVendor.vendorHomepage, pattern);
-        or = orLike(or, all, types, ",vendorId,", syVendor.vendorId, pattern);
-        or = orLike(or, all, types, ",vendorItem,", syVendor.vendorItem, pattern);
-        or = orLike(or, all, types, ",vendorNm,", syVendor.vendorNm, pattern);
-        or = orLike(or, all, types, ",vendorNmEn,", syVendor.vendorNmEn, pattern);
-        or = orLike(or, all, types, ",vendorNo,", syVendor.vendorNo, pattern);
-        or = orLike(or, all, types, ",vendorPhone,", syVendor.vendorPhone, pattern);
-        or = orLike(or, all, types, ",vendorRegUrl,", syVendor.vendorRegUrl, pattern);
-        or = orLike(or, all, types, ",vendorRemark,", syVendor.vendorRemark, pattern);
-        or = orLike(or, all, types, ",vendorStatusCd,", syVendor.vendorStatusCd, pattern);
-        or = orLike(or, all, types, ",vendorType,", syVendor.vendorType, pattern);
-        or = orLike(or, all, types, ",vendorZipCode,", syVendor.vendorZipCode, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

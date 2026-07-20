@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -14,15 +15,14 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdOptRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** PdProdOpt (pd_prod_opt — 옵션값) QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -31,6 +31,19 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdOptRepositoryImpl";
     private static final QPdProdOpt pdProdOpt = QPdProdOpt.pdProdOpt;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pdProdOpt.regDate,
+        "upd_date", pdProdOpt.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("prodOptId", pdProdOpt.prodOptId),
+        Map.entry("prodId", pdProdOpt.prodId),
+        Map.entry("prodOptNm", pdProdOpt.prodOptNm),
+        Map.entry("prodOptVal", pdProdOpt.prodOptVal),
+        Map.entry("parentProdOptId", pdProdOpt.parentProdOptId),
+        Map.entry("siteId", pdProdOpt.siteId),
+        Map.entry("useYn", pdProdOpt.useYn)
+    );
 
     private JPAQuery<PdProdOptDto.Item> baseSelColumnQuery() {
         return queryFactory
@@ -74,16 +87,16 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     andOptTypeId(search),
-                    andProdIdsIn(search),
-                    andProdIdEq(search),
-                    andSiteIdEq(search),
-                    andProdOptIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strIn(pdProdOpt.prodId, search.getProdIds()),
+                    QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
+                    QdslUtil.strEq(pdProdOpt.siteId, search.getSiteId()),
+                    QdslUtil.strEq(pdProdOpt.prodOptId, search.getProdOptId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             query.offset(offset).limit(pageSize);
@@ -94,18 +107,18 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
     /* 상품 옵션값 페이지조회 */
     @Override
     public PdProdOptDto.PageResponse selectPageData(PdProdOptDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 andOptTypeId(search),
-                andProdIdsIn(search),
-                andProdIdEq(search),
-                andSiteIdEq(search),
-                andProdOptIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strIn(pdProdOpt.prodId, search.getProdIds()),
+                QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
+                QdslUtil.strEq(pdProdOpt.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdProdOpt.prodOptId, search.getProdOptId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -136,64 +149,10 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         return null; // prod_opt_type_id 컬럼 제거됨 — pd_prod 플랫 컬럼으로 대체
     }
 
-    private BooleanExpression andProdIdsIn(PdProdOptDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getProdIds())
-                ? pdProdOpt.prodId.in(search.getProdIds()) : null;
+private BooleanExpression andSearchValueLike(PdProdOptDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    private BooleanExpression andProdIdEq(PdProdOptDto.Request search) {
-        return search != null && StringUtils.hasText(search.getProdId())
-                ? pdProdOpt.prodId.eq(search.getProdId()) : null;
-    }
-
-    private BooleanExpression andSiteIdEq(PdProdOptDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pdProdOpt.siteId.eq(search.getSiteId()) : null;
-    }
-
-    private BooleanExpression andProdOptIdEq(PdProdOptDto.Request search) {
-        return search != null && StringUtils.hasText(search.getProdOptId())
-                ? pdProdOpt.prodOptId.eq(search.getProdOptId()) : null;
-    }
-
-    private BooleanExpression andDateRangeBetween(PdProdOptDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pdProdOpt.regDate.goe(start).and(pdProdOpt.regDate.lt(endExcl));
-            case "upd_date": return pdProdOpt.updDate.goe(start).and(pdProdOpt.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    private BooleanExpression andSearchValueLike(PdProdOptDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",prodOptId,", pdProdOpt.prodOptId, pattern);
-        or = orLike(or, all, types, ",prodId,", pdProdOpt.prodId, pattern);
-        or = orLike(or, all, types, ",prodOptNm,", pdProdOpt.prodOptNm, pattern);
-        or = orLike(or, all, types, ",prodOptVal,", pdProdOpt.prodOptVal, pattern);
-        or = orLike(or, all, types, ",parentProdOptId,", pdProdOpt.parentProdOptId, pattern);
-        or = orLike(or, all, types, ",siteId,", pdProdOpt.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", pdProdOpt.useYn, pattern);
-        return or;
-    }
-
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdProdOptDto.Request req) {

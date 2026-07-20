@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,12 +20,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** OdClaim QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -45,6 +46,70 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private static final QSyCode   cdEc = new QSyCode("cd_ec");
     private static final QSyCode   cdAp = new QSyCode("cd_ap");
     private static final QSyCode   cdAt = new QSyCode("cd_at");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "request_date", odClaim.requestDate,
+        "proc_date", odClaim.procDate,
+        "claim_cancel_date", odClaim.claimCancelDate,
+        "collect_schd_date", odClaim.collectSchdDate,
+        "reg_date", odClaim.regDate,
+        "upd_date", odClaim.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("addShippingFeeChargeCd", odClaim.addShippingFeeChargeCd),
+        Map.entry("addShippingFeeReason", odClaim.addShippingFeeReason),
+        Map.entry("apprAprvUserId", odClaim.apprAprvUserId),
+        Map.entry("apprReason", odClaim.apprReason),
+        Map.entry("apprReqUserId", odClaim.apprReqUserId),
+        Map.entry("apprStatusCd", odClaim.apprStatusCd),
+        Map.entry("apprStatusCdBefore", odClaim.apprStatusCdBefore),
+        Map.entry("apprTargetCd", odClaim.apprTargetCd),
+        Map.entry("apprTargetNm", odClaim.apprTargetNm),
+        Map.entry("claimCancelReasonCd", odClaim.claimCancelReasonCd),
+        Map.entry("claimCancelReasonDetail", odClaim.claimCancelReasonDetail),
+        Map.entry("claimCancelYn", odClaim.claimCancelYn),
+        Map.entry("claimId", odClaim.claimId),
+        Map.entry("claimStatusCd", odClaim.claimStatusCd),
+        Map.entry("claimStatusCdBefore", odClaim.claimStatusCdBefore),
+        Map.entry("claimTypeCd", odClaim.claimTypeCd),
+        Map.entry("collectAddr", odClaim.collectAddr),
+        Map.entry("collectAddrDetail", odClaim.collectAddrDetail),
+        Map.entry("collectNm", odClaim.collectNm),
+        Map.entry("collectPhone", odClaim.collectPhone),
+        Map.entry("collectReqMemo", odClaim.collectReqMemo),
+        Map.entry("collectZip", odClaim.collectZip),
+        Map.entry("customerFaultYn", odClaim.customerFaultYn),
+        Map.entry("exchRecvAddr", odClaim.exchRecvAddr),
+        Map.entry("exchRecvAddrDetail", odClaim.exchRecvAddrDetail),
+        Map.entry("exchRecvNm", odClaim.exchRecvNm),
+        Map.entry("exchRecvPhone", odClaim.exchRecvPhone),
+        Map.entry("exchRecvReqMemo", odClaim.exchRecvReqMemo),
+        Map.entry("exchRecvZip", odClaim.exchRecvZip),
+        Map.entry("exchangeCourierCd", odClaim.exchangeCourierCd),
+        Map.entry("exchangeTrackingNo", odClaim.exchangeTrackingNo),
+        Map.entry("inboundCourierCd", odClaim.inboundCourierCd),
+        Map.entry("inboundDlivId", odClaim.inboundDlivId),
+        Map.entry("inboundTrackingNo", odClaim.inboundTrackingNo),
+        Map.entry("memberId", odClaim.memberId),
+        Map.entry("memberNm", odClaim.memberNm),
+        Map.entry("memo", odClaim.memo),
+        Map.entry("orderId", odClaim.orderId),
+        Map.entry("outboundDlivId", odClaim.outboundDlivId),
+        Map.entry("procUserId", odClaim.procUserId),
+        Map.entry("prodNm", odClaim.prodNm),
+        Map.entry("reasonCd", odClaim.reasonCd),
+        Map.entry("reasonDetail", odClaim.reasonDetail),
+        Map.entry("refundAccountNm", odClaim.refundAccountNm),
+        Map.entry("refundAccountNo", odClaim.refundAccountNo),
+        Map.entry("refundBankCd", odClaim.refundBankCd),
+        Map.entry("refundMethodCd", odClaim.refundMethodCd),
+        Map.entry("returnCourierCd", odClaim.returnCourierCd),
+        Map.entry("returnStatusCd", odClaim.returnStatusCd),
+        Map.entry("returnStatusCdBefore", odClaim.returnStatusCdBefore),
+        Map.entry("returnTrackingNo", odClaim.returnTrackingNo),
+        Map.entry("shippingFeeMemo", odClaim.shippingFeeMemo),
+        Map.entry("shippingFeePaidYn", odClaim.shippingFeePaidYn),
+        Map.entry("siteId", odClaim.siteId)
+    );
 
     /** 목록/페이지 공용 base query */
     private JPAQuery<OdClaimDto.Item> baseListQuery() {
@@ -162,13 +227,13 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         JPAQuery<OdClaimDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andClaimIdEq(search),
-                    andOrderIdEq(search),
-                    andMemberIdEq(search),
-                    andClaimStatusCdEq(search),
-                    andClaimTypeCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(odClaim.siteId, search.getSiteId()),
+                    QdslUtil.strEq(odClaim.claimId, search.getClaimId()),
+                    QdslUtil.strEq(odClaim.orderId, search.getOrderId()),
+                    QdslUtil.strEq(odClaim.memberId, search.getMemberId()),
+                    QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
+                    QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -192,13 +257,13 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andClaimIdEq(search),
-                andOrderIdEq(search),
-                andMemberIdEq(search),
-                andClaimStatusCdEq(search),
-                andClaimTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(odClaim.siteId, search.getSiteId()),
+                QdslUtil.strEq(odClaim.claimId, search.getClaimId()),
+                QdslUtil.strEq(odClaim.orderId, search.getOrderId()),
+                QdslUtil.strEq(odClaim.memberId, search.getMemberId()),
+                QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
+                QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -224,143 +289,17 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(OdClaimDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? odClaim.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(OdClaimDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* claimId 정확 일치 */
-    private BooleanExpression andClaimIdEq(OdClaimDto.Request search) {
-        return search != null && StringUtils.hasText(search.getClaimId())
-                ? odClaim.claimId.eq(search.getClaimId()) : null;
-    }
-
-    /* orderId 정확 일치 */
-    private BooleanExpression andOrderIdEq(OdClaimDto.Request search) {
-        return search != null && StringUtils.hasText(search.getOrderId())
-                ? odClaim.orderId.eq(search.getOrderId()) : null;
-    }
-
-    /* memberId 정확 일치 */
-    private BooleanExpression andMemberIdEq(OdClaimDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMemberId())
-                ? odClaim.memberId.eq(search.getMemberId()) : null;
-    }
-
-    /* claimStatusCd 정확 일치 */
-    private BooleanExpression andClaimStatusCdEq(OdClaimDto.Request search) {
-        return search != null && StringUtils.hasText(search.getClaimStatusCd())
-                ? odClaim.claimStatusCd.eq(search.getClaimStatusCd()) : null;
-    }
-
-    /* claimTypeCd 정확 일치 */
-    private BooleanExpression andClaimTypeCdEq(OdClaimDto.Request search) {
-        return search != null && StringUtils.hasText(search.getClaimTypeCd())
-                ? odClaim.claimTypeCd.eq(search.getClaimTypeCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(OdClaimDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "request_date": return odClaim.requestDate.goe(start).and(odClaim.requestDate.lt(endExcl));
-            case "proc_date": return odClaim.procDate.goe(start).and(odClaim.procDate.lt(endExcl));
-            case "claim_cancel_date": return odClaim.claimCancelDate.goe(start).and(odClaim.claimCancelDate.lt(endExcl));
-            case "collect_schd_date": return odClaim.collectSchdDate.goe(start).and(odClaim.collectSchdDate.lt(endExcl));
-            case "reg_date": return odClaim.regDate.goe(start).and(odClaim.regDate.lt(endExcl));
-            case "upd_date": return odClaim.updDate.goe(start).and(odClaim.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(OdClaimDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",addShippingFeeChargeCd,", odClaim.addShippingFeeChargeCd, pattern);
-        or = orLike(or, all, types, ",addShippingFeeReason,", odClaim.addShippingFeeReason, pattern);
-        or = orLike(or, all, types, ",apprAprvUserId,", odClaim.apprAprvUserId, pattern);
-        or = orLike(or, all, types, ",apprReason,", odClaim.apprReason, pattern);
-        or = orLike(or, all, types, ",apprReqUserId,", odClaim.apprReqUserId, pattern);
-        or = orLike(or, all, types, ",apprStatusCd,", odClaim.apprStatusCd, pattern);
-        or = orLike(or, all, types, ",apprStatusCdBefore,", odClaim.apprStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",apprTargetCd,", odClaim.apprTargetCd, pattern);
-        or = orLike(or, all, types, ",apprTargetNm,", odClaim.apprTargetNm, pattern);
-        or = orLike(or, all, types, ",claimCancelReasonCd,", odClaim.claimCancelReasonCd, pattern);
-        or = orLike(or, all, types, ",claimCancelReasonDetail,", odClaim.claimCancelReasonDetail, pattern);
-        or = orLike(or, all, types, ",claimCancelYn,", odClaim.claimCancelYn, pattern);
-        or = orLike(or, all, types, ",claimId,", odClaim.claimId, pattern);
-        or = orLike(or, all, types, ",claimStatusCd,", odClaim.claimStatusCd, pattern);
-        or = orLike(or, all, types, ",claimStatusCdBefore,", odClaim.claimStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",claimTypeCd,", odClaim.claimTypeCd, pattern);
-        or = orLike(or, all, types, ",collectAddr,", odClaim.collectAddr, pattern);
-        or = orLike(or, all, types, ",collectAddrDetail,", odClaim.collectAddrDetail, pattern);
-        or = orLike(or, all, types, ",collectNm,", odClaim.collectNm, pattern);
-        or = orLike(or, all, types, ",collectPhone,", odClaim.collectPhone, pattern);
-        or = orLike(or, all, types, ",collectReqMemo,", odClaim.collectReqMemo, pattern);
-        or = orLike(or, all, types, ",collectZip,", odClaim.collectZip, pattern);
-        or = orLike(or, all, types, ",customerFaultYn,", odClaim.customerFaultYn, pattern);
-        or = orLike(or, all, types, ",exchRecvAddr,", odClaim.exchRecvAddr, pattern);
-        or = orLike(or, all, types, ",exchRecvAddrDetail,", odClaim.exchRecvAddrDetail, pattern);
-        or = orLike(or, all, types, ",exchRecvNm,", odClaim.exchRecvNm, pattern);
-        or = orLike(or, all, types, ",exchRecvPhone,", odClaim.exchRecvPhone, pattern);
-        or = orLike(or, all, types, ",exchRecvReqMemo,", odClaim.exchRecvReqMemo, pattern);
-        or = orLike(or, all, types, ",exchRecvZip,", odClaim.exchRecvZip, pattern);
-        or = orLike(or, all, types, ",exchangeCourierCd,", odClaim.exchangeCourierCd, pattern);
-        or = orLike(or, all, types, ",exchangeTrackingNo,", odClaim.exchangeTrackingNo, pattern);
-        or = orLike(or, all, types, ",inboundCourierCd,", odClaim.inboundCourierCd, pattern);
-        or = orLike(or, all, types, ",inboundDlivId,", odClaim.inboundDlivId, pattern);
-        or = orLike(or, all, types, ",inboundTrackingNo,", odClaim.inboundTrackingNo, pattern);
-        or = orLike(or, all, types, ",memberId,", odClaim.memberId, pattern);
-        or = orLike(or, all, types, ",memberNm,", odClaim.memberNm, pattern);
-        or = orLike(or, all, types, ",memo,", odClaim.memo, pattern);
-        or = orLike(or, all, types, ",orderId,", odClaim.orderId, pattern);
-        or = orLike(or, all, types, ",outboundDlivId,", odClaim.outboundDlivId, pattern);
-        or = orLike(or, all, types, ",procUserId,", odClaim.procUserId, pattern);
-        or = orLike(or, all, types, ",prodNm,", odClaim.prodNm, pattern);
-        or = orLike(or, all, types, ",reasonCd,", odClaim.reasonCd, pattern);
-        or = orLike(or, all, types, ",reasonDetail,", odClaim.reasonDetail, pattern);
-        or = orLike(or, all, types, ",refundAccountNm,", odClaim.refundAccountNm, pattern);
-        or = orLike(or, all, types, ",refundAccountNo,", odClaim.refundAccountNo, pattern);
-        or = orLike(or, all, types, ",refundBankCd,", odClaim.refundBankCd, pattern);
-        or = orLike(or, all, types, ",refundMethodCd,", odClaim.refundMethodCd, pattern);
-        or = orLike(or, all, types, ",returnCourierCd,", odClaim.returnCourierCd, pattern);
-        or = orLike(or, all, types, ",returnStatusCd,", odClaim.returnStatusCd, pattern);
-        or = orLike(or, all, types, ",returnStatusCdBefore,", odClaim.returnStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",returnTrackingNo,", odClaim.returnTrackingNo, pattern);
-        or = orLike(or, all, types, ",shippingFeeMemo,", odClaim.shippingFeeMemo, pattern);
-        or = orLike(or, all, types, ",shippingFeePaidYn,", odClaim.shippingFeePaidYn, pattern);
-        or = orLike(or, all, types, ",siteId,", odClaim.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

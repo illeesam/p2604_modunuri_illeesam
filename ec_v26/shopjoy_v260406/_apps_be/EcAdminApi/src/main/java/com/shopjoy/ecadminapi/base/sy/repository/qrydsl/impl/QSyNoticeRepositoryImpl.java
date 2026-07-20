@@ -19,9 +19,11 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyNotice QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
@@ -30,6 +32,16 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyNoticeRepositoryImpl";
     private static final QSyNotice syNotice = QSyNotice.syNotice;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("attachGrpId", syNotice.attachGrpId),
+        Map.entry("contentHtml", syNotice.contentHtml),
+        Map.entry("isFixed", syNotice.isFixed),
+        Map.entry("noticeId", syNotice.noticeId),
+        Map.entry("noticeStatusCd", syNotice.noticeStatusCd),
+        Map.entry("noticeTitle", syNotice.noticeTitle),
+        Map.entry("noticeTypeCd", syNotice.noticeTypeCd),
+        Map.entry("siteId", syNotice.siteId)
+    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 공지사항 baseSelColumnQuery */
@@ -62,11 +74,11 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andNoticeIdEq(search),
-                    andStatusEq(search),
-                    andNoticeTypeCdEq(search),
-                    andIsFixedEq(search),
+                    QdslUtil.strEq(syNotice.siteId, search.getSiteId()),
+                    QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()),
+                    QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()),
+                    QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()),
+                    QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -90,11 +102,11 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andNoticeIdEq(search),
-                andStatusEq(search),
-                andNoticeTypeCdEq(search),
-                andIsFixedEq(search),
+                QdslUtil.strEq(syNotice.siteId, search.getSiteId()),
+                QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()),
+                QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()),
+                QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()),
+                QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()),
                 andSearchValueLike(search)
         };
 
@@ -122,66 +134,14 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyNoticeDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syNotice.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyNoticeDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* noticeId 정확 일치 */
-    private BooleanExpression andNoticeIdEq(SyNoticeDto.Request search) {
-        return search != null && StringUtils.hasText(search.getNoticeId())
-                ? syNotice.noticeId.eq(search.getNoticeId()) : null;
-    }
-
-    /* noticeStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SyNoticeDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? syNotice.noticeStatusCd.eq(search.getStatus()) : null;
-    }
-
-    /* noticeTypeCd 정확 일치 */
-    private BooleanExpression andNoticeTypeCdEq(SyNoticeDto.Request search) {
-        return search != null && StringUtils.hasText(search.getNoticeTypeCd())
-                ? syNotice.noticeTypeCd.eq(search.getNoticeTypeCd()) : null;
-    }
-
-    /* isFixed 정확 일치 */
-    private BooleanExpression andIsFixedEq(SyNoticeDto.Request search) {
-        return search != null && StringUtils.hasText(search.getIsFixed())
-                ? syNotice.isFixed.eq(search.getIsFixed()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyNoticeDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachGrpId,", syNotice.attachGrpId, pattern);
-        or = orLike(or, all, types, ",contentHtml,", syNotice.contentHtml, pattern);
-        or = orLike(or, all, types, ",isFixed,", syNotice.isFixed, pattern);
-        or = orLike(or, all, types, ",noticeId,", syNotice.noticeId, pattern);
-        or = orLike(or, all, types, ",noticeStatusCd,", syNotice.noticeStatusCd, pattern);
-        or = orLike(or, all, types, ",noticeTitle,", syNotice.noticeTitle, pattern);
-        or = orLike(or, all, types, ",noticeTypeCd,", syNotice.noticeTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", syNotice.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -222,7 +182,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     }
 
     /* 공지사항 수정 */
-
 
     @Override
     public int updateSelective(SyNotice entity) {

@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,12 +19,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PmPlan QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmPlanRepositoryImpl implements QPmPlanRepository {
@@ -34,6 +35,23 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     private static final QSySite sySite  = QSySite.sySite;
     private static final QSyCode cdPt = new QSyCode("cd_pt");
     private static final QSyCode cdPs = new QSyCode("cd_ps");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pmPlan.regDate,
+        "upd_date", pmPlan.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("bannerUrl", pmPlan.bannerUrl),
+        Map.entry("planDesc", pmPlan.planDesc),
+        Map.entry("planId", pmPlan.planId),
+        Map.entry("planNm", pmPlan.planNm),
+        Map.entry("planStatusCd", pmPlan.planStatusCd),
+        Map.entry("planStatusCdBefore", pmPlan.planStatusCdBefore),
+        Map.entry("planTitle", pmPlan.planTitle),
+        Map.entry("planTypeCd", pmPlan.planTypeCd),
+        Map.entry("siteId", pmPlan.siteId),
+        Map.entry("thumbnailUrl", pmPlan.thumbnailUrl),
+        Map.entry("useYn", pmPlan.useYn)
+    );
 
     /* 프로모션 플랜 baseSelColumnQuery */
     private JPAQuery<PmPlanDto.Item> baseSelColumnQuery() {
@@ -67,16 +85,16 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andPlanIdEq(search),
-                    andUseYnEq(search),
-                    andPlanStatusCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(pmPlan.siteId, search.getSiteId()),
+                    QdslUtil.strEq(pmPlan.planId, search.getPlanId()),
+                    QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
+                    QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -88,18 +106,18 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     /* 프로모션 플랜 페이지조회 */
     @Override
     public PmPlanDto.PageResponse selectPageData(PmPlanDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andPlanIdEq(search),
-                andUseYnEq(search),
-                andPlanStatusCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(pmPlan.siteId, search.getSiteId()),
+                QdslUtil.strEq(pmPlan.planId, search.getPlanId()),
+                QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
+                QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -128,79 +146,14 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PmPlanDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pmPlan.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(PmPlanDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* planId 정확 일치 */
-    private BooleanExpression andPlanIdEq(PmPlanDto.Request search) {
-        return search != null && StringUtils.hasText(search.getPlanId())
-                ? pmPlan.planId.eq(search.getPlanId()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(PmPlanDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? pmPlan.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* planStatusCd 정확 일치 */
-    private BooleanExpression andPlanStatusCdEq(PmPlanDto.Request search) {
-        return search != null && StringUtils.hasText(search.getPlanStatusCd())
-                ? pmPlan.planStatusCd.eq(search.getPlanStatusCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PmPlanDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pmPlan.regDate.goe(start).and(pmPlan.regDate.lt(endExcl));
-            case "upd_date": return pmPlan.updDate.goe(start).and(pmPlan.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PmPlanDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",bannerUrl,", pmPlan.bannerUrl, pattern);
-        or = orLike(or, all, types, ",planDesc,", pmPlan.planDesc, pattern);
-        or = orLike(or, all, types, ",planId,", pmPlan.planId, pattern);
-        or = orLike(or, all, types, ",planNm,", pmPlan.planNm, pattern);
-        or = orLike(or, all, types, ",planStatusCd,", pmPlan.planStatusCd, pattern);
-        or = orLike(or, all, types, ",planStatusCdBefore,", pmPlan.planStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",planTitle,", pmPlan.planTitle, pattern);
-        or = orLike(or, all, types, ",planTypeCd,", pmPlan.planTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", pmPlan.siteId, pattern);
-        or = orLike(or, all, types, ",thumbnailUrl,", pmPlan.thumbnailUrl, pattern);
-        or = orLike(or, all, types, ",useYn,", pmPlan.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

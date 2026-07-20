@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,12 +18,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 @RequiredArgsConstructor
 public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
@@ -30,6 +31,17 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGroupRepositoryImpl";
     private static final QMbMemberGroup mbMemberGroup   = QMbMemberGroup.mbMemberGroup;
     private static final QSySite        sySite = QSySite.sySite;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", mbMemberGroup.regDate,
+        "upd_date", mbMemberGroup.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("groupMemo", mbMemberGroup.groupMemo),
+        Map.entry("groupNm", mbMemberGroup.groupNm),
+        Map.entry("memberGroupId", mbMemberGroup.memberGroupId),
+        Map.entry("siteId", mbMemberGroup.siteId),
+        Map.entry("useYn", mbMemberGroup.useYn)
+    );
 
     /* 회원 그룹 baseSelColumnQuery */
     private JPAQuery<MbMemberGroupDto.Item> baseSelColumnQuery() {
@@ -57,10 +69,10 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andMemberGroupIdEq(search),
-                    andUseYnEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(mbMemberGroup.siteId, search.getSiteId()),
+                    QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()),
+                    QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -83,10 +95,10 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andMemberGroupIdEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(mbMemberGroup.siteId, search.getSiteId()),
+                QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()),
+                QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -114,67 +126,14 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     /* searchType 사용 예  searchType = "groupNm" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(MbMemberGroupDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? mbMemberGroup.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(MbMemberGroupDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* memberGroupId 정확 일치 */
-    private BooleanExpression andMemberGroupIdEq(MbMemberGroupDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMemberGroupId())
-                ? mbMemberGroup.memberGroupId.eq(search.getMemberGroupId()) : null;
-    }
-
-    /* useYn 정확 일치 (사용여부 드롭다운) */
-    private BooleanExpression andUseYnEq(MbMemberGroupDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? mbMemberGroup.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(MbMemberGroupDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return mbMemberGroup.regDate.goe(start).and(mbMemberGroup.regDate.lt(endExcl));
-            case "upd_date": return mbMemberGroup.updDate.goe(start).and(mbMemberGroup.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(MbMemberGroupDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",groupMemo,", mbMemberGroup.groupMemo, pattern);
-        or = orLike(or, all, types, ",groupNm,", mbMemberGroup.groupNm, pattern);
-        or = orLike(or, all, types, ",memberGroupId,", mbMemberGroup.memberGroupId, pattern);
-        or = orLike(or, all, types, ",siteId,", mbMemberGroup.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", mbMemberGroup.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -215,7 +174,6 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     }
 
     /* 회원 그룹 수정 */
-
 
     @Override
     public int updateSelective(MbMemberGroup entity) {

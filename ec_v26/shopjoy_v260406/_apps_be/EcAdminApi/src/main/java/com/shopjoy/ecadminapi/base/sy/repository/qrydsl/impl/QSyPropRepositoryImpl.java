@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyProp QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyPropRepositoryImpl implements QSyPropRepository {
@@ -39,6 +40,17 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyPropRepositoryImpl";
     private static final QSyProp syProp = QSyProp.syProp;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("pathId", syProp.pathId),
+        Map.entry("propId", syProp.propId),
+        Map.entry("propKey", syProp.propKey),
+        Map.entry("propLabel", syProp.propLabel),
+        Map.entry("propRemark", syProp.propRemark),
+        Map.entry("propTypeCd", syProp.propTypeCd),
+        Map.entry("propValue", syProp.propValue),
+        Map.entry("siteId", syProp.siteId),
+        Map.entry("useYn", syProp.useYn)
+    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 시스템 속성 baseQuery */
@@ -71,13 +83,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         JPAQuery<SyPropDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
+                    QdslUtil.strEq(syProp.siteId, search.getSiteId()),
                     andPathIdIn(search),
-                    andPropKeyEq(search),
+                    QdslUtil.strEq(syProp.propKey, search.getPropKey()),
                     andPropKeysIn(search),
                     andPropKeyPrefixesStartsWith(search),
-                    andPropTypeCdEq(search),
-                    andUseYnEq(search),
+                    QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()),
+                    QdslUtil.strEq(syProp.useYn, search.getUseYn()),
                     andPropProfileLike(search),
                     andSearchValueLike(search)
                 )
@@ -102,13 +114,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(syProp.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andPropKeyEq(search),
+                QdslUtil.strEq(syProp.propKey, search.getPropKey()),
                 andPropKeysIn(search),
                 andPropKeyPrefixesStartsWith(search),
-                andPropTypeCdEq(search),
-                andUseYnEq(search),
+                QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()),
+                QdslUtil.strEq(syProp.useYn, search.getUseYn()),
                 andPropProfileLike(search),
                 andSearchValueLike(search)
         };
@@ -135,20 +147,12 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* 시스템 속성 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyPropDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syProp.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함.
      * '__orphan__' 특수값: sy_path 에 등록되지 않은 path_id 를 가진 행 (또는 NULL) 필터. */
@@ -160,12 +164,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
             return syProp.pathId.isNull().or(syProp.pathId.notIn(registeredPaths));
         }
         return syProp.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_prop"));
-    }
-
-    /* propKey 정확 일치 (단건) */
-    private BooleanExpression andPropKeyEq(SyPropDto.Request search) {
-        return search != null && StringUtils.hasText(search.getPropKey())
-                ? syProp.propKey.eq(search.getPropKey()) : null;
     }
 
     /* propKeys IN 조건 (쉼표 구분 복수 키) */
@@ -190,18 +188,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return or;
     }
 
-    /* propTypeCd 정확 일치 */
-    private BooleanExpression andPropTypeCdEq(SyPropDto.Request search) {
-        return search != null && StringUtils.hasText(search.getPropTypeCd())
-                ? syProp.propTypeCd.eq(search.getPropTypeCd()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(SyPropDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? syProp.useYn.eq(search.getUseYn()) : null;
-    }
-
     /* propProfile 필터 — ^{profile}^ 포함 OR all(빈값/^all^ 포함) 행도 함께 조회 */
     private BooleanExpression andPropProfileLike(SyPropDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPropProfile())) return null;
@@ -214,33 +200,10 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return hasProfile.or(isAll);
     }
 
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyPropDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",pathId,", syProp.pathId, pattern);
-        or = orLike(or, all, types, ",propId,", syProp.propId, pattern);
-        or = orLike(or, all, types, ",propKey,", syProp.propKey, pattern);
-        or = orLike(or, all, types, ",propLabel,", syProp.propLabel, pattern);
-        or = orLike(or, all, types, ",propRemark,", syProp.propRemark, pattern);
-        or = orLike(or, all, types, ",propTypeCd,", syProp.propTypeCd, pattern);
-        or = orLike(or, all, types, ",propValue,", syProp.propValue, pattern);
-        or = orLike(or, all, types, ",siteId,", syProp.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", syProp.useYn, pattern);
-        return or;
+private BooleanExpression andSearchValueLike(SyPropDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

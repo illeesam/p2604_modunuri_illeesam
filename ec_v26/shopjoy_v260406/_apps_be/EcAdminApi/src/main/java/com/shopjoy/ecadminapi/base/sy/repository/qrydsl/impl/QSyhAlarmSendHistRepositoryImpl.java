@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,12 +18,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhAlarmSendHistReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyhAlarmSendHist QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistRepository {
@@ -31,6 +32,22 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAlarmSendHistRepositoryImpl";
     private static final QSyhAlarmSendHist syhAlarmSendHist   = QSyhAlarmSendHist.syhAlarmSendHist;
     private static final QSySite           sySite = QSySite.sySite;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "send_date", syhAlarmSendHist.sendDate,
+        "reg_date", syhAlarmSendHist.regDate,
+        "upd_date", syhAlarmSendHist.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("alarmId", syhAlarmSendHist.alarmId),
+        Map.entry("channel", syhAlarmSendHist.channel),
+        Map.entry("errorMsg", syhAlarmSendHist.errorMsg),
+        Map.entry("memberId", syhAlarmSendHist.memberId),
+        Map.entry("userId", syhAlarmSendHist.userId),
+        Map.entry("sendHistId", syhAlarmSendHist.sendHistId),
+        Map.entry("sendHistStatusCd", syhAlarmSendHist.sendHistStatusCd),
+        Map.entry("sendTo", syhAlarmSendHist.sendTo),
+        Map.entry("siteId", syhAlarmSendHist.siteId)
+    );
 
     /* 알람 발송 이력 baseSelColumnQuery */
     private JPAQuery<SyhAlarmSendHistDto.Item> baseSelColumnQuery() {
@@ -73,15 +90,15 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
         JPAQuery<SyhAlarmSendHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
-                andSendHistIdEq(search),
-                andStatusEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhAlarmSendHist.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()),
+                QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -100,10 +117,10 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andSendHistIdEq(search),
-                andStatusEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhAlarmSendHist.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()),
+                QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -132,72 +149,14 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     /* 알람 발송 이력 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyhAlarmSendHistDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syhAlarmSendHist.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyhAlarmSendHistDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* sendHistId 정확 일치 */
-    private BooleanExpression andSendHistIdEq(SyhAlarmSendHistDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSendHistId())
-                ? syhAlarmSendHist.sendHistId.eq(search.getSendHistId()) : null;
-    }
-
-    /* sendHistStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SyhAlarmSendHistDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? syhAlarmSendHist.sendHistStatusCd.eq(search.getStatus()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyhAlarmSendHistDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "send_date": return syhAlarmSendHist.sendDate.goe(start).and(syhAlarmSendHist.sendDate.lt(endExcl));
-            case "reg_date": return syhAlarmSendHist.regDate.goe(start).and(syhAlarmSendHist.regDate.lt(endExcl));
-            case "upd_date": return syhAlarmSendHist.updDate.goe(start).and(syhAlarmSendHist.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyhAlarmSendHistDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",alarmId,", syhAlarmSendHist.alarmId, pattern);
-        or = orLike(or, all, types, ",channel,", syhAlarmSendHist.channel, pattern);
-        or = orLike(or, all, types, ",errorMsg,", syhAlarmSendHist.errorMsg, pattern);
-        or = orLike(or, all, types, ",memberId,", syhAlarmSendHist.memberId, pattern);
-        or = orLike(or, all, types, ",userId,", syhAlarmSendHist.userId, pattern);
-        or = orLike(or, all, types, ",sendHistId,", syhAlarmSendHist.sendHistId, pattern);
-        or = orLike(or, all, types, ",sendHistStatusCd,", syhAlarmSendHist.sendHistStatusCd, pattern);
-        or = orLike(or, all, types, ",sendTo,", syhAlarmSendHist.sendTo, pattern);
-        or = orLike(or, all, types, ",siteId,", syhAlarmSendHist.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

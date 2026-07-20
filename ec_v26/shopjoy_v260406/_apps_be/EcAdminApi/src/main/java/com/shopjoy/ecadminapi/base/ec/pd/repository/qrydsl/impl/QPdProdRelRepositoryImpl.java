@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -16,12 +17,12 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdRelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PdProdRel QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
@@ -29,6 +30,18 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdRelRepositoryImpl";
     private static final QPdProdRel pdProdRel = QPdProdRel.pdProdRel;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pdProdRel.regDate,
+        "upd_date", pdProdRel.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("prodId", pdProdRel.prodId),
+        Map.entry("prodRelId", pdProdRel.prodRelId),
+        Map.entry("prodRelTypeCd", pdProdRel.prodRelTypeCd),
+        Map.entry("relProdId", pdProdRel.relProdId),
+        Map.entry("siteId", pdProdRel.siteId),
+        Map.entry("useYn", pdProdRel.useYn)
+    );
 
     /** 단건 조회 */
     private JPAQuery<PdProdRelDto.Item> baseSelColumnQuery() {
@@ -57,15 +70,15 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         JPAQuery<PdProdRelDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andProdRelIdEq(search),
-                    andProdIdEq(search),
-                    andUseYnEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(pdProdRel.prodRelId, search.getProdRelId()),
+                    QdslUtil.strEq(pdProdRel.prodId, search.getProdId()),
+                    QdslUtil.strEq(pdProdRel.useYn, search.getUseYn()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -77,17 +90,17 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
     /** 페이지 목록 */
     @Override
     public PdProdRelDto.PageResponse selectPageData(PdProdRelDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andProdRelIdEq(search),
-                andProdIdEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(pdProdRel.prodRelId, search.getProdRelId()),
+                QdslUtil.strEq(pdProdRel.prodId, search.getProdId()),
+                QdslUtil.strEq(pdProdRel.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -117,68 +130,14 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
     /** 검색조건 빌드 — Mapper XML pdProdRelCond 와 동일 동작 (DTO Request 필드 한정) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* prodRelId 정확 일치 */
-    private BooleanExpression andProdRelIdEq(PdProdRelDto.Request search) {
-        return search != null && StringUtils.hasText(search.getProdRelId())
-                ? pdProdRel.prodRelId.eq(search.getProdRelId()) : null;
+private BooleanExpression andSearchValueLike(PdProdRelDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* prodId 정확 일치 */
-    private BooleanExpression andProdIdEq(PdProdRelDto.Request search) {
-        return search != null && StringUtils.hasText(search.getProdId())
-                ? pdProdRel.prodId.eq(search.getProdId()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(PdProdRelDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? pdProdRel.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PdProdRelDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pdProdRel.regDate.goe(start).and(pdProdRel.regDate.lt(endExcl));
-            case "upd_date": return pdProdRel.updDate.goe(start).and(pdProdRel.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PdProdRelDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",prodId,", pdProdRel.prodId, pattern);
-        or = orLike(or, all, types, ",prodRelId,", pdProdRel.prodRelId, pattern);
-        or = orLike(or, all, types, ",prodRelTypeCd,", pdProdRel.prodRelTypeCd, pattern);
-        or = orLike(or, all, types, ",relProdId,", pdProdRel.relProdId, pattern);
-        or = orLike(or, all, types, ",siteId,", pdProdRel.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", pdProdRel.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

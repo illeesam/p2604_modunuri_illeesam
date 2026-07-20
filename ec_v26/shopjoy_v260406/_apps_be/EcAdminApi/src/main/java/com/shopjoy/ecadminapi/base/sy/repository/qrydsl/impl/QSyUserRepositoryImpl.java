@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -23,14 +24,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** SyUser QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -51,6 +51,26 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /* 같은 sy_code 테이블이 두 번 조인되므로 역할별 alias 부여 */
     private static final QSyCode syCode_userStatusCd = new QSyCode("code_userStatusCd");
     private static final QSyCode syCode_authMethodCd = new QSyCode("code_authMethodCd");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syUser.regDate,
+        "upd_date", syUser.updDate,
+        "last_login_date", syUser.lastLoginDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("authMethodCd", syUser.authMethodCd),
+        Map.entry("deptId", syUser.deptId),
+        Map.entry("loginId", syUser.loginId),
+        Map.entry("loginPwdHash", syUser.loginPwdHash),
+        Map.entry("profileAttachId", syUser.profileAttachId),
+        Map.entry("roleId", syUser.roleId),
+        Map.entry("siteId", syUser.siteId),
+        Map.entry("userEmail", syUser.userEmail),
+        Map.entry("userId", syUser.userId),
+        Map.entry("userMemo", syUser.userMemo),
+        Map.entry("userNm", syUser.userNm),
+        Map.entry("userPhone", syUser.userPhone),
+        Map.entry("userStatusCd", syUser.userStatusCd)
+    );
 
     /* ============================================================
      * 기본 쿼리 빌드 — SELECT + JOIN (조회 메서드들이 공유하는 base)
@@ -116,16 +136,16 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
+                    QdslUtil.strEq(syUser.siteId, search.getSiteId()),
                     andDeptIdIn(search),
-                    andStatusEq(search),
-                    andRoleEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
+                    QdslUtil.strEq(syRole.roleNm, search.getRole()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -144,11 +164,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(syUser.siteId, search.getSiteId()),
                 andDeptIdIn(search),
-                andStatusEq(search),
-                andRoleEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
+                QdslUtil.strEq(syRole.roleNm, search.getRole()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -182,11 +202,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 /* andRoleEq 이 syRole 을 참조하므로 join 필요 (목록/페이징과 동일 필터 집합 유지) */
                 .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId))
                 .where(
-                    andSiteIdEq(search),
+                    QdslUtil.strEq(syUser.siteId, search.getSiteId()),
                     andDeptIdIn(search),
-                    andStatusEq(search),
-                    andRoleEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
+                    QdslUtil.strEq(syRole.roleNm, search.getRole()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .fetchOne();
@@ -195,15 +215,9 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptIdIn(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyUserDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syUser.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 부서 트리 — 선택 노드 + 모든 자손 부서 사용자까지 포함 */
     private BooleanExpression andDeptIdIn(SyUserDto.Request search) {
@@ -212,66 +226,10 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 : null;
     }
 
-    /* userStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SyUserDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? syUser.userStatusCd.eq(search.getStatus()) : null;
+private BooleanExpression andSearchValueLike(SyUserDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* 권한 — USER_ROLE 코드값(=역할명) 정확 일치 (조인된 sy_role.role_nm 기준) */
-    private BooleanExpression andRoleEq(SyUserDto.Request search) {
-        return search != null && StringUtils.hasText(search.getRole())
-                ? syRole.roleNm.eq(search.getRole()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyUserDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date":        return syUser.regDate.goe(start).and(syUser.regDate.lt(endExcl));
-            case "upd_date":        return syUser.updDate.goe(start).and(syUser.updDate.lt(endExcl));
-            case "last_login_date": return syUser.lastLoginDate.goe(start).and(syUser.lastLoginDate.lt(endExcl));
-            default:                return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyUserDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",authMethodCd,",    syUser.authMethodCd,    pattern);
-        or = orLike(or, all, types, ",deptId,",          syUser.deptId,          pattern);
-        or = orLike(or, all, types, ",loginId,",         syUser.loginId,         pattern);
-        or = orLike(or, all, types, ",loginPwdHash,",    syUser.loginPwdHash,    pattern);
-        or = orLike(or, all, types, ",profileAttachId,", syUser.profileAttachId, pattern);
-        or = orLike(or, all, types, ",roleId,",          syUser.roleId,          pattern);
-        or = orLike(or, all, types, ",siteId,",          syUser.siteId,          pattern);
-        or = orLike(or, all, types, ",userEmail,",       syUser.userEmail,       pattern);
-        or = orLike(or, all, types, ",userId,",          syUser.userId,          pattern);
-        or = orLike(or, all, types, ",userMemo,",        syUser.userMemo,        pattern);
-        or = orLike(or, all, types, ",userNm,",          syUser.userNm,          pattern);
-        or = orLike(or, all, types, ",userPhone,",       syUser.userPhone,       pattern);
-        or = orLike(or, all, types, ",userStatusCd,",    syUser.userStatusCd,    pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /* ============================================================
      * 정렬조건 — sort 문자열 파싱 ("userId asc, regDate desc")

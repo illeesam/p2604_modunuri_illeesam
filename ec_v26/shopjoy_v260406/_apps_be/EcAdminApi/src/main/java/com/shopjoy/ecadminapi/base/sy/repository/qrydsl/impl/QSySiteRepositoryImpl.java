@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,14 +22,13 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SySite QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSySiteRepositoryImpl implements QSySiteRepository {
@@ -40,6 +40,29 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyCode cdSt = new QSyCode("cd_st");
     private static final QSyCode cdSs = new QSyCode("cd_ss");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", sySite.regDate,
+        "upd_date", sySite.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("configJson", sySite.configJson),
+        Map.entry("faviconUrl", sySite.faviconUrl),
+        Map.entry("logoUrl", sySite.logoUrl),
+        Map.entry("pathId", sySite.pathId),
+        Map.entry("siteAddress", sySite.siteAddress),
+        Map.entry("siteBusinessNo", sySite.siteBusinessNo),
+        Map.entry("siteCeo", sySite.siteCeo),
+        Map.entry("siteCode", sySite.siteCode),
+        Map.entry("siteDesc", sySite.siteDesc),
+        Map.entry("siteDomain", sySite.siteDomain),
+        Map.entry("siteEmail", sySite.siteEmail),
+        Map.entry("siteId", sySite.siteId),
+        Map.entry("siteNm", sySite.siteNm),
+        Map.entry("sitePhone", sySite.sitePhone),
+        Map.entry("siteStatusCd", sySite.siteStatusCd),
+        Map.entry("siteTypeCd", sySite.siteTypeCd),
+        Map.entry("siteZipCode", sySite.siteZipCode)
+    );
 
     /* 사이트 baseSelColumnQuery */
     private JPAQuery<SySiteDto.Item> baseSelColumnQuery() {
@@ -75,16 +98,16 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         JPAQuery<SySiteDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
+                    QdslUtil.strEq(sySite.siteId, search.getSiteId()),
                     andPathIdIn(search),
-                    andStatusEq(search),
-                    andTypeCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
+                    QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -96,18 +119,18 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     /* 사이트 페이지조회 */
     @Override
     public SySiteDto.PageResponse selectPageData(SySiteDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(sySite.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andStatusEq(search),
-                andTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
+                QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -136,15 +159,9 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(a), andPathIdIn(a), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SySiteDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? sySite.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SySiteDto.Request search) {
@@ -153,69 +170,10 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 : null;
     }
 
-    /* siteStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SySiteDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? sySite.siteStatusCd.eq(search.getStatus()) : null;
+private BooleanExpression andSearchValueLike(SySiteDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* siteTypeCd 정확 일치 */
-    private BooleanExpression andTypeCdEq(SySiteDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTypeCd())
-                ? sySite.siteTypeCd.eq(search.getTypeCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SySiteDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return sySite.regDate.goe(start).and(sySite.regDate.lt(endExcl));
-            case "upd_date": return sySite.updDate.goe(start).and(sySite.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SySiteDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",configJson,", sySite.configJson, pattern);
-        or = orLike(or, all, types, ",faviconUrl,", sySite.faviconUrl, pattern);
-        or = orLike(or, all, types, ",logoUrl,", sySite.logoUrl, pattern);
-        or = orLike(or, all, types, ",pathId,", sySite.pathId, pattern);
-        or = orLike(or, all, types, ",siteAddress,", sySite.siteAddress, pattern);
-        or = orLike(or, all, types, ",siteBusinessNo,", sySite.siteBusinessNo, pattern);
-        or = orLike(or, all, types, ",siteCeo,", sySite.siteCeo, pattern);
-        or = orLike(or, all, types, ",siteCode,", sySite.siteCode, pattern);
-        or = orLike(or, all, types, ",siteDesc,", sySite.siteDesc, pattern);
-        or = orLike(or, all, types, ",siteDomain,", sySite.siteDomain, pattern);
-        or = orLike(or, all, types, ",siteEmail,", sySite.siteEmail, pattern);
-        or = orLike(or, all, types, ",siteId,", sySite.siteId, pattern);
-        or = orLike(or, all, types, ",siteNm,", sySite.siteNm, pattern);
-        or = orLike(or, all, types, ",sitePhone,", sySite.sitePhone, pattern);
-        or = orLike(or, all, types, ",siteStatusCd,", sySite.siteStatusCd, pattern);
-        or = orLike(or, all, types, ",siteTypeCd,", sySite.siteTypeCd, pattern);
-        or = orLike(or, all, types, ",siteZipCode,", sySite.siteZipCode, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

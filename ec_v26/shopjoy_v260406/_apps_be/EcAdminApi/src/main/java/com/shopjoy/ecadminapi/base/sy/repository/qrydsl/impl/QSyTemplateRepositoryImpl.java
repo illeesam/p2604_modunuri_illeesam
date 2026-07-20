@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,14 +22,13 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyTemplate QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
@@ -39,7 +39,22 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyTemplateRepositoryImpl";
     private static final QSyTemplate syTemplate = QSyTemplate.syTemplate;
     private static final QSySite sySite = QSySite.sySite;
-    private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syTemplate.regDate,
+        "upd_date", syTemplate.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("pathId", syTemplate.pathId),
+        Map.entry("sampleParams", syTemplate.sampleParams),
+        Map.entry("siteId", syTemplate.siteId),
+        Map.entry("templateCode", syTemplate.templateCode),
+        Map.entry("templateContent", syTemplate.templateContent),
+        Map.entry("templateId", syTemplate.templateId),
+        Map.entry("templateNm", syTemplate.templateNm),
+        Map.entry("templateSubject", syTemplate.templateSubject),
+        Map.entry("templateTypeCd", syTemplate.templateTypeCd),
+        Map.entry("useYn", syTemplate.useYn)
+    );
 
     /* 템플릿 baseQuery */
     private JPAQuery<SyTemplateDto.Item> baseQuery() {
@@ -70,12 +85,12 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         JPAQuery<SyTemplateDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
+                    QdslUtil.strEq(syTemplate.siteId, search.getSiteId()),
                     andPathIdIn(search),
-                    andTemplateIdEq(search),
-                    andTemplateTypeCdEq(search),
-                    andUseYnEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(syTemplate.templateId, search.getTemplateId()),
+                    QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()),
+                    QdslUtil.strEq(syTemplate.useYn, search.getUseYn()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -99,12 +114,12 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(syTemplate.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andTemplateIdEq(search),
-                andTemplateTypeCdEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syTemplate.templateId, search.getTemplateId()),
+                QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()),
+                QdslUtil.strEq(syTemplate.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -130,20 +145,12 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyTemplateDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syTemplate.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyTemplateDto.Request search) {
@@ -152,67 +159,10 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                 : null;
     }
 
-    /* templateId 정확 일치 */
-    private BooleanExpression andTemplateIdEq(SyTemplateDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTemplateId())
-                ? syTemplate.templateId.eq(search.getTemplateId()) : null;
+private BooleanExpression andSearchValueLike(SyTemplateDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* templateTypeCd 정확 일치 */
-    private BooleanExpression andTemplateTypeCdEq(SyTemplateDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTemplateTypeCd())
-                ? syTemplate.templateTypeCd.eq(search.getTemplateTypeCd()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(SyTemplateDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? syTemplate.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* 기간 검색 — dateType 컬럼 기준 [dateStart, dateEnd+1일) 범위 */
-    private BooleanExpression andDateRangeBetween(SyTemplateDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), DF).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   DF).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syTemplate.regDate.goe(start).and(syTemplate.regDate.lt(endExcl));
-            case "upd_date": return syTemplate.updDate.goe(start).and(syTemplate.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyTemplateDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",pathId,", syTemplate.pathId, pattern);
-        or = orLike(or, all, types, ",sampleParams,", syTemplate.sampleParams, pattern);
-        or = orLike(or, all, types, ",siteId,", syTemplate.siteId, pattern);
-        or = orLike(or, all, types, ",templateCode,", syTemplate.templateCode, pattern);
-        or = orLike(or, all, types, ",templateContent,", syTemplate.templateContent, pattern);
-        or = orLike(or, all, types, ",templateId,", syTemplate.templateId, pattern);
-        or = orLike(or, all, types, ",templateNm,", syTemplate.templateNm, pattern);
-        or = orLike(or, all, types, ",templateSubject,", syTemplate.templateSubject, pattern);
-        or = orLike(or, all, types, ",templateTypeCd,", syTemplate.templateTypeCd, pattern);
-        or = orLike(or, all, types, ",useYn,", syTemplate.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

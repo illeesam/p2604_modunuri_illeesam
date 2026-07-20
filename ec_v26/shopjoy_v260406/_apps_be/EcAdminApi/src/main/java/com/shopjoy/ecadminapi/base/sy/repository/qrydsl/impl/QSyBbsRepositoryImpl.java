@@ -22,9 +22,11 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyBbs QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyBbsRepositoryImpl implements QSyBbsRepository {
@@ -34,6 +36,20 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBbsRepositoryImpl";
     private static final QSyBbs syBbs = QSyBbs.syBbs;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("attachGrpId", syBbs.attachGrpId),
+        Map.entry("authorNm", syBbs.authorNm),
+        Map.entry("bbmId", syBbs.bbmId),
+        Map.entry("bbsId", syBbs.bbsId),
+        Map.entry("bbsStatusCd", syBbs.bbsStatusCd),
+        Map.entry("bbsTitle", syBbs.bbsTitle),
+        Map.entry("contentHtml", syBbs.contentHtml),
+        Map.entry("isFixed", syBbs.isFixed),
+        Map.entry("memberId", syBbs.memberId),
+        Map.entry("parentBbsId", syBbs.parentBbsId),
+        Map.entry("pathId", syBbs.pathId),
+        Map.entry("siteId", syBbs.siteId)
+    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 게시판 게시물 baseSelColumnQuery */
@@ -66,10 +82,10 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andBbsIdEq(search),
-                    andBbmIdEq(search),
-                    andStatusEq(search),
+                    QdslUtil.strEq(syBbs.siteId, search.getSiteId()),
+                    QdslUtil.strEq(syBbs.bbsId, search.getBbsId()),
+                    QdslUtil.strEq(syBbs.bbmId, search.getBbmId()),
+                    QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()),
                     andDateRangeBetween(search),
                     andSearchValueLike(search)
                 )
@@ -94,10 +110,10 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andBbsIdEq(search),
-                andBbmIdEq(search),
-                andStatusEq(search),
+                QdslUtil.strEq(syBbs.siteId, search.getSiteId()),
+                QdslUtil.strEq(syBbs.bbsId, search.getBbsId()),
+                QdslUtil.strEq(syBbs.bbmId, search.getBbmId()),
+                QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()),
                 andDateRangeBetween(search),
                 andSearchValueLike(search)
         };
@@ -126,27 +142,9 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyBbsDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syBbs.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* bbsId 정확 일치 */
-    private BooleanExpression andBbsIdEq(SyBbsDto.Request search) {
-        return search != null && StringUtils.hasText(search.getBbsId())
-                ? syBbs.bbsId.eq(search.getBbsId()) : null;
-    }
-
-    /* bbmId(게시판) 정확 일치 */
-    private BooleanExpression andBbmIdEq(SyBbsDto.Request search) {
-        return search != null && StringUtils.hasText(search.getBbmId())
-                ? syBbs.bbmId.eq(search.getBbmId()) : null;
-    }
 
     /* 등록일(regDate) 기간 검색 — dateStart/dateEnd (yyyy-MM-dd) 포함 범위 */
     private BooleanExpression andDateRangeBetween(SyBbsDto.Request search) {
@@ -164,42 +162,10 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         return expr;
     }
 
-    /* bbsStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SyBbsDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? syBbs.bbsStatusCd.eq(search.getStatus()) : null;
+private BooleanExpression andSearchValueLike(SyBbsDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyBbsDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachGrpId,", syBbs.attachGrpId, pattern);
-        or = orLike(or, all, types, ",authorNm,", syBbs.authorNm, pattern);
-        or = orLike(or, all, types, ",bbmId,", syBbs.bbmId, pattern);
-        or = orLike(or, all, types, ",bbsId,", syBbs.bbsId, pattern);
-        or = orLike(or, all, types, ",bbsStatusCd,", syBbs.bbsStatusCd, pattern);
-        or = orLike(or, all, types, ",bbsTitle,", syBbs.bbsTitle, pattern);
-        or = orLike(or, all, types, ",contentHtml,", syBbs.contentHtml, pattern);
-        or = orLike(or, all, types, ",isFixed,", syBbs.isFixed, pattern);
-        or = orLike(or, all, types, ",memberId,", syBbs.memberId, pattern);
-        or = orLike(or, all, types, ",parentBbsId,", syBbs.parentBbsId, pattern);
-        or = orLike(or, all, types, ",pathId,", syBbs.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", syBbs.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -240,7 +206,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     }
 
     /* 게시판 게시물 수정 */
-
 
     @Override
     public int updateSelective(SyBbs entity) {

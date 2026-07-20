@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,12 +20,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 @RequiredArgsConstructor
 public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepository {
 
@@ -35,6 +36,26 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     private static final QMbMember          mbMember  = QMbMember.mbMember;
     private static final QSyCode            cdTa = new QSyCode("cd_ta");
     private static final QSyCode            cdTt = new QSyCode("cd_tt");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", mbhMemberTokenLog.regDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("accessToken", mbhMemberTokenLog.accessToken),
+        Map.entry("actionCd", mbhMemberTokenLog.actionCd),
+        Map.entry("authId", mbhMemberTokenLog.authId),
+        Map.entry("cmdNm", mbhMemberTokenLog.cmdNm),
+        Map.entry("deviceInfo", mbhMemberTokenLog.deviceInfo),
+        Map.entry("ip", mbhMemberTokenLog.ip),
+        Map.entry("logId", mbhMemberTokenLog.logId),
+        Map.entry("loginLogId", mbhMemberTokenLog.loginLogId),
+        Map.entry("memberId", mbhMemberTokenLog.memberId),
+        Map.entry("prevToken", mbhMemberTokenLog.prevToken),
+        Map.entry("refreshToken", mbhMemberTokenLog.refreshToken),
+        Map.entry("revokeReason", mbhMemberTokenLog.revokeReason),
+        Map.entry("siteId", mbhMemberTokenLog.siteId),
+        Map.entry("tokenTypeCd", mbhMemberTokenLog.tokenTypeCd),
+        Map.entry("uiNm", mbhMemberTokenLog.uiNm)
+    );
 
     /* baseSelColumnQuery */
     private JPAQuery<MbhMemberTokenLogDto.Item> baseSelColumnQuery() {
@@ -73,9 +94,9 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         JPAQuery<MbhMemberTokenLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andLogIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(mbhMemberTokenLog.siteId, search.getSiteId()),
+                    QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -98,9 +119,9 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andLogIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(mbhMemberTokenLog.siteId, search.getSiteId()),
+                QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -128,70 +149,14 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     /* searchType 사용 예  searchType = "memberId" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(MbhMemberTokenLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? mbhMemberTokenLog.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(MbhMemberTokenLogDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* logId 정확 일치 */
-    private BooleanExpression andLogIdEq(MbhMemberTokenLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getLogId())
-                ? mbhMemberTokenLog.logId.eq(search.getLogId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(MbhMemberTokenLogDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return mbhMemberTokenLog.regDate.goe(start).and(mbhMemberTokenLog.regDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(MbhMemberTokenLogDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",accessToken,", mbhMemberTokenLog.accessToken, pattern);
-        or = orLike(or, all, types, ",actionCd,", mbhMemberTokenLog.actionCd, pattern);
-        or = orLike(or, all, types, ",authId,", mbhMemberTokenLog.authId, pattern);
-        or = orLike(or, all, types, ",cmdNm,", mbhMemberTokenLog.cmdNm, pattern);
-        or = orLike(or, all, types, ",deviceInfo,", mbhMemberTokenLog.deviceInfo, pattern);
-        or = orLike(or, all, types, ",ip,", mbhMemberTokenLog.ip, pattern);
-        or = orLike(or, all, types, ",logId,", mbhMemberTokenLog.logId, pattern);
-        or = orLike(or, all, types, ",loginLogId,", mbhMemberTokenLog.loginLogId, pattern);
-        or = orLike(or, all, types, ",memberId,", mbhMemberTokenLog.memberId, pattern);
-        or = orLike(or, all, types, ",prevToken,", mbhMemberTokenLog.prevToken, pattern);
-        or = orLike(or, all, types, ",refreshToken,", mbhMemberTokenLog.refreshToken, pattern);
-        or = orLike(or, all, types, ",revokeReason,", mbhMemberTokenLog.revokeReason, pattern);
-        or = orLike(or, all, types, ",siteId,", mbhMemberTokenLog.siteId, pattern);
-        or = orLike(or, all, types, ",tokenTypeCd,", mbhMemberTokenLog.tokenTypeCd, pattern);
-        or = orLike(or, all, types, ",uiNm,", mbhMemberTokenLog.uiNm, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -230,7 +195,6 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     }
 
     /* 수정 */
-
 
     @Override
     public int updateSelective(MbhMemberTokenLog entity) {

@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,12 +19,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** OdPayMethod QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -34,6 +35,20 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     private static final QOdPayMethod odPayMethod   = QOdPayMethod.odPayMethod;
     private static final QMbMember    mem = new QMbMember("mem");
     private static final QSyCode      cdPm = new QSyCode("cd_pm");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", odPayMethod.regDate,
+        "upd_date", odPayMethod.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("mainMethodYn", odPayMethod.mainMethodYn),
+        Map.entry("memberId", odPayMethod.memberId),
+        Map.entry("payKeyNo", odPayMethod.payKeyNo),
+        Map.entry("payMethodAlias", odPayMethod.payMethodAlias),
+        Map.entry("payMethodId", odPayMethod.payMethodId),
+        Map.entry("payMethodNm", odPayMethod.payMethodNm),
+        Map.entry("payMethodTypeCd", odPayMethod.payMethodTypeCd),
+        Map.entry("siteId", odPayMethod.siteId)
+    );
 
     /** 목록/페이지/단건 공용 base query (DTO Item에 별칭 컬럼 없음 - 기본 필드만 매핑) */
     private JPAQuery<OdPayMethodDto.Item> baseListQuery() {
@@ -65,8 +80,8 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         JPAQuery<OdPayMethodDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andPayMethodIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(odPayMethod.payMethodId, search.getPayMethodId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -90,8 +105,8 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andPayMethodIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(odPayMethod.payMethodId, search.getPayMethodId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -117,63 +132,17 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* payMethodId 정확 일치 */
-    private BooleanExpression andPayMethodIdEq(OdPayMethodDto.Request search) {
-        return search != null && StringUtils.hasText(search.getPayMethodId())
-                ? odPayMethod.payMethodId.eq(search.getPayMethodId()) : null;
+private BooleanExpression andSearchValueLike(OdPayMethodDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(OdPayMethodDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return odPayMethod.regDate.goe(start).and(odPayMethod.regDate.lt(endExcl));
-            case "upd_date": return odPayMethod.updDate.goe(start).and(odPayMethod.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(OdPayMethodDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",mainMethodYn,", odPayMethod.mainMethodYn, pattern);
-        or = orLike(or, all, types, ",memberId,", odPayMethod.memberId, pattern);
-        or = orLike(or, all, types, ",payKeyNo,", odPayMethod.payKeyNo, pattern);
-        or = orLike(or, all, types, ",payMethodAlias,", odPayMethod.payMethodAlias, pattern);
-        or = orLike(or, all, types, ",payMethodId,", odPayMethod.payMethodId, pattern);
-        or = orLike(or, all, types, ",payMethodNm,", odPayMethod.payMethodNm, pattern);
-        or = orLike(or, all, types, ",payMethodTypeCd,", odPayMethod.payMethodTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", odPayMethod.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

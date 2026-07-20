@@ -19,7 +19,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
-import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 @RequiredArgsConstructor
 public class QDpAreaRepositoryImpl implements QDpAreaRepository {
 
@@ -35,6 +35,17 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpAreaRepositoryImpl";
     private static final QDpArea dpArea = QDpArea.dpArea;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("areaCd", dpArea.areaCd),
+        Map.entry("areaDesc", dpArea.areaDesc),
+        Map.entry("areaId", dpArea.areaId),
+        Map.entry("areaNm", dpArea.areaNm),
+        Map.entry("areaTypeCd", dpArea.areaTypeCd),
+        Map.entry("pathId", dpArea.pathId),
+        Map.entry("siteId", dpArea.siteId),
+        Map.entry("uiId", dpArea.uiId),
+        Map.entry("useYn", dpArea.useYn)
+    );
 
     /* 전시 영역 baseQuery */
     private JPAQuery<DpAreaDto.Item> baseQuery() {
@@ -60,13 +71,13 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         JPAQuery<DpAreaDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andUiIdsIn(search),
-                    andSiteIdEq(search),
+                    QdslUtil.strIn(dpArea.uiId, search.getUiIds()),
+                    QdslUtil.strEq(dpArea.siteId, search.getSiteId()),
                     andPathIdIn(search),
-                    andUseYnEq(search),
-                    andAreaIdEq(search),
-                    andUiIdEq(search),
-                    andAreaTypeCdEq(search),
+                    QdslUtil.strEq(dpArea.useYn, search.getUseYn()),
+                    QdslUtil.strEq(dpArea.areaId, search.getAreaId()),
+                    QdslUtil.strEq(dpArea.uiId, search.getUiId()),
+                    QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,13 +99,13 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andUiIdsIn(search),
-                andSiteIdEq(search),
+                QdslUtil.strIn(dpArea.uiId, search.getUiIds()),
+                QdslUtil.strEq(dpArea.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andUseYnEq(search),
-                andAreaIdEq(search),
-                andUiIdEq(search),
-                andAreaTypeCdEq(search),
+                QdslUtil.strEq(dpArea.useYn, search.getUseYn()),
+                QdslUtil.strEq(dpArea.areaId, search.getAreaId()),
+                QdslUtil.strEq(dpArea.uiId, search.getUiId()),
+                QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()),
                 andSearchValueLike(search)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -117,26 +128,12 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* uiId IN */
-    private BooleanExpression andUiIdsIn(DpAreaDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getUiIds())
-                ? dpArea.uiId.in(search.getUiIds()) : null;
-    }
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(DpAreaDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? dpArea.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpAreaDto.Request search) {
@@ -145,57 +142,10 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 : null;
     }
 
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(DpAreaDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? dpArea.useYn.eq(search.getUseYn()) : null;
+private BooleanExpression andSearchValueLike(DpAreaDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* areaId 정확 일치 */
-    private BooleanExpression andAreaIdEq(DpAreaDto.Request search) {
-        return search != null && StringUtils.hasText(search.getAreaId())
-                ? dpArea.areaId.eq(search.getAreaId()) : null;
-    }
-
-    /* uiId 정확 일치 */
-    private BooleanExpression andUiIdEq(DpAreaDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUiId())
-                ? dpArea.uiId.eq(search.getUiId()) : null;
-    }
-
-    /* areaTypeCd 정확 일치 */
-    private BooleanExpression andAreaTypeCdEq(DpAreaDto.Request search) {
-        return search != null && StringUtils.hasText(search.getAreaTypeCd())
-                ? dpArea.areaTypeCd.eq(search.getAreaTypeCd()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(DpAreaDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",areaCd,", dpArea.areaCd, pattern);
-        or = orLike(or, all, types, ",areaDesc,", dpArea.areaDesc, pattern);
-        or = orLike(or, all, types, ",areaId,", dpArea.areaId, pattern);
-        or = orLike(or, all, types, ",areaNm,", dpArea.areaNm, pattern);
-        or = orLike(or, all, types, ",areaTypeCd,", dpArea.areaTypeCd, pattern);
-        or = orLike(or, all, types, ",pathId,", dpArea.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", dpArea.siteId, pattern);
-        or = orLike(or, all, types, ",uiId,", dpArea.uiId, pattern);
-        or = orLike(or, all, types, ",useYn,", dpArea.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

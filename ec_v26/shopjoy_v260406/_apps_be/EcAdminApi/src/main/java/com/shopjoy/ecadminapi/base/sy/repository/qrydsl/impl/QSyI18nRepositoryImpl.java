@@ -19,9 +19,11 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyI18n QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyI18nRepositoryImpl implements QSyI18nRepository {
@@ -30,6 +32,15 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyI18nRepositoryImpl";
     private static final QSyI18n syI18n = QSyI18n.syI18n;
     private static final QSySite sySite = QSySite.sySite;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("i18nCategory", syI18n.i18nCategory),
+        Map.entry("i18nDesc", syI18n.i18nDesc),
+        Map.entry("i18nId", syI18n.i18nId),
+        Map.entry("i18nKey", syI18n.i18nKey),
+        Map.entry("i18nScopeCd", syI18n.i18nScopeCd),
+        Map.entry("siteId", syI18n.siteId),
+        Map.entry("useYn", syI18n.useYn)
+    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 다국어 baseSelColumnQuery */
@@ -61,10 +72,10 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andI18nIdEq(search),
-                    andI18nScopeCdEq(search),
-                    andUseYnEq(search),
+                    QdslUtil.strEq(syI18n.siteId, search.getSiteId()),
+                    QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
+                    QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
+                    QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,10 +99,10 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andI18nIdEq(search),
-                andI18nScopeCdEq(search),
-                andUseYnEq(search),
+                QdslUtil.strEq(syI18n.siteId, search.getSiteId()),
+                QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
+                QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
+                QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
                 andSearchValueLike(search)
         };
 
@@ -119,59 +130,14 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     /* 다국어 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyI18nDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syI18n.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyI18nDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* i18nId 정확 일치 */
-    private BooleanExpression andI18nIdEq(SyI18nDto.Request search) {
-        return search != null && StringUtils.hasText(search.getI18nId())
-                ? syI18n.i18nId.eq(search.getI18nId()) : null;
-    }
-
-    /* i18nScopeCd 정확 일치 (범위 select) */
-    private BooleanExpression andI18nScopeCdEq(SyI18nDto.Request search) {
-        return search != null && StringUtils.hasText(search.getI18nScopeCd())
-                ? syI18n.i18nScopeCd.eq(search.getI18nScopeCd()) : null;
-    }
-
-    /* useYn 정확 일치 (사용여부 select) */
-    private BooleanExpression andUseYnEq(SyI18nDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? syI18n.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyI18nDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",i18nCategory,", syI18n.i18nCategory, pattern);
-        or = orLike(or, all, types, ",i18nDesc,", syI18n.i18nDesc, pattern);
-        or = orLike(or, all, types, ",i18nId,", syI18n.i18nId, pattern);
-        or = orLike(or, all, types, ",i18nKey,", syI18n.i18nKey, pattern);
-        or = orLike(or, all, types, ",i18nScopeCd,", syI18n.i18nScopeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", syI18n.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", syI18n.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -215,7 +181,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     }
 
     /* 다국어 수정 */
-
 
     @Override
     public int updateSelective(SyI18n entity) {

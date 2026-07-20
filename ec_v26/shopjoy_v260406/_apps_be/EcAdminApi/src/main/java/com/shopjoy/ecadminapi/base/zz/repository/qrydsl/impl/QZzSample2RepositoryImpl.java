@@ -13,12 +13,13 @@ import com.shopjoy.ecadminapi.base.zz.data.entity.QZzSample2;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample2;
 import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzSample2Repository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** ZzSample2 QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QZzSample2RepositoryImpl implements QZzSample2Repository {
@@ -26,6 +27,35 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzSample2RepositoryImpl";
     private static final QZzSample2 zzSample2 = QZzSample2.zzSample2;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("attrNm1", zzSample2.attrNm1),
+        Map.entry("attrNm2", zzSample2.attrNm2),
+        Map.entry("attrNm3", zzSample2.attrNm3),
+        Map.entry("attrNm4", zzSample2.attrNm4),
+        Map.entry("cateCds", zzSample2.cateCds),
+        Map.entry("cdGrp", zzSample2.cdGrp),
+        Map.entry("cdInfwSeCd", zzSample2.cdInfwSeCd),
+        Map.entry("cdNm", zzSample2.cdNm),
+        Map.entry("cdVl", zzSample2.cdVl),
+        Map.entry("col01", zzSample2.col01),
+        Map.entry("col02", zzSample2.col02),
+        Map.entry("col03", zzSample2.col03),
+        Map.entry("col04", zzSample2.col04),
+        Map.entry("col05", zzSample2.col05),
+        Map.entry("col06", zzSample2.col06),
+        Map.entry("col07", zzSample2.col07),
+        Map.entry("col08", zzSample2.col08),
+        Map.entry("col09", zzSample2.col09),
+        Map.entry("divCd", zzSample2.divCd),
+        Map.entry("explnCn", zzSample2.explnCn),
+        Map.entry("groupCd", zzSample2.groupCd),
+        Map.entry("kindCd", zzSample2.kindCd),
+        Map.entry("sample1Id", zzSample2.sample1Id),
+        Map.entry("sample2Id", zzSample2.sample2Id),
+        Map.entry("statusCd", zzSample2.statusCd),
+        Map.entry("typeCd", zzSample2.typeCd),
+        Map.entry("useYn", zzSample2.useYn)
+    );
 
     /* baseSelColumnQuery */
     private JPAQuery<ZzSample2Dto.Item> baseSelColumnQuery() {
@@ -84,16 +114,16 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
 
         JPAQuery<ZzSample2Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSample1IdsIn(search),
-                andSample2IdsIn(search),
-                andSample2IdEq(search),
-                andSample1IdEq(search),
-                andUseYnEq(search),
+                QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids()),
+                QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids()),
+                QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id()),
+                QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id()),
+                QdslUtil.strEq(zzSample2.useYn, search.getUseYn()),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -112,11 +142,11 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSample1IdsIn(search),
-                andSample2IdsIn(search),
-                andSample2IdEq(search),
-                andSample1IdEq(search),
-                andUseYnEq(search),
+                QdslUtil.strIn(zzSample2.sample1Id, search.getSample1Ids()),
+                QdslUtil.strIn(zzSample2.sample2Id, search.getSample2Ids()),
+                QdslUtil.strEq(zzSample2.sample2Id, search.getSample2Id()),
+                QdslUtil.strEq(zzSample2.sample1Id, search.getSample1Id()),
+                QdslUtil.strEq(zzSample2.useYn, search.getUseYn()),
                 andSearchValueLike(search)
         };
 
@@ -145,85 +175,14 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
     /* buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(a), andDeptId(a), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* sample1Id IN */
-    private BooleanExpression andSample1IdsIn(ZzSample2Dto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getSample1Ids())
-                ? zzSample2.sample1Id.in(search.getSample1Ids()) : null;
+private BooleanExpression andSearchValueLike(ZzSample2Dto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* sample2Id IN */
-    private BooleanExpression andSample2IdsIn(ZzSample2Dto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getSample2Ids())
-                ? zzSample2.sample2Id.in(search.getSample2Ids()) : null;
-    }
-
-    /* sample2Id 정확 일치 */
-    private BooleanExpression andSample2IdEq(ZzSample2Dto.Request search) {
-        return search != null && StringUtils.hasText(search.getSample2Id())
-                ? zzSample2.sample2Id.eq(search.getSample2Id()) : null;
-    }
-
-    /* sample1Id 정확 일치 */
-    private BooleanExpression andSample1IdEq(ZzSample2Dto.Request search) {
-        return search != null && StringUtils.hasText(search.getSample1Id())
-                ? zzSample2.sample1Id.eq(search.getSample1Id()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(ZzSample2Dto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? zzSample2.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(ZzSample2Dto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",attrNm1,", zzSample2.attrNm1, pattern);
-        or = orLike(or, all, types, ",attrNm2,", zzSample2.attrNm2, pattern);
-        or = orLike(or, all, types, ",attrNm3,", zzSample2.attrNm3, pattern);
-        or = orLike(or, all, types, ",attrNm4,", zzSample2.attrNm4, pattern);
-        or = orLike(or, all, types, ",cateCds,", zzSample2.cateCds, pattern);
-        or = orLike(or, all, types, ",cdGrp,", zzSample2.cdGrp, pattern);
-        or = orLike(or, all, types, ",cdInfwSeCd,", zzSample2.cdInfwSeCd, pattern);
-        or = orLike(or, all, types, ",cdNm,", zzSample2.cdNm, pattern);
-        or = orLike(or, all, types, ",cdVl,", zzSample2.cdVl, pattern);
-        or = orLike(or, all, types, ",col01,", zzSample2.col01, pattern);
-        or = orLike(or, all, types, ",col02,", zzSample2.col02, pattern);
-        or = orLike(or, all, types, ",col03,", zzSample2.col03, pattern);
-        or = orLike(or, all, types, ",col04,", zzSample2.col04, pattern);
-        or = orLike(or, all, types, ",col05,", zzSample2.col05, pattern);
-        or = orLike(or, all, types, ",col06,", zzSample2.col06, pattern);
-        or = orLike(or, all, types, ",col07,", zzSample2.col07, pattern);
-        or = orLike(or, all, types, ",col08,", zzSample2.col08, pattern);
-        or = orLike(or, all, types, ",col09,", zzSample2.col09, pattern);
-        or = orLike(or, all, types, ",divCd,", zzSample2.divCd, pattern);
-        or = orLike(or, all, types, ",explnCn,", zzSample2.explnCn, pattern);
-        or = orLike(or, all, types, ",groupCd,", zzSample2.groupCd, pattern);
-        or = orLike(or, all, types, ",kindCd,", zzSample2.kindCd, pattern);
-        or = orLike(or, all, types, ",sample1Id,", zzSample2.sample1Id, pattern);
-        or = orLike(or, all, types, ",sample2Id,", zzSample2.sample2Id, pattern);
-        or = orLike(or, all, types, ",statusCd,", zzSample2.statusCd, pattern);
-        or = orLike(or, all, types, ",typeCd,", zzSample2.typeCd, pattern);
-        or = orLike(or, all, types, ",useYn,", zzSample2.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

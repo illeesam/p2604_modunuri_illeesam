@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,12 +19,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** MbMember QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QMbMemberRepositoryImpl implements QMbMemberRepository {
@@ -34,6 +35,27 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     private static final QSySite   sySite     = QSySite.sySite;
     private static final QSyCode   cdGr  = new QSyCode("cd_gr");
     private static final QSyCode   cdMs  = new QSyCode("cd_ms");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "join_date", mbMember.joinDate,
+        "reg_date", mbMember.regDate,
+        "upd_date", mbMember.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("gradeCd", mbMember.gradeCd),
+        Map.entry("loginId", mbMember.loginId),
+        Map.entry("loginPwdHash", mbMember.loginPwdHash),
+        Map.entry("memberAddr", mbMember.memberAddr),
+        Map.entry("memberAddrDetail", mbMember.memberAddrDetail),
+        Map.entry("memberGender", mbMember.memberGender),
+        Map.entry("memberId", mbMember.memberId),
+        Map.entry("memberMemo", mbMember.memberMemo),
+        Map.entry("memberNm", mbMember.memberNm),
+        Map.entry("memberPhone", mbMember.memberPhone),
+        Map.entry("memberStatusCd", mbMember.memberStatusCd),
+        Map.entry("memberStatusCdBefore", mbMember.memberStatusCdBefore),
+        Map.entry("memberZipCode", mbMember.memberZipCode),
+        Map.entry("siteId", mbMember.siteId)
+    );
 
     private JPAQuery<MbMemberDto.Item> baseSelColumnQuery() {
         return queryFactory
@@ -72,11 +94,11 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andMemberIdEq(search),
-                    andGradeCdEq(search),
-                    andMemberStatusCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(mbMember.siteId, search.getSiteId()),
+                    QdslUtil.strEq(mbMember.memberId, search.getMemberId()),
+                    QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()),
+                    QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -100,11 +122,11 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andMemberIdEq(search),
-                andGradeCdEq(search),
-                andMemberStatusCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(mbMember.siteId, search.getSiteId()),
+                QdslUtil.strEq(mbMember.memberId, search.getMemberId()),
+                QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()),
+                QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -134,83 +156,14 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     /* searchType 사용 예  searchType = "memberId,memberNm,loginId,memberPhone" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(MbMemberDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? mbMember.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(MbMemberDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* memberId 정확 일치 */
-    private BooleanExpression andMemberIdEq(MbMemberDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMemberId())
-                ? mbMember.memberId.eq(search.getMemberId()) : null;
-    }
-
-    /* gradeCd 정확 일치 (등급 드롭다운) */
-    private BooleanExpression andGradeCdEq(MbMemberDto.Request search) {
-        return search != null && StringUtils.hasText(search.getGradeCd())
-                ? mbMember.gradeCd.eq(search.getGradeCd()) : null;
-    }
-
-    /* memberStatusCd 정확 일치 (상태 드롭다운) */
-    private BooleanExpression andMemberStatusCdEq(MbMemberDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMemberStatusCd())
-                ? mbMember.memberStatusCd.eq(search.getMemberStatusCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(MbMemberDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "join_date": return mbMember.joinDate.goe(start).and(mbMember.joinDate.lt(endExcl));
-            case "reg_date": return mbMember.regDate.goe(start).and(mbMember.regDate.lt(endExcl));
-            case "upd_date": return mbMember.updDate.goe(start).and(mbMember.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(MbMemberDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",gradeCd,", mbMember.gradeCd, pattern);
-        or = orLike(or, all, types, ",loginId,", mbMember.loginId, pattern);
-        or = orLike(or, all, types, ",loginPwdHash,", mbMember.loginPwdHash, pattern);
-        or = orLike(or, all, types, ",memberAddr,", mbMember.memberAddr, pattern);
-        or = orLike(or, all, types, ",memberAddrDetail,", mbMember.memberAddrDetail, pattern);
-        or = orLike(or, all, types, ",memberGender,", mbMember.memberGender, pattern);
-        or = orLike(or, all, types, ",memberId,", mbMember.memberId, pattern);
-        or = orLike(or, all, types, ",memberMemo,", mbMember.memberMemo, pattern);
-        or = orLike(or, all, types, ",memberNm,", mbMember.memberNm, pattern);
-        or = orLike(or, all, types, ",memberPhone,", mbMember.memberPhone, pattern);
-        or = orLike(or, all, types, ",memberStatusCd,", mbMember.memberStatusCd, pattern);
-        or = orLike(or, all, types, ",memberStatusCdBefore,", mbMember.memberStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",memberZipCode,", mbMember.memberZipCode, pattern);
-        or = orLike(or, all, types, ",siteId,", mbMember.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

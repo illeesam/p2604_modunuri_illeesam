@@ -18,9 +18,11 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyI18nMsg QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
@@ -28,6 +30,13 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyI18nMsgRepositoryImpl";
     private static final QSyI18nMsg syI18nMsg = QSyI18nMsg.syI18nMsg;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("i18nId", syI18nMsg.i18nId),
+        Map.entry("i18nMsg", syI18nMsg.i18nMsg),
+        Map.entry("i18nMsgId", syI18nMsg.i18nMsgId),
+        Map.entry("langCd", syI18nMsg.langCd),
+        Map.entry("siteId", syI18nMsg.siteId)
+    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 다국어 메시지 baseSelColumnQuery */
@@ -56,9 +65,9 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         JPAQuery<SyI18nMsgDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andI18nMsgIdEq(search),
-                    andI18nIdEq(search),
-                    andLangCdEq(search),
+                    QdslUtil.strEq(syI18nMsg.i18nMsgId, search.getI18nMsgId()),
+                    QdslUtil.strEq(syI18nMsg.i18nId, search.getI18nId()),
+                    QdslUtil.strEq(syI18nMsg.langCd, search.getLangCd()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -82,9 +91,9 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andI18nMsgIdEq(search),
-                andI18nIdEq(search),
-                andLangCdEq(search),
+                QdslUtil.strEq(syI18nMsg.i18nMsgId, search.getI18nMsgId()),
+                QdslUtil.strEq(syI18nMsg.i18nId, search.getI18nId()),
+                QdslUtil.strEq(syI18nMsg.langCd, search.getLangCd()),
                 andSearchValueLike(search)
         };
 
@@ -112,51 +121,14 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     /* 다국어 메시지 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* i18nMsgId 정확 일치 */
-    private BooleanExpression andI18nMsgIdEq(SyI18nMsgDto.Request search) {
-        return search != null && StringUtils.hasText(search.getI18nMsgId())
-                ? syI18nMsg.i18nMsgId.eq(search.getI18nMsgId()) : null;
+private BooleanExpression andSearchValueLike(SyI18nMsgDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* i18nId 정확 일치 */
-    private BooleanExpression andI18nIdEq(SyI18nMsgDto.Request search) {
-        return search != null && StringUtils.hasText(search.getI18nId())
-                ? syI18nMsg.i18nId.eq(search.getI18nId()) : null;
-    }
-
-    /* langCd 정확 일치 */
-    private BooleanExpression andLangCdEq(SyI18nMsgDto.Request search) {
-        return search != null && StringUtils.hasText(search.getLangCd())
-                ? syI18nMsg.langCd.eq(search.getLangCd()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyI18nMsgDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",i18nId,", syI18nMsg.i18nId, pattern);
-        or = orLike(or, all, types, ",i18nMsg,", syI18nMsg.i18nMsg, pattern);
-        or = orLike(or, all, types, ",i18nMsgId,", syI18nMsg.i18nMsgId, pattern);
-        or = orLike(or, all, types, ",langCd,", syI18nMsg.langCd, pattern);
-        or = orLike(or, all, types, ",siteId,", syI18nMsg.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -195,7 +167,6 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     }
 
     /* 다국어 메시지 수정 */
-
 
     @Override
     public int updateSelective(SyI18nMsg entity) {

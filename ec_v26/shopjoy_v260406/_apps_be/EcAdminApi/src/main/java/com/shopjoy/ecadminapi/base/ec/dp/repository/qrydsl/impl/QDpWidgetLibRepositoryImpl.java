@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,14 +20,13 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 @RequiredArgsConstructor
 public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
 
@@ -35,6 +35,24 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetLibRepositoryImpl";
     private static final QDpWidgetLib dpWidgetLib = QDpWidgetLib.dpWidgetLib;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", dpWidgetLib.regDate,
+        "upd_date", dpWidgetLib.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("isSystem", dpWidgetLib.isSystem),
+        Map.entry("pathId", dpWidgetLib.pathId),
+        Map.entry("siteId", dpWidgetLib.siteId),
+        Map.entry("thumbnailUrl", dpWidgetLib.thumbnailUrl),
+        Map.entry("useYn", dpWidgetLib.useYn),
+        Map.entry("widgetCode", dpWidgetLib.widgetCode),
+        Map.entry("widgetConfigJson", dpWidgetLib.widgetConfigJson),
+        Map.entry("widgetContent", dpWidgetLib.widgetContent),
+        Map.entry("widgetLibDesc", dpWidgetLib.widgetLibDesc),
+        Map.entry("widgetLibId", dpWidgetLib.widgetLibId),
+        Map.entry("widgetNm", dpWidgetLib.widgetNm),
+        Map.entry("widgetTypeCd", dpWidgetLib.widgetTypeCd)
+    );
 
     /* 전시 위젯 라이브러리 baseQuery */
     private JPAQuery<DpWidgetLibDto.Item> baseQuery() {
@@ -61,17 +79,17 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
+                    QdslUtil.strEq(dpWidgetLib.siteId, search.getSiteId()),
                     andPathIdIn(search),
-                    andWidgetLibIdEq(search),
-                    andWidgetTypeCdEq(search),
-                    andUseYnEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId()),
+                    QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd()),
+                    QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -83,18 +101,18 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* 전시 위젯 라이브러리 페이지조회 */
     @Override
     public DpWidgetLibDto.PageResponse selectPageData(DpWidgetLibDto.Request search) {
-        int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo = search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(dpWidgetLib.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andWidgetLibIdEq(search),
-                andWidgetTypeCdEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId()),
+                QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd()),
+                QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -117,20 +135,12 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(DpWidgetLibDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? dpWidgetLib.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpWidgetLibDto.Request search) {
@@ -139,70 +149,10 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                 : null;
     }
 
-    /* widgetLibId 정확 일치 */
-    private BooleanExpression andWidgetLibIdEq(DpWidgetLibDto.Request search) {
-        return search != null && StringUtils.hasText(search.getWidgetLibId())
-                ? dpWidgetLib.widgetLibId.eq(search.getWidgetLibId()) : null;
+private BooleanExpression andSearchValueLike(DpWidgetLibDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* widgetTypeCd 정확 일치 */
-    private BooleanExpression andWidgetTypeCdEq(DpWidgetLibDto.Request search) {
-        return search != null && StringUtils.hasText(search.getWidgetTypeCd())
-                ? dpWidgetLib.widgetTypeCd.eq(search.getWidgetTypeCd()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(DpWidgetLibDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? dpWidgetLib.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(DpWidgetLibDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return dpWidgetLib.regDate.goe(start).and(dpWidgetLib.regDate.lt(endExcl));
-            case "upd_date": return dpWidgetLib.updDate.goe(start).and(dpWidgetLib.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(DpWidgetLibDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",isSystem,", dpWidgetLib.isSystem, pattern);
-        or = orLike(or, all, types, ",pathId,", dpWidgetLib.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", dpWidgetLib.siteId, pattern);
-        or = orLike(or, all, types, ",thumbnailUrl,", dpWidgetLib.thumbnailUrl, pattern);
-        or = orLike(or, all, types, ",useYn,", dpWidgetLib.useYn, pattern);
-        or = orLike(or, all, types, ",widgetCode,", dpWidgetLib.widgetCode, pattern);
-        or = orLike(or, all, types, ",widgetConfigJson,", dpWidgetLib.widgetConfigJson, pattern);
-        or = orLike(or, all, types, ",widgetContent,", dpWidgetLib.widgetContent, pattern);
-        or = orLike(or, all, types, ",widgetLibDesc,", dpWidgetLib.widgetLibDesc, pattern);
-        or = orLike(or, all, types, ",widgetLibId,", dpWidgetLib.widgetLibId, pattern);
-        or = orLike(or, all, types, ",widgetNm,", dpWidgetLib.widgetNm, pattern);
-        or = orLike(or, all, types, ",widgetTypeCd,", dpWidgetLib.widgetTypeCd, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

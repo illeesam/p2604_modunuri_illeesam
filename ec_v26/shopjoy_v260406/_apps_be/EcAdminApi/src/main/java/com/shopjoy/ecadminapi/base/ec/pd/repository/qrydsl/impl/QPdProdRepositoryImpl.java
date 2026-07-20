@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -22,15 +23,14 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** PdProd QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -47,6 +47,36 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final QSyCode     cdPs = new QSyCode("cd_ps");
     private static final QSyCode     cdPt = new QSyCode("cd_pt");
     private static final QSyCode     cdSz = new QSyCode("cd_sz");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", pdProd.regDate,
+        "upd_date", pdProd.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("adltYn", pdProd.adltYn),
+        Map.entry("advrtStmt", pdProd.advrtStmt),
+        Map.entry("brandId", pdProd.brandId),
+        Map.entry("categoryId", pdProd.categoryId),
+        Map.entry("contentHtml", pdProd.contentHtml),
+        Map.entry("couponUseYn", pdProd.couponUseYn),
+        Map.entry("discntUseYn", pdProd.discntUseYn),
+        Map.entry("dlivTmpltId", pdProd.dlivTmpltId),
+        Map.entry("isBest", pdProd.isBest),
+        Map.entry("isNew", pdProd.isNew),
+        Map.entry("mdUserId", pdProd.mdUserId),
+        Map.entry("prodCode", pdProd.prodCode),
+        Map.entry("prodId", pdProd.prodId),
+        Map.entry("prodNm", pdProd.prodNm),
+        Map.entry("prodStatusCd", pdProd.prodStatusCd),
+        Map.entry("prodStatusCdBefore", pdProd.prodStatusCdBefore),
+        Map.entry("prodTypeCd", pdProd.prodTypeCd),
+        Map.entry("sameDayDlivYn", pdProd.sameDayDlivYn),
+        Map.entry("saveUseYn", pdProd.saveUseYn),
+        Map.entry("siteId", pdProd.siteId),
+        Map.entry("sizeInfoCd", pdProd.sizeInfoCd),
+        Map.entry("soldOutYn", pdProd.soldOutYn),
+        Map.entry("thumbnailUrl", pdProd.thumbnailUrl),
+        Map.entry("vendorId", pdProd.vendorId)
+    );
 
     private static final QPdProdImg piThumb    = new QPdProdImg("pi_thumb");     // 썸네일 (is_thumb=Y, outer)
     private static final QPdProdImg piThumbMin = new QPdProdImg("pi_thumb_min"); // 썸네일 MIN(sort_ord) 내부
@@ -163,15 +193,15 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         JPAQuery<PdProdDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andProdIdsIn(search),
-                    andSiteIdEq(search),
-                    andProdIdEq(search),
-                    andBrandIdEq(search),
-                    andMdUserIdEq(search),
-                    andProdStatusCdEq(search),
-                    andProdTypeCdEq(search),
-                    andVendorIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strIn(pdProd.prodId, search.getProdIds()),
+                    QdslUtil.strEq(pdProd.siteId, search.getSiteId()),
+                    QdslUtil.strEq(pdProd.prodId, search.getProdId()),
+                    QdslUtil.strEq(pdProd.brandId, search.getBrandId()),
+                    QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
+                    QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
+                    QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
+                    QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -195,15 +225,15 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andProdIdsIn(search),
-                andSiteIdEq(search),
-                andProdIdEq(search),
-                andBrandIdEq(search),
-                andMdUserIdEq(search),
-                andProdStatusCdEq(search),
-                andProdTypeCdEq(search),
-                andVendorIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strIn(pdProd.prodId, search.getProdIds()),
+                QdslUtil.strEq(pdProd.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdProd.prodId, search.getProdId()),
+                QdslUtil.strEq(pdProd.brandId, search.getBrandId()),
+                QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
+                QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
+                QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
+                QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -229,122 +259,18 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andProdIdEq(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* prodId IN */
-    private BooleanExpression andProdIdsIn(PdProdDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getProdIds())
-                ? pdProd.prodId.in(search.getProdIds()) : null;
+private BooleanExpression andSearchValueLike(PdProdDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PdProdDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pdProd.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* prodId 정확 일치 */
-    private BooleanExpression andProdIdEq(PdProdDto.Request search) {
-        return search != null && StringUtils.hasText(search.getProdId())
-                ? pdProd.prodId.eq(search.getProdId()) : null;
-    }
-
-    /* brandId 정확 일치 */
-    private BooleanExpression andBrandIdEq(PdProdDto.Request search) {
-        return search != null && StringUtils.hasText(search.getBrandId())
-                ? pdProd.brandId.eq(search.getBrandId()) : null;
-    }
-
-    /* mdUserId 정확 일치 */
-    private BooleanExpression andMdUserIdEq(PdProdDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMdUserId())
-                ? pdProd.mdUserId.eq(search.getMdUserId()) : null;
-    }
-
-    /* prodStatusCd 정확 일치 */
-    private BooleanExpression andProdStatusCdEq(PdProdDto.Request search) {
-        return search != null && StringUtils.hasText(search.getProdStatusCd())
-                ? pdProd.prodStatusCd.eq(search.getProdStatusCd()) : null;
-    }
-
-    /* vendorId 정확 일치 */
-    private BooleanExpression andVendorIdEq(PdProdDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorId())
-                ? pdProd.vendorId.eq(search.getVendorId()) : null;
-    }
-
-    /* prodTypeCd 정확 일치 */
-    private BooleanExpression andProdTypeCdEq(PdProdDto.Request search) {
-        return search != null && StringUtils.hasText(search.getProdTypeCd())
-                ? pdProd.prodTypeCd.eq(search.getProdTypeCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PdProdDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return pdProd.regDate.goe(start).and(pdProd.regDate.lt(endExcl));
-            case "upd_date": return pdProd.updDate.goe(start).and(pdProd.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PdProdDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",adltYn,", pdProd.adltYn, pattern);
-        or = orLike(or, all, types, ",advrtStmt,", pdProd.advrtStmt, pattern);
-        or = orLike(or, all, types, ",brandId,", pdProd.brandId, pattern);
-        or = orLike(or, all, types, ",categoryId,", pdProd.categoryId, pattern);
-        or = orLike(or, all, types, ",contentHtml,", pdProd.contentHtml, pattern);
-        or = orLike(or, all, types, ",couponUseYn,", pdProd.couponUseYn, pattern);
-        or = orLike(or, all, types, ",discntUseYn,", pdProd.discntUseYn, pattern);
-        or = orLike(or, all, types, ",dlivTmpltId,", pdProd.dlivTmpltId, pattern);
-        or = orLike(or, all, types, ",isBest,", pdProd.isBest, pattern);
-        or = orLike(or, all, types, ",isNew,", pdProd.isNew, pattern);
-        or = orLike(or, all, types, ",mdUserId,", pdProd.mdUserId, pattern);
-        or = orLike(or, all, types, ",prodCode,", pdProd.prodCode, pattern);
-        or = orLike(or, all, types, ",prodId,", pdProd.prodId, pattern);
-        or = orLike(or, all, types, ",prodNm,", pdProd.prodNm, pattern);
-        or = orLike(or, all, types, ",prodStatusCd,", pdProd.prodStatusCd, pattern);
-        or = orLike(or, all, types, ",prodStatusCdBefore,", pdProd.prodStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",prodTypeCd,", pdProd.prodTypeCd, pattern);
-        or = orLike(or, all, types, ",sameDayDlivYn,", pdProd.sameDayDlivYn, pattern);
-        or = orLike(or, all, types, ",saveUseYn,", pdProd.saveUseYn, pattern);
-        or = orLike(or, all, types, ",siteId,", pdProd.siteId, pattern);
-        or = orLike(or, all, types, ",sizeInfoCd,", pdProd.sizeInfoCd, pattern);
-        or = orLike(or, all, types, ",soldOutYn,", pdProd.soldOutYn, pattern);
-        or = orLike(or, all, types, ",thumbnailUrl,", pdProd.thumbnailUrl, pattern);
-        or = orLike(or, all, types, ",vendorId,", pdProd.vendorId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

@@ -17,9 +17,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** OdhOrderItemChgHist QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistRepository {
@@ -27,6 +29,18 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhOrderItemChgHistRepositoryImpl";
     private static final QOdhOrderItemChgHist odhOrderItemChgHist = QOdhOrderItemChgHist.odhOrderItemChgHist;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("afterVal", odhOrderItemChgHist.afterVal),
+        Map.entry("beforeVal", odhOrderItemChgHist.beforeVal),
+        Map.entry("chgField", odhOrderItemChgHist.chgField),
+        Map.entry("chgReason", odhOrderItemChgHist.chgReason),
+        Map.entry("chgTypeCd", odhOrderItemChgHist.chgTypeCd),
+        Map.entry("chgUserId", odhOrderItemChgHist.chgUserId),
+        Map.entry("orderId", odhOrderItemChgHist.orderId),
+        Map.entry("orderItemChgHistId", odhOrderItemChgHist.orderItemChgHistId),
+        Map.entry("orderItemId", odhOrderItemChgHist.orderItemId),
+        Map.entry("siteId", odhOrderItemChgHist.siteId)
+    );
 
     /* 주문 아이템 변경 이력 baseSelColumnQuery */
     private JPAQuery<OdhOrderItemChgHistDto.Item> baseSelColumnQuery() {
@@ -56,13 +70,13 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         JPAQuery<OdhOrderItemChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andOrderItemChgHistIdEq(search),
+                    QdslUtil.strEq(odhOrderItemChgHist.siteId, search.getSiteId()),
+                    QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -74,15 +88,15 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
     /* 주문 아이템 변경 이력 페이지조회 */
     @Override
     public OdhOrderItemChgHistDto.PageResponse selectPageData(OdhOrderItemChgHistDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andOrderItemChgHistIdEq(search),
+                QdslUtil.strEq(odhOrderItemChgHist.siteId, search.getSiteId()),
+                QdslUtil.strEq(odhOrderItemChgHist.orderItemChgHistId, search.getOrderItemChgHistId()),
                 andSearchValueLike(search)
         };
 
@@ -111,50 +125,14 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
     /* 주문 아이템 변경 이력 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(OdhOrderItemChgHistDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? odhOrderItemChgHist.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(OdhOrderItemChgHistDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* orderItemChgHistId 정확 일치 */
-    private BooleanExpression andOrderItemChgHistIdEq(OdhOrderItemChgHistDto.Request search) {
-        return search != null && StringUtils.hasText(search.getOrderItemChgHistId())
-                ? odhOrderItemChgHist.orderItemChgHistId.eq(search.getOrderItemChgHistId()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(OdhOrderItemChgHistDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",afterVal,", odhOrderItemChgHist.afterVal, pattern);
-        or = orLike(or, all, types, ",beforeVal,", odhOrderItemChgHist.beforeVal, pattern);
-        or = orLike(or, all, types, ",chgField,", odhOrderItemChgHist.chgField, pattern);
-        or = orLike(or, all, types, ",chgReason,", odhOrderItemChgHist.chgReason, pattern);
-        or = orLike(or, all, types, ",chgTypeCd,", odhOrderItemChgHist.chgTypeCd, pattern);
-        or = orLike(or, all, types, ",chgUserId,", odhOrderItemChgHist.chgUserId, pattern);
-        or = orLike(or, all, types, ",orderId,", odhOrderItemChgHist.orderId, pattern);
-        or = orLike(or, all, types, ",orderItemChgHistId,", odhOrderItemChgHist.orderItemChgHistId, pattern);
-        or = orLike(or, all, types, ",orderItemId,", odhOrderItemChgHist.orderItemId, pattern);
-        or = orLike(or, all, types, ",siteId,", odhOrderItemChgHist.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

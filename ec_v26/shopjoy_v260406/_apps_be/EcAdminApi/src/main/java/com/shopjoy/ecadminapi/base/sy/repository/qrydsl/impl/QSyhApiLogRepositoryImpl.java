@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,12 +18,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhApiLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyhApiLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
@@ -31,6 +32,26 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhApiLogRepositoryImpl";
     private static final QSyhApiLog syhApiLog   = QSyhApiLog.syhApiLog;
     private static final QSySite    sySite = QSySite.sySite;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syhApiLog.regDate,
+        "upd_date", syhApiLog.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("apiNm", syhApiLog.apiNm),
+        Map.entry("apiTypeCd", syhApiLog.apiTypeCd),
+        Map.entry("cmdNm", syhApiLog.cmdNm),
+        Map.entry("endpoint", syhApiLog.endpoint),
+        Map.entry("errorMsg", syhApiLog.errorMsg),
+        Map.entry("logId", syhApiLog.logId),
+        Map.entry("methodCd", syhApiLog.methodCd),
+        Map.entry("refId", syhApiLog.refId),
+        Map.entry("refTypeCd", syhApiLog.refTypeCd),
+        Map.entry("reqBody", syhApiLog.reqBody),
+        Map.entry("resBody", syhApiLog.resBody),
+        Map.entry("resultCd", syhApiLog.resultCd),
+        Map.entry("siteId", syhApiLog.siteId),
+        Map.entry("uiNm", syhApiLog.uiNm)
+    );
 
     /* API 로그 baseSelColumnQuery */
     private JPAQuery<SyhApiLogDto.Item> baseSelColumnQuery() {
@@ -80,15 +101,15 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
         JPAQuery<SyhApiLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
-                andLogIdEq(search),
-                andTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhApiLog.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
+                QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -107,10 +128,10 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andLogIdEq(search),
-                andTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhApiLog.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
+                QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -139,76 +160,14 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyhApiLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syhApiLog.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyhApiLogDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* logId 정확 일치 */
-    private BooleanExpression andLogIdEq(SyhApiLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getLogId())
-                ? syhApiLog.logId.eq(search.getLogId()) : null;
-    }
-
-    /* apiTypeCd 정확 일치 */
-    private BooleanExpression andTypeCdEq(SyhApiLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTypeCd())
-                ? syhApiLog.apiTypeCd.eq(search.getTypeCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyhApiLogDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syhApiLog.regDate.goe(start).and(syhApiLog.regDate.lt(endExcl));
-            case "upd_date": return syhApiLog.updDate.goe(start).and(syhApiLog.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyhApiLogDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",apiNm,", syhApiLog.apiNm, pattern);
-        or = orLike(or, all, types, ",apiTypeCd,", syhApiLog.apiTypeCd, pattern);
-        or = orLike(or, all, types, ",cmdNm,", syhApiLog.cmdNm, pattern);
-        or = orLike(or, all, types, ",endpoint,", syhApiLog.endpoint, pattern);
-        or = orLike(or, all, types, ",errorMsg,", syhApiLog.errorMsg, pattern);
-        or = orLike(or, all, types, ",logId,", syhApiLog.logId, pattern);
-        or = orLike(or, all, types, ",methodCd,", syhApiLog.methodCd, pattern);
-        or = orLike(or, all, types, ",refId,", syhApiLog.refId, pattern);
-        or = orLike(or, all, types, ",refTypeCd,", syhApiLog.refTypeCd, pattern);
-        or = orLike(or, all, types, ",reqBody,", syhApiLog.reqBody, pattern);
-        or = orLike(or, all, types, ",resBody,", syhApiLog.resBody, pattern);
-        or = orLike(or, all, types, ",resultCd,", syhApiLog.resultCd, pattern);
-        or = orLike(or, all, types, ",siteId,", syhApiLog.siteId, pattern);
-        or = orLike(or, all, types, ",uiNm,", syhApiLog.uiNm, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

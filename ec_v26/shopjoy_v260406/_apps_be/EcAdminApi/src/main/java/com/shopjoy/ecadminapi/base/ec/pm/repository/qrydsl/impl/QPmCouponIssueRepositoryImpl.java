@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,15 +18,14 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponIssueRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PmCouponIssue QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
@@ -36,6 +36,19 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
     private static final QPmCoupon       pmCoupon    = QPmCoupon.pmCoupon;
     private static final QMbMember       mbMember    = QMbMember.mbMember;
     private static final QSyCode         cdCt = new QSyCode("cd_ct");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "issue_date", pmCouponIssue.issueDate,
+        "reg_date", pmCouponIssue.regDate,
+        "upd_date", pmCouponIssue.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("couponId", pmCouponIssue.couponId),
+        Map.entry("issueId", pmCouponIssue.issueId),
+        Map.entry("memberId", pmCouponIssue.memberId),
+        Map.entry("orderId", pmCouponIssue.orderId),
+        Map.entry("siteId", pmCouponIssue.siteId),
+        Map.entry("useYn", pmCouponIssue.useYn)
+    );
 
     /* 쿠폰 발행 baseSelColumnQuery */
     private JPAQuery<PmCouponIssueDto.Item> baseSelColumnQuery() {
@@ -79,17 +92,17 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         JPAQuery<PmCouponIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andCouponIdsIn(search),
-                    andIssueIdEq(search),
-                    andMemberIdEq(search),
-                    andUseYnEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(pmCouponIssue.siteId, search.getSiteId()),
+                    QdslUtil.strIn(pmCouponIssue.couponId, search.getCouponIds()),
+                    QdslUtil.strEq(pmCouponIssue.issueId, search.getIssueId()),
+                    QdslUtil.strEq(pmCouponIssue.memberId, search.getMemberId()),
+                    QdslUtil.strEq(pmCouponIssue.useYn, search.getUseYn()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -108,12 +121,12 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andCouponIdsIn(search),
-                andIssueIdEq(search),
-                andMemberIdEq(search),
-                andUseYnEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(pmCouponIssue.siteId, search.getSiteId()),
+                QdslUtil.strIn(pmCouponIssue.couponId, search.getCouponIds()),
+                QdslUtil.strEq(pmCouponIssue.issueId, search.getIssueId()),
+                QdslUtil.strEq(pmCouponIssue.memberId, search.getMemberId()),
+                QdslUtil.strEq(pmCouponIssue.useYn, search.getUseYn()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -141,81 +154,14 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PmCouponIssueDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pmCouponIssue.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(PmCouponIssueDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* couponId IN — prodId 기반 사전 필터용 */
-    private BooleanExpression andCouponIdsIn(PmCouponIssueDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getCouponIds())
-                ? pmCouponIssue.couponId.in(search.getCouponIds()) : null;
-    }
-
-    /* issueId 정확 일치 */
-    private BooleanExpression andIssueIdEq(PmCouponIssueDto.Request search) {
-        return search != null && StringUtils.hasText(search.getIssueId())
-                ? pmCouponIssue.issueId.eq(search.getIssueId()) : null;
-    }
-
-    /* memberId 정확 일치 */
-    private BooleanExpression andMemberIdEq(PmCouponIssueDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMemberId())
-                ? pmCouponIssue.memberId.eq(search.getMemberId()) : null;
-    }
-
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(PmCouponIssueDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? pmCouponIssue.useYn.eq(search.getUseYn()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(PmCouponIssueDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "issue_date": return pmCouponIssue.issueDate.goe(start).and(pmCouponIssue.issueDate.lt(endExcl));
-            case "reg_date": return pmCouponIssue.regDate.goe(start).and(pmCouponIssue.regDate.lt(endExcl));
-            case "upd_date": return pmCouponIssue.updDate.goe(start).and(pmCouponIssue.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PmCouponIssueDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",couponId,", pmCouponIssue.couponId, pattern);
-        or = orLike(or, all, types, ",issueId,", pmCouponIssue.issueId, pattern);
-        or = orLike(or, all, types, ",memberId,", pmCouponIssue.memberId, pattern);
-        or = orLike(or, all, types, ",orderId,", pmCouponIssue.orderId, pattern);
-        or = orLike(or, all, types, ",siteId,", pmCouponIssue.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", pmCouponIssue.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -254,7 +200,6 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
     }
 
     /* 쿠폰 발행 수정 */
-
 
     @Override
     public int updateSelective(PmCouponIssue entity) {

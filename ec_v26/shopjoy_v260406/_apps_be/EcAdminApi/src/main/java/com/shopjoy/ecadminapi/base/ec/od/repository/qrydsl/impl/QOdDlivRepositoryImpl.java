@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,15 +18,14 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdDlivRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** OdDliv QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -41,6 +41,45 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     private static final QSyCode   cdDd = new QSyCode("cd_dd");
     private static final QSyCode   cdOc = new QSyCode("cd_oc");
     private static final QSyCode   cdIc = new QSyCode("cd_ic");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "dliv_ship_date", odDliv.dlivShipDate,
+        "dliv_date", odDliv.dlivDate,
+        "reg_date", odDliv.regDate,
+        "upd_date", odDliv.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("apprAprvUserId", odDliv.apprAprvUserId),
+        Map.entry("apprReason", odDliv.apprReason),
+        Map.entry("apprReqUserId", odDliv.apprReqUserId),
+        Map.entry("apprStatusCd", odDliv.apprStatusCd),
+        Map.entry("apprStatusCdBefore", odDliv.apprStatusCdBefore),
+        Map.entry("apprTargetCd", odDliv.apprTargetCd),
+        Map.entry("apprTargetNm", odDliv.apprTargetNm),
+        Map.entry("claimId", odDliv.claimId),
+        Map.entry("dlivDivCd", odDliv.dlivDivCd),
+        Map.entry("dlivId", odDliv.dlivId),
+        Map.entry("dlivMemo", odDliv.dlivMemo),
+        Map.entry("dlivPayTypeCd", odDliv.dlivPayTypeCd),
+        Map.entry("dlivStatusCd", odDliv.dlivStatusCd),
+        Map.entry("dlivStatusCdBefore", odDliv.dlivStatusCdBefore),
+        Map.entry("dlivTypeCd", odDliv.dlivTypeCd),
+        Map.entry("inboundCourierCd", odDliv.inboundCourierCd),
+        Map.entry("inboundTrackingNo", odDliv.inboundTrackingNo),
+        Map.entry("memberId", odDliv.memberId),
+        Map.entry("memberNm", odDliv.memberNm),
+        Map.entry("orderId", odDliv.orderId),
+        Map.entry("outboundCourierCd", odDliv.outboundCourierCd),
+        Map.entry("outboundTrackingNo", odDliv.outboundTrackingNo),
+        Map.entry("parentDlivId", odDliv.parentDlivId),
+        Map.entry("recvAddr", odDliv.recvAddr),
+        Map.entry("recvAddrDetail", odDliv.recvAddrDetail),
+        Map.entry("recvNm", odDliv.recvNm),
+        Map.entry("recvPhone", odDliv.recvPhone),
+        Map.entry("recvZip", odDliv.recvZip),
+        Map.entry("shippingFeeTypeCd", odDliv.shippingFeeTypeCd),
+        Map.entry("siteId", odDliv.siteId),
+        Map.entry("vendorId", odDliv.vendorId)
+    );
 
     /* 배송 baseSelColumnQuery */
     private JPAQuery<OdDlivDto.Item> baseSelColumnQuery() {
@@ -93,13 +132,13 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andOrderIdsIn(search),
-                    andOrderIdEq(search),
-                    andSiteIdEq(search),
-                    andDlivIdEq(search),
-                    andMemberIdEq(search),
-                    andDlivStatusCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strIn(odDliv.orderId, search.getOrderIds()),
+                    QdslUtil.strEq(odDliv.orderId, search.getOrderId()),
+                    QdslUtil.strEq(odDliv.siteId, search.getSiteId()),
+                    QdslUtil.strEq(odDliv.dlivId, search.getDlivId()),
+                    QdslUtil.strEq(odDliv.memberId, search.getMemberId()),
+                    QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -123,13 +162,13 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andOrderIdsIn(search),
-                andOrderIdEq(search),
-                andSiteIdEq(search),
-                andDlivIdEq(search),
-                andMemberIdEq(search),
-                andDlivStatusCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strIn(odDliv.orderId, search.getOrderIds()),
+                QdslUtil.strEq(odDliv.orderId, search.getOrderId()),
+                QdslUtil.strEq(odDliv.siteId, search.getSiteId()),
+                QdslUtil.strEq(odDliv.dlivId, search.getDlivId()),
+                QdslUtil.strEq(odDliv.memberId, search.getMemberId()),
+                QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -157,113 +196,14 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* orderId IN */
-    private BooleanExpression andOrderIdsIn(OdDlivDto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getOrderIds())
-                ? odDliv.orderId.in(search.getOrderIds()) : null;
+private BooleanExpression andSearchValueLike(OdDlivDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* orderId 정확 일치 */
-    private BooleanExpression andOrderIdEq(OdDlivDto.Request search) {
-        return search != null && StringUtils.hasText(search.getOrderId())
-                ? odDliv.orderId.eq(search.getOrderId()) : null;
-    }
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(OdDlivDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? odDliv.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* dlivId 정확 일치 */
-    private BooleanExpression andDlivIdEq(OdDlivDto.Request search) {
-        return search != null && StringUtils.hasText(search.getDlivId())
-                ? odDliv.dlivId.eq(search.getDlivId()) : null;
-    }
-
-    /* memberId 정확 일치 */
-    private BooleanExpression andMemberIdEq(OdDlivDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMemberId())
-                ? odDliv.memberId.eq(search.getMemberId()) : null;
-    }
-
-    /* dlivStatusCd 정확 일치 */
-    private BooleanExpression andDlivStatusCdEq(OdDlivDto.Request search) {
-        return search != null && StringUtils.hasText(search.getDlivStatusCd())
-                ? odDliv.dlivStatusCd.eq(search.getDlivStatusCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(OdDlivDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "dliv_ship_date": return odDliv.dlivShipDate.goe(start).and(odDliv.dlivShipDate.lt(endExcl));
-            case "dliv_date": return odDliv.dlivDate.goe(start).and(odDliv.dlivDate.lt(endExcl));
-            case "reg_date": return odDliv.regDate.goe(start).and(odDliv.regDate.lt(endExcl));
-            case "upd_date": return odDliv.updDate.goe(start).and(odDliv.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(OdDlivDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",apprAprvUserId,", odDliv.apprAprvUserId, pattern);
-        or = orLike(or, all, types, ",apprReason,", odDliv.apprReason, pattern);
-        or = orLike(or, all, types, ",apprReqUserId,", odDliv.apprReqUserId, pattern);
-        or = orLike(or, all, types, ",apprStatusCd,", odDliv.apprStatusCd, pattern);
-        or = orLike(or, all, types, ",apprStatusCdBefore,", odDliv.apprStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",apprTargetCd,", odDliv.apprTargetCd, pattern);
-        or = orLike(or, all, types, ",apprTargetNm,", odDliv.apprTargetNm, pattern);
-        or = orLike(or, all, types, ",claimId,", odDliv.claimId, pattern);
-        or = orLike(or, all, types, ",dlivDivCd,", odDliv.dlivDivCd, pattern);
-        or = orLike(or, all, types, ",dlivId,", odDliv.dlivId, pattern);
-        or = orLike(or, all, types, ",dlivMemo,", odDliv.dlivMemo, pattern);
-        or = orLike(or, all, types, ",dlivPayTypeCd,", odDliv.dlivPayTypeCd, pattern);
-        or = orLike(or, all, types, ",dlivStatusCd,", odDliv.dlivStatusCd, pattern);
-        or = orLike(or, all, types, ",dlivStatusCdBefore,", odDliv.dlivStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",dlivTypeCd,", odDliv.dlivTypeCd, pattern);
-        or = orLike(or, all, types, ",inboundCourierCd,", odDliv.inboundCourierCd, pattern);
-        or = orLike(or, all, types, ",inboundTrackingNo,", odDliv.inboundTrackingNo, pattern);
-        or = orLike(or, all, types, ",memberId,", odDliv.memberId, pattern);
-        or = orLike(or, all, types, ",memberNm,", odDliv.memberNm, pattern);
-        or = orLike(or, all, types, ",orderId,", odDliv.orderId, pattern);
-        or = orLike(or, all, types, ",outboundCourierCd,", odDliv.outboundCourierCd, pattern);
-        or = orLike(or, all, types, ",outboundTrackingNo,", odDliv.outboundTrackingNo, pattern);
-        or = orLike(or, all, types, ",parentDlivId,", odDliv.parentDlivId, pattern);
-        or = orLike(or, all, types, ",recvAddr,", odDliv.recvAddr, pattern);
-        or = orLike(or, all, types, ",recvAddrDetail,", odDliv.recvAddrDetail, pattern);
-        or = orLike(or, all, types, ",recvNm,", odDliv.recvNm, pattern);
-        or = orLike(or, all, types, ",recvPhone,", odDliv.recvPhone, pattern);
-        or = orLike(or, all, types, ",recvZip,", odDliv.recvZip, pattern);
-        or = orLike(or, all, types, ",shippingFeeTypeCd,", odDliv.shippingFeeTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", odDliv.siteId, pattern);
-        or = orLike(or, all, types, ",vendorId,", odDliv.vendorId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
@@ -304,7 +244,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     }
 
     /* 배송 수정 */
-
 
     @Override
     public int updateSelective(OdDliv entity) {

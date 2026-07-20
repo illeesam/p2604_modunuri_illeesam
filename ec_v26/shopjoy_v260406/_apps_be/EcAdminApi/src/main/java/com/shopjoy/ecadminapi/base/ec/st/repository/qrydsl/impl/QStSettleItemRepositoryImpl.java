@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -20,12 +21,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** StSettleItem QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
@@ -37,6 +38,21 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     private static final QOdOrderItem  odOrderItem  = QOdOrderItem.odOrderItem;
     private static final QSySite       sySite  = QSySite.sySite;
     private static final QSyCode       cdSit = new QSyCode("cd_sit");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "order_date", stSettleItem.orderDate,
+        "reg_date", stSettleItem.regDate,
+        "upd_date", stSettleItem.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("orderId", stSettleItem.orderId),
+        Map.entry("orderItemId", stSettleItem.orderItemId),
+        Map.entry("prodId", stSettleItem.prodId),
+        Map.entry("settleId", stSettleItem.settleId),
+        Map.entry("settleItemId", stSettleItem.settleItemId),
+        Map.entry("settleItemTypeCd", stSettleItem.settleItemTypeCd),
+        Map.entry("siteId", stSettleItem.siteId),
+        Map.entry("vendorId", stSettleItem.vendorId)
+    );
 
     /* 정산 항목 baseListQuery */
     private JPAQuery<StSettleItemDto.Item> baseListQuery() {
@@ -75,9 +91,9 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         JPAQuery<StSettleItemDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andSettleItemIdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(stSettleItem.siteId, search.getSiteId()),
+                    QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -101,9 +117,9 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andSettleItemIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(stSettleItem.siteId, search.getSiteId()),
+                QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -129,70 +145,17 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* 정산 항목 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(StSettleItemDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? stSettleItem.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(StSettleItemDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* settleItemId 정확 일치 */
-    private BooleanExpression andSettleItemIdEq(StSettleItemDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSettleItemId())
-                ? stSettleItem.settleItemId.eq(search.getSettleItemId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(StSettleItemDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "order_date": return stSettleItem.orderDate.goe(start).and(stSettleItem.orderDate.lt(endExcl));
-            case "reg_date": return stSettleItem.regDate.goe(start).and(stSettleItem.regDate.lt(endExcl));
-            case "upd_date": return stSettleItem.updDate.goe(start).and(stSettleItem.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(StSettleItemDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",orderId,", stSettleItem.orderId, pattern);
-        or = orLike(or, all, types, ",orderItemId,", stSettleItem.orderItemId, pattern);
-        or = orLike(or, all, types, ",prodId,", stSettleItem.prodId, pattern);
-        or = orLike(or, all, types, ",settleId,", stSettleItem.settleId, pattern);
-        or = orLike(or, all, types, ",settleItemId,", stSettleItem.settleItemId, pattern);
-        or = orLike(or, all, types, ",settleItemTypeCd,", stSettleItem.settleItemTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", stSettleItem.siteId, pattern);
-        or = orLike(or, all, types, ",vendorId,", stSettleItem.vendorId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

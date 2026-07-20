@@ -13,12 +13,13 @@ import com.shopjoy.ecadminapi.base.zz.data.entity.QZzExam1;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExam1;
 import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzExam1Repository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** ZzExam1 QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -27,6 +28,14 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzExam1RepositoryImpl";
     private static final QZzExam1 zzExam1 = QZzExam1.zzExam1;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("col11", zzExam1.col11),
+        Map.entry("col12", zzExam1.col12),
+        Map.entry("col13", zzExam1.col13),
+        Map.entry("col14", zzExam1.col14),
+        Map.entry("col15", zzExam1.col15),
+        Map.entry("exam1Id", zzExam1.exam1Id)
+    );
 
     /* zz_exam1 baseSelColumnQuery */
     private JPAQuery<ZzExam1Dto.Item> baseSelColumnQuery() {
@@ -63,13 +72,13 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
 
         JPAQuery<ZzExam1Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andExam1IdsIn(search),
-                andExam1IdEq(search),
+                QdslUtil.strIn(zzExam1.exam1Id, search.getExam1Ids()),
+                QdslUtil.strEq(zzExam1.exam1Id, search.getExam1Id()),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -88,8 +97,8 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andExam1IdsIn(search),
-                andExam1IdEq(search),
+                QdslUtil.strIn(zzExam1.exam1Id, search.getExam1Ids()),
+                QdslUtil.strEq(zzExam1.exam1Id, search.getExam1Id()),
                 andSearchValueLike(search)
         };
 
@@ -118,46 +127,14 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     /* searchType 사용 예  searchType = "col11,col12" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* exam1Id IN */
-    private BooleanExpression andExam1IdsIn(ZzExam1Dto.Request search) {
-        return search != null && !CollectionUtils.isEmpty(search.getExam1Ids())
-                ? zzExam1.exam1Id.in(search.getExam1Ids()) : null;
+private BooleanExpression andSearchValueLike(ZzExam1Dto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* exam1Id 정확 일치 */
-    private BooleanExpression andExam1IdEq(ZzExam1Dto.Request search) {
-        return search != null && StringUtils.hasText(search.getExam1Id())
-                ? zzExam1.exam1Id.eq(search.getExam1Id()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(ZzExam1Dto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",col11,", zzExam1.col11, pattern);
-        or = orLike(or, all, types, ",col12,", zzExam1.col12, pattern);
-        or = orLike(or, all, types, ",col13,", zzExam1.col13, pattern);
-        or = orLike(or, all, types, ",col14,", zzExam1.col14, pattern);
-        or = orLike(or, all, types, ",col15,", zzExam1.col15, pattern);
-        or = orLike(or, all, types, ",exam1Id,", zzExam1.exam1Id, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /* zz_exam1 buildOrder */
     @SuppressWarnings({"rawtypes","unchecked"})

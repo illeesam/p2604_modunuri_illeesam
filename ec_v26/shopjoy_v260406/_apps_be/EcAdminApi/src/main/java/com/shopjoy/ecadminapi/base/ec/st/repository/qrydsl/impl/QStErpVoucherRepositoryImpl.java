@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,12 +20,12 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** StErpVoucher QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
@@ -36,6 +37,23 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     private static final QSyVendor     syVendor  = QSyVendor.syVendor;
     private static final QSyCode       cdEvt = new QSyCode("cd_evt");
     private static final QSyCode       cdEvs = new QSyCode("cd_evs");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", stErpVoucher.regDate,
+        "upd_date", stErpVoucher.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("erpResMsg", stErpVoucher.erpResMsg),
+        Map.entry("erpVoucherDesc", stErpVoucher.erpVoucherDesc),
+        Map.entry("erpVoucherId", stErpVoucher.erpVoucherId),
+        Map.entry("erpVoucherNo", stErpVoucher.erpVoucherNo),
+        Map.entry("erpVoucherStatusCd", stErpVoucher.erpVoucherStatusCd),
+        Map.entry("erpVoucherStatusCdBefore", stErpVoucher.erpVoucherStatusCdBefore),
+        Map.entry("erpVoucherTypeCd", stErpVoucher.erpVoucherTypeCd),
+        Map.entry("settleId", stErpVoucher.settleId),
+        Map.entry("settleYm", stErpVoucher.settleYm),
+        Map.entry("siteId", stErpVoucher.siteId),
+        Map.entry("vendorId", stErpVoucher.vendorId)
+    );
 
     /* ERP 전표 baseListQuery */
     private JPAQuery<StErpVoucherDto.Item> baseListQuery() {
@@ -76,11 +94,11 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         JPAQuery<StErpVoucherDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andErpVoucherIdEq(search),
-                    andErpVoucherTypeCdEq(search),
-                    andErpVoucherStatusCdEq(search),
-                    andDateRangeBetween(search),
+                    QdslUtil.strEq(stErpVoucher.siteId, search.getSiteId()),
+                    QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()),
+                    QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()),
+                    QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()),
+                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -104,11 +122,11 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andErpVoucherIdEq(search),
-                andErpVoucherTypeCdEq(search),
-                andErpVoucherStatusCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(stErpVoucher.siteId, search.getSiteId()),
+                QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()),
+                QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()),
+                QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -134,87 +152,17 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* ERP 전표 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(StErpVoucherDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? stErpVoucher.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(StErpVoucherDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* erpVoucherId 정확 일치 */
-    private BooleanExpression andErpVoucherIdEq(StErpVoucherDto.Request search) {
-        return search != null && StringUtils.hasText(search.getErpVoucherId())
-                ? stErpVoucher.erpVoucherId.eq(search.getErpVoucherId()) : null;
-    }
-
-    /* erpVoucherTypeCd 정확 일치 */
-    private BooleanExpression andErpVoucherTypeCdEq(StErpVoucherDto.Request search) {
-        return search != null && StringUtils.hasText(search.getErpVoucherTypeCd())
-                ? stErpVoucher.erpVoucherTypeCd.eq(search.getErpVoucherTypeCd()) : null;
-    }
-
-    /* erpVoucherStatusCd 정확 일치 */
-    private BooleanExpression andErpVoucherStatusCdEq(StErpVoucherDto.Request search) {
-        return search != null && StringUtils.hasText(search.getErpVoucherStatusCd())
-                ? stErpVoucher.erpVoucherStatusCd.eq(search.getErpVoucherStatusCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(StErpVoucherDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate startDate = LocalDate.parse(search.getDateStart(), fmt);
-        LocalDate endIncl   = LocalDate.parse(search.getDateEnd(),   fmt);
-        LocalDateTime start   = startDate.atStartOfDay();
-        LocalDateTime endExcl = endIncl.plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "voucher_date": return stErpVoucher.voucherDate.goe(startDate).and(stErpVoucher.voucherDate.loe(endIncl));
-            case "reg_date": return stErpVoucher.regDate.goe(start).and(stErpVoucher.regDate.lt(endExcl));
-            case "upd_date": return stErpVoucher.updDate.goe(start).and(stErpVoucher.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(StErpVoucherDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",erpResMsg,", stErpVoucher.erpResMsg, pattern);
-        or = orLike(or, all, types, ",erpVoucherDesc,", stErpVoucher.erpVoucherDesc, pattern);
-        or = orLike(or, all, types, ",erpVoucherId,", stErpVoucher.erpVoucherId, pattern);
-        or = orLike(or, all, types, ",erpVoucherNo,", stErpVoucher.erpVoucherNo, pattern);
-        or = orLike(or, all, types, ",erpVoucherStatusCd,", stErpVoucher.erpVoucherStatusCd, pattern);
-        or = orLike(or, all, types, ",erpVoucherStatusCdBefore,", stErpVoucher.erpVoucherStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",erpVoucherTypeCd,", stErpVoucher.erpVoucherTypeCd, pattern);
-        or = orLike(or, all, types, ",settleId,", stErpVoucher.settleId, pattern);
-        or = orLike(or, all, types, ",settleYm,", stErpVoucher.settleYm, pattern);
-        or = orLike(or, all, types, ",siteId,", stErpVoucher.siteId, pattern);
-        or = orLike(or, all, types, ",vendorId,", stErpVoucher.vendorId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

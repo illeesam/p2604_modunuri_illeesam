@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,12 +20,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhAccessLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyhAccessLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
@@ -38,6 +39,36 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private static final QSyDept   syDept   = QSyDept.syDept;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyCode   cd_at    = new QSyCode("cd_at");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syhAccessLog.regDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("appTypeCd", syhAccessLog.appTypeCd),
+        Map.entry("cmdNm", syhAccessLog.cmdNm),
+        Map.entry("deptId", syhAccessLog.deptId),
+        Map.entry("fileNm", syhAccessLog.fileNm),
+        Map.entry("funcNm", syhAccessLog.funcNm),
+        Map.entry("lineNo", syhAccessLog.lineNo),
+        Map.entry("localeId", syhAccessLog.localeId),
+        Map.entry("logId", syhAccessLog.logId),
+        Map.entry("profile", syhAccessLog.profile),
+        Map.entry("reqBody", syhAccessLog.reqBody),
+        Map.entry("reqHost", syhAccessLog.reqHost),
+        Map.entry("reqIp", syhAccessLog.reqIp),
+        Map.entry("reqMethod", syhAccessLog.reqMethod),
+        Map.entry("reqPath", syhAccessLog.reqPath),
+        Map.entry("reqQuery", syhAccessLog.reqQuery),
+        Map.entry("reqUa", syhAccessLog.reqUa),
+        Map.entry("respBody", syhAccessLog.respBody),
+        Map.entry("roleId", syhAccessLog.roleId),
+        Map.entry("serverNm", syhAccessLog.serverNm),
+        Map.entry("siteId", syhAccessLog.siteId),
+        Map.entry("threadNm", syhAccessLog.threadNm),
+        Map.entry("traceId", syhAccessLog.traceId),
+        Map.entry("uiNm", syhAccessLog.uiNm),
+        Map.entry("userId", syhAccessLog.userId),
+        Map.entry("vendorId", syhAccessLog.vendorId)
+    );
 
     /* baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드) */
     private JPAQuery<SyhAccessLogDto.Item> baseSelColumnQuery() {
@@ -108,13 +139,13 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andMethodEq(search),
+                QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod()),
                 andStatusEq(search),
                 andPathLike(search),
                 andUiNmLike(search),
-                andTraceIdEq(search),
-                andAppTypeCdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()),
+                QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -143,15 +174,9 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* reqMethod 정확 일치 */
-    private BooleanExpression andMethodEq(SyhAccessLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMethod())
-                ? syhAccessLog.reqMethod.eq(search.getMethod()) : null;
-    }
 
     /* respStatus 정확 일치 (숫자만 파싱, 비숫자면 무시) */
     private BooleanExpression andStatusEq(SyhAccessLogDto.Request search) {
@@ -175,76 +200,10 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 ? syhAccessLog.uiNm.likeIgnoreCase("%" + search.getUiNm().trim() + "%") : null;
     }
 
-    /* traceId 정확 일치 */
-    private BooleanExpression andTraceIdEq(SyhAccessLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTraceId())
-                ? syhAccessLog.traceId.eq(search.getTraceId().trim()) : null;
+private BooleanExpression andSearchValueLike(SyhAccessLogDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* appTypeCd 정확 일치 */
-    private BooleanExpression andAppTypeCdEq(SyhAccessLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getAppTypeCd())
-                ? syhAccessLog.appTypeCd.eq(search.getAppTypeCd()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyhAccessLogDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syhAccessLog.regDate.goe(start).and(syhAccessLog.regDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyhAccessLogDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",appTypeCd,", syhAccessLog.appTypeCd, pattern);
-        or = orLike(or, all, types, ",cmdNm,", syhAccessLog.cmdNm, pattern);
-        or = orLike(or, all, types, ",deptId,", syhAccessLog.deptId, pattern);
-        or = orLike(or, all, types, ",fileNm,", syhAccessLog.fileNm, pattern);
-        or = orLike(or, all, types, ",funcNm,", syhAccessLog.funcNm, pattern);
-        or = orLike(or, all, types, ",lineNo,", syhAccessLog.lineNo, pattern);
-        or = orLike(or, all, types, ",localeId,", syhAccessLog.localeId, pattern);
-        or = orLike(or, all, types, ",logId,", syhAccessLog.logId, pattern);
-        or = orLike(or, all, types, ",profile,", syhAccessLog.profile, pattern);
-        or = orLike(or, all, types, ",reqBody,", syhAccessLog.reqBody, pattern);
-        or = orLike(or, all, types, ",reqHost,", syhAccessLog.reqHost, pattern);
-        or = orLike(or, all, types, ",reqIp,", syhAccessLog.reqIp, pattern);
-        or = orLike(or, all, types, ",reqMethod,", syhAccessLog.reqMethod, pattern);
-        or = orLike(or, all, types, ",reqPath,", syhAccessLog.reqPath, pattern);
-        or = orLike(or, all, types, ",reqQuery,", syhAccessLog.reqQuery, pattern);
-        or = orLike(or, all, types, ",reqUa,", syhAccessLog.reqUa, pattern);
-        or = orLike(or, all, types, ",respBody,", syhAccessLog.respBody, pattern);
-        or = orLike(or, all, types, ",roleId,", syhAccessLog.roleId, pattern);
-        or = orLike(or, all, types, ",serverNm,", syhAccessLog.serverNm, pattern);
-        or = orLike(or, all, types, ",siteId,", syhAccessLog.siteId, pattern);
-        or = orLike(or, all, types, ",threadNm,", syhAccessLog.threadNm, pattern);
-        or = orLike(or, all, types, ",traceId,", syhAccessLog.traceId, pattern);
-        or = orLike(or, all, types, ",uiNm,", syhAccessLog.uiNm, pattern);
-        or = orLike(or, all, types, ",userId,", syhAccessLog.userId, pattern);
-        or = orLike(or, all, types, ",vendorId,", syhAccessLog.vendorId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,12 +21,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyVendorBrandRepository
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyVendorBrand QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
@@ -37,6 +38,20 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyBrand syBrand = QSyBrand.syBrand;
     private static final QSyCode cdVbc = new QSyCode("cd_vbc");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syVendorBrand.regDate,
+        "upd_date", syVendorBrand.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("brandId", syVendorBrand.brandId),
+        Map.entry("contractCd", syVendorBrand.contractCd),
+        Map.entry("isMain", syVendorBrand.isMain),
+        Map.entry("siteId", syVendorBrand.siteId),
+        Map.entry("useYn", syVendorBrand.useYn),
+        Map.entry("vendorBrandId", syVendorBrand.vendorBrandId),
+        Map.entry("vendorBrandRemark", syVendorBrand.vendorBrandRemark),
+        Map.entry("vendorId", syVendorBrand.vendorId)
+    );
 
     /* 업체별 브랜드 baseSelColumnQuery */
     private JPAQuery<SyVendorBrandDto.Item> baseSelColumnQuery() {
@@ -72,16 +87,16 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
-                andVendorBrandIdEq(search),
-                andBrandIdEq(search),
-                andVendorIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syVendorBrand.siteId, search.getSiteId()),
+                QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()),
+                QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()),
+                QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -93,18 +108,18 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     /* 업체별 브랜드 페이지조회 */
     @Override
     public SyVendorBrandDto.PageResponse selectPageData(SyVendorBrandDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andVendorBrandIdEq(search),
-                andBrandIdEq(search),
-                andVendorIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syVendorBrand.siteId, search.getSiteId()),
+                QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()),
+                QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()),
+                QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -133,76 +148,14 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     /* 업체별 브랜드 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyVendorBrandDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syVendorBrand.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyVendorBrandDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* vendorBrandId 정확 일치 */
-    private BooleanExpression andVendorBrandIdEq(SyVendorBrandDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorBrandId())
-                ? syVendorBrand.vendorBrandId.eq(search.getVendorBrandId()) : null;
-    }
-
-    /* brandId 정확 일치 */
-    private BooleanExpression andBrandIdEq(SyVendorBrandDto.Request search) {
-        return search != null && StringUtils.hasText(search.getBrandId())
-                ? syVendorBrand.brandId.eq(search.getBrandId()) : null;
-    }
-
-    /* vendorId 정확 일치 */
-    private BooleanExpression andVendorIdEq(SyVendorBrandDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorId())
-                ? syVendorBrand.vendorId.eq(search.getVendorId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyVendorBrandDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syVendorBrand.regDate.goe(start).and(syVendorBrand.regDate.lt(endExcl));
-            case "upd_date": return syVendorBrand.updDate.goe(start).and(syVendorBrand.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyVendorBrandDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",brandId,", syVendorBrand.brandId, pattern);
-        or = orLike(or, all, types, ",contractCd,", syVendorBrand.contractCd, pattern);
-        or = orLike(or, all, types, ",isMain,", syVendorBrand.isMain, pattern);
-        or = orLike(or, all, types, ",siteId,", syVendorBrand.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", syVendorBrand.useYn, pattern);
-        or = orLike(or, all, types, ",vendorBrandId,", syVendorBrand.vendorBrandId, pattern);
-        or = orLike(or, all, types, ",vendorBrandRemark,", syVendorBrand.vendorBrandRemark, pattern);
-        or = orLike(or, all, types, ",vendorId,", syVendorBrand.vendorId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyAlarm QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
@@ -42,6 +43,19 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     private static final QSyCode cdAt = new QSyCode("cd_at");
     private static final QSyCode cdAc = new QSyCode("cd_ac");
     private static final QSyCode cdAtt = new QSyCode("cd_att");
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("alarmId", syAlarm.alarmId),
+        Map.entry("alarmMsg", syAlarm.alarmMsg),
+        Map.entry("alarmStatusCd", syAlarm.alarmStatusCd),
+        Map.entry("alarmTitle", syAlarm.alarmTitle),
+        Map.entry("alarmTypeCd", syAlarm.alarmTypeCd),
+        Map.entry("channelCd", syAlarm.channelCd),
+        Map.entry("pathId", syAlarm.pathId),
+        Map.entry("siteId", syAlarm.siteId),
+        Map.entry("targetId", syAlarm.targetId),
+        Map.entry("targetTypeCd", syAlarm.targetTypeCd),
+        Map.entry("templateId", syAlarm.templateId)
+    );
 
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -81,11 +95,11 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         JPAQuery<SyAlarmDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
+                    QdslUtil.strEq(syAlarm.siteId, search.getSiteId()),
                     andPathIdIn(search),
-                    andAlarmIdEq(search),
-                    andStatusEq(search),
-                    andTypeCdEq(search),
+                    QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()),
+                    QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()),
+                    QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -109,11 +123,11 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
+                QdslUtil.strEq(syAlarm.siteId, search.getSiteId()),
                 andPathIdIn(search),
-                andAlarmIdEq(search),
-                andStatusEq(search),
-                andTypeCdEq(search),
+                QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()),
+                QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()),
+                QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()),
                 andSearchValueLike(search)
         };
 
@@ -139,20 +153,12 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-
-
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
-
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyAlarmDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syAlarm.siteId.eq(search.getSiteId()) : null;
-    }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyAlarmDto.Request search) {
@@ -161,53 +167,10 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 : null;
     }
 
-    /* alarmId 정확 일치 */
-    private BooleanExpression andAlarmIdEq(SyAlarmDto.Request search) {
-        return search != null && StringUtils.hasText(search.getAlarmId())
-                ? syAlarm.alarmId.eq(search.getAlarmId()) : null;
+private BooleanExpression andSearchValueLike(SyAlarmDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* alarmStatusCd 정확 일치 */
-    private BooleanExpression andStatusEq(SyAlarmDto.Request search) {
-        return search != null && StringUtils.hasText(search.getStatus())
-                ? syAlarm.alarmStatusCd.eq(search.getStatus()) : null;
-    }
-
-    /* alarmTypeCd 정확 일치 */
-    private BooleanExpression andTypeCdEq(SyAlarmDto.Request search) {
-        return search != null && StringUtils.hasText(search.getTypeCd())
-                ? syAlarm.alarmTypeCd.eq(search.getTypeCd()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyAlarmDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",alarmId,", syAlarm.alarmId, pattern);
-        or = orLike(or, all, types, ",alarmMsg,", syAlarm.alarmMsg, pattern);
-        or = orLike(or, all, types, ",alarmStatusCd,", syAlarm.alarmStatusCd, pattern);
-        or = orLike(or, all, types, ",alarmTitle,", syAlarm.alarmTitle, pattern);
-        or = orLike(or, all, types, ",alarmTypeCd,", syAlarm.alarmTypeCd, pattern);
-        or = orLike(or, all, types, ",channelCd,", syAlarm.channelCd, pattern);
-        or = orLike(or, all, types, ",pathId,", syAlarm.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", syAlarm.siteId, pattern);
-        or = orLike(or, all, types, ",targetId,", syAlarm.targetId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", syAlarm.targetTypeCd, pattern);
-        or = orLike(or, all, types, ",templateId,", syAlarm.templateId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

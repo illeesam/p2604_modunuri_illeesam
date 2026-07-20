@@ -18,9 +18,11 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** PdhProdSkuChgHist QueryDSL Custom 구현체 — write-once 로그성 (updBy/updDate 없음) */
 @RequiredArgsConstructor
 public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepository {
@@ -31,6 +33,17 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
     private static final QSySite            sySite    = QSySite.sySite;
     private static final QPdProd            pdProd    = QPdProd.pdProd;
     private static final QSyCode            cd_sct = new QSyCode("cd_sct");
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("afterVal", pdhProdSkuChgHist.afterVal),
+        Map.entry("beforeVal", pdhProdSkuChgHist.beforeVal),
+        Map.entry("chgBy", pdhProdSkuChgHist.chgBy),
+        Map.entry("chgReason", pdhProdSkuChgHist.chgReason),
+        Map.entry("chgTypeCd", pdhProdSkuChgHist.chgTypeCd),
+        Map.entry("histId", pdhProdSkuChgHist.histId),
+        Map.entry("prodId", pdhProdSkuChgHist.prodId),
+        Map.entry("siteId", pdhProdSkuChgHist.siteId),
+        Map.entry("skuId", pdhProdSkuChgHist.prodSkuId)
+    );
 
     /* 상품 SKU 변경 이력 baseSelColumnQuery */
     private JPAQuery<PdhProdSkuChgHistDto.Item> baseSelColumnQuery() {
@@ -72,13 +85,13 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
 
         JPAQuery<PdhProdSkuChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
-                andHistIdEq(search),
+                QdslUtil.strEq(pdhProdSkuChgHist.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdhProdSkuChgHist.histId, search.getHistId()),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -97,8 +110,8 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andHistIdEq(search),
+                QdslUtil.strEq(pdhProdSkuChgHist.siteId, search.getSiteId()),
+                QdslUtil.strEq(pdhProdSkuChgHist.histId, search.getHistId()),
                 andSearchValueLike(search)
         };
 
@@ -127,49 +140,14 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
     /* 상품 SKU 변경 이력 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(PdhProdSkuChgHistDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? pdhProdSkuChgHist.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(PdhProdSkuChgHistDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* histId 정확 일치 */
-    private BooleanExpression andHistIdEq(PdhProdSkuChgHistDto.Request search) {
-        return search != null && StringUtils.hasText(search.getHistId())
-                ? pdhProdSkuChgHist.histId.eq(search.getHistId()) : null;
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(PdhProdSkuChgHistDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",afterVal,", pdhProdSkuChgHist.afterVal, pattern);
-        or = orLike(or, all, types, ",beforeVal,", pdhProdSkuChgHist.beforeVal, pattern);
-        or = orLike(or, all, types, ",chgBy,", pdhProdSkuChgHist.chgBy, pattern);
-        or = orLike(or, all, types, ",chgReason,", pdhProdSkuChgHist.chgReason, pattern);
-        or = orLike(or, all, types, ",chgTypeCd,", pdhProdSkuChgHist.chgTypeCd, pattern);
-        or = orLike(or, all, types, ",histId,", pdhProdSkuChgHist.histId, pattern);
-        or = orLike(or, all, types, ",prodId,", pdhProdSkuChgHist.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", pdhProdSkuChgHist.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", pdhProdSkuChgHist.prodSkuId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

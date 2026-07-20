@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,12 +19,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhBatchLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyhBatchLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
@@ -33,6 +34,20 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     private static final QSyhBatchLog syhBatchLog   = QSyhBatchLog.syhBatchLog;
     private static final QSySite      sySite = QSySite.sySite;
     private static final QSyCode      cd_bs  = new QSyCode("cd_bs");
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syhBatchLog.regDate,
+        "upd_date", syhBatchLog.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("batchCode", syhBatchLog.batchCode),
+        Map.entry("batchId", syhBatchLog.batchId),
+        Map.entry("batchLogId", syhBatchLog.batchLogId),
+        Map.entry("batchNm", syhBatchLog.batchNm),
+        Map.entry("detail", syhBatchLog.detail),
+        Map.entry("message", syhBatchLog.message),
+        Map.entry("runStatus", syhBatchLog.runStatus),
+        Map.entry("siteId", syhBatchLog.siteId)
+    );
 
     /* 배치 로그 baseSelColumnQuery — list/page/byId 공유 (코드명 조인 포함 풀필드) */
     private JPAQuery<SyhBatchLogDto.Item> baseSelColumnQuery() {
@@ -80,14 +95,14 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
         JPAQuery<SyhBatchLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteIdEq(search),
-                andBatchLogIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhBatchLog.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo   = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -106,9 +121,9 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andBatchLogIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syhBatchLog.siteId, search.getSiteId()),
+                QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -137,64 +152,14 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteIdEq(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(SyhBatchLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? syhBatchLog.siteId.eq(search.getSiteId()) : null;
+private BooleanExpression andSearchValueLike(SyhBatchLogDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* batchLogId 정확 일치 */
-    private BooleanExpression andBatchLogIdEq(SyhBatchLogDto.Request search) {
-        return search != null && StringUtils.hasText(search.getBatchLogId())
-                ? syhBatchLog.batchLogId.eq(search.getBatchLogId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyhBatchLogDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syhBatchLog.regDate.goe(start).and(syhBatchLog.regDate.lt(endExcl));
-            case "upd_date": return syhBatchLog.updDate.goe(start).and(syhBatchLog.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyhBatchLogDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",batchCode,", syhBatchLog.batchCode, pattern);
-        or = orLike(or, all, types, ",batchId,", syhBatchLog.batchId, pattern);
-        or = orLike(or, all, types, ",batchLogId,", syhBatchLog.batchLogId, pattern);
-        or = orLike(or, all, types, ",batchNm,", syhBatchLog.batchNm, pattern);
-        or = orLike(or, all, types, ",detail,", syhBatchLog.detail, pattern);
-        or = orLike(or, all, types, ",message,", syhBatchLog.message, pattern);
-        or = orLike(or, all, types, ",runStatus,", syhBatchLog.runStatus, pattern);
-        or = orLike(or, all, types, ",siteId,", syhBatchLog.siteId, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드

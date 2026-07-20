@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
 /** CmFaq QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -43,6 +44,13 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     private static final QCmFaq  cmFaq  = QCmFaq.cmFaq;
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyPath syPath = QSyPath.syPath;
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("faqId", cmFaq.faqId),
+        Map.entry("faqQuestion", cmFaq.faqQuestion),
+        Map.entry("faqAnswer", cmFaq.faqAnswer),
+        Map.entry("pathId", cmFaq.pathId),
+        Map.entry("useYn", cmFaq.useYn)
+    );
 
     /* FAQ baseSelColumnQuery */
     private JPAQuery<CmFaqDto.Item> baseSelColumnQuery() {
@@ -76,10 +84,10 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    andSiteIdEq(search),
-                    andFaqIdEq(search),
+                    QdslUtil.strEq(cmFaq.siteId, search.getSiteId()),
+                    QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
                     andPathTreeIn(search),
-                    andUseYnEq(search),
+                    QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
                     andSearchValueLike(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -101,10 +109,10 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andSiteIdEq(search),
-                andFaqIdEq(search),
+                QdslUtil.strEq(cmFaq.siteId, search.getSiteId()),
+                QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
                 andPathTreeIn(search),
-                andUseYnEq(search),
+                QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
                 andSearchValueLike(search)
         };
 
@@ -131,18 +139,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
      * ============================================================ */
 
-    /* siteId 정확 일치 */
-    private BooleanExpression andSiteIdEq(CmFaqDto.Request search) {
-        return search != null && StringUtils.hasText(search.getSiteId())
-                ? cmFaq.siteId.eq(search.getSiteId()) : null;
-    }
-
-    /* faqId 정확 일치 */
-    private BooleanExpression andFaqIdEq(CmFaqDto.Request search) {
-        return search != null && StringUtils.hasText(search.getFaqId())
-                ? cmFaq.faqId.eq(search.getFaqId()) : null;
-    }
-
     /* pathId — 선택 노드 + 모든 자손 path 포함 (트리 클릭 시 하위까지 조회) */
     private BooleanExpression andPathTreeIn(CmFaqDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPathId())) return null;
@@ -150,35 +146,10 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         return (ids == null || ids.isEmpty()) ? cmFaq.pathId.eq(search.getPathId()) : cmFaq.pathId.in(ids);
     }
 
-    /* useYn 정확 일치 */
-    private BooleanExpression andUseYnEq(CmFaqDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUseYn())
-                ? cmFaq.useYn.eq(search.getUseYn()) : null;
+private BooleanExpression andSearchValueLike(CmFaqDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(CmFaqDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",faqId,", cmFaq.faqId, pattern);
-        or = orLike(or, all, types, ",faqQuestion,", cmFaq.faqQuestion, pattern);
-        or = orLike(or, all, types, ",faqAnswer,", cmFaq.faqAnswer, pattern);
-        or = orLike(or, all, types, ",pathId,", cmFaq.pathId, pattern);
-        or = orLike(or, all, types, ",useYn,", cmFaq.useYn, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드 — 기본: sortOrd ASC, regDate DESC, faqId ASC (안정 정렬)

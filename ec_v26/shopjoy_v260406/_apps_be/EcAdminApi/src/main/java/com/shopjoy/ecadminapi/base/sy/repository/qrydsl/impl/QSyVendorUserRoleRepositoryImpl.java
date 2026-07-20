@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -21,12 +22,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyVendorUserRoleReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.shopjoy.ecadminapi.common.util.QdslUtil;
 /** SyVendorUserRole QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleRepository {
@@ -39,6 +40,19 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     private static final QSyVendorUser syVendorUser = QSyVendorUser.syVendorUser;
     private static final QSyRole syRole = QSyRole.syRole;
     private static final QSyUser syUser = QSyUser.syUser;
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+        "reg_date", syVendorUserRole.regDate,
+        "upd_date", syVendorUserRole.updDate
+    );
+    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
+        Map.entry("grantUserId", syVendorUserRole.grantUserId),
+        Map.entry("roleId", syVendorUserRole.roleId),
+        Map.entry("siteId", syVendorUserRole.siteId),
+        Map.entry("userId", syVendorUserRole.userId),
+        Map.entry("vendorId", syVendorUserRole.vendorId),
+        Map.entry("vendorUserRoleId", syVendorUserRole.vendorUserRoleId),
+        Map.entry("vendorUserRoleRemark", syVendorUserRole.vendorUserRoleRemark)
+    );
 
     /* 업체 사용자 역할 연결 baseSelColumnQuery */
     private JPAQuery<SyVendorUserRoleDto.Item> baseSelColumnQuery() {
@@ -76,15 +90,15 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorUserRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andVendorUserRoleIdEq(search),
-                andVendorIdEq(search),
-                andUserIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syVendorUserRole.vendorUserRoleId, search.getVendorUserRoleId()),
+                QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId()),
+                QdslUtil.strEq(syVendorUserRole.userId, search.getUserId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
-        Integer pageNo = search == null ? null : search.getPageNo();
-        Integer pageSize = search == null ? null : search.getPageSize();
+        Integer pageNo = search.getPageNo();
+        Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
             int limit  = pageSize;
@@ -96,17 +110,17 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     /* 업체 사용자 역할 연결 페이지조회 */
     @Override
     public SyVendorUserRoleDto.PageResponse selectPageData(SyVendorUserRoleDto.Request search) {
-        int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                andVendorUserRoleIdEq(search),
-                andVendorIdEq(search),
-                andUserIdEq(search),
-                andDateRangeBetween(search),
+                QdslUtil.strEq(syVendorUserRole.vendorUserRoleId, search.getVendorUserRoleId()),
+                QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId()),
+                QdslUtil.strEq(syVendorUserRole.userId, search.getUserId()),
+                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
                 andSearchValueLike(search)
         };
 
@@ -135,69 +149,14 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     /* 업체 사용자 역할 연결 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-    /* vendorUserRoleId 정확 일치 */
-    private BooleanExpression andVendorUserRoleIdEq(SyVendorUserRoleDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorUserRoleId())
-                ? syVendorUserRole.vendorUserRoleId.eq(search.getVendorUserRoleId()) : null;
+private BooleanExpression andSearchValueLike(SyVendorUserRoleDto.Request search) {
+        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
-    /* vendorId 정확 일치 */
-    private BooleanExpression andVendorIdEq(SyVendorUserRoleDto.Request search) {
-        return search != null && StringUtils.hasText(search.getVendorId())
-                ? syVendorUserRole.vendorId.eq(search.getVendorId()) : null;
-    }
-
-    /* userId 정확 일치 */
-    private BooleanExpression andUserIdEq(SyVendorUserRoleDto.Request search) {
-        return search != null && StringUtils.hasText(search.getUserId())
-                ? syVendorUserRole.userId.eq(search.getUserId()) : null;
-    }
-
-    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRangeBetween(SyVendorUserRoleDto.Request search) {
-        if (search == null
-                || !StringUtils.hasText(search.getDateType())
-                || !StringUtils.hasText(search.getDateStart())
-                || !StringUtils.hasText(search.getDateEnd())) return null;
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-        switch (search.getDateType()) {
-            case "reg_date": return syVendorUserRole.regDate.goe(start).and(syVendorUserRole.regDate.lt(endExcl));
-            case "upd_date": return syVendorUserRole.updDate.goe(start).and(syVendorUserRole.updDate.lt(endExcl));
-            default: return null;
-        }
-    }
-
-    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValueLike(SyVendorUserRoleDto.Request search) {
-        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
-        String pattern = "%" + search.getSearchValue() + "%";
-        String typeRaw = search.getSearchType();
-        boolean all = !StringUtils.hasText(typeRaw);
-        String types = all ? "" : ("," + typeRaw.trim() + ",");
-        BooleanExpression or = null;
-        or = orLike(or, all, types, ",grantUserId,", syVendorUserRole.grantUserId, pattern);
-        or = orLike(or, all, types, ",roleId,", syVendorUserRole.roleId, pattern);
-        or = orLike(or, all, types, ",siteId,", syVendorUserRole.siteId, pattern);
-        or = orLike(or, all, types, ",userId,", syVendorUserRole.userId, pattern);
-        or = orLike(or, all, types, ",vendorId,", syVendorUserRole.vendorId, pattern);
-        or = orLike(or, all, types, ",vendorUserRoleId,", syVendorUserRole.vendorUserRoleId, pattern);
-        or = orLike(or, all, types, ",vendorUserRoleRemark,", syVendorUserRole.vendorUserRoleRemark, pattern);
-        return or;
-    }
-
-    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
-    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
-                                     String token, StringPath path, String pattern) {
-        if (!(all || types.contains(token))) return acc;
-        BooleanExpression expr = path.likeIgnoreCase(pattern);
-        return acc == null ? expr : acc.or(expr);
-    }
 
     /**
      * 정렬조건 빌드
