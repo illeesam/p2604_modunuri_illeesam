@@ -58,43 +58,51 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
         Map.entry("useYn", zzSample3.useYn)
     );
 
-    /* baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (zz_sample3 는 다목적 샘플 테이블이라 sy_code 미등록.
+     * 아래는 실제 값이 아니라 필드 용도를 보여주기 위한 예시 가상 코드)
+     * USE_YN     {Y: '사용', N: '미사용'}
+     * STATUS_CD  {ACTIVE: '활성', INACTIVE: '비활성', PENDING: '대기'}
+     * TYPE_CD    {NORMAL: '일반', SPECIAL: '특수'}
+     * DIV_CD     {A: '구분A', B: '구분B'}
+     * KIND_CD    {BASIC: '기본', CUSTOM: '커스텀'}
+     */
     private JPAQuery<ZzSample3Dto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(ZzSample3Dto.Item.class,
-                        zzSample3.sample3Id,
-                        zzSample3.cdGrp,
-                        zzSample3.cdVl,
-                        zzSample3.cdNm,
-                        zzSample3.srtordVl,
-                        zzSample3.attrNm1,
-                        zzSample3.attrNm2,
-                        zzSample3.attrNm3,
-                        zzSample3.attrNm4,
-                        zzSample3.explnCn,
-                        zzSample3.cdInfwSeCd,
-                        zzSample3.useYn,
-                        zzSample3.regBy,
-                        zzSample3.regDate,
-                        zzSample3.updBy,
-                        zzSample3.updDate,
-                        zzSample3.groupCd,
-                        zzSample3.col01,
-                        zzSample3.col02,
-                        zzSample3.col03,
-                        zzSample3.col04,
-                        zzSample3.col05,
-                        zzSample3.col06,
-                        zzSample3.col07,
-                        zzSample3.col08,
-                        zzSample3.col09,
-                        zzSample3.statusCd,
-                        zzSample3.typeCd,
-                        zzSample3.divCd,
-                        zzSample3.kindCd,
-                        zzSample3.cateCds,
-                        zzSample3.sample1Id,
-                        zzSample3.sample2Id
+                        zzSample3.sample3Id,    // 샘플3 ID (PK)
+                        zzSample3.cdGrp,        // 도메인 구분 키
+                        zzSample3.cdVl,         // 코드 값
+                        zzSample3.cdNm,         // 코드명 / 대표 텍스트
+                        zzSample3.srtordVl,     // 정렬 순서
+                        zzSample3.attrNm1,      // 속성명1
+                        zzSample3.attrNm2,      // 속성명2
+                        zzSample3.attrNm3,      // 속성명3
+                        zzSample3.attrNm4,      // 속성명4
+                        zzSample3.explnCn,      // 설명 내용
+                        zzSample3.cdInfwSeCd,   // 코드 유입 구분 코드
+                        zzSample3.useYn,        // 사용 여부 — USE_YN {Y: '사용', N: '미사용'}
+                        zzSample3.regBy,        // 등록자
+                        zzSample3.regDate,      // 등록일시
+                        zzSample3.updBy,        // 수정자
+                        zzSample3.updDate,      // 수정일시
+                        zzSample3.groupCd,      // 그룹 코드
+                        zzSample3.col01,        // 범용 컬럼01
+                        zzSample3.col02,        // 범용 컬럼02
+                        zzSample3.col03,        // 범용 컬럼03
+                        zzSample3.col04,        // 범용 컬럼04
+                        zzSample3.col05,        // 범용 컬럼05
+                        zzSample3.col06,        // 범용 컬럼06
+                        zzSample3.col07,        // 범용 컬럼07
+                        zzSample3.col08,        // 범용 컬럼08
+                        zzSample3.col09,        // 범용 컬럼09
+                        zzSample3.statusCd,     // 상태 코드 — STATUS_CD {ACTIVE: '활성', INACTIVE: '비활성', PENDING: '대기'}
+                        zzSample3.typeCd,       // 유형 코드 — TYPE_CD {NORMAL: '일반', SPECIAL: '특수'}
+                        zzSample3.divCd,        // 구분 코드 — DIV_CD {A: '구분A', B: '구분B'}
+                        zzSample3.kindCd,       // 종류 코드 — KIND_CD {BASIC: '기본', CUSTOM: '커스텀'}
+                        zzSample3.cateCds,      // 카테고리 코드 목록
+                        zzSample3.sample1Id,    // 연관 샘플1 ID (FK)
+                        zzSample3.sample2Id     // 연관 샘플2 ID (FK)
                 ))
                 .from(zzSample3);
     }

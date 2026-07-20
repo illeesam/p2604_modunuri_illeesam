@@ -42,12 +42,21 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         Map.entry("tagNm", cmBlogTag.tagNm)
     );
 
-    /** 기본 쿼리 빌드 */
+    /*
+     * baseSelColumnQuery — 코드성 필드 없음 (cm_blog_tag 는 블로그-태그명 매핑 테이블)
+     */
     private JPAQuery<CmBlogTagDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogTagDto.Item.class,
-                        cmBlogTag.blogTagId, cmBlogTag.siteId, cmBlogTag.blogId, cmBlogTag.tagNm, cmBlogTag.sortOrd,
-                        cmBlogTag.regBy, cmBlogTag.regDate, cmBlogTag.updBy, cmBlogTag.updDate
+                        cmBlogTag.blogTagId,  // 태그ID (PK)
+                        cmBlogTag.siteId,     // 사이트ID
+                        cmBlogTag.blogId,     // 블로그ID (cm_blog.blog_id)
+                        cmBlogTag.tagNm,      // 태그명
+                        cmBlogTag.sortOrd,    // 정렬순서
+                        cmBlogTag.regBy,      // 등록자
+                        cmBlogTag.regDate,    // 등록일시
+                        cmBlogTag.updBy,      // 수정자
+                        cmBlogTag.updDate     // 수정일시
                 ))
                 .from(cmBlogTag);
     }

@@ -49,29 +49,33 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         Map.entry("siteId", syhBatchLog.siteId)
     );
 
-    /* 배치 로그 baseSelColumnQuery — list/page/byId 공유 (코드명 조인 포함 풀필드) */
+    /*
+     * baseSelColumnQuery — list/page/byId 공유 (코드명 조인 포함 풀필드)
+     * 코드성 필드 예시 코드값
+     * BATCH_STATUS  {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'}
+     */
     private JPAQuery<SyhBatchLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhBatchLogDto.Item.class,
-                        syhBatchLog.batchLogId,
-                        syhBatchLog.siteId,
-                        syhBatchLog.batchId,
-                        syhBatchLog.batchCode,
-                        syhBatchLog.batchNm,
-                        syhBatchLog.runAt,
-                        syhBatchLog.endAt,
-                        syhBatchLog.durationMs,
-                        syhBatchLog.runStatus,
-                        syhBatchLog.procCount,
-                        syhBatchLog.errorCount,
-                        syhBatchLog.message,
-                        syhBatchLog.detail,
-                        syhBatchLog.regBy,
-                        syhBatchLog.regDate,
-                        syhBatchLog.updBy,
-                        syhBatchLog.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        cd_bs.codeLabel.as("runStatusNm")
+                        syhBatchLog.batchLogId,   // 로그ID (PK, YYMMDDhhmmss+rand4)
+                        syhBatchLog.siteId,       // 사이트ID (sy_site.site_id)
+                        syhBatchLog.batchId,      // 배치ID
+                        syhBatchLog.batchCode,    // 배치코드
+                        syhBatchLog.batchNm,      // 배치명
+                        syhBatchLog.runAt,        // 실행시작일시
+                        syhBatchLog.endAt,        // 실행종료일시
+                        syhBatchLog.durationMs,   // 실행시간(ms)
+                        syhBatchLog.runStatus,    // 실행결과 — BATCH_STATUS {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'}
+                        syhBatchLog.procCount,    // 처리건수
+                        syhBatchLog.errorCount,   // 오류건수
+                        syhBatchLog.message,      // 결과메시지
+                        syhBatchLog.detail,       // 상세로그 (JSON)
+                        syhBatchLog.regBy,        // 등록자
+                        syhBatchLog.regDate,      // 등록일시
+                        syhBatchLog.updBy,        // 수정자
+                        syhBatchLog.updDate,      // 수정일시
+                        sySite.siteNm.as("siteNm"),        // 사이트명 (조인: sy_site)
+                        cd_bs.codeLabel.as("runStatusNm")  // 실행결과 코드명 (조인: sy_code BATCH_STATUS)
                 ))
                 .from(syhBatchLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhBatchLog.siteId))

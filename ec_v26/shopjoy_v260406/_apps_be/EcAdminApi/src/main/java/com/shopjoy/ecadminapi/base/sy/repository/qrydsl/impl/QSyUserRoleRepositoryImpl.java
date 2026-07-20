@@ -48,16 +48,25 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         Map.entry("userRoleRemark", syUserRole.userRoleRemark)
     );
 
-    /* 사용자별 역할 baseSelColumnQuery */
+    /* 사용자별 역할 baseSelColumnQuery — 코드성 필드 없음 (역할명/역할코드는 조인으로 획득) */
     private JPAQuery<SyUserRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyUserRoleDto.Item.class,
-                        syUserRole.userRoleId, syUserRole.userId, syUserRole.roleId, syUserRole.grantUserId,
-                        syUserRole.grantDate, syUserRole.validFrom, syUserRole.validTo, syUserRole.userRoleRemark,
-                        syUserRole.regBy, syUserRole.regDate, syUserRole.updBy, syUserRole.updDate,
-                        syRole.roleNm.as("roleNm"),
-                        syRole.roleCode.as("roleCode"),
-                        usr2.userNm.as("grantUserNm")
+                        syUserRole.userRoleId,                    // 사용자역할ID (PK, YYMMDDhhmmss+rand4)
+                        syUserRole.userId,                        // 사용자ID (sy_user.user_id, UNIQUE with role_id)
+                        syUserRole.roleId,                        // 역할ID (sy_role.role_id, UNIQUE with user_id)
+                        syUserRole.grantUserId,                   // 부여자 (sy_user.user_id)
+                        syUserRole.grantDate,                     // 부여일시
+                        syUserRole.validFrom,                     // 적용 시작일
+                        syUserRole.validTo,                       // 적용 종료일
+                        syUserRole.userRoleRemark,                // 비고
+                        syUserRole.regBy,                         // 등록자
+                        syUserRole.regDate,                       // 등록일시
+                        syUserRole.updBy,                         // 수정자
+                        syUserRole.updDate,                       // 수정일시
+                        syRole.roleNm.as("roleNm"),               // 역할명 (조인: sy_role)
+                        syRole.roleCode.as("roleCode"),           // 역할코드 (조인: sy_role)
+                        usr2.userNm.as("grantUserNm")             // 부여자명 (조인: sy_user, alias usr2)
                 ))
                 .from(syUserRole)
                 .leftJoin(usr).on(usr.userId.eq(syUserRole.userId))

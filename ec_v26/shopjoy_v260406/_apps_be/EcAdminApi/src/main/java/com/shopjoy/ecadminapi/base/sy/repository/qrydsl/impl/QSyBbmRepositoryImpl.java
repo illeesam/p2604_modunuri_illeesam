@@ -53,15 +53,35 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         Map.entry("useYn", syBbm.useYn)
     );
 
-    /* 게시판 마스터 baseQuery */
+    /*
+     * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
+     * BBM_TYPE         {NORMAL: '일반팝업', NOTICE: '공지팝업', EVENT: '이벤트팝업', COOKIE: '쿠키팝업'}
+     * BBM_CONTENT_TYPE {NONE: '불가', TEXTAREA: 'textarea', HTMLEDITOR: 'HTML 에디터'}
+     * BBM_SCOPE_TYPE   {PUBLIC: '공개', PRIVATE: '개인', COMPANY: '회사'}
+     * ALLOW_COMMENT/ALLOW_ATTACH/ALLOW_LIKE/USE_YN {Y: '허용/사용', N: '비허용/미사용'}
+     */
     private JPAQuery<SyBbmDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyBbmDto.Item.class,
-                        syBbm.bbmId, syBbm.siteId, syBbm.bbmCode, syBbm.bbmNm, syBbm.pathId, syBbm.bbmTypeCd,
-                        syBbm.allowComment, syBbm.allowAttach, syBbm.allowLike, syBbm.contentTypeCd,
-                        syBbm.scopeTypeCd, syBbm.sortOrd, syBbm.useYn, syBbm.bbmRemark,
-                        syBbm.regBy, syBbm.regDate, syBbm.updBy, syBbm.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syBbm.bbmId,          // 게시판ID (YYMMDDhhmmss+rand4)
+                        syBbm.siteId,         // 사이트ID (sy_site.site_id)
+                        syBbm.bbmCode,        // 게시판코드
+                        syBbm.bbmNm,          // 게시판명
+                        syBbm.pathId,         // 점(.) 구분 표시경로 (트리 빌드용)
+                        syBbm.bbmTypeCd,      // 게시판유형 — BBM_TYPE {NORMAL: '일반팝업', NOTICE: '공지팝업', EVENT: '이벤트팝업', COOKIE: '쿠키팝업'}
+                        syBbm.allowComment,   // 댓글허용 — ALLOW_COMMENT {Y: '허용', N: '비허용'}
+                        syBbm.allowAttach,    // 첨부허용 — ALLOW_ATTACH {Y: '허용', N: '비허용'}
+                        syBbm.allowLike,      // 좋아요허용 — ALLOW_LIKE {Y: '허용', N: '비허용'}
+                        syBbm.contentTypeCd,  // 내용유형 — BBM_CONTENT_TYPE {NONE: '불가', TEXTAREA: 'textarea', HTMLEDITOR: 'HTML 에디터'}
+                        syBbm.scopeTypeCd,    // 접근범위 — BBM_SCOPE_TYPE {PUBLIC: '공개', PRIVATE: '개인', COMPANY: '회사'}
+                        syBbm.sortOrd,        // 정렬순서
+                        syBbm.useYn,          // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syBbm.bbmRemark,      // 비고
+                        syBbm.regBy,          // 등록자
+                        syBbm.regDate,        // 등록일시
+                        syBbm.updBy,          // 수정자
+                        syBbm.updDate,        // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syBbm)
                 .leftJoin(sySite).on(sySite.siteId.eq(syBbm.siteId));

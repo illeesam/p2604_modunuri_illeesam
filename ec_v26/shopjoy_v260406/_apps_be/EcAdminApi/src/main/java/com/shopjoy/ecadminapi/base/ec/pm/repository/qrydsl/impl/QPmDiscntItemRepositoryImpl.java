@@ -41,12 +41,18 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         Map.entry("targetTypeCd", pmDiscntItem.targetTypeCd)
     );
 
-    /* 할인 대상 상품 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * DISCNT_ITEM_TARGET  {CATEGORY: '카테고리', PRODUCT: '상품', MEMBER_GRADE: '회원등급'} (Entity 주석 대상ID 설명 기준)
+     */
     private JPAQuery<PmDiscntItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmDiscntItemDto.Item.class,
-                        pmDiscntItem.discntItemId, pmDiscntItem.discntId, pmDiscntItem.siteId,
-                        pmDiscntItem.targetTypeCd, pmDiscntItem.targetId,
+                        pmDiscntItem.discntItemId,   // 할인항목ID (PK)
+                        pmDiscntItem.discntId,       // 할인ID (pm_discnt.discnt_id)
+                        pmDiscntItem.siteId,         // 사이트ID
+                        pmDiscntItem.targetTypeCd,   // 대상유형 — DISCNT_ITEM_TARGET {CATEGORY, PRODUCT, MEMBER_GRADE}
+                        pmDiscntItem.targetId,       // 대상ID (category_id/prod_id/grade_cd)
                         pmDiscntItem.regBy, pmDiscntItem.regDate
                 ))
                 .from(pmDiscntItem);

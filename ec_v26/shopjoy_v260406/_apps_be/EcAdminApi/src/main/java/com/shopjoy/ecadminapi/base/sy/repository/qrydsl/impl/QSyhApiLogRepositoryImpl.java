@@ -53,32 +53,38 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         Map.entry("uiNm", syhApiLog.uiNm)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 예시값)
+     * apiTypeCd  {PG: 'PG결제', LOGISTICS: '물류/택배', KAKAO: '카카오', NAVER: '네이버', SMS: 'SMS'}
+     * resultCd   {SUCCESS: '성공', FAIL: '실패'}
+     * refTypeCd  {ORDER: '주문', DLIV: '배송', PUSH: '푸시'}
+     */
     /* API 로그 baseSelColumnQuery */
     private JPAQuery<SyhApiLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhApiLogDto.Item.class,
-                        syhApiLog.logId,
-                        syhApiLog.siteId,
-                        syhApiLog.apiTypeCd,
-                        syhApiLog.apiNm,
-                        syhApiLog.uiNm,
-                        syhApiLog.cmdNm,
-                        syhApiLog.methodCd,
-                        syhApiLog.endpoint,
-                        syhApiLog.reqBody,
-                        syhApiLog.resBody,
-                        syhApiLog.httpStatus,
-                        syhApiLog.resultCd,
-                        syhApiLog.errorMsg,
-                        syhApiLog.elapsedMs,
-                        syhApiLog.refTypeCd,
-                        syhApiLog.refId,
-                        syhApiLog.callDate,
-                        syhApiLog.regBy,
-                        syhApiLog.regDate,
-                        syhApiLog.updBy,
-                        syhApiLog.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syhApiLog.logId,          // 로그ID (PK, YYMMDDhhmmss+rand4)
+                        syhApiLog.siteId,         // 사이트ID
+                        syhApiLog.apiTypeCd,      // 연동유형코드 — {PG: 'PG결제', LOGISTICS: '물류/택배', KAKAO: '카카오', NAVER: '네이버', SMS: 'SMS'}
+                        syhApiLog.apiNm,          // API명 (예: 결제승인)
+                        syhApiLog.uiNm,           // 화면명 (X-UI-Nm 헤더)
+                        syhApiLog.cmdNm,          // 작업명 (X-Cmd-Nm 헤더)
+                        syhApiLog.methodCd,       // HTTP 메서드
+                        syhApiLog.endpoint,       // 호출 URL
+                        syhApiLog.reqBody,        // 요청 파라미터 (민감정보 마스킹 처리)
+                        syhApiLog.resBody,        // 응답 본문
+                        syhApiLog.httpStatus,     // HTTP 응답코드
+                        syhApiLog.resultCd,       // 처리결과 — {SUCCESS: '성공', FAIL: '실패'}
+                        syhApiLog.errorMsg,       // 오류 메시지
+                        syhApiLog.elapsedMs,      // 응답시간 (밀리초)
+                        syhApiLog.refTypeCd,      // 연관유형코드 — {ORDER: '주문', DLIV: '배송', PUSH: '푸시'}
+                        syhApiLog.refId,          // 연관ID
+                        syhApiLog.callDate,       // API 호출일시
+                        syhApiLog.regBy,          // 등록자
+                        syhApiLog.regDate,        // 등록일시
+                        syhApiLog.updBy,          // 수정자
+                        syhApiLog.updDate,        // 수정일시
+                        sySite.siteNm.as("siteNm")  // 사이트명 (조인: sy_site)
                 ))
                 .from(syhApiLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhApiLog.siteId));

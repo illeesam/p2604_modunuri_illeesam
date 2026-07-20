@@ -45,13 +45,25 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         Map.entry("siteId", pmDiscntUsage.siteId)
     );
 
-    /* 할인 사용 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * discntTypeCd  {RATE: '정률', FIXED: '정액', FREE_SHIP: '무료배송'} (Entity 주석 기준 — 사용 시점 스냅샷)
+     */
     private JPAQuery<PmDiscntUsageDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmDiscntUsageDto.Item.class,
-                        pmDiscntUsage.discntUsageId, pmDiscntUsage.siteId, pmDiscntUsage.discntId, pmDiscntUsage.discntNm,
-                        pmDiscntUsage.memberId, pmDiscntUsage.orderId, pmDiscntUsage.orderItemId, pmDiscntUsage.prodId,
-                        pmDiscntUsage.discntTypeCd, pmDiscntUsage.discntValue, pmDiscntUsage.discntAmt, pmDiscntUsage.usedDate,
+                        pmDiscntUsage.discntUsageId,   // 할인사용ID (PK, YYMMDDhhmmss+rand4)
+                        pmDiscntUsage.siteId,          // 사이트ID (sy_site.site_id)
+                        pmDiscntUsage.discntId,        // 할인ID (pm_discnt.discnt_id)
+                        pmDiscntUsage.discntNm,        // 할인명 스냅샷
+                        pmDiscntUsage.memberId,        // 회원ID (mb_member.member_id)
+                        pmDiscntUsage.orderId,         // 주문ID (od_order.order_id)
+                        pmDiscntUsage.orderItemId,     // 주문상품ID (od_order_item.order_item_id, 상품별 할인 적용 시)
+                        pmDiscntUsage.prodId,          // 상품ID (pd_prod.prod_id, 할인 적용 상품)
+                        pmDiscntUsage.discntTypeCd,    // 할인유형 스냅샷 — RATE: '정률' / FIXED: '정액' / FREE_SHIP: '무료배송'
+                        pmDiscntUsage.discntValue,     // 할인값 스냅샷 (정률이면 % / 정액이면 원)
+                        pmDiscntUsage.discntAmt,       // 실할인금액
+                        pmDiscntUsage.usedDate,        // 적용일시
                         pmDiscntUsage.regBy, pmDiscntUsage.regDate
                 ))
                 .from(pmDiscntUsage);

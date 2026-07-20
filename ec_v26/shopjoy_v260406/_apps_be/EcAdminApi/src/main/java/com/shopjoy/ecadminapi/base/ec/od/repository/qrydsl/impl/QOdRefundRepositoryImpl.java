@@ -57,17 +57,34 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         Map.entry("siteId", odRefund.siteId)
     );
 
-    /** 목록/페이지/단건 공용 base query */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * REFUND_TYPE   {CANCEL:취소환불, RETURN:반품환불, PARTIAL:부분환불, EXTRA:추가결제환불}
+     * REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
+     * FAULT_TYPE (od_refund.fault_type_cd, Entity 주석상 코드그룹명 CLAIM_FAULT — 정책서(sy.08) 기준 실제 그룹명은 FAULT_TYPE)
+     *   {CUST:구매자 귀책, VENDOR:판매자 귀책, PLATFORM:플랫폼 귀책}
+     */
     private JPAQuery<OdRefundDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdRefundDto.Item.class,
-                        odRefund.refundId, odRefund.siteId, odRefund.orderId, odRefund.claimId,
-                        odRefund.refundTypeCd,
-                        odRefund.refundProdAmt, odRefund.refundCouponAmt, odRefund.refundShipAmt,
-                        odRefund.refundSaveAmt, odRefund.refundCacheAmt, odRefund.totalRefundAmt,
-                        odRefund.refundStatusCd, odRefund.refundStatusCdBefore,
-                        odRefund.refundReqDate, odRefund.refundCompltDate,
-                        odRefund.faultTypeCd, odRefund.refundReason, odRefund.memo,
+                        odRefund.refundId,           // 환불ID (YYMMDDhhmmss+rand4)
+                        odRefund.siteId,              // 사이트ID (sy_site.site_id)
+                        odRefund.orderId,             // 주문ID (od_order.order_id)
+                        odRefund.claimId,             // 클레임ID (od_claim.claim_id)
+                        odRefund.refundTypeCd,        // 환불유형코드 — REFUND_TYPE {CANCEL:취소환불, RETURN:반품환불, PARTIAL:부분환불, EXTRA:추가결제환불}
+                        odRefund.refundProdAmt,       // 환불 상품금액 (주문쿠폰 안분 차감 후 실환불 대상액)
+                        odRefund.refundCouponAmt,     // 주문쿠폰 안분 차감액 (환불 불가 — 쿠폰 재발급 또는 소멸)
+                        odRefund.refundShipAmt,       // 환불 배송비 (음수이면 추가청구)
+                        odRefund.refundSaveAmt,       // 적립금 복원금액 (od_order_discnt.SAVE_USE 기준)
+                        odRefund.refundCacheAmt,      // 캐쉬 복원금액 (od_order_discnt.CACHE_USE 기준)
+                        odRefund.totalRefundAmt,      // 총 환불금액 (실결제 수단으로 돌려주는 합계)
+                        odRefund.refundStatusCd,      // 환불상태 — REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
+                        odRefund.refundStatusCdBefore,// 변경 전 환불상태 — REFUND_STATUS (동일 코드그룹)
+                        odRefund.refundReqDate,       // 환불 요청일시
+                        odRefund.refundCompltDate,    // 환불 완료일시
+                        odRefund.faultTypeCd,         // 귀책유형코드 — FAULT_TYPE {CUST:구매자 귀책, VENDOR:판매자 귀책, PLATFORM:플랫폼 귀책}
+                        odRefund.refundReason,        // 환불 사유
+                        odRefund.memo,                // 관리 메모
                         odRefund.regBy, odRefund.regDate, odRefund.updBy, odRefund.updDate
                 ))
                 .from(odRefund)

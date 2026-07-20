@@ -48,12 +48,17 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         Map.entry("siteId", pmPlanItem.siteId)
     );
 
-    /* 프로모션 플랜 아이템 baseSelColumnQuery */
+    /* 프로모션 플랜 아이템 baseSelColumnQuery — 코드성 필드 없음 (상품 매핑·진열순서·메모만 보유) */
     private JPAQuery<PmPlanItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmPlanItemDto.Item.class,
-                        pmPlanItem.planItemId, pmPlanItem.planId, pmPlanItem.siteId, pmPlanItem.prodId, pmPlanItem.sortOrd,
-                        pmPlanItem.planItemMemo, pmPlanItem.regBy, pmPlanItem.regDate, pmPlanItem.updBy, pmPlanItem.updDate
+                        pmPlanItem.planItemId,     // 기획전상품ID (PK)
+                        pmPlanItem.planId,         // 기획전ID (pm_plan.plan_id)
+                        pmPlanItem.siteId,         // 사이트ID
+                        pmPlanItem.prodId,         // 상품ID (pd_prod.prod_id)
+                        pmPlanItem.sortOrd,        // 정렬순서
+                        pmPlanItem.planItemMemo,   // 항목 메모 (특가/한정수량 등)
+                        pmPlanItem.regBy, pmPlanItem.regDate, pmPlanItem.updBy, pmPlanItem.updDate
                 ))
                 .from(pmPlanItem)
                 .leftJoin(pmPlan).on(pmPlan.planId.eq(pmPlanItem.planId))

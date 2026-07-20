@@ -56,14 +56,32 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         Map.entry("useYn", pmGift.useYn)
     );
 
-    /** 공통 base query — JOIN 일치, Item 필드만 projection */
+    /**
+     * 공통 base query — JOIN 일치, Item 필드만 projection
+     *
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * GIFT_TYPE    {PRODUCT: '상품', SAMPLE: '샘플', ETC: '기타'}
+     * GIFT_STATUS  {ACTIVE: '활성', INACTIVE: '비활성'}
+     */
     private JPAQuery<PmGiftDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmGiftDto.Item.class,
-                        pmGift.giftId, pmGift.siteId, pmGift.giftNm, pmGift.giftTypeCd, pmGift.prodId,
-                        pmGift.giftStock, pmGift.giftDesc, pmGift.startDate, pmGift.endDate,
-                        pmGift.giftStatusCd, pmGift.giftStatusCdBefore, pmGift.memGradeCd,
-                        pmGift.minOrderAmt, pmGift.minOrderQty, pmGift.selfCdivRate, pmGift.sellerCdivRate,
+                        pmGift.giftId,               // 사은품ID (PK, YYMMDDhhmmss+rand4)
+                        pmGift.siteId,               // 사이트ID
+                        pmGift.giftNm,               // 사은품명
+                        pmGift.giftTypeCd,           // 사은품유형 — GIFT_TYPE {PRODUCT: '상품', SAMPLE: '샘플', ETC: '기타'}
+                        pmGift.prodId,               // 연결 상품ID (pd_prod.prod_id)
+                        pmGift.giftStock,            // 사은품 재고
+                        pmGift.giftDesc,             // 사은품 설명
+                        pmGift.startDate,            // 시작일시
+                        pmGift.endDate,              // 종료일시
+                        pmGift.giftStatusCd,         // 상태 — GIFT_STATUS {ACTIVE: '활성', INACTIVE: '비활성'}
+                        pmGift.giftStatusCdBefore,   // 변경 전 상태
+                        pmGift.memGradeCd,           // 적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)
+                        pmGift.minOrderAmt,          // 최소주문금액 — 사은품 지급 기준 금액
+                        pmGift.minOrderQty,          // 최소주문수량 (NULL=제한없음)
+                        pmGift.selfCdivRate,         // 자사(사이트) 분담율 (%) — 기본 100%
+                        pmGift.sellerCdivRate,       // 판매자(업체) 분담율 (%) — 기본 0%
                         pmGift.useYn, pmGift.regBy, pmGift.regDate, pmGift.updBy, pmGift.updDate
                 ))
                 .from(pmGift)

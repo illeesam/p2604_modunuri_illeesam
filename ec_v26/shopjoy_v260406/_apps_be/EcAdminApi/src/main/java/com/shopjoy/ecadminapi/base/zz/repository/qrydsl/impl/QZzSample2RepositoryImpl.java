@@ -57,42 +57,50 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
         Map.entry("useYn", zzSample2.useYn)
     );
 
-    /* baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (zz_sample2 는 다목적 샘플 테이블이라 sy_code 미등록.
+     * 아래는 실제 값이 아니라 필드 용도를 보여주기 위한 예시 가상 코드)
+     * USE_YN     {Y: '사용', N: '미사용'}
+     * STATUS_CD  {ACTIVE: '활성', INACTIVE: '비활성', PENDING: '대기'}
+     * TYPE_CD    {NORMAL: '일반', SPECIAL: '특수'}
+     * DIV_CD     {A: '구분A', B: '구분B'}
+     * KIND_CD    {BASIC: '기본', CUSTOM: '커스텀'}
+     */
     private JPAQuery<ZzSample2Dto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(ZzSample2Dto.Item.class,
-                        zzSample2.sample2Id,
-                        zzSample2.cdGrp,
-                        zzSample2.cdVl,
-                        zzSample2.cdNm,
-                        zzSample2.srtordVl,
-                        zzSample2.attrNm1,
-                        zzSample2.attrNm2,
-                        zzSample2.attrNm3,
-                        zzSample2.attrNm4,
-                        zzSample2.explnCn,
-                        zzSample2.cdInfwSeCd,
-                        zzSample2.useYn,
-                        zzSample2.regBy,
-                        zzSample2.regDate,
-                        zzSample2.updBy,
-                        zzSample2.updDate,
-                        zzSample2.groupCd,
-                        zzSample2.col01,
-                        zzSample2.col02,
-                        zzSample2.col03,
-                        zzSample2.col04,
-                        zzSample2.col05,
-                        zzSample2.col06,
-                        zzSample2.col07,
-                        zzSample2.col08,
-                        zzSample2.col09,
-                        zzSample2.statusCd,
-                        zzSample2.typeCd,
-                        zzSample2.divCd,
-                        zzSample2.kindCd,
-                        zzSample2.cateCds,
-                        zzSample2.sample1Id
+                        zzSample2.sample2Id,    // 샘플2 ID (PK, ZS2+YYMMDDHHmmss+rand4)
+                        zzSample2.cdGrp,        // 도메인 구분 키
+                        zzSample2.cdVl,         // 코드 값
+                        zzSample2.cdNm,         // 코드명 / 대표 텍스트
+                        zzSample2.srtordVl,     // 정렬 순서
+                        zzSample2.attrNm1,      // 속성명1
+                        zzSample2.attrNm2,      // 속성명2
+                        zzSample2.attrNm3,      // 속성명3
+                        zzSample2.attrNm4,      // 속성명4
+                        zzSample2.explnCn,      // 설명 내용
+                        zzSample2.cdInfwSeCd,   // 코드 유입 구분 코드
+                        zzSample2.useYn,        // 사용 여부 — USE_YN {Y: '사용', N: '미사용'}
+                        zzSample2.regBy,        // 등록자
+                        zzSample2.regDate,      // 등록일시
+                        zzSample2.updBy,        // 수정자
+                        zzSample2.updDate,      // 수정일시
+                        zzSample2.groupCd,      // 그룹 코드
+                        zzSample2.col01,        // 범용 컬럼01
+                        zzSample2.col02,        // 범용 컬럼02
+                        zzSample2.col03,        // 범용 컬럼03
+                        zzSample2.col04,        // 범용 컬럼04
+                        zzSample2.col05,        // 범용 컬럼05
+                        zzSample2.col06,        // 범용 컬럼06
+                        zzSample2.col07,        // 범용 컬럼07
+                        zzSample2.col08,        // 범용 컬럼08
+                        zzSample2.col09,        // 범용 컬럼09
+                        zzSample2.statusCd,     // 상태 코드 — STATUS_CD {ACTIVE: '활성', INACTIVE: '비활성', PENDING: '대기'}
+                        zzSample2.typeCd,       // 유형 코드 — TYPE_CD {NORMAL: '일반', SPECIAL: '특수'}
+                        zzSample2.divCd,        // 구분 코드 — DIV_CD {A: '구분A', B: '구분B'}
+                        zzSample2.kindCd,       // 종류 코드 — KIND_CD {BASIC: '기본', CUSTOM: '커스텀'}
+                        zzSample2.cateCds,      // 카테고리 코드 목록
+                        zzSample2.sample1Id     // 연관 샘플1 ID (FK)
                 ))
                 .from(zzSample2);
     }

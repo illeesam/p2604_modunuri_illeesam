@@ -53,13 +53,25 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
         Map.entry("siteId", odOrderItemDiscnt.siteId)
     );
 
-    /** 목록/페이지/단건 공용 base query */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * ORDER_ITEM_DISCNT_TYPE (sy_code 미등록 — Entity 주석 기준 예시)
+     *   ITEM_DISCNT:즉시할인, ITEM_COUPON:상품쿠폰
+     */
     private JPAQuery<OdOrderItemDiscntDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdOrderItemDiscntDto.Item.class,
-                        odOrderItemDiscnt.itemDiscntId, odOrderItemDiscnt.siteId, odOrderItemDiscnt.orderId, odOrderItemDiscnt.orderItemId,
-                        odOrderItemDiscnt.discntTypeCd, odOrderItemDiscnt.couponId, odOrderItemDiscnt.couponIssueId,
-                        odOrderItemDiscnt.discntRate, odOrderItemDiscnt.unitDiscntAmt, odOrderItemDiscnt.totalDiscntAmt, odOrderItemDiscnt.orderQty,
+                        odOrderItemDiscnt.itemDiscntId,    // 주문상품할인ID (YYMMDDhhmmss+rand4)
+                        odOrderItemDiscnt.siteId,           // 사이트ID
+                        odOrderItemDiscnt.orderId,          // 주문ID (od_order.order_id)
+                        odOrderItemDiscnt.orderItemId,      // 주문상품ID (od_order_item.order_item_id)
+                        odOrderItemDiscnt.discntTypeCd,     // 할인유형코드 — ORDER_ITEM_DISCNT_TYPE {ITEM_DISCNT:즉시할인, ITEM_COUPON:상품쿠폰}
+                        odOrderItemDiscnt.couponId,         // 쿠폰ID (pm_coupon.coupon_id — ITEM_COUPON인 경우)
+                        odOrderItemDiscnt.couponIssueId,    // 쿠폰발급ID (pm_coupon_issue.coupon_issue_id — ITEM_COUPON인 경우)
+                        odOrderItemDiscnt.discntRate,       // 할인율 (% — 비율할인인 경우)
+                        odOrderItemDiscnt.unitDiscntAmt,    // 1개당 할인금액
+                        odOrderItemDiscnt.totalDiscntAmt,   // 전체 할인금액 (unit_discnt_amt × order_qty)
+                        odOrderItemDiscnt.orderQty,         // 주문수량 스냅샷
                         odOrderItemDiscnt.regBy, odOrderItemDiscnt.regDate
                 ))
                 .from(odOrderItemDiscnt)

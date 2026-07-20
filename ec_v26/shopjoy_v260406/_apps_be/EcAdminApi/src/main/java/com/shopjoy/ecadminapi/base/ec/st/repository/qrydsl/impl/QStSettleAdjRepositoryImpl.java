@@ -49,16 +49,28 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         Map.entry("siteNm", sySite.siteNm)
     );
 
-    /* 정산 조정 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
+     * SETTLE_ADJ_TYPE    {PENALTY: '패널티', BONUS: '보너스', ERROR_FIX: '오류수정', OTHER: '기타'}
+     * SETTLE_ADJ_STATUS  {대기: '대기', 승인: '승인', 반려: '반려'} — aprvStatusCd (sy_code 조인 미사용, 코드값 자체가 한글)
+     */
     private JPAQuery<StSettleAdjDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleAdjDto.Item.class,
-                        stSettleAdj.settleAdjId, stSettleAdj.settleId, stSettleAdj.siteId,
-                        stSettleAdj.adjTypeCd, stSettleAdj.adjAmt, stSettleAdj.adjReason,
-                        stSettleAdj.settleAdjMemo, stSettleAdj.aprvStatusCd,
-                        stSettleAdj.regBy, stSettleAdj.regDate, stSettleAdj.updBy, stSettleAdj.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        cdSat.codeLabel.as("adjTypeCdNm")
+                        stSettleAdj.settleAdjId,          // 정산조정ID (PK)
+                        stSettleAdj.settleId,              // 정산ID (st_settle.settle_id)
+                        stSettleAdj.siteId,                 // 사이트ID
+                        stSettleAdj.adjTypeCd,              // 조정유형 — SETTLE_ADJ_TYPE {PENALTY: '패널티', BONUS: '보너스', ERROR_FIX: '오류수정', OTHER: '기타'}
+                        stSettleAdj.adjAmt,                 // 조정금액 (양수, 유형에 따라 가산/차감)
+                        stSettleAdj.adjReason,              // 조정 사유
+                        stSettleAdj.settleAdjMemo,          // 메모
+                        stSettleAdj.aprvStatusCd,           // 승인상태 — SETTLE_ADJ_STATUS {대기, 승인, 반려}
+                        stSettleAdj.regBy,                  // 등록자
+                        stSettleAdj.regDate,                // 등록일시
+                        stSettleAdj.updBy,                  // 수정자
+                        stSettleAdj.updDate,                // 수정일시
+                        sySite.siteNm.as("siteNm"),                 // 사이트명 (조인)
+                        cdSat.codeLabel.as("adjTypeCdNm")           // 조정유형명 (sy_code 조인)
                 ))
                 .from(stSettleAdj)
                 .leftJoin(sySite).on(sySite.siteId.eq(stSettleAdj.siteId))

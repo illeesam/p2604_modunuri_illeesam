@@ -52,18 +52,27 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         Map.entry("vendorUserRoleRemark", syVendorUserRole.vendorUserRoleRemark)
     );
 
-    /* 업체 사용자 역할 연결 baseSelColumnQuery */
+    /* 업체 사용자 역할 연결 baseSelColumnQuery — 코드성 필드 없음 (역할명은 조인으로 획득) */
     private JPAQuery<SyVendorUserRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorUserRoleDto.Item.class,
-                        syVendorUserRole.vendorUserRoleId, syVendorUserRole.vendorId, syVendorUserRole.userId, syVendorUserRole.roleId,
-                        syVendorUserRole.grantUserId, syVendorUserRole.grantDate, syVendorUserRole.validFrom, syVendorUserRole.validTo,
-                        syVendorUserRole.vendorUserRoleRemark,
-                        syVendorUserRole.regBy, syVendorUserRole.regDate, syVendorUserRole.updBy, syVendorUserRole.updDate,
-                        syVendor.vendorNm.as("vendorNm"),
-                        syVendorUser.memberNm.as("memberNm"),
-                        syRole.roleNm.as("roleNm"),
-                        syUser.userNm.as("grantUserNm")
+                        syVendorUserRole.vendorUserRoleId,          // 업체사용자역할ID (PK)
+                        syVendorUserRole.vendorId,                  // 업체ID (sy_vendor.vendor_id)
+                        syVendorUserRole.userId,                    // 업체사용자ID (sy_vendor_user.vendor_user_id)
+                        syVendorUserRole.roleId,                    // 역할ID (sy_role.role_id)
+                        syVendorUserRole.grantUserId,                // 역할 부여자 (sy_user.user_id)
+                        syVendorUserRole.grantDate,                  // 역할 부여일시
+                        syVendorUserRole.validFrom,                  // 유효 시작일
+                        syVendorUserRole.validTo,                    // 유효 종료일
+                        syVendorUserRole.vendorUserRoleRemark,       // 비고
+                        syVendorUserRole.regBy,                      // 등록자
+                        syVendorUserRole.regDate,                    // 등록일시
+                        syVendorUserRole.updBy,                      // 수정자
+                        syVendorUserRole.updDate,                    // 수정일시
+                        syVendor.vendorNm.as("vendorNm"),            // 업체명 (조인: sy_vendor)
+                        syVendorUser.memberNm.as("memberNm"),        // 업체사용자 이름 (조인: sy_vendor_user)
+                        syRole.roleNm.as("roleNm"),                  // 역할명 (조인: sy_role)
+                        syUser.userNm.as("grantUserNm")              // 부여자명 (조인: sy_user)
                 ))
                 .from(syVendorUserRole)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorUserRole.vendorId))

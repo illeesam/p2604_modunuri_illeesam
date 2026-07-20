@@ -53,16 +53,32 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         Map.entry("vendorId", syVendorBrand.vendorId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * VENDOR_BRAND_CONTRACT  (sy_code 미등록 — 실제 코드값 미확인, 계약유형 구분 코드로만 사용)
+     */
     /* 업체별 브랜드 baseSelColumnQuery */
     private JPAQuery<SyVendorBrandDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorBrandDto.Item.class,
-                        syVendorBrand.vendorBrandId, syVendorBrand.siteId, syVendorBrand.vendorId, syVendorBrand.brandId, syVendorBrand.isMain,
-                        syVendorBrand.contractCd, syVendorBrand.startDate, syVendorBrand.endDate, syVendorBrand.commissionRate,
-                        syVendorBrand.sortOrd, syVendorBrand.useYn, syVendorBrand.vendorBrandRemark,
-                        syVendorBrand.regBy, syVendorBrand.regDate, syVendorBrand.updBy, syVendorBrand.updDate,
-                        syVendor.vendorNm.as("vendorNm"),
-                        syBrand.brandNm.as("brandNm")
+                        syVendorBrand.vendorBrandId,               // 업체브랜드ID (PK)
+                        syVendorBrand.siteId,                      // 사이트ID (sy_site.site_id)
+                        syVendorBrand.vendorId,                    // 업체ID (sy_vendor.vendor_id)
+                        syVendorBrand.brandId,                     // 브랜드ID (sy_brand.brand_id)
+                        syVendorBrand.isMain,                      // 대표 브랜드 여부 Y/N
+                        syVendorBrand.contractCd,                  // 계약유형 — VENDOR_BRAND_CONTRACT (sy_code 미등록)
+                        syVendorBrand.startDate,                   // 계약 시작일
+                        syVendorBrand.endDate,                     // 계약 종료일
+                        syVendorBrand.commissionRate,              // 수수료율 (%)
+                        syVendorBrand.sortOrd,                     // 정렬순서
+                        syVendorBrand.useYn,                       // 사용여부 Y/N
+                        syVendorBrand.vendorBrandRemark,           // 비고
+                        syVendorBrand.regBy,                       // 등록자
+                        syVendorBrand.regDate,                     // 등록일시
+                        syVendorBrand.updBy,                       // 수정자
+                        syVendorBrand.updDate,                     // 수정일시
+                        syVendor.vendorNm.as("vendorNm"),          // 업체명 (조인: sy_vendor)
+                        syBrand.brandNm.as("brandNm")              // 브랜드명 (조인: sy_brand)
                 ))
                 .from(syVendorBrand)
                 .leftJoin(sySite).on(sySite.siteId.eq(syVendorBrand.siteId))

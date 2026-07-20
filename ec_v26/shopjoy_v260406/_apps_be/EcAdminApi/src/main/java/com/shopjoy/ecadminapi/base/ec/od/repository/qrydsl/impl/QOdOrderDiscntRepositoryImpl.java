@@ -51,14 +51,25 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         Map.entry("siteId", odOrderDiscnt.siteId)
     );
 
-    /** 목록/페이지/단건 공용 base query */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * ORDER_DISCNT_TYPE  {SALE_PRICE:판매가할인, PAY_DISCNT:결제할인, COUPON:쿠폰할인, PROMOTION:프로모션할인, SHIP_DISCNT:배송비할인, PRODUCT_DISCNT:상품할인, CLAIM_SHIP:클레임배송비할인}
+     */
     private JPAQuery<OdOrderDiscntDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdOrderDiscntDto.Item.class,
-                        odOrderDiscnt.orderDiscntId, odOrderDiscnt.siteId, odOrderDiscnt.orderId,
-                        odOrderDiscnt.discntTypeCd, odOrderDiscnt.couponId, odOrderDiscnt.couponIssueId,
-                        odOrderDiscnt.discntRate, odOrderDiscnt.discntAmt, odOrderDiscnt.baseItemAmt,
-                        odOrderDiscnt.restoreYn, odOrderDiscnt.restoreAmt, odOrderDiscnt.restoreDate,
+                        odOrderDiscnt.orderDiscntId,  // 주문할인ID (YYMMDDhhmmss+rand4)
+                        odOrderDiscnt.siteId,          // 사이트ID
+                        odOrderDiscnt.orderId,         // 주문ID (od_order.order_id)
+                        odOrderDiscnt.discntTypeCd,    // 할인유형코드 — ORDER_DISCNT_TYPE {SALE_PRICE:판매가할인, PAY_DISCNT:결제할인, COUPON:쿠폰할인, PROMOTION:프로모션할인, SHIP_DISCNT:배송비할인, PRODUCT_DISCNT:상품할인, CLAIM_SHIP:클레임배송비할인}
+                        odOrderDiscnt.couponId,        // 쿠폰ID (pm_coupon.coupon_id — ORDER_COUPON인 경우)
+                        odOrderDiscnt.couponIssueId,   // 쿠폰발급ID (pm_coupon_issue.coupon_issue_id — ORDER_COUPON인 경우)
+                        odOrderDiscnt.discntRate,      // 할인율 (% — 비율할인인 경우)
+                        odOrderDiscnt.discntAmt,       // 할인·차감 금액
+                        odOrderDiscnt.baseItemAmt,     // 안분 기준 상품금액 (주문쿠폰 안분 계산용 — 쿠폰 적용 대상 items 합계)
+                        odOrderDiscnt.restoreYn,       // 복원여부 Y/N (환불 시 적립금·캐쉬 차감 복원 완료 여부)
+                        odOrderDiscnt.restoreAmt,      // 복원된 금액 (부분반품 시 부분복원 지원)
+                        odOrderDiscnt.restoreDate,     // 복원 처리일시
                         odOrderDiscnt.regBy, odOrderDiscnt.regDate
                 ))
                 .from(odOrderDiscnt)

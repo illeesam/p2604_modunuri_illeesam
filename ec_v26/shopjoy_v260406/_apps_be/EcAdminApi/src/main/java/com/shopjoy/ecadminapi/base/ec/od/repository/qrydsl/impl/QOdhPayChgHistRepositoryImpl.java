@@ -44,15 +44,28 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         Map.entry("siteId", odhPayChgHist.siteId)
     );
 
-    /* 결제 변경 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * PAY_STATUS  {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
+     * PAY_CHG_TYPE  {STATUS:상태변경, METHOD:수단변경, AMOUNT:금액변경}
+     */
     private JPAQuery<OdhPayChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhPayChgHistDto.Item.class,
-                        odhPayChgHist.payChgHistId, odhPayChgHist.siteId, odhPayChgHist.payId, odhPayChgHist.orderId,
-                        odhPayChgHist.payStatusCdBefore, odhPayChgHist.payStatusCdAfter,
-                        odhPayChgHist.chgTypeCd, odhPayChgHist.chgReason, odhPayChgHist.pgResponse,
-                        odhPayChgHist.refundAmt, odhPayChgHist.refundPgTid,
-                        odhPayChgHist.chgUserId, odhPayChgHist.chgDate, odhPayChgHist.memo,
+                        odhPayChgHist.payChgHistId,        // 결제변경이력ID (YYMMDDhhmmss+rand4)
+                        odhPayChgHist.siteId,               // 사이트ID
+                        odhPayChgHist.payId,                 // 결제ID (od_pay.)
+                        odhPayChgHist.orderId,               // 주문ID (od_order.)
+                        odhPayChgHist.payStatusCdBefore,     // 변경 전 결제상태 — PAY_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
+                        odhPayChgHist.payStatusCdAfter,      // 변경 후 결제상태 — PAY_STATUS (동일 코드그룹)
+                        odhPayChgHist.chgTypeCd,             // 변경유형 — PAY_CHG_TYPE {STATUS:상태변경, METHOD:수단변경, AMOUNT:금액변경}
+                        odhPayChgHist.chgReason,             // 변경 사유 (예: PG 승인 완료, 수동 환불 등)
+                        odhPayChgHist.pgResponse,            // PG 응답 데이터 (JSON)
+                        odhPayChgHist.refundAmt,             // 환불 금액 (환불 시만)
+                        odhPayChgHist.refundPgTid,           // 환불 거래ID (환불 시 PG로부터 받은 ID)
+                        odhPayChgHist.chgUserId,             // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+                        odhPayChgHist.chgDate,               // 변경 일시
+                        odhPayChgHist.memo,                  // 메모
                         odhPayChgHist.regBy, odhPayChgHist.regDate, odhPayChgHist.updBy, odhPayChgHist.updDate))
                 .from(odhPayChgHist);
     }

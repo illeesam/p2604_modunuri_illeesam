@@ -52,14 +52,26 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         Map.entry("useYn", syCodeGrp.useYn)
     );
 
-    /* 공통 코드 그룹 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN {Y: '사용', N: '미사용'}
+     * (sy_code_grp 자체가 공통코드 그룹의 메타 테이블 — code_grp 값 예시: MEMBER_GRADE, ORDER_STATUS, ALARM_TYPE 등)
+     */
     private JPAQuery<SyCodeGrpDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyCodeGrpDto.Item.class,
-                        syCodeGrp.codeGrpId, syCodeGrp.siteId, syCodeGrp.codeGrp, syCodeGrp.grpNm, syCodeGrp.pathId,
-                        syCodeGrp.codeGrpDesc, syCodeGrp.useYn,
-                        syCodeGrp.regBy, syCodeGrp.regDate, syCodeGrp.updBy, syCodeGrp.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syCodeGrp.codeGrpId,     // 코드그룹ID (YYMMDDhhmmss+rand4)
+                        syCodeGrp.siteId,        // 사이트ID (sy_site.site_id)
+                        syCodeGrp.codeGrp,       // 코드그룹코드 (예: MEMBER_GRADE, UNIQUE with site_id)
+                        syCodeGrp.grpNm,         // 그룹명
+                        syCodeGrp.pathId,        // 점(.) 구분 표시경로 (트리 빌드용)
+                        syCodeGrp.codeGrpDesc,   // 코드그룹설명
+                        syCodeGrp.useYn,         // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syCodeGrp.regBy,         // 등록자
+                        syCodeGrp.regDate,       // 등록일시
+                        syCodeGrp.updBy,         // 수정자
+                        syCodeGrp.updDate,       // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syCodeGrp)
                 .leftJoin(sySite).on(sySite.siteId.eq(syCodeGrp.siteId));

@@ -39,22 +39,22 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         Map.entry("exam3Id", zzExam3.exam3Id)
     );
 
-    /* zz_exam3 baseSelColumnQuery */
+    /* zz_exam3 baseSelColumnQuery — 코드성 필드 없음(범용 컬럼만 보유한 연습용 샘플 테이블) */
     private JPAQuery<ZzExam3Dto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(ZzExam3Dto.Item.class,
-                        zzExam3.exam1Id,
-                        zzExam3.exam2Id,
-                        zzExam3.exam3Id,
-                        zzExam3.col31,
-                        zzExam3.col32,
-                        zzExam3.col33,
-                        zzExam3.col34,
-                        zzExam3.col35,
-                        zzExam3.regBy,
-                        zzExam3.regDate,
-                        zzExam3.updBy,
-                        zzExam3.updDate
+                        zzExam3.exam1Id,    // 연관 exam1 ID (복합PK, FK)
+                        zzExam3.exam2Id,    // 연관 exam2 ID (복합PK, FK)
+                        zzExam3.exam3Id,    // exam3 ID (복합PK)
+                        zzExam3.col31,      // 범용 컬럼31
+                        zzExam3.col32,      // 범용 컬럼32
+                        zzExam3.col33,      // 범용 컬럼33
+                        zzExam3.col34,      // 범용 컬럼34
+                        zzExam3.col35,      // 범용 컬럼35
+                        zzExam3.regBy,      // 등록자
+                        zzExam3.regDate,    // 등록일시
+                        zzExam3.updBy,      // 수정자
+                        zzExam3.updDate     // 수정일시
                 ))
                 .from(zzExam3);
     }

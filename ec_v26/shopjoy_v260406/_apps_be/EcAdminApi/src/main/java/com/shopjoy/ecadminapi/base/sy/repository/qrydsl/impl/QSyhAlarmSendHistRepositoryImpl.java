@@ -49,25 +49,29 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         Map.entry("siteId", syhAlarmSendHist.siteId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * sendHistStatusCd  (sy_code 미등록 — Entity 주석 기준 SENT/FAILED 값 사용)
+     */
     /* 알람 발송 이력 baseSelColumnQuery */
     private JPAQuery<SyhAlarmSendHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAlarmSendHistDto.Item.class,
-                        syhAlarmSendHist.sendHistId,
-                        syhAlarmSendHist.siteId,
-                        syhAlarmSendHist.alarmId,
-                        syhAlarmSendHist.memberId,
-                        syhAlarmSendHist.userId,
-                        syhAlarmSendHist.channel,
-                        syhAlarmSendHist.sendTo,
-                        syhAlarmSendHist.sendDate,
-                        syhAlarmSendHist.sendHistStatusCd,
-                        syhAlarmSendHist.errorMsg,
-                        syhAlarmSendHist.regBy,
-                        syhAlarmSendHist.regDate,
-                        syhAlarmSendHist.updBy,
-                        syhAlarmSendHist.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syhAlarmSendHist.sendHistId,             // 발송이력ID (PK)
+                        syhAlarmSendHist.siteId,                 // 사이트ID (sy_site.site_id)
+                        syhAlarmSendHist.alarmId,                // 알림ID
+                        syhAlarmSendHist.memberId,                // 수신자 회원ID
+                        syhAlarmSendHist.userId,                  // 수신자 사용자ID (sy_user.user_id)
+                        syhAlarmSendHist.channel,                 // 발송채널
+                        syhAlarmSendHist.sendTo,                  // 수신처 (이메일/전화/토큰)
+                        syhAlarmSendHist.sendDate,                // 발송일시
+                        syhAlarmSendHist.sendHistStatusCd,        // 발송결과 (SENT/FAILED, sy_code 미등록)
+                        syhAlarmSendHist.errorMsg,                // 오류메시지
+                        syhAlarmSendHist.regBy,                   // 등록자
+                        syhAlarmSendHist.regDate,                 // 등록일시
+                        syhAlarmSendHist.updBy,                   // 수정자
+                        syhAlarmSendHist.updDate,                 // 수정일시
+                        sySite.siteNm.as("siteNm")                // 사이트명 (조인: sy_site)
                 ))
                 .from(syhAlarmSendHist)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhAlarmSendHist.siteId));

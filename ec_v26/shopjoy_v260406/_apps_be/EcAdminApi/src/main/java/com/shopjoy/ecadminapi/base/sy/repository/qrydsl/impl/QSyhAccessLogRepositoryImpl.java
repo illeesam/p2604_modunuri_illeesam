@@ -70,45 +70,49 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         Map.entry("vendorId", syhAccessLog.vendorId)
     );
 
-    /* baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드) */
+    /*
+     * baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드)
+     * 코드성 필드 예시 코드값
+     * APP_TYPE  {ADMIN: '관리자', MEMBER: '회원', VENDOR: '업체', ANON: '비로그인'}
+     */
     private JPAQuery<SyhAccessLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAccessLogDto.Item.class,
-                        syhAccessLog.logId,
-                        syhAccessLog.siteId,
-                        syhAccessLog.reqMethod,
-                        syhAccessLog.reqHost,
-                        syhAccessLog.reqPath,
-                        syhAccessLog.reqQuery,
-                        syhAccessLog.reqIp,
-                        syhAccessLog.reqUa,
-                        syhAccessLog.reqBody,
-                        syhAccessLog.appTypeCd,
-                        syhAccessLog.userId,
-                        syhAccessLog.roleId,
-                        syhAccessLog.deptId,
-                        syhAccessLog.vendorId,
-                        syhAccessLog.localeId,
-                        syhAccessLog.respStatus,
-                        syhAccessLog.respTimeMs,
-                        syhAccessLog.respBody,
-                        syhAccessLog.serverNm,
-                        syhAccessLog.profile,
-                        syhAccessLog.threadNm,
-                        syhAccessLog.uiNm,
-                        syhAccessLog.cmdNm,
-                        syhAccessLog.fileNm,
-                        syhAccessLog.funcNm,
-                        syhAccessLog.lineNo,
-                        syhAccessLog.traceId,
-                        syhAccessLog.reqDt,
-                        syhAccessLog.regDate,
-                        sySite.siteNm.as("siteNm"),
-                        cd_at.codeLabel.as("appTypeCdNm"),
-                        syUser.userNm.as("userNm"),
-                        syRole.roleNm.as("roleNm"),
-                        syDept.deptNm.as("deptNm"),
-                        syVendor.vendorNm.as("vendorNm")
+                        syhAccessLog.logId,                     // PK: AL+yyMMddHHmmss+rand4
+                        syhAccessLog.siteId,                    // 사이트ID (sy_site.site_id)
+                        syhAccessLog.reqMethod,                 // HTTP 메서드
+                        syhAccessLog.reqHost,                   // Host 헤더 값
+                        syhAccessLog.reqPath,                   // 요청 URI 경로
+                        syhAccessLog.reqQuery,                  // 쿼리 파라미터 문자열
+                        syhAccessLog.reqIp,                     // 클라이언트 실제 IP
+                        syhAccessLog.reqUa,                     // User-Agent
+                        syhAccessLog.reqBody,                   // 요청 바디 (설정된 최대 크기까지)
+                        syhAccessLog.appTypeCd,                 // 호출 앱 유형 — APP_TYPE {ADMIN: '관리자', MEMBER: '회원', VENDOR: '업체', ANON: '비로그인'}
+                        syhAccessLog.userId,                    // 인증 사용자 ID
+                        syhAccessLog.roleId,                    // 역할 ID
+                        syhAccessLog.deptId,                    // 부서 ID (MDC)
+                        syhAccessLog.vendorId,                  // 업체 ID (MDC)
+                        syhAccessLog.localeId,                  // 지역 ID (MDC)
+                        syhAccessLog.respStatus,                 // HTTP 응답 상태 코드
+                        syhAccessLog.respTimeMs,                 // 요청 처리 시간 (밀리초)
+                        syhAccessLog.respBody,                   // 응답 바디 (설정된 최대 크기까지)
+                        syhAccessLog.serverNm,                   // 서버 호스트명
+                        syhAccessLog.profile,                    // 활성 Spring 프로파일
+                        syhAccessLog.threadNm,                   // 처리 스레드명
+                        syhAccessLog.uiNm,                       // 화면명 (X-UI-Nm 헤더)
+                        syhAccessLog.cmdNm,                       // 작업명 (X-Cmd-Nm 헤더)
+                        syhAccessLog.fileNm,                     // 파일명 (X-헤더)
+                        syhAccessLog.funcNm,                     // 함수명 (X-헤더)
+                        syhAccessLog.lineNo,                     // 라인번호 (X-헤더)
+                        syhAccessLog.traceId,                    // 트레이스ID (X-헤더)
+                        syhAccessLog.reqDt,                      // 요청 수신 시각
+                        syhAccessLog.regDate,                    // DB 저장 시각
+                        sySite.siteNm.as("siteNm"),              // 사이트명 (조인: sy_site)
+                        cd_at.codeLabel.as("appTypeCdNm"),        // 앱유형 코드명 (조인: sy_code APP_TYPE)
+                        syUser.userNm.as("userNm"),              // 사용자명 (조인: sy_user)
+                        syRole.roleNm.as("roleNm"),              // 역할명 (조인: sy_role)
+                        syDept.deptNm.as("deptNm"),              // 부서명 (조인: sy_dept)
+                        syVendor.vendorNm.as("vendorNm")         // 업체명 (조인: sy_vendor)
                 ))
                 .from(syhAccessLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhAccessLog.siteId))

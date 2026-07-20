@@ -45,13 +45,22 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         Map.entry("siteId", pmEventBenefit.siteId)
     );
 
-    /* 이벤트 혜택 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * BENEFIT_TYPE  {COUPON: '쿠폰', POINT: '적립금', DISCOUNT: '할인', GIFT: '사은품'} (코드: EVENT_BENEFIT_TYPE)
+     */
     private JPAQuery<PmEventBenefitDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmEventBenefitDto.Item.class,
-                        pmEventBenefit.benefitId, pmEventBenefit.siteId, pmEventBenefit.eventId, pmEventBenefit.benefitNm,
-                        pmEventBenefit.benefitTypeCd, pmEventBenefit.conditionDesc, pmEventBenefit.benefitValue,
-                        pmEventBenefit.couponId, pmEventBenefit.sortOrd,
+                        pmEventBenefit.benefitId,       // 혜택ID (PK)
+                        pmEventBenefit.siteId,          // 사이트ID
+                        pmEventBenefit.eventId,         // 이벤트ID
+                        pmEventBenefit.benefitNm,       // 혜택명
+                        pmEventBenefit.benefitTypeCd,   // 혜택유형 — BENEFIT_TYPE {COUPON: '쿠폰', POINT: '적립금', DISCOUNT: '할인', GIFT: '사은품'}
+                        pmEventBenefit.conditionDesc,   // 조건 설명
+                        pmEventBenefit.benefitValue,    // 혜택 값
+                        pmEventBenefit.couponId,        // 연결 쿠폰ID
+                        pmEventBenefit.sortOrd,         // 정렬순서
                         pmEventBenefit.regBy, pmEventBenefit.regDate, pmEventBenefit.updBy, pmEventBenefit.updDate
                 ))
                 .from(pmEventBenefit);

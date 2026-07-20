@@ -41,12 +41,19 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         Map.entry("targetTypeCd", pmEventItem.targetTypeCd)
     );
 
-    /* 이벤트 대상 상품 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * EVENT_ITEM_TARGET  {PRODUCT: '상품', CATEGORY: '카테고리', VENDOR: '판매자', BRAND: '브랜드'}
+     */
     private JPAQuery<PmEventItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmEventItemDto.Item.class,
-                        pmEventItem.eventItemId, pmEventItem.eventId, pmEventItem.siteId,
-                        pmEventItem.targetTypeCd, pmEventItem.targetId, pmEventItem.sortNo,
+                        pmEventItem.eventItemId,   // 이벤트항목ID (PK, YYMMDDhhmmss+rand4)
+                        pmEventItem.eventId,       // 이벤트ID (pm_event.event_id)
+                        pmEventItem.siteId,        // 사이트ID (sy_site.site_id)
+                        pmEventItem.targetTypeCd,  // 대상유형 — EVENT_ITEM_TARGET {PRODUCT, CATEGORY, VENDOR, BRAND}
+                        pmEventItem.targetId,      // 대상ID (prod_id / category_id / vendor_id / brand_id)
+                        pmEventItem.sortNo,        // 이벤트 내 노출 순서
                         pmEventItem.regBy, pmEventItem.regDate
                 ))
                 .from(pmEventItem);

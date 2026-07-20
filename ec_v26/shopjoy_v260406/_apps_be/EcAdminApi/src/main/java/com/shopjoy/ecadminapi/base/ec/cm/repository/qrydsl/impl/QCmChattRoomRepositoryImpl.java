@@ -48,15 +48,31 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         Map.entry("subject", cmChattRoom.subject)
     );
 
-    /** 기본 쿼리 빌드 */
+    /*
+     * baseSelColumnQuery — 코드성 필드 실제 코드값 (sy_code_grp CHATT_STATUS)
+     * CHATT_STATUS  {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
+     */
     private JPAQuery<CmChattRoomDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmChattRoomDto.Item.class,
-                        cmChattRoom.chattRoomId, cmChattRoom.siteId, cmChattRoom.memberId, cmChattRoom.memberNm,
-                        cmChattRoom.adminUserId, cmChattRoom.subject, cmChattRoom.chattStatusCd, cmChattRoom.chattStatusCdBefore,
-                        cmChattRoom.lastMsgDate, cmChattRoom.memberUnreadCnt, cmChattRoom.adminUnreadCnt,
-                        cmChattRoom.chattMemo, cmChattRoom.closeDate, cmChattRoom.closeReason,
-                        cmChattRoom.regBy, cmChattRoom.regDate, cmChattRoom.updBy, cmChattRoom.updDate
+                        cmChattRoom.chattRoomId,          // 채팅방ID (PK, YYMMDDhhmmss+rand4)
+                        cmChattRoom.siteId,               // 사이트ID (sy_site.site_id)
+                        cmChattRoom.memberId,             // 회원ID (고객)
+                        cmChattRoom.memberNm,             // 회원명
+                        cmChattRoom.adminUserId,          // 담당관리자 (sy_user.user_id)
+                        cmChattRoom.subject,              // 채팅주제
+                        cmChattRoom.chattStatusCd,        // 상태 — CHATT_STATUS {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
+                        cmChattRoom.chattStatusCdBefore,  // 변경 전 채팅상태 — CHATT_STATUS {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
+                        cmChattRoom.lastMsgDate,          // 마지막 메시지 일시
+                        cmChattRoom.memberUnreadCnt,      // 고객 미읽메시지 수
+                        cmChattRoom.adminUnreadCnt,       // 관리자 미읽메시지 수
+                        cmChattRoom.chattMemo,            // 메모
+                        cmChattRoom.closeDate,            // 종료일시
+                        cmChattRoom.closeReason,          // 종료사유
+                        cmChattRoom.regBy,                // 등록자
+                        cmChattRoom.regDate,              // 등록일시
+                        cmChattRoom.updBy,                // 수정자
+                        cmChattRoom.updDate                // 수정일시
                 ))
                 .from(cmChattRoom);
     }

@@ -40,19 +40,19 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         Map.entry("skuId", pdhProdSkuPriceHist.prodSkuId)
     );
 
-    /* 상품 SKU 가격 이력 baseSelColumnQuery */
+    /* 상품 SKU 가격 이력 baseSelColumnQuery — 코드성 필드 없음 (금액 이력) */
     private JPAQuery<PdhProdSkuPriceHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdSkuPriceHistDto.Item.class,
-                        pdhProdSkuPriceHist.histId,
-                        pdhProdSkuPriceHist.siteId,
-                        pdhProdSkuPriceHist.prodSkuId,
-                        pdhProdSkuPriceHist.prodId,
-                        pdhProdSkuPriceHist.addPriceBefore,
-                        pdhProdSkuPriceHist.addPriceAfter,
-                        pdhProdSkuPriceHist.chgReason,
-                        pdhProdSkuPriceHist.chgBy,
-                        pdhProdSkuPriceHist.chgDate,
+                        pdhProdSkuPriceHist.histId,          // 이력ID (PK, YYMMDDhhmmss+rand4)
+                        pdhProdSkuPriceHist.siteId,           // 사이트ID (sy_site.site_id)
+                        pdhProdSkuPriceHist.prodSkuId,        // SKU ID (pd_prod_sku.prod_sku_id)
+                        pdhProdSkuPriceHist.prodId,           // 상품ID (pd_prod.prod_id)
+                        pdhProdSkuPriceHist.addPriceBefore,   // 변경 전 옵션 추가금액
+                        pdhProdSkuPriceHist.addPriceAfter,    // 변경 후 옵션 추가금액
+                        pdhProdSkuPriceHist.chgReason,       // 변경사유
+                        pdhProdSkuPriceHist.chgBy,           // 처리자 (sy_user.user_id)
+                        pdhProdSkuPriceHist.chgDate,         // 처리일시
                         pdhProdSkuPriceHist.regBy,
                         pdhProdSkuPriceHist.regDate
                 ))

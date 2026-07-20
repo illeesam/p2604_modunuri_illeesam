@@ -50,12 +50,20 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         Map.entry("siteId", odPayMethod.siteId)
     );
 
-    /** 목록/페이지/단건 공용 base query (DTO Item에 별칭 컬럼 없음 - 기본 필드만 매핑) */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (DTO Item에 별칭 컬럼 없음 - 기본 필드만 매핑)
+     * PAY_METHOD  {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+     */
     private JPAQuery<OdPayMethodDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdPayMethodDto.Item.class,
-                        odPayMethod.payMethodId, odPayMethod.memberId, odPayMethod.payMethodTypeCd, odPayMethod.payMethodNm,
-                        odPayMethod.payMethodAlias, odPayMethod.payKeyNo, odPayMethod.mainMethodYn,
+                        odPayMethod.payMethodId,      // 결제수단ID (YYMMDDhhmmss+rand4)
+                        odPayMethod.memberId,         // 회원ID (mb_member.member_id)
+                        odPayMethod.payMethodTypeCd,  // 결제수단유형코드 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+                        odPayMethod.payMethodNm,      // 결제수단명 (카드사명, 은행명 등)
+                        odPayMethod.payMethodAlias,   // 별칭 (사용자 설정)
+                        odPayMethod.payKeyNo,         // 결제 게이트웨이 발급 키/토큰
+                        odPayMethod.mainMethodYn,     // 기본결제수단여부 Y/N
                         odPayMethod.regBy, odPayMethod.regDate, odPayMethod.updBy, odPayMethod.updDate
                 ))
                 .from(odPayMethod)

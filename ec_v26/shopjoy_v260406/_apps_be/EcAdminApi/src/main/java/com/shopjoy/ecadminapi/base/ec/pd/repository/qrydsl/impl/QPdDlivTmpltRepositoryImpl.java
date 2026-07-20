@@ -58,16 +58,35 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         Map.entry("vendorId", pdDlivTmplt.vendorId)
     );
 
-    /* 배송 템플릿 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
+     * DLIV_METHOD_CD    {COURIER: '택배', DIRECT: '직접배송', PICKUP: '방문수령'}
+     * DLIV_PAY_TYPE_CD  {PREPAY: '선불', COD: '착불'}
+     * BASE_DLIV_YN      {Y: '기본배송지', N: '일반'}
+     * USE_YN            {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<PdDlivTmpltDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdDlivTmpltDto.Item.class,
-                        pdDlivTmplt.dlivTmpltId, pdDlivTmplt.siteId, pdDlivTmplt.vendorId, pdDlivTmplt.dlivTmpltNm,
-                        pdDlivTmplt.dlivMethodCd, pdDlivTmplt.dlivPayTypeCd, pdDlivTmplt.dlivCourierCd,
-                        pdDlivTmplt.dlivCost, pdDlivTmplt.freeDlivMinAmt, pdDlivTmplt.islandExtraCost,
-                        pdDlivTmplt.returnCost, pdDlivTmplt.exchangeCost, pdDlivTmplt.returnCourierCd,
-                        pdDlivTmplt.returnAddrZip, pdDlivTmplt.returnAddr, pdDlivTmplt.returnAddrDetail, pdDlivTmplt.returnTelNo,
-                        pdDlivTmplt.baseDlivYn, pdDlivTmplt.useYn,
+                        pdDlivTmplt.dlivTmpltId,          // 배송템플릿ID (PK, YYMMDDhhmmss+rand4)
+                        pdDlivTmplt.siteId,                // 사이트ID (sy_site.site_id)
+                        pdDlivTmplt.vendorId,               // 업체ID (sy_vendor.vendor_id)
+                        pdDlivTmplt.dlivTmpltNm,             // 템플릿명
+                        pdDlivTmplt.dlivMethodCd,             // 배송방법 — {COURIER: '택배', DIRECT: '직접배송', PICKUP: '방문수령'}
+                        pdDlivTmplt.dlivPayTypeCd,            // 배송비결제유형 — {PREPAY: '선불', COD: '착불'}
+                        pdDlivTmplt.dlivCourierCd,           // 배송 택배사 코드
+                        pdDlivTmplt.dlivCost,                // 기본 배송비
+                        pdDlivTmplt.freeDlivMinAmt,          // 무료배송 최소 주문금액
+                        pdDlivTmplt.islandExtraCost,          // 도서산간 추가배송비
+                        pdDlivTmplt.returnCost,               // 반품배송비 (편도)
+                        pdDlivTmplt.exchangeCost,              // 교환배송비 (왕복=반품+재발송)
+                        pdDlivTmplt.returnCourierCd,           // 반품 택배사 코드
+                        pdDlivTmplt.returnAddrZip,            // 반품지 우편번호
+                        pdDlivTmplt.returnAddr,               // 반품지 주소
+                        pdDlivTmplt.returnAddrDetail,          // 반품지 상세주소
+                        pdDlivTmplt.returnTelNo,              // 반품지 전화번호
+                        pdDlivTmplt.baseDlivYn,                // 기본배송지여부 — {Y: '기본', N: '일반'}
+                        pdDlivTmplt.useYn,                     // 사용여부 — {Y: '사용', N: '미사용'}
                         pdDlivTmplt.regBy, pdDlivTmplt.regDate, pdDlivTmplt.updBy, pdDlivTmplt.updDate
                 ))
                 .from(pdDlivTmplt)

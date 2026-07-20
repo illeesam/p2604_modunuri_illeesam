@@ -42,13 +42,25 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         Map.entry("siteId", odhDlivItemChgHist.siteId)
     );
 
-    /* 배송 아이템 변경 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CHG_TYPE (od_dliv_item 변경유형, sy_code 미등록 — Entity 주석 기준 예시)
+     *   QTY:수량변경, STATUS:상태변경, CARRIER:택배사변경, TRACK_NO:송장번호변경, RECV_INFO:수령정보변경
+     */
     private JPAQuery<OdhDlivItemChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhDlivItemChgHistDto.Item.class,
-                        odhDlivItemChgHist.dlivItemChgHistId, odhDlivItemChgHist.siteId, odhDlivItemChgHist.dlivId, odhDlivItemChgHist.dlivItemId,
-                        odhDlivItemChgHist.chgTypeCd, odhDlivItemChgHist.chgField, odhDlivItemChgHist.beforeVal, odhDlivItemChgHist.afterVal,
-                        odhDlivItemChgHist.chgReason, odhDlivItemChgHist.chgUserId, odhDlivItemChgHist.chgDate,
+                        odhDlivItemChgHist.dlivItemChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
+                        odhDlivItemChgHist.siteId,            // 사이트ID
+                        odhDlivItemChgHist.dlivId,            // 배송ID (od_dliv.)
+                        odhDlivItemChgHist.dlivItemId,        // 배송품목ID (od_dliv_item.)
+                        odhDlivItemChgHist.chgTypeCd,         // 변경유형코드 — CHG_TYPE {QTY:수량변경, STATUS:상태변경, CARRIER:택배사변경, TRACK_NO:송장번호변경, RECV_INFO:수령정보변경}
+                        odhDlivItemChgHist.chgField,          // 변경 필드명
+                        odhDlivItemChgHist.beforeVal,         // 변경전값
+                        odhDlivItemChgHist.afterVal,          // 변경후값
+                        odhDlivItemChgHist.chgReason,         // 변경사유
+                        odhDlivItemChgHist.chgUserId,         // 처리자 (sy_user.user_id)
+                        odhDlivItemChgHist.chgDate,           // 처리일시
                         odhDlivItemChgHist.regBy, odhDlivItemChgHist.regDate, odhDlivItemChgHist.updBy, odhDlivItemChgHist.updDate))
                 .from(odhDlivItemChgHist);
     }

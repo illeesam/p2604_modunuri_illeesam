@@ -41,13 +41,23 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         Map.entry("statusReason", odhDlivStatusHist.statusReason)
     );
 
-    /* 배송 상태 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * DLIV_STATUS  {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+     */
     private JPAQuery<OdhDlivStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhDlivStatusHistDto.Item.class,
-                        odhDlivStatusHist.dlivStatusHistId, odhDlivStatusHist.siteId, odhDlivStatusHist.dlivId, odhDlivStatusHist.orderId,
-                        odhDlivStatusHist.dlivStatusCdBefore, odhDlivStatusHist.dlivStatusCd, odhDlivStatusHist.statusReason,
-                        odhDlivStatusHist.chgUserId, odhDlivStatusHist.chgDate, odhDlivStatusHist.memo,
+                        odhDlivStatusHist.dlivStatusHistId,   // 배송상태이력ID (YYMMDDhhmmss+rand4)
+                        odhDlivStatusHist.siteId,              // 사이트ID
+                        odhDlivStatusHist.dlivId,              // 배송ID (od_dliv.dliv_id)
+                        odhDlivStatusHist.orderId,             // 주문ID (od_order.order_id)
+                        odhDlivStatusHist.dlivStatusCdBefore,  // 변경 전 배송상태 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+                        odhDlivStatusHist.dlivStatusCd,        // 변경 후 배송상태 — DLIV_STATUS (동일 코드그룹)
+                        odhDlivStatusHist.statusReason,        // 상태 변경 사유
+                        odhDlivStatusHist.chgUserId,           // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+                        odhDlivStatusHist.chgDate,             // 변경 일시
+                        odhDlivStatusHist.memo,                // 메모
                         odhDlivStatusHist.regBy, odhDlivStatusHist.regDate, odhDlivStatusHist.updBy, odhDlivStatusHist.updDate))
                 .from(odhDlivStatusHist);
     }

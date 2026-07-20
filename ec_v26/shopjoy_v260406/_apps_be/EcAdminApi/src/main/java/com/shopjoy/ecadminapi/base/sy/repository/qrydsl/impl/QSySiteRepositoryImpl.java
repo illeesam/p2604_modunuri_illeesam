@@ -63,17 +63,37 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         Map.entry("siteZipCode", sySite.siteZipCode)
     );
 
-    /* 사이트 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * SITE_TYPE   {EC: '이커머스', ADMIN: '관리자', API: 'API'}
+     * SITE_STATUS {ACTIVE: '활성', MAINTENANCE: '점검중', INACTIVE: '비활성'}
+     */
     private JPAQuery<SySiteDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SySiteDto.Item.class,
-                        sySite.siteId, sySite.siteCode, sySite.siteTypeCd, sySite.siteNm, sySite.siteDomain,
-                        sySite.logoUrl, sySite.faviconUrl, sySite.siteDesc, sySite.siteEmail, sySite.sitePhone,
-                        sySite.siteZipCode, sySite.siteAddress, sySite.siteBusinessNo, sySite.siteCeo,
-                        sySite.siteStatusCd, sySite.configJson,
-                        sySite.regBy, sySite.regDate, sySite.updBy, sySite.updDate, sySite.pathId,
-                        cdSt.codeLabel.as("siteTypeCdNm"),
-                        cdSs.codeLabel.as("siteStatusCdNm")
+                        sySite.siteId,           // 사이트ID (YYMMDDhhmmss+rand4)
+                        sySite.siteCode,         // 사이트코드
+                        sySite.siteTypeCd,       // 사이트유형 — SITE_TYPE {EC: '이커머스', ADMIN: '관리자', API: 'API'}
+                        sySite.siteNm,           // 사이트명
+                        sySite.siteDomain,       // 도메인
+                        sySite.logoUrl,          // 로고URL
+                        sySite.faviconUrl,       // 파비콘URL
+                        sySite.siteDesc,         // 사이트설명
+                        sySite.siteEmail,        // 대표이메일
+                        sySite.sitePhone,        // 대표전화
+                        sySite.siteZipCode,      // 우편번호
+                        sySite.siteAddress,      // 주소
+                        sySite.siteBusinessNo,   // 사업자번호
+                        sySite.siteCeo,          // 대표자명
+                        sySite.siteStatusCd,     // 상태 — SITE_STATUS {ACTIVE: '활성', MAINTENANCE: '점검중', INACTIVE: '비활성'}
+                        sySite.configJson,       // 확장설정 (JSON)
+                        sySite.regBy,            // 등록자
+                        sySite.regDate,          // 등록일시
+                        sySite.updBy,            // 수정자
+                        sySite.updDate,          // 수정일시
+                        sySite.pathId,           // 점(.) 구분 표시경로 (트리 빌드용)
+                        cdSt.codeLabel.as("siteTypeCdNm"),     // 사이트유형 라벨 (sy_code SITE_TYPE 조인)
+                        cdSs.codeLabel.as("siteStatusCdNm")    // 상태 라벨 (sy_code SITE_STATUS 조인)
                 ))
                 .from(sySite)
                 .leftJoin(cdSt).on(cdSt.codeGrp.eq("SITE_TYPE").and(cdSt.codeValue.eq(sySite.siteTypeCd)))

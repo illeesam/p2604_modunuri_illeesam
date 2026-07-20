@@ -47,13 +47,26 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         Map.entry("usageId", pmCouponUsage.usageId)
     );
 
-    /* 쿠폰 사용 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * discountTypeCd  {RATE: '정률', FIXED: '정액'} (Entity 주석 기준)
+     */
     private JPAQuery<PmCouponUsageDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmCouponUsageDto.Item.class,
-                        pmCouponUsage.usageId, pmCouponUsage.siteId, pmCouponUsage.couponId, pmCouponUsage.couponCode, pmCouponUsage.couponNm,
-                        pmCouponUsage.memberId, pmCouponUsage.orderId, pmCouponUsage.orderItemId, pmCouponUsage.prodId,
-                        pmCouponUsage.discountTypeCd, pmCouponUsage.discountValue, pmCouponUsage.discountAmt, pmCouponUsage.usedDate,
+                        pmCouponUsage.usageId,          // 사용이력ID (PK, YYMMDDhhmmss+rand4)
+                        pmCouponUsage.siteId,           // 사이트ID (sy_site.site_id)
+                        pmCouponUsage.couponId,         // 쿠폰ID (pm_coupon.coupon_id)
+                        pmCouponUsage.couponCode,       // 쿠폰코드 스냅샷
+                        pmCouponUsage.couponNm,         // 쿠폰명 스냅샷
+                        pmCouponUsage.memberId,         // 회원ID (mb_member.member_id)
+                        pmCouponUsage.orderId,          // 주문ID (od_order.order_id)
+                        pmCouponUsage.orderItemId,      // 주문상품ID (od_order_item.order_item_id, 상품별 쿠폰 적용 시)
+                        pmCouponUsage.prodId,           // 상품ID (pd_prod.prod_id, 쿠폰 적용 상품)
+                        pmCouponUsage.discountTypeCd,   // 할인유형 — RATE: '정률' / FIXED: '정액'
+                        pmCouponUsage.discountValue,    // 할인값 (정률: % / 정액: 원)
+                        pmCouponUsage.discountAmt,      // 실할인금액
+                        pmCouponUsage.usedDate,         // 사용일시
                         pmCouponUsage.regBy, pmCouponUsage.regDate, pmCouponUsage.updBy, pmCouponUsage.updDate
                 ))
                 .from(pmCouponUsage);

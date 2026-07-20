@@ -54,13 +54,37 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         Map.entry("widgetTypeCd", dpWidgetLib.widgetTypeCd)
     );
 
-    /* 전시 위젯 라이브러리 baseQuery */
+    /*
+     * baseQuery — 코드성 필드 예시 코드값
+     * USE_YN / IS_SYSTEM  {Y: '예', N: '아니오'}
+     * WIDGET_TYPE_CD (코드그룹: DISP_WIDGET_TYPE, 27종)
+     *   {image_banner: '이미지배너', product_slider: '상품슬라이더', product: '상품', cond_product: '조건부상품',
+     *    chart_bar: '막대차트', chart_line: '라인차트', chart_pie: '파이차트', text_banner: '텍스트배너',
+     *    info_card: '정보카드', popup: '팝업', file: '파일', file_list: '파일목록', coupon: '쿠폰',
+     *    html_editor: 'HTML에디터', textarea: '텍스트영역', markdown: '마크다운', barcode: '바코드',
+     *    qrcode: 'QR코드', barcode_qrcode: '바코드+QR코드', video_player: '동영상플레이어', countdown: '카운트다운',
+     *    payment_widget: '결제위젯', approval_widget: '승인위젯', event_banner: '이벤트배너', cache_banner: '캐시배너',
+     *    widget_embed: '위젯임베드', map_widget: '지도위젯'}
+     */
     private JPAQuery<DpWidgetLibDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpWidgetLibDto.Item.class,
-                dpWidgetLib.widgetLibId, dpWidgetLib.siteId, dpWidgetLib.widgetCode, dpWidgetLib.widgetNm, dpWidgetLib.widgetTypeCd,
-                dpWidgetLib.widgetLibDesc, dpWidgetLib.pathId, dpWidgetLib.thumbnailUrl, dpWidgetLib.widgetContent,
-                dpWidgetLib.widgetConfigJson, dpWidgetLib.isSystem, dpWidgetLib.sortOrd, dpWidgetLib.useYn,
-                dpWidgetLib.regBy, dpWidgetLib.regDate, dpWidgetLib.updBy, dpWidgetLib.updDate
+                dpWidgetLib.widgetLibId,       // 위젯라이브러리ID (PK, YYMMDDhhmmss+rand4)
+                dpWidgetLib.siteId,            // 사이트ID (sy_site.site_id)
+                dpWidgetLib.widgetCode,        // 위젯코드
+                dpWidgetLib.widgetNm,          // 위젯명
+                dpWidgetLib.widgetTypeCd,      // 위젯유형 — WIDGET_TYPE_CD (코드: DISP_WIDGET_TYPE, 27종)
+                dpWidgetLib.widgetLibDesc,     // 위젯라이브러리설명
+                dpWidgetLib.pathId,            // 점(.) 구분 표시경로
+                dpWidgetLib.thumbnailUrl,      // 미리보기 썸네일URL
+                dpWidgetLib.widgetContent,     // 위젯내용 (HTML 에디터, dp_widget/dp_panel_item 과 3개 테이블 통일)
+                dpWidgetLib.widgetConfigJson,  // 위젯설정 (JSON, 3개 테이블 통일)
+                dpWidgetLib.isSystem,          // 시스템기본위젯여부 — IS_SYSTEM {Y: '예', N: '아니오'}
+                dpWidgetLib.sortOrd,           // 정렬순서
+                dpWidgetLib.useYn,             // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                dpWidgetLib.regBy,             // 등록자
+                dpWidgetLib.regDate,           // 등록일시
+                dpWidgetLib.updBy,             // 수정자
+                dpWidgetLib.updDate            // 수정일시
         )).from(dpWidgetLib);
     }
 

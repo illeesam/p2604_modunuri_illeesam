@@ -49,17 +49,29 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         Map.entry("siteId", stSettleEtcAdj.siteId)
     );
 
-    /* 정산 기타 조정 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
+     * SETTLE_ETC_ADJ_TYPE  {위약금, 인센티브, 세금조정, 기타} (코드값 자체가 한글 — Entity 주석상 SHIP/RETURN_SHIP/PENALTY/OTHER 와 값 표기가 다름)
+     * ADJ_DIR              {ADD: '가산', SUB: '차감'} (Entity 주석상 ADD/DEDUCT 와 값 표기가 다름)
+     */
     private JPAQuery<StSettleEtcAdjDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleEtcAdjDto.Item.class,
-                        stSettleEtcAdj.settleEtcAdjId, stSettleEtcAdj.settleId, stSettleEtcAdj.siteId,
-                        stSettleEtcAdj.etcAdjTypeCd, stSettleEtcAdj.etcAdjDirCd, stSettleEtcAdj.etcAdjAmt,
-                        stSettleEtcAdj.etcAdjReason, stSettleEtcAdj.settleEtcAdjMemo,
-                        stSettleEtcAdj.regBy, stSettleEtcAdj.regDate, stSettleEtcAdj.updBy, stSettleEtcAdj.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        cdSeat.codeLabel.as("etcAdjTypeCdNm"),
-                        cdAd.codeLabel.as("etcAdjDirCdNm")
+                        stSettleEtcAdj.settleEtcAdjId,       // 기타조정ID (PK)
+                        stSettleEtcAdj.settleId,              // 정산ID (st_settle.settle_id)
+                        stSettleEtcAdj.siteId,                // 사이트ID
+                        stSettleEtcAdj.etcAdjTypeCd,          // 기타조정유형 — SETTLE_ETC_ADJ_TYPE {위약금, 인센티브, 세금조정, 기타}
+                        stSettleEtcAdj.etcAdjDirCd,           // 가산/차감 — ADJ_DIR {ADD: '가산', SUB: '차감'}
+                        stSettleEtcAdj.etcAdjAmt,             // 기타조정 금액
+                        stSettleEtcAdj.etcAdjReason,          // 사유
+                        stSettleEtcAdj.settleEtcAdjMemo,      // 메모
+                        stSettleEtcAdj.regBy,                 // 등록자
+                        stSettleEtcAdj.regDate,               // 등록일시
+                        stSettleEtcAdj.updBy,                 // 수정자
+                        stSettleEtcAdj.updDate,               // 수정일시
+                        sySite.siteNm.as("siteNm"),                   // 사이트명 (조인)
+                        cdSeat.codeLabel.as("etcAdjTypeCdNm"),        // 기타조정유형명 (sy_code 조인)
+                        cdAd.codeLabel.as("etcAdjDirCdNm")            // 가산/차감명 (sy_code 조인)
                 ))
                 .from(stSettleEtcAdj)
                 .leftJoin(sySite).on(sySite.siteId.eq(stSettleEtcAdj.siteId))

@@ -44,16 +44,20 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         Map.entry("useYn", pdProdSku.useYn)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN  {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<PdProdSkuDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdSkuDto.Item.class,
-                        pdProdSku.prodSkuId,
-                        pdProdSku.prodId,
-                        pdProdSku.prodOptId1,
-                        pdProdSku.prodOptId2,
-                        pdProdSku.prodSkuCode,
-                        pdProdSku.addPrice,
-                        pdProdSku.useYn,
+                        pdProdSku.prodSkuId,     // SKU ID (PK)
+                        pdProdSku.prodId,         // 상품ID
+                        pdProdSku.prodOptId1,     // 옵션1 값ID (pd_prod_opt.prod_opt_id)
+                        pdProdSku.prodOptId2,     // 옵션2 값ID (pd_prod_opt.prod_opt_id)
+                        pdProdSku.prodSkuCode,    // 자체 SKU 코드
+                        pdProdSku.addPrice,       // 옵션 추가금액 (기본가 대비)
+                        pdProdSku.useYn,           // 사용여부 — {Y: '사용', N: '미사용'}
                         pdProdSku.regBy,
                         pdProdSku.regDate,
                         pdProdSku.updBy,

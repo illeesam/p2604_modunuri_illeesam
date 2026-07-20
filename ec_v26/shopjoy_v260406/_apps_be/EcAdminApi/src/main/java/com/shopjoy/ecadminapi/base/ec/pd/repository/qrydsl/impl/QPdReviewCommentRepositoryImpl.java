@@ -47,13 +47,24 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         Map.entry("writerTypeCd", pdReviewComment.writerTypeCd)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (Entity 주석 기준 — sy_code 미등록)
+     * WRITER_TYPE_CD   {MEMBER: '회원', SELLER: '판매자', ADMIN: '관리자'}
+     * REPLY_STATUS_CD  {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
+     */
     /** 단건 조회 */
     private JPAQuery<PdReviewCommentDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdReviewCommentDto.Item.class,
-                        pdReviewComment.reviewCommentId, pdReviewComment.siteId, pdReviewComment.reviewId, pdReviewComment.parentReplyId,
-                        pdReviewComment.writerTypeCd, pdReviewComment.writerId, pdReviewComment.writerNm,
-                        pdReviewComment.reviewReplyContent, pdReviewComment.replyStatusCd,
+                        pdReviewComment.reviewCommentId,   // 댓글ID (PK)
+                        pdReviewComment.siteId,              // 사이트ID
+                        pdReviewComment.reviewId,            // 리뷰ID (pd_review.review_id)
+                        pdReviewComment.parentReplyId,        // 상위댓글ID (대댓글)
+                        pdReviewComment.writerTypeCd,          // 작성자유형 — {MEMBER: '회원', SELLER: '판매자', ADMIN: '관리자'}
+                        pdReviewComment.writerId,            // 작성자ID
+                        pdReviewComment.writerNm,            // 작성자명
+                        pdReviewComment.reviewReplyContent,  // 댓글 내용
+                        pdReviewComment.replyStatusCd,         // 상태 — {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
                         pdReviewComment.regBy, pdReviewComment.regDate, pdReviewComment.updBy, pdReviewComment.updDate
                 ))
                 .from(pdReviewComment);

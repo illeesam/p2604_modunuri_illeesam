@@ -48,12 +48,23 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         Map.entry("useYn", pdProdBundleItem.useYn)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN  {Y: '사용', N: '미사용'}
+     */
     /* 묶음상품 구성 baseSelColumnQuery */
     private JPAQuery<PdProdBundleItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdBundleItemDto.Item.class,
-                        pdProdBundleItem.bundleItemId, pdProdBundleItem.siteId, pdProdBundleItem.bundleProdId, pdProdBundleItem.itemProdId, pdProdBundleItem.itemSkuId,
-                        pdProdBundleItem.itemQty, pdProdBundleItem.priceRate, pdProdBundleItem.sortOrd, pdProdBundleItem.useYn,
+                        pdProdBundleItem.bundleItemId,   // 묶음구성ID (PK, YYMMDDhhmmss+rand4)
+                        pdProdBundleItem.siteId,          // 사이트ID (sy_site.site_id)
+                        pdProdBundleItem.bundleProdId,     // 묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)
+                        pdProdBundleItem.itemProdId,       // 구성품 상품ID (pd_prod.prod_id) — 독립 판매 상품
+                        pdProdBundleItem.itemSkuId,        // 구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)
+                        pdProdBundleItem.itemQty,          // 구성 수량 (기본 1)
+                        pdProdBundleItem.priceRate,        // 가격 안분율(%) — 구성품 합계 100% 필수, 부분클레임 환불 계산 기준
+                        pdProdBundleItem.sortOrd,          // 노출 정렬 순서
+                        pdProdBundleItem.useYn,             // 사용여부 — {Y: '사용', N: '미사용'}
                         pdProdBundleItem.regBy, pdProdBundleItem.regDate, pdProdBundleItem.updBy, pdProdBundleItem.updDate
                 ))
                 .from(pdProdBundleItem)

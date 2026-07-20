@@ -41,13 +41,24 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         Map.entry("siteId", odhOrderChgHist.siteId)
     );
 
-    /* 주문 변경 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CHG_TYPE (od_order 변경유형, sy_code 미등록 — Entity 주석 기준 예시)
+     *   PAY_METHOD:결제수단변경, RECV_INFO:수령정보변경, AMOUNT:금액변경, MEMO:메모변경, COUPON:쿠폰변경, CACHE:적립금변경, APPROVAL:결재변경
+     */
     private JPAQuery<OdhOrderChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderChgHistDto.Item.class,
-                        odhOrderChgHist.orderChgHistId, odhOrderChgHist.siteId, odhOrderChgHist.orderId,
-                        odhOrderChgHist.chgTypeCd, odhOrderChgHist.chgField, odhOrderChgHist.beforeVal, odhOrderChgHist.afterVal,
-                        odhOrderChgHist.chgReason, odhOrderChgHist.chgUserId, odhOrderChgHist.chgDate,
+                        odhOrderChgHist.orderChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
+                        odhOrderChgHist.siteId,         // 사이트ID
+                        odhOrderChgHist.orderId,        // 주문ID (od_order.)
+                        odhOrderChgHist.chgTypeCd,      // 변경유형코드 — CHG_TYPE {PAY_METHOD:결제수단변경, RECV_INFO:수령정보변경, AMOUNT:금액변경, MEMO:메모변경, COUPON:쿠폰변경, CACHE:적립금변경, APPROVAL:결재변경}
+                        odhOrderChgHist.chgField,       // 변경 필드명
+                        odhOrderChgHist.beforeVal,      // 변경전값
+                        odhOrderChgHist.afterVal,       // 변경후값
+                        odhOrderChgHist.chgReason,      // 변경사유
+                        odhOrderChgHist.chgUserId,      // 처리자 (sy_user.user_id)
+                        odhOrderChgHist.chgDate,        // 처리일시
                         odhOrderChgHist.regBy, odhOrderChgHist.regDate, odhOrderChgHist.updBy, odhOrderChgHist.updDate))
                 .from(odhOrderChgHist);
     }

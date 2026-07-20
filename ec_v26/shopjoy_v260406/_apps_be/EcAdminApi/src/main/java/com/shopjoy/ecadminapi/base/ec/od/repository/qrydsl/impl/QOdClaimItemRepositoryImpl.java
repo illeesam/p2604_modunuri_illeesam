@@ -47,20 +47,40 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         Map.entry("siteId", odClaimItem.siteId)
     );
 
-    /* 클레임 아이템 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * CLAIM_ITEM_STATUS  {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소}
+     */
     private JPAQuery<OdClaimItemDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdClaimItemDto.Item.class,
-                        odClaimItem.claimItemId, odClaimItem.siteId, odClaimItem.claimId, odClaimItem.orderItemId,
-                        odClaimItem.prodId, odClaimItem.prodNm,
-                        odClaimItem.prodSkuId, odClaimItem.prodOptId1, odClaimItem.prodOptId2, odClaimItem.prodOption,
-                        odClaimItem.newProdId, odClaimItem.newProdSkuId,
-                        odClaimItem.newProdOptId1, odClaimItem.newProdOptId2,
-                        odClaimItem.newProdNm, odClaimItem.newProdOption,
-                        odClaimItem.newQty, odClaimItem.newUnitPrice,
-                        odClaimItem.unitPrice, odClaimItem.claimQty, odClaimItem.itemAmt, odClaimItem.refundAmt,
-                        odClaimItem.claimItemStatusCd, odClaimItem.claimItemStatusCdBefore,
-                        odClaimItem.returnShippingFee, odClaimItem.inboundShippingFee, odClaimItem.exchangeShippingFee,
+                        odClaimItem.claimItemId,             // 클레임항목ID (YYMMDDhhmmss+rand4)
+                        odClaimItem.siteId,                  // 사이트ID
+                        odClaimItem.claimId,                 // 클레임ID (od_claim.)
+                        odClaimItem.orderItemId,             // 주문상품ID (od_order_item.)
+                        odClaimItem.prodId,                   // 상품ID
+                        odClaimItem.prodNm,                   // 상품명 (주문시점 스냅샷)
+                        odClaimItem.prodSkuId,                // SKU ID (pd_prod_sku.prod_sku_id, 주문시점 스냅샷)
+                        odClaimItem.prodOptId1,               // 옵션1 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)
+                        odClaimItem.prodOptId2,               // 옵션2 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)
+                        odClaimItem.prodOption,               // 옵션 (색상/사이즈 스냅샷)
+                        odClaimItem.newProdId,                // [교환] 교환 요청 상품ID (claim_type_cd=EXCHANGE 시에만 사용)
+                        odClaimItem.newProdSkuId,             // [교환] 교환 요청 SKU ID
+                        odClaimItem.newProdOptId1,            // [교환] 교환 요청 옵션1 값ID
+                        odClaimItem.newProdOptId2,            // [교환] 교환 요청 옵션2 값ID
+                        odClaimItem.newProdNm,                 // [교환] 교환 요청 상품명
+                        odClaimItem.newProdOption,            // [교환] 교환 요청 옵션 텍스트
+                        odClaimItem.newQty,                    // [교환] 교환 요청 수량
+                        odClaimItem.newUnitPrice,             // [교환] 교환 요청 단가 (정산 차액 계산: new_unit_price*new_qty - unit_price*claim_qty)
+                        odClaimItem.unitPrice,                 // 판매가 (단가)
+                        odClaimItem.claimQty,                  // 클레임 수량
+                        odClaimItem.itemAmt,                   // 클레임금액 (unit_price × claim_qty)
+                        odClaimItem.refundAmt,                 // 환불금액
+                        odClaimItem.claimItemStatusCd,        // 항목상태 — CLAIM_ITEM_STATUS {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소}
+                        odClaimItem.claimItemStatusCdBefore,  // 변경 전 클레임상태 — CLAIM_ITEM_STATUS (동일 코드그룹)
+                        odClaimItem.returnShippingFee,        // 해당 항목의 수거배송료
+                        odClaimItem.inboundShippingFee,       // 해당 항목의 반입배송료
+                        odClaimItem.exchangeShippingFee,      // 해당 항목의 교환 발송배송료
                         odClaimItem.regBy, odClaimItem.regDate, odClaimItem.updBy, odClaimItem.updDate
                 ))
                 .from(odClaimItem);

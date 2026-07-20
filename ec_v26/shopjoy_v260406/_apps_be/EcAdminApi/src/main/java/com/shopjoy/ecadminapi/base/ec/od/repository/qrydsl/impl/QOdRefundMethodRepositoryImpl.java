@@ -56,14 +56,28 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         Map.entry("siteId", odRefundMethod.siteId)
     );
 
-    /** 목록/페이지/단건 공용 base query */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * PAY_METHOD    {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+     * REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
+     */
     private JPAQuery<OdRefundMethodDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdRefundMethodDto.Item.class,
-                        odRefundMethod.refundMethodId, odRefundMethod.siteId, odRefundMethod.refundId, odRefundMethod.orderId,
-                        odRefundMethod.payMethodCd, odRefundMethod.refundPriority, odRefundMethod.refundAmt, odRefundMethod.refundAvailAmt,
-                        odRefundMethod.refundStatusCd, odRefundMethod.refundStatusCdBefore, odRefundMethod.refundDate,
-                        odRefundMethod.payId, odRefundMethod.pgRefundId, odRefundMethod.pgResponse,
+                        odRefundMethod.refundMethodId,      // 환불수단ID (YYMMDDhhmmss+rand4)
+                        odRefundMethod.siteId,                // 사이트ID (sy_site.site_id)
+                        odRefundMethod.refundId,              // 환불ID (od_refund.refund_id)
+                        odRefundMethod.orderId,               // 주문ID (od_order.order_id)
+                        odRefundMethod.payMethodCd,           // 결제수단코드 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+                        odRefundMethod.refundPriority,        // 환불 우선순위 (1=카드·현금성 결제수단, 2=캐쉬, 3=적립금)
+                        odRefundMethod.refundAmt,             // 해당 수단으로 환불할 금액
+                        odRefundMethod.refundAvailAmt,        // 해당 수단 잔여 환불 가능금액 (원 결제액 - 기환불 누적액)
+                        odRefundMethod.refundStatusCd,        // 수단별 환불상태 — REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
+                        odRefundMethod.refundStatusCdBefore,  // 변경 전 환불상태 — REFUND_STATUS (동일 코드그룹)
+                        odRefundMethod.refundDate,            // 해당 수단 환불 완료일시
+                        odRefundMethod.payId,                  // 원 결제 레코드ID (od_pay.pay_id)
+                        odRefundMethod.pgRefundId,            // PG 환불 거래ID
+                        odRefundMethod.pgResponse,            // PG 환불 응답 JSON
                         odRefundMethod.regBy, odRefundMethod.regDate, odRefundMethod.updBy, odRefundMethod.updDate
                 ))
                 .from(odRefundMethod)

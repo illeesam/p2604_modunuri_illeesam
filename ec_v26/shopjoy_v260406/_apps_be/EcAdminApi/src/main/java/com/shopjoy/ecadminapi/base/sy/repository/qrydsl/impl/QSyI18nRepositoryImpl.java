@@ -41,14 +41,27 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         Map.entry("useYn", syI18n.useYn)
     );
 
-    /* 다국어 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * I18N_SCOPE {FO: '프론트', BO: '관리자', COMMON: '공통'}
+     * USE_YN     {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<SyI18nDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyI18nDto.Item.class,
-                        syI18n.i18nId, syI18n.siteId, syI18n.i18nKey, syI18n.i18nDesc, syI18n.i18nScopeCd,
-                        syI18n.i18nCategory, syI18n.sortOrd, syI18n.useYn,
-                        syI18n.regBy, syI18n.regDate, syI18n.updBy, syI18n.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syI18n.i18nId,         // 다국어ID (YYMMDDhhmmss+rand4)
+                        syI18n.siteId,         // 사이트ID (sy_site.site_id, NULL=전체 공용)
+                        syI18n.i18nKey,        // 다국어 키 (예: common.bt.save, error.FORBIDDEN)
+                        syI18n.i18nDesc,       // 키 설명 (번역자 참고용)
+                        syI18n.i18nScopeCd,    // 적용범위 — I18N_SCOPE {FO: '프론트', BO: '관리자', COMMON: '공통'}
+                        syI18n.i18nCategory,   // 키 첫 세그먼트 (common/error/link/paging 등)
+                        syI18n.sortOrd,        // 정렬순서
+                        syI18n.useYn,          // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syI18n.regBy,          // 등록자
+                        syI18n.regDate,        // 등록일시
+                        syI18n.updBy,          // 수정자
+                        syI18n.updDate,        // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syI18n)
                 .leftJoin(sySite).on(sySite.siteId.eq(syI18n.siteId));

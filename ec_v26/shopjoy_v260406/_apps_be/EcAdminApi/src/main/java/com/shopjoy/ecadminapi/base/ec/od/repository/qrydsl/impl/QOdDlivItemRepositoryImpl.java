@@ -47,14 +47,26 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         Map.entry("siteId", odDlivItem.siteId)
     );
 
-    /* 배송 아이템 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * dliv_type_cd (od_dliv_item, sy_code 미등록 — Entity 주석 기준 예시)  OUT:출고, IN:입고반품
+     * DLIV_STATUS  {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+     */
     private JPAQuery<OdDlivItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdDlivItemDto.Item.class,
-                        odDlivItem.dlivItemId, odDlivItem.siteId, odDlivItem.dlivId, odDlivItem.orderItemId,
-                        odDlivItem.prodId, odDlivItem.prodOptId1, odDlivItem.prodOptId2,
-                        odDlivItem.dlivTypeCd, odDlivItem.unitPrice, odDlivItem.dlivQty,
-                        odDlivItem.dlivItemStatusCd, odDlivItem.dlivItemStatusCdBefore,
+                        odDlivItem.dlivItemId,               // 배송항목ID (YYMMDDhhmmss+rand4)
+                        odDlivItem.siteId,                    // 사이트ID
+                        odDlivItem.dlivId,                    // 배송ID (od_dliv.)
+                        odDlivItem.orderItemId,               // 주문상품ID (od_order_item.)
+                        odDlivItem.prodId,                     // 상품ID
+                        odDlivItem.prodOptId1,                // 옵션1 값ID (pd_prod_opt.opt_id)
+                        odDlivItem.prodOptId2,                // 옵션2 값ID (pd_prod_opt.opt_id)
+                        odDlivItem.dlivTypeCd,                // 입출고구분 — {OUT:출고, IN:입고반품}
+                        odDlivItem.unitPrice,                 // 단가 (주문시점 스냅샷)
+                        odDlivItem.dlivQty,                    // 출고수량 (부분출고 시 주문수량보다 적을 수 있음)
+                        odDlivItem.dlivItemStatusCd,          // 항목 배송상태 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+                        odDlivItem.dlivItemStatusCdBefore,    // 변경 전 배송상태 — DLIV_STATUS (동일 코드그룹)
                         odDlivItem.regBy, odDlivItem.regDate, odDlivItem.updBy, odDlivItem.updDate
                 ))
                 .from(odDlivItem);

@@ -62,15 +62,30 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         Map.entry("useYn", syMenu.useYn)
     );
 
-    /* 메뉴 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * MENU_TYPE {PAGE: '페이지', FOLDER: '폴더', LINK: '링크'}
+     * USE_YN    {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<SyMenuDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyMenuDto.Item.class,
-                        syMenu.menuId, syMenu.siteId, syMenu.menuCode, syMenu.menuNm, syMenu.parentMenuId,
-                        syMenu.menuUrl, syMenu.menuTypeCd, syMenu.iconClass, syMenu.sortOrd, syMenu.useYn,
-                        syMenu.menuRemark,
-                        syMenu.regBy, syMenu.regDate, syMenu.updBy, syMenu.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syMenu.menuId,         // 메뉴ID (YYMMDDhhmmss+rand4)
+                        syMenu.siteId,         // 사이트ID (sy_site.site_id)
+                        syMenu.menuCode,       // 메뉴코드
+                        syMenu.menuNm,         // 메뉴명
+                        syMenu.parentMenuId,   // 상위메뉴ID
+                        syMenu.menuUrl,        // 메뉴URL
+                        syMenu.menuTypeCd,     // 메뉴유형 — MENU_TYPE {PAGE: '페이지', FOLDER: '폴더', LINK: '링크'}
+                        syMenu.iconClass,      // 아이콘 CSS 클래스
+                        syMenu.sortOrd,        // 정렬순서
+                        syMenu.useYn,          // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syMenu.menuRemark,     // 비고
+                        syMenu.regBy,          // 등록자
+                        syMenu.regDate,        // 등록일시
+                        syMenu.updBy,          // 수정자
+                        syMenu.updDate,        // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syMenu)
                 .leftJoin(sySite).on(sySite.siteId.eq(syMenu.siteId))

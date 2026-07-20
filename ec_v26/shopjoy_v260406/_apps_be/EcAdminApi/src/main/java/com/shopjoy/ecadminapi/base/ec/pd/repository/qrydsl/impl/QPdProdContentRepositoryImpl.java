@@ -43,16 +43,21 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         Map.entry("useYn", pdProdContent.useYn)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
+     * CONTENT_TYPE_CD (PROD_CONTENT_TYPE)  {DETAIL: '상세설명', NOTICE: '상품공지', GUIDE: '이용안내', SIZE_GUIDE: '사이즈안내'}
+     * USE_YN                                {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<PdProdContentDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdContentDto.Item.class,
-                        pdProdContent.prodContentId,
-                        pdProdContent.siteId,
-                        pdProdContent.prodId,
-                        pdProdContent.contentTypeCd,
-                        pdProdContent.contentHtml,
-                        pdProdContent.sortOrd,
-                        pdProdContent.useYn,
+                        pdProdContent.prodContentId,   // 상품컨텐츠ID (PK)
+                        pdProdContent.siteId,           // 사이트ID (sy_site.site_id)
+                        pdProdContent.prodId,           // 상품ID (pd_prod.prod_id)
+                        pdProdContent.contentTypeCd,     // 컨텐츠유형 — {DETAIL: '상세설명', NOTICE: '상품공지', GUIDE: '이용안내', SIZE_GUIDE: '사이즈안내'}
+                        pdProdContent.contentHtml,      // HTML 에디터 컨텐츠
+                        pdProdContent.sortOrd,          // 정렬순서
+                        pdProdContent.useYn,             // 사용여부 — {Y: '사용', N: '미사용'}
                         pdProdContent.regBy,
                         pdProdContent.regDate,
                         pdProdContent.updBy,

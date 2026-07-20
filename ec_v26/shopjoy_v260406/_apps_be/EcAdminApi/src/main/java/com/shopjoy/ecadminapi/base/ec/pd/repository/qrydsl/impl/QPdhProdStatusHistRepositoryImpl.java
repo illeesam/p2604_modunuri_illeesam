@@ -50,18 +50,22 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         Map.entry("siteId", pdhProdStatusHist.siteId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
+     * BEFORE_STATUS_CD / AFTER_STATUS_CD (PRODUCT_STATUS)  {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
+     */
     /* 상품 상태 이력 baseSelColumnQuery */
     private JPAQuery<PdhProdStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdStatusHistDto.Item.class,
-                        pdhProdStatusHist.prodStatusHistId,
-                        pdhProdStatusHist.siteId,
-                        pdhProdStatusHist.prodId,
-                        pdhProdStatusHist.beforeStatusCd,
-                        pdhProdStatusHist.afterStatusCd,
-                        pdhProdStatusHist.memo,
-                        pdhProdStatusHist.procUserId,
-                        pdhProdStatusHist.procDate,
+                        pdhProdStatusHist.prodStatusHistId,   // 이력ID (PK)
+                        pdhProdStatusHist.siteId,              // 사이트ID
+                        pdhProdStatusHist.prodId,              // 상품ID
+                        pdhProdStatusHist.beforeStatusCd,       // 이전상태 — {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
+                        pdhProdStatusHist.afterStatusCd,        // 변경상태 — 동일 코드그룹
+                        pdhProdStatusHist.memo,                // 처리메모
+                        pdhProdStatusHist.procUserId,          // 처리자 (sy_user.user_id)
+                        pdhProdStatusHist.procDate,            // 처리일시
                         pdhProdStatusHist.regBy, pdhProdStatusHist.regDate, pdhProdStatusHist.updBy, pdhProdStatusHist.updDate
                 ))
                 .from(pdhProdStatusHist)

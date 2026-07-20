@@ -63,36 +63,40 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         Map.entry("userId", syhSendEmailLog.userId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * SEND_RESULT  {SUCCESS: '성공', FAILED: '실패', PENDING: '대기'}
+     */
     /* 이메일 발송 로그 baseSelColumnQuery */
     private JPAQuery<SyhSendEmailLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhSendEmailLogDto.Item.class,
-                        syhSendEmailLog.logId,
-                        syhSendEmailLog.siteId,
-                        syhSendEmailLog.templateId,
-                        syhSendEmailLog.templateCode,
-                        syhSendEmailLog.memberId,
-                        syhSendEmailLog.userId,
-                        syhSendEmailLog.fromAddr,
-                        syhSendEmailLog.toAddr,
-                        syhSendEmailLog.ccAddr,
-                        syhSendEmailLog.bccAddr,
-                        syhSendEmailLog.subject,
-                        syhSendEmailLog.content,
-                        syhSendEmailLog.params,
-                        syhSendEmailLog.resultCd,
-                        syhSendEmailLog.failReason,
-                        syhSendEmailLog.sendDate,
-                        syhSendEmailLog.refTypeCd,
-                        syhSendEmailLog.refId,
-                        syhSendEmailLog.regBy,
-                        syhSendEmailLog.regDate,
-                        syhSendEmailLog.updBy,
-                        syhSendEmailLog.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syTemplate.templateNm.as("templateNm"),
-                        syUser.userNm.as("userNm"),
-                        cd_sr.codeLabel.as("resultCdNm")
+                        syhSendEmailLog.logId,           // 로그ID (PK, YYMMDDhhmmss+rand4)
+                        syhSendEmailLog.siteId,          // 사이트ID (sy_site.site_id)
+                        syhSendEmailLog.templateId,      // 템플릿ID (sy_template.template_id)
+                        syhSendEmailLog.templateCode,    // 템플릿코드 스냅샷
+                        syhSendEmailLog.memberId,        // 대상 회원ID (ec_member.member_id, 비회원 NULL)
+                        syhSendEmailLog.userId,          // 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+                        syhSendEmailLog.fromAddr,        // 발신 이메일
+                        syhSendEmailLog.toAddr,          // 수신 이메일
+                        syhSendEmailLog.ccAddr,          // 참조 이메일 (복수 시 콤마 구분)
+                        syhSendEmailLog.bccAddr,         // 숨은참조 이메일
+                        syhSendEmailLog.subject,         // 발송 제목 (치환 완료본)
+                        syhSendEmailLog.content,         // 발송 본문 (치환 완료본 HTML)
+                        syhSendEmailLog.params,          // 치환 파라미터 JSON
+                        syhSendEmailLog.resultCd,        // 발송결과 — SEND_RESULT {SUCCESS: '성공', FAILED: '실패', PENDING: '대기'}
+                        syhSendEmailLog.failReason,      // 실패 사유
+                        syhSendEmailLog.sendDate,        // 발송일시
+                        syhSendEmailLog.refTypeCd,       // 연관유형코드 (ORDER/CLAIM/JOIN/PWD_RESET 등)
+                        syhSendEmailLog.refId,           // 연관ID
+                        syhSendEmailLog.regBy,           // 등록자
+                        syhSendEmailLog.regDate,         // 등록일시
+                        syhSendEmailLog.updBy,           // 수정자
+                        syhSendEmailLog.updDate,         // 수정일시
+                        sySite.siteNm.as("siteNm"),                  // 사이트명 (조인: sy_site)
+                        syTemplate.templateNm.as("templateNm"),      // 템플릿명 (조인: sy_template)
+                        syUser.userNm.as("userNm"),                  // 관리자명 (조인: sy_user)
+                        cd_sr.codeLabel.as("resultCdNm")              // 발송결과 코드명 (조인: sy_code SEND_RESULT)
                 ))
                 .from(syhSendEmailLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhSendEmailLog.siteId))

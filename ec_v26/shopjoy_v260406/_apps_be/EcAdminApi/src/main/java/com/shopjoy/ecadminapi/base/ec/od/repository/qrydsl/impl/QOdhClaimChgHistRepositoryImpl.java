@@ -41,13 +41,24 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         Map.entry("siteId", odhClaimChgHist.siteId)
     );
 
-    /* 클레임 변경 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CHG_TYPE (od_claim 변경유형, sy_code 미등록 — Entity 주석 기준 예시)
+     *   CLAIM_TYPE:클레임유형변경, REASON:사유변경, AMOUNT:금액변경, APPROVAL:결재변경, MEMO:메모변경, REFUND:환불변경
+     */
     private JPAQuery<OdhClaimChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimChgHistDto.Item.class,
-                        odhClaimChgHist.claimChgHistId, odhClaimChgHist.siteId, odhClaimChgHist.claimId,
-                        odhClaimChgHist.chgTypeCd, odhClaimChgHist.chgField, odhClaimChgHist.beforeVal, odhClaimChgHist.afterVal,
-                        odhClaimChgHist.chgReason, odhClaimChgHist.chgUserId, odhClaimChgHist.chgDate,
+                        odhClaimChgHist.claimChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
+                        odhClaimChgHist.siteId,         // 사이트ID
+                        odhClaimChgHist.claimId,        // 클레임ID (od_claim.)
+                        odhClaimChgHist.chgTypeCd,      // 변경유형코드 — CHG_TYPE {CLAIM_TYPE:클레임유형변경, REASON:사유변경, AMOUNT:금액변경, APPROVAL:결재변경, MEMO:메모변경, REFUND:환불변경}
+                        odhClaimChgHist.chgField,       // 변경 필드명
+                        odhClaimChgHist.beforeVal,      // 변경전값
+                        odhClaimChgHist.afterVal,       // 변경후값
+                        odhClaimChgHist.chgReason,      // 변경사유
+                        odhClaimChgHist.chgUserId,      // 처리자 (sy_user.user_id)
+                        odhClaimChgHist.chgDate,        // 처리일시
                         odhClaimChgHist.regBy, odhClaimChgHist.regDate, odhClaimChgHist.updBy, odhClaimChgHist.updDate))
                 .from(odhClaimChgHist);
     }

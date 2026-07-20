@@ -44,15 +44,32 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         Map.entry("refType", cmChattMsg.refType)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 실제 코드값 (DDL 컬럼 코멘트 기준, sy_code 미등록)
+     * SENDER_TYPE_CD  {MEMBER: '고객회원', ADMIN: '관리자', SYSTEM: '시스템'}
+     * MSG_TYPE_CD     {TEXT: '텍스트', IMAGE: '이미지', FILE: '파일', REF: '참조', SYSTEM: '시스템'}
+     * READ_YN         {Y: '읽음', N: '안읽음'}
+     */
     private JPAQuery<CmChattMsgDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmChattMsgDto.Item.class,
-                        cmChattMsg.chattMsgId, cmChattMsg.siteId, cmChattMsg.chattId,
-                        cmChattMsg.senderTypeCd, cmChattMsg.senderId, cmChattMsg.senderNm,
-                        cmChattMsg.msgText, cmChattMsg.msgTypeCd, cmChattMsg.attachGrpId,
-                        cmChattMsg.refType, cmChattMsg.refId,
-                        cmChattMsg.readYn, cmChattMsg.sendDate,
-                        cmChattMsg.regBy, cmChattMsg.regDate, cmChattMsg.updBy, cmChattMsg.updDate
+                        cmChattMsg.chattMsgId,    // 메시지ID (PK, YYMMDDhhmmss+rand4)
+                        cmChattMsg.siteId,        // 사이트ID (sy_site.site_id)
+                        cmChattMsg.chattId,       // 채팅방ID (cm_chatt.chatt_id)
+                        cmChattMsg.senderTypeCd,  // 발신자유형 — SENDER_TYPE_CD {MEMBER: '고객회원', ADMIN: '관리자', SYSTEM: '시스템'}
+                        cmChattMsg.senderId,      // 발신자ID (memberId 또는 userId)
+                        cmChattMsg.senderNm,      // 발신자명 (비정규화 캐시)
+                        cmChattMsg.msgText,       // 메시지 내용
+                        cmChattMsg.msgTypeCd,     // 메시지유형 — MSG_TYPE_CD {TEXT: '텍스트', IMAGE: '이미지', FILE: '파일', REF: '참조', SYSTEM: '시스템'}
+                        cmChattMsg.attachGrpId,   // 첨부그룹ID (sy_attach_grp.attach_grp_id)
+                        cmChattMsg.refType,       // 참조유형 — REF_TYPE {ORDER: '주문', PRODUCT: '상품', CLAIM: '클레임'}
+                        cmChattMsg.refId,         // 참조ID
+                        cmChattMsg.readYn,        // 읽음여부 — READ_YN {Y: '읽음', N: '안읽음'}
+                        cmChattMsg.sendDate,      // 발송일시
+                        cmChattMsg.regBy,         // 등록자
+                        cmChattMsg.regDate,       // 등록일시
+                        cmChattMsg.updBy,         // 수정자
+                        cmChattMsg.updDate        // 수정일시
                 ))
                 .from(cmChattMsg);
     }

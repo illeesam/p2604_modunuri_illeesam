@@ -54,18 +54,36 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         Map.entry("vendorId", stSettleItem.vendorId)
     );
 
-    /* 정산 항목 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
+     * SETTLE_ITEM_TYPE  {SALE: '판매', CANCEL: '취소/반품', DISCNT: '할인분담', GIFT: '사은품분담', SHIP: '배송비', ADJ: '조정'}
+     * (Entity 주석상 SALE/CANCEL/RETURN — sy_code 실 데이터에는 CANCEL 하나로 취소/반품 통합 + DISCNT/GIFT/SHIP/ADJ 추가 존재)
+     */
     private JPAQuery<StSettleItemDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleItemDto.Item.class,
-                        stSettleItem.settleItemId, stSettleItem.settleId, stSettleItem.siteId, stSettleItem.orderId, stSettleItem.orderItemId,
-                        stSettleItem.vendorId, stSettleItem.prodId, stSettleItem.settleItemTypeCd, stSettleItem.orderDate, stSettleItem.orderQty,
-                        stSettleItem.unitPrice, stSettleItem.itemPrice, stSettleItem.discntAmt, stSettleItem.commissionRate, stSettleItem.commissionAmt,
-                        stSettleItem.settleItemAmt, stSettleItem.regBy, stSettleItem.regDate,
-                        odOrder.memberNm.as("orderNm"),
-                        odOrderItem.prodNm.as("orderItemNm"),
-                        sySite.siteNm.as("siteNm"),
-                        cdSit.codeLabel.as("settleItemTypeCdNm")
+                        stSettleItem.settleItemId,       // 정산항목ID (PK)
+                        stSettleItem.settleId,            // 정산ID (st_settle.settle_id)
+                        stSettleItem.siteId,               // 사이트ID
+                        stSettleItem.orderId,              // 주문ID (od_order.order_id)
+                        stSettleItem.orderItemId,          // 주문항목ID (od_order_item.order_item_id)
+                        stSettleItem.vendorId,             // 업체ID
+                        stSettleItem.prodId,               // 상품ID
+                        stSettleItem.settleItemTypeCd,     // 항목유형 — SETTLE_ITEM_TYPE {SALE: '판매', CANCEL: '취소/반품', DISCNT: '할인분담', GIFT: '사은품분담', SHIP: '배송비', ADJ: '조정'}
+                        stSettleItem.orderDate,            // 주문일시
+                        stSettleItem.orderQty,             // 주문수량
+                        stSettleItem.unitPrice,            // 단가
+                        stSettleItem.itemPrice,            // 소계 (unit_price × order_qty)
+                        stSettleItem.discntAmt,            // 할인금액
+                        stSettleItem.commissionRate,       // 수수료율 (%)
+                        stSettleItem.commissionAmt,        // 수수료금액
+                        stSettleItem.settleItemAmt,        // 항목 정산금액
+                        stSettleItem.regBy,                // 등록자
+                        stSettleItem.regDate,               // 등록일시
+                        odOrder.memberNm.as("orderNm"),                     // 주문 회원명 (조인)
+                        odOrderItem.prodNm.as("orderItemNm"),               // 주문항목 상품명 (조인)
+                        sySite.siteNm.as("siteNm"),                         // 사이트명 (조인)
+                        cdSit.codeLabel.as("settleItemTypeCdNm")            // 항목유형명 (sy_code 조인)
                 ))
                 .from(stSettleItem)
                 .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleItem.orderId))

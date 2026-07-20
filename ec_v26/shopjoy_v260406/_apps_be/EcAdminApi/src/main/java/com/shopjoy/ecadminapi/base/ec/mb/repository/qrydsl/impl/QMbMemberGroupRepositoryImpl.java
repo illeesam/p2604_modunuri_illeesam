@@ -43,12 +43,22 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         Map.entry("useYn", mbMemberGroup.useYn)
     );
 
-    /* 회원 그룹 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN  {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<MbMemberGroupDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberGroupDto.Item.class,
-                        mbMemberGroup.memberGroupId, mbMemberGroup.siteId, mbMemberGroup.groupNm, mbMemberGroup.groupMemo, mbMemberGroup.useYn,
-                        mbMemberGroup.regBy, mbMemberGroup.regDate, mbMemberGroup.updBy, mbMemberGroup.updDate
+                        mbMemberGroup.memberGroupId,   // 그룹ID (PK)
+                        mbMemberGroup.siteId,          // 사이트ID (sy_site.site_id)
+                        mbMemberGroup.groupNm,         // 그룹명
+                        mbMemberGroup.groupMemo,       // 메모
+                        mbMemberGroup.useYn,           // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        mbMemberGroup.regBy,           // 등록자ID
+                        mbMemberGroup.regDate,         // 등록일시
+                        mbMemberGroup.updBy,           // 수정자ID
+                        mbMemberGroup.updDate          // 수정일시
                 ))
                 .from(mbMemberGroup)
                 .leftJoin(sySite).on(sySite.siteId.eq(mbMemberGroup.siteId));

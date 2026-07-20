@@ -53,14 +53,30 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         Map.entry("useYn", pdProdQna.useYn)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (prodQnaTypeCd 는 sy_code 미등록 — Entity 주석 기준 예시)
+     * SCRT_YN / ANSW_YN / DISP_YN / USE_YN  {Y: '예', N: '아니오'}
+     */
     /** 단건 조회 */
     private JPAQuery<PdProdQnaDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdQnaDto.Item.class,
-                        pdProdQna.prodQnaId, pdProdQna.siteId, pdProdQna.prodId, pdProdQna.prodSkuId, pdProdQna.memberId, pdProdQna.orderId,
-                        pdProdQna.prodQnaTypeCd, pdProdQna.prodQnaTitle, pdProdQna.prodQnaContent,
-                        pdProdQna.scrtYn, pdProdQna.answYn, pdProdQna.answContent, pdProdQna.answDate, pdProdQna.answUserId,
-                        pdProdQna.dispYn, pdProdQna.useYn,
+                        pdProdQna.prodQnaId,      // 문의ID (PK, YYMMDDhhmmss+rand4)
+                        pdProdQna.siteId,          // 사이트ID (sy_site.site_id)
+                        pdProdQna.prodId,          // 상품ID (pd_prod.prod_id)
+                        pdProdQna.prodSkuId,       // SKUID (pd_prod_sku.prod_sku_id)
+                        pdProdQna.memberId,        // 회원ID (mb_member.member_id)
+                        pdProdQna.orderId,         // 주문ID (od_order.order_id)
+                        pdProdQna.prodQnaTypeCd,    // 문의유형코드
+                        pdProdQna.prodQnaTitle,    // 문의제목
+                        pdProdQna.prodQnaContent,  // 문의내용
+                        pdProdQna.scrtYn,            // 비밀글여부 — {Y: '예', N: '아니오'}
+                        pdProdQna.answYn,             // 답변여부 — {Y: '예', N: '아니오'}
+                        pdProdQna.answContent,     // 답변내용
+                        pdProdQna.answDate,        // 답변일시
+                        pdProdQna.answUserId,      // 답변자ID (sy_user.user_id)
+                        pdProdQna.dispYn,             // 노출여부 — {Y: '예', N: '아니오'}
+                        pdProdQna.useYn,              // 사용여부 — {Y: '예', N: '아니오'}
                         pdProdQna.regBy, pdProdQna.regDate, pdProdQna.updBy, pdProdQna.updDate
                 ))
                 .from(pdProdQna);

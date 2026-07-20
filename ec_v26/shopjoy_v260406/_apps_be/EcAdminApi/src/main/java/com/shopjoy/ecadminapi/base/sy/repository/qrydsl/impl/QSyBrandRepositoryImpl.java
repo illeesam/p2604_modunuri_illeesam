@@ -55,15 +55,29 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         Map.entry("vendorId", syBrand.vendorId)
     );
 
-    /* 브랜드 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<SyBrandDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyBrandDto.Item.class,
-                        syBrand.brandId, syBrand.siteId, syBrand.brandCode, syBrand.brandNm, syBrand.brandEnNm,
-                        syBrand.pathId, syBrand.logoUrl, syBrand.vendorId, syBrand.sortOrd, syBrand.useYn,
-                        syBrand.brandRemark,
-                        syBrand.regBy, syBrand.regDate, syBrand.updBy, syBrand.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syBrand.brandId,      // 브랜드ID (YYMMDDhhmmss+rand4)
+                        syBrand.siteId,       // 사이트ID (sy_site.site_id)
+                        syBrand.brandCode,    // 브랜드코드
+                        syBrand.brandNm,      // 브랜드명 (한글)
+                        syBrand.brandEnNm,    // 브랜드영문명
+                        syBrand.pathId,       // 점(.) 구분 표시경로 (트리 빌드용)
+                        syBrand.logoUrl,      // 로고URL
+                        syBrand.vendorId,     // 업체ID
+                        syBrand.sortOrd,      // 정렬순서
+                        syBrand.useYn,        // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syBrand.brandRemark,  // 비고
+                        syBrand.regBy,        // 등록자
+                        syBrand.regDate,      // 등록일시
+                        syBrand.updBy,        // 수정자
+                        syBrand.updDate,      // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syBrand)
                 .leftJoin(sySite).on(sySite.siteId.eq(syBrand.siteId));

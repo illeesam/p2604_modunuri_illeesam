@@ -52,12 +52,20 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         Map.entry("siteId", pmSaveUsage.siteId)
     );
 
-    /* 적립금 사용 이력 baseSelColumnQuery */
+    /* 적립금 사용 이력 baseSelColumnQuery — 코드성 필드 없음 (주문 시 사용된 적립금 건별 기록) */
     private JPAQuery<PmSaveUsageDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmSaveUsageDto.Item.class,
-                        pmSaveUsage.saveUsageId, pmSaveUsage.siteId, pmSaveUsage.memberId, pmSaveUsage.orderId, pmSaveUsage.orderItemId, pmSaveUsage.prodId,
-                        pmSaveUsage.useAmt, pmSaveUsage.balanceAmt, pmSaveUsage.usedDate, pmSaveUsage.regBy, pmSaveUsage.regDate
+                        pmSaveUsage.saveUsageId,    // 적립사용ID (PK, YYMMDDhhmmss+rand4)
+                        pmSaveUsage.siteId,         // 사이트ID (sy_site.site_id)
+                        pmSaveUsage.memberId,       // 회원ID (mb_member.member_id)
+                        pmSaveUsage.orderId,        // 주문ID (od_order.order_id)
+                        pmSaveUsage.orderItemId,    // 주문상품ID (od_order_item.order_item_id, 상품별 사용 시)
+                        pmSaveUsage.prodId,         // 상품ID (pd_prod.prod_id, 사용 상품)
+                        pmSaveUsage.useAmt,         // 사용 적립금액
+                        pmSaveUsage.balanceAmt,     // 사용 후 잔액
+                        pmSaveUsage.usedDate,       // 사용일시
+                        pmSaveUsage.regBy, pmSaveUsage.regDate
                 ))
                 .from(pmSaveUsage)
                 .leftJoin(sySite).on(sySite.siteId.eq(pmSaveUsage.siteId))

@@ -41,13 +41,23 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         Map.entry("statusReason", odhPayStatusHist.statusReason)
     );
 
-    /* 결제 상태 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * PAY_STATUS  {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
+     */
     private JPAQuery<OdhPayStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhPayStatusHistDto.Item.class,
-                        odhPayStatusHist.payStatusHistId, odhPayStatusHist.siteId, odhPayStatusHist.payId, odhPayStatusHist.orderId,
-                        odhPayStatusHist.payStatusCdBefore, odhPayStatusHist.payStatusCd, odhPayStatusHist.statusReason,
-                        odhPayStatusHist.chgUserId, odhPayStatusHist.chgDate, odhPayStatusHist.memo,
+                        odhPayStatusHist.payStatusHistId,   // 결제상태이력ID (YYMMDDhhmmss+rand4)
+                        odhPayStatusHist.siteId,              // 사이트ID
+                        odhPayStatusHist.payId,               // 결제ID (od_pay.)
+                        odhPayStatusHist.orderId,             // 주문ID (od_order.)
+                        odhPayStatusHist.payStatusCdBefore,   // 변경 전 결제상태 — PAY_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
+                        odhPayStatusHist.payStatusCd,         // 변경 후 결제상태 — PAY_STATUS (동일 코드그룹)
+                        odhPayStatusHist.statusReason,        // 상태 변경 사유
+                        odhPayStatusHist.chgUserId,           // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+                        odhPayStatusHist.chgDate,             // 변경 일시
+                        odhPayStatusHist.memo,                // 메모
                         odhPayStatusHist.regBy, odhPayStatusHist.regDate, odhPayStatusHist.updBy, odhPayStatusHist.updDate))
                 .from(odhPayStatusHist);
     }

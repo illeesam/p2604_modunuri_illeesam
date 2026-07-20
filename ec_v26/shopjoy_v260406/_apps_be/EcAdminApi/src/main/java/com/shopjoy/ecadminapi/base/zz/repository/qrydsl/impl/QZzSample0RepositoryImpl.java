@@ -44,29 +44,33 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
         Map.entry("useYn", zzSample0.useYn)
     );
 
-    /* baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (zz_sample0 는 다목적 샘플 테이블이라 sy_code 미등록.
+     * 아래는 실제 값이 아니라 필드 용도를 보여주기 위한 예시 가상 코드)
+     * USE_YN {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<ZzSample0Dto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(ZzSample0Dto.Item.class,
-                        zzSample0.sample0Id,
-                        zzSample0.sampleName,
-                        zzSample0.sampleDesc,
-                        zzSample0.sampleValue,
-                        zzSample0.sortOrd,
-                        zzSample0.useYn,
-                        zzSample0.regBy,
-                        zzSample0.regDate,
-                        zzSample0.updBy,
-                        zzSample0.updDate,
-                        zzSample0.col01,
-                        zzSample0.col02,
-                        zzSample0.col03,
-                        zzSample0.col04,
-                        zzSample0.col05,
-                        zzSample0.col06,
-                        zzSample0.col07,
-                        zzSample0.col08,
-                        zzSample0.col09
+                        zzSample0.sample0Id,     // 샘플0 ID (PK, YYMMDDhhmmss+rand4)
+                        zzSample0.sampleName,    // 샘플 이름
+                        zzSample0.sampleDesc,    // 샘플 설명
+                        zzSample0.sampleValue,   // 샘플 값
+                        zzSample0.sortOrd,       // 정렬 순서
+                        zzSample0.useYn,         // 사용 여부 — USE_YN {Y: '사용', N: '미사용'}
+                        zzSample0.regBy,         // 등록자
+                        zzSample0.regDate,       // 등록일시
+                        zzSample0.updBy,         // 수정자
+                        zzSample0.updDate,       // 수정일시
+                        zzSample0.col01,         // 범용 컬럼01
+                        zzSample0.col02,         // 범용 컬럼02
+                        zzSample0.col03,         // 범용 컬럼03
+                        zzSample0.col04,         // 범용 컬럼04
+                        zzSample0.col05,         // 범용 컬럼05
+                        zzSample0.col06,         // 범용 컬럼06
+                        zzSample0.col07,         // 범용 컬럼07
+                        zzSample0.col08,         // 범용 컬럼08
+                        zzSample0.col09          // 범용 컬럼09
                 ))
                 .from(zzSample0);
     }

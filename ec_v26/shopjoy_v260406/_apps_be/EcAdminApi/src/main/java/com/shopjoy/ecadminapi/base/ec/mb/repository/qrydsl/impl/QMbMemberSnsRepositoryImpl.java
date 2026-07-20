@@ -44,12 +44,19 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         Map.entry("snsUserId", mbMemberSns.snsUserId)
     );
 
-    /* SNS 연동 회원 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * SNS_CHANNEL_CD (코드: SNS_CHANNEL)  {KAKAO: '카카오', NAVER: '네이버', GOOGLE: '구글', APPLE: '애플'}
+     */
     private JPAQuery<MbMemberSnsDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberSnsDto.Item.class,
-                        mbMemberSns.memberSnsId, mbMemberSns.memberId, mbMemberSns.snsChannelCd, mbMemberSns.snsUserId,
-                        mbMemberSns.regBy, mbMemberSns.regDate
+                        mbMemberSns.memberSnsId,   // SNS연동ID (PK)
+                        mbMemberSns.memberId,      // 회원ID (mb_member.member_id)
+                        mbMemberSns.snsChannelCd,  // SNS채널코드 — SNS_CHANNEL {KAKAO: '카카오', NAVER: '네이버', GOOGLE: '구글', APPLE: '애플'}
+                        mbMemberSns.snsUserId,     // SNS 플랫폼 사용자ID
+                        mbMemberSns.regBy,         // 등록자ID
+                        mbMemberSns.regDate        // 등록일시
                 ))
                 .from(mbMemberSns)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberSns.memberId))

@@ -42,13 +42,25 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
         Map.entry("siteId", odhClaimItemChgHist.siteId)
     );
 
-    /* 클레임 아이템 변경 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CHG_TYPE (od_claim_item 변경유형, sy_code 미등록 — Entity 주석 기준 예시)
+     *   QTY:수량변경, AMOUNT:금액변경, REASON:사유변경, STATUS:상태변경, REFUND_AMT:환불금액변경
+     */
     private JPAQuery<OdhClaimItemChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimItemChgHistDto.Item.class,
-                        odhClaimItemChgHist.claimItemChgHistId, odhClaimItemChgHist.siteId, odhClaimItemChgHist.claimId, odhClaimItemChgHist.claimItemId,
-                        odhClaimItemChgHist.chgTypeCd, odhClaimItemChgHist.chgField, odhClaimItemChgHist.beforeVal, odhClaimItemChgHist.afterVal,
-                        odhClaimItemChgHist.chgReason, odhClaimItemChgHist.chgUserId, odhClaimItemChgHist.chgDate,
+                        odhClaimItemChgHist.claimItemChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
+                        odhClaimItemChgHist.siteId,             // 사이트ID
+                        odhClaimItemChgHist.claimId,            // 클레임ID (od_claim.)
+                        odhClaimItemChgHist.claimItemId,        // 클레임품목ID (od_claim_item.)
+                        odhClaimItemChgHist.chgTypeCd,          // 변경유형코드 — CHG_TYPE {QTY:수량변경, AMOUNT:금액변경, REASON:사유변경, STATUS:상태변경, REFUND_AMT:환불금액변경}
+                        odhClaimItemChgHist.chgField,           // 변경 필드명
+                        odhClaimItemChgHist.beforeVal,          // 변경전값
+                        odhClaimItemChgHist.afterVal,           // 변경후값
+                        odhClaimItemChgHist.chgReason,          // 변경사유
+                        odhClaimItemChgHist.chgUserId,          // 처리자 (sy_user.user_id)
+                        odhClaimItemChgHist.chgDate,            // 처리일시
                         odhClaimItemChgHist.regBy, odhClaimItemChgHist.regDate, odhClaimItemChgHist.updBy, odhClaimItemChgHist.updDate))
                 .from(odhClaimItemChgHist);
     }

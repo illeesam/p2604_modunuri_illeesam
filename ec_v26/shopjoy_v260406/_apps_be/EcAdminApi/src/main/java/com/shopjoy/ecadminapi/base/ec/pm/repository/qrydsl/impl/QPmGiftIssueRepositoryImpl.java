@@ -56,13 +56,23 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         Map.entry("siteId", pmGiftIssue.siteId)
     );
 
-    /* 사은품 발행 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * GIFT_ISSUE_STATUS  {ISSUED: '발급됨', DELIVERED: '배송완료', CANCELLED: '취소'}
+     */
     private JPAQuery<PmGiftIssueDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmGiftIssueDto.Item.class,
-                        pmGiftIssue.giftIssueId, pmGiftIssue.giftId, pmGiftIssue.siteId, pmGiftIssue.memberId, pmGiftIssue.orderId,
-                        pmGiftIssue.issueDate, pmGiftIssue.giftIssueStatusCd, pmGiftIssue.giftIssueStatusCdBefore,
-                        pmGiftIssue.giftIssueMemo, pmGiftIssue.regBy, pmGiftIssue.regDate, pmGiftIssue.updBy, pmGiftIssue.updDate
+                        pmGiftIssue.giftIssueId,               // 사은품발급ID (PK)
+                        pmGiftIssue.giftId,                    // 사은품ID (pm_gift.gift_id)
+                        pmGiftIssue.siteId,                    // 사이트ID
+                        pmGiftIssue.memberId,                  // 회원ID
+                        pmGiftIssue.orderId,                   // 기준주문ID (od_order.order_id)
+                        pmGiftIssue.issueDate,                 // 발급일시
+                        pmGiftIssue.giftIssueStatusCd,         // 상태 — GIFT_ISSUE_STATUS {ISSUED: '발급됨', DELIVERED: '배송완료', CANCELLED: '취소'}
+                        pmGiftIssue.giftIssueStatusCdBefore,   // 변경 전 상태
+                        pmGiftIssue.giftIssueMemo,             // 메모
+                        pmGiftIssue.regBy, pmGiftIssue.regDate, pmGiftIssue.updBy, pmGiftIssue.updDate
                 ))
                 .from(pmGiftIssue)
                 .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftIssue.giftId))

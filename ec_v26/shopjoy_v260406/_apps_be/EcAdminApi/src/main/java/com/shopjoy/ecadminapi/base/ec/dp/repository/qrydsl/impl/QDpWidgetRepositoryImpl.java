@@ -49,14 +49,40 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         Map.entry("widgetTypeCd", dpWidget.widgetTypeCd)
     );
 
-    /* 전시 위젯 baseQuery */
+    /*
+     * baseQuery — 코드성 필드 예시 코드값
+     * USE_YN / TITLE_SHOW_YN / WIDGET_LIB_REF_YN  {Y: '예', N: '아니오'}
+     * WIDGET_TYPE_CD (코드그룹: DISP_WIDGET_TYPE, 27종)
+     *   {image_banner: '이미지배너', product_slider: '상품슬라이더', product: '상품', cond_product: '조건부상품',
+     *    chart_bar: '막대차트', chart_line: '라인차트', chart_pie: '파이차트', text_banner: '텍스트배너',
+     *    info_card: '정보카드', popup: '팝업', file: '파일', file_list: '파일목록', coupon: '쿠폰',
+     *    html_editor: 'HTML에디터', textarea: '텍스트영역', markdown: '마크다운', barcode: '바코드',
+     *    qrcode: 'QR코드', barcode_qrcode: '바코드+QR코드', video_player: '동영상플레이어', countdown: '카운트다운',
+     *    payment_widget: '결제위젯', approval_widget: '승인위젯', event_banner: '이벤트배너', cache_banner: '캐시배너',
+     *    widget_embed: '위젯임베드', map_widget: '지도위젯'}
+     * DISP_ENV — 전시 환경 ^CODE^CODE^ 형식 (예: ^PROD^DEV^TEST^)
+     */
     private JPAQuery<DpWidgetDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpWidgetDto.Item.class,
-                dpWidget.widgetId, dpWidget.widgetLibId, dpWidget.siteId, dpWidget.widgetNm, dpWidget.widgetTypeCd,
-                dpWidget.widgetDesc, dpWidget.widgetTitle, dpWidget.widgetContent, dpWidget.titleShowYn,
-                dpWidget.widgetLibRefYn, dpWidget.widgetConfigJson, dpWidget.thumbnailUrl,
-                dpWidget.sortOrd, dpWidget.useYn, dpWidget.dispEnv,
-                dpWidget.regBy, dpWidget.regDate, dpWidget.updBy, dpWidget.updDate
+                dpWidget.widgetId,          // 위젯ID (PK, YYMMDDhhmmss+rand4)
+                dpWidget.widgetLibId,       // 위젯라이브러리ID (dp_widget_lib.widget_lib_id, 참조 선택사항)
+                dpWidget.siteId,            // 사이트ID (sy_site.site_id)
+                dpWidget.widgetNm,          // 위젯명
+                dpWidget.widgetTypeCd,      // 위젯유형 — WIDGET_TYPE_CD (코드: DISP_WIDGET_TYPE, 27종)
+                dpWidget.widgetDesc,        // 위젯설명
+                dpWidget.widgetTitle,       // 위젯타이틀
+                dpWidget.widgetContent,     // 위젯내용 (HTML 에디터)
+                dpWidget.titleShowYn,       // 타이틀표시여부 — TITLE_SHOW_YN {Y: '예', N: '아니오'}
+                dpWidget.widgetLibRefYn,    // 위젯라이브러리참조여부 — WIDGET_LIB_REF_YN {Y: '예', N: '아니오'}
+                dpWidget.widgetConfigJson,  // 위젯추가설정 (JSON)
+                dpWidget.thumbnailUrl,      // 미리보기 썸네일URL
+                dpWidget.sortOrd,           // 정렬순서
+                dpWidget.useYn,             // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                dpWidget.dispEnv,           // 전시 환경 (^PROD^DEV^TEST^ 형식)
+                dpWidget.regBy,             // 등록자
+                dpWidget.regDate,           // 등록일시
+                dpWidget.updBy,             // 수정자
+                dpWidget.updDate            // 수정일시
         )).from(dpWidget);
     }
 

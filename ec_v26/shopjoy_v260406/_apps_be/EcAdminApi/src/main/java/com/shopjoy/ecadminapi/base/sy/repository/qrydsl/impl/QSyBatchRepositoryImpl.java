@@ -51,15 +51,35 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         Map.entry("siteId", syBatch.siteId)
     );
 
-    /* 배치 baseQuery */
+    /*
+     * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
+     * BATCH_CYCLE      {MANUAL: '수동', HOURLY: '시간별', DAILY: '일간', WEEKLY: '주간', MONTHLY: '월간'}
+     * BATCH_STATUS_CD  {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'} (활성상태, DDL 기본값 'ACTIVE')
+     * BATCH_RUN_STATUS (sy_code 미등록, DDL 주석 기준) {IDLE: '대기', RUNNING: '실행중', SUCCESS: '성공', FAILED: '실패'}
+     */
     private JPAQuery<SyBatchDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyBatchDto.Item.class,
-                        syBatch.batchId, syBatch.siteId, syBatch.batchCode, syBatch.batchNm, syBatch.batchDesc, syBatch.cronExpr,
-                        syBatch.batchCycleCd, syBatch.batchLastRun, syBatch.batchNextRun, syBatch.batchRunCount,
-                        syBatch.batchStatusCd, syBatch.batchRunStatus, syBatch.batchTimeoutSec, syBatch.batchMemo,
-                        syBatch.regBy, syBatch.regDate, syBatch.updBy, syBatch.updDate, syBatch.pathId,
-                        sySite.siteNm.as("siteNm")
+                        syBatch.batchId,          // 배치ID (YYMMDDhhmmss+rand4)
+                        syBatch.siteId,           // 사이트ID (sy_site.site_id)
+                        syBatch.batchCode,        // 배치코드
+                        syBatch.batchNm,          // 배치명
+                        syBatch.batchDesc,        // 배치설명
+                        syBatch.cronExpr,         // Cron 표현식
+                        syBatch.batchCycleCd,     // 주기유형 — BATCH_CYCLE {MANUAL: '수동', HOURLY: '시간별', DAILY: '일간', WEEKLY: '주간', MONTHLY: '월간'}
+                        syBatch.batchLastRun,     // 최근실행일시
+                        syBatch.batchNextRun,     // 다음실행예정일시
+                        syBatch.batchRunCount,    // 실행횟수
+                        syBatch.batchStatusCd,    // 활성상태 — BATCH_STATUS_CD {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'}
+                        syBatch.batchRunStatus,   // 실행상태 — BATCH_RUN_STATUS {IDLE: '대기', RUNNING: '실행중', SUCCESS: '성공', FAILED: '실패'}
+                        syBatch.batchTimeoutSec,  // 타임아웃(초)
+                        syBatch.batchMemo,        // 메모
+                        syBatch.regBy,            // 등록자
+                        syBatch.regDate,          // 등록일시
+                        syBatch.updBy,            // 수정자
+                        syBatch.updDate,          // 수정일시
+                        syBatch.pathId,           // 점(.) 구분 표시경로 (트리 빌드용)
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syBatch)
                 .leftJoin(sySite).on(sySite.siteId.eq(syBatch.siteId));

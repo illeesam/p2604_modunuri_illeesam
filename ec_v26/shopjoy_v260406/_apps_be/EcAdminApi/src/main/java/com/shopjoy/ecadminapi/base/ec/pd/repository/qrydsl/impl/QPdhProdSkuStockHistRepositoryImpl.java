@@ -44,22 +44,26 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         Map.entry("skuId", pdhProdSkuStockHist.prodSkuId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (Entity 주석 기준 — SKU_STOCK_CHG)
+     * CHG_REASON_CD  {SALE: '판매', PURCHASE: '매입/입고', RETURN: '반품', EXCHANGE: '교환', ADJUST: '재고조정', CLAIM: '클레임', ADMIN: '관리자수동'}
+     */
     /* 상품 SKU 재고 이력 baseSelColumnQuery */
     private JPAQuery<PdhProdSkuStockHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdSkuStockHistDto.Item.class,
-                        pdhProdSkuStockHist.histId,
-                        pdhProdSkuStockHist.siteId,
-                        pdhProdSkuStockHist.prodSkuId,
-                        pdhProdSkuStockHist.prodId,
-                        pdhProdSkuStockHist.stockBefore,
-                        pdhProdSkuStockHist.stockAfter,
-                        pdhProdSkuStockHist.chgQty,
-                        pdhProdSkuStockHist.chgReasonCd,
-                        pdhProdSkuStockHist.chgReason,
-                        pdhProdSkuStockHist.orderItemId,
-                        pdhProdSkuStockHist.chgBy,
-                        pdhProdSkuStockHist.chgDate,
+                        pdhProdSkuStockHist.histId,          // 이력ID (PK, YYMMDDhhmmss+rand4)
+                        pdhProdSkuStockHist.siteId,           // 사이트ID (sy_site.site_id)
+                        pdhProdSkuStockHist.prodSkuId,        // SKU ID (pd_prod_sku.prod_sku_id)
+                        pdhProdSkuStockHist.prodId,           // 상품ID (pd_prod.prod_id)
+                        pdhProdSkuStockHist.stockBefore,     // 변경 전 재고수량
+                        pdhProdSkuStockHist.stockAfter,      // 변경 후 재고수량
+                        pdhProdSkuStockHist.chgQty,          // 변동수량 (양수=입고, 음수=출고/판매)
+                        pdhProdSkuStockHist.chgReasonCd,       // 변동사유 — {SALE: '판매', PURCHASE: '매입/입고', RETURN: '반품', EXCHANGE: '교환', ADJUST: '재고조정', CLAIM: '클레임', ADMIN: '관리자수동'}
+                        pdhProdSkuStockHist.chgReason,       // 변동사유 상세
+                        pdhProdSkuStockHist.orderItemId,     // 연관 주문상품ID (od_order_item.order_item_id)
+                        pdhProdSkuStockHist.chgBy,           // 처리자 (sy_user.user_id)
+                        pdhProdSkuStockHist.chgDate,         // 처리일시
                         pdhProdSkuStockHist.regBy,
                         pdhProdSkuStockHist.regDate
                 ))

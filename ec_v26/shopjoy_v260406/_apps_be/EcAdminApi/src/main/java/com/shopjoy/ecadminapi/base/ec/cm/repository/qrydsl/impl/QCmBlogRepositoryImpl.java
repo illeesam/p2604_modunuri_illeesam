@@ -48,14 +48,31 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         Map.entry("useYn", cmBlog.useYn)
     );
 
-    /** 기본 쿼리 빌드 */
+    /*
+     * baseSelColumnQuery — 코드성 필드 실제 코드값 (DDL 컬럼 코멘트 기준, sy_code 미등록)
+     * BLOG_TYPE_CD  {NEWS: '뉴스', BLOG: '블로그'}
+     * USE_YN        {Y: '공개', N: '비공개'}
+     * IS_NOTICE     {Y: '공지(상단고정)', N: '일반'}
+     */
     private JPAQuery<CmBlogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogDto.Item.class,
-                        cmBlog.blogId, cmBlog.siteId, cmBlog.blogCateId, cmBlog.blogTypeCd, cmBlog.blogTitle, cmBlog.blogSummary,
-                        cmBlog.blogContent, cmBlog.blogAuthor, cmBlog.prodId, cmBlog.viewCount,
-                        cmBlog.useYn, cmBlog.isNotice,
-                        cmBlog.regBy, cmBlog.regDate, cmBlog.updBy, cmBlog.updDate
+                        cmBlog.blogId,       // 블로그ID (PK)
+                        cmBlog.siteId,       // 사이트ID (sy_site.site_id)
+                        cmBlog.blogCateId,   // 블로그카테고리ID (cm_blog_cate.blog_cate_id)
+                        cmBlog.blogTypeCd,   // 게시글 구분 — BLOG_TYPE_CD {NEWS: '뉴스', BLOG: '블로그'}
+                        cmBlog.blogTitle,    // 제목
+                        cmBlog.blogSummary,  // 요약 (미리보기, 검색결과용)
+                        cmBlog.blogContent,  // 본문 (HTML 에디터)
+                        cmBlog.blogAuthor,   // 작성자 이름
+                        cmBlog.prodId,       // 상품ID (pd_prod.prod_id, 상품 관련 글일 때만)
+                        cmBlog.viewCount,    // 조회수
+                        cmBlog.useYn,        // 공개여부 — USE_YN {Y: '공개', N: '비공개'}
+                        cmBlog.isNotice,     // 공지글 여부(상단 고정) — IS_NOTICE {Y: '공지', N: '일반'}
+                        cmBlog.regBy,        // 등록자
+                        cmBlog.regDate,      // 등록일시
+                        cmBlog.updBy,        // 수정자
+                        cmBlog.updDate       // 수정일시
                 ))
                 .from(cmBlog);
     }

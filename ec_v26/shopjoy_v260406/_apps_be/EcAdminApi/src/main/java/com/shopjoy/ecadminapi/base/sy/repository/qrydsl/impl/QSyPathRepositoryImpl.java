@@ -39,13 +39,25 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         Map.entry("useYn", syPath.useYn)
     );
 
-    /* baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN {Y: '사용', N: '미사용'}
+     * BIZ_CD (sy_code 미등록, 참조 테이블명 자유 문자열) 예: sy_brand, sy_code_grp, sy_prop, sy_batch, sy_alarm 등
+     */
     private JPAQuery<SyPathDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyPathDto.Item.class,
-                        syPath.pathId, syPath.bizCd, syPath.parentPathId, syPath.pathLabel, syPath.sortOrd,
-                        syPath.useYn, syPath.pathRemark,
-                        syPath.regBy, syPath.regDate, syPath.updBy, syPath.updDate
+                        syPath.pathId,         // 경로ID (PK, auto)
+                        syPath.bizCd,          // 업무코드 (참조 테이블명, 예: sy_brand / sy_code_grp / sy_prop)
+                        syPath.parentPathId,   // 부모 경로ID (sy_path.path_id, 루트는 NULL)
+                        syPath.pathLabel,      // 경로 라벨 (한글 표시명)
+                        syPath.sortOrd,        // 동일 부모 내 정렬순서
+                        syPath.useYn,          // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syPath.pathRemark,     // 비고
+                        syPath.regBy,          // 등록자
+                        syPath.regDate,        // 등록일시
+                        syPath.updBy,          // 수정자
+                        syPath.updDate         // 수정일시
                 ))
                 .from(syPath);
     }

@@ -117,45 +117,106 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         Map.entry("voucherIssueId", stSettleRaw.voucherIssueId)
     );
 
-    /* 정산 원천 데이터 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
+     * RAW_TYPE            {ORDER: '주문', CLAIM: '클레임', ADJ: '조정'}
+     * RAW_STATUS          {COLLECTED: '수집완료', EXCLUDED: '제외', SETTLED: '정산반영'}
+     * ORDER_ITEM_STATUS   {ORDERED: '주문완료', PAID: '결제완료', PREPARING: '준비중', SHIPPING: '배송중', DELIVERED: '배송완료', CONFIRMED: '구매확정', CANCELLED: '취소'}
+     * VENDOR_TYPE         {BRAND: '브랜드사', AGENT: '에이전트', DIRECT: '직매입', CONSIGN: '위탁판매'}
+     * PAY_METHOD_CD       (sy_code 실 데이터 없음, 참고: PAY_METHOD 그룹 BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)
+     * BUY_CONFIRM_YN / CLOSE_YN / ERP_SEND_YN  {Y: '예', N: '아니오'}
+     */
     private JPAQuery<StSettleRawDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleRawDto.Item.class,
-                        stSettleRaw.settleRawId, stSettleRaw.siteId, stSettleRaw.rawTypeCd, stSettleRaw.rawStatusCd, stSettleRaw.rawStatusCdBefore,
-                        stSettleRaw.orderId, stSettleRaw.orderNo, stSettleRaw.orderItemId, stSettleRaw.orderDate, stSettleRaw.orderItemStatusCd,
-                        stSettleRaw.memberId, stSettleRaw.claimId, stSettleRaw.claimItemId, stSettleRaw.vendorId, stSettleRaw.vendorTypeCd,
-                        stSettleRaw.prodId, stSettleRaw.prodNm, stSettleRaw.brandId, stSettleRaw.brandNm,
-                        stSettleRaw.categoryId1, stSettleRaw.categoryId2, stSettleRaw.categoryId3, stSettleRaw.categoryId4, stSettleRaw.categoryId5,
-                        stSettleRaw.prodSkuId, stSettleRaw.prodOptId1, stSettleRaw.prodOptId2, stSettleRaw.mdUserId,
-                        stSettleRaw.normalPrice, stSettleRaw.unitPrice, stSettleRaw.orderQty, stSettleRaw.itemPrice, stSettleRaw.discntAmt,
-                        stSettleRaw.couponDiscntAmt, stSettleRaw.promoDiscntAmt, stSettleRaw.promoId, stSettleRaw.couponId, stSettleRaw.couponIssueId,
-                        stSettleRaw.discntId, stSettleRaw.voucherId, stSettleRaw.voucherIssueId, stSettleRaw.voucherUseAmt,
-                        stSettleRaw.cacheUseAmt, stSettleRaw.mileageUseAmt, stSettleRaw.saveSchdAmt, stSettleRaw.giftId, stSettleRaw.giftAmt,
-                        stSettleRaw.payMethodCd, stSettleRaw.buyConfirmYn, stSettleRaw.buyConfirmDate, stSettleRaw.bundlePriceRate,
-                        stSettleRaw.settleTargetAmt, stSettleRaw.settleFeeRate, stSettleRaw.settleFeeAmt, stSettleRaw.settleAmt,
-                        stSettleRaw.settlePeriod, stSettleRaw.settleId, stSettleRaw.closeYn, stSettleRaw.closeDate, stSettleRaw.settleCloseId,
-                        stSettleRaw.erpVoucherId, stSettleRaw.erpVoucherLineNo, stSettleRaw.erpSendYn, stSettleRaw.erpSendDate,
-                        stSettleRaw.regBy, stSettleRaw.regDate, stSettleRaw.updBy, stSettleRaw.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        odOrder.memberNm.as("orderNm"),
-                        odOrderItem.prodNm.as("orderItemNm"),
-                        mbMember.memberNm.as("memberNm"),
-                        odClaim.memberNm.as("claimNm"),
-                        odClaimItem.prodNm.as("claimItemNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        pdProd.prodNm.as("prodIdNm"),
-                        syBrand.brandNm.as("brandIdNm"),
-                        syUser.userNm.as("mdUserNm"),
-                        pmEvent.eventNm.as("promoNm"),
-                        pmCoupon.couponNm.as("couponNm"),
-                        pmDiscnt.discntNm.as("discntNm"),
-                        pmVoucher.voucherNm.as("voucherNm"),
-                        pmGift.giftNm.as("giftNm"),
-                        cdRt.codeLabel.as("rawTypeCdNm"),
-                        cdRs.codeLabel.as("rawStatusCdNm"),
-                        cdOis.codeLabel.as("orderItemStatusCdNm"),
-                        cdVt.codeLabel.as("vendorTypeCdNm"),
-                        cdPmc.codeLabel.as("payMethodCdNm")
+                        stSettleRaw.settleRawId,           // 수집원장ID (PK, YYMMDDhhmmss+rand4)
+                        stSettleRaw.siteId,                 // 사이트ID
+                        stSettleRaw.rawTypeCd,              // 수집유형 — RAW_TYPE {ORDER: '주문', CLAIM: '클레임', ADJ: '조정'}
+                        stSettleRaw.rawStatusCd,            // 수집상태 — RAW_STATUS {COLLECTED: '수집완료', EXCLUDED: '제외', SETTLED: '정산반영'}
+                        stSettleRaw.rawStatusCdBefore,      // 변경 전 수집상태
+                        stSettleRaw.orderId,                // 주문ID (od_order.order_id)
+                        stSettleRaw.orderNo,                // 주문번호 스냅샷
+                        stSettleRaw.orderItemId,            // 주문상품ID (od_order_item.order_item_id)
+                        stSettleRaw.orderDate,              // 주문일시 스냅샷
+                        stSettleRaw.orderItemStatusCd,      // 수집 시점 주문상태 스냅샷 — ORDER_ITEM_STATUS {ORDERED: '주문완료', PAID: '결제완료', PREPARING: '준비중', SHIPPING: '배송중', DELIVERED: '배송완료', CONFIRMED: '구매확정', CANCELLED: '취소'}
+                        stSettleRaw.memberId,               // 주문 회원ID 스냅샷 (mb_member.member_id)
+                        stSettleRaw.claimId,                // 클레임ID (클레임 수집 시)
+                        stSettleRaw.claimItemId,            // 클레임상품ID (클레임 수집 시)
+                        stSettleRaw.vendorId,                // 업체ID
+                        stSettleRaw.vendorTypeCd,            // 업체구분 — VENDOR_TYPE {BRAND: '브랜드사', AGENT: '에이전트', DIRECT: '직매입', CONSIGN: '위탁판매'}
+                        stSettleRaw.prodId,                  // 상품ID
+                        stSettleRaw.prodNm,                  // 상품명 스냅샷
+                        stSettleRaw.brandId,                 // 브랜드ID 스냅샷 (sy_brand.brand_id)
+                        stSettleRaw.brandNm,                 // 브랜드명 스냅샷
+                        stSettleRaw.categoryId1,             // 카테고리 1단계(대분류) ID 스냅샷
+                        stSettleRaw.categoryId2,             // 카테고리 2단계(중분류) ID 스냅샷
+                        stSettleRaw.categoryId3,             // 카테고리 3단계(소분류) ID 스냅샷
+                        stSettleRaw.categoryId4,             // 카테고리 4단계 ID 스냅샷
+                        stSettleRaw.categoryId5,             // 카테고리 5단계 ID 스냅샷
+                        stSettleRaw.prodSkuId,               // SKU ID 스냅샷 (pd_prod_sku.prod_sku_id)
+                        stSettleRaw.prodOptId1,              // 옵션1 값ID 스냅샷 (pd_prod_opt.opt_id)
+                        stSettleRaw.prodOptId2,              // 옵션2 값ID 스냅샷 (pd_prod_opt.opt_id)
+                        stSettleRaw.mdUserId,                // 담당MD (sy_user.user_id)
+                        stSettleRaw.normalPrice,             // 정상가 스냅샷 (할인 전 1ea 가격)
+                        stSettleRaw.unitPrice,               // 단가 (옵션 추가금액 포함)
+                        stSettleRaw.orderQty,                // 주문수량
+                        stSettleRaw.itemPrice,               // 소계 (unit_price × order_qty)
+                        stSettleRaw.discntAmt,               // 직접할인금액
+                        stSettleRaw.couponDiscntAmt,         // 쿠폰할인금액
+                        stSettleRaw.promoDiscntAmt,          // 프로모션할인금액
+                        stSettleRaw.promoId,                 // 프로모션ID (pm_event.event_id)
+                        stSettleRaw.couponId,                 // 쿠폰ID (pm_coupon.coupon_id)
+                        stSettleRaw.couponIssueId,            // 쿠폰발급ID (pm_coupon_issue.coupon_issue_id)
+                        stSettleRaw.discntId,                 // 할인ID (pm_discnt.discnt_id)
+                        stSettleRaw.voucherId,                // 상품권ID (pm_voucher.voucher_id)
+                        stSettleRaw.voucherIssueId,           // 상품권발급ID (pm_voucher_issue.voucher_issue_id)
+                        stSettleRaw.voucherUseAmt,            // 상품권 사용금액
+                        stSettleRaw.cacheUseAmt,              // 캐쉬(적립금) 사용금액
+                        stSettleRaw.mileageUseAmt,            // 적립금 사용금액
+                        stSettleRaw.saveSchdAmt,              // 적립 예정금액 (구매확정 전=예상, 확정 후=실적립)
+                        stSettleRaw.giftId,                   // 사은품ID (pm_gift.gift_id)
+                        stSettleRaw.giftAmt,                  // 사은품 원가금액 (정산 차감 대상)
+                        stSettleRaw.payMethodCd,              // 결제수단 — PAY_METHOD_CD (sy_code 실 데이터 없음, 참고: PAY_METHOD 그룹)
+                        stSettleRaw.buyConfirmYn,             // 구매확정여부 — BUY_CONFIRM_YN {Y: '예', N: '아니오'}
+                        stSettleRaw.buyConfirmDate,           // 구매확정일시
+                        stSettleRaw.bundlePriceRate,          // 묶음 안분율 (%) — 부분 정산 계산 기준
+                        stSettleRaw.settleTargetAmt,          // 정산대상금액 (item_price - 모든 할인)
+                        stSettleRaw.settleFeeRate,            // 수수료율 (%)
+                        stSettleRaw.settleFeeAmt,             // 수수료금액
+                        stSettleRaw.settleAmt,                // 정산금액 (settle_target_amt - settle_fee_amt)
+                        stSettleRaw.settlePeriod,             // 정산기간 (YYYY-MM)
+                        stSettleRaw.settleId,                 // 정산집계ID (st_settle.settle_id, 집계 후 연결)
+                        stSettleRaw.closeYn,                  // 정산마감 완료 여부 — CLOSE_YN {Y: '예', N: '아니오'}
+                        stSettleRaw.closeDate,                // 마감일시
+                        stSettleRaw.settleCloseId,            // 정산마감ID (st_settle_close.settle_close_id)
+                        stSettleRaw.erpVoucherId,             // ERP 전표ID (st_erp_voucher.erp_voucher_id)
+                        stSettleRaw.erpVoucherLineNo,         // ERP 전표 라인번호 (st_erp_voucher_line.line_no)
+                        stSettleRaw.erpSendYn,                // ERP 전송 여부 — ERP_SEND_YN {Y: '예', N: '아니오'}
+                        stSettleRaw.erpSendDate,              // ERP 전송일시
+                        stSettleRaw.regBy,                    // 등록자
+                        stSettleRaw.regDate,                  // 등록일시
+                        stSettleRaw.updBy,                    // 수정자
+                        stSettleRaw.updDate,                  // 수정일시
+                        sySite.siteNm.as("siteNm"),                             // 사이트명 (조인)
+                        odOrder.memberNm.as("orderNm"),                         // 주문 회원명 (조인)
+                        odOrderItem.prodNm.as("orderItemNm"),                   // 주문항목 상품명 (조인)
+                        mbMember.memberNm.as("memberNm"),                       // 회원명 (조인)
+                        odClaim.memberNm.as("claimNm"),                         // 클레임 회원명 (조인)
+                        odClaimItem.prodNm.as("claimItemNm"),                   // 클레임항목 상품명 (조인)
+                        syVendor.vendorNm.as("vendorNm"),                       // 업체명 (조인)
+                        pdProd.prodNm.as("prodIdNm"),                           // 상품명 (조인, 현재 스냅샷)
+                        syBrand.brandNm.as("brandIdNm"),                        // 브랜드명 (조인, 현재 스냅샷)
+                        syUser.userNm.as("mdUserNm"),                           // 담당MD명 (조인)
+                        pmEvent.eventNm.as("promoNm"),                          // 프로모션명 (조인)
+                        pmCoupon.couponNm.as("couponNm"),                       // 쿠폰명 (조인)
+                        pmDiscnt.discntNm.as("discntNm"),                       // 할인명 (조인)
+                        pmVoucher.voucherNm.as("voucherNm"),                    // 상품권명 (조인)
+                        pmGift.giftNm.as("giftNm"),                             // 사은품명 (조인)
+                        cdRt.codeLabel.as("rawTypeCdNm"),                       // 수집유형명 (sy_code 조인)
+                        cdRs.codeLabel.as("rawStatusCdNm"),                     // 수집상태명 (sy_code 조인)
+                        cdOis.codeLabel.as("orderItemStatusCdNm"),              // 주문상태명 (sy_code 조인)
+                        cdVt.codeLabel.as("vendorTypeCdNm"),                    // 업체구분명 (sy_code 조인)
+                        cdPmc.codeLabel.as("payMethodCdNm")                     // 결제수단명 (sy_code 조인)
                 ))
                 .from(stSettleRaw)
                 .leftJoin(sySite).on(sySite.siteId.eq(stSettleRaw.siteId))

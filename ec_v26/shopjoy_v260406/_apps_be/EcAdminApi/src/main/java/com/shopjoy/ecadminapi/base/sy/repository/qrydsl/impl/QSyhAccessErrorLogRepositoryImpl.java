@@ -72,46 +72,50 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         Map.entry("vendorId", syhAccessErrorLog.vendorId)
     );
 
-    /* baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드) */
+    /*
+     * baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드)
+     * 코드성 필드 예시 코드값
+     * APP_TYPE  {ADMIN: '관리자', MEMBER: '회원', VENDOR: '업체', ANON: '비로그인'}
+     */
     private JPAQuery<SyhAccessErrorLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAccessErrorLogDto.Item.class,
-                        syhAccessErrorLog.logId,
-                        syhAccessErrorLog.siteId,
-                        syhAccessErrorLog.reqMethod,
-                        syhAccessErrorLog.reqHost,
-                        syhAccessErrorLog.reqPath,
-                        syhAccessErrorLog.reqQuery,
-                        syhAccessErrorLog.reqIp,
-                        syhAccessErrorLog.reqUa,
-                        syhAccessErrorLog.appTypeCd,
-                        syhAccessErrorLog.userId,
-                        syhAccessErrorLog.roleId,
-                        syhAccessErrorLog.deptId,
-                        syhAccessErrorLog.vendorId,
-                        syhAccessErrorLog.localeId,
-                        syhAccessErrorLog.respTimeMs,
-                        syhAccessErrorLog.errorType,
-                        syhAccessErrorLog.errorMsg,
-                        syhAccessErrorLog.stackTrace,
-                        syhAccessErrorLog.uiNm,
-                        syhAccessErrorLog.cmdNm,
-                        syhAccessErrorLog.fileNm,
-                        syhAccessErrorLog.funcNm,
-                        syhAccessErrorLog.lineNo,
-                        syhAccessErrorLog.traceId,
-                        syhAccessErrorLog.serverNm,
-                        syhAccessErrorLog.profile,
-                        syhAccessErrorLog.threadNm,
-                        syhAccessErrorLog.loggerNm,
-                        syhAccessErrorLog.logDt,
-                        syhAccessErrorLog.regDate,
-                        sySite.siteNm.as("siteNm"),
-                        cd_at.codeLabel.as("appTypeCdNm"),
-                        syUser.userNm.as("userNm"),
-                        syRole.roleNm.as("roleNm"),
-                        syDept.deptNm.as("deptNm"),
-                        syVendor.vendorNm.as("vendorNm")
+                        syhAccessErrorLog.logId,                    // PK: EL+yyMMddHHmmss+rand4
+                        syhAccessErrorLog.siteId,                   // 사이트ID (sy_site.site_id) — 미인증 요청은 null 허용
+                        syhAccessErrorLog.reqMethod,                // HTTP 메서드
+                        syhAccessErrorLog.reqHost,                  // Host 헤더 값
+                        syhAccessErrorLog.reqPath,                  // 요청 URI 경로
+                        syhAccessErrorLog.reqQuery,                 // 쿼리 파라미터 문자열
+                        syhAccessErrorLog.reqIp,                    // 클라이언트 실제 IP (X-Forwarded-For 우선)
+                        syhAccessErrorLog.reqUa,                    // User-Agent
+                        syhAccessErrorLog.appTypeCd,                // 호출 앱 유형 — APP_TYPE {ADMIN: '관리자', MEMBER: '회원', VENDOR: '업체', ANON: '비로그인'}
+                        syhAccessErrorLog.userId,                   // 인증 사용자 ID (MDC)
+                        syhAccessErrorLog.roleId,                   // 역할 ID (MDC)
+                        syhAccessErrorLog.deptId,                   // 부서 ID (MDC)
+                        syhAccessErrorLog.vendorId,                 // 업체 ID (MDC)
+                        syhAccessErrorLog.localeId,                 // 지역 ID (MDC)
+                        syhAccessErrorLog.respTimeMs,                // 요청 처리 시간 (밀리초)
+                        syhAccessErrorLog.errorType,                 // 예외 클래스 FQCN
+                        syhAccessErrorLog.errorMsg,                  // 예외 메시지
+                        syhAccessErrorLog.stackTrace,                // 스택 트레이스 (최대 3000자)
+                        syhAccessErrorLog.uiNm,                      // 화면명 (X-UI-Nm 헤더)
+                        syhAccessErrorLog.cmdNm,                     // 작업명 (X-Cmd-Nm 헤더)
+                        syhAccessErrorLog.fileNm,                    // 파일명 (X-헤더)
+                        syhAccessErrorLog.funcNm,                    // 함수명 (X-헤더)
+                        syhAccessErrorLog.lineNo,                    // 라인번호 (X-헤더)
+                        syhAccessErrorLog.traceId,                   // 트레이스ID (X-헤더)
+                        syhAccessErrorLog.serverNm,                  // 서버 호스트명
+                        syhAccessErrorLog.profile,                   // 활성 Spring 프로파일
+                        syhAccessErrorLog.threadNm,                  // 로그 발생 스레드명
+                        syhAccessErrorLog.loggerNm,                  // 로거 클래스 이름
+                        syhAccessErrorLog.logDt,                     // 에러 발생 시각
+                        syhAccessErrorLog.regDate,                   // DB 저장 시각
+                        sySite.siteNm.as("siteNm"),                  // 사이트명 (조인: sy_site)
+                        cd_at.codeLabel.as("appTypeCdNm"),            // 앱유형 코드명 (조인: sy_code APP_TYPE)
+                        syUser.userNm.as("userNm"),                  // 사용자명 (조인: sy_user)
+                        syRole.roleNm.as("roleNm"),                  // 역할명 (조인: sy_role)
+                        syDept.deptNm.as("deptNm"),                  // 부서명 (조인: sy_dept)
+                        syVendor.vendorNm.as("vendorNm")             // 업체명 (조인: sy_vendor)
                 ))
                 .from(syhAccessErrorLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhAccessErrorLog.siteId))

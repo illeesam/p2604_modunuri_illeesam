@@ -61,17 +61,39 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         Map.entry("vendorId", syVendorContent.vendorId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * VENDOR_CONTENT_TYPE    {INTRO: '업체소개', POLICY: '정책/규정', NOTICE: '공지사항'}
+     * VENDOR_CONTENT_STATUS  {DRAFT: '임시저장', ACTIVE: '게시중', INACTIVE: '비게시'}
+     */
     /* 업체 콘텐츠 baseSelColumnQuery */
     private JPAQuery<SyVendorContentDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorContentDto.Item.class,
-                        syVendorContent.vendorContentId, syVendorContent.siteId, syVendorContent.vendorId, syVendorContent.contentTypeCd,
-                        syVendorContent.vendorContentTitle, syVendorContent.vendorContentSubtitle, syVendorContent.contentHtml,
-                        syVendorContent.thumbUrl, syVendorContent.imageUrl, syVendorContent.linkUrl, syVendorContent.attachGrpId, syVendorContent.langCd,
-                        syVendorContent.startDate, syVendorContent.endDate, syVendorContent.sortOrd,
-                        syVendorContent.vendorContentStatusCd, syVendorContent.useYn, syVendorContent.viewCount, syVendorContent.vendorContentRemark,
-                        syVendorContent.regBy, syVendorContent.regDate, syVendorContent.updBy, syVendorContent.updDate,
-                        syVendor.vendorNm.as("vendorNm")
+                        syVendorContent.vendorContentId,             // 업체콘텐츠ID (PK)
+                        syVendorContent.siteId,                      // 사이트ID (sy_site.site_id)
+                        syVendorContent.vendorId,                    // 업체ID (sy_vendor.vendor_id)
+                        syVendorContent.contentTypeCd,                // 콘텐츠유형 — VENDOR_CONTENT_TYPE {INTRO: '업체소개', POLICY: '정책/규정', NOTICE: '공지사항'}
+                        syVendorContent.vendorContentTitle,           // 제목
+                        syVendorContent.vendorContentSubtitle,        // 부제
+                        syVendorContent.contentHtml,                  // 본문 (HTML)
+                        syVendorContent.thumbUrl,                     // 썸네일 URL
+                        syVendorContent.imageUrl,                     // 대표 이미지 URL
+                        syVendorContent.linkUrl,                      // 링크 URL
+                        syVendorContent.attachGrpId,                  // 첨부파일그룹ID (sy_attach_grp.attach_grp_id)
+                        syVendorContent.langCd,                       // 언어코드 (ko/en/ja)
+                        syVendorContent.startDate,                    // 노출 시작일시
+                        syVendorContent.endDate,                      // 노출 종료일시
+                        syVendorContent.sortOrd,                      // 정렬순서
+                        syVendorContent.vendorContentStatusCd,        // 상태 — VENDOR_CONTENT_STATUS {DRAFT: '임시저장', ACTIVE: '게시중', INACTIVE: '비게시'}
+                        syVendorContent.useYn,                        // 사용여부 Y/N
+                        syVendorContent.viewCount,                    // 조회수
+                        syVendorContent.vendorContentRemark,          // 비고
+                        syVendorContent.regBy,                        // 등록자
+                        syVendorContent.regDate,                      // 등록일시
+                        syVendorContent.updBy,                        // 수정자
+                        syVendorContent.updDate,                      // 수정일시
+                        syVendor.vendorNm.as("vendorNm")              // 업체명 (조인: sy_vendor)
                 ))
                 .from(syVendorContent)
                 .leftJoin(sySite).on(sySite.siteId.eq(syVendorContent.siteId))

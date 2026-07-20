@@ -54,13 +54,25 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         Map.entry("voucherIssueStatusCdBefore", pmVoucherIssue.voucherIssueStatusCdBefore)
     );
 
-    /* 바우처(상품권) 발행 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * VOUCHER_ISSUE_STATUS  {ISSUED: '발급됨', USED: '사용완료', EXPIRED: '만료', CANCELLED: '취소'}
+     */
     private JPAQuery<PmVoucherIssueDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmVoucherIssueDto.Item.class,
-                        pmVoucherIssue.voucherIssueId, pmVoucherIssue.voucherId, pmVoucherIssue.siteId, pmVoucherIssue.memberId, pmVoucherIssue.voucherCode,
-                        pmVoucherIssue.issueDate, pmVoucherIssue.expireDate, pmVoucherIssue.useDate, pmVoucherIssue.orderId, pmVoucherIssue.useAmt,
-                        pmVoucherIssue.voucherIssueStatusCd, pmVoucherIssue.voucherIssueStatusCdBefore,
+                        pmVoucherIssue.voucherIssueId,               // 상품권발급ID (PK)
+                        pmVoucherIssue.voucherId,                    // 상품권ID (pm_voucher.voucher_id)
+                        pmVoucherIssue.siteId,                       // 사이트ID
+                        pmVoucherIssue.memberId,                     // 회원ID (mb_member.member_id)
+                        pmVoucherIssue.voucherCode,                  // 발급 고유코드 (UNIQUE)
+                        pmVoucherIssue.issueDate,                    // 발급일시
+                        pmVoucherIssue.expireDate,                   // 만료일시
+                        pmVoucherIssue.useDate,                      // 사용일시
+                        pmVoucherIssue.orderId,                      // 사용된 주문ID (od_order.order_id)
+                        pmVoucherIssue.useAmt,                       // 실제 사용 할인금액
+                        pmVoucherIssue.voucherIssueStatusCd,         // 상태 — VOUCHER_ISSUE_STATUS {ISSUED, USED, EXPIRED, CANCELLED}
+                        pmVoucherIssue.voucherIssueStatusCdBefore,   // 변경 전 상태
                         pmVoucherIssue.regBy, pmVoucherIssue.regDate, pmVoucherIssue.updBy, pmVoucherIssue.updDate
                 ))
                 .from(pmVoucherIssue)

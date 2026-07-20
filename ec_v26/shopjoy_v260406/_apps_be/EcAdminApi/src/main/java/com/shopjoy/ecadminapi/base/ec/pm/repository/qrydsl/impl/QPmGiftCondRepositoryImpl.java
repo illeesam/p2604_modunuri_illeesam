@@ -48,12 +48,21 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         Map.entry("targetTypeCd", pmGiftCond.targetTypeCd)
     );
 
-    /* 사은품 지급 조건 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * GIFT_COND_TYPE  {ORDER_AMT: '주문금액', PRODUCT: '특정상품', MEMBER_GRADE: '회원등급'}
+     * targetTypeCd    {PRODUCT: '상품', CATEGORY: '카테고리', MEMBER_GRADE: '회원등급'} (Entity 주석 기준)
+     */
     private JPAQuery<PmGiftCondDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmGiftCondDto.Item.class,
-                        pmGiftCond.giftCondId, pmGiftCond.giftId, pmGiftCond.siteId, pmGiftCond.condTypeCd,
-                        pmGiftCond.minOrderAmt, pmGiftCond.targetTypeCd, pmGiftCond.targetId,
+                        pmGiftCond.giftCondId,     // 사은품조건ID (PK)
+                        pmGiftCond.giftId,         // 사은품ID (pm_gift.gift_id)
+                        pmGiftCond.siteId,         // 사이트ID
+                        pmGiftCond.condTypeCd,     // 조건유형 — GIFT_COND_TYPE {ORDER_AMT: '주문금액', PRODUCT: '특정상품', MEMBER_GRADE: '회원등급'}
+                        pmGiftCond.minOrderAmt,    // 최소주문금액 (ORDER_AMT 조건)
+                        pmGiftCond.targetTypeCd,   // 대상유형 — PRODUCT/CATEGORY/MEMBER_GRADE
+                        pmGiftCond.targetId,       // 대상ID
                         pmGiftCond.regBy, pmGiftCond.regDate
                 ))
                 .from(pmGiftCond)

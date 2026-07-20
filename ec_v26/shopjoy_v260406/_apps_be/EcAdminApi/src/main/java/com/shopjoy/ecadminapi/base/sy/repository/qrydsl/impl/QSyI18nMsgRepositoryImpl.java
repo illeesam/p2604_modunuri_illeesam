@@ -37,12 +37,21 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         Map.entry("siteId", syI18nMsg.siteId)
     );
 
-    /* 다국어 메시지 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * LANG_CODE {ko: '한국어', en: '영어', ja: '일본어', in: '인도네시아어'}
+     */
     private JPAQuery<SyI18nMsgDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyI18nMsgDto.Item.class,
-                        syI18nMsg.i18nMsgId, syI18nMsg.i18nId, syI18nMsg.langCd, syI18nMsg.i18nMsg,
-                        syI18nMsg.regBy, syI18nMsg.regDate, syI18nMsg.updBy, syI18nMsg.updDate
+                        syI18nMsg.i18nMsgId,   // 다국어 메시지ID (YYMMDDhhmmss+rand4)
+                        syI18nMsg.i18nId,      // 다국어ID (sy_i18n.i18n_id)
+                        syI18nMsg.langCd,      // 언어코드 — LANG_CODE {ko: '한국어', en: '영어', ja: '일본어', in: '인도네시아어'}
+                        syI18nMsg.i18nMsg,     // 번역 메시지 (플레이스홀더: {0},{1} 지원)
+                        syI18nMsg.regBy,       // 등록자
+                        syI18nMsg.regDate,     // 등록일시
+                        syI18nMsg.updBy,       // 수정자
+                        syI18nMsg.updDate      // 수정일시
                 ))
                 .from(syI18nMsg);
     }

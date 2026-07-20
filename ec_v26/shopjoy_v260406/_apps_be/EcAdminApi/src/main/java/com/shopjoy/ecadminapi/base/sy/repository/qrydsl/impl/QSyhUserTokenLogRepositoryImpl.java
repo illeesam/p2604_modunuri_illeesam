@@ -58,34 +58,38 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         Map.entry("userId", syhUserTokenLog.userId)
     );
 
-    /* baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * TOKEN_ACTION  {ISSUE: '발급', REFRESH: '갱신', EXPIRE: '만료', REVOKE: '강제폐기'}
+     * TOKEN_TYPE    {ACCESS: '액세스', REFRESH: '리프레시', TEMP: '임시'}
+     */
     private JPAQuery<SyhUserTokenLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhUserTokenLogDto.Item.class,
-                        syhUserTokenLog.logId,
-                        syhUserTokenLog.siteId,
-                        syhUserTokenLog.userId,
-                        syhUserTokenLog.loginLogId,
-                        syhUserTokenLog.actionCd,
-                        syhUserTokenLog.tokenTypeCd,
-                        syhUserTokenLog.accessToken,
-                        syhUserTokenLog.tokenExp,
-                        syhUserTokenLog.prevToken,
-                        syhUserTokenLog.refreshToken,
-                        syhUserTokenLog.ip,
-                        syhUserTokenLog.deviceInfo,
-                        syhUserTokenLog.revokeReason,
-                        syhUserTokenLog.accessTokenExp,
-                        syhUserTokenLog.uiNm,
-                        syhUserTokenLog.cmdNm,
-                        syhUserTokenLog.regBy,
-                        syhUserTokenLog.regDate,
-                        syhUserTokenLog.updBy,
-                        syhUserTokenLog.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syUser.userNm.as("userNm"),
-                        cd_ta.codeLabel.as("actionCdNm"),
-                        cd_tt.codeLabel.as("tokenTypeCdNm")
+                        syhUserTokenLog.logId,              // 로그ID (PK, YYMMDDhhmmss+rand4)
+                        syhUserTokenLog.siteId,              // 사이트ID (sy_site.site_id)
+                        syhUserTokenLog.userId,               // 사용자ID (sy_user.user_id)
+                        syhUserTokenLog.loginLogId,           // 최초 로그인 로그ID (sy_user_login_log.log_id)
+                        syhUserTokenLog.actionCd,             // 토큰 액션 — TOKEN_ACTION {ISSUE: '발급', REFRESH: '갱신', EXPIRE: '만료', REVOKE: '강제폐기'}
+                        syhUserTokenLog.tokenTypeCd,          // 토큰 유형 — TOKEN_TYPE {ACCESS: '액세스', REFRESH: '리프레시', TEMP: '임시'}
+                        syhUserTokenLog.accessToken,          // 토큰값 (SHA-256 해시 저장 권장)
+                        syhUserTokenLog.tokenExp,             // 토큰 만료일시
+                        syhUserTokenLog.prevToken,            // 갱신 전 토큰 해시 (REFRESH 액션 시)
+                        syhUserTokenLog.refreshToken,         // 리프레시 토큰
+                        syhUserTokenLog.ip,                   // IP주소
+                        syhUserTokenLog.deviceInfo,           // User-Agent
+                        syhUserTokenLog.revokeReason,         // 폐기 사유 (LOGOUT/FORCE/EXPIRED 등)
+                        syhUserTokenLog.accessTokenExp,       // 액세스 토큰 만료일시
+                        syhUserTokenLog.uiNm,                 // 화면명 (X-UI-Nm 헤더)
+                        syhUserTokenLog.cmdNm,                // 기능명 (X-Cmd-Nm 헤더)
+                        syhUserTokenLog.regBy,                // 등록자
+                        syhUserTokenLog.regDate,              // 등록일시
+                        syhUserTokenLog.updBy,                // 수정자
+                        syhUserTokenLog.updDate,              // 수정일시
+                        sySite.siteNm.as("siteNm"),                    // 사이트명 (조인: sy_site)
+                        syUser.userNm.as("userNm"),                    // 사용자명 (조인: sy_user)
+                        cd_ta.codeLabel.as("actionCdNm"),               // 토큰액션 코드명 (조인: sy_code TOKEN_ACTION)
+                        cd_tt.codeLabel.as("tokenTypeCdNm")             // 토큰유형 코드명 (조인: sy_code TOKEN_TYPE)
                 ))
                 .from(syhUserTokenLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhUserTokenLog.siteId))

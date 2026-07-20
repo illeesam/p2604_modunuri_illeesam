@@ -42,13 +42,20 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         Map.entry("thumbUrl", cmBlogFile.thumbUrl)
     );
 
-    /* 게시물 첨부파일 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 없음 (cm_blog_file 은 이미지 URL/정렬순서 중심 테이블)
+     */
     private JPAQuery<CmBlogFileDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogFileDto.Item.class,
-                        cmBlogFile.blogImgId, cmBlogFile.blogId, cmBlogFile.imgUrl, cmBlogFile.thumbUrl,
-                        cmBlogFile.imgAltText, cmBlogFile.sortOrd,
-                        cmBlogFile.regBy, cmBlogFile.regDate
+                        cmBlogFile.blogImgId,   // 블로그이미지ID (PK)
+                        cmBlogFile.blogId,      // 블로그ID (cm_blog.blog_id)
+                        cmBlogFile.imgUrl,      // 원본 이미지 URL
+                        cmBlogFile.thumbUrl,    // 썸네일 이미지 URL
+                        cmBlogFile.imgAltText,  // 이미지 대체텍스트
+                        cmBlogFile.sortOrd,     // 정렬순서
+                        cmBlogFile.regBy,       // 등록자
+                        cmBlogFile.regDate      // 등록일시
                 ))
                 .from(cmBlogFile);
     }

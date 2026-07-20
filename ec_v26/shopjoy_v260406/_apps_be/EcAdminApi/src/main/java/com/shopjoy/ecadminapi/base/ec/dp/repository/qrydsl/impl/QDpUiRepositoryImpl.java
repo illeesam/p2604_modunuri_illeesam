@@ -55,14 +55,29 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         Map.entry("useYn", dpUi.useYn)
     );
 
-    /* 전시 UI baseQuery */
+    /*
+     * baseQuery — 코드성 필드 예시 코드값
+     * USE_YN           {Y: '사용', N: '미사용'}
+     * DEVICE_TYPE_CD   (코드그룹: DEVICE_TYPE, sy_code 실제 등록값 미확인 — 필드 용도만 참고)
+     */
     private JPAQuery<DpUiDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(DpUiDto.Item.class,
-                        dpUi.uiId, dpUi.siteId, dpUi.uiCd, dpUi.uiNm, dpUi.uiDesc,
-                        dpUi.deviceTypeCd, dpUi.pathId, dpUi.sortOrd, dpUi.useYn,
-                        dpUi.useStartDate, dpUi.useEndDate,
-                        dpUi.regBy, dpUi.regDate, dpUi.updBy, dpUi.updDate
+                        dpUi.uiId,          // UIID (PK, YYMMDDhhmmss+rand4)
+                        dpUi.siteId,        // 사이트ID (sy_site.site_id)
+                        dpUi.uiCd,          // UI코드 (예: MOBILE_MAIN, PC_MAIN)
+                        dpUi.uiNm,          // UI명
+                        dpUi.uiDesc,        // UI설명
+                        dpUi.deviceTypeCd,  // 디바이스유형 — DEVICE_TYPE_CD (코드: DEVICE_TYPE)
+                        dpUi.pathId,        // 페이지경로
+                        dpUi.sortOrd,       // 정렬순서
+                        dpUi.useYn,         // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        dpUi.useStartDate,  // 사용시작일
+                        dpUi.useEndDate,    // 사용종료일
+                        dpUi.regBy,         // 등록자
+                        dpUi.regDate,       // 등록일시
+                        dpUi.updBy,         // 수정자
+                        dpUi.updDate        // 수정일시
                 ))
                 .from(dpUi);
     }

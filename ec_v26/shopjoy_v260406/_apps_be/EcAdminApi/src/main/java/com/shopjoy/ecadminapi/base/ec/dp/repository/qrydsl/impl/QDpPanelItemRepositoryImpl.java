@@ -51,16 +51,45 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         Map.entry("widgetTypeCd", dpPanelItem.widgetTypeCd)
     );
 
-    /* 전시 패널 아이템 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN / TITLE_SHOW_YN / WIDGET_LIB_REF_YN / DISP_YN  {Y: '예', N: '아니오'}
+     * WIDGET_TYPE_CD (코드그룹: DISP_WIDGET_TYPE, 27종)
+     *   {image_banner: '이미지배너', product_slider: '상품슬라이더', product: '상품', cond_product: '조건부상품',
+     *    chart_bar: '막대차트', chart_line: '라인차트', chart_pie: '파이차트', text_banner: '텍스트배너',
+     *    info_card: '정보카드', popup: '팝업', file: '파일', file_list: '파일목록', coupon: '쿠폰',
+     *    html_editor: 'HTML에디터', textarea: '텍스트영역', markdown: '마크다운', barcode: '바코드',
+     *    qrcode: 'QR코드', barcode_qrcode: '바코드+QR코드', video_player: '동영상플레이어', countdown: '카운트다운',
+     *    payment_widget: '결제위젯', approval_widget: '승인위젯', event_banner: '이벤트배너', cache_banner: '캐시배너',
+     *    widget_embed: '위젯임베드', map_widget: '지도위젯'}
+     * CONTENT_TYPE_CD  {WIDGET: '위젯', HTML: 'HTML', TEXT: '텍스트', IMAGE: '이미지'}
+     * VISIBILITY_TARGETS — VISIBILITY_TARGET 코드 ^CODE^CODE^ 형식 (예: ^PUBLIC^MEMBER^VIP^)
+     * DISP_ENV — 전시 환경 ^CODE^CODE^ 형식 (예: ^PROD^DEV^TEST^)
+     */
     private JPAQuery<DpPanelItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(DpPanelItemDto.Item.class,
-                        dpPanelItem.panelItemId, dpPanelItem.panelId, dpPanelItem.widgetLibId, dpPanelItem.widgetTypeCd,
-                        dpPanelItem.widgetTitle, dpPanelItem.widgetContent, dpPanelItem.titleShowYn, dpPanelItem.widgetLibRefYn,
-                        dpPanelItem.contentTypeCd, dpPanelItem.sortOrd, dpPanelItem.widgetConfigJson,
-                        dpPanelItem.visibilityTargets, dpPanelItem.dispYn, dpPanelItem.dispStartDt, dpPanelItem.dispEndDt,
-                        dpPanelItem.dispEnv, dpPanelItem.useYn,
-                        dpPanelItem.regBy, dpPanelItem.regDate, dpPanelItem.updBy, dpPanelItem.updDate
+                        dpPanelItem.panelItemId,       // 패널항목ID (PK, YYMMDDhhmmss+rand4)
+                        dpPanelItem.panelId,           // 패널ID (dp_panel.panel_id, FK)
+                        dpPanelItem.widgetLibId,       // 위젯라이브러리ID (dp_widget_lib.widget_lib_id, 선택사항)
+                        dpPanelItem.widgetTypeCd,      // 위젯유형 — WIDGET_TYPE_CD (코드: DISP_WIDGET_TYPE, 27종)
+                        dpPanelItem.widgetTitle,       // 위젯타이틀
+                        dpPanelItem.widgetContent,     // 위젯내용 (HTML 에디터)
+                        dpPanelItem.titleShowYn,       // 타이틀표시여부 — TITLE_SHOW_YN {Y: '예', N: '아니오'}
+                        dpPanelItem.widgetLibRefYn,    // 위젯라이브러리참조여부 — WIDGET_LIB_REF_YN {Y: '예', N: '아니오'}
+                        dpPanelItem.contentTypeCd,     // 콘텐츠유형 — CONTENT_TYPE_CD {WIDGET: '위젯', HTML: 'HTML', TEXT: '텍스트', IMAGE: '이미지'}
+                        dpPanelItem.sortOrd,           // 항목정렬순서
+                        dpPanelItem.widgetConfigJson,  // 위젯설정 (JSON - 위젯별 특정 설정 또는 직접 생성 콘텐츠)
+                        dpPanelItem.visibilityTargets, // 공개대상 — VISIBILITY_TARGET (^CODE^CODE^ 형식)
+                        dpPanelItem.dispYn,            // 전시여부 — DISP_YN {Y: '예', N: '아니오'} (배치로 자동 관리)
+                        dpPanelItem.dispStartDt,       // 전시시작일시
+                        dpPanelItem.dispEndDt,         // 전시종료일시
+                        dpPanelItem.dispEnv,           // 전시 환경 (^PROD^DEV^TEST^ 형식)
+                        dpPanelItem.useYn,             // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        dpPanelItem.regBy,             // 등록자
+                        dpPanelItem.regDate,           // 등록일시
+                        dpPanelItem.updBy,             // 수정자
+                        dpPanelItem.updDate            // 수정일시
                 ))
                 .from(dpPanelItem);
     }

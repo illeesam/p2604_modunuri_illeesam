@@ -49,12 +49,22 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         Map.entry("targetTypeCd", mbLike.targetTypeCd)
     );
 
-    /* 좋아요(찜) baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * TARGET_TYPE_CD (코드: LIKE_TARGET_TYPE)  {PRODUCT: '상품', BRAND: '브랜드'}
+     */
     private JPAQuery<MbLikeDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbLikeDto.Item.class,
-                        mbLike.likeId, mbLike.siteId, mbLike.memberId, mbLike.targetTypeCd, mbLike.targetId,
-                        mbLike.regBy, mbLike.regDate, mbLike.updBy, mbLike.updDate
+                        mbLike.likeId,         // 좋아요ID (PK)
+                        mbLike.siteId,         // 사이트ID (sy_site.site_id)
+                        mbLike.memberId,       // 회원ID (mb_member.member_id)
+                        mbLike.targetTypeCd,   // 대상유형 — LIKE_TARGET_TYPE {PRODUCT: '상품', BRAND: '브랜드'}
+                        mbLike.targetId,       // 대상ID (targetTypeCd 별 참조 테이블 PK)
+                        mbLike.regBy,          // 등록자
+                        mbLike.regDate,        // 등록일
+                        mbLike.updBy,          // 수정자
+                        mbLike.updDate         // 수정일
                 ))
                 .from(mbLike)
                 .leftJoin(sySite).on(sySite.siteId.eq(mbLike.siteId))

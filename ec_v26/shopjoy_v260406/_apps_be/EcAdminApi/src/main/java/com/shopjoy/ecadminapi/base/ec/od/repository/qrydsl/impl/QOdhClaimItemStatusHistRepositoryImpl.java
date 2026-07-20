@@ -42,13 +42,24 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         Map.entry("statusReason", odhClaimItemStatusHist.statusReason)
     );
 
-    /* 클레임 아이템 상태 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CLAIM_ITEM_STATUS  {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소}
+     */
     private JPAQuery<OdhClaimItemStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimItemStatusHistDto.Item.class,
-                        odhClaimItemStatusHist.claimItemStatusHistId, odhClaimItemStatusHist.siteId, odhClaimItemStatusHist.claimItemId, odhClaimItemStatusHist.claimId, odhClaimItemStatusHist.orderItemId,
-                        odhClaimItemStatusHist.claimItemStatusCdBefore, odhClaimItemStatusHist.claimItemStatusCd, odhClaimItemStatusHist.statusReason,
-                        odhClaimItemStatusHist.chgUserId, odhClaimItemStatusHist.chgDate, odhClaimItemStatusHist.memo,
+                        odhClaimItemStatusHist.claimItemStatusHistId,   // 클레임상품상태이력ID (YYMMDDhhmmss+rand4)
+                        odhClaimItemStatusHist.siteId,                  // 사이트ID
+                        odhClaimItemStatusHist.claimItemId,             // 클레임상품ID (od_claim_item.claim_item_id)
+                        odhClaimItemStatusHist.claimId,                 // 클레임ID (od_claim.claim_id)
+                        odhClaimItemStatusHist.orderItemId,             // 주문상품ID (od_order_item.order_item_id)
+                        odhClaimItemStatusHist.claimItemStatusCdBefore, // 변경 전 클레임상품상태 — CLAIM_ITEM_STATUS {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소}
+                        odhClaimItemStatusHist.claimItemStatusCd,       // 변경 후 클레임상품상태 — CLAIM_ITEM_STATUS (동일 코드그룹)
+                        odhClaimItemStatusHist.statusReason,            // 상태 변경 사유
+                        odhClaimItemStatusHist.chgUserId,               // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+                        odhClaimItemStatusHist.chgDate,                 // 변경 일시
+                        odhClaimItemStatusHist.memo,                    // 메모
                         odhClaimItemStatusHist.regBy, odhClaimItemStatusHist.regDate, odhClaimItemStatusHist.updBy, odhClaimItemStatusHist.updDate))
                 .from(odhClaimItemStatusHist);
     }

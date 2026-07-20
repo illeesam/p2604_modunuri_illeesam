@@ -47,19 +47,23 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         Map.entry("siteId", pdhProdChgHist.siteId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (Entity 주석 기준 — sy_code 미등록)
+     * CHG_TYPE_CD  {PRICE: '가격변경', STOCK: '재고변경', STATUS: '상태변경'}
+     */
     /** 기본 쿼리 빌드 */
     private JPAQuery<PdhProdChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdChgHistDto.Item.class,
-                        pdhProdChgHist.prodChgHistId,
-                        pdhProdChgHist.siteId,
-                        pdhProdChgHist.prodId,
-                        pdhProdChgHist.chgTypeCd,
-                        pdhProdChgHist.beforeVal,
-                        pdhProdChgHist.afterVal,
-                        pdhProdChgHist.chgReason,
-                        pdhProdChgHist.chgUserId,
-                        pdhProdChgHist.chgDate,
+                        pdhProdChgHist.prodChgHistId,   // 이력ID (PK)
+                        pdhProdChgHist.siteId,            // 사이트ID (sy_site.site_id)
+                        pdhProdChgHist.prodId,            // 상품ID
+                        pdhProdChgHist.chgTypeCd,           // 변경유형코드 — {PRICE: '가격변경', STOCK: '재고변경', STATUS: '상태변경'}
+                        pdhProdChgHist.beforeVal,         // 변경전값
+                        pdhProdChgHist.afterVal,          // 변경후값
+                        pdhProdChgHist.chgReason,         // 변경사유
+                        pdhProdChgHist.chgUserId,          // 처리자 (sy_user.user_id)
+                        pdhProdChgHist.chgDate,           // 처리일시
                         pdhProdChgHist.regBy, pdhProdChgHist.regDate, pdhProdChgHist.updBy, pdhProdChgHist.updDate
                 ))
                 .from(pdhProdChgHist)

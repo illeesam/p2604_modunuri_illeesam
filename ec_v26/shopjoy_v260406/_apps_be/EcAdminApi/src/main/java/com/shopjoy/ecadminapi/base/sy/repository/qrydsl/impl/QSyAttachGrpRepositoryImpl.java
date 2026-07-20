@@ -40,13 +40,27 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         Map.entry("useYn", syAttachGrp.useYn)
     );
 
-    /* 첨부파일 그룹 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN  {Y: '사용', N: '미사용'} (sy_code 미등록 — DDL 기본값 'Y' 기반 표기)
+     */
     private JPAQuery<SyAttachGrpDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyAttachGrpDto.Item.class,
-                        syAttachGrp.attachGrpId, syAttachGrp.attachGrpCode, syAttachGrp.attachGrpNm, syAttachGrp.fileExtAllow,
-                        syAttachGrp.maxFileSize, syAttachGrp.maxFileCount, syAttachGrp.storagePath, syAttachGrp.useYn, syAttachGrp.sortOrd,
-                        syAttachGrp.attachGrpRemark, syAttachGrp.regBy, syAttachGrp.regDate, syAttachGrp.updBy, syAttachGrp.updDate
+                        syAttachGrp.attachGrpId,       // 파일 그룹 ID (ATG + timestamp + random)
+                        syAttachGrp.attachGrpCode,     // 그룹 코드 (businessCode + "_" + timestamp)
+                        syAttachGrp.attachGrpNm,       // 그룹 이름 (사용자에게 표시되는 이름)
+                        syAttachGrp.fileExtAllow,      // 허용 확장자 목록
+                        syAttachGrp.maxFileSize,       // 그룹 내 단일 파일 최대 크기
+                        syAttachGrp.maxFileCount,      // 그룹 내 최대 파일 개수
+                        syAttachGrp.storagePath,       // 저장 경로
+                        syAttachGrp.useYn,             // 사용 여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syAttachGrp.sortOrd,           // 정렬순서
+                        syAttachGrp.attachGrpRemark,   // 비고
+                        syAttachGrp.regBy,             // 등록자
+                        syAttachGrp.regDate,           // 등록일시
+                        syAttachGrp.updBy,             // 수정자
+                        syAttachGrp.updDate            // 수정일시
                 ))
                 .from(syAttachGrp);
     }

@@ -56,12 +56,25 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         Map.entry("prodSkuId", odCart.prodSkuId)
     );
 
-    /* 장바구니 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * od_cart 는 상태코드(*_cd) 컬럼 없음 (is_checked 는 Y/N 플래그)
+     */
     private JPAQuery<OdCartDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdCartDto.Item.class,
-                        odCart.cartId, odCart.siteId, odCart.memberId, odCart.sessionKey, odCart.prodId, odCart.prodSkuId,
-                        odCart.prodOptId1, odCart.prodOptId2, odCart.unitPrice, odCart.orderQty, odCart.itemPrice, odCart.isChecked,
+                        odCart.cartId,      // 장바구니ID (YYMMDDhhmmss+rand4)
+                        odCart.siteId,      // 사이트ID
+                        odCart.memberId,    // 회원ID (비회원 NULL)
+                        odCart.sessionKey,  // 비회원 세션키
+                        odCart.prodId,      // 상품ID (pd_prod.prod_id)
+                        odCart.prodSkuId,   // SKU ID (pd_prod_sku.prod_sku_id)
+                        odCart.prodOptId1,  // 옵션1 값ID (pd_prod_opt.opt_id, 예: 색상)
+                        odCart.prodOptId2,  // 옵션2 값ID (pd_prod_opt.opt_id, 예: 사이즈)
+                        odCart.unitPrice,   // 단가 (담을 시점 가격)
+                        odCart.orderQty,    // 수량
+                        odCart.itemPrice,   // 소계 (단가 × 수량)
+                        odCart.isChecked,   // 주문선택여부 Y/N
                         odCart.regBy, odCart.regDate, odCart.updBy, odCart.updDate,
                         sySite.siteNm.as("siteNm"),
                         mbMember.memberNm.as("memberNm"),

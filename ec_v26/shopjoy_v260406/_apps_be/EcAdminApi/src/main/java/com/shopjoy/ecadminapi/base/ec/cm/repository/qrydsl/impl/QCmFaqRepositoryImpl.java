@@ -52,16 +52,28 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         Map.entry("useYn", cmFaq.useYn)
     );
 
-    /* FAQ baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 실제 코드값
+     * USE_YN  {Y: '노출', N: '숨김'} — sy_code 미등록, use_yn 전역 공통 규약
+     */
     private JPAQuery<CmFaqDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmFaqDto.Item.class,
-                        cmFaq.faqId, cmFaq.siteId, cmFaq.pathId, cmFaq.faqQuestion, cmFaq.faqAnswer,
-                        cmFaq.answerAttachGrpId,
-                        cmFaq.sortOrd, cmFaq.useYn, cmFaq.viewCount,
-                        cmFaq.regBy, cmFaq.regDate, cmFaq.updBy, cmFaq.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syPath.pathLabel.as("pathLabel")
+                        cmFaq.faqId,             // FAQ ID (PK, YYMMDDhhmmss+rand4)
+                        cmFaq.siteId,            // 사이트ID (sy_site.site_id)
+                        cmFaq.pathId,            // FAQ 분류 표시경로 (sy_path.path_id, biz_cd=cm_faq)
+                        cmFaq.faqQuestion,       // 질문
+                        cmFaq.faqAnswer,         // 답변(HTML)
+                        cmFaq.answerAttachGrpId, // 답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=FAQ_ANSWER_ATTACH)
+                        cmFaq.sortOrd,           // 정렬순서
+                        cmFaq.useYn,             // 노출여부 — USE_YN {Y: '노출', N: '숨김'}
+                        cmFaq.viewCount,         // 조회수
+                        cmFaq.regBy,             // 등록자
+                        cmFaq.regDate,           // 등록일시
+                        cmFaq.updBy,             // 수정자
+                        cmFaq.updDate,           // 수정일시
+                        sySite.siteNm.as("siteNm"),      // 사이트명 (sy_site 조인)
+                        syPath.pathLabel.as("pathLabel") // 표시경로 라벨 (sy_path 조인)
                 ))
                 .from(cmFaq)
                 .leftJoin(sySite).on(sySite.siteId.eq(cmFaq.siteId))

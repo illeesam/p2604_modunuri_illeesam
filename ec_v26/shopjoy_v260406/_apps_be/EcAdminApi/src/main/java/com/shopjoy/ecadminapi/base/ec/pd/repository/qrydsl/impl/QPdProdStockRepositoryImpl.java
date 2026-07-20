@@ -17,6 +17,15 @@ public class QPdProdStockRepositoryImpl implements QPdProdStockRepository {
     private final JPAQueryFactory queryFactory;
     private static final QPdProdStock sc = QPdProdStock.pdProdStock;
 
+    /*
+     * PdProdStock 필드 설명 (baseSelColumnQuery 없음 — selectFrom(sc) 로 전체 컬럼 직접 조회하는 단순 구조)
+     * prodStockId — 재고ID (PK)
+     * stockCode   — 재고코드 (UNIQUE, 자유 문자열 — 예: SHIRT-RED-M)
+     * siteId      — 사이트ID (sy_site.site_id)
+     * prodId      — 상품ID (pd_prod.prod_id)
+     * stockQty    — 재고수량
+     * saleCount   — 판매수량 (캐싱 — 주문 완료 시 +1)
+     */
     @Override
     public Optional<PdProdStock> selectByStockCode(String stockCode) {
         PdProdStock result = queryFactory

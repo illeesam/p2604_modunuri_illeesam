@@ -56,18 +56,40 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         Map.entry("uiNm", mbhMemberLoginLog.uiNm)
     );
 
-    /* 회원 로그인 로그 baseSelColumnQuery — list/page/byId 공유 (코드명 포함 풀필드) */
+    /*
+     * baseSelColumnQuery — list/page/byId 공유 (코드명 포함 풀필드)
+     * 코드성 필드 예시 코드값
+     * RESULT_CD (코드: LOGIN_RESULT)  {SUCCESS: '성공', FAIL_PW: '비밀번호불일치', FAIL_LOCKED: '계정잠금',
+     *                                  FAIL_NOT_FOUND: '없는계정', FAIL_DORMANT: '휴면계정', FAIL_WITHDRAWN: '탈퇴계정'}
+     */
     private JPAQuery<MbhMemberLoginLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbhMemberLoginLogDto.Item.class,
-                        mbhMemberLoginLog.logId, mbhMemberLoginLog.siteId, mbhMemberLoginLog.memberId, mbhMemberLoginLog.loginId, mbhMemberLoginLog.loginDate,
-                        mbhMemberLoginLog.resultCd, mbhMemberLoginLog.failCnt, mbhMemberLoginLog.ip, mbhMemberLoginLog.device, mbhMemberLoginLog.os, mbhMemberLoginLog.browser, mbhMemberLoginLog.country,
-                        mbhMemberLoginLog.accessToken, mbhMemberLoginLog.accessTokenExp, mbhMemberLoginLog.refreshToken, mbhMemberLoginLog.refreshTokenExp,
-                        mbhMemberLoginLog.uiNm, mbhMemberLoginLog.cmdNm,
-                        mbhMemberLoginLog.regBy, mbhMemberLoginLog.regDate, mbhMemberLoginLog.updBy, mbhMemberLoginLog.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        mbMember.memberNm.as("memberNm"),
-                        cdLr.codeLabel.as("resultCdNm")
+                        mbhMemberLoginLog.logId,             // 로그ID (PK)
+                        mbhMemberLoginLog.siteId,            // 사이트ID (sy_site.site_id)
+                        mbhMemberLoginLog.memberId,          // 회원ID (로그인 실패 시 NULL)
+                        mbhMemberLoginLog.loginId,           // 입력한 로그인ID (이메일)
+                        mbhMemberLoginLog.loginDate,         // 로그인 시도일시
+                        mbhMemberLoginLog.resultCd,          // 결과 — LOGIN_RESULT {SUCCESS: '성공', FAIL_PW: '비밀번호불일치', FAIL_LOCKED: '계정잠금', FAIL_DORMANT: '휴면계정', FAIL_WITHDRAWN: '탈퇴계정'}
+                        mbhMemberLoginLog.failCnt,           // 해당 시점 연속 실패 횟수
+                        mbhMemberLoginLog.ip,                // IP주소
+                        mbhMemberLoginLog.device,            // User-Agent 전문
+                        mbhMemberLoginLog.os,                // OS 정보
+                        mbhMemberLoginLog.browser,           // 브라우저 정보
+                        mbhMemberLoginLog.country,           // 국가코드 (GeoIP)
+                        mbhMemberLoginLog.accessToken,       // 액세스 토큰 (SHA-256 해시값 저장 권장, 로그인 실패 시 NULL)
+                        mbhMemberLoginLog.accessTokenExp,    // 액세스 토큰 만료일시
+                        mbhMemberLoginLog.refreshToken,      // 리프레시 토큰 (SHA-256 해시값 저장 권장)
+                        mbhMemberLoginLog.refreshTokenExp,   // 리프레시 토큰 만료일시
+                        mbhMemberLoginLog.uiNm,              // 화면명 (X-UI-Nm 헤더)
+                        mbhMemberLoginLog.cmdNm,             // 기능명 (X-Cmd-Nm 헤더)
+                        mbhMemberLoginLog.regBy,             // 등록자 (sy_user.user_id, mb_member.member_id)
+                        mbhMemberLoginLog.regDate,           // 등록일
+                        mbhMemberLoginLog.updBy,             // 수정자 (sy_user.user_id, mb_member.member_id)
+                        mbhMemberLoginLog.updDate,           // 수정일
+                        sySite.siteNm.as("siteNm"),                 // 사이트명 (sy_site 조인)
+                        mbMember.memberNm.as("memberNm"),           // 회원명 (mb_member 조인)
+                        cdLr.codeLabel.as("resultCdNm")             // 결과 코드라벨 (sy_code LOGIN_RESULT 조인)
                 ))
                 .from(mbhMemberLoginLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(mbhMemberLoginLog.siteId))

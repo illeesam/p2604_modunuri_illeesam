@@ -66,39 +66,44 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         Map.entry("userId", syhSendMsgLog.userId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * MSG_CHANNEL   {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
+     * SEND_RESULT   {SUCCESS: '성공', FAILED: '실패', PENDING: '대기'}
+     */
     /* 메시지 발송 로그 baseSelColumnQuery */
     private JPAQuery<SyhSendMsgLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhSendMsgLogDto.Item.class,
-                        syhSendMsgLog.logId,
-                        syhSendMsgLog.siteId,
-                        syhSendMsgLog.channelCd,
-                        syhSendMsgLog.templateId,
-                        syhSendMsgLog.templateCode,
-                        syhSendMsgLog.memberId,
-                        syhSendMsgLog.userId,
-                        syhSendMsgLog.recvPhone,
-                        syhSendMsgLog.deviceToken,
-                        syhSendMsgLog.senderPhone,
-                        syhSendMsgLog.title,
-                        syhSendMsgLog.content,
-                        syhSendMsgLog.params,
-                        syhSendMsgLog.kakaoTplCode,
-                        syhSendMsgLog.resultCd,
-                        syhSendMsgLog.resultMsg,
-                        syhSendMsgLog.failReason,
-                        syhSendMsgLog.sendDate,
-                        syhSendMsgLog.refTypeCd,
-                        syhSendMsgLog.refId,
-                        syhSendMsgLog.regBy,
-                        syhSendMsgLog.regDate,
-                        syhSendMsgLog.updBy,
-                        syhSendMsgLog.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syTemplate.templateNm.as("templateNm"),
-                        syUser.userNm.as("userNm"),
-                        cd_mc.codeLabel.as("channelCdNm"),
-                        cd_sr.codeLabel.as("resultCdNm")
+                        syhSendMsgLog.logId,            // 로그ID (PK, YYMMDDhhmmss+rand4)
+                        syhSendMsgLog.siteId,           // 사이트ID (sy_site.site_id)
+                        syhSendMsgLog.channelCd,        // 발송채널 — MSG_CHANNEL {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
+                        syhSendMsgLog.templateId,       // 템플릿ID (sy_template.template_id)
+                        syhSendMsgLog.templateCode,     // 템플릿코드 스냅샷
+                        syhSendMsgLog.memberId,         // 대상 회원ID (ec_member.member_id, 비회원 NULL)
+                        syhSendMsgLog.userId,           // 대상 관리자ID (sy_user.user_id, 관리자 발송 시)
+                        syhSendMsgLog.recvPhone,        // 수신 전화번호 (SMS/LMS/카카오)
+                        syhSendMsgLog.deviceToken,      // 디바이스 토큰 (앱 푸시)
+                        syhSendMsgLog.senderPhone,      // 발신 번호 (SMS/LMS)
+                        syhSendMsgLog.title,            // 제목 (LMS/앱 푸시)
+                        syhSendMsgLog.content,          // 발송 내용 (치환 완료본)
+                        syhSendMsgLog.params,           // 치환 파라미터 JSON
+                        syhSendMsgLog.kakaoTplCode,     // 카카오 알림톡 템플릿 코드 (카카오 채널 시)
+                        syhSendMsgLog.resultCd,         // 발송결과 — SEND_RESULT {SUCCESS: '성공', FAILED: '실패', PENDING: '대기'}
+                        syhSendMsgLog.resultMsg,        // 통신사/카카오 응답 메시지
+                        syhSendMsgLog.failReason,       // 실패 사유
+                        syhSendMsgLog.sendDate,         // 발송일시
+                        syhSendMsgLog.refTypeCd,        // 연관유형코드 (ORDER/CLAIM/JOIN/AUTH 등)
+                        syhSendMsgLog.refId,            // 연관ID
+                        syhSendMsgLog.regBy,            // 등록자
+                        syhSendMsgLog.regDate,          // 등록일시
+                        syhSendMsgLog.updBy,            // 수정자
+                        syhSendMsgLog.updDate,          // 수정일시
+                        sySite.siteNm.as("siteNm"),                 // 사이트명 (조인: sy_site)
+                        syTemplate.templateNm.as("templateNm"),     // 템플릿명 (조인: sy_template)
+                        syUser.userNm.as("userNm"),                 // 관리자명 (조인: sy_user)
+                        cd_mc.codeLabel.as("channelCdNm"),           // 발송채널 코드명 (조인: sy_code MSG_CHANNEL)
+                        cd_sr.codeLabel.as("resultCdNm")             // 발송결과 코드명 (조인: sy_code SEND_RESULT)
                 ))
                 .from(syhSendMsgLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhSendMsgLog.siteId))

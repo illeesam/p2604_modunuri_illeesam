@@ -42,14 +42,26 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
         Map.entry("closeReason", cmChatt.closeReason)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 실제 코드값 (sy_code_grp CHATT_STATUS)
+     * CHATT_STATUS  {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
+     */
     private JPAQuery<CmChattDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmChattDto.Item.class,
-                        cmChatt.chattId, cmChatt.siteId, cmChatt.subject,
-                        cmChatt.chattStatusCd, cmChatt.chattStatusCdBefore,
-                        cmChatt.lastMsgDate, cmChatt.chattMemo,
-                        cmChatt.closeDate, cmChatt.closeReason,
-                        cmChatt.regBy, cmChatt.regDate, cmChatt.updBy, cmChatt.updDate
+                        cmChatt.chattId,              // 채팅방ID (PK, YYMMDDhhmmss+rand4)
+                        cmChatt.siteId,               // 사이트ID (sy_site.site_id)
+                        cmChatt.subject,              // 채팅주제
+                        cmChatt.chattStatusCd,        // 상태 — CHATT_STATUS {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
+                        cmChatt.chattStatusCdBefore,  // 변경 전 상태 — CHATT_STATUS {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
+                        cmChatt.lastMsgDate,          // 마지막 메시지 일시
+                        cmChatt.chattMemo,            // 관리자 메모
+                        cmChatt.closeDate,            // 종료일시
+                        cmChatt.closeReason,          // 종료사유
+                        cmChatt.regBy,                // 등록자
+                        cmChatt.regDate,              // 등록일시
+                        cmChatt.updBy,                // 수정자
+                        cmChatt.updDate               // 수정일시
                 ))
                 .from(cmChatt);
     }

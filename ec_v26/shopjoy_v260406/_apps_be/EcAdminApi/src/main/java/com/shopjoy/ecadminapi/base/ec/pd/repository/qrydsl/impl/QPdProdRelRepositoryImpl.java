@@ -43,12 +43,21 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         Map.entry("useYn", pdProdRel.useYn)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (PROD_REL_TYPE 은 sy_code 미등록 — Entity 주석 기준)
+     * PROD_REL_TYPE_CD  {REL_PROD: '연관상품', CODY_PROD: '코디상품'}
+     * USE_YN            {Y: '사용', N: '미사용'}
+     */
     /** 단건 조회 */
     private JPAQuery<PdProdRelDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdRelDto.Item.class,
-                        pdProdRel.prodRelId, pdProdRel.prodId, pdProdRel.relProdId,
-                        pdProdRel.prodRelTypeCd, pdProdRel.sortOrd, pdProdRel.useYn,
+                        pdProdRel.prodRelId,       // 연관관계ID (PK, YYMMDDhhmmss+rand4)
+                        pdProdRel.prodId,          // 기준 상품ID (pd_prod.prod_id)
+                        pdProdRel.relProdId,       // 연관 대상 상품ID (pd_prod.prod_id)
+                        pdProdRel.prodRelTypeCd,    // 관계유형 — {REL_PROD: '연관상품', CODY_PROD: '코디상품'}
+                        pdProdRel.sortOrd,         // 정렬순서 (낮을수록 우선 노출)
+                        pdProdRel.useYn,             // 사용여부 — {Y: '사용', N: '미사용'}
                         pdProdRel.regBy, pdProdRel.regDate, pdProdRel.updBy, pdProdRel.updDate
                 ))
                 .from(pdProdRel);

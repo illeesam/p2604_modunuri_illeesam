@@ -46,12 +46,28 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         Map.entry("useYn", dpArea.useYn)
     );
 
-    /* 전시 영역 baseQuery */
+    /*
+     * baseQuery — 코드성 필드 예시 코드값
+     * USE_YN        {Y: '사용', N: '미사용'}
+     * AREA_TYPE_CD  (코드그룹: DISP_AREA_TYPE, sy_code 실제 등록값 미확인 — 필드 용도만 참고)
+     */
     private JPAQuery<DpAreaDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpAreaDto.Item.class,
-                dpArea.areaId, dpArea.uiId, dpArea.siteId, dpArea.areaCd, dpArea.areaNm, dpArea.areaTypeCd, dpArea.areaDesc,
-                dpArea.pathId, dpArea.useYn, dpArea.useStartDate, dpArea.useEndDate,
-                dpArea.regBy, dpArea.regDate, dpArea.updBy, dpArea.updDate
+                dpArea.areaId,        // 영역ID (PK, YYMMDDhhmmss+rand4)
+                dpArea.uiId,          // UIID (dp_ui.ui_id, FK)
+                dpArea.siteId,        // 사이트ID (sy_site.site_id)
+                dpArea.areaCd,        // 영역코드 (예: MAIN_TOP, SIDEBAR_MID)
+                dpArea.areaNm,        // 영역명
+                dpArea.areaTypeCd,    // 영역유형 — AREA_TYPE_CD (코드: DISP_AREA_TYPE)
+                dpArea.areaDesc,      // 영역설명
+                dpArea.pathId,        // 점(.) 구분 표시경로
+                dpArea.useYn,         // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                dpArea.useStartDate,  // 사용시작일
+                dpArea.useEndDate,    // 사용종료일
+                dpArea.regBy,         // 등록자
+                dpArea.regDate,       // 등록일시
+                dpArea.updBy,         // 수정자
+                dpArea.updDate        // 수정일시
         )).from(dpArea);
     }
 

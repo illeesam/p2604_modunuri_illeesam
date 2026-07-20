@@ -47,14 +47,21 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         Map.entry("targetTypeCd", pmSaveItem.targetTypeCd)
     );
 
-    /* 적립금 대상 상품 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * SAVE_ITEM_TARGET  대상 유형 코드 (sy_code: SAVE_ITEM_TARGET, 상품·카테고리·브랜드 등 — Entity 주석 기준. 실제 등록값은 미확인)
+     */
     private JPAQuery<PmSaveItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmSaveItemDto.Item.class,
-                        pmSaveItem.saveItemId, pmSaveItem.saveId, pmSaveItem.siteId, pmSaveItem.targetTypeCd, pmSaveItem.targetId,
+                        pmSaveItem.saveItemId,     // PK: SAI+yyMMddHHmmss+rand4
+                        pmSaveItem.saveId,         // FK: pm_save.save_id (적립금 ID)
+                        pmSaveItem.siteId,         // FK: sy_site.site_id (NULL=전사 공통)
+                        pmSaveItem.targetTypeCd,   // 대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)
+                        pmSaveItem.targetId,       // 대상 ID (상품·카테고리·브랜드 등)
                         pmSaveItem.regBy, pmSaveItem.regDate,
-                        sySite.siteNm.as("siteNm"),
-                        cdSit.codeLabel.as("targetTypeCdNm")
+                        sySite.siteNm.as("siteNm"),                 // 사이트명 (조인)
+                        cdSit.codeLabel.as("targetTypeCdNm")        // 대상유형 코드라벨 (조인)
                 ))
                 .from(pmSaveItem)
                 .leftJoin(pmSave).on(pmSave.saveId.eq(pmSaveItem.saveId))

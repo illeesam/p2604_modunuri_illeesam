@@ -58,14 +58,29 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         Map.entry("useYn", syDept.useYn)
     );
 
-    /* 부서 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * DEPT_TYPE {HQ: '본사', DEV: '개발팀', DEV_BACKEND: '백엔드', DEV_FRONTEND: '프론트엔드', MKT: '마케팅팀', LOGIS: '물류팀'}
+     * USE_YN    {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<SyDeptDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyDeptDto.Item.class,
-                        syDept.deptId, syDept.siteId, syDept.deptCode, syDept.deptNm, syDept.parentDeptId,
-                        syDept.deptTypeCd, syDept.managerId, syDept.sortOrd, syDept.useYn, syDept.deptRemark,
-                        syDept.regBy, syDept.regDate, syDept.updBy, syDept.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syDept.deptId,         // 부서ID (YYMMDDhhmmss+rand4)
+                        syDept.siteId,         // 사이트ID (sy_site.site_id)
+                        syDept.deptCode,       // 부서코드
+                        syDept.deptNm,         // 부서명
+                        syDept.parentDeptId,   // 상위부서ID
+                        syDept.deptTypeCd,     // 부서유형 — DEPT_TYPE {HQ: '본사', DEV: '개발팀', DEV_BACKEND: '백엔드', DEV_FRONTEND: '프론트엔드', MKT: '마케팅팀', LOGIS: '물류팀'}
+                        syDept.managerId,      // 부서장 (sy_user.user_id)
+                        syDept.sortOrd,        // 정렬순서
+                        syDept.useYn,          // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syDept.deptRemark,     // 비고
+                        syDept.regBy,          // 등록자
+                        syDept.regDate,        // 등록일시
+                        syDept.updBy,          // 수정자
+                        syDept.updDate,        // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syDept)
                 .leftJoin(sySite).on(sySite.siteId.eq(syDept.siteId))

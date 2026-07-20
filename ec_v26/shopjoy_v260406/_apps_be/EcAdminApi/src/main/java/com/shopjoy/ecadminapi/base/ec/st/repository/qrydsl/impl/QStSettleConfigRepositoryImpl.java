@@ -52,18 +52,32 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         Map.entry("vendorId", stSettleConfig.vendorId)
     );
 
-    /* 정산 설정 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
+     * SETTLE_CYCLE  {DAILY: '일정산', WEEKLY: '주정산'(또는 '주간'), BIWEEKLY: '격주', MONTHLY: '월정산'(또는 '월간')}
+     * USE_YN        {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<StSettleConfigDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleConfigDto.Item.class,
-                        stSettleConfig.settleConfigId, stSettleConfig.siteId, stSettleConfig.vendorId, stSettleConfig.categoryId,
-                        stSettleConfig.settleCycleCd, stSettleConfig.settleDay, stSettleConfig.commissionRate, stSettleConfig.minSettleAmt,
-                        stSettleConfig.settleConfigRemark, stSettleConfig.useYn,
-                        stSettleConfig.regBy, stSettleConfig.regDate, stSettleConfig.updBy, stSettleConfig.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        pdCategory.categoryNm.as("categoryNm"),
-                        cdSc.codeLabel.as("settleCycleCdNm")
+                        stSettleConfig.settleConfigId,       // 정산기준ID (PK, YYMMDDhhmmss+rand4)
+                        stSettleConfig.siteId,                // 사이트ID (sy_site.site_id)
+                        stSettleConfig.vendorId,               // 업체ID (NULL=전체 기준)
+                        stSettleConfig.categoryId,             // 카테고리ID (NULL=전체 기준)
+                        stSettleConfig.settleCycleCd,          // 정산주기 — SETTLE_CYCLE {DAILY: '일정산', WEEKLY: '주정산', BIWEEKLY: '격주', MONTHLY: '월정산'}
+                        stSettleConfig.settleDay,              // 정산일 (월 N일, MONTHLY 시 사용)
+                        stSettleConfig.commissionRate,         // 수수료율 (%)
+                        stSettleConfig.minSettleAmt,           // 최소 정산금액
+                        stSettleConfig.settleConfigRemark,     // 비고
+                        stSettleConfig.useYn,                  // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        stSettleConfig.regBy,                  // 등록자
+                        stSettleConfig.regDate,                // 등록일시
+                        stSettleConfig.updBy,                  // 수정자
+                        stSettleConfig.updDate,                // 수정일시
+                        sySite.siteNm.as("siteNm"),                     // 사이트명 (조인)
+                        syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
+                        pdCategory.categoryNm.as("categoryNm"),         // 카테고리명 (조인)
+                        cdSc.codeLabel.as("settleCycleCdNm")            // 정산주기명 (sy_code 조인)
                 ))
                 .from(stSettleConfig)
                 .leftJoin(sySite).on(sySite.siteId.eq(stSettleConfig.siteId))

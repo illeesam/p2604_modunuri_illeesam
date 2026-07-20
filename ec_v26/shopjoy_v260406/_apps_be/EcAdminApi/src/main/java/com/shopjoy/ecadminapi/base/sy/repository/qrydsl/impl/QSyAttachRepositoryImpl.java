@@ -54,17 +54,40 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         Map.entry("thumbUrl", syAttach.thumbUrl)
     );
 
-    /* 첨부파일 baseSelColumnQuery — Projections.bean 으로 SyAttachDto.Item 평면 매핑.
-     * 그룹정보(attachGrp)가 필요한 화면은 호출측(서비스)에서 SyAttachGrp 를 별도 조회한다. */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * THUMB_GENERATED_YN {Y: '생성됨', N: '미생성'} (동영상은 필수 Y, 이미지는 선택)
+     * STORAGE_TYPE (sy_code 미등록, 자유 문자열) {LOCAL: '로컬', AWS_S3: 'AWS S3', NCP_OBS: '네이버클라우드 OBS'}
+     */
     private JPAQuery<SyAttachDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyAttachDto.Item.class,
-                        syAttach.attachId, syAttach.siteId, syAttach.attachGrpId, syAttach.fileNm, syAttach.fileSize, syAttach.fileExt,
-                        syAttach.mimeTypeCd, syAttach.storedNm, syAttach.attachUrl, syAttach.storagePath, syAttach.physicalPath,
-                        syAttach.cdnHost, syAttach.cdnImgUrl, syAttach.cdnThumbUrl, syAttach.thumbFileNm, syAttach.thumbStoredNm,
-                        syAttach.thumbUrl, syAttach.thumbCdnUrl, syAttach.thumbGeneratedYn, syAttach.sortOrd, syAttach.attachMemo,
-                        syAttach.regBy, syAttach.regDate, syAttach.updBy, syAttach.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syAttach.attachId,           // 첨부파일 ID (YYMMDDhhmmss+random(4)+seq)
+                        syAttach.siteId,             // 사이트ID (sy_site.site_id)
+                        syAttach.attachGrpId,        // 파일 그룹 ID (sy_attach_grp 과 연계)
+                        syAttach.fileNm,             // 원본 파일명
+                        syAttach.fileSize,           // 파일 크기
+                        syAttach.fileExt,            // 파일 확장자
+                        syAttach.mimeTypeCd,         // MIME 타입
+                        syAttach.storedNm,           // 저장된 파일명 (YYYYMMDD_hhmmss_seq_random.ext)
+                        syAttach.attachUrl,          // 첨부파일 URL
+                        syAttach.storagePath,        // 파일 저장 경로 (정책: /cdn/{업무명}/YYYY/YYYYMM/YYYYMMDD/{파일명})
+                        syAttach.physicalPath,       // 실제 물리 저장 전체 경로 (서버 절대경로)
+                        syAttach.cdnHost,            // CDN 호스트
+                        syAttach.cdnImgUrl,          // CDN 이미지 URL
+                        syAttach.cdnThumbUrl,        // CDN 썸네일 URL
+                        syAttach.thumbFileNm,        // 썸네일 원본 파일명
+                        syAttach.thumbStoredNm,      // 썸네일 저장 파일명
+                        syAttach.thumbUrl,           // 썸네일 URL
+                        syAttach.thumbCdnUrl,        // 썸네일 CDN URL
+                        syAttach.thumbGeneratedYn,   // 썸네일 생성 여부 — THUMB_GENERATED_YN {Y: '생성됨', N: '미생성'}
+                        syAttach.sortOrd,            // 정렬순서
+                        syAttach.attachMemo,         // 메모
+                        syAttach.regBy,              // 등록자
+                        syAttach.regDate,            // 등록일시
+                        syAttach.updBy,              // 수정자
+                        syAttach.updDate,            // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syAttach)
                 .leftJoin(sySite).on(sySite.siteId.eq(syAttach.siteId));

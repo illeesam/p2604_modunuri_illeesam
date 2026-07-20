@@ -47,28 +47,32 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         Map.entry("siteId", syhBatchHist.siteId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 예시값)
+     * runStatus  {SUCCESS: '성공', FAILED: '실패', TIMEOUT: '시간초과'}
+     */
     /* 배치 실행 이력 baseSelColumnQuery */
     private JPAQuery<SyhBatchHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhBatchHistDto.Item.class,
-                        syhBatchHist.batchHistId,
-                        syhBatchHist.siteId,
-                        syhBatchHist.batchId,
-                        syhBatchHist.batchCode,
-                        syhBatchHist.batchNm,
-                        syhBatchHist.runAt,
-                        syhBatchHist.endAt,
-                        syhBatchHist.durationMs,
-                        syhBatchHist.runStatus,
-                        syhBatchHist.procCount,
-                        syhBatchHist.errorCount,
-                        syhBatchHist.message,
-                        syhBatchHist.detail,
-                        syhBatchHist.regBy,
-                        syhBatchHist.regDate,
-                        syhBatchHist.updBy,
-                        syhBatchHist.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syhBatchHist.batchHistId,   // 이력ID (PK)
+                        syhBatchHist.siteId,        // 사이트ID (sy_site.site_id)
+                        syhBatchHist.batchId,       // 배치ID
+                        syhBatchHist.batchCode,     // 배치코드
+                        syhBatchHist.batchNm,       // 배치명
+                        syhBatchHist.runAt,         // 실행시작일시
+                        syhBatchHist.endAt,         // 실행종료일시
+                        syhBatchHist.durationMs,    // 실행시간(ms)
+                        syhBatchHist.runStatus,     // 실행결과 — {SUCCESS: '성공', FAILED: '실패', TIMEOUT: '시간초과'}
+                        syhBatchHist.procCount,     // 처리건수
+                        syhBatchHist.errorCount,    // 오류건수
+                        syhBatchHist.message,       // 결과메시지
+                        syhBatchHist.detail,        // 상세로그 (JSON)
+                        syhBatchHist.regBy,         // 등록자
+                        syhBatchHist.regDate,       // 등록일시
+                        syhBatchHist.updBy,         // 수정자
+                        syhBatchHist.updDate,       // 수정일시
+                        sySite.siteNm.as("siteNm")  // 사이트명 (조인: sy_site)
                 ))
                 .from(syhBatchHist)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhBatchHist.siteId));

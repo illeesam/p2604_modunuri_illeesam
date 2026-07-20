@@ -42,13 +42,25 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         Map.entry("siteId", odhOrderItemChgHist.siteId)
     );
 
-    /* 주문 아이템 변경 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CHG_TYPE (od_order_item 변경유형, sy_code 미등록 — Entity 주석 기준 예시)
+     *   QTY:수량변경, PRICE:가격변경, OPT:옵션변경, STATUS:상태변경, AMOUNT:금액변경, COUPON:쿠폰변경
+     */
     private JPAQuery<OdhOrderItemChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderItemChgHistDto.Item.class,
-                        odhOrderItemChgHist.orderItemChgHistId, odhOrderItemChgHist.siteId, odhOrderItemChgHist.orderId, odhOrderItemChgHist.orderItemId,
-                        odhOrderItemChgHist.chgTypeCd, odhOrderItemChgHist.chgField, odhOrderItemChgHist.beforeVal, odhOrderItemChgHist.afterVal,
-                        odhOrderItemChgHist.chgReason, odhOrderItemChgHist.chgUserId, odhOrderItemChgHist.chgDate,
+                        odhOrderItemChgHist.orderItemChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
+                        odhOrderItemChgHist.siteId,             // 사이트ID
+                        odhOrderItemChgHist.orderId,            // 주문ID (od_order.)
+                        odhOrderItemChgHist.orderItemId,        // 주문품목ID (od_order_item.)
+                        odhOrderItemChgHist.chgTypeCd,          // 변경유형코드 — CHG_TYPE {QTY:수량변경, PRICE:가격변경, OPT:옵션변경, STATUS:상태변경, AMOUNT:금액변경, COUPON:쿠폰변경}
+                        odhOrderItemChgHist.chgField,           // 변경 필드명
+                        odhOrderItemChgHist.beforeVal,          // 변경전값
+                        odhOrderItemChgHist.afterVal,           // 변경후값
+                        odhOrderItemChgHist.chgReason,          // 변경사유
+                        odhOrderItemChgHist.chgUserId,          // 처리자 (sy_user.user_id)
+                        odhOrderItemChgHist.chgDate,            // 처리일시
                         odhOrderItemChgHist.regBy, odhOrderItemChgHist.regDate, odhOrderItemChgHist.updBy, odhOrderItemChgHist.updDate))
                 .from(odhOrderItemChgHist);
     }

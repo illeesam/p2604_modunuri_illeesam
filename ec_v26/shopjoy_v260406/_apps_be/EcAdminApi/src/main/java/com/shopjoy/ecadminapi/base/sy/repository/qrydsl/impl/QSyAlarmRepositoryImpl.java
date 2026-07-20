@@ -56,18 +56,38 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     );
 
 
-    /* 알람 baseQuery */
+    /*
+     * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
+     * ALARM_TYPE        {ORDER: '주문', DELIVERY: '배송', CLAIM: '클레임', MARKETING: '마케팅', SYSTEM: '시스템'}
+     * ALARM_CHANNEL     {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
+     * ALARM_TARGET_TYPE {MEMBER: '회원', VENDOR: '업체', ADMIN: '관리자', ALL: '전체'}
+     * ALARM_STATUS_CD   (sy_code 미등록, DDL 주석 기준) {PENDING: '대기', SENT: '발송완료', FAILED: '실패', CANCELLED: '취소'}
+     */
     private JPAQuery<SyAlarmDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyAlarmDto.Item.class,
-                        syAlarm.alarmId, syAlarm.siteId, syAlarm.alarmTitle, syAlarm.alarmTypeCd, syAlarm.channelCd,
-                        syAlarm.targetTypeCd, syAlarm.targetId, syAlarm.templateId, syAlarm.alarmMsg, syAlarm.alarmSendDate,
-                        syAlarm.alarmStatusCd, syAlarm.alarmSendCount, syAlarm.alarmFailCount, syAlarm.pathId,
-                        syAlarm.regBy, syAlarm.regDate, syAlarm.updBy, syAlarm.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        cdAt.codeLabel.as("alarmTypeCdNm"),
-                        cdAc.codeLabel.as("channelCdNm"),
-                        cdAtt.codeLabel.as("targetTypeCdNm")
+                        syAlarm.alarmId,          // 알림ID (YYMMDDhhmmss+rand4)
+                        syAlarm.siteId,           // 사이트ID (sy_site.site_id)
+                        syAlarm.alarmTitle,       // 알림제목
+                        syAlarm.alarmTypeCd,      // 알림유형 — ALARM_TYPE {ORDER: '주문', DELIVERY: '배송', CLAIM: '클레임', MARKETING: '마케팅', SYSTEM: '시스템'}
+                        syAlarm.channelCd,        // 발송채널 — ALARM_CHANNEL {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
+                        syAlarm.targetTypeCd,     // 대상유형 — ALARM_TARGET_TYPE {MEMBER: '회원', VENDOR: '업체', ADMIN: '관리자', ALL: '전체'}
+                        syAlarm.targetId,         // 대상ID (회원ID 또는 등급코드)
+                        syAlarm.templateId,       // 템플릿ID
+                        syAlarm.alarmMsg,         // 발송내용
+                        syAlarm.alarmSendDate,    // 발송예정일시
+                        syAlarm.alarmStatusCd,    // 발송상태 — ALARM_STATUS_CD {PENDING: '대기', SENT: '발송완료', FAILED: '실패', CANCELLED: '취소'}
+                        syAlarm.alarmSendCount,   // 발송성공수
+                        syAlarm.alarmFailCount,   // 발송실패수
+                        syAlarm.pathId,           // 점(.) 구분 표시경로 (트리 빌드용)
+                        syAlarm.regBy,            // 등록자
+                        syAlarm.regDate,          // 등록일시
+                        syAlarm.updBy,            // 수정자
+                        syAlarm.updDate,          // 수정일시
+                        sySite.siteNm.as("siteNm"),               // 사이트명 (sy_site 조인)
+                        cdAt.codeLabel.as("alarmTypeCdNm"),       // 알림유형 라벨 (sy_code ALARM_TYPE 조인)
+                        cdAc.codeLabel.as("channelCdNm"),         // 발송채널 라벨 (sy_code ALARM_CHANNEL 조인)
+                        cdAtt.codeLabel.as("targetTypeCdNm")      // 대상유형 라벨 (sy_code ALARM_TARGET_TYPE 조인)
                 ))
                 .from(syAlarm)
                 .leftJoin(sySite).on(sySite.siteId.eq(syAlarm.siteId))

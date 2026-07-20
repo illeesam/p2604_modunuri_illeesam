@@ -50,16 +50,26 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         Map.entry("zipCd", mbMemberAddr.zipCd)
     );
 
-    /* 회원 주소 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * IS_DEFAULT (defaultYn)  {Y: '기본배송지', N: '일반배송지'}
+     */
     private JPAQuery<MbMemberAddrDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberAddrDto.Item.class,
-                        mbMemberAddr.memberAddrId, mbMemberAddr.memberId,
-                        mbMemberAddr.addrNm, mbMemberAddr.recvNm, mbMemberAddr.recvPhone,
-                        mbMemberAddr.zipCd.as("zipCode"),
-                        mbMemberAddr.addr, mbMemberAddr.addrDetail,
-                        mbMemberAddr.isDefault.as("defaultYn"),
-                        mbMemberAddr.regBy, mbMemberAddr.regDate, mbMemberAddr.updBy, mbMemberAddr.updDate
+                        mbMemberAddr.memberAddrId,             // 배송지ID (PK)
+                        mbMemberAddr.memberId,                 // 회원ID (mb_member.member_id)
+                        mbMemberAddr.addrNm,                   // 배송지명 (예: 집, 회사)
+                        mbMemberAddr.recvNm,                   // 수령자명
+                        mbMemberAddr.recvPhone,                // 수령자 연락처
+                        mbMemberAddr.zipCd.as("zipCode"),       // 우편번호
+                        mbMemberAddr.addr,                     // 기본주소
+                        mbMemberAddr.addrDetail,                // 상세주소
+                        mbMemberAddr.isDefault.as("defaultYn"), // 기본배송지여부 — IS_DEFAULT {Y: '기본배송지', N: '일반배송지'}
+                        mbMemberAddr.regBy,                    // 등록자
+                        mbMemberAddr.regDate,                  // 등록일
+                        mbMemberAddr.updBy,                    // 수정자
+                        mbMemberAddr.updDate                   // 수정일
                 ))
                 .from(mbMemberAddr)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberAddr.memberId))

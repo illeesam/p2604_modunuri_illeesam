@@ -52,20 +52,24 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         Map.entry("siteId", pdhProdContentChgHist.siteId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
+     * CONTENT_TYPE_CD (PROD_CONTENT_TYPE)  {DETAIL: '상세설명', NOTICE: '상품공지', GUIDE: '이용안내', SIZE_GUIDE: '사이즈안내'}
+     */
     /* 상품 콘텐츠 변경 이력 baseSelColumnQuery */
     private JPAQuery<PdhProdContentChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdContentChgHistDto.Item.class,
-                        pdhProdContentChgHist.histId,
-                        pdhProdContentChgHist.siteId,
-                        pdhProdContentChgHist.prodId,
-                        pdhProdContentChgHist.prodContentId,
-                        pdhProdContentChgHist.contentTypeCd,
-                        pdhProdContentChgHist.contentBefore,
-                        pdhProdContentChgHist.contentAfter,
-                        pdhProdContentChgHist.chgReason,
-                        pdhProdContentChgHist.chgUserId,
-                        pdhProdContentChgHist.chgDate,
+                        pdhProdContentChgHist.histId,           // 이력ID (PK, YYMMDDhhmmss+rand4)
+                        pdhProdContentChgHist.siteId,            // 사이트ID (sy_site.site_id)
+                        pdhProdContentChgHist.prodId,            // 상품ID (pd_prod.prod_id)
+                        pdhProdContentChgHist.prodContentId,      // 상품컨텐츠ID (pd_prod_content.)
+                        pdhProdContentChgHist.contentTypeCd,       // 컨텐츠유형코드 — {DETAIL: '상세설명', NOTICE: '상품공지', GUIDE: '이용안내', SIZE_GUIDE: '사이즈안내'}
+                        pdhProdContentChgHist.contentBefore,     // 변경전 HTML 컨텐츠
+                        pdhProdContentChgHist.contentAfter,      // 변경후 HTML 컨텐츠
+                        pdhProdContentChgHist.chgReason,         // 변경사유
+                        pdhProdContentChgHist.chgUserId,          // 처리자 (sy_user.user_id)
+                        pdhProdContentChgHist.chgDate,           // 처리일시
                         pdhProdContentChgHist.regBy, pdhProdContentChgHist.regDate, pdhProdContentChgHist.updBy, pdhProdContentChgHist.updDate
                 ))
                 .from(pdhProdContentChgHist)

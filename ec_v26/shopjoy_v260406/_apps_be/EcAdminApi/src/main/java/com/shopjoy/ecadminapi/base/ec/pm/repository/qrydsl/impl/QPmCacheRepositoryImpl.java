@@ -49,14 +49,26 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         Map.entry("siteId", pmCache.siteId)
     );
 
-    /* 캐시(충전금) baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CACHE_TYPE  {EARN_BUY: '구매 적립', EARN_ADMIN: '관리자 지급', EARN_EVENT: '이벤트 지급', USE_ORDER: '주문 사용', REFUND: '환불 복원', EXPIRE: '소멸'}
+     * (참고: sy_code 샘플 데이터 기준. 운영 DB의 실제 등록값과 다를 수 있음 — Entity/DDL 주석에는 코드값이 명시되어 있지 않음)
+     */
     private JPAQuery<PmCacheDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmCacheDto.Item.class,
-                        pmCache.cacheId, pmCache.siteId, pmCache.memberId, pmCache.memberNm,
-                        pmCache.cacheTypeCd, pmCache.cacheAmt, pmCache.balanceAmt,
-                        pmCache.refId, pmCache.cacheDesc, pmCache.procUserId,
-                        pmCache.cacheDate, pmCache.expireDate,
+                        pmCache.cacheId,       // 적립금(캐시)ID (PK, YYMMDDhhmmss+rand4)
+                        pmCache.siteId,        // 사이트ID (sy_site.site_id)
+                        pmCache.memberId,      // 회원ID (mb_member.member_id)
+                        pmCache.memberNm,      // 회원명 (스냅샷)
+                        pmCache.cacheTypeCd,   // 유형 — CACHE_TYPE {EARN_BUY, EARN_ADMIN, EARN_EVENT, USE_ORDER, REFUND, EXPIRE}
+                        pmCache.cacheAmt,      // 변동 금액 (양수:적립 / 음수:차감)
+                        pmCache.balanceAmt,    // 처리 후 잔액
+                        pmCache.refId,         // 참조ID (주문ID 등)
+                        pmCache.cacheDesc,     // 내역 설명
+                        pmCache.procUserId,    // 처리자 (관리자 직접 부여 시)
+                        pmCache.cacheDate,     // 처리일시
+                        pmCache.expireDate,    // 소멸예정일
                         pmCache.regBy, pmCache.regDate, pmCache.updBy, pmCache.updDate
                 ))
                 .from(pmCache)

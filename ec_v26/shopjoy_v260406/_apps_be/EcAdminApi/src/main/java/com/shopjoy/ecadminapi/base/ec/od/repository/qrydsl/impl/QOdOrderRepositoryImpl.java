@@ -88,21 +88,51 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         Map.entry("siteId", odOrder.siteId)
     );
 
-    /** 목록/페이지 공용 base query */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * ORDER_STATUS  {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소}
+     * PAY_METHOD    {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+     * DLIV_STATUS   {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+     * ACCESS_CHANNEL {WEB_PC:Web-PC, WEB_MOBILE:모바일 웹, APP_IOS:앱-iOS, APP_ANDROID:앱-Android}
+     * APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+     */
     private JPAQuery<OdOrderDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdOrderDto.Item.class,
-                        odOrder.orderId, odOrder.siteId, odOrder.memberId, odOrder.memberNm, odOrder.ordererEmail,
-                        odOrder.totalAmt, odOrder.payAmt,
-                        odOrder.orderStatusCd, odOrder.orderStatusCdBefore,
-                        odOrder.payMethodCd, odOrder.dlivStatusCd, odOrder.couponId,
-                        odOrder.recvNm, odOrder.recvPhone, odOrder.recvZip, odOrder.recvAddr, odOrder.recvAddrDetail, odOrder.recvMemo,
-                        odOrder.refundBankCd, odOrder.refundAccountNo, odOrder.refundAccountNm,
-                        odOrder.accessChannelCd,
-                        odOrder.apprStatusCd, odOrder.apprStatusCdBefore, odOrder.apprAmt,
-                        odOrder.apprTargetCd, odOrder.apprTargetNm, odOrder.apprReason,
-                        odOrder.apprReqUserId, odOrder.apprReqDate, odOrder.apprAprvUserId, odOrder.apprAprvDate,
-                        odOrder.memo, odOrder.orderDate,
+                        odOrder.orderId,               // 주문ID (YYMMDDhhmmss+rand4)
+                        odOrder.siteId,                // 사이트ID (sy_site.site_id)
+                        odOrder.memberId,              // 회원ID
+                        odOrder.memberNm,              // 주문자명
+                        odOrder.ordererEmail,          // 주문자 이메일 (주문 시점 스냅샷)
+                        odOrder.totalAmt,              // 상품합계금액 (현재값)
+                        odOrder.payAmt,                // 실결제금액 (현재값)
+                        odOrder.orderStatusCd,         // 주문상태 — ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소}
+                        odOrder.orderStatusCdBefore,   // 변경 전 주문상태 — ORDER_STATUS (동일 코드그룹)
+                        odOrder.payMethodCd,           // 결제수단 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+                        odOrder.dlivStatusCd,          // 배송상태 최신 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+                        odOrder.couponId,              // 사용쿠폰ID
+                        odOrder.recvNm,                // 수령자명
+                        odOrder.recvPhone,             // 수령자연락처
+                        odOrder.recvZip,               // 수령자우편번호
+                        odOrder.recvAddr,              // 수령자주소
+                        odOrder.recvAddrDetail,        // 수령자상세주소
+                        odOrder.recvMemo,              // 배송메모
+                        odOrder.refundBankCd,          // 환불 은행코드 — BANK_CODE (무통장/가상계좌 환불 시)
+                        odOrder.refundAccountNo,       // 환불 계좌번호
+                        odOrder.refundAccountNm,       // 환불 예금주명
+                        odOrder.accessChannelCd,       // 주문유입경로 — ACCESS_CHANNEL {WEB_PC:Web-PC, WEB_MOBILE:모바일 웹, APP_IOS:앱-iOS, APP_ANDROID:앱-Android}
+                        odOrder.apprStatusCd,          // 결재상태 — APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+                        odOrder.apprStatusCdBefore,    // 변경 전 결재상태 — APPROVAL_STATUS (동일 코드그룹)
+                        odOrder.apprAmt,               // 결재 요청금액
+                        odOrder.apprTargetCd,          // 결재대상 구분 — APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+                        odOrder.apprTargetNm,          // 결재 대상명
+                        odOrder.apprReason,            // 사유/메모
+                        odOrder.apprReqUserId,         // 결재 요청자 (sy_user.user_id)
+                        odOrder.apprReqDate,           // 결재 요청일시
+                        odOrder.apprAprvUserId,        // 결재자 (sy_user.user_id)
+                        odOrder.apprAprvDate,          // 결재일시
+                        odOrder.memo,                  // 관리메모
+                        odOrder.orderDate,             // 주문일시
                         odOrder.regBy, odOrder.regDate, odOrder.updBy, odOrder.updDate,
                         mbMember.loginId.as("memberEmail"),
                         sySite.siteNm.as("siteNm"),
@@ -124,23 +154,52 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)));
     }
 
+    /*
+     * selectById — 코드성 필드 예시 코드값 (baseListQuery 와 동일 코드그룹, 상세조회 전용 별도 projection)
+     * ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소}
+     * BANK_CODE {신한:신한은행, 국민:국민은행, 우리:우리은행, 농협:NH농협 등}
+     * APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료} / APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+     */
     /* 주문 키조회 */
     @Override
     public Optional<OdOrderDto.Item> selectById(String orderId) {
         OdOrderDto.Item dto = queryFactory
                 .select(Projections.bean(OdOrderDto.Item.class,
                         // a.* equivalent (DTO Item 에 존재하는 필드만)
-                        odOrder.orderId, odOrder.siteId, odOrder.memberId, odOrder.memberNm, odOrder.ordererEmail,
-                        odOrder.totalAmt, odOrder.payAmt,
-                        odOrder.orderStatusCd, odOrder.orderStatusCdBefore,
-                        odOrder.payMethodCd, odOrder.dlivStatusCd, odOrder.couponId,
-                        odOrder.recvNm, odOrder.recvPhone, odOrder.recvZip, odOrder.recvAddr, odOrder.recvAddrDetail, odOrder.recvMemo,
-                        odOrder.refundBankCd, odOrder.refundAccountNo, odOrder.refundAccountNm,
-                        odOrder.accessChannelCd,
-                        odOrder.apprStatusCd, odOrder.apprStatusCdBefore, odOrder.apprAmt,
-                        odOrder.apprTargetCd, odOrder.apprTargetNm, odOrder.apprReason,
-                        odOrder.apprReqUserId, odOrder.apprReqDate, odOrder.apprAprvUserId, odOrder.apprAprvDate,
-                        odOrder.memo, odOrder.orderDate,
+                        odOrder.orderId,               // 주문ID (YYMMDDhhmmss+rand4)
+                        odOrder.siteId,                // 사이트ID (sy_site.site_id)
+                        odOrder.memberId,              // 회원ID
+                        odOrder.memberNm,              // 주문자명
+                        odOrder.ordererEmail,          // 주문자 이메일 (주문 시점 스냅샷)
+                        odOrder.totalAmt,              // 상품합계금액 (현재값)
+                        odOrder.payAmt,                // 실결제금액 (현재값)
+                        odOrder.orderStatusCd,         // 주문상태 — ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소}
+                        odOrder.orderStatusCdBefore,   // 변경 전 주문상태 — ORDER_STATUS (동일 코드그룹)
+                        odOrder.payMethodCd,           // 결제수단 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+                        odOrder.dlivStatusCd,          // 배송상태 최신 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+                        odOrder.couponId,              // 사용쿠폰ID
+                        odOrder.recvNm,                // 수령자명
+                        odOrder.recvPhone,             // 수령자연락처
+                        odOrder.recvZip,               // 수령자우편번호
+                        odOrder.recvAddr,              // 수령자주소
+                        odOrder.recvAddrDetail,        // 수령자상세주소
+                        odOrder.recvMemo,              // 배송메모
+                        odOrder.refundBankCd,          // 환불 은행코드 — BANK_CODE (예: 신한/국민/우리/농협 등)
+                        odOrder.refundAccountNo,       // 환불 계좌번호
+                        odOrder.refundAccountNm,       // 환불 예금주명
+                        odOrder.accessChannelCd,       // 주문유입경로 — ACCESS_CHANNEL {WEB_PC:Web-PC, WEB_MOBILE:모바일 웹, APP_IOS:앱-iOS, APP_ANDROID:앱-Android}
+                        odOrder.apprStatusCd,          // 결재상태 — APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+                        odOrder.apprStatusCdBefore,    // 변경 전 결재상태 — APPROVAL_STATUS (동일 코드그룹)
+                        odOrder.apprAmt,               // 결재 요청금액
+                        odOrder.apprTargetCd,          // 결재대상 구분 — APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+                        odOrder.apprTargetNm,          // 결재 대상명
+                        odOrder.apprReason,            // 사유/메모
+                        odOrder.apprReqUserId,         // 결재 요청자 (sy_user.user_id)
+                        odOrder.apprReqDate,           // 결재 요청일시
+                        odOrder.apprAprvUserId,        // 결재자 (sy_user.user_id)
+                        odOrder.apprAprvDate,          // 결재일시
+                        odOrder.memo,                  // 관리메모
+                        odOrder.orderDate,             // 주문일시
                         odOrder.regBy, odOrder.regDate, odOrder.updBy, odOrder.updDate,
                         // joined
                         mbMember.loginId.as("memberEmail"),

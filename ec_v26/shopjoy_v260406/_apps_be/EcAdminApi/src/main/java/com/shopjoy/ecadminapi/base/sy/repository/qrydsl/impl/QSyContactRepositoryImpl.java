@@ -49,15 +49,32 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    /* 문의 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CONTACT_STATUS {RECEIVED: '접수', IN_PROGRESS: '처리중', DONE: '완료', ON_HOLD: '보류'}
+     */
     private JPAQuery<SyContactDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyContactDto.Item.class,
-                        syContact.contactId, syContact.siteId, syContact.memberId, syContact.memberNm, syContact.categoryCd,
-                        syContact.contactTitle, syContact.contactContent, syContact.contentAttachGrpId, syContact.contactStatusCd,
-                        syContact.contactAnswer, syContact.answerAttachGrpId, syContact.answerUserId, syContact.answerDate, syContact.contactDate,
-                        syContact.regBy, syContact.regDate, syContact.updBy, syContact.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syContact.contactId,           // 문의ID (YYMMDDhhmmss+rand4)
+                        syContact.siteId,              // 사이트ID (sy_site.site_id)
+                        syContact.memberId,             // 회원ID
+                        syContact.memberNm,             // 문의자명
+                        syContact.categoryCd,           // 문의유형
+                        syContact.contactTitle,         // 제목
+                        syContact.contactContent,       // 문의내용
+                        syContact.contentAttachGrpId,   // 문의 내용 첨부파일그룹ID (sy_attach_grp.attach_grp_id)
+                        syContact.contactStatusCd,      // 처리상태 — CONTACT_STATUS {RECEIVED: '접수', IN_PROGRESS: '처리중', DONE: '완료', ON_HOLD: '보류'}
+                        syContact.contactAnswer,        // 답변내용
+                        syContact.answerAttachGrpId,    // 답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id)
+                        syContact.answerUserId,         // 답변자 (sy_user.user_id)
+                        syContact.answerDate,           // 답변일시
+                        syContact.contactDate,          // 문의일시
+                        syContact.regBy,                // 등록자
+                        syContact.regDate,              // 등록일시
+                        syContact.updBy,                // 수정자
+                        syContact.updDate,              // 수정일시
+                        sySite.siteNm.as("siteNm")      // 사이트명 (sy_site 조인)
                 ))
                 .from(syContact)
                 .leftJoin(sySite).on(sySite.siteId.eq(syContact.siteId));

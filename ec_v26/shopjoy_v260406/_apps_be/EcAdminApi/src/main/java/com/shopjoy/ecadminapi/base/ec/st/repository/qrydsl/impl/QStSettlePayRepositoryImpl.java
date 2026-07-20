@@ -57,18 +57,37 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         Map.entry("vendorId", stSettlePay.vendorId)
     );
 
-    /* 정산 지급 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * PAY_METHOD_CD      (Entity 주석 명시값 없음. sy_code 에도 'PAY_METHOD_CD' 그룹 데이터 없음 —
+     *                      od_refund_method.pay_method_cd DDL 코멘트 기준 유사 코드그룹 'PAY_METHOD' 값 참고: BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)
+     * SETTLE_PAY_STATUS  {PENDING: '지급대기', REQUESTED: '지급요청', COMPLT: '지급완료', FAILED: '지급실패', DISPUTED: '이의신청'}
+     */
     private JPAQuery<StSettlePayDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettlePayDto.Item.class,
-                        stSettlePay.settlePayId, stSettlePay.settleId, stSettlePay.siteId, stSettlePay.vendorId,
-                        stSettlePay.payAmt, stSettlePay.payMethodCd, stSettlePay.bankNm, stSettlePay.bankAccount, stSettlePay.bankHolder,
-                        stSettlePay.payStatusCd, stSettlePay.payStatusCdBefore, stSettlePay.payDate, stSettlePay.payBy, stSettlePay.settlePayMemo,
-                        stSettlePay.regBy, stSettlePay.regDate, stSettlePay.updBy, stSettlePay.updDate,
-                        syVendor.vendorNm.as("vendorNm"),
-                        sySite.siteNm.as("siteNm"),
-                        cdPmc.codeLabel.as("payMethodCdNm"),
-                        cdSps.codeLabel.as("payStatusCdNm")
+                        stSettlePay.settlePayId,         // 정산지급ID (PK, YYMMDDhhmmss+rand4)
+                        stSettlePay.settleId,             // 정산ID (st_settle.settle_id)
+                        stSettlePay.siteId,                // 사이트ID
+                        stSettlePay.vendorId,              // 업체ID (sy_vendor.vendor_id)
+                        stSettlePay.payAmt,                // 지급금액
+                        stSettlePay.payMethodCd,           // 지급수단 — PAY_METHOD_CD (sy_code 실 데이터 없음, 참고: PAY_METHOD 그룹 BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)
+                        stSettlePay.bankNm,                // 은행명
+                        stSettlePay.bankAccount,           // 계좌번호
+                        stSettlePay.bankHolder,            // 예금주
+                        stSettlePay.payStatusCd,           // 지급상태 — SETTLE_PAY_STATUS {PENDING: '지급대기', REQUESTED: '지급요청', COMPLT: '지급완료', FAILED: '지급실패', DISPUTED: '이의신청'}
+                        stSettlePay.payStatusCdBefore,     // 변경 전 상태
+                        stSettlePay.payDate,               // 실지급 일시
+                        stSettlePay.payBy,                 // 지급처리자 (sy_user.user_id)
+                        stSettlePay.settlePayMemo,         // 메모
+                        stSettlePay.regBy,                 // 등록자
+                        stSettlePay.regDate,               // 등록일시
+                        stSettlePay.updBy,                 // 수정자
+                        stSettlePay.updDate,               // 수정일시
+                        syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
+                        sySite.siteNm.as("siteNm"),                     // 사이트명 (조인)
+                        cdPmc.codeLabel.as("payMethodCdNm"),            // 지급수단명 (sy_code 조인)
+                        cdSps.codeLabel.as("payStatusCdNm")             // 지급상태명 (sy_code 조인)
                 ))
                 .from(stSettlePay)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId))

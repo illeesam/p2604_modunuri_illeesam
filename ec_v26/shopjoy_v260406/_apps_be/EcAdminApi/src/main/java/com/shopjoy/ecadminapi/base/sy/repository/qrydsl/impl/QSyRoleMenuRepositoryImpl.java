@@ -43,12 +43,22 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         Map.entry("siteId", syRoleMenu.siteId)
     );
 
-    /* 역할별 메뉴 권한 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * PERM_LEVEL (sy_code 미등록, 숫자 코드 — DDL 주석 기준) {1: '조회', 2: '수정', 3: '삭제'}
+     */
     private JPAQuery<SyRoleMenuDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyRoleMenuDto.Item.class,
-                        syRoleMenu.roleMenuId, syRoleMenu.siteId, syRoleMenu.roleId, syRoleMenu.menuId, syRoleMenu.permLevel,
-                        syRoleMenu.regBy, syRoleMenu.regDate, syRoleMenu.updBy, syRoleMenu.updDate
+                        syRoleMenu.roleMenuId,   // 역할메뉴ID
+                        syRoleMenu.siteId,       // 사이트ID (sy_site.site_id)
+                        syRoleMenu.roleId,       // 역할ID
+                        syRoleMenu.menuId,       // 메뉴ID
+                        syRoleMenu.permLevel,    // 권한레벨 — PERM_LEVEL {1: '조회', 2: '수정', 3: '삭제'}
+                        syRoleMenu.regBy,        // 등록자
+                        syRoleMenu.regDate,      // 등록일시
+                        syRoleMenu.updBy,        // 수정자
+                        syRoleMenu.updDate       // 수정일시
                 ))
                 .from(syRoleMenu)
                 .leftJoin(sySite).on(sySite.siteId.eq(syRoleMenu.siteId));

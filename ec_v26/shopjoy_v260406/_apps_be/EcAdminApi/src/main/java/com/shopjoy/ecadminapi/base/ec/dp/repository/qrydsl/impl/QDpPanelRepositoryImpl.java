@@ -56,13 +56,32 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         Map.entry("visibilityTargets", dpPanel.visibilityTargets)
     );
 
-    /* 전시 패널 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN                 {Y: '사용', N: '미사용'}
+     * DISP_PANEL_STATUS_CD   — DISP_STATUS {SHOW: '노출', HIDE: '숨김'}
+     * PANEL_TYPE_CD          (코드그룹: DISP_TYPE, sy_code 실제 등록값 미확인 — 필드 용도만 참고)
+     * VISIBILITY_TARGETS     — VISIBILITY_TARGET 코드 ^CODE^CODE^ 형식 (예: ^PUBLIC^MEMBER^VIP^)
+     */
     private JPAQuery<DpPanelDto.Item> baseSelColumnQuery() {
         return queryFactory.select(Projections.bean(DpPanelDto.Item.class,
-                dpPanel.panelId, dpPanel.siteId, dpPanel.areaId, dpPanel.panelNm, dpPanel.panelTypeCd, dpPanel.pathId,
-                dpPanel.visibilityTargets, dpPanel.useYn, dpPanel.useStartDate, dpPanel.useEndDate,
-                dpPanel.dispPanelStatusCd, dpPanel.dispPanelStatusCdBefore, dpPanel.contentJson,
-                dpPanel.regBy, dpPanel.regDate, dpPanel.updBy, dpPanel.updDate
+                dpPanel.panelId,                  // 패널ID (PK, YYMMDDhhmmss+rand4)
+                dpPanel.siteId,                   // 사이트ID (sy_site.site_id)
+                dpPanel.areaId,                   // 영역ID (dp_area.area_id, FK)
+                dpPanel.panelNm,                  // 패널명
+                dpPanel.panelTypeCd,               // 표시유형 — PANEL_TYPE_CD (코드: DISP_TYPE)
+                dpPanel.pathId,                   // 점(.) 구분 표시경로
+                dpPanel.visibilityTargets,        // 공개대상 — VISIBILITY_TARGET (^CODE^CODE^ 형식)
+                dpPanel.useYn,                    // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                dpPanel.useStartDate,             // 사용시작일
+                dpPanel.useEndDate,               // 사용종료일
+                dpPanel.dispPanelStatusCd,        // 상태 — DISP_STATUS {SHOW: '노출', HIDE: '숨김'}
+                dpPanel.dispPanelStatusCdBefore,  // 변경 전 패널상태 — DISP_STATUS {SHOW: '노출', HIDE: '숨김'}
+                dpPanel.contentJson,              // 패널콘텐츠 (JSON - 위젯 목록 및 설정, {rows:[...]} 구조)
+                dpPanel.regBy,                    // 등록자
+                dpPanel.regDate,                  // 등록일시
+                dpPanel.updBy,                    // 수정자
+                dpPanel.updDate                   // 수정일시
         )).from(dpPanel);
     }
 

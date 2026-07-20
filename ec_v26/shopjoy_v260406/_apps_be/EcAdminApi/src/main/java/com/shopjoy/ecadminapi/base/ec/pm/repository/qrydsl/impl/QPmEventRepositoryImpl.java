@@ -49,16 +49,33 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         Map.entry("useYn", pmEvent.useYn)
     );
 
-    /* 이벤트 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * EVENT_TYPE    {PROMOTION: '프로모션', FLASH: '플래시세일', CAMPAIGN: '캠페인', COUPON: '쿠폰이벤트'}
+     * EVENT_STATUS  {DRAFT: '초안', ACTIVE: '진행중', PAUSED: '일시정지', ENDED: '종료', CLOSED: '마감'}
+     * EVENT_TARGET  {ALL: '전체', MEMBER: '회원', GRADE: '특정등급', GUEST: '비회원'}
+     */
     private JPAQuery<PmEventDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmEventDto.Item.class,
-                        pmEvent.eventId, pmEvent.siteId, pmEvent.eventNm, pmEvent.eventTypeCd,
-                        pmEvent.imgUrl, pmEvent.eventTitle, pmEvent.eventContent,
-                        pmEvent.startDate, pmEvent.endDate, pmEvent.noticeStart, pmEvent.noticeEnd,
-                        pmEvent.eventStatusCd, pmEvent.eventStatusCdBefore,
-                        pmEvent.targetTypeCd, pmEvent.sortOrd, pmEvent.viewCnt,
-                        pmEvent.useYn, pmEvent.eventDesc,
+                        pmEvent.eventId,               // 이벤트ID (PK, YYMMDDhhmmss+rand4)
+                        pmEvent.siteId,                // 사이트ID (sy_site.site_id)
+                        pmEvent.eventNm,               // 이벤트명
+                        pmEvent.eventTypeCd,           // 이벤트유형 — EVENT_TYPE {PROMOTION, FLASH, CAMPAIGN, COUPON}
+                        pmEvent.imgUrl,                // 배너이미지URL
+                        pmEvent.eventTitle,            // 이벤트 제목
+                        pmEvent.eventContent,          // 이벤트 상세내용
+                        pmEvent.startDate,             // 이벤트 시작일
+                        pmEvent.endDate,               // 이벤트 종료일
+                        pmEvent.noticeStart,           // 예고 시작일
+                        pmEvent.noticeEnd,             // 예고 종료일
+                        pmEvent.eventStatusCd,         // 상태 — EVENT_STATUS {DRAFT, ACTIVE, PAUSED, ENDED, CLOSED}
+                        pmEvent.eventStatusCdBefore,   // 변경 전 이벤트상태 — EVENT_STATUS
+                        pmEvent.targetTypeCd,          // 대상유형 — EVENT_TARGET {ALL, MEMBER, GRADE, GUEST}
+                        pmEvent.sortOrd,               // 정렬순서
+                        pmEvent.viewCnt,               // 조회수
+                        pmEvent.useYn,                 // 사용여부 Y/N
+                        pmEvent.eventDesc,             // 이벤트설명
                         pmEvent.regBy, pmEvent.regDate, pmEvent.updBy, pmEvent.updDate
                 ))
                 .from(pmEvent);

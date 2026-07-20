@@ -81,31 +81,67 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final QPdProdImg piFirst    = new QPdProdImg("pi_first");     // 첫번째 이미지 (outer)
     private static final QPdProdImg piFirstMin = new QPdProdImg("pi_first_min"); // 첫번째 이미지 MIN(sort_ord) 내부
 
+    /*
+     * baseListQuery / selectById — 코드성 필드 예시 코드값 (sy_code 등록 기준)
+     * PROD_STATUS_CD (PRODUCT_STATUS)  {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
+     * PROD_TYPE_CD   (PRODUCT_TYPE)    {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'} — Entity 주석 기준 예시(코드그룹 미등록)
+     * SIZE_INFO_CD   (PRODUCT_SIZE)    {FREE: 'FREE', XS: 'XS', S: 'S', M: 'M', L: 'L', XL: 'XL', XXL: 'XXL'}
+     * IS_NEW/IS_BEST/ADLT_YN/SAME_DAY_DLIV_YN/SOLD_OUT_YN/COUPON_USE_YN/SAVE_USE_YN/DISCNT_USE_YN/SIMUL_YN  {Y: '예', N: '아니오'}
+     */
     /** 목록/페이지 공용 base query — selectList/selectPageData 의 컬럼 셋 (thumbnail LEFT JOIN으로 1행 보장) */
     private JPAQuery<PdProdDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdDto.Item.class,
-                        pdProd.prodId, pdProd.siteId, pdProd.categoryId, pdProd.brandId, pdProd.vendorId, pdProd.mdUserId,
-                        pdProd.prodNm, pdProd.prodTypeCd, pdProd.prodCode,
-                        pdProd.listPrice, pdProd.salePrice, pdProd.purchasePrice, pdProd.marginRate,
-                        pdProd.platformFeeRate, pdProd.platformFeeAmount,
-                        pdProd.prodStatusCd, pdProd.prodStatusCdBefore,
-                        pdProd.contentHtml, pdProd.weight, pdProd.sizeInfoCd,
-                        pdProd.isNew, pdProd.isBest, pdProd.viewCount,
-                        pdProd.saleStartDate, pdProd.saleEndDate,
-                        pdProd.minBuyQty, pdProd.maxBuyQty, pdProd.dayMaxBuyQty, pdProd.idMaxBuyQty,
-                        pdProd.adltYn, pdProd.sameDayDlivYn, pdProd.soldOutYn, pdProd.dlivTmpltId,
-                        pdProd.couponUseYn, pdProd.saveUseYn, pdProd.discntUseYn,
-                        pdProd.advrtStmt, pdProd.advrtStartDate, pdProd.advrtEndDate,
-                        pdProd.simulYn, pdProd.prodOptStdCd,
-                        pdProd.prodOptType1Cd, pdProd.prodOptType2Cd,
+                        pdProd.prodId,                  // 상품ID (PK, YYMMDDhhmmss+rand4)
+                        pdProd.siteId,                   // 사이트ID (sy_site.site_id)
+                        pdProd.categoryId,                // 카테고리ID
+                        pdProd.brandId,                   // 브랜드ID
+                        pdProd.vendorId,                  // 업체ID
+                        pdProd.mdUserId,                  // 담당MD (sy_user.user_id)
+                        pdProd.prodNm,                    // 상품명
+                        pdProd.prodTypeCd,                 // 상품유형 — {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'}
+                        pdProd.prodCode,                  // 상품코드(SKU)
+                        pdProd.listPrice,                 // 정가
+                        pdProd.salePrice,                 // 판매가
+                        pdProd.purchasePrice,              // 매입가(원가) — 내부 관리용
+                        pdProd.marginRate,                 // 마진율(%) — 내부 관리용
+                        pdProd.platformFeeRate,             // 플랫폼수수료 율(%) — 내부 관리용
+                        pdProd.platformFeeAmount,           // 플랫폼수수료 금액(원) — 내부 관리용
+                        pdProd.prodStatusCd,                 // 상태 — {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
+                        pdProd.prodStatusCdBefore,           // 변경 전 상품상태 — 동일 코드그룹
+                        pdProd.contentHtml,                // 상세설명 (HTML)
+                        pdProd.weight,                     // 무게(kg)
+                        pdProd.sizeInfoCd,                   // 사이즈 — {FREE: 'FREE', XS: 'XS', S: 'S', M: 'M', L: 'L', XL: 'XL', XXL: 'XXL'}
+                        pdProd.isNew,                        // 신상품여부 — {Y: '예', N: '아니오'}
+                        pdProd.isBest,                        // 베스트여부 — {Y: '예', N: '아니오'}
+                        pdProd.viewCount,                  // 조회수
+                        pdProd.saleStartDate,               // 판매기간 시작 (NULL=즉시)
+                        pdProd.saleEndDate,                 // 판매기간 종료 (NULL=무기한)
+                        pdProd.minBuyQty,                  // 최소구매수량 (기본 1)
+                        pdProd.maxBuyQty,                  // 최대구매수량 (NULL=무제한)
+                        pdProd.dayMaxBuyQty,                // 1일 최대구매수량 (NULL=무제한)
+                        pdProd.idMaxBuyQty,                 // ID당 최대구매수량 (NULL=무제한)
+                        pdProd.adltYn,                        // 성인상품 여부 — {Y: '예', N: '아니오'}
+                        pdProd.sameDayDlivYn,                  // 당일배송여부 — {Y: '예', N: '아니오'}
+                        pdProd.soldOutYn,                      // 품절여부 — {Y: '예', N: '아니오'}
+                        pdProd.dlivTmpltId,                 // 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
+                        pdProd.couponUseYn,                    // 쿠폰 사용 가능 여부 — {Y: '예', N: '아니오'}
+                        pdProd.saveUseYn,                      // 적립금 사용 가능 여부 — {Y: '예', N: '아니오'}
+                        pdProd.discntUseYn,                    // 할인 적용 가능 여부 — {Y: '예', N: '아니오'}
+                        pdProd.advrtStmt,                  // 홍보문구 (500자 이내)
+                        pdProd.advrtStartDate,              // 홍보문구 시작일시
+                        pdProd.advrtEndDate,                // 홍보문구 종료일시
+                        pdProd.simulYn,                        // 시뮬데이터여부 — {Y: '예', N: '아니오'}
+                        pdProd.prodOptStdCd,                // 옵션 표준코드 (예: COLOR, SIZE)
+                        pdProd.prodOptType1Cd,              // 옵션유형1 분류코드 (예: COLOR)
+                        pdProd.prodOptType2Cd,              // 옵션유형2 분류코드 (예: SIZE)
                         pdProd.regBy, pdProd.regDate, pdProd.updBy, pdProd.updDate,
-                        pdCategory.categoryNm.as("cateNm"),
-                        syBrand.brandNm.as("brandNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        syUser.userNm.as("mdUserNm"),
-                        cdPs.codeLabel.as("prodStatusCdNm"),
-                        cdPt.codeLabel.as("prodTypeCdNm"),
+                        pdCategory.categoryNm.as("cateNm"),        // 카테고리명 (조인)
+                        syBrand.brandNm.as("brandNm"),             // 브랜드명 (조인)
+                        syVendor.vendorNm.as("vendorNm"),          // 업체명 (조인)
+                        syUser.userNm.as("mdUserNm"),               // 담당MD명 (조인)
+                        cdPs.codeLabel.as("prodStatusCdNm"),        // 상품상태 코드라벨 (조인, sy_code.PRODUCT_STATUS)
+                        cdPt.codeLabel.as("prodTypeCdNm"),          // 상품유형 코드라벨 (조인, sy_code.PRODUCT_TYPE)
                         // thumbnail_url: prod 직접 값 → is_thumb='Y' 중 MIN(prod_img_id) 행 → 전체 중 MIN(prod_img_id) 행
                         // Hibernate 6.x 는 스칼라 서브쿼리 .limit() 을 무시하므로
                         // MIN(PK) 이중 서브쿼리로 단일 행을 보장함 (PK는 항상 유일)
@@ -141,34 +177,70 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     /** 단건 조회 — selectById 와 동일 컬럼 셋 (size_info_cd_nm 포함) */
     @Override
     public Optional<PdProdDto.Item> selectById(String prodId) {
+        /*
+         * selectById — 코드성 필드 예시 코드값 (sy_code 등록 기준, baseListQuery 상단 참고와 동일)
+         * PROD_STATUS_CD  {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
+         * PROD_TYPE_CD    {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'}
+         * SIZE_INFO_CD    {FREE: 'FREE', XS: 'XS', S: 'S', M: 'M', L: 'L', XL: 'XL', XXL: 'XXL'}
+         */
         PdProdDto.Item dto = queryFactory
                 .select(Projections.bean(PdProdDto.Item.class,
                         // a.* equivalent
-                        pdProd.prodId, pdProd.siteId, pdProd.categoryId, pdProd.brandId, pdProd.vendorId, pdProd.mdUserId,
-                        pdProd.prodNm, pdProd.prodTypeCd, pdProd.prodCode,
-                        pdProd.listPrice, pdProd.salePrice, pdProd.purchasePrice, pdProd.marginRate,
-                        pdProd.platformFeeRate, pdProd.platformFeeAmount,
-                        pdProd.prodStatusCd, pdProd.prodStatusCdBefore,
-                        pdProd.thumbnailUrl, pdProd.contentHtml, pdProd.weight, pdProd.sizeInfoCd,
-                        pdProd.isNew, pdProd.isBest, pdProd.viewCount,
-                        pdProd.saleStartDate, pdProd.saleEndDate,
-                        pdProd.minBuyQty, pdProd.maxBuyQty, pdProd.dayMaxBuyQty, pdProd.idMaxBuyQty,
-                        pdProd.adltYn, pdProd.sameDayDlivYn, pdProd.soldOutYn, pdProd.dlivTmpltId,
-                        pdProd.couponUseYn, pdProd.saveUseYn, pdProd.discntUseYn,
-                        pdProd.advrtStmt, pdProd.advrtStartDate, pdProd.advrtEndDate,
-                        pdProd.simulYn, pdProd.prodOptStdCd,
-                        pdProd.prodOptType1Cd, pdProd.prodOptType2Cd,
+                        pdProd.prodId,                  // 상품ID (PK)
+                        pdProd.siteId,                   // 사이트ID
+                        pdProd.categoryId,                // 카테고리ID
+                        pdProd.brandId,                   // 브랜드ID
+                        pdProd.vendorId,                  // 업체ID
+                        pdProd.mdUserId,                  // 담당MD (sy_user.user_id)
+                        pdProd.prodNm,                    // 상품명
+                        pdProd.prodTypeCd,                 // 상품유형 — {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'}
+                        pdProd.prodCode,                  // 상품코드(SKU)
+                        pdProd.listPrice,                 // 정가
+                        pdProd.salePrice,                 // 판매가
+                        pdProd.purchasePrice,              // 매입가(원가) — 내부 관리용
+                        pdProd.marginRate,                 // 마진율(%) — 내부 관리용
+                        pdProd.platformFeeRate,             // 플랫폼수수료 율(%) — 내부 관리용
+                        pdProd.platformFeeAmount,           // 플랫폼수수료 금액(원) — 내부 관리용
+                        pdProd.prodStatusCd,                 // 상태 — {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
+                        pdProd.prodStatusCdBefore,           // 변경 전 상품상태 — 동일 코드그룹
+                        pdProd.thumbnailUrl,                // 썸네일URL (직접 컬럼값. COALESCE 서브쿼리는 baseListQuery 참고)
+                        pdProd.contentHtml,                 // 상세설명 (HTML)
+                        pdProd.weight,                     // 무게(kg)
+                        pdProd.sizeInfoCd,                   // 사이즈 — {FREE: 'FREE', XS: 'XS', S: 'S', M: 'M', L: 'L', XL: 'XL', XXL: 'XXL'}
+                        pdProd.isNew,                        // 신상품여부 — {Y: '예', N: '아니오'}
+                        pdProd.isBest,                        // 베스트여부 — {Y: '예', N: '아니오'}
+                        pdProd.viewCount,                  // 조회수
+                        pdProd.saleStartDate,               // 판매기간 시작 (NULL=즉시)
+                        pdProd.saleEndDate,                 // 판매기간 종료 (NULL=무기한)
+                        pdProd.minBuyQty,                  // 최소구매수량 (기본 1)
+                        pdProd.maxBuyQty,                  // 최대구매수량 (NULL=무제한)
+                        pdProd.dayMaxBuyQty,                // 1일 최대구매수량 (NULL=무제한)
+                        pdProd.idMaxBuyQty,                 // ID당 최대구매수량 (NULL=무제한)
+                        pdProd.adltYn,                        // 성인상품 여부 — {Y: '예', N: '아니오'}
+                        pdProd.sameDayDlivYn,                  // 당일배송여부 — {Y: '예', N: '아니오'}
+                        pdProd.soldOutYn,                      // 품절여부 — {Y: '예', N: '아니오'}
+                        pdProd.dlivTmpltId,                 // 배송템플릿ID
+                        pdProd.couponUseYn,                    // 쿠폰 사용 가능 여부 — {Y: '예', N: '아니오'}
+                        pdProd.saveUseYn,                      // 적립금 사용 가능 여부 — {Y: '예', N: '아니오'}
+                        pdProd.discntUseYn,                    // 할인 적용 가능 여부 — {Y: '예', N: '아니오'}
+                        pdProd.advrtStmt,                  // 홍보문구
+                        pdProd.advrtStartDate,              // 홍보문구 시작일시
+                        pdProd.advrtEndDate,                // 홍보문구 종료일시
+                        pdProd.simulYn,                        // 시뮬데이터여부 — {Y: '예', N: '아니오'}
+                        pdProd.prodOptStdCd,                // 옵션 표준코드
+                        pdProd.prodOptType1Cd,              // 옵션유형1 분류코드
+                        pdProd.prodOptType2Cd,              // 옵션유형2 분류코드
                         pdProd.regBy, pdProd.regDate, pdProd.updBy, pdProd.updDate,
                         // joined
-                        pdCategory.categoryNm.as("cateNm"),
-                        pdCategory.parentCategoryId.as("parentCategoryId"),
-                        syBrand.brandNm.as("brandNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        syVendor.vendorPhone.as("vendorTel"),
-                        syUser.userNm.as("mdUserNm"),
-                        cdPs.codeLabel.as("prodStatusCdNm"),
-                        cdPt.codeLabel.as("prodTypeCdNm"),
-                        cdSz.codeLabel.as("sizeInfoCdNm")
+                        pdCategory.categoryNm.as("cateNm"),                     // 카테고리명 (조인)
+                        pdCategory.parentCategoryId.as("parentCategoryId"),     // 상위 카테고리ID (조인)
+                        syBrand.brandNm.as("brandNm"),                          // 브랜드명 (조인)
+                        syVendor.vendorNm.as("vendorNm"),                       // 업체명 (조인)
+                        syVendor.vendorPhone.as("vendorTel"),                   // 업체 전화번호 (조인)
+                        syUser.userNm.as("mdUserNm"),                            // 담당MD명 (조인)
+                        cdPs.codeLabel.as("prodStatusCdNm"),                     // 상품상태 코드라벨 (조인)
+                        cdPt.codeLabel.as("prodTypeCdNm"),                       // 상품유형 코드라벨 (조인)
+                        cdSz.codeLabel.as("sizeInfoCdNm")                        // 사이즈 코드라벨 (조인)
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(pdProd)
                 .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId))

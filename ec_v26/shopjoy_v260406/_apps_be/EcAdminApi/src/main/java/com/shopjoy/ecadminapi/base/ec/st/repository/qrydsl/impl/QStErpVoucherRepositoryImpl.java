@@ -55,20 +55,38 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         Map.entry("vendorId", stErpVoucher.vendorId)
     );
 
-    /* ERP 전표 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
+     * ERP_VOUCHER_TYPE    {SALE: '매출전표', CANCEL: '취소전표', SETTLE: '정산전표', ADJ: '조정전표'}
+     * ERP_VOUCHER_STATUS  {DRAFT: '임시', SENT: '전송완료', FAILED: '전송실패', CONFIRMED: 'ERP확인'}
+     * (Entity 주석상 erpVoucherStatusCd 흐름: DRAFT→CONFIRMED→SENT→MATCHED/MISMATCH/ERROR — sy_code 실 데이터와 값 표기가 다름)
+     */
     private JPAQuery<StErpVoucherDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StErpVoucherDto.Item.class,
-                        stErpVoucher.erpVoucherId, stErpVoucher.siteId, stErpVoucher.vendorId, stErpVoucher.settleId, stErpVoucher.settleYm,
-                        stErpVoucher.erpVoucherTypeCd, stErpVoucher.erpVoucherStatusCd, stErpVoucher.erpVoucherStatusCdBefore,
-                        stErpVoucher.voucherDate, stErpVoucher.erpVoucherDesc,
-                        stErpVoucher.totalDebitAmt, stErpVoucher.totalCreditAmt,
-                        stErpVoucher.erpSendDate, stErpVoucher.erpVoucherNo, stErpVoucher.erpResMsg,
-                        stErpVoucher.regBy, stErpVoucher.regDate, stErpVoucher.updBy, stErpVoucher.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        cdEvt.codeLabel.as("erpVoucherTypeCdNm"),
-                        cdEvs.codeLabel.as("erpVoucherStatusCdNm")
+                        stErpVoucher.erpVoucherId,               // ERP전표ID (PK, YYMMDDhhmmss+rand4)
+                        stErpVoucher.siteId,                     // 사이트ID
+                        stErpVoucher.vendorId,                   // 업체ID
+                        stErpVoucher.settleId,                   // 정산ID (st_settle.settle_id)
+                        stErpVoucher.settleYm,                   // 정산년월 (YYYYMM)
+                        stErpVoucher.erpVoucherTypeCd,            // 전표유형 — ERP_VOUCHER_TYPE {SALE: '매출전표', CANCEL: '취소전표', SETTLE: '정산전표', ADJ: '조정전표'}
+                        stErpVoucher.erpVoucherStatusCd,          // 전표상태 — ERP_VOUCHER_STATUS {DRAFT: '임시', SENT: '전송완료', FAILED: '전송실패', CONFIRMED: 'ERP확인'}
+                        stErpVoucher.erpVoucherStatusCdBefore,    // 변경 전 전표상태
+                        stErpVoucher.voucherDate,                // 전표 기준일자
+                        stErpVoucher.erpVoucherDesc,              // 전표 적요
+                        stErpVoucher.totalDebitAmt,                // 차변 합계 (대변과 일치해야 전표 확정 가능)
+                        stErpVoucher.totalCreditAmt,               // 대변 합계
+                        stErpVoucher.erpSendDate,                  // ERP 전송일시
+                        stErpVoucher.erpVoucherNo,                 // ERP 채번 전표번호 (전송 후 ERP에서 수신)
+                        stErpVoucher.erpResMsg,                    // ERP 처리 응답 메시지
+                        stErpVoucher.regBy,                        // 등록자
+                        stErpVoucher.regDate,                      // 등록일시
+                        stErpVoucher.updBy,                        // 수정자
+                        stErpVoucher.updDate,                      // 수정일시
+                        sySite.siteNm.as("siteNm"),                 // 사이트명 (조인)
+                        syVendor.vendorNm.as("vendorNm"),           // 업체명 (조인)
+                        cdEvt.codeLabel.as("erpVoucherTypeCdNm"),   // 전표유형명 (sy_code 조인)
+                        cdEvs.codeLabel.as("erpVoucherStatusCdNm") // 전표상태명 (sy_code 조인)
                 ))
                 .from(stErpVoucher)
                 .leftJoin(sySite).on(sySite.siteId.eq(stErpVoucher.siteId))

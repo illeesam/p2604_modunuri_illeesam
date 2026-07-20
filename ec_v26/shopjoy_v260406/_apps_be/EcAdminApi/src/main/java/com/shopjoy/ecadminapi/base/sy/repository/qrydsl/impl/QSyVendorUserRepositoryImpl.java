@@ -60,17 +60,37 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         Map.entry("vendorUserStatusCd", syVendorUser.vendorUserStatusCd)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * POSITION               {CEO: '대표', DIRECTOR: '이사', MANAGER: '팀장', EMPLOYEE: '담당자'}
+     * VENDOR_MEMBER_STATUS   (sy_code 미등록 — 실제 코드값 미확인, 업체 담당자 재직상태 구분 코드로만 사용)
+     */
     /* 업체 사용자 baseSelColumnQuery */
     private JPAQuery<SyVendorUserDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorUserDto.Item.class,
-                        syVendorUser.vendorUserId, syVendorUser.siteId, syVendorUser.vendorId, syVendorUser.userId,
-                        syVendorUser.memberNm, syVendorUser.positionCd, syVendorUser.vendorUserDeptNm,
-                        syVendorUser.vendorUserPhone, syVendorUser.vendorUserMobile, syVendorUser.vendorUserEmail,
-                        syVendorUser.birthDate, syVendorUser.isMain, syVendorUser.authYn, syVendorUser.joinDate, syVendorUser.leaveDate,
-                        syVendorUser.vendorUserStatusCd, syVendorUser.vendorUserRemark,
-                        syVendorUser.regBy, syVendorUser.regDate, syVendorUser.updBy, syVendorUser.updDate,
-                        syVendor.vendorNm.as("vendorNm")
+                        syVendorUser.vendorUserId,                 // 판매/배송업체사용자ID (PK)
+                        syVendorUser.siteId,                       // 사이트ID
+                        syVendorUser.vendorId,                     // 판매/배송업체ID (sy_vendor.vendor_id)
+                        syVendorUser.userId,                       // 사용자ID (sy_user.user_id, NULL=비로그인)
+                        syVendorUser.memberNm,                     // 이름
+                        syVendorUser.positionCd,                   // 직위/직책 — POSITION {CEO: '대표', DIRECTOR: '이사', MANAGER: '팀장', EMPLOYEE: '담당자'}
+                        syVendorUser.vendorUserDeptNm,             // 부서/팀명
+                        syVendorUser.vendorUserPhone,              // 사무실 전화
+                        syVendorUser.vendorUserMobile,             // 휴대전화
+                        syVendorUser.vendorUserEmail,              // 이메일
+                        syVendorUser.birthDate,                    // 생년월일
+                        syVendorUser.isMain,                       // 대표 담당자 여부 (업체당 1명 권장)
+                        syVendorUser.authYn,                       // 업체 관리권한 여부 (Y=업체 정보 수정 가능)
+                        syVendorUser.joinDate,                     // 등록(합류) 일자
+                        syVendorUser.leaveDate,                    // 퇴직/탈퇴 일자
+                        syVendorUser.vendorUserStatusCd,           // 상태 — VENDOR_MEMBER_STATUS (sy_code 미등록)
+                        syVendorUser.vendorUserRemark,             // 비고
+                        syVendorUser.regBy,                        // 등록자
+                        syVendorUser.regDate,                      // 등록일시
+                        syVendorUser.updBy,                        // 수정자
+                        syVendorUser.updDate,                      // 수정일시
+                        syVendor.vendorNm.as("vendorNm")           // 업체명 (조인: sy_vendor)
                 ))
                 .from(syVendorUser)
                 .leftJoin(sySite).on(sySite.siteId.eq(syVendorUser.siteId))

@@ -42,11 +42,16 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         Map.entry("userId", cmBlogGood.userId)
     );
 
-    /** 기본 쿼리 빌드 */
+    /*
+     * baseSelColumnQuery — 코드성 필드 없음 (cm_blog_good 은 회원-블로그 좋아요 매핑 테이블)
+     */
     private JPAQuery<CmBlogGoodDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogGoodDto.Item.class,
-                        cmBlogGood.likeId, cmBlogGood.blogId, cmBlogGood.userId, cmBlogGood.regDate
+                        cmBlogGood.likeId,   // 좋아요ID (PK)
+                        cmBlogGood.blogId,   // 블로그ID (cm_blog.blog_id)
+                        cmBlogGood.userId,   // 사용자ID (mb_member.member_id)
+                        cmBlogGood.regDate   // 등록일시
                 ))
                 .from(cmBlogGood)
                 .leftJoin(cmBlog).on(cmBlog.blogId.eq(cmBlogGood.blogId));

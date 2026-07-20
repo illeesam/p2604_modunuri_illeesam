@@ -53,14 +53,28 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         Map.entry("useYn", pmPlan.useYn)
     );
 
-    /* 프로모션 플랜 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * PLAN_TYPE    {SEASON: '시즌', BRAND: '브랜드', THEME: '테마', COLLAB: '협업'}
+     * PLAN_STATUS  {DRAFT: '초안', ACTIVE: '공개', ENDED: '종료'}
+     */
     private JPAQuery<PmPlanDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmPlanDto.Item.class,
-                        pmPlan.planId, pmPlan.siteId, pmPlan.planNm, pmPlan.planTitle, pmPlan.planTypeCd,
-                        pmPlan.planDesc, pmPlan.thumbnailUrl, pmPlan.bannerUrl, pmPlan.startDate, pmPlan.endDate,
-                        pmPlan.planStatusCd, pmPlan.planStatusCdBefore, pmPlan.sortOrd, pmPlan.useYn,
-                        pmPlan.regBy, pmPlan.regDate, pmPlan.updBy, pmPlan.updDate
+                        pmPlan.planId,               // 기획전ID (PK, YYMMDDhhmmss+rand4)
+                        pmPlan.siteId,               // 사이트ID
+                        pmPlan.planNm,               // 기획전명 (내부용)
+                        pmPlan.planTitle,            // 기획전 타이틀 (노출용)
+                        pmPlan.planTypeCd,           // 유형 — PLAN_TYPE {SEASON: '시즌', BRAND: '브랜드', THEME: '테마', COLLAB: '협업'}
+                        pmPlan.planDesc,             // 기획전 설명
+                        pmPlan.thumbnailUrl,         // 썸네일 이미지 URL
+                        pmPlan.bannerUrl,            // 배너 이미지 URL
+                        pmPlan.startDate,            // 시작일시
+                        pmPlan.endDate,              // 종료일시
+                        pmPlan.planStatusCd,         // 상태 — PLAN_STATUS {DRAFT: '초안', ACTIVE: '공개', ENDED: '종료'}
+                        pmPlan.planStatusCdBefore,   // 변경 전 상태
+                        pmPlan.sortOrd,              // 정렬순서
+                        pmPlan.useYn, pmPlan.regBy, pmPlan.regDate, pmPlan.updBy, pmPlan.updDate
                 ))
                 .from(pmPlan)
                 .leftJoin(sySite).on(sySite.siteId.eq(pmPlan.siteId))

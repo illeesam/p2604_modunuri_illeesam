@@ -81,21 +81,37 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         Map.entry("vbankHolderNm", odPay.vbankHolderNm)
     );
 
-    /** 목록/페이지 공용 base query */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * PAY_STATUS  {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
+     * PAY_METHOD  {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+     * PAY_DIR     {DEPOSIT:입금, REFUND:환불}
+     * REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
+     */
     private JPAQuery<OdPayDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdPayDto.Item.class,
-                        odPay.payId, odPay.siteId, odPay.orderId,
-                        odPay.payStatusCd, odPay.payStatusCdBefore,
-                        odPay.payMethodCd, odPay.payDirCd, odPay.payChannelCd,
-                        odPay.payAmt, odPay.refundAmt, odPay.refundStatusCd, odPay.refundDate,
-                        odPay.pgTransactionId, odPay.payDate,
-                        odPay.cardNo, odPay.cardTypeCd,
-                        odPay.installmentMonth.as("cardInstallMonth"),
-                        odPay.vbankBankCode,
-                        odPay.vbankAccount.as("vbankAccountNo"),
-                        odPay.vbankHolderNm.as("vbankAccountNm"),
-                        odPay.vbankDepositDate.as("vbankExpireDate"),
+                        odPay.payId,                 // 결제ID (YYMMDDhhmmss+rand4)
+                        odPay.siteId,                 // 사이트ID (sy_site.site_id)
+                        odPay.orderId,                // 주문ID (od_order.)
+                        odPay.payStatusCd,            // 결제상태 — PAY_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
+                        odPay.payStatusCdBefore,      // 변경 전 결제상태 — PAY_STATUS (동일 코드그룹)
+                        odPay.payMethodCd,            // 결제수단 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+                        odPay.payDirCd,               // 입금/환불 방향 — PAY_DIR {DEPOSIT:입금, REFUND:환불}
+                        odPay.payChannelCd,           // 결제채널 — PAY_CHANNEL {CARD:신용카드, ACCOUNT:계좌이체, KAKAO:카카오페이, NAVER:네이버페이} (TOSS만 해당)
+                        odPay.payAmt,                 // 결제 금액
+                        odPay.refundAmt,              // 환불 금액
+                        odPay.refundStatusCd,         // 환불 상태 — REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
+                        odPay.refundDate,             // 환불 완료일시
+                        odPay.pgTransactionId,        // PG 거래ID
+                        odPay.payDate,                // 결제 완료일시
+                        odPay.cardNo,                 // 카드번호 (마스킹: ****-****-****-5678)
+                        odPay.cardTypeCd,             // 카드 타입 — CARD_TYPE {CREDIT:신용카드, DEBIT:체크카드, CHECK:직불카드}
+                        odPay.installmentMonth.as("cardInstallMonth"),  // 할부 개월수 (0=일시불)
+                        odPay.vbankBankCode,          // 가상계좌 은행코드 — BANK_CODE
+                        odPay.vbankAccount.as("vbankAccountNo"),      // 가상계좌 계좌번호
+                        odPay.vbankHolderNm.as("vbankAccountNm"),     // 가상계좌 예금주명
+                        odPay.vbankDepositDate.as("vbankExpireDate"), // 가상계좌 입금확인일시
                         odPay.memo, odPay.regBy, odPay.regDate, odPay.updBy, odPay.updDate,
                         odOrder.memberNm.as("memberNm"),
                         odOrder.orderDate.as("orderDate"),
@@ -114,22 +130,36 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odPay.refundStatusCd)));
     }
 
+    /*
+     * selectById — 코드성 필드는 baseListQuery 와 동일 코드그룹
+     * + 상세조회 전용 추가 조인: payChannelCd→PAY_CHANNEL, vbankBankCode→BANK_CODE, cardTypeCd→CARD_TYPE
+     */
     /* 결제 키조회 */
     @Override
     public Optional<OdPayDto.Item> selectById(String payId) {
         OdPayDto.Item dto = queryFactory
                 .select(Projections.bean(OdPayDto.Item.class,
-                        odPay.payId, odPay.siteId, odPay.orderId,
-                        odPay.payStatusCd, odPay.payStatusCdBefore,
-                        odPay.payMethodCd, odPay.payDirCd, odPay.payChannelCd,
-                        odPay.payAmt, odPay.refundAmt, odPay.refundStatusCd, odPay.refundDate,
-                        odPay.pgTransactionId, odPay.payDate,
-                        odPay.cardNo, odPay.cardTypeCd,
-                        odPay.installmentMonth.as("cardInstallMonth"),
-                        odPay.vbankBankCode,
-                        odPay.vbankAccount.as("vbankAccountNo"),
-                        odPay.vbankHolderNm.as("vbankAccountNm"),
-                        odPay.vbankDepositDate.as("vbankExpireDate"),
+                        odPay.payId,                  // 결제ID (YYMMDDhhmmss+rand4)
+                        odPay.siteId,                  // 사이트ID (sy_site.site_id)
+                        odPay.orderId,                 // 주문ID (od_order.)
+                        odPay.payStatusCd,             // 결제상태 — PAY_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
+                        odPay.payStatusCdBefore,       // 변경 전 결제상태 — PAY_STATUS (동일 코드그룹)
+                        odPay.payMethodCd,             // 결제수단 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
+                        odPay.payDirCd,                // 입금/환불 방향 — PAY_DIR {DEPOSIT:입금, REFUND:환불}
+                        odPay.payChannelCd,            // 결제채널 — PAY_CHANNEL {CARD:신용카드, ACCOUNT:계좌이체, KAKAO:카카오페이, NAVER:네이버페이}
+                        odPay.payAmt,                  // 결제 금액
+                        odPay.refundAmt,               // 환불 금액
+                        odPay.refundStatusCd,          // 환불 상태 — REFUND_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패}
+                        odPay.refundDate,              // 환불 완료일시
+                        odPay.pgTransactionId,         // PG 거래ID
+                        odPay.payDate,                 // 결제 완료일시
+                        odPay.cardNo,                  // 카드번호 (마스킹)
+                        odPay.cardTypeCd,              // 카드 타입 — CARD_TYPE {CREDIT:신용카드, DEBIT:체크카드, CHECK:직불카드}
+                        odPay.installmentMonth.as("cardInstallMonth"),  // 할부 개월수 (0=일시불)
+                        odPay.vbankBankCode,           // 가상계좌 은행코드 — BANK_CODE
+                        odPay.vbankAccount.as("vbankAccountNo"),      // 가상계좌 계좌번호
+                        odPay.vbankHolderNm.as("vbankAccountNm"),     // 가상계좌 예금주명
+                        odPay.vbankDepositDate.as("vbankExpireDate"), // 가상계좌 입금확인일시
                         odPay.memo, odPay.regBy, odPay.regDate, odPay.updBy, odPay.updDate,
                         // joined
                         odOrder.memberNm.as("memberNm"),

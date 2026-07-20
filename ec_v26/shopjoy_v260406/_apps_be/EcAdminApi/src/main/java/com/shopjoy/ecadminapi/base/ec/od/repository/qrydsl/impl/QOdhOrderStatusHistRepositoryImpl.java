@@ -40,13 +40,22 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         Map.entry("statusReason", odhOrderStatusHist.statusReason)
     );
 
-    /* 주문 상태 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * ORDER_STATUS  {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소}
+     */
     private JPAQuery<OdhOrderStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderStatusHistDto.Item.class,
-                        odhOrderStatusHist.orderStatusHistId, odhOrderStatusHist.siteId, odhOrderStatusHist.orderId,
-                        odhOrderStatusHist.orderStatusCdBefore, odhOrderStatusHist.orderStatusCd, odhOrderStatusHist.statusReason,
-                        odhOrderStatusHist.chgUserId, odhOrderStatusHist.chgDate, odhOrderStatusHist.memo,
+                        odhOrderStatusHist.orderStatusHistId,       // 주문상태이력ID (YYMMDDhhmmss+rand4)
+                        odhOrderStatusHist.siteId,                  // 사이트ID
+                        odhOrderStatusHist.orderId,                 // 주문ID (od_order.order_id)
+                        odhOrderStatusHist.orderStatusCdBefore,     // 변경 전 주문상태 — ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소}
+                        odhOrderStatusHist.orderStatusCd,           // 변경 후 주문상태 — ORDER_STATUS (동일 코드그룹)
+                        odhOrderStatusHist.statusReason,            // 상태 변경 사유
+                        odhOrderStatusHist.chgUserId,                // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+                        odhOrderStatusHist.chgDate,                  // 변경 일시
+                        odhOrderStatusHist.memo,                     // 메모
                         odhOrderStatusHist.regBy, odhOrderStatusHist.regDate, odhOrderStatusHist.updBy, odhOrderStatusHist.updDate))
                 .from(odhOrderStatusHist);
     }

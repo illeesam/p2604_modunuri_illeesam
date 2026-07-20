@@ -45,12 +45,21 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         Map.entry("thumbUrl", pdReviewAttach.thumbUrl)
     );
 
+    /*
+     * baseQuerySingle / baseQueryWithJoin — 코드성 필드 예시 코드값 (sy_code 등록 기준)
+     * MEDIA_TYPE_CD  {IMAGE: '이미지', VIDEO: '동영상', DOCUMENT: '문서'}
+     */
     /** selectById 용 base query — pd_review JOIN 없음 */
     private JPAQuery<PdReviewAttachDto.Item> baseQuerySingle() {
         return queryFactory
                 .select(Projections.bean(PdReviewAttachDto.Item.class,
-                        pdReviewAttach.reviewAttachId, pdReviewAttach.siteId, pdReviewAttach.reviewId, pdReviewAttach.attachId,
-                        pdReviewAttach.mediaTypeCd, pdReviewAttach.thumbUrl, pdReviewAttach.sortOrd,
+                        pdReviewAttach.reviewAttachId,   // 미디어ID (PK)
+                        pdReviewAttach.siteId,             // 사이트ID
+                        pdReviewAttach.reviewId,           // 리뷰ID (pd_review.review_id)
+                        pdReviewAttach.attachId,           // 첨부파일ID (sy_attach.attach_id) — url·파일명 여기서 조회
+                        pdReviewAttach.mediaTypeCd,         // 미디어유형 — {IMAGE: '이미지', VIDEO: '동영상', DOCUMENT: '문서'}
+                        pdReviewAttach.thumbUrl,           // 동영상 썸네일URL (이미지는 sy_attach.url 사용)
+                        pdReviewAttach.sortOrd,            // 정렬순서
                         pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
                 ))
                 .from(pdReviewAttach);
@@ -135,8 +144,13 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     private JPAQuery<PdReviewAttachDto.Item> baseQueryWithJoin() {
         return queryFactory
                 .select(Projections.bean(PdReviewAttachDto.Item.class,
-                        pdReviewAttach.reviewAttachId, pdReviewAttach.siteId, pdReviewAttach.reviewId, pdReviewAttach.attachId,
-                        pdReviewAttach.mediaTypeCd, pdReviewAttach.thumbUrl, pdReviewAttach.sortOrd,
+                        pdReviewAttach.reviewAttachId,   // 미디어ID (PK)
+                        pdReviewAttach.siteId,             // 사이트ID
+                        pdReviewAttach.reviewId,           // 리뷰ID (pd_review.review_id)
+                        pdReviewAttach.attachId,           // 첨부파일ID (sy_attach.attach_id)
+                        pdReviewAttach.mediaTypeCd,         // 미디어유형 — {IMAGE: '이미지', VIDEO: '동영상', DOCUMENT: '문서'}
+                        pdReviewAttach.thumbUrl,           // 동영상 썸네일URL
+                        pdReviewAttach.sortOrd,            // 정렬순서
                         pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
                 ))
                 .from(pdReviewAttach)

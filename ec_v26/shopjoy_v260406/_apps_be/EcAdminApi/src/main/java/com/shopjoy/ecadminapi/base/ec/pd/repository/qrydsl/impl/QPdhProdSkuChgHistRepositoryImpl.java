@@ -45,20 +45,24 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         Map.entry("skuId", pdhProdSkuChgHist.prodSkuId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 SKU_CHG_TYPE 기준. 실 데이터 미등록 시 Entity 주석 참고)
+     * CHG_TYPE_CD  {STATUS: 'SKU 상태변경'} — 등록된 세부 코드값은 실 운영 sy_code 확인 필요
+     */
     /* 상품 SKU 변경 이력 baseSelColumnQuery */
     private JPAQuery<PdhProdSkuChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdSkuChgHistDto.Item.class,
-                        pdhProdSkuChgHist.histId,
-                        pdhProdSkuChgHist.siteId,
-                        pdhProdSkuChgHist.prodSkuId,
-                        pdhProdSkuChgHist.prodId,
-                        pdhProdSkuChgHist.chgTypeCd,
-                        pdhProdSkuChgHist.beforeVal,
-                        pdhProdSkuChgHist.afterVal,
-                        pdhProdSkuChgHist.chgReason,
-                        pdhProdSkuChgHist.chgBy,
-                        pdhProdSkuChgHist.chgDate,
+                        pdhProdSkuChgHist.histId,        // 이력ID (PK, YYMMDDhhmmss+rand4)
+                        pdhProdSkuChgHist.siteId,         // 사이트ID (sy_site.site_id)
+                        pdhProdSkuChgHist.prodSkuId,      // SKU ID (pd_prod_sku.prod_sku_id)
+                        pdhProdSkuChgHist.prodId,         // 상품ID (pd_prod.prod_id)
+                        pdhProdSkuChgHist.chgTypeCd,       // 변경유형 (코드: SKU_CHG_TYPE)
+                        pdhProdSkuChgHist.beforeVal,      // 변경 전 값
+                        pdhProdSkuChgHist.afterVal,       // 변경 후 값
+                        pdhProdSkuChgHist.chgReason,      // 변경사유
+                        pdhProdSkuChgHist.chgBy,          // 처리자 (sy_user.user_id)
+                        pdhProdSkuChgHist.chgDate,        // 처리일시
                         pdhProdSkuChgHist.regBy,
                         pdhProdSkuChgHist.regDate
                 ))

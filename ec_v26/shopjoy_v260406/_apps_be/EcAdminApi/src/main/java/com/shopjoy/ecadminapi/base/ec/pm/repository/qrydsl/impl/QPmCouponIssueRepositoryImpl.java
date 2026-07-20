@@ -50,24 +50,34 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         Map.entry("useYn", pmCouponIssue.useYn)
     );
 
-    /* 쿠폰 발행 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * COUPON_TYPE  {PROD_DISCNT: '상품할인', ORDER_DISCNT: '주문할인', SHIP_DISCNT: '배송비할인', SHIP_FREE: '무료배송', JOIN_GIFT: '가입축하', VIP: 'VIP전용', CLAIM_COMP: '클레임보상'}
+     * useYn        {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<PmCouponIssueDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmCouponIssueDto.Item.class,
-                        pmCouponIssue.issueId, pmCouponIssue.siteId, pmCouponIssue.couponId, pmCouponIssue.memberId,
-                        pmCouponIssue.issueDate, pmCouponIssue.useYn, pmCouponIssue.useDate, pmCouponIssue.orderId,
+                        pmCouponIssue.issueId,     // 발급ID (PK)
+                        pmCouponIssue.siteId,      // 사이트ID (sy_site.site_id)
+                        pmCouponIssue.couponId,    // 쿠폰ID (pm_coupon.coupon_id)
+                        pmCouponIssue.memberId,    // 회원ID
+                        pmCouponIssue.issueDate,   // 발급일시
+                        pmCouponIssue.useYn,       // 사용여부 — Y: '사용' / N: '미사용'
+                        pmCouponIssue.useDate,     // 사용일시
+                        pmCouponIssue.orderId,     // 사용주문ID
                         pmCouponIssue.regBy, pmCouponIssue.regDate, pmCouponIssue.updBy, pmCouponIssue.updDate,
-                        pmCoupon.couponNm.as("couponNm"),
-                        pmCoupon.couponCd.as("couponCd"),
-                        pmCoupon.couponTypeCd.as("couponTypeCd"),
-                        pmCoupon.discountRate.as("discountRate"),
-                        pmCoupon.discountAmt.as("discountAmt"),
-                        pmCoupon.validFrom.as("validFrom"),
-                        pmCoupon.validTo.as("validTo"),
-                        mbMember.memberNm.as("memberNm"),
-                        mbMember.loginId.as("memberEmail"),
-                        mbMember.memberPhone.as("memberPhone"),
-                        cdCt.codeLabel.as("couponTypeCdNm")
+                        pmCoupon.couponNm.as("couponNm"),           // 쿠폰명 (조인)
+                        pmCoupon.couponCd.as("couponCd"),           // 쿠폰코드 (조인)
+                        pmCoupon.couponTypeCd.as("couponTypeCd"),   // 쿠폰유형 (조인) — COUPON_TYPE {PROD_DISCNT, ORDER_DISCNT, SHIP_DISCNT, SHIP_FREE, JOIN_GIFT, VIP, CLAIM_COMP}
+                        pmCoupon.discountRate.as("discountRate"),   // 할인률 (%) (조인)
+                        pmCoupon.discountAmt.as("discountAmt"),     // 할인금액 (조인)
+                        pmCoupon.validFrom.as("validFrom"),         // 유효기간 시작 (조인)
+                        pmCoupon.validTo.as("validTo"),             // 유효기간 종료 (조인)
+                        mbMember.memberNm.as("memberNm"),           // 회원명 (조인)
+                        mbMember.loginId.as("memberEmail"),         // 회원 로그인ID/이메일 (조인)
+                        mbMember.memberPhone.as("memberPhone"),     // 회원 전화번호 (조인)
+                        cdCt.codeLabel.as("couponTypeCdNm")         // 쿠폰유형 코드라벨 (조인)
                 ))
                 .from(pmCouponIssue)
                 .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(pmCouponIssue.couponId))

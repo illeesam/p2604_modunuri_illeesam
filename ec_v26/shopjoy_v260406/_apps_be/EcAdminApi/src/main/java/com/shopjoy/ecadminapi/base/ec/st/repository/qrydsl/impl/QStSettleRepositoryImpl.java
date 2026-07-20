@@ -50,20 +50,40 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         Map.entry("vendorId", stSettle.vendorId)
     );
 
-    /* 정산 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
+     * SETTLE_STATUS  {OPEN: '진행중', CLOSED: '마감완료', CANCELLED: '마감취소'}
+     * (Entity/DDL 주석상 settleStatusCd 흐름: DRAFT/CONFIRMED/CLOSED/PAID — sy_code 실 데이터와 값 표기가 다름)
+     */
     private JPAQuery<StSettleDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleDto.Item.class,
-                        stSettle.settleId, stSettle.siteId, stSettle.vendorId, stSettle.settleYm,
-                        stSettle.settleStartDate, stSettle.settleEndDate,
-                        stSettle.totalOrderAmt, stSettle.totalReturnAmt, stSettle.totalClaimCnt, stSettle.totalDiscntAmt,
-                        stSettle.commissionRate, stSettle.commissionAmt, stSettle.settleAmt,
-                        stSettle.adjAmt, stSettle.etcAdjAmt, stSettle.finalSettleAmt,
-                        stSettle.settleStatusCd, stSettle.settleStatusCdBefore, stSettle.settleMemo,
-                        stSettle.regBy, stSettle.regDate, stSettle.updBy, stSettle.updDate,
-                        syVendor.vendorNm.as("vendorNm"),
-                        sySite.siteNm.as("siteNm"),
-                        cdSs.codeLabel.as("settleStatusCdNm")
+                        stSettle.settleId,                 // 정산ID (PK, YYMMDDhhmmss+rand4)
+                        stSettle.siteId,                   // 사이트ID
+                        stSettle.vendorId,                  // 업체ID (sy_vendor.vendor_id)
+                        stSettle.settleYm,                  // 정산년월 (YYYYMM)
+                        stSettle.settleStartDate,           // 정산 기준 시작일
+                        stSettle.settleEndDate,             // 정산 기준 종료일
+                        stSettle.totalOrderAmt,             // 총 주문금액 (당월 신규 주문 귀속)
+                        stSettle.totalReturnAmt,            // 총 환불금액 (환불 확정월 귀속 — 타월 주문 환불 포함)
+                        stSettle.totalClaimCnt,             // 환불 건수 (st_settle_raw.raw_type_cd=CLAIM 집계)
+                        stSettle.totalDiscntAmt,            // 총 할인금액
+                        stSettle.commissionRate,            // 적용 수수료율 (%)
+                        stSettle.commissionAmt,             // 수수료금액
+                        stSettle.settleAmt,                 // 기본 정산금액
+                        stSettle.adjAmt,                    // 정산조정 합계
+                        stSettle.etcAdjAmt,                 // 기타조정 합계
+                        stSettle.finalSettleAmt,            // 최종 정산금액
+                        stSettle.settleStatusCd,            // 상태 — SETTLE_STATUS {OPEN: '진행중', CLOSED: '마감완료', CANCELLED: '마감취소'}
+                        stSettle.settleStatusCdBefore,      // 변경 전 상태
+                        stSettle.settleMemo,                // 정산 메모
+                        stSettle.regBy,                     // 등록자
+                        stSettle.regDate,                   // 등록일시
+                        stSettle.updBy,                     // 수정자
+                        stSettle.updDate,                   // 수정일시
+                        syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
+                        sySite.siteNm.as("siteNm"),                     // 사이트명 (조인)
+                        cdSs.codeLabel.as("settleStatusCdNm")           // 상태명 (sy_code 조인)
                 ))
                 .from(stSettle)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettle.vendorId))

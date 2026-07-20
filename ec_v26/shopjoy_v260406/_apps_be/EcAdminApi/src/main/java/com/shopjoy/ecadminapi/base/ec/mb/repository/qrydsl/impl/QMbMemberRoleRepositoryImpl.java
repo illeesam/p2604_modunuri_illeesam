@@ -48,16 +48,25 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         Map.entry("siteId", mbMemberRole.siteId)
     );
 
-    /* 회원 역할 연결 baseSelColumnQuery */
+    /* 회원 역할 연결 baseSelColumnQuery — 코드성 필드 없음 (역할/일자 위주) */
     private JPAQuery<MbMemberRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberRoleDto.Item.class,
-                        mbMemberRole.memberRoleId, mbMemberRole.memberId, mbMemberRole.roleId, mbMemberRole.grantUserId,
-                        mbMemberRole.grantDate, mbMemberRole.validFrom, mbMemberRole.validTo, mbMemberRole.memberRoleRemark,
-                        mbMemberRole.regBy, mbMemberRole.regDate, mbMemberRole.updBy, mbMemberRole.updDate,
-                        mbMember.memberNm.as("memberNm"),
-                        syRole.roleNm.as("roleNm"),
-                        gu.userNm.as("grantUserNm")
+                        mbMemberRole.memberRoleId,      // PK
+                        mbMemberRole.memberId,          // 회원 ID (mb_member.member_id)
+                        mbMemberRole.roleId,            // 역할 ID (sy_role.role_id)
+                        mbMemberRole.grantUserId,       // 권한 부여 관리자 ID
+                        mbMemberRole.grantDate,         // 권한 부여 일시
+                        mbMemberRole.validFrom,         // 유효 시작일
+                        mbMemberRole.validTo,           // 유효 종료일
+                        mbMemberRole.memberRoleRemark,  // 비고
+                        mbMemberRole.regBy,             // 등록자
+                        mbMemberRole.regDate,           // 등록일
+                        mbMemberRole.updBy,             // 수정자
+                        mbMemberRole.updDate,           // 수정일
+                        mbMember.memberNm.as("memberNm"),     // 회원명 (mb_member 조인)
+                        syRole.roleNm.as("roleNm"),           // 역할명 (sy_role 조인)
+                        gu.userNm.as("grantUserNm")           // 권한 부여 관리자명 (sy_user 조인, 별칭 gu)
                 ))
                 .from(mbMemberRole)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberRole.memberId))

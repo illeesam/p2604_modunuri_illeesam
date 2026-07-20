@@ -50,18 +50,35 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         Map.entry("useYn", pmDiscnt.useYn)
     );
 
-    /* 할인 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * DISCNT_TYPE      {PROD: '상품할인', ORDER: '주문할인', SHIP: '배송비할인', SHIP_FREE: '무료배송'}
+     * DISCNT_TARGET    {ALL: '전체', CATEGORY: '카테고리', PRODUCT: '상품', MEMBER_GRADE: '회원등급'}
+     * discntStatusCd   {ACTIVE: '활성', INACTIVE: '비활성', EXPIRED: '만료'} (코드: DISCNT_STATUS)
+     */
     private JPAQuery<PmDiscntDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmDiscntDto.Item.class,
-                        pmDiscnt.discntId, pmDiscnt.siteId, pmDiscnt.discntNm,
-                        pmDiscnt.discntTypeCd, pmDiscnt.discntTargetCd, pmDiscnt.discntValue,
-                        pmDiscnt.minOrderAmt, pmDiscnt.minOrderQty, pmDiscnt.maxDiscntAmt,
-                        pmDiscnt.startDate, pmDiscnt.endDate,
-                        pmDiscnt.discntStatusCd, pmDiscnt.discntStatusCdBefore,
-                        pmDiscnt.discntDesc, pmDiscnt.memGradeCd,
-                        pmDiscnt.selfCdivRate, pmDiscnt.sellerCdivRate,
-                        pmDiscnt.dvcPcYn, pmDiscnt.dvcMwebYn, pmDiscnt.dvcMappYn,
+                        pmDiscnt.discntId,               // 할인ID (PK, YYMMDDhhmmss+rand4)
+                        pmDiscnt.siteId,                 // 사이트ID (sy_site.site_id)
+                        pmDiscnt.discntNm,                // 할인명
+                        pmDiscnt.discntTypeCd,           // 할인유형 — DISCNT_TYPE {PROD, ORDER, SHIP, SHIP_FREE}
+                        pmDiscnt.discntTargetCd,         // 할인대상 — DISCNT_TARGET {ALL, CATEGORY, PRODUCT, MEMBER_GRADE}
+                        pmDiscnt.discntValue,            // 할인값 (정률이면 %, 정액이면 원)
+                        pmDiscnt.minOrderAmt,             // 최소주문금액
+                        pmDiscnt.minOrderQty,             // 최소주문수량 (NULL=제한없음)
+                        pmDiscnt.maxDiscntAmt,            // 최대할인한도 (NULL=무제한)
+                        pmDiscnt.startDate,               // 할인 시작일시
+                        pmDiscnt.endDate,                 // 할인 종료일시
+                        pmDiscnt.discntStatusCd,         // 상태 — ACTIVE: '활성' / INACTIVE: '비활성' / EXPIRED: '만료' (코드: DISCNT_STATUS)
+                        pmDiscnt.discntStatusCdBefore,   // 변경 전 상태
+                        pmDiscnt.discntDesc,              // 할인 설명
+                        pmDiscnt.memGradeCd,              // 적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)
+                        pmDiscnt.selfCdivRate,            // 자사(사이트) 분담율 (%) — 기본 100%
+                        pmDiscnt.sellerCdivRate,          // 판매자(업체) 분담율 (%) — 기본 0%
+                        pmDiscnt.dvcPcYn,                 // PC 채널 적용여부 Y/N
+                        pmDiscnt.dvcMwebYn,               // 모바일WEB 적용여부 Y/N
+                        pmDiscnt.dvcMappYn,               // 모바일APP 적용여부 Y/N
                         pmDiscnt.useYn, pmDiscnt.regBy, pmDiscnt.regDate, pmDiscnt.updBy, pmDiscnt.updDate
                 ))
                 .from(pmDiscnt);

@@ -48,21 +48,25 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         Map.entry("siteId", pdProdImg.siteId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * IS_THUMB  {Y: '대표이미지', N: '일반이미지'}
+     */
     private JPAQuery<PdProdImgDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdImgDto.Item.class,
-                        pdProdImg.prodImgId,
-                        pdProdImg.siteId,
-                        pdProdImg.prodId,
-                        pdProdImg.prodOptId1,
-                        pdProdImg.prodOptId2,
-                        pdProdImg.attachId,
-                        pdProdImg.cdnHost,
-                        pdProdImg.cdnImgUrl,
-                        pdProdImg.cdnThumbUrl,
-                        pdProdImg.imgAltText,
-                        pdProdImg.sortOrd,
-                        pdProdImg.isThumb,
+                        pdProdImg.prodImgId,     // 상품이미지ID (PK)
+                        pdProdImg.siteId,         // 사이트ID (sy_site.site_id)
+                        pdProdImg.prodId,         // 상품ID (pd_prod.prod_id)
+                        pdProdImg.prodOptId1,     // 옵션1 값ID (색상 등, NULL이면 공통 이미지)
+                        pdProdImg.prodOptId2,     // 옵션2 값ID (사이즈 등, NULL이면 색상 공통)
+                        pdProdImg.attachId,        // 첨부파일ID (sy_attach.attach_id, 원본 파일 보관용)
+                        pdProdImg.cdnHost,        // CDN 호스트명
+                        pdProdImg.cdnImgUrl,      // CDN 원본 이미지 URL (상세 페이지용)
+                        pdProdImg.cdnThumbUrl,     // CDN 썸네일 URL (목록/검색/카테고리용)
+                        pdProdImg.imgAltText,      // 이미지 대체텍스트 (alt 속성, SEO/접근성)
+                        pdProdImg.sortOrd,        // 정렬순서
+                        pdProdImg.isThumb,          // 대표이미지여부 — {Y: '대표이미지', N: '일반이미지'}
                         pdProdImg.regBy,
                         pdProdImg.regDate,
                         pdProdImg.updBy,

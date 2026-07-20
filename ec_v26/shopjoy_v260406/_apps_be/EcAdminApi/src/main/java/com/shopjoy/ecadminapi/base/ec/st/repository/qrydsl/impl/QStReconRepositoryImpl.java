@@ -59,21 +59,41 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         Map.entry("vendorId", stRecon.vendorId)
     );
 
-    /* 정산 대사(Reconciliation) baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
+     * RECON_TYPE    {ORDER: '주문대사', SETTLE: '정산대사'}
+     * RECON_STATUS  {MATCHED: '일치', DIFF: '차이', MANUAL: '수동처리'}
+     * (Entity 주석상 reconStatusCd 흐름: MATCHED/MISMATCH/RESOLVED — sy_code 실 데이터와 값 표기가 다름)
+     */
     private JPAQuery<StReconDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StReconDto.Item.class,
-                        stRecon.reconId, stRecon.siteId, stRecon.vendorId, stRecon.reconTypeCd,
-                        stRecon.reconStatusCd, stRecon.reconStatusCdBefore, stRecon.settleId, stRecon.settleRawId,
-                        stRecon.refId, stRecon.refNo, stRecon.settlePeriod,
-                        stRecon.expectedAmt, stRecon.actualAmt, stRecon.diffAmt, stRecon.reconNote,
-                        stRecon.resolvedBy, stRecon.resolvedDate,
-                        stRecon.regBy, stRecon.regDate, stRecon.updBy, stRecon.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        stSettleRaw.prodNm.as("settleRawNm"),
-                        cdRt.codeLabel.as("reconTypeCdNm"),
-                        cdRs.codeLabel.as("reconStatusCdNm")
+                        stRecon.reconId,                 // 대사ID (PK, YYMMDDhhmmss+rand4)
+                        stRecon.siteId,                  // 사이트ID
+                        stRecon.vendorId,                 // 업체ID
+                        stRecon.reconTypeCd,               // 대사유형 — RECON_TYPE {ORDER: '주문대사', SETTLE: '정산대사'}
+                        stRecon.reconStatusCd,             // 대사상태 — RECON_STATUS {MATCHED: '일치', DIFF: '차이', MANUAL: '수동처리'}
+                        stRecon.reconStatusCdBefore,       // 변경 전 대사상태
+                        stRecon.settleId,                  // 정산ID (st_settle.settle_id)
+                        stRecon.settleRawId,               // 수집원장ID (st_settle_raw.settle_raw_id)
+                        stRecon.refId,                     // 참조ID (order_id / pay_id / claim_id 등)
+                        stRecon.refNo,                     // 참조번호 스냅샷
+                        stRecon.settlePeriod,              // 정산기간 (YYYY-MM)
+                        stRecon.expectedAmt,               // 기대금액 (정산 계산값)
+                        stRecon.actualAmt,                 // 실제금액 (외부/결제 확인값)
+                        stRecon.diffAmt,                   // 차이금액 (expected_amt - actual_amt)
+                        stRecon.reconNote,                 // 대사 메모
+                        stRecon.resolvedBy,                // 해소 처리자 (sy_user.user_id)
+                        stRecon.resolvedDate,               // 해소 일시
+                        stRecon.regBy,                      // 등록자
+                        stRecon.regDate,                    // 등록일시
+                        stRecon.updBy,                      // 수정자
+                        stRecon.updDate,                    // 수정일시
+                        sySite.siteNm.as("siteNm"),                   // 사이트명 (조인)
+                        syVendor.vendorNm.as("vendorNm"),             // 업체명 (조인)
+                        stSettleRaw.prodNm.as("settleRawNm"),         // 수집원장 상품명 스냅샷 (조인)
+                        cdRt.codeLabel.as("reconTypeCdNm"),           // 대사유형명 (sy_code 조인)
+                        cdRs.codeLabel.as("reconStatusCdNm")         // 대사상태명 (sy_code 조인)
                 ))
                 .from(stRecon)
                 .leftJoin(sySite).on(sySite.siteId.eq(stRecon.siteId))

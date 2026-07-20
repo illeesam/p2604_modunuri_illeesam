@@ -50,16 +50,28 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         Map.entry("siteId", pdCategory.siteId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CATEGORY_STATUS_CD (코드: USE_YN)  {Y: '사용', N: '미사용'}
+     * CATEGORY_DEPTH                     {1: '대분류', 2: '중분류', 3: '소분류'}
+     */
     private JPAQuery<PdCategoryDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdCategoryDto.Item.class,
-                        pdCategory.categoryId, pdCategory.siteId, pdCategory.parentCategoryId, pdCategory.categoryNm,
-                        pdCategory.categoryDepth, pdCategory.sortOrd, pdCategory.categoryStatusCd, pdCategory.categoryStatusCdBefore,
-                        pdCategory.imgUrl, pdCategory.categoryDesc,
+                        pdCategory.categoryId,                 // 카테고리ID (PK, YYMMDDhhmmss+rand4)
+                        pdCategory.siteId,                     // 사이트ID (sy_site.site_id)
+                        pdCategory.parentCategoryId,           // 상위 카테고리ID
+                        pdCategory.categoryNm,                 // 카테고리명
+                        pdCategory.categoryDepth,               // 깊이 — {1: '대분류', 2: '중분류', 3: '소분류'}
+                        pdCategory.sortOrd,                     // 정렬순서
+                        pdCategory.categoryStatusCd,             // 상태 — USE_YN {Y: '사용', N: '미사용'}
+                        pdCategory.categoryStatusCdBefore,       // 변경 전 카테고리상태 — USE_YN {Y: '사용', N: '미사용'}
+                        pdCategory.imgUrl,                     // 이미지URL
+                        pdCategory.categoryDesc,                // 설명
                         pdCategory.regBy, pdCategory.regDate, pdCategory.updBy, pdCategory.updDate,
-                        p1.categoryNm.as("parentCategoryNm"),
-                        p2.categoryNm.as("grandParentCategoryNm"),
-                        cdCs.codeLabel.as("categoryStatusCdNm")
+                        p1.categoryNm.as("parentCategoryNm"),           // 상위 카테고리명 (조인)
+                        p2.categoryNm.as("grandParentCategoryNm"),      // 최상위(조부모) 카테고리명 (조인)
+                        cdCs.codeLabel.as("categoryStatusCdNm")         // 카테고리상태 코드라벨 (조인, sy_code.USE_YN)
                 ))
                 .from(pdCategory)
                 .leftJoin(p1).on(p1.categoryId.eq(pdCategory.parentCategoryId))

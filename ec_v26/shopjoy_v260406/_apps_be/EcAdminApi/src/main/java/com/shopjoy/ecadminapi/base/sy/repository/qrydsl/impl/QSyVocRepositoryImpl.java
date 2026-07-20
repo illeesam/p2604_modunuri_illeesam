@@ -41,13 +41,27 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         Map.entry("vocNm", syVoc.vocNm)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * VOC_MASTER  {DELIVERY: '배송', PRODUCT: '상품', PAYMENT: '결제', CLAIM: '클레임', SERVICE: '서비스', ETC: '기타'}
+     * VOC_DETAIL  {DELIVERY_DELAY: '배송지연', PRODUCT_DEFECT: '상품불량', PAYMENT_FAIL: '결제실패', CLAIM_RETURN: '반품처리', ETC: '기타' 등}
+     */
     /* 고객의 소리(VOC) baseSelColumnQuery */
     private JPAQuery<SyVocDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVocDto.Item.class,
-                        syVoc.vocId, syVoc.siteId, syVoc.vocMasterCd, syVoc.vocDetailCd, syVoc.vocNm, syVoc.vocContent, syVoc.useYn,
-                        syVoc.regBy, syVoc.regDate, syVoc.updBy, syVoc.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syVoc.vocId,           // VOC분류ID (PK, YYMMDDhhmmss+rand4)
+                        syVoc.siteId,          // 사이트ID (sy_site.site_id)
+                        syVoc.vocMasterCd,     // VOC마스터코드 — VOC_MASTER {DELIVERY: '배송', PRODUCT: '상품', PAYMENT: '결제', CLAIM: '클레임', SERVICE: '서비스', ETC: '기타'}
+                        syVoc.vocDetailCd,     // VOC세부코드 — VOC_DETAIL {DELIVERY_DELAY: '배송지연', PRODUCT_DEFECT: '상품불량', PAYMENT_FAIL: '결제실패', CLAIM_RETURN: '반품처리', ETC: '기타' 등}
+                        syVoc.vocNm,           // VOC항목명
+                        syVoc.vocContent,      // VOC항목설명
+                        syVoc.useYn,           // 사용여부 Y/N
+                        syVoc.regBy,           // 등록자
+                        syVoc.regDate,         // 등록일시
+                        syVoc.updBy,           // 수정자
+                        syVoc.updDate,         // 수정일시
+                        sySite.siteNm.as("siteNm")  // 사이트명 (조인: sy_site)
                 ))
                 .from(syVoc)
                 .leftJoin(sySite).on(sySite.siteId.eq(syVoc.siteId));

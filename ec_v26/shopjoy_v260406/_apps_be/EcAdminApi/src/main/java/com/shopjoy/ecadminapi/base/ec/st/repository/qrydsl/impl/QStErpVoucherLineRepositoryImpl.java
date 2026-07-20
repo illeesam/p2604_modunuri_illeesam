@@ -47,15 +47,27 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         Map.entry("siteId", stErpVoucherLine.siteId)
     );
 
-    /* ERP 전표 상세 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 참고값)
+     * REF_TYPE_CD  {SETTLE: '정산', ORDER: '주문', CLAIM: '클레임', PAY: '지급', ADJ: '조정'}
+     */
     private JPAQuery<StErpVoucherLineDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StErpVoucherLineDto.Item.class,
-                        stErpVoucherLine.erpVoucherLineId, stErpVoucherLine.erpVoucherId, stErpVoucherLine.lineNo,
-                        stErpVoucherLine.accountCd, stErpVoucherLine.accountNm, stErpVoucherLine.costCenterCd, stErpVoucherLine.profitCenterCd,
-                        stErpVoucherLine.debitAmt, stErpVoucherLine.creditAmt,
-                        stErpVoucherLine.refTypeCd, stErpVoucherLine.refId, stErpVoucherLine.lineMemo,
-                        stErpVoucherLine.regBy, stErpVoucherLine.regDate
+                        stErpVoucherLine.erpVoucherLineId,   // 전표라인ID (PK, YYMMDDhhmmss+rand4)
+                        stErpVoucherLine.erpVoucherId,       // ERP전표ID (st_erp_voucher.erp_voucher_id)
+                        stErpVoucherLine.lineNo,             // 라인 순번 (전표 내 고유)
+                        stErpVoucherLine.accountCd,          // 계정코드 (ERP 계정과목 코드)
+                        stErpVoucherLine.accountNm,          // 계정명 스냅샷
+                        stErpVoucherLine.costCenterCd,       // 코스트센터 코드
+                        stErpVoucherLine.profitCenterCd,     // 수익센터 코드
+                        stErpVoucherLine.debitAmt,           // 차변 금액 (대변과 상호 배타적)
+                        stErpVoucherLine.creditAmt,          // 대변 금액 (차변과 상호 배타적)
+                        stErpVoucherLine.refTypeCd,          // 참조유형 — REF_TYPE_CD {SETTLE: '정산', ORDER: '주문', CLAIM: '클레임', PAY: '지급', ADJ: '조정'}
+                        stErpVoucherLine.refId,              // 참조ID (settle_id / order_id / claim_id 등)
+                        stErpVoucherLine.lineMemo,           // 라인 적요
+                        stErpVoucherLine.regBy,              // 등록자
+                        stErpVoucherLine.regDate             // 등록일시
                 ))
                 .from(stErpVoucherLine);
     }

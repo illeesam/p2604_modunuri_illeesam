@@ -44,14 +44,24 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         Map.entry("useYn", cmBlogCate.useYn)
     );
 
-    /* 게시판 카테고리 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 실제 코드값
+     * USE_YN  {Y: '사용', N: '미사용'} — sy_code 미등록, use_yn 전역 공통 규약
+     */
     private JPAQuery<CmBlogCateDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogCateDto.Item.class,
-                        cmBlogCate.blogCateId, cmBlogCate.siteId, cmBlogCate.blogCateNm, cmBlogCate.parentBlogCateId,
-                        cmBlogCate.sortOrd, cmBlogCate.useYn,
-                        cmBlogCate.regBy, cmBlogCate.regDate, cmBlogCate.updBy, cmBlogCate.updDate,
-                        sySite.siteNm.as("siteNm")
+                        cmBlogCate.blogCateId,       // 블로그카테고리ID (PK)
+                        cmBlogCate.siteId,           // 사이트ID (sy_site.site_id)
+                        cmBlogCate.blogCateNm,       // 카테고리명
+                        cmBlogCate.parentBlogCateId, // 상위 카테고리ID (NULL이면 최상위)
+                        cmBlogCate.sortOrd,          // 정렬순서
+                        cmBlogCate.useYn,            // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        cmBlogCate.regBy,            // 등록자
+                        cmBlogCate.regDate,          // 등록일시
+                        cmBlogCate.updBy,            // 수정자
+                        cmBlogCate.updDate,          // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(cmBlogCate)
                 .leftJoin(sySite).on(sySite.siteId.eq(cmBlogCate.siteId));

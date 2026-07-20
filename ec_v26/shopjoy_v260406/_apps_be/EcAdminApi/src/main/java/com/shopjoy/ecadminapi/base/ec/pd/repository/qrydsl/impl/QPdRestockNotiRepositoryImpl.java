@@ -49,12 +49,21 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         Map.entry("skuId", pdRestockNoti.prodSkuId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * NOTI_YN  {Y: '발송완료', N: '미발송'}
+     */
     /* 재입고 알림 baseSelColumnQuery */
     private JPAQuery<PdRestockNotiDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdRestockNotiDto.Item.class,
-                        pdRestockNoti.restockNotiId, pdRestockNoti.siteId, pdRestockNoti.prodId, pdRestockNoti.prodSkuId, pdRestockNoti.memberId,
-                        pdRestockNoti.notiYn, pdRestockNoti.notiDate,
+                        pdRestockNoti.restockNotiId,   // 재입고알림ID (PK, YYMMDDhhmmss+rand4)
+                        pdRestockNoti.siteId,           // 사이트ID (sy_site.site_id)
+                        pdRestockNoti.prodId,           // 상품ID (pd_prod.prod_id)
+                        pdRestockNoti.prodSkuId,        // SKUID (pd_prod_sku.prod_sku_id)
+                        pdRestockNoti.memberId,         // 회원ID (mb_member.member_id)
+                        pdRestockNoti.notiYn,             // 알림발송여부 — {Y: '발송완료', N: '미발송'}
+                        pdRestockNoti.notiDate,         // 알림발송일시
                         pdRestockNoti.regBy, pdRestockNoti.regDate, pdRestockNoti.updBy, pdRestockNoti.updDate
                 ))
                 .from(pdRestockNoti)

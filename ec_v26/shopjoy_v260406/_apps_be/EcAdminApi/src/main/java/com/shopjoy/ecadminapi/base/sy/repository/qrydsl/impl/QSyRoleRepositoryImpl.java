@@ -64,14 +64,31 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         Map.entry("useYn", syRole.useYn)
     );
 
-    /* 역할(권한) baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * ROLE_TYPE     {SYSTEM: '시스템', CUSTOM: '커스텀'}
+     * USE_YN        {Y: '사용', N: '미사용'}
+     * RESTRICT_PERM {Y: '제한권한', N: '일반권한'}
+     */
     private JPAQuery<SyRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyRoleDto.Item.class,
-                        syRole.roleId, syRole.siteId, syRole.roleCode, syRole.roleNm, syRole.parentRoleId,
-                        syRole.roleTypeCd, syRole.sortOrd, syRole.useYn, syRole.restrictPerm, syRole.roleRemark,
-                        syRole.regBy, syRole.regDate, syRole.updBy, syRole.updDate, syRole.pathId,
-                        sySite.siteNm.as("siteNm")
+                        syRole.roleId,          // 역할ID (YYMMDDhhmmss+rand4)
+                        syRole.siteId,          // 사이트ID (sy_site.site_id)
+                        syRole.roleCode,        // 역할코드
+                        syRole.roleNm,          // 역할명
+                        syRole.parentRoleId,    // 상위역할ID
+                        syRole.roleTypeCd,      // 역할유형 — ROLE_TYPE {SYSTEM: '시스템', CUSTOM: '커스텀'}
+                        syRole.sortOrd,         // 정렬순서
+                        syRole.useYn,           // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syRole.restrictPerm,    // 제한권한여부 — RESTRICT_PERM {Y: '제한권한', N: '일반권한'}
+                        syRole.roleRemark,      // 비고
+                        syRole.regBy,           // 등록자
+                        syRole.regDate,         // 등록일시
+                        syRole.updBy,           // 수정자
+                        syRole.updDate,         // 수정일시
+                        syRole.pathId,          // 점(.) 구분 표시경로 (트리 빌드용)
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syRole)
                 .leftJoin(sySite).on(sySite.siteId.eq(syRole.siteId))

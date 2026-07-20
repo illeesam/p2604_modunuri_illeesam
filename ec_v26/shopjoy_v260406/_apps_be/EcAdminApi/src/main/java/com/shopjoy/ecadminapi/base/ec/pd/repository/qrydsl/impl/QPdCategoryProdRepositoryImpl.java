@@ -51,17 +51,28 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         Map.entry("siteId", pdCategoryProd.siteId)
     );
 
-    /* 카테고리-상품 매핑 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CATEGORY_PROD_TYPE_CD  {NORMAL: '일반', HIGHLIGHT: '강조', RECOMMEND: '추천', MAIN: '메인', BANNER: '배너', HOT_DEAL: '핫딜'}
+     * DISP_YN                {Y: '전시', N: '비전시'}
+     */
     private JPAQuery<PdCategoryProdDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdCategoryProdDto.Item.class,
-                        pdCategoryProd.categoryProdId, pdCategoryProd.siteId, pdCategoryProd.categoryId, pdCategoryProd.prodId,
-                        pdCategoryProd.categoryProdTypeCd, pdCategoryProd.sortOrd, pdCategoryProd.emphasisCd,
-                        pdCategoryProd.dispYn, pdCategoryProd.dispStartDate, pdCategoryProd.dispEndDate,
+                        pdCategoryProd.categoryProdId,        // 상품카테고리연결ID (PK, YYMMDDhhmmss+rand4)
+                        pdCategoryProd.siteId,                // 사이트ID (sy_site.site_id)
+                        pdCategoryProd.categoryId,             // 카테고리ID (pd_category.category_id)
+                        pdCategoryProd.prodId,                 // 상품ID (pd_prod.prod_id)
+                        pdCategoryProd.categoryProdTypeCd,     // 진열유형 — {NORMAL: '일반', HIGHLIGHT: '강조', RECOMMEND: '추천', MAIN: '메인', BANNER: '배너', HOT_DEAL: '핫딜'}
+                        pdCategoryProd.sortOrd,                // 표시 순서 (동일 타입 내, 낮을수록 우선 노출)
+                        pdCategoryProd.emphasisCd,             // 강조표시 코드
+                        pdCategoryProd.dispYn,                  // 전시여부 — {Y: '전시', N: '비전시'}
+                        pdCategoryProd.dispStartDate,           // 전시시작일 (NULL=즉시)
+                        pdCategoryProd.dispEndDate,             // 전시종료일 (NULL=무기한)
                         pdCategoryProd.regBy, pdCategoryProd.regDate, pdCategoryProd.updBy, pdCategoryProd.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        pdCategory.categoryNm.as("categoryNm"),
-                        pdProd.prodNm.as("prodNm")
+                        sySite.siteNm.as("siteNm"),                    // 사이트명 (조인)
+                        pdCategory.categoryNm.as("categoryNm"),        // 카테고리명 (조인)
+                        pdProd.prodNm.as("prodNm")                     // 상품명 (조인)
                 ))
                 .from(pdCategoryProd)
                 .leftJoin(sySite).on(sySite.siteId.eq(pdCategoryProd.siteId))

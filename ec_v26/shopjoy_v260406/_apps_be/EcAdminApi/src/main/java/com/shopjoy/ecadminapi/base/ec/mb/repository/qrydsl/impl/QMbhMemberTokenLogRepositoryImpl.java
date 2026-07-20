@@ -57,20 +57,38 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         Map.entry("uiNm", mbhMemberTokenLog.uiNm)
     );
 
-    /* baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * ACTION_CD (코드: TOKEN_ACTION)      {ISSUE: '발급', REFRESH: '갱신', REVOKE: '강제폐기', EXPIRE: '만료'}
+     * TOKEN_TYPE_CD (코드: TOKEN_TYPE)    {ACCESS: '액세스', REFRESH: '리프레시', TEMP: '임시'}
+     */
     private JPAQuery<MbhMemberTokenLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbhMemberTokenLogDto.Item.class,
-                        mbhMemberTokenLog.logId, mbhMemberTokenLog.siteId, mbhMemberTokenLog.memberId, mbhMemberTokenLog.loginLogId,
-                        mbhMemberTokenLog.actionCd, mbhMemberTokenLog.tokenTypeCd,
-                        mbhMemberTokenLog.accessToken, mbhMemberTokenLog.tokenExp, mbhMemberTokenLog.prevToken, mbhMemberTokenLog.refreshToken,
-                        mbhMemberTokenLog.ip, mbhMemberTokenLog.deviceInfo, mbhMemberTokenLog.revokeReason, mbhMemberTokenLog.accessTokenExp,
-                        mbhMemberTokenLog.uiNm, mbhMemberTokenLog.cmdNm,
-                        mbhMemberTokenLog.regBy, mbhMemberTokenLog.regDate, mbhMemberTokenLog.updBy, mbhMemberTokenLog.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        mbMember.memberNm.as("memberNm"),
-                        cdTa.codeLabel.as("actionCdNm"),
-                        cdTt.codeLabel.as("tokenTypeCdNm")
+                        mbhMemberTokenLog.logId,             // 로그ID (PK)
+                        mbhMemberTokenLog.siteId,            // 사이트ID (sy_site.site_id)
+                        mbhMemberTokenLog.memberId,          // 회원ID (mb_member.member_id)
+                        mbhMemberTokenLog.loginLogId,        // 최초 로그인 로그ID (mbh_member_login_log)
+                        mbhMemberTokenLog.actionCd,          // 토큰 액션 — TOKEN_ACTION {ISSUE: '발급', REFRESH: '갱신', REVOKE: '강제폐기', EXPIRE: '만료'}
+                        mbhMemberTokenLog.tokenTypeCd,       // 토큰 유형 — TOKEN_TYPE {ACCESS: '액세스', REFRESH: '리프레시', TEMP: '임시'}
+                        mbhMemberTokenLog.accessToken,       // 토큰값 (SHA-256 해시 저장 권장)
+                        mbhMemberTokenLog.tokenExp,          // 토큰 만료일시
+                        mbhMemberTokenLog.prevToken,         // 갱신 전 토큰 해시 (REFRESH 액션 시)
+                        mbhMemberTokenLog.refreshToken,      // 리프레시 토큰
+                        mbhMemberTokenLog.ip,                // IP주소
+                        mbhMemberTokenLog.deviceInfo,        // User-Agent
+                        mbhMemberTokenLog.revokeReason,      // 폐기 사유 (LOGOUT/FORCE/EXPIRED 등)
+                        mbhMemberTokenLog.accessTokenExp,    // 액세스 토큰 만료일시
+                        mbhMemberTokenLog.uiNm,              // 화면명 (X-UI-Nm 헤더)
+                        mbhMemberTokenLog.cmdNm,             // 기능명 (X-Cmd-Nm 헤더)
+                        mbhMemberTokenLog.regBy,             // 등록자 (sy_user.user_id, mb_member.member_id)
+                        mbhMemberTokenLog.regDate,           // 등록일
+                        mbhMemberTokenLog.updBy,             // 수정자 (sy_user.user_id, mb_member.member_id)
+                        mbhMemberTokenLog.updDate,           // 수정일
+                        sySite.siteNm.as("siteNm"),                 // 사이트명 (sy_site 조인)
+                        mbMember.memberNm.as("memberNm"),           // 회원명 (mb_member 조인)
+                        cdTa.codeLabel.as("actionCdNm"),            // 토큰 액션 코드라벨 (sy_code TOKEN_ACTION 조인)
+                        cdTt.codeLabel.as("tokenTypeCdNm")          // 토큰 유형 코드라벨 (sy_code TOKEN_TYPE 조인)
                 ))
                 .from(mbhMemberTokenLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(mbhMemberTokenLog.siteId))

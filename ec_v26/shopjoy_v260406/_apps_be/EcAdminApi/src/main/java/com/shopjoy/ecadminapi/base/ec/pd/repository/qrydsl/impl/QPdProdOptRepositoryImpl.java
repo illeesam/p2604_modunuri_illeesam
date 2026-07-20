@@ -45,22 +45,29 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         Map.entry("useYn", pdProdOpt.useYn)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
+     * PROD_OPT_STD_CD / PROD_OPT_TYPE1_CD / PROD_OPT_TYPE2_CD (OPT_VAL)
+     *   {BLACK: '검정', WHITE: '흰색', RED: '빨강', BLUE: '파랑', GREEN: '초록', YELLOW: '노랑', PINK: '핑크', PURPLE: '보라', GRAY: '회색', BROWN: '갈색'}
+     * USE_YN               {Y: '사용', N: '미사용'}
+     * PROD_OPT_TYPE_LEVEL  {1: '1단 옵션', 2: '2단 옵션'}
+     */
     private JPAQuery<PdProdOptDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdOptDto.Item.class,
-                        pdProdOpt.prodOptId,
-                        pdProdOpt.siteId,
-                        pdProdOpt.prodId,
-                        pdProdOpt.prodOptNm,
-                        pdProdOpt.prodOptVal,
-                        pdProdOpt.prodOptStdCd,
-                        pdProdOpt.parentProdOptId,
-                        pdProdOpt.prodOptStyle,
-                        pdProdOpt.sortOrd,
-                        pdProdOpt.useYn,
-                        pdProdOpt.prodOptTypeLevel,
-                        pdProdOpt.prodOptType1Cd,
-                        pdProdOpt.prodOptType2Cd,
+                        pdProdOpt.prodOptId,           // 옵션ID (PK)
+                        pdProdOpt.siteId,               // 사이트ID (sy_site.site_id)
+                        pdProdOpt.prodId,               // 상품ID (pd_prod.prod_id) — 조회 편의용 비정규화 컬럼
+                        pdProdOpt.prodOptNm,             // 옵션명 (예: 빨강, M)
+                        pdProdOpt.prodOptVal,            // 실제 저장값 — 직접입력 또는 프리셋 선택 시 자동 채움
+                        pdProdOpt.prodOptStdCd,           // 표준 코드값 — OPT_VAL {BLACK: '검정', WHITE: '흰색', RED: '빨강', ...}. 직접입력 시 NULL
+                        pdProdOpt.parentProdOptId,        // 상위 옵션ID — 2단 옵션에서 상위 1단 옵션값 참조, NULL이면 독립값
+                        pdProdOpt.prodOptStyle,          // 옵션 스타일 (컬러 hex 값, 아이콘 클래스 등)
+                        pdProdOpt.sortOrd,               // 정렬순서
+                        pdProdOpt.useYn,                  // 사용여부 — {Y: '사용', N: '미사용'}
+                        pdProdOpt.prodOptTypeLevel,        // 옵션유형레벨 — {1: '1단 옵션', 2: '2단 옵션'}
+                        pdProdOpt.prodOptType1Cd,         // 옵션유형1 분류코드 (예: COLOR)
+                        pdProdOpt.prodOptType2Cd,         // 옵션유형2 분류코드 (예: SIZE)
                         pdProdOpt.regBy,
                         pdProdOpt.regDate,
                         pdProdOpt.updBy,

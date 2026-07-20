@@ -42,13 +42,23 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         Map.entry("useYn", cmPath.useYn)
     );
 
-    /** 기본 쿼리 빌드 */
+    /*
+     * baseSelColumnQuery — 코드성 필드 실제 코드값
+     * USE_YN  {Y: '사용', N: '미사용'} — sy_code 미등록, use_yn 전역 공통 규약
+     */
     private JPAQuery<CmPathDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmPathDto.Item.class,
-                        cmPath.bizCd, cmPath.parentPathId, cmPath.pathLabel, cmPath.sortOrd,
-                        cmPath.useYn, cmPath.pathRemark,
-                        cmPath.regBy, cmPath.regDate, cmPath.updBy, cmPath.updDate
+                        cmPath.bizCd,         // 업무코드 (PK, 참조 테이블명, 예: sy_brand / sy_code_grp / ec_prop)
+                        cmPath.parentPathId,  // 부모 경로ID (sy_path., 루트는 NULL)
+                        cmPath.pathLabel,     // 경로 라벨 (한글 표시명)
+                        cmPath.sortOrd,       // 동일 부모 내 정렬순서
+                        cmPath.useYn,         // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        cmPath.pathRemark,    // 비고
+                        cmPath.regBy,         // 등록자
+                        cmPath.regDate,       // 등록일시
+                        cmPath.updBy,         // 수정자
+                        cmPath.updDate        // 수정일시
                 ))
                 .from(cmPath);
     }

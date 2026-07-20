@@ -50,14 +50,26 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         Map.entry("voucherTypeCd", pmVoucher.voucherTypeCd)
     );
 
-    /* 바우처(상품권) baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * VOUCHER_TYPE    {AMOUNT: '금액권', RATE: '정률권'}
+     * VOUCHER_STATUS  {ACTIVE: '활성', INACTIVE: '비활성', EXPIRED: '만료'}
+     */
     private JPAQuery<PmVoucherDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmVoucherDto.Item.class,
-                        pmVoucher.voucherId, pmVoucher.siteId, pmVoucher.voucherNm, pmVoucher.voucherTypeCd, pmVoucher.voucherValue,
-                        pmVoucher.minOrderAmt, pmVoucher.maxDiscntAmt, pmVoucher.expireMonth,
-                        pmVoucher.voucherStatusCd, pmVoucher.voucherStatusCdBefore, pmVoucher.voucherDesc, pmVoucher.useYn,
-                        pmVoucher.regBy, pmVoucher.regDate, pmVoucher.updBy, pmVoucher.updDate
+                        pmVoucher.voucherId,               // 상품권ID (PK, YYMMDDhhmmss+rand4)
+                        pmVoucher.siteId,                  // 사이트ID
+                        pmVoucher.voucherNm,               // 상품권명
+                        pmVoucher.voucherTypeCd,           // 유형 — VOUCHER_TYPE {AMOUNT: '금액권', RATE: '정률권'}
+                        pmVoucher.voucherValue,            // 권면금액 또는 할인율
+                        pmVoucher.minOrderAmt,             // 사용 최소주문금액
+                        pmVoucher.maxDiscntAmt,            // 최대할인한도 (정률권)
+                        pmVoucher.expireMonth,             // 유효기간 (발급 후 N개월, NULL=무제한)
+                        pmVoucher.voucherStatusCd,         // 상태 — VOUCHER_STATUS {ACTIVE: '활성', INACTIVE: '비활성', EXPIRED: '만료'}
+                        pmVoucher.voucherStatusCdBefore,   // 변경 전 상태
+                        pmVoucher.voucherDesc,             // 상품권 설명
+                        pmVoucher.useYn, pmVoucher.regBy, pmVoucher.regDate, pmVoucher.updBy, pmVoucher.updDate
                 ))
                 .from(pmVoucher)
                 .leftJoin(sySite).on(sySite.siteId.eq(pmVoucher.siteId))

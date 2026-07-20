@@ -41,12 +41,18 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         Map.entry("targetTypeCd", pmCouponItem.targetTypeCd)
     );
 
-    /* 쿠폰 대상 상품 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * COUPON_ITEM_TARGET  {PRODUCT: '상품', CATEGORY: '카테고리', VENDOR: '판매자', BRAND: '브랜드'}
+     */
     private JPAQuery<PmCouponItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmCouponItemDto.Item.class,
-                        pmCouponItem.couponItemId, pmCouponItem.couponId, pmCouponItem.siteId,
-                        pmCouponItem.targetTypeCd, pmCouponItem.targetId,
+                        pmCouponItem.couponItemId,   // 쿠폰항목ID (PK, YYMMDDhhmmss+rand4)
+                        pmCouponItem.couponId,       // 쿠폰ID (pm_coupon.coupon_id)
+                        pmCouponItem.siteId,         // 사이트ID (sy_site.site_id)
+                        pmCouponItem.targetTypeCd,   // 대상유형 — COUPON_ITEM_TARGET {PRODUCT: '상품', CATEGORY: '카테고리', VENDOR: '판매자', BRAND: '브랜드'}
+                        pmCouponItem.targetId,       // 대상ID (prod_id / category_id / vendor_id / brand_id)
                         pmCouponItem.regBy, pmCouponItem.regDate
                 ))
                 .from(pmCouponItem);

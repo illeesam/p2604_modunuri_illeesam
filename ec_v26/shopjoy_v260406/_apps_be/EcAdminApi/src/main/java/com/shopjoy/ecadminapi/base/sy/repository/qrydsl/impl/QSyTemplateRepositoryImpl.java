@@ -55,14 +55,28 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         Map.entry("useYn", syTemplate.useYn)
     );
 
-    /* 템플릿 baseQuery */
+    /*
+     * baseQuery — 코드성 필드 예시 코드값
+     * TEMPLATE_TYPE  {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
+     */
     private JPAQuery<SyTemplateDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyTemplateDto.Item.class,
-                        syTemplate.templateId, syTemplate.siteId, syTemplate.templateTypeCd, syTemplate.templateCode, syTemplate.templateNm,
-                        syTemplate.templateSubject, syTemplate.templateContent, syTemplate.sampleParams, syTemplate.useYn, syTemplate.pathId,
-                        syTemplate.regBy, syTemplate.regDate, syTemplate.updBy, syTemplate.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syTemplate.templateId,                    // 템플릿ID (PK, YYMMDDhhmmss+rand4)
+                        syTemplate.siteId,                        // 사이트ID (sy_site.site_id)
+                        syTemplate.templateTypeCd,                 // 템플릿유형 — TEMPLATE_TYPE {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
+                        syTemplate.templateCode,                   // 템플릿코드
+                        syTemplate.templateNm,                     // 템플릿명
+                        syTemplate.templateSubject,                // 제목 (이메일용)
+                        syTemplate.templateContent,                // 내용 (치환변수 포함)
+                        syTemplate.sampleParams,                   // 치환변수 예시 (JSON)
+                        syTemplate.useYn,                          // 사용여부 Y/N
+                        syTemplate.pathId,                         // 점(.) 구분 표시경로 (트리 빌드용)
+                        syTemplate.regBy,                          // 등록자
+                        syTemplate.regDate,                        // 등록일시
+                        syTemplate.updBy,                          // 수정자
+                        syTemplate.updDate,                        // 수정일시
+                        sySite.siteNm.as("siteNm")                 // 사이트명 (조인: sy_site)
                 ))
                 .from(syTemplate)
                 .leftJoin(sySite).on(sySite.siteId.eq(syTemplate.siteId));

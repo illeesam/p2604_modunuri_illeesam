@@ -44,11 +44,14 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         Map.entry("tagId", pdProdTag.tagId)
     );
 
-    /* 상품 태그 baseSelColumnQuery */
+    /* 상품 태그 baseSelColumnQuery — 코드성 필드 없음 (단순 매핑 테이블) */
     private JPAQuery<PdProdTagDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdTagDto.Item.class,
-                        pdProdTag.prodTagId, pdProdTag.siteId, pdProdTag.prodId, pdProdTag.tagId,
+                        pdProdTag.prodTagId,   // 상품태그ID (PK)
+                        pdProdTag.siteId,       // 사이트ID
+                        pdProdTag.prodId,       // 상품ID (pd_prod.prod_id)
+                        pdProdTag.tagId,        // 태그ID (pd_tag.tag_id)
                         pdProdTag.regBy, pdProdTag.regDate
                 ))
                 .from(pdProdTag)

@@ -59,24 +59,50 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         Map.entry("useYn", pmCoupon.useYn)
     );
 
-    /* 쿠폰 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * COUPON_TYPE    {PROD_DISCNT: '상품할인', ORDER_DISCNT: '주문할인', SHIP_DISCNT: '배송비할인', SHIP_FREE: '무료배송', JOIN_GIFT: '가입축하', VIP: 'VIP전용', CLAIM_COMP: '클레임보상'}
+     * COUPON_STATUS  {ACTIVE: '활성', INACTIVE: '비활성', EXPIRED: '만료'}
+     * COUPON_TARGET  {ALL: '전체', MEMBER: '회원', GRADE: '등급'}
+     * MEMBER_GRADE   회원 등급 코드 (sy_code MEMBER_GRADE 그룹, 사이트별 등급 구성에 따라 값 상이)
+     */
     private JPAQuery<PmCouponDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmCouponDto.Item.class,
-                        pmCoupon.couponId, pmCoupon.siteId, pmCoupon.couponCd, pmCoupon.couponNm,
-                        pmCoupon.couponTypeCd, pmCoupon.discountRate, pmCoupon.discountAmt,
-                        pmCoupon.minOrderAmt, pmCoupon.minOrderQty, pmCoupon.maxDiscountAmt,
-                        pmCoupon.issueLimit, pmCoupon.issueCnt, pmCoupon.maxIssuePerMem,
-                        pmCoupon.couponDesc, pmCoupon.validFrom, pmCoupon.validTo,
-                        pmCoupon.couponStatusCd, pmCoupon.couponStatusCdBefore,
-                        pmCoupon.useYn, pmCoupon.targetTypeCd, pmCoupon.targetValue, pmCoupon.memGradeCd,
-                        pmCoupon.selfCdivRate, pmCoupon.sellerCdivRate, pmCoupon.sellerCdivRemark,
-                        pmCoupon.dvcPcYn, pmCoupon.dvcMwebYn, pmCoupon.dvcMappYn, pmCoupon.memo,
+                        pmCoupon.couponId,              // 쿠폰ID (PK, YYMMDDhhmmss+rand4)
+                        pmCoupon.siteId,                // 사이트ID (sy_site.site_id)
+                        pmCoupon.couponCd,               // 쿠폰코드 (UNIQUE)
+                        pmCoupon.couponNm,               // 쿠폰명
+                        pmCoupon.couponTypeCd,           // 쿠폰유형 — COUPON_TYPE {PROD_DISCNT, ORDER_DISCNT, SHIP_DISCNT, SHIP_FREE, JOIN_GIFT, VIP, CLAIM_COMP}
+                        pmCoupon.discountRate,           // 할인률 (%)
+                        pmCoupon.discountAmt,            // 할인금액
+                        pmCoupon.minOrderAmt,            // 최소주문금액
+                        pmCoupon.minOrderQty,            // 최소주문수량 (NULL=제한없음)
+                        pmCoupon.maxDiscountAmt,         // 최대할인한도 (NULL=무제한)
+                        pmCoupon.issueLimit,             // 총발급한도 (NULL=무제한)
+                        pmCoupon.issueCnt,               // 발급된 개수
+                        pmCoupon.maxIssuePerMem,         // 회원당 최대발급수 (NULL=무제한)
+                        pmCoupon.couponDesc,             // 쿠폰설명
+                        pmCoupon.validFrom,              // 유효기간 시작
+                        pmCoupon.validTo,                // 유효기간 종료
+                        pmCoupon.couponStatusCd,         // 상태 — COUPON_STATUS {ACTIVE: '활성', INACTIVE: '비활성', EXPIRED: '만료'}
+                        pmCoupon.couponStatusCdBefore,   // 변경 전 쿠폰상태 — COUPON_STATUS
+                        pmCoupon.useYn,                  // 사용여부 Y/N
+                        pmCoupon.targetTypeCd,           // 적용대상 — COUPON_TARGET {ALL: '전체', MEMBER: '회원', GRADE: '등급'}
+                        pmCoupon.targetValue,            // 적용대상값 (회원ID/등급코드)
+                        pmCoupon.memGradeCd,             // 적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)
+                        pmCoupon.selfCdivRate,           // 자사(사이트) 분담율 (%) — 기본 100%
+                        pmCoupon.sellerCdivRate,         // 판매자(업체) 분담율 (%) — 기본 0%
+                        pmCoupon.sellerCdivRemark,       // 판매자 분담 비고
+                        pmCoupon.dvcPcYn,                // PC 채널 적용여부 Y/N
+                        pmCoupon.dvcMwebYn,              // 모바일WEB 적용여부 Y/N
+                        pmCoupon.dvcMappYn,              // 모바일APP 적용여부 Y/N
+                        pmCoupon.memo,                   // 메모
                         pmCoupon.regBy, pmCoupon.regDate, pmCoupon.updBy, pmCoupon.updDate,
-                        cdCt.codeLabel.as("couponTypeCdNm"),
-                        cdCs.codeLabel.as("couponStatusCdNm"),
-                        cdTt.codeLabel.as("targetTypeCdNm"),
-                        cdMg.codeLabel.as("memGradeCdNm")
+                        cdCt.codeLabel.as("couponTypeCdNm"),     // 쿠폰유형 코드라벨 (조인)
+                        cdCs.codeLabel.as("couponStatusCdNm"),   // 쿠폰상태 코드라벨 (조인)
+                        cdTt.codeLabel.as("targetTypeCdNm"),     // 적용대상 코드라벨 (조인)
+                        cdMg.codeLabel.as("memGradeCdNm")        // 적용등급 코드라벨 (조인)
                 ))
                 .from(pmCoupon)
                 .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd)))

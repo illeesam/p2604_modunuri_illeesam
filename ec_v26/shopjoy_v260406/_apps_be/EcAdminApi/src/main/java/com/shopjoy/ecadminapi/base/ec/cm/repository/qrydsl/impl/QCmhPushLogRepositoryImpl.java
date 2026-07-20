@@ -51,15 +51,32 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         Map.entry("templateId", cmhPushLog.templateId)
     );
 
-    /** 기본 쿼리 빌드 */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 (PUSH_CHANNEL / PUSH_RESULT 는 sy_code 미등록 — 실제 코드 등록 없음)
+     * channel_cd : 발송채널 구분 코드 (코드: PUSH_CHANNEL, DB 등록값 없음 — 용도만 설명)
+     * result_cd  : 발송결과 코드 (코드: PUSH_RESULT, DB 등록값 없음. 컬럼 기본값은 'SUCCESS')
+     * ref_type_cd: 연관유형코드 (자유 문자열, 예: ORDER/CLAIM/EVENT 등 — sy_code 미등록)
+     */
     private JPAQuery<CmhPushLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmhPushLogDto.Item.class,
-                        cmhPushLog.logId, cmhPushLog.siteId, cmhPushLog.channelCd, cmhPushLog.templateId, cmhPushLog.memberId,
-                        cmhPushLog.recvAddr, cmhPushLog.pushLogTitle, cmhPushLog.pushLogContent,
-                        cmhPushLog.resultCd, cmhPushLog.failReason, cmhPushLog.sendDate,
-                        cmhPushLog.refTypeCd, cmhPushLog.refId,
-                        cmhPushLog.regBy, cmhPushLog.regDate, cmhPushLog.updBy, cmhPushLog.updDate
+                        cmhPushLog.logId,           // 로그ID (PK, YYMMDDhhmmss+rand4)
+                        cmhPushLog.siteId,          // 사이트ID
+                        cmhPushLog.channelCd,       // 발송채널 (코드: PUSH_CHANNEL — sy_code 미등록)
+                        cmhPushLog.templateId,      // 템플릿ID (sy_template.template_id)
+                        cmhPushLog.memberId,        // 대상 회원ID
+                        cmhPushLog.recvAddr,        // 수신처 (이메일/전화번호/디바이스토큰)
+                        cmhPushLog.pushLogTitle,    // 발송 제목
+                        cmhPushLog.pushLogContent,  // 발송 내용
+                        cmhPushLog.resultCd,        // 발송결과 (코드: PUSH_RESULT — sy_code 미등록, DB 기본값 'SUCCESS')
+                        cmhPushLog.failReason,      // 실패 사유
+                        cmhPushLog.sendDate,        // 발송일시
+                        cmhPushLog.refTypeCd,       // 연관유형코드 (ORDER/CLAIM/EVENT 등, 자유 코드)
+                        cmhPushLog.refId,           // 연관ID
+                        cmhPushLog.regBy,           // 등록자
+                        cmhPushLog.regDate,         // 등록일시
+                        cmhPushLog.updBy,           // 수정자
+                        cmhPushLog.updDate          // 수정일시
                 ))
                 .from(cmhPushLog);
     }

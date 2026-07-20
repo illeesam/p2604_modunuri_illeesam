@@ -44,12 +44,21 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         Map.entry("useYn", pdTag.useYn)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN  {Y: '사용', N: '미사용'}
+     */
     /* 태그 baseSelColumnQuery */
     private JPAQuery<PdTagDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdTagDto.Item.class,
-                        pdTag.tagId, pdTag.siteId, pdTag.tagNm, pdTag.tagDesc,
-                        pdTag.useCount, pdTag.sortOrd, pdTag.useYn,
+                        pdTag.tagId,       // 태그ID (PK, YYMMDDhhmmss+rand4)
+                        pdTag.siteId,       // 사이트ID (sy_site.site_id)
+                        pdTag.tagNm,       // 태그명
+                        pdTag.tagDesc,     // 태그설명
+                        pdTag.useCount,    // 사용 빈도
+                        pdTag.sortOrd,     // 정렬순서
+                        pdTag.useYn,         // 사용여부 — {Y: '사용', N: '미사용'}
                         pdTag.regBy, pdTag.regDate, pdTag.updBy, pdTag.updDate
                 ))
                 .from(pdTag)

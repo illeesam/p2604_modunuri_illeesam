@@ -41,13 +41,23 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         Map.entry("statusReason", odhClaimStatusHist.statusReason)
     );
 
-    /* 클레임 상태 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CLAIM_STATUS  {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회}
+     */
     private JPAQuery<OdhClaimStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimStatusHistDto.Item.class,
-                        odhClaimStatusHist.claimStatusHistId, odhClaimStatusHist.siteId, odhClaimStatusHist.claimId, odhClaimStatusHist.orderId,
-                        odhClaimStatusHist.claimStatusCdBefore, odhClaimStatusHist.claimStatusCd, odhClaimStatusHist.statusReason,
-                        odhClaimStatusHist.chgUserId, odhClaimStatusHist.chgDate, odhClaimStatusHist.memo,
+                        odhClaimStatusHist.claimStatusHistId,   // 클레임상태이력ID (YYMMDDhhmmss+rand4)
+                        odhClaimStatusHist.siteId,               // 사이트ID
+                        odhClaimStatusHist.claimId,              // 클레임ID (od_claim.claim_id)
+                        odhClaimStatusHist.orderId,              // 주문ID (od_order.order_id)
+                        odhClaimStatusHist.claimStatusCdBefore,  // 변경 전 클레임상태 — CLAIM_STATUS {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회}
+                        odhClaimStatusHist.claimStatusCd,        // 변경 후 클레임상태 — CLAIM_STATUS (동일 코드그룹)
+                        odhClaimStatusHist.statusReason,         // 상태 변경 사유
+                        odhClaimStatusHist.chgUserId,            // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+                        odhClaimStatusHist.chgDate,              // 변경 일시
+                        odhClaimStatusHist.memo,                 // 메모
                         odhClaimStatusHist.regBy, odhClaimStatusHist.regDate, odhClaimStatusHist.updBy, odhClaimStatusHist.updDate))
                 .from(odhClaimStatusHist);
     }

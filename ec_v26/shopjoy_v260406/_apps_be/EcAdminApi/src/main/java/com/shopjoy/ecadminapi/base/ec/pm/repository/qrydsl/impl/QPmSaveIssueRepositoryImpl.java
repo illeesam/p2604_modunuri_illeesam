@@ -62,13 +62,30 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         Map.entry("siteId", pmSaveIssue.siteId)
     );
 
-    /* 적립금 지급 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * SAVE_ISSUE_TYPE    {ORDER: '구매확정', EVENT: '이벤트', REVIEW: '리뷰', REFERRAL: '친구초대', ADMIN: '관리자지급'} (Entity 주석: ORDER/EVENT/REVIEW/REFERRAL/ADMIN)
+     * SAVE_ISSUE_STATUS  {PENDING: '적립예정', CONFIRMED: '적립완료', EXPIRED: '소멸', CANCELED: '취소'} (Entity 주석 기준)
+     * refTypeCd          참조유형 (ORDER/EVENT/REVIEW/ADMIN)
+     */
     private JPAQuery<PmSaveIssueDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmSaveIssueDto.Item.class,
-                        pmSaveIssue.saveIssueId, pmSaveIssue.siteId, pmSaveIssue.memberId, pmSaveIssue.saveIssueTypeCd, pmSaveIssue.saveAmt,
-                        pmSaveIssue.saveRate, pmSaveIssue.refTypeCd, pmSaveIssue.refId, pmSaveIssue.orderId, pmSaveIssue.orderItemId, pmSaveIssue.prodId,
-                        pmSaveIssue.expireDate, pmSaveIssue.issueStatusCd, pmSaveIssue.issueStatusCdBefore, pmSaveIssue.saveMemo,
+                        pmSaveIssue.saveIssueId,               // 적립지급ID (PK, YYMMDDhhmmss+rand4)
+                        pmSaveIssue.siteId,                    // 사이트ID (sy_site.site_id)
+                        pmSaveIssue.memberId,                  // 회원ID (mb_member.member_id)
+                        pmSaveIssue.saveIssueTypeCd,           // 지급유형 — SAVE_ISSUE_TYPE {ORDER, EVENT, REVIEW, REFERRAL, ADMIN}
+                        pmSaveIssue.saveAmt,                   // 지급 적립금액
+                        pmSaveIssue.saveRate,                  // 적립률 (%, 구매적립 시)
+                        pmSaveIssue.refTypeCd,                 // 참조유형 (ORDER/EVENT/REVIEW/ADMIN)
+                        pmSaveIssue.refId,                     // 참조ID (order_id / event_id 등)
+                        pmSaveIssue.orderId,                   // 주문ID (od_order.order_id, 구매적립 시)
+                        pmSaveIssue.orderItemId,               // 주문상품ID (od_order_item.order_item_id, 상품별 적립 시)
+                        pmSaveIssue.prodId,                    // 상품ID (pd_prod.prod_id, 적립 기준 상품)
+                        pmSaveIssue.expireDate,                // 소멸예정일
+                        pmSaveIssue.issueStatusCd,             // 지급상태 — SAVE_ISSUE_STATUS {PENDING, CONFIRMED, EXPIRED, CANCELED}
+                        pmSaveIssue.issueStatusCdBefore,       // 변경 전 지급상태
+                        pmSaveIssue.saveMemo,                  // 지급 메모
                         pmSaveIssue.regBy, pmSaveIssue.regDate, pmSaveIssue.updBy, pmSaveIssue.updDate
                 ))
                 .from(pmSaveIssue)

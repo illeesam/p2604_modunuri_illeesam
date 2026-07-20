@@ -111,29 +111,87 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         Map.entry("siteId", odClaim.siteId)
     );
 
-    /** 목록/페이지 공용 base query */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값
+     * CLAIM_TYPE    {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
+     * CLAIM_STATUS  {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회}
+     * REFUND_METHOD {CARD:카드 취소, BANK:계좌이체, CACHE:캐시(충전금) 환급}
+     * COURIER       {CJ:CJ대한통운, LOGEN:로젠택배, POST:우체국택배, HANJIN:한진택배, LOTTE:롯데택배, KYOUNGDONG:경동택배, DIRECT:직배송}
+     */
     private JPAQuery<OdClaimDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdClaimDto.Item.class,
-                        odClaim.claimId, odClaim.siteId, odClaim.orderId, odClaim.memberId, odClaim.memberNm,
-                        odClaim.claimTypeCd, odClaim.claimStatusCd, odClaim.claimStatusCdBefore,
-                        odClaim.reasonCd, odClaim.reasonDetail, odClaim.prodNm,
-                        odClaim.customerFaultYn,
-                        odClaim.claimCancelYn, odClaim.claimCancelDate, odClaim.claimCancelReasonCd, odClaim.claimCancelReasonDetail,
-                        odClaim.refundMethodCd, odClaim.refundAmt, odClaim.refundProdAmt, odClaim.refundShippingAmt, odClaim.refundSaveAmt,
-                        odClaim.refundBankCd, odClaim.refundAccountNo, odClaim.refundAccountNm,
-                        odClaim.requestDate, odClaim.procDate, odClaim.procUserId, odClaim.memo,
-                        odClaim.addShippingFee, odClaim.addShippingFeeChargeCd, odClaim.addShippingFeeReason,
-                        odClaim.collectNm, odClaim.collectPhone, odClaim.collectZip, odClaim.collectAddr, odClaim.collectAddrDetail, odClaim.collectReqMemo,
-                        odClaim.collectSchdDate, odClaim.returnShippingFee, odClaim.returnCourierCd, odClaim.returnTrackingNo,
-                        odClaim.returnStatusCd, odClaim.returnStatusCdBefore,
-                        odClaim.inboundShippingFee, odClaim.inboundCourierCd, odClaim.inboundTrackingNo, odClaim.inboundDlivId,
-                        odClaim.exchRecvNm, odClaim.exchRecvPhone, odClaim.exchRecvZip, odClaim.exchRecvAddr, odClaim.exchRecvAddrDetail, odClaim.exchRecvReqMemo,
-                        odClaim.exchangeShippingFee, odClaim.exchangeCourierCd, odClaim.exchangeTrackingNo, odClaim.outboundDlivId,
-                        odClaim.totalShippingFee, odClaim.shippingFeePaidYn, odClaim.shippingFeePaidDate, odClaim.shippingFeeMemo,
-                        odClaim.apprStatusCd, odClaim.apprStatusCdBefore, odClaim.apprAmt,
-                        odClaim.apprTargetCd, odClaim.apprTargetNm, odClaim.apprReason,
-                        odClaim.apprReqUserId, odClaim.apprReqDate, odClaim.apprAprvUserId, odClaim.apprAprvDate,
+                        odClaim.claimId,                    // 클레임ID (YYMMDDhhmmss+rand4)
+                        odClaim.siteId,                      // 사이트ID (sy_site.site_id)
+                        odClaim.orderId,                     // 주문ID
+                        odClaim.memberId,                    // 회원ID
+                        odClaim.memberNm,                    // 회원명
+                        odClaim.claimTypeCd,                 // 클레임유형 — CLAIM_TYPE {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
+                        odClaim.claimStatusCd,               // 클레임상태 — CLAIM_STATUS {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회}
+                        odClaim.claimStatusCdBefore,         // 변경 전 클레임상태 — CLAIM_STATUS (동일 코드그룹)
+                        odClaim.reasonCd,                    // 사유코드 — CANCEL_REASON/RETURN_REASON/EXCHANGE_REASON (claim_type_cd 별 분기)
+                        odClaim.reasonDetail,                // 사유 상세
+                        odClaim.prodNm,                      // 대표 상품명
+                        odClaim.customerFaultYn,             // 고객귀책여부 (Y=고객귀책, N=판매자귀책)
+                        odClaim.claimCancelYn,               // 클레임 철회여부 Y/N (신청 자체를 취소한 경우)
+                        odClaim.claimCancelDate,             // 클레임 철회일시
+                        odClaim.claimCancelReasonCd,         // 클레임 철회사유코드
+                        odClaim.claimCancelReasonDetail,     // 클레임 철회사유상세
+                        odClaim.refundMethodCd,              // 환불수단 — REFUND_METHOD {CARD:카드 취소, BANK:계좌이체, CACHE:캐시(충전금) 환급}
+                        odClaim.refundAmt,                   // 환불 합계금액 (상품금액+배송비-추가배송비-적립금복원)
+                        odClaim.refundProdAmt,               // 환불 상품금액
+                        odClaim.refundShippingAmt,           // 환불 배송비
+                        odClaim.refundSaveAmt,               // 환불 적립금 합계 (사용 적립금 복원액)
+                        odClaim.refundBankCd,                // 환불 은행코드 — BANK_CODE (계좌이체 환불 시)
+                        odClaim.refundAccountNo,             // 환불 계좌번호
+                        odClaim.refundAccountNm,             // 환불 예금주명
+                        odClaim.requestDate,                 // 클레임 요청일시
+                        odClaim.procDate,                    // 처리일시
+                        odClaim.procUserId,                  // 처리자 (sy_user.user_id)
+                        odClaim.memo,                        // 관리메모
+                        odClaim.addShippingFee,              // 추가배송비 (교환=출고배송비, 반품/취소=무료배송 조건 파괴 시 추가)
+                        odClaim.addShippingFeeChargeCd,      // 추가배송비 청구방법코드
+                        odClaim.addShippingFeeReason,        // 추가배송비 면제사유
+                        odClaim.collectNm,                   // 수거지 성명 (반품·교환 수거 주소)
+                        odClaim.collectPhone,                // 수거지 연락처
+                        odClaim.collectZip,                  // 수거지 우편번호
+                        odClaim.collectAddr,                 // 수거지 기본주소
+                        odClaim.collectAddrDetail,           // 수거지 상세주소
+                        odClaim.collectReqMemo,              // 수거 요청사항
+                        odClaim.collectSchdDate,             // 수거 예정일시
+                        odClaim.returnShippingFee,           // 수거배송료
+                        odClaim.returnCourierCd,             // 수거 택배사 — COURIER {CJ:CJ대한통운, LOGEN:로젠택배, POST:우체국택배, HANJIN:한진택배, LOTTE:롯데택배, KYOUNGDONG:경동택배, DIRECT:직배송}
+                        odClaim.returnTrackingNo,            // 수거 송장번호
+                        odClaim.returnStatusCd,              // 수거 상태 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+                        odClaim.returnStatusCdBefore,        // 변경 전 수거상태 — DLIV_STATUS (동일 코드그룹)
+                        odClaim.inboundShippingFee,          // 반입배송료
+                        odClaim.inboundCourierCd,            // 반입 택배사 — COURIER (동일 코드그룹)
+                        odClaim.inboundTrackingNo,           // 반입 송장번호
+                        odClaim.inboundDlivId,               // 반입 배송ID (od_dliv.)
+                        odClaim.exchRecvNm,                  // 교환 수령자명 (원 주문 배송지와 다를 경우)
+                        odClaim.exchRecvPhone,               // 교환 수령자 연락처
+                        odClaim.exchRecvZip,                 // 교환 수령지 우편번호
+                        odClaim.exchRecvAddr,                // 교환 수령지 기본주소
+                        odClaim.exchRecvAddrDetail,          // 교환 수령지 상세주소
+                        odClaim.exchRecvReqMemo,             // 교환 배송 요청사항
+                        odClaim.exchangeShippingFee,         // 교환상품 발송배송료
+                        odClaim.exchangeCourierCd,           // 교환상품 발송 택배사 — COURIER (동일 코드그룹)
+                        odClaim.exchangeTrackingNo,          // 교환상품 발송 송장번호
+                        odClaim.outboundDlivId,              // 교환상품 발송 배송ID (od_dliv.)
+                        odClaim.totalShippingFee,            // 총 배송료 (수거+반입+발송)
+                        odClaim.shippingFeePaidYn,           // 배송료 정산 완료 여부 Y/N
+                        odClaim.shippingFeePaidDate,         // 배송료 정산일시
+                        odClaim.shippingFeeMemo,             // 배송료 비고
+                        odClaim.apprStatusCd,                // 결재상태 — APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+                        odClaim.apprStatusCdBefore,          // 변경 전 결재상태 — APPROVAL_STATUS (동일 코드그룹)
+                        odClaim.apprAmt,                     // 결재 요청금액
+                        odClaim.apprTargetCd,                // 결재대상 구분 — APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+                        odClaim.apprTargetNm,                // 결재 대상명
+                        odClaim.apprReason,                  // 사유/메모
+                        odClaim.apprReqUserId,               // 결재 요청자 (sy_user.user_id)
+                        odClaim.apprReqDate,                 // 결재 요청일시
+                        odClaim.apprAprvUserId,              // 결재자 (sy_user.user_id)
+                        odClaim.apprAprvDate,                // 결재일시
                         odClaim.regBy, odClaim.regDate, odClaim.updBy, odClaim.updDate,
                         odOrder.orderDate.as("orderDate"),
                         odOrder.orderStatusCd.as("orderStatusCd"),
@@ -154,31 +212,87 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd)));
     }
 
+    /*
+     * selectById — 코드성 필드는 baseListQuery 와 동일 코드그룹 (CLAIM_TYPE/CLAIM_STATUS/REFUND_METHOD/COURIER/DLIV_STATUS/APPROVAL_STATUS/APPROVAL_TARGET)
+     * 상세조회 전용 추가 조인: refundBankCd→BANK_CODE, returnStatusCd/inboundCourierCd→DLIV_STATUS·COURIER, apprTargetCd→APPROVAL_TARGET
+     */
     /* 클레임(취소/반품/교환) 키조회 */
     @Override
     public Optional<OdClaimDto.Item> selectById(String claimId) {
         OdClaimDto.Item dto = queryFactory
                 .select(Projections.bean(OdClaimDto.Item.class,
                         // a.* equivalent (DTO Item 에 존재하는 모든 a. 필드)
-                        odClaim.claimId, odClaim.siteId, odClaim.orderId, odClaim.memberId, odClaim.memberNm,
-                        odClaim.claimTypeCd, odClaim.claimStatusCd, odClaim.claimStatusCdBefore,
-                        odClaim.reasonCd, odClaim.reasonDetail, odClaim.prodNm,
-                        odClaim.customerFaultYn,
-                        odClaim.claimCancelYn, odClaim.claimCancelDate, odClaim.claimCancelReasonCd, odClaim.claimCancelReasonDetail,
-                        odClaim.refundMethodCd, odClaim.refundAmt, odClaim.refundProdAmt, odClaim.refundShippingAmt, odClaim.refundSaveAmt,
-                        odClaim.refundBankCd, odClaim.refundAccountNo, odClaim.refundAccountNm,
-                        odClaim.requestDate, odClaim.procDate, odClaim.procUserId, odClaim.memo,
-                        odClaim.addShippingFee, odClaim.addShippingFeeChargeCd, odClaim.addShippingFeeReason,
-                        odClaim.collectNm, odClaim.collectPhone, odClaim.collectZip, odClaim.collectAddr, odClaim.collectAddrDetail, odClaim.collectReqMemo,
-                        odClaim.collectSchdDate, odClaim.returnShippingFee, odClaim.returnCourierCd, odClaim.returnTrackingNo,
-                        odClaim.returnStatusCd, odClaim.returnStatusCdBefore,
-                        odClaim.inboundShippingFee, odClaim.inboundCourierCd, odClaim.inboundTrackingNo, odClaim.inboundDlivId,
-                        odClaim.exchRecvNm, odClaim.exchRecvPhone, odClaim.exchRecvZip, odClaim.exchRecvAddr, odClaim.exchRecvAddrDetail, odClaim.exchRecvReqMemo,
-                        odClaim.exchangeShippingFee, odClaim.exchangeCourierCd, odClaim.exchangeTrackingNo, odClaim.outboundDlivId,
-                        odClaim.totalShippingFee, odClaim.shippingFeePaidYn, odClaim.shippingFeePaidDate, odClaim.shippingFeeMemo,
-                        odClaim.apprStatusCd, odClaim.apprStatusCdBefore, odClaim.apprAmt,
-                        odClaim.apprTargetCd, odClaim.apprTargetNm, odClaim.apprReason,
-                        odClaim.apprReqUserId, odClaim.apprReqDate, odClaim.apprAprvUserId, odClaim.apprAprvDate,
+                        odClaim.claimId,                      // 클레임ID (YYMMDDhhmmss+rand4)
+                        odClaim.siteId,                        // 사이트ID (sy_site.site_id)
+                        odClaim.orderId,                       // 주문ID
+                        odClaim.memberId,                      // 회원ID
+                        odClaim.memberNm,                      // 회원명
+                        odClaim.claimTypeCd,                   // 클레임유형 — CLAIM_TYPE {CANCEL:취소, RETURN:반품, EXCHANGE:교환}
+                        odClaim.claimStatusCd,                 // 클레임상태 — CLAIM_STATUS {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회}
+                        odClaim.claimStatusCdBefore,           // 변경 전 클레임상태 — CLAIM_STATUS (동일 코드그룹)
+                        odClaim.reasonCd,                      // 사유코드 — CANCEL_REASON/RETURN_REASON/EXCHANGE_REASON (claim_type_cd 별 분기)
+                        odClaim.reasonDetail,                  // 사유 상세
+                        odClaim.prodNm,                        // 대표 상품명
+                        odClaim.customerFaultYn,               // 고객귀책여부 (Y=고객귀책, N=판매자귀책)
+                        odClaim.claimCancelYn,                  // 클레임 철회여부 Y/N
+                        odClaim.claimCancelDate,               // 클레임 철회일시
+                        odClaim.claimCancelReasonCd,           // 클레임 철회사유코드
+                        odClaim.claimCancelReasonDetail,       // 클레임 철회사유상세
+                        odClaim.refundMethodCd,                // 환불수단 — REFUND_METHOD {CARD:카드 취소, BANK:계좌이체, CACHE:캐시(충전금) 환급}
+                        odClaim.refundAmt,                     // 환불 합계금액
+                        odClaim.refundProdAmt,                 // 환불 상품금액
+                        odClaim.refundShippingAmt,             // 환불 배송비
+                        odClaim.refundSaveAmt,                 // 환불 적립금 합계
+                        odClaim.refundBankCd,                  // 환불 은행코드 — BANK_CODE (계좌이체 환불 시)
+                        odClaim.refundAccountNo,               // 환불 계좌번호
+                        odClaim.refundAccountNm,               // 환불 예금주명
+                        odClaim.requestDate,                   // 클레임 요청일시
+                        odClaim.procDate,                      // 처리일시
+                        odClaim.procUserId,                    // 처리자 (sy_user.user_id)
+                        odClaim.memo,                          // 관리메모
+                        odClaim.addShippingFee,                // 추가배송비
+                        odClaim.addShippingFeeChargeCd,        // 추가배송비 청구방법코드
+                        odClaim.addShippingFeeReason,          // 추가배송비 면제사유
+                        odClaim.collectNm,                     // 수거지 성명
+                        odClaim.collectPhone,                  // 수거지 연락처
+                        odClaim.collectZip,                    // 수거지 우편번호
+                        odClaim.collectAddr,                   // 수거지 기본주소
+                        odClaim.collectAddrDetail,             // 수거지 상세주소
+                        odClaim.collectReqMemo,                // 수거 요청사항
+                        odClaim.collectSchdDate,               // 수거 예정일시
+                        odClaim.returnShippingFee,             // 수거배송료
+                        odClaim.returnCourierCd,               // 수거 택배사 — COURIER {CJ:CJ대한통운, LOGEN:로젠택배, POST:우체국택배, HANJIN:한진택배, LOTTE:롯데택배, KYOUNGDONG:경동택배, DIRECT:직배송}
+                        odClaim.returnTrackingNo,              // 수거 송장번호
+                        odClaim.returnStatusCd,                // 수거 상태 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+                        odClaim.returnStatusCdBefore,          // 변경 전 수거상태 — DLIV_STATUS (동일 코드그룹)
+                        odClaim.inboundShippingFee,            // 반입배송료
+                        odClaim.inboundCourierCd,              // 반입 택배사 — COURIER (동일 코드그룹)
+                        odClaim.inboundTrackingNo,             // 반입 송장번호
+                        odClaim.inboundDlivId,                 // 반입 배송ID (od_dliv.)
+                        odClaim.exchRecvNm,                    // 교환 수령자명
+                        odClaim.exchRecvPhone,                 // 교환 수령자 연락처
+                        odClaim.exchRecvZip,                   // 교환 수령지 우편번호
+                        odClaim.exchRecvAddr,                  // 교환 수령지 기본주소
+                        odClaim.exchRecvAddrDetail,            // 교환 수령지 상세주소
+                        odClaim.exchRecvReqMemo,               // 교환 배송 요청사항
+                        odClaim.exchangeShippingFee,           // 교환상품 발송배송료
+                        odClaim.exchangeCourierCd,             // 교환상품 발송 택배사 — COURIER (동일 코드그룹)
+                        odClaim.exchangeTrackingNo,            // 교환상품 발송 송장번호
+                        odClaim.outboundDlivId,                // 교환상품 발송 배송ID (od_dliv.)
+                        odClaim.totalShippingFee,              // 총 배송료 (수거+반입+발송)
+                        odClaim.shippingFeePaidYn,             // 배송료 정산 완료 여부 Y/N
+                        odClaim.shippingFeePaidDate,           // 배송료 정산일시
+                        odClaim.shippingFeeMemo,               // 배송료 비고
+                        odClaim.apprStatusCd,                  // 결재상태 — APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+                        odClaim.apprStatusCdBefore,            // 변경 전 결재상태 — APPROVAL_STATUS (동일 코드그룹)
+                        odClaim.apprAmt,                       // 결재 요청금액
+                        odClaim.apprTargetCd,                  // 결재대상 구분 — APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+                        odClaim.apprTargetNm,                  // 결재 대상명
+                        odClaim.apprReason,                    // 사유/메모
+                        odClaim.apprReqUserId,                 // 결재 요청자 (sy_user.user_id)
+                        odClaim.apprReqDate,                   // 결재 요청일시
+                        odClaim.apprAprvUserId,                // 결재자 (sy_user.user_id)
+                        odClaim.apprAprvDate,                  // 결재일시
                         odClaim.regBy, odClaim.regDate, odClaim.updBy, odClaim.updDate,
                         // joined
                         odOrder.orderDate.as("orderDate"),

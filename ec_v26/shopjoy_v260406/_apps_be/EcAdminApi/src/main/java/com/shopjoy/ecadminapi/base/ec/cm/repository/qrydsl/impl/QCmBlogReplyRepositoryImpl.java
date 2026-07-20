@@ -47,14 +47,26 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         Map.entry("writerNm", cmBlogReply.writerNm)
     );
 
-    /** 기본 쿼리 빌드 */
+    /*
+     * baseSelColumnQuery — 코드성 필드 실제 코드값 (sy_code_grp COMMENT_STATUS)
+     * COMMENT_STATUS  {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
+     */
     private JPAQuery<CmBlogReplyDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogReplyDto.Item.class,
-                        cmBlogReply.commentId, cmBlogReply.siteId, cmBlogReply.blogId, cmBlogReply.parentCommentId,
-                        cmBlogReply.writerId, cmBlogReply.writerNm, cmBlogReply.blogCommentContent,
-                        cmBlogReply.commentStatusCd, cmBlogReply.commentStatusCdBefore,
-                        cmBlogReply.regBy, cmBlogReply.regDate, cmBlogReply.updBy, cmBlogReply.updDate
+                        cmBlogReply.commentId,             // 댓글ID (PK)
+                        cmBlogReply.siteId,                 // 사이트ID
+                        cmBlogReply.blogId,                 // 블로그ID
+                        cmBlogReply.parentCommentId,         // 대댓글 부모ID
+                        cmBlogReply.writerId,                // 작성자ID
+                        cmBlogReply.writerNm,                // 작성자명
+                        cmBlogReply.blogCommentContent,     // 댓글 내용
+                        cmBlogReply.commentStatusCd,         // 상태 — COMMENT_STATUS {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
+                        cmBlogReply.commentStatusCdBefore,  // 변경 전 댓글상태 — COMMENT_STATUS {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
+                        cmBlogReply.regBy,                   // 등록자
+                        cmBlogReply.regDate,                 // 등록일시
+                        cmBlogReply.updBy,                   // 수정자
+                        cmBlogReply.updDate                  // 수정일시
                 ))
                 .from(cmBlogReply);
     }

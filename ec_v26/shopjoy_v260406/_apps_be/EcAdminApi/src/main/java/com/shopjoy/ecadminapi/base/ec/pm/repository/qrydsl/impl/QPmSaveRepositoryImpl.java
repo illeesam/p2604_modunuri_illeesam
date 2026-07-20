@@ -49,12 +49,24 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         Map.entry("siteId", pmSave.siteId)
     );
 
-    /* 적립금 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * SAVE_TYPE  {EARN: '적립', USE: '사용', EXPIRE: '소멸', CANCEL: '적립취소', ADMIN: '관리자조정'} (Entity 주석: EARN/USE/EXPIRE/CANCEL/ADMIN)
+     * refTypeCd  연관유형 (예: ORDER/EVENT/ADMIN 등, Entity 주석 기준)
+     */
     private JPAQuery<PmSaveDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmSaveDto.Item.class,
-                        pmSave.saveId, pmSave.siteId, pmSave.memberId, pmSave.saveTypeCd, pmSave.saveAmt,
-                        pmSave.balanceAmt, pmSave.refTypeCd, pmSave.refId, pmSave.expireDate, pmSave.saveMemo,
+                        pmSave.saveId,        // 적립금ID (PK, YYMMDDhhmmss+rand4)
+                        pmSave.siteId,        // 사이트ID
+                        pmSave.memberId,      // 회원ID (mb_member.member_id)
+                        pmSave.saveTypeCd,    // 적립금유형 — SAVE_TYPE {EARN, USE, EXPIRE, CANCEL, ADMIN}
+                        pmSave.saveAmt,       // 변동액 (양수:적립, 음수:차감)
+                        pmSave.balanceAmt,    // 처리 후 잔액
+                        pmSave.refTypeCd,     // 연관유형 (ORDER/EVENT/ADMIN 등)
+                        pmSave.refId,         // 연관ID
+                        pmSave.expireDate,    // 소멸예정일
+                        pmSave.saveMemo,      // 메모
                         pmSave.regBy, pmSave.regDate
                 ))
                 .from(pmSave)

@@ -51,15 +51,30 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         Map.entry("useYn", syProp.useYn)
     );
 
-    /* 시스템 속성 baseQuery */
+    /*
+     * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
+     * PROP_TYPE {STRING: '문자열', NUMBER: '숫자', BOOLEAN: 'Y/N', JSON: 'JSON'}
+     * USE_YN    {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<SyPropDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyPropDto.Item.class,
-                        syProp.propId, syProp.siteId, syProp.pathId, syProp.propKey, syProp.propValue, syProp.propLabel,
-                        syProp.propTypeCd, syProp.sortOrd, syProp.useYn, syProp.propRemark,
-                        Expressions.stringPath(syProp, "propProfile").as("propProfile"),
-                        syProp.regBy, syProp.regDate, syProp.updBy, syProp.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syProp.propId,          // 프로퍼티ID (PK, auto)
+                        syProp.siteId,          // 사이트ID (sy_site.site_id, NULL=전역)
+                        syProp.pathId,          // 점(.) 구분 표시경로 (aa.bb.cc)
+                        syProp.propKey,         // 키 (코드 식별자)
+                        syProp.propValue,       // 값
+                        syProp.propLabel,       // 표시명
+                        syProp.propTypeCd,      // 값 타입 — PROP_TYPE {STRING: '문자열', NUMBER: '숫자', BOOLEAN: 'Y/N', JSON: 'JSON'}
+                        syProp.sortOrd,         // 같은 표시경로 내 정렬순서
+                        syProp.useYn,           // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syProp.propRemark,      // 비고
+                        Expressions.stringPath(syProp, "propProfile").as("propProfile"),   // 적용 프로파일 (^local^dev^prod^ 형식, 비어있으면 전체 환경 적용)
+                        syProp.regBy,           // 등록자
+                        syProp.regDate,         // 등록일시
+                        syProp.updBy,           // 수정자
+                        syProp.updDate,         // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syProp)
                 .leftJoin(sySite).on(sySite.siteId.eq(syProp.siteId));

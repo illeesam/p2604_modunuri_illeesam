@@ -47,15 +47,26 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         Map.entry("siteId", stSettleClose.siteId)
     );
 
-    /* 정산 마감 baseListQuery */
+    /*
+     * baseListQuery — 코드성 필드 예시 코드값 (sy_code 실 데이터 기준)
+     * SETTLE_CLOSE_STATUS  {DRAFT: '임시마감', CONFIRMED: '확정마감', PAID: '지급완료'}
+     * (Entity 주석상 closeStatusCd 흐름: CLOSED/REOPENED — sy_code 실 데이터와 값 표기가 다름)
+     */
     private JPAQuery<StSettleCloseDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleCloseDto.Item.class,
-                        stSettleClose.settleCloseId, stSettleClose.settleId, stSettleClose.siteId, stSettleClose.closeStatusCd,
-                        stSettleClose.closeReason, stSettleClose.finalSettleAmt, stSettleClose.closeBy, stSettleClose.closeDate,
-                        stSettleClose.regBy, stSettleClose.regDate,
-                        sySite.siteNm.as("siteNm"),
-                        cdScs.codeLabel.as("closeStatusCdNm")
+                        stSettleClose.settleCloseId,     // 마감이력ID (PK)
+                        stSettleClose.settleId,           // 정산ID (st_settle.settle_id)
+                        stSettleClose.siteId,             // 사이트ID
+                        stSettleClose.closeStatusCd,      // 마감상태 — SETTLE_CLOSE_STATUS {DRAFT: '임시마감', CONFIRMED: '확정마감', PAID: '지급완료'}
+                        stSettleClose.closeReason,        // 마감/재오픈 사유
+                        stSettleClose.finalSettleAmt,     // 마감 시점 최종정산금액 스냅샷
+                        stSettleClose.closeBy,            // 처리자 (sy_user.user_id)
+                        stSettleClose.closeDate,          // 처리일시
+                        stSettleClose.regBy,              // 등록자
+                        stSettleClose.regDate,            // 등록일시
+                        sySite.siteNm.as("siteNm"),                   // 사이트명 (조인)
+                        cdScs.codeLabel.as("closeStatusCdNm")         // 마감상태명 (sy_code 조인)
                 ))
                 .from(stSettleClose)
                 .leftJoin(sySite).on(sySite.siteId.eq(stSettleClose.siteId))

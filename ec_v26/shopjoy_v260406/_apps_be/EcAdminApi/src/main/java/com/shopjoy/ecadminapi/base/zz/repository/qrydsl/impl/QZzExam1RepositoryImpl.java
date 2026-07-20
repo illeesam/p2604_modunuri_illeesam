@@ -37,20 +37,20 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         Map.entry("exam1Id", zzExam1.exam1Id)
     );
 
-    /* zz_exam1 baseSelColumnQuery */
+    /* zz_exam1 baseSelColumnQuery — 코드성 필드 없음(범용 컬럼만 보유한 연습용 샘플 테이블) */
     private JPAQuery<ZzExam1Dto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(ZzExam1Dto.Item.class,
-                        zzExam1.exam1Id,
-                        zzExam1.col11,
-                        zzExam1.col12,
-                        zzExam1.col13,
-                        zzExam1.col14,
-                        zzExam1.col15,
-                        zzExam1.regBy,
-                        zzExam1.regDate,
-                        zzExam1.updBy,
-                        zzExam1.updDate
+                        zzExam1.exam1Id,    // exam1 ID (PK)
+                        zzExam1.col11,      // 범용 컬럼11
+                        zzExam1.col12,      // 범용 컬럼12
+                        zzExam1.col13,      // 범용 컬럼13
+                        zzExam1.col14,      // 범용 컬럼14
+                        zzExam1.col15,      // 범용 컬럼15
+                        zzExam1.regBy,      // 등록자
+                        zzExam1.regDate,    // 등록일시
+                        zzExam1.updBy,      // 수정자
+                        zzExam1.updDate     // 수정일시
                 ))
                 .from(zzExam1);
     }

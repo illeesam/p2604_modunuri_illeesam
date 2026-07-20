@@ -76,35 +76,40 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
      * 기본 쿼리 빌드 — SELECT + JOIN (조회 메서드들이 공유하는 base)
      * ============================================================ */
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USER_STATUS   {ACTIVE: '활성', INACTIVE: '비활성', LOCKED: '잠김'}
+     * AUTH_METHOD   {EMAIL: '이메일', GOOGLE: '구글', KAKAO: '카카오', NAVER: '네이버'}
+     */
     /** 기본 쿼리 빌드 */
     private JPAQuery<SyUserDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyUserDto.Item.class,
-                        syUser.userId,
-                        syUser.siteId,
-                        syUser.loginId,
-                        syUser.loginPwdHash,
-                        syUser.userNm,
-                        syUser.userEmail,
-                        syUser.userPhone,
-                        syUser.deptId,
-                        syUser.roleId,
-                        syUser.userStatusCd,
-                        syUser.lastLogin,
-                        syUser.loginFailCnt,
-                        syUser.userMemo,
-                        syUser.regBy,
-                        syUser.regDate,
-                        syUser.updBy,
-                        syUser.updDate,
-                        syUser.authMethodCd,
-                        syUser.lastLoginDate,
-                        syUser.profileAttachId,
-                        sySite.siteNm.as("siteNm"),
-                        syDept.deptNm.as("deptNm"),
-                        syRole.roleNm.as("roleNm"),
-                        syCode_userStatusCd.codeLabel.as("userStatusCdNm"),
-                        syCode_authMethodCd.codeLabel.as("authMethodCdNm")
+                        syUser.userId,                              // 사용자ID (PK, YYMMDDhhmmss+rand4)
+                        syUser.siteId,                               // 사이트ID (sy_site.site_id)
+                        syUser.loginId,                              // 로그인 아이디
+                        syUser.loginPwdHash,                         // 비밀번호 (bcrypt)
+                        syUser.userNm,                               // 사용자명
+                        syUser.userEmail,                            // 이메일
+                        syUser.userPhone,                            // 연락처
+                        syUser.deptId,                               // 부서ID (sy_dept.dept_id)
+                        syUser.roleId,                               // 역할ID (sy_role.role_id)
+                        syUser.userStatusCd,                         // 상태 — USER_STATUS {ACTIVE: '활성', INACTIVE: '비활성', LOCKED: '잠김'}
+                        syUser.lastLogin,                            // 최근 로그인
+                        syUser.loginFailCnt,                         // 로그인 실패 횟수
+                        syUser.userMemo,                             // 메모
+                        syUser.regBy,                                // 등록자
+                        syUser.regDate,                              // 등록일시
+                        syUser.updBy,                                // 수정자
+                        syUser.updDate,                              // 수정일시
+                        syUser.authMethodCd,                         // 인증방식 — AUTH_METHOD {EMAIL: '이메일', GOOGLE: '구글', KAKAO: '카카오', NAVER: '네이버'}
+                        syUser.lastLoginDate,                        // 마지막 로그인 일시
+                        syUser.profileAttachId,                      // 프로필 첨부아이디
+                        sySite.siteNm.as("siteNm"),                  // 사이트명 (조인: sy_site)
+                        syDept.deptNm.as("deptNm"),                  // 부서명 (조인: sy_dept)
+                        syRole.roleNm.as("roleNm"),                  // 역할명 (조인: sy_role)
+                        syCode_userStatusCd.codeLabel.as("userStatusCdNm"),   // 상태 코드명 (조인: sy_code USER_STATUS)
+                        syCode_authMethodCd.codeLabel.as("authMethodCdNm")   // 인증방식 코드명 (조인: sy_code AUTH_METHOD)
                 ))
                 .from(syUser)
                 .leftJoin(sySite).on(sySite.siteId.eq(syUser.siteId))

@@ -49,15 +49,32 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         Map.entry("useYn", syCode.useYn)
     );
 
-    /* baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN {Y: '사용', N: '미사용'}
+     * (sy_code 자체가 전체 공통코드 메타 테이블 — code_grp 로 도메인 구분, code_value/code_label 이 실제 코드값/라벨.
+     *  예: code_grp='SITE_STATUS' 인 행의 code_value 는 ACTIVE/MAINTENANCE/INACTIVE)
+     */
     private JPAQuery<SyCodeDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyCodeDto.Item.class,
-                        syCode.codeId, syCode.siteId, syCode.codeGrp, syCode.codeValue, syCode.codeLabel,
-                        syCode.sortOrd, syCode.useYn, syCode.parentCodeValue, syCode.childCodeValues,
-                        syCode.codeRemark, syCode.codeLevel, syCode.codeOpt1,
-                        syCode.regBy, syCode.regDate, syCode.updBy, syCode.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syCode.codeId,            // 코드ID (YYMMDDhhmmss+rand4)
+                        syCode.siteId,            // 사이트ID (sy_site.site_id)
+                        syCode.codeGrp,           // 코드그룹 (sy_code_grp.code_grp)
+                        syCode.codeValue,         // 코드값 (저장값)
+                        syCode.codeLabel,         // 코드라벨 (표시명)
+                        syCode.sortOrd,           // 정렬순서
+                        syCode.useYn,             // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        syCode.parentCodeValue,   // 부모 코드값 (트리 구조 시 상위 code_value, null 이면 루트)
+                        syCode.childCodeValues,   // 허용 자식/전이 코드값 목록 (^VAL1^VAL2^ 형식 — 상태 전이 제약이나 하위 코드 목록)
+                        syCode.codeRemark,        // 비고
+                        syCode.codeLevel,         // 코드 트리 레벨 (1=루트, 2=중간, 3=리프 등)
+                        syCode.codeOpt1,          // 코드별 부가 옵션 1 (스타일 색상 hex, 아이콘 클래스 등 자유 문자열)
+                        syCode.regBy,             // 등록자
+                        syCode.regDate,           // 등록일시
+                        syCode.updBy,             // 수정자
+                        syCode.updDate,           // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syCode)
                 .leftJoin(sySite).on(sySite.siteId.eq(syCode.siteId));

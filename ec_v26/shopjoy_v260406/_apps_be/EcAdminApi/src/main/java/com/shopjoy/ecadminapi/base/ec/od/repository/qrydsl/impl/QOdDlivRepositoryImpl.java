@@ -81,18 +81,37 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         Map.entry("vendorId", odDliv.vendorId)
     );
 
-    /* 배송 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * DLIV_TYPE  {NORMAL:정상배송, RETURN:반품, EXCHANGE:교환반품, EXCHANGE_OUT:교환출고}
+     * DLIV_DIV   {OUTBOUND:출고(정상배송), INBOUND:입고(반품수거)}
+     * DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+     * COURIER    {CJ:CJ대한통운, LOGEN:로젠택배, POST:우체국택배, HANJIN:한진택배, LOTTE:롯데택배, KYOUNGDONG:경동택배, DIRECT:직배송}
+     */
     private JPAQuery<OdDlivDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdDlivDto.Item.class,
-                        odDliv.dlivId, odDliv.siteId, odDliv.orderId, odDliv.vendorId,
-                        odDliv.dlivTypeCd, odDliv.dlivDivCd, odDliv.dlivStatusCd, odDliv.dlivStatusCdBefore,
-                        odDliv.outboundCourierCd, odDliv.outboundTrackingNo,
-                        odDliv.dlivShipDate, odDliv.dlivDate,
-                        odDliv.shippingFee,
-                        odDliv.inboundCourierCd, odDliv.inboundTrackingNo,
-                        odDliv.recvNm, odDliv.recvPhone, odDliv.recvZip, odDliv.recvAddr, odDliv.recvAddrDetail,
-                        odDliv.dlivMemo,
+                        odDliv.dlivId,                // 배송ID (YYMMDDhhmmss+rand4)
+                        odDliv.siteId,                 // 사이트ID (sy_site.site_id)
+                        odDliv.orderId,                // 주문ID (od_order.)
+                        odDliv.vendorId,               // 출고 업체ID (벤더별 분리출고 시)
+                        odDliv.dlivTypeCd,             // 배송유형 — DLIV_TYPE {NORMAL:정상배송, RETURN:반품, EXCHANGE:교환반품, EXCHANGE_OUT:교환출고}
+                        odDliv.dlivDivCd,              // 입출고구분 — DLIV_DIV {OUTBOUND:출고(정상배송), INBOUND:입고(반품수거)}
+                        odDliv.dlivStatusCd,           // 배송상태 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
+                        odDliv.dlivStatusCdBefore,     // 변경 전 배송상태 — DLIV_STATUS (동일 코드그룹)
+                        odDliv.outboundCourierCd,      // 출고(발송) 택배사 — COURIER {CJ:CJ대한통운, LOGEN:로젠택배, POST:우체국택배, HANJIN:한진택배, LOTTE:롯데택배, KYOUNGDONG:경동택배, DIRECT:직배송}
+                        odDliv.outboundTrackingNo,     // 출고(발송) 송장번호
+                        odDliv.dlivShipDate,           // 출고일시
+                        odDliv.dlivDate,               // 배송완료일시
+                        odDliv.shippingFee,            // 배송료 (현재값)
+                        odDliv.inboundCourierCd,       // 반입 택배사 (반품일 때만) — COURIER (동일 코드그룹)
+                        odDliv.inboundTrackingNo,      // 반입 송장번호
+                        odDliv.recvNm,                 // 수령자명
+                        odDliv.recvPhone,              // 수령자연락처
+                        odDliv.recvZip,                // 우편번호
+                        odDliv.recvAddr,               // 주소
+                        odDliv.recvAddrDetail,         // 상세주소
+                        odDliv.dlivMemo,               // 메모 (HTML 에디터)
                         odDliv.regBy, odDliv.regDate, odDliv.updBy, odDliv.updDate,
                         odOrder.memberNm.as("memberNm"),
                         odOrder.orderDate.as("orderDate"),

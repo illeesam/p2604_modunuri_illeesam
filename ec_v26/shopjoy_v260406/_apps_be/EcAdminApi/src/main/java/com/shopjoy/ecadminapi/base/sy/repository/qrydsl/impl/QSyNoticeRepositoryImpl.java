@@ -42,15 +42,31 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         Map.entry("siteId", syNotice.siteId)
     );
 
-    /* 공지사항 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * NOTICE_TYPE     {NORMAL: '일반', URGENT: '긴급'}
+     * NOTICE_STATUS_CD (sy_code 미등록, DDL 주석 기준) {ACTIVE: '활성', INACTIVE: '비활성'}
+     * IS_FIXED        {Y: '상단고정', N: '일반'}
+     */
     private JPAQuery<SyNoticeDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyNoticeDto.Item.class,
-                        syNotice.noticeId, syNotice.siteId, syNotice.noticeTitle, syNotice.noticeTypeCd, syNotice.isFixed,
-                        syNotice.contentHtml, syNotice.attachGrpId, syNotice.startDate, syNotice.endDate,
-                        syNotice.noticeStatusCd, syNotice.viewCount,
-                        syNotice.regBy, syNotice.regDate, syNotice.updBy, syNotice.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syNotice.noticeId,        // 공지ID (YYMMDDhhmmss+rand4)
+                        syNotice.siteId,          // 사이트ID (sy_site.site_id)
+                        syNotice.noticeTitle,     // 제목
+                        syNotice.noticeTypeCd,    // 공지유형 — NOTICE_TYPE {NORMAL: '일반', URGENT: '긴급'}
+                        syNotice.isFixed,         // 상단고정 — IS_FIXED {Y: '상단고정', N: '일반'}
+                        syNotice.contentHtml,     // 내용 (HTML)
+                        syNotice.attachGrpId,     // 첨부파일그룹ID
+                        syNotice.startDate,       // 노출시작일
+                        syNotice.endDate,         // 노출종료일
+                        syNotice.noticeStatusCd,  // 상태 — NOTICE_STATUS_CD {ACTIVE: '활성', INACTIVE: '비활성'}
+                        syNotice.viewCount,       // 조회수
+                        syNotice.regBy,           // 등록자
+                        syNotice.regDate,         // 등록일시
+                        syNotice.updBy,           // 수정자
+                        syNotice.updDate,         // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syNotice)
                 .leftJoin(sySite).on(sySite.siteId.eq(syNotice.siteId));

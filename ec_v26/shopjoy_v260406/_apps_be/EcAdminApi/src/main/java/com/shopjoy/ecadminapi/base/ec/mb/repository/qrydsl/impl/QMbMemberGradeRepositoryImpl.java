@@ -45,13 +45,26 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         Map.entry("useYn", mbMemberGrade.useYn)
     );
 
-    /* 회원 등급 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * GRADE_CD (코드: MEMBER_GRADE)  {BASIC: '일반', NORMAL: '일반', GOLD: '우수', VIP: 'VIP'}
+     * USE_YN                        {Y: '사용', N: '미사용'}
+     */
     private JPAQuery<MbMemberGradeDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberGradeDto.Item.class,
-                        mbMemberGrade.memberGradeId, mbMemberGrade.siteId, mbMemberGrade.gradeCd, mbMemberGrade.gradeNm, mbMemberGrade.gradeRank,
-                        mbMemberGrade.minPurchaseAmt, mbMemberGrade.saveRate, mbMemberGrade.useYn,
-                        mbMemberGrade.regBy, mbMemberGrade.regDate, mbMemberGrade.updBy, mbMemberGrade.updDate
+                        mbMemberGrade.memberGradeId,   // 등급ID (PK)
+                        mbMemberGrade.siteId,          // 사이트ID (sy_site.site_id)
+                        mbMemberGrade.gradeCd,         // 등급코드 — MEMBER_GRADE {BASIC: '일반', GOLD: '우수', VIP: 'VIP'}
+                        mbMemberGrade.gradeNm,         // 등급명
+                        mbMemberGrade.gradeRank,       // 등급우선순위 (낮을수록 낮은 등급)
+                        mbMemberGrade.minPurchaseAmt,  // 등급 유지 최소 누적구매금액
+                        mbMemberGrade.saveRate,        // 적립률 (%)
+                        mbMemberGrade.useYn,           // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
+                        mbMemberGrade.regBy,           // 등록자ID
+                        mbMemberGrade.regDate,         // 등록일시
+                        mbMemberGrade.updBy,           // 수정자ID
+                        mbMemberGrade.updDate          // 수정일시
                 ))
                 .from(mbMemberGrade)
                 .leftJoin(sySite).on(sySite.siteId.eq(mbMemberGrade.siteId))

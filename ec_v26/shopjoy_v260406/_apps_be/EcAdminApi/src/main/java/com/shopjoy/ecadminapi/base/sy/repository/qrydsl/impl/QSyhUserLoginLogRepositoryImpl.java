@@ -56,34 +56,38 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         Map.entry("userId", syhUserLoginLog.userId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * LOGIN_RESULT  {SUCCESS: '성공', FAIL_PW: '비밀번호불일치', FAIL_LOCKED: '계정잠금', FAIL_DORMANT: '휴면계정', FAIL_WITHDRAWN: '탈퇴계정'}
+     */
     /* 사용자 로그인 로그 baseSelColumnQuery */
     private JPAQuery<SyhUserLoginLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhUserLoginLogDto.Item.class,
-                        syhUserLoginLog.logId,
-                        syhUserLoginLog.siteId,
-                        syhUserLoginLog.userId,
-                        syhUserLoginLog.loginId,
-                        syhUserLoginLog.loginDate,
-                        syhUserLoginLog.resultCd,
-                        syhUserLoginLog.failCnt,
-                        syhUserLoginLog.ip,
-                        syhUserLoginLog.device,
-                        syhUserLoginLog.os,
-                        syhUserLoginLog.browser,
-                        syhUserLoginLog.accessToken,
-                        syhUserLoginLog.accessTokenExp,
-                        syhUserLoginLog.refreshToken,
-                        syhUserLoginLog.refreshTokenExp,
-                        syhUserLoginLog.uiNm,
-                        syhUserLoginLog.cmdNm,
-                        syhUserLoginLog.regBy,
-                        syhUserLoginLog.regDate,
-                        syhUserLoginLog.updBy,
-                        syhUserLoginLog.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syUser.userNm.as("userNm"),
-                        cd_lr.codeLabel.as("resultCdNm")
+                        syhUserLoginLog.logId,               // 로그ID (PK, YYMMDDhhmmss+rand4)
+                        syhUserLoginLog.siteId,               // 사이트ID (sy_site.site_id)
+                        syhUserLoginLog.userId,                // 사용자ID (로그인 실패 시 NULL)
+                        syhUserLoginLog.loginId,               // 입력한 로그인ID
+                        syhUserLoginLog.loginDate,             // 로그인 시도일시
+                        syhUserLoginLog.resultCd,              // 결과 — LOGIN_RESULT {SUCCESS: '성공', FAIL_PW: '비밀번호불일치', FAIL_LOCKED: '계정잠금', FAIL_DORMANT: '휴면계정', FAIL_WITHDRAWN: '탈퇴계정'}
+                        syhUserLoginLog.failCnt,               // 해당 시점 연속 실패 횟수
+                        syhUserLoginLog.ip,                    // IP주소
+                        syhUserLoginLog.device,                // User-Agent 전문
+                        syhUserLoginLog.os,                    // OS 정보
+                        syhUserLoginLog.browser,               // 브라우저 정보
+                        syhUserLoginLog.accessToken,           // 액세스 토큰 (SHA-256 해시값 저장 권장, 로그인 실패 시 NULL)
+                        syhUserLoginLog.accessTokenExp,        // 액세스 토큰 만료일시
+                        syhUserLoginLog.refreshToken,          // 리프레시 토큰 (SHA-256 해시값 저장 권장)
+                        syhUserLoginLog.refreshTokenExp,       // 리프레시 토큰 만료일시
+                        syhUserLoginLog.uiNm,                  // 화면명 (X-UI-Nm 헤더)
+                        syhUserLoginLog.cmdNm,                 // 기능명 (X-Cmd-Nm 헤더)
+                        syhUserLoginLog.regBy,                 // 등록자
+                        syhUserLoginLog.regDate,               // 등록일시
+                        syhUserLoginLog.updBy,                 // 수정자
+                        syhUserLoginLog.updDate,               // 수정일시
+                        sySite.siteNm.as("siteNm"),                  // 사이트명 (조인: sy_site)
+                        syUser.userNm.as("userNm"),                  // 사용자명 (조인: sy_user)
+                        cd_lr.codeLabel.as("resultCdNm")              // 로그인결과 코드명 (조인: sy_code LOGIN_RESULT)
                 ))
                 .from(syhUserLoginLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhUserLoginLog.siteId))

@@ -41,13 +41,23 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         Map.entry("statusReason", odhOrderItemStatusHist.statusReason)
     );
 
-    /* 주문 아이템 상태 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * ORDER_ITEM_STATUS  {ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소}
+     */
     private JPAQuery<OdhOrderItemStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderItemStatusHistDto.Item.class,
-                        odhOrderItemStatusHist.orderItemStatusHistId, odhOrderItemStatusHist.siteId, odhOrderItemStatusHist.orderItemId, odhOrderItemStatusHist.orderId,
-                        odhOrderItemStatusHist.orderItemStatusCdBefore, odhOrderItemStatusHist.orderItemStatusCd, odhOrderItemStatusHist.statusReason,
-                        odhOrderItemStatusHist.chgUserId, odhOrderItemStatusHist.chgDate, odhOrderItemStatusHist.memo,
+                        odhOrderItemStatusHist.orderItemStatusHistId,   // 주문상품상태이력ID (YYMMDDhhmmss+rand4)
+                        odhOrderItemStatusHist.siteId,                  // 사이트ID
+                        odhOrderItemStatusHist.orderItemId,             // 주문상품ID (od_order_item.order_item_id)
+                        odhOrderItemStatusHist.orderId,                 // 주문ID (od_order.order_id)
+                        odhOrderItemStatusHist.orderItemStatusCdBefore, // 변경 전 주문상품상태 — ORDER_ITEM_STATUS {ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소}
+                        odhOrderItemStatusHist.orderItemStatusCd,       // 변경 후 주문상품상태 — ORDER_ITEM_STATUS (동일 코드그룹)
+                        odhOrderItemStatusHist.statusReason,            // 상태 변경 사유
+                        odhOrderItemStatusHist.chgUserId,               // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+                        odhOrderItemStatusHist.chgDate,                 // 변경 일시
+                        odhOrderItemStatusHist.memo,                    // 메모
                         odhOrderItemStatusHist.regBy, odhOrderItemStatusHist.regDate, odhOrderItemStatusHist.updBy, odhOrderItemStatusHist.updDate))
                 .from(odhOrderItemStatusHist);
     }

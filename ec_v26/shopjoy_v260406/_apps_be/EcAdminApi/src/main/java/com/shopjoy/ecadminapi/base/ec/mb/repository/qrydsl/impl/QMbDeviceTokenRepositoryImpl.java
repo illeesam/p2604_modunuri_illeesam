@@ -44,14 +44,26 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         Map.entry("siteId", mbDeviceToken.siteId)
     );
 
-    /* baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * OS_TYPE          ANDROID/IOS (코드 미등록, DDL 코멘트 기준 값)
+     * BENEFIT_NOTI_YN  {Y: '수신', N: '미수신'}
+     */
     private JPAQuery<MbDeviceTokenDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbDeviceTokenDto.Item.class,
-                        mbDeviceToken.deviceTokenId, mbDeviceToken.deviceToken, mbDeviceToken.siteId, mbDeviceToken.memberId,
-                        mbDeviceToken.osType, mbDeviceToken.benefitNotiYn, mbDeviceToken.alimReadDate,
-                        mbDeviceToken.regBy, mbDeviceToken.regDate, mbDeviceToken.updBy, mbDeviceToken.updDate,
-                        mbMember.memberNm.as("memberNm")
+                        mbDeviceToken.deviceTokenId,   // 디바이스 토큰ID (PK)
+                        mbDeviceToken.deviceToken,     // 디바이스 토큰 키
+                        mbDeviceToken.siteId,          // 사이트ID (sy_site.site_id)
+                        mbDeviceToken.memberId,        // 회원ID (mb_member.member_id, 비회원 가능)
+                        mbDeviceToken.osType,          // OS유형 — ANDROID/IOS
+                        mbDeviceToken.benefitNotiYn,   // 혜택알림수신여부 — BENEFIT_NOTI_YN {Y: '수신', N: '미수신'}
+                        mbDeviceToken.alimReadDate,    // 알림리스트 읽음일시
+                        mbDeviceToken.regBy,           // 등록자
+                        mbDeviceToken.regDate,         // 등록일시
+                        mbDeviceToken.updBy,           // 수정자
+                        mbDeviceToken.updDate,         // 수정일시
+                        mbMember.memberNm.as("memberNm")   // 회원명 (mb_member 조인)
                 ))
                 .from(mbDeviceToken)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbDeviceToken.memberId));

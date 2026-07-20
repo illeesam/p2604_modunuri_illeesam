@@ -51,22 +51,22 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         Map.entry("siteId", pdhProdViewLog.siteId)
     );
 
-    /* 상품 조회 로그 baseSelColumnQuery */
+    /* 상품 조회 로그 baseSelColumnQuery — 코드성 필드 없음 (로그성 원본값 저장) */
     private JPAQuery<PdhProdViewLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdViewLogDto.Item.class,
-                        pdhProdViewLog.logId,
-                        pdhProdViewLog.siteId,
-                        pdhProdViewLog.memberId,
-                        pdhProdViewLog.sessionKey,
-                        pdhProdViewLog.prodId,
-                        pdhProdViewLog.refId,
-                        pdhProdViewLog.refNm,
-                        pdhProdViewLog.searchKw,
-                        pdhProdViewLog.ip,
-                        pdhProdViewLog.device,
-                        pdhProdViewLog.referrer,
-                        pdhProdViewLog.viewDate,
+                        pdhProdViewLog.logId,        // 로그ID (PK, YYMMDDhhmmss+rand4)
+                        pdhProdViewLog.siteId,        // 사이트ID
+                        pdhProdViewLog.memberId,      // 회원ID (비회원 NULL)
+                        pdhProdViewLog.sessionKey,    // 비회원 세션키
+                        pdhProdViewLog.prodId,        // 상품ID (pd_prod.prod_id)
+                        pdhProdViewLog.refId,         // 참조ID (prod_id 등)
+                        pdhProdViewLog.refNm,         // 참조명 스냅샷
+                        pdhProdViewLog.searchKw,      // 검색어 (SEARCH 유형)
+                        pdhProdViewLog.ip,            // IP주소
+                        pdhProdViewLog.device,        // User-Agent
+                        pdhProdViewLog.referrer,      // 유입경로 URL
+                        pdhProdViewLog.viewDate,      // 조회일시
                         pdhProdViewLog.regBy, pdhProdViewLog.regDate, pdhProdViewLog.updBy, pdhProdViewLog.updDate
                 ))
                 .from(pdhProdViewLog)

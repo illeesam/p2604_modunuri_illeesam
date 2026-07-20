@@ -41,13 +41,24 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         Map.entry("siteId", odhDlivChgHist.siteId)
     );
 
-    /* 배송 변경 이력 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * CHG_TYPE (od_dliv 변경유형, sy_code 미등록 — Entity 주석 기준 예시)
+     *   COURIER:택배사변경, TRACKING:송장번호변경, RECV_INFO:수령정보변경, MEMO:메모변경, SPLIT:분할, MERGE:병합
+     */
     private JPAQuery<OdhDlivChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhDlivChgHistDto.Item.class,
-                        odhDlivChgHist.dlivChgHistId, odhDlivChgHist.siteId, odhDlivChgHist.dlivId,
-                        odhDlivChgHist.chgTypeCd, odhDlivChgHist.chgField, odhDlivChgHist.beforeVal, odhDlivChgHist.afterVal,
-                        odhDlivChgHist.chgReason, odhDlivChgHist.chgUserId, odhDlivChgHist.chgDate,
+                        odhDlivChgHist.dlivChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
+                        odhDlivChgHist.siteId,        // 사이트ID
+                        odhDlivChgHist.dlivId,        // 배송ID
+                        odhDlivChgHist.chgTypeCd,     // 변경유형코드 — CHG_TYPE {COURIER:택배사변경, TRACKING:송장번호변경, RECV_INFO:수령정보변경, MEMO:메모변경, SPLIT:분할, MERGE:병합}
+                        odhDlivChgHist.chgField,      // 변경 필드명
+                        odhDlivChgHist.beforeVal,     // 변경전값
+                        odhDlivChgHist.afterVal,      // 변경후값
+                        odhDlivChgHist.chgReason,     // 변경사유
+                        odhDlivChgHist.chgUserId,     // 처리자 (sy_user.user_id)
+                        odhDlivChgHist.chgDate,       // 처리일시
                         odhDlivChgHist.regBy, odhDlivChgHist.regDate, odhDlivChgHist.updBy, odhDlivChgHist.updDate))
                 .from(odhDlivChgHist);
     }

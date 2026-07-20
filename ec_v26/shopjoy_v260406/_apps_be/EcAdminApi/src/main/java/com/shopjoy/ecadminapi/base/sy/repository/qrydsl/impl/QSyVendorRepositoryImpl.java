@@ -72,18 +72,46 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         Map.entry("vendorZipCode", syVendor.vendorZipCode)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * VENDOR_CLASS   {INDIVIDUAL: '개인사업자', CORPORATION: '법인사업자', TAX_EXEMPT: '면세사업자', SIMPLIFIED: '간이과세자'}
+     * VENDOR_STATUS  {ACTIVE: '활성', REVIEWING: '심사중', BLOCKED: '정지'}
+     */
     /* 업체(판매자) baseSelColumnQuery */
     private JPAQuery<SyVendorDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorDto.Item.class,
-                        syVendor.vendorId, syVendor.siteId, syVendor.vendorNo, syVendor.corpNo,
-                        syVendor.vendorNm, syVendor.vendorNmEn, syVendor.ceoNm, syVendor.vendorType, syVendor.vendorItem,
-                        syVendor.vendorClassCd, syVendor.vendorZipCode, syVendor.vendorAddr, syVendor.vendorAddrDetail,
-                        syVendor.vendorPhone, syVendor.vendorFax, syVendor.vendorEmail, syVendor.vendorHomepage,
-                        syVendor.vendorBankNm, syVendor.vendorBankAccount, syVendor.vendorBankHolder, syVendor.vendorRegUrl,
-                        syVendor.openDate, syVendor.contractDate, syVendor.vendorStatusCd, syVendor.pathId, syVendor.vendorRemark,
-                        syVendor.regBy, syVendor.regDate, syVendor.updBy, syVendor.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syVendor.vendorId,                    // 판매/배송업체ID (PK, YYMMDDhhmmss+rand4)
+                        syVendor.siteId,                      // 사이트ID (sy_site.site_id)
+                        syVendor.vendorNo,                    // 판매/배송업체등록번호
+                        syVendor.corpNo,                      // 법인등록번호 (선택)
+                        syVendor.vendorNm,                    // 상호 / 회사명
+                        syVendor.vendorNmEn,                  // 영문 상호
+                        syVendor.ceoNm,                       // 대표자명
+                        syVendor.vendorType,                  // 업태
+                        syVendor.vendorItem,                  // 종목
+                        syVendor.vendorClassCd,               // 판매/배송업체구분 — VENDOR_CLASS {INDIVIDUAL: '개인사업자', CORPORATION: '법인사업자', TAX_EXEMPT: '면세사업자', SIMPLIFIED: '간이과세자'}
+                        syVendor.vendorZipCode,               // 우편번호
+                        syVendor.vendorAddr,                  // 주소
+                        syVendor.vendorAddrDetail,            // 상세주소
+                        syVendor.vendorPhone,                 // 대표 전화
+                        syVendor.vendorFax,                   // 팩스
+                        syVendor.vendorEmail,                 // 대표 이메일
+                        syVendor.vendorHomepage,               // 홈페이지
+                        syVendor.vendorBankNm,                // 은행명
+                        syVendor.vendorBankAccount,           // 계좌번호
+                        syVendor.vendorBankHolder,             // 예금주
+                        syVendor.vendorRegUrl,                // 판매/배송업체등록증 첨부 URL
+                        syVendor.openDate,                    // 개업일자
+                        syVendor.contractDate,                // 계약일자
+                        syVendor.vendorStatusCd,               // 상태 — VENDOR_STATUS {ACTIVE: '활성', REVIEWING: '심사중', BLOCKED: '정지'}
+                        syVendor.pathId,                      // 점(.) 구분 표시경로
+                        syVendor.vendorRemark,                // 비고 (HTML 에디터)
+                        syVendor.regBy,                       // 등록자
+                        syVendor.regDate,                     // 등록일시
+                        syVendor.updBy,                       // 수정자
+                        syVendor.updDate,                     // 수정일시
+                        sySite.siteNm.as("siteNm")            // 사이트명 (조인: sy_site)
                 ))
                 .from(syVendor)
                 .leftJoin(sySite).on(sySite.siteId.eq(syVendor.siteId))

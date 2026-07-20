@@ -50,12 +50,24 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         Map.entry("useYn", pdProdSetItem.useYn)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * USE_YN  {Y: '사용', N: '미사용'}
+     */
     /* 세트상품 구성 baseSelColumnQuery */
     private JPAQuery<PdProdSetItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdSetItemDto.Item.class,
-                        pdProdSetItem.setItemId, pdProdSetItem.siteId, pdProdSetItem.setProdId, pdProdSetItem.itemProdId, pdProdSetItem.itemSkuId,
-                        pdProdSetItem.itemNm, pdProdSetItem.itemQty, pdProdSetItem.itemDesc, pdProdSetItem.sortOrd, pdProdSetItem.useYn,
+                        pdProdSetItem.setItemId,     // 세트구성ID (PK, YYMMDDhhmmss+rand4)
+                        pdProdSetItem.siteId,         // 사이트ID (sy_site.site_id)
+                        pdProdSetItem.setProdId,       // 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
+                        pdProdSetItem.itemProdId,      // 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
+                        pdProdSetItem.itemSkuId,       // 구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)
+                        pdProdSetItem.itemNm,         // 구성품 표시명 (예: 머그컵, 접시 2p)
+                        pdProdSetItem.itemQty,        // 구성 수량
+                        pdProdSetItem.itemDesc,       // 구성품 부가 설명 (소재·용량·색상 등)
+                        pdProdSetItem.sortOrd,        // 노출 정렬 순서
+                        pdProdSetItem.useYn,           // 사용여부 — {Y: '사용', N: '미사용'}
                         pdProdSetItem.regBy, pdProdSetItem.regDate, pdProdSetItem.updBy, pdProdSetItem.updDate
                 ))
                 .from(pdProdSetItem)

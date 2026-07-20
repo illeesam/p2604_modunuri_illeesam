@@ -49,15 +49,34 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    /* 게시판 게시물 baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * BBS_STATUS_CD (sy_code 미등록, DDL 주석 기준) {ACTIVE: '정상', DELETED: '삭제됨', HIDDEN: '숨김'}
+     * IS_FIXED {Y: '상단고정', N: '일반'}
+     */
     private JPAQuery<SyBbsDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyBbsDto.Item.class,
-                        syBbs.bbsId, syBbs.siteId, syBbs.bbmId, syBbs.parentBbsId, syBbs.memberId, syBbs.authorNm,
-                        syBbs.bbsTitle, syBbs.contentHtml, syBbs.attachGrpId, syBbs.viewCount, syBbs.likeCount,
-                        syBbs.commentCount, syBbs.isFixed, syBbs.bbsStatusCd, syBbs.pathId,
-                        syBbs.regBy, syBbs.regDate, syBbs.updBy, syBbs.updDate,
-                        sySite.siteNm.as("siteNm")
+                        syBbs.bbsId,          // 게시물ID (YYMMDDhhmmss+rand4)
+                        syBbs.siteId,         // 사이트ID (sy_site.site_id)
+                        syBbs.bbmId,          // 게시판ID
+                        syBbs.parentBbsId,    // 부모게시물ID (답글)
+                        syBbs.memberId,       // 작성자 회원ID
+                        syBbs.authorNm,       // 작성자명
+                        syBbs.bbsTitle,       // 제목
+                        syBbs.contentHtml,    // 내용 (HTML)
+                        syBbs.attachGrpId,    // 첨부파일그룹ID
+                        syBbs.viewCount,      // 조회수
+                        syBbs.likeCount,      // 좋아요수
+                        syBbs.commentCount,   // 댓글수
+                        syBbs.isFixed,        // 상단고정 — IS_FIXED {Y: '상단고정', N: '일반'}
+                        syBbs.bbsStatusCd,    // 상태 — BBS_STATUS_CD {ACTIVE: '정상', DELETED: '삭제됨', HIDDEN: '숨김'}
+                        syBbs.pathId,         // 점(.) 구분 표시경로 (트리 빌드용)
+                        syBbs.regBy,          // 등록자
+                        syBbs.regDate,        // 등록일시
+                        syBbs.updBy,          // 수정자
+                        syBbs.updDate,        // 수정일시
+                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syBbs)
                 .leftJoin(sySite).on(sySite.siteId.eq(syBbs.siteId));

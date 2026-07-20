@@ -47,15 +47,26 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         Map.entry("siteId", pdReview.siteId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 등록 기준)
+     * REVIEW_STATUS_CD  {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
+     */
     /** 단건 조회 */
     private JPAQuery<PdReviewDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdReviewDto.Item.class,
-                        pdReview.reviewId, pdReview.siteId, pdReview.prodId, pdReview.memberId,
-                        pdReview.reviewTitle, pdReview.reviewContent, pdReview.rating,
-                        pdReview.helpfulCnt, pdReview.unhelpfulCnt,
-                        pdReview.reviewStatusCd, pdReview.reviewStatusCdBefore,
-                        pdReview.reviewDate,
+                        pdReview.reviewId,       // 리뷰ID (PK, YYMMDDhhmmss+rand4)
+                        pdReview.siteId,          // 사이트ID (sy_site.site_id)
+                        pdReview.prodId,          // 상품ID (pd_prod.prod_id)
+                        pdReview.memberId,        // 회원ID (mb_member.member_id)
+                        pdReview.reviewTitle,     // 리뷰 제목
+                        pdReview.reviewContent,  // 리뷰 내용
+                        pdReview.rating,          // 평점 (1.0~5.0)
+                        pdReview.helpfulCnt,      // 도움이 돼요 수
+                        pdReview.unhelpfulCnt,    // 도움이 안 돼요 수
+                        pdReview.reviewStatusCd,           // 상태 — {ACTIVE: '정상', HIDDEN: '숨김', DELETED: '삭제'}
+                        pdReview.reviewStatusCdBefore,     // 변경 전 리뷰상태 — 동일 코드그룹
+                        pdReview.reviewDate,      // 리뷰작성일
                         pdReview.regBy, pdReview.regDate, pdReview.updBy, pdReview.updDate
                 ))
                 .from(pdReview);

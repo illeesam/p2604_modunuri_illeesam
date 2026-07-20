@@ -28,13 +28,26 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattMemberRepositoryImpl";
     private static final QCmChattMember cmChattMember = QCmChattMember.cmChattMember;
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 실제 코드값 (DDL 컬럼 코멘트 기준, sy_code 미등록)
+     * MEMBER_TYPE_CD  {MEMBER: '고객회원', ADMIN: '관리자'}
+     */
     private JPAQuery<CmChattMemberDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmChattMemberDto.Item.class,
-                        cmChattMember.chattMemberId, cmChattMember.siteId, cmChattMember.chattId,
-                        cmChattMember.memberTypeCd, cmChattMember.refId, cmChattMember.refNm,
-                        cmChattMember.unreadCnt, cmChattMember.joinDate, cmChattMember.leaveDate,
-                        cmChattMember.regBy, cmChattMember.regDate, cmChattMember.updBy, cmChattMember.updDate
+                        cmChattMember.chattMemberId, // 참여자ID (PK, YYMMDDhhmmss+rand4)
+                        cmChattMember.siteId,        // 사이트ID (sy_site.site_id)
+                        cmChattMember.chattId,       // 채팅방ID (cm_chatt.chatt_id)
+                        cmChattMember.memberTypeCd,  // 참여자유형 — MEMBER_TYPE_CD {MEMBER: '고객회원', ADMIN: '관리자'}
+                        cmChattMember.refId,         // 참조ID (mb_member.member_id 또는 sy_user.user_id)
+                        cmChattMember.refNm,         // 참여자명 (비정규화 캐시)
+                        cmChattMember.unreadCnt,     // 미읽음 메시지 수
+                        cmChattMember.joinDate,      // 참여일시
+                        cmChattMember.leaveDate,     // 퇴장일시 (NULL=현재 참여중)
+                        cmChattMember.regBy,         // 등록자
+                        cmChattMember.regDate,       // 등록일시
+                        cmChattMember.updBy,         // 수정자
+                        cmChattMember.updDate        // 수정일시
                 ))
                 .from(cmChattMember);
     }

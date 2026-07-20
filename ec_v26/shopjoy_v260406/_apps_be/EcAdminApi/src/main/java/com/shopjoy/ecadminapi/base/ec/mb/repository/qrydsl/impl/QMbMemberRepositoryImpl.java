@@ -57,19 +57,41 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         Map.entry("siteId", mbMember.siteId)
     );
 
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * GRADE_CD (코드: MEMBER_GRADE)          {BASIC: '일반', GOLD: '우수', VIP: 'VIP'}
+     * MEMBER_STATUS_CD (코드: MEMBER_STATUS) {ACTIVE: '활성', DORMANT: '휴면', SUSPENDED: '정지', WITHDRAWN: '탈퇴'}
+     * MEMBER_GENDER                          {M: '남성', F: '여성'}
+     */
     private JPAQuery<MbMemberDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberDto.Item.class,
-                        mbMember.memberId, mbMember.siteId, mbMember.loginId, mbMember.memberNm, mbMember.memberPhone,
-                        mbMember.memberGender, mbMember.birthDate,
-                        mbMember.gradeCd, mbMember.memberStatusCd, mbMember.memberStatusCdBefore,
-                        mbMember.joinDate, mbMember.lastLogin,
-                        mbMember.orderCount, mbMember.totalPurchaseAmt, mbMember.cacheBalanceAmt,
-                        mbMember.memberZipCode, mbMember.memberAddr, mbMember.memberAddrDetail, mbMember.memberMemo,
-                        mbMember.regBy, mbMember.regDate, mbMember.updBy, mbMember.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        cdGr.codeLabel.as("gradeCdNm"),
-                        cdMs.codeLabel.as("memberStatusCdNm")
+                        mbMember.memberId,               // 회원ID (PK, YYMMDDhhmmss+rand4)
+                        mbMember.siteId,                 // 사이트ID (sy_site.site_id)
+                        mbMember.loginId,                // 이메일 (로그인 ID)
+                        mbMember.memberNm,                // 회원명
+                        mbMember.memberPhone,             // 연락처
+                        mbMember.memberGender,            // 성별 — M/F {M: '남성', F: '여성'}
+                        mbMember.birthDate,               // 생년월일
+                        mbMember.gradeCd,                 // 등급 — MEMBER_GRADE {BASIC: '일반', GOLD: '우수', VIP: 'VIP'}
+                        mbMember.memberStatusCd,          // 상태 — MEMBER_STATUS {ACTIVE: '활성', DORMANT: '휴면', SUSPENDED: '정지', WITHDRAWN: '탈퇴'}
+                        mbMember.memberStatusCdBefore,    // 변경 전 회원상태 — MEMBER_STATUS (동일 코드값)
+                        mbMember.joinDate,                // 가입일
+                        mbMember.lastLogin,               // 최근 로그인
+                        mbMember.orderCount,              // 주문 건수
+                        mbMember.totalPurchaseAmt,        // 누적 구매금액
+                        mbMember.cacheBalanceAmt,         // 적립금 잔액
+                        mbMember.memberZipCode,           // 우편번호
+                        mbMember.memberAddr,              // 주소
+                        mbMember.memberAddrDetail,        // 상세주소
+                        mbMember.memberMemo,              // 메모
+                        mbMember.regBy,                   // 등록자 (sy_user.user_id, mb_member.member_id)
+                        mbMember.regDate,                 // 등록일
+                        mbMember.updBy,                   // 수정자 (sy_user.user_id, mb_member.member_id)
+                        mbMember.updDate,                 // 수정일
+                        sySite.siteNm.as("siteNm"),                    // 사이트명 (sy_site 조인)
+                        cdGr.codeLabel.as("gradeCdNm"),                // 등급 코드라벨 (sy_code MEMBER_GRADE 조인)
+                        cdMs.codeLabel.as("memberStatusCdNm")          // 상태 코드라벨 (sy_code MEMBER_STATUS 조인)
                 ))
                 .from(mbMember)
                 .leftJoin(sySite).on(sySite.siteId.eq(mbMember.siteId))

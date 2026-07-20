@@ -68,22 +68,56 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         Map.entry("prodSkuId", odOrderItem.prodSkuId)
     );
 
-    /* 주문 아이템(상품) baseSelColumnQuery */
+    /*
+     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * ORDER_ITEM_STATUS  {ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소}
+     * COURIER  {CJ:CJ대한통운, LOGEN:로젠택배, POST:우체국택배, HANJIN:한진택배, LOTTE:롯데택배, KYOUNGDONG:경동택배, DIRECT:직배송}
+     */
     private JPAQuery<OdOrderItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdOrderItemDto.Item.class,
-                        odOrderItem.orderItemId, odOrderItem.siteId, odOrderItem.orderId, odOrderItem.prodId, odOrderItem.prodSkuId,
-                        odOrderItem.prodOptId1, odOrderItem.prodOptId2, odOrderItem.prodNm, odOrderItem.brandNm, odOrderItem.dlivTmpltId,
-                        odOrderItem.normalPrice, odOrderItem.unitPrice, odOrderItem.orderQty, odOrderItem.itemOrderAmt,
-                        odOrderItem.cancelQty, odOrderItem.itemCancelAmt, odOrderItem.completQty, odOrderItem.itemCompletedAmt,
-                        odOrderItem.orgUnitPrice, odOrderItem.orgItemOrderAmt, odOrderItem.orgDiscountAmt, odOrderItem.orgShippingFee,
-                        odOrderItem.saveRate, odOrderItem.saveUseAmt, odOrderItem.saveSchdAmt,
-                        odOrderItem.orderItemStatusCd, odOrderItem.orderItemStatusCdBefore,
-                        odOrderItem.claimYn, odOrderItem.buyConfirmYn, odOrderItem.buyConfirmSchdDate, odOrderItem.buyConfirmDate,
-                        odOrderItem.settleYn, odOrderItem.settleDate,
-                        odOrderItem.reserveSaleYn, odOrderItem.reserveDlivSchdDate,
-                        odOrderItem.bundleGroupId, odOrderItem.bundlePriceRate, odOrderItem.giftId,
-                        odOrderItem.outboundShippingFee, odOrderItem.dlivCourierCd, odOrderItem.dlivTrackingNo, odOrderItem.dlivShipDate,
+                        odOrderItem.orderItemId,             // 주문상품ID (YYMMDDhhmmss+rand4)
+                        odOrderItem.siteId,                  // 사이트ID
+                        odOrderItem.orderId,                 // 주문ID (od_order.)
+                        odOrderItem.prodId,                  // 상품ID (pd_prod.)
+                        odOrderItem.prodSkuId,               // SKU ID (pd_prod_sku.prod_sku_id, 무옵션 시 NULL)
+                        odOrderItem.prodOptId1,              // 옵션1 값ID (pd_prod_opt.opt_id)
+                        odOrderItem.prodOptId2,              // 옵션2 값ID (pd_prod_opt.opt_id)
+                        odOrderItem.prodNm,                  // 상품명 (주문 시점 스냅샷)
+                        odOrderItem.brandNm,                 // 브랜드명 (주문 시점 스냅샷)
+                        odOrderItem.dlivTmpltId,             // 배송비 템플릿ID 스냅샷
+                        odOrderItem.normalPrice,             // 정상가 (할인 전 1ea 가격)
+                        odOrderItem.unitPrice,                // 판매가 (단가, 옵션 추가금액 포함)
+                        odOrderItem.orderQty,                 // 주문수량
+                        odOrderItem.itemOrderAmt,            // 주문금액 (unit_price × order_qty)
+                        odOrderItem.cancelQty,               // 취소수량
+                        odOrderItem.itemCancelAmt,           // 취소금액 (클레임 누적 취소액)
+                        odOrderItem.completQty,              // 판매완료수량
+                        odOrderItem.itemCompletedAmt,        // 완료금액 (item_order_amt - item_cancel_amt)
+                        odOrderItem.orgUnitPrice,            // 원 단가 (주문 확정 시점 스냅샷)
+                        odOrderItem.orgItemOrderAmt,         // 원 주문금액 (주문 확정 시점 스냅샷)
+                        odOrderItem.orgDiscountAmt,          // 원 할인금액 (주문 확정 시점 스냅샷)
+                        odOrderItem.orgShippingFee,          // 원 배송료 (주문 확정 시점 스냅샷)
+                        odOrderItem.saveRate,                 // 주문 시점 적립율 (%)
+                        odOrderItem.saveUseAmt,              // 사용 적립금 (주문상품별 안분금액)
+                        odOrderItem.saveSchdAmt,             // 적립 예정금액 (구매확정 전=예상, 확정 후=실적립)
+                        odOrderItem.orderItemStatusCd,       // 품목 주문 상태 — ORDER_ITEM_STATUS {ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소}
+                        odOrderItem.orderItemStatusCdBefore, // 변경 전 품목상태 — ORDER_ITEM_STATUS (동일 코드그룹)
+                        odOrderItem.claimYn,                  // 클레임 진행 중 여부 Y/N
+                        odOrderItem.buyConfirmYn,            // 구매확정여부 Y/N
+                        odOrderItem.buyConfirmSchdDate,      // 구매확정 예정일 (배송완료 + N일 자동 설정)
+                        odOrderItem.buyConfirmDate,          // 구매확정일시
+                        odOrderItem.settleYn,                 // 정산처리여부 Y/N
+                        odOrderItem.settleDate,              // 정산처리일시
+                        odOrderItem.reserveSaleYn,           // 예약판매여부 Y/N
+                        odOrderItem.reserveDlivSchdDate,     // 예약판매 발송 예정일시
+                        odOrderItem.bundleGroupId,           // 묶음 그룹키 (동일 묶음 구성품 식별, UUID, 일반상품=NULL)
+                        odOrderItem.bundlePriceRate,         // 묶음 가격 안분율 (%) — 부분클레임 환불 계산 기준
+                        odOrderItem.giftId,                   // 발급 사은품ID (pm_gift.gift_id)
+                        odOrderItem.outboundShippingFee,     // 해당 항목의 배송료 (부분배송 시)
+                        odOrderItem.dlivCourierCd,           // 해당 항목의 배송 택배사 — COURIER {CJ:CJ대한통운, LOGEN:로젠택배, POST:우체국택배, HANJIN:한진택배, LOTTE:롯데택배, KYOUNGDONG:경동택배, DIRECT:직배송}
+                        odOrderItem.dlivTrackingNo,          // 해당 항목의 배송 송장번호
+                        odOrderItem.dlivShipDate,            // 해당 항목의 출고일시
                         odOrderItem.regBy, odOrderItem.regDate, odOrderItem.updBy, odOrderItem.updDate,
                         pdProd.thumbnailUrl.as("thumbnailUrl"),
                         pdProd.salePrice.as("salePriceCurrent"),
