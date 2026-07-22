@@ -34,22 +34,34 @@ window.DashboardBoAppMonitor = {
     const cfTopUrlRangeLabel = computed(() => RANGE_OPTS.find(o => o.value === topUrlRange.value)?.label || '');
     const cfRtTopRangeLabel  = computed(() => RANGE_OPTS.find(o => o.value === rtTopRange.value)?.label  || '');
 
+    /* 응답시간 4단계 등급 — 전 위젯(히트맵/응답시간Top10/상태분포) 공통 색상·기준
+     * 쾌적 <500ms(초록) / 보통 <1500ms(파랑) / 경고 <3000ms(오렌지) / 위험 ≥3000ms(적색) */
+    const RT_GRADES = [
+      { max: 500,      key: 'good', label: '쾌적', color: '#10b981' },
+      { max: 1500,     key: 'ok',   label: '보통', color: '#3b82f6' },
+      { max: 3000,     key: 'warn', label: '경고', color: '#f59e0b' },
+      { max: Infinity, key: 'bad',  label: '위험', color: '#ef4444' },
+    ];
+    const fnRtGrade = (rt) => RT_GRADES.find(g => rt < g.max) || RT_GRADES[RT_GRADES.length - 1];
+    /* 히트맵 산점도의 등급 인덱스 (0~3) */
+    const fnRtGradeIdx = (rt) => RT_GRADES.findIndex(g => rt < g.max);
+
     const WIDGET_SRC = {
       XVIEW: { compId:'(없음)', chartType:'scatter + brush (X-View 히트맵)', url:'(로컬 목업 — 실시간 생성)', dataKey:'xviewData', fields:'t(timestamp ms) / rt(응답시간ms) / err(boolean)', desc:'브라우저 로컬에서 800개 랜덤 포인트 생성. 2초마다 새 포인트 추가. 실제 구현 시 APM 에이전트 데이터 연동 필요.',
         tag:'<co-echart\n  :option="cfOptXview"\n  height="360px"\n  @brush-selected="onXviewBrush"\n/>',
-        attrs:[{k:':option',v:'cfOptXview',d:'scatter series — 정상(파랑)/에러(빨강), brush toolbox 포함'},{k:'height',v:'"360px"',d:'드릴다운 영역 포함 높이'},{k:'@brush-selected',v:'onXviewBrush',d:'브러시 선택 시 드릴다운 테이블 갱신 emit 핸들러'}] },
+        attrs:[{k:':option',v:'cfOptXview',d:'scatter series — 4단계(쾌적 초록/보통 파랑/경고 오렌지/위험 적색), brush toolbox 포함'},{k:'height',v:'"360px"',d:'드릴다운 영역 포함 높이'},{k:'@brush-selected',v:'onXviewBrush',d:'브러시 선택 시 트랜잭션 목록 새창(postMessage) emit 핸들러'}] },
       TOPURL:   { compId:'(없음)', chartType:'bar (수평 막대)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'url / uiNm / cmdNm 별 호출건수 집계 (선택 기간)', desc:'선택한 기간(10분~2일) 트랜잭션을 URL 기준 집계해 호출량 상위 10개를 표시.',
         tag:'<co-echart\n  :option="cfOptTopUrl"\n  height="260px"\n/>',
         attrs:[{k:':option',v:'cfOptTopUrl',d:'bar horizontal — url 별 count 내림차순 Top10, topUrlRange 기간 필터'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
-      RTTOP:    { compId:'(없음)', chartType:'bar (수평 막대, 4단계 색상)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'url 별 평균 응답시간(ms) 집계 (선택 기간)', desc:'선택한 기간(10분~2일) 트랜잭션을 URL 기준 평균 응답시간 집계해 상위 10개 표시. 쾌적(<500ms)/일반(<1500ms)/경고(<3000ms)/위험(≥3000ms) 4단계 색상.',
+      RTTOP:    { compId:'(없음)', chartType:'bar (수평 막대, 4단계 색상)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'url 별 평균 응답시간(ms) 집계 (선택 기간)', desc:'선택한 기간(10분~2일) 트랜잭션을 URL 기준 평균 응답시간 집계해 상위 10개 표시. 쾌적(<500ms 초록)/보통(<1500ms 파랑)/경고(<3000ms 오렌지)/위험(≥3000ms 적색) 4단계 색상.',
         tag:'<co-echart\n  :option="cfOptRtTop"\n  height="260px"\n/>',
         attrs:[{k:':option',v:'cfOptRtTop',d:'bar horizontal — url 별 평균 응답시간 내림차순 Top10, rtTopRange 기간 필터, itemStyle.color 콜백으로 4단계 색상'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
       RTTREND:  { compId:'(없음)', chartType:'line (10초 버킷 평균/최대 응답시간)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'t(10초 버킷) / avgRt / maxRt', desc:'10초 단위로 평균·최대 응답시간을 집계한 추이선.',
         tag:'<co-echart\n  :option="cfOptRtTrend"\n  height="220px"\n/>',
         attrs:[{k:':option',v:'cfOptRtTrend',d:'line 2 series — 평균/최대 응답시간'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
-      STATUSPIE:{ compId:'(없음)', chartType:'pie (파이 차트)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'상태별(정상/느림/오류) 비중', desc:'최근 10분 트랜잭션의 상태 분포.',
+      STATUSPIE:{ compId:'(없음)', chartType:'pie (파이 차트)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'상태별(쾌적/보통/경고/위험) 비중', desc:'최근 10분 트랜잭션의 상태 분포(4단계 등급).',
         tag:'<co-echart\n  :option="cfOptStatusPie"\n  height="220px"\n/>',
-        attrs:[{k:':option',v:'cfOptStatusPie',d:'pie series — 정상/느림/오류 3종 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+        attrs:[{k:':option',v:'cfOptStatusPie',d:'pie series — 쾌적/보통/경고/위험 4종 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
     };
 
     /* 위젯 정보 팝오버 열기
@@ -146,7 +158,7 @@ window.DashboardBoAppMonitor = {
     const cfOptXview = computed(() => {
       const now  = Date.now();
       const from = now - 10 * 60 * 1000;
-      const pts  = xviewData.value.map(p => [p.t, p.rt, p.err ? 2 : p.rt > 3000 ? 2 : p.rt > 500 ? 1 : 0, p.url||'', p.uiNm||'', p.cmdNm||'']);
+      const pts  = xviewData.value.map(p => [p.t, p.rt, fnRtGradeIdx(p.rt), p.url||'', p.uiNm||'', p.cmdNm||'']);
 
       return {
         tooltip: {
@@ -154,7 +166,7 @@ window.DashboardBoAppMonitor = {
           formatter: p => {
             const d   = new Date(p.data[0]);
             const hms = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
-            const lbl = ['정상','느림','오류'][p.data[2]] || '';
+            const lbl = (RT_GRADES[p.data[2]] || {}).label || '';
             const url   = p.data[3] || '';
             const uiNm  = p.data[4] || '';
             const cmdNm = p.data[5] || '';
@@ -193,15 +205,16 @@ window.DashboardBoAppMonitor = {
           splitLine: { lineStyle:{ color:'#f0f0f0' } },
         },
         visualMap: {
-          show: true, type:'piecewise', categories: [0,1,2], dimension: 2,
+          show: true, type:'piecewise', categories: [0,1,2,3], dimension: 2,
           pieces: [
-            { value:0, label:'정상 (<500ms)',    color:'#3b82f6' },
-            { value:1, label:'느림 (<3000ms)',   color:'#f59e0b' },
-            { value:2, label:'오류 / 매우 느림', color:'#ef4444' },
+            { value:0, label:'쾌적 (<500ms)',   color: RT_GRADES[0].color },
+            { value:1, label:'보통 (<1500ms)',  color: RT_GRADES[1].color },
+            { value:2, label:'경고 (<3000ms)',  color: RT_GRADES[2].color },
+            { value:3, label:'위험 (≥3000ms)',  color: RT_GRADES[3].color },
           ],
-          right: 16, bottom: 48, textStyle:{ fontSize:10 },
+          right: 16, bottom: 40, textStyle:{ fontSize:10 },
         },
-        /* brush 는 scatter 단일 시리즈(index 0)만 대상. 경고선(500/3000ms)은 별도 line 시리즈
+        /* brush 는 scatter 단일 시리즈(index 0)만 대상. 경고선(1500/3000ms)은 별도 line 시리즈
          * 대신 scatter 의 markLine 으로 그려 series 배열을 1개로 유지 → brush overallReset 오류 회피.
          * large:true 도 제거(brush 선택 index 집계와 상충). */
         series: [
@@ -213,8 +226,8 @@ window.DashboardBoAppMonitor = {
               symbol: 'none', silent: true,
               label: { show: false },
               data: [
-                { yAxis: 500,  lineStyle:{ type:'dashed', color:'#f59e0b', width:1.5 } },
-                { yAxis: 3000, lineStyle:{ type:'dashed', color:'#ef4444', width:1.5 } },
+                { yAxis: 1500, lineStyle:{ type:'dashed', color: RT_GRADES[2].color, width:1.5 } },
+                { yAxis: 3000, lineStyle:{ type:'dashed', color: RT_GRADES[3].color, width:1.5 } },
               ],
             },
           },
@@ -253,11 +266,12 @@ window.DashboardBoAppMonitor = {
         .filter(Boolean)
         .map(p => {
           const d = new Date(p.t);
+          const g = fnRtGrade(p.rt);
           return {
             time: d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0'),
             rt: p.rt,
-            status: p.err ? '오류' : p.rt > 3000 ? '매우 느림' : p.rt > 500 ? '느림' : '정상',
-            statusColor: p.err ? '#ef4444' : p.rt > 3000 ? '#ef4444' : p.rt > 500 ? '#f59e0b' : '#10b981',
+            status: g.label,
+            statusColor: g.color,
             url: p.url || '',
             uiNm: p.uiNm || '',
             cmdNm: p.cmdNm || '',
@@ -286,15 +300,6 @@ window.DashboardBoAppMonitor = {
         series: [{ type:'bar', data: top.map(t => t[1]), itemStyle:{ color:'#6366f1', borderRadius:[0,4,4,0] }, barMaxWidth: 16 }],
       };
     });
-
-    /* 평균 응답시간 등급 색상 — 쾌적 <500ms / 일반 <1500ms / 경고 <3000ms / 위험 ≥3000ms */
-    const RT_GRADES = [
-      { max: 500,  label:'쾌적', color:'#3b82f6' },
-      { max: 1500, label:'일반', color:'#10b981' },
-      { max: 3000, label:'경고', color:'#f59e0b' },
-      { max: Infinity, label:'위험', color:'#ef4444' },
-    ];
-    const fnRtGrade = (rt) => RT_GRADES.find(g => rt < g.max) || RT_GRADES[RT_GRADES.length - 1];
 
     /* ── 응답시간 Top10 (URL별 평균 응답시간, 선택 기간 필터) option ─────────────────────────── */
     const cfOptRtTop = computed(() => {
@@ -356,24 +361,16 @@ window.DashboardBoAppMonitor = {
       };
     });
 
-    /* ── 상태 분포 파이 option ─────────────────────────── */
+    /* ── 상태 분포 파이 option (4단계 등급) ─────────────────────────── */
     const cfOptStatusPie = computed(() => {
-      let ok = 0, slow = 0, err = 0;
-      xviewData.value.forEach(p => {
-        if (p.err || p.rt > 3000) err++;
-        else if (p.rt > 500) slow++;
-        else ok++;
-      });
+      const cnt = [0, 0, 0, 0];
+      xviewData.value.forEach(p => { cnt[fnRtGradeIdx(p.rt)]++; });
       return {
         tooltip: { trigger:'item', formatter: p => p.name + ': ' + p.value + '건 (' + p.percent + '%)' },
         legend: { orient:'vertical', right:8, top:'center', textStyle:{ fontSize:10 } },
         series: [{
           type:'pie', radius:['40%','68%'], center:['38%','50%'],
-          data: [
-            { name:'정상', value: ok,   itemStyle:{ color:'#3b82f6' } },
-            { name:'느림', value: slow, itemStyle:{ color:'#f59e0b' } },
-            { name:'오류', value: err,  itemStyle:{ color:'#ef4444' } },
-          ],
+          data: RT_GRADES.map((g, i) => ({ name: g.label, value: cnt[i], itemStyle:{ color: g.color } })),
           label:{ show:false },
           emphasis:{ label:{ show:true, fontSize:11 } },
         }],
@@ -427,7 +424,7 @@ window.DashboardBoAppMonitor = {
         <span style="font-size:10px;font-weight:400;color:#10b981;background:#f0fdf4;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;">● LIVE</span>
         <span style="flex:1;"></span>
         <span style="font-size:10px;color:#888;">박스 드래그 → 트랜잭션 목록 새창</span>
-        <span style="font-size:10px;color:#888;">━ ━ 500ms 경고 &amp; ━ ━ 3000ms 오류</span>
+        <span style="font-size:10px;color:#888;">━ ━ 1500ms 경고 &amp; ━ ━ 3000ms 위험</span>
       </div>
       <co-echart :option="cfOptXview" height="360px" @brush-selected="onXviewBrush" @ready="fnXviewChartReady" />
     </bo-container>
@@ -456,7 +453,7 @@ window.DashboardBoAppMonitor = {
         </select>
         <span style="flex:1;"></span>
         <span style="font-size:10px;color:#888;">최근 {{ cfRtTopRangeLabel }}</span>
-        <span style="font-size:10px;color:#888;">🔵 쾌적 &lt;500ms · 🟢 일반 &lt;1500ms · 🟠 경고 &lt;3000ms · 🔴 위험 ≥3000ms</span>
+        <span style="font-size:10px;color:#888;">🟢 쾌적 &lt;500ms · 🔵 보통 &lt;1500ms · 🟠 경고 &lt;3000ms · 🔴 위험 ≥3000ms</span>
       </div>
       <co-echart :option="cfOptRtTop" height="260px" />
     </bo-container>
