@@ -196,7 +196,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(SyhSendMsgLogDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyhSendMsgLogDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

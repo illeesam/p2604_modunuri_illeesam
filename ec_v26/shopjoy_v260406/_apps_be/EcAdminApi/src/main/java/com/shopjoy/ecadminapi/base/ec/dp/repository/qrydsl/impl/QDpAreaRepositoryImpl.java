@@ -157,7 +157,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(DpAreaDto.Request search) {
+    private BooleanExpression andSearchValueLike(DpAreaDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

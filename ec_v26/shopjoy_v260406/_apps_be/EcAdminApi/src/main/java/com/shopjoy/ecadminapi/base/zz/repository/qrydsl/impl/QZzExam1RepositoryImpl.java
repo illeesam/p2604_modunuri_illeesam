@@ -131,7 +131,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(ZzExam1Dto.Request search) {
+    private BooleanExpression andSearchValueLike(ZzExam1Dto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

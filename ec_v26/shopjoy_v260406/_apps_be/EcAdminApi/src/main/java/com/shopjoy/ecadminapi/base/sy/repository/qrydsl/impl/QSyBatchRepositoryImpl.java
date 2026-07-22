@@ -173,7 +173,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(SyBatchDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyBatchDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

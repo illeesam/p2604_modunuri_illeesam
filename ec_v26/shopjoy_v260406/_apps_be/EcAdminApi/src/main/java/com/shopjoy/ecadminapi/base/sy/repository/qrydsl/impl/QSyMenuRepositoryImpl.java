@@ -188,7 +188,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         return syMenu.menuId.in(menuIds);
     }
 
-private BooleanExpression andSearchValueLike(SyMenuDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyMenuDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

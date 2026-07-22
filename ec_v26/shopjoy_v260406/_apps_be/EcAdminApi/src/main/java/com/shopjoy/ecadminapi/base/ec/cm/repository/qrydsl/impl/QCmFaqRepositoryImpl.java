@@ -158,7 +158,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         return (ids == null || ids.isEmpty()) ? cmFaq.pathId.eq(search.getPathId()) : cmFaq.pathId.in(ids);
     }
 
-private BooleanExpression andSearchValueLike(CmFaqDto.Request search) {
+    private BooleanExpression andSearchValueLike(CmFaqDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

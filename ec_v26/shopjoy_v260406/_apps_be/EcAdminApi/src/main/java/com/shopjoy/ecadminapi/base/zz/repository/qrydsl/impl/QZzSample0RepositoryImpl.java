@@ -150,7 +150,7 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(ZzSample0Dto.Request search) {
+    private BooleanExpression andSearchValueLike(ZzSample0Dto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

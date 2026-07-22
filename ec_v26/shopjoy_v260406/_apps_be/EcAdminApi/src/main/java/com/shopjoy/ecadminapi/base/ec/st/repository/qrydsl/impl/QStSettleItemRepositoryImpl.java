@@ -169,7 +169,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(StSettleItemDto.Request search) {
+    private BooleanExpression andSearchValueLike(StSettleItemDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

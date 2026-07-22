@@ -173,7 +173,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(SyBrandDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyBrandDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

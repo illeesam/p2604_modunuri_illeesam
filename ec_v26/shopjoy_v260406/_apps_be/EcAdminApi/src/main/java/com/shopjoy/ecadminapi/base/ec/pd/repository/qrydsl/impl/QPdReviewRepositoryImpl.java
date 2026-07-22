@@ -171,7 +171,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         return pdReview.rating.goe(lo).and(pdReview.rating.lt(hi));
     }
 
-private BooleanExpression andSearchValueLike(PdReviewDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdReviewDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

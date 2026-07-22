@@ -44,6 +44,8 @@
       { group: '카테고리' },
       { id: 'pdCategoryMng', label: '카테고리관리' },
       { id: 'pdCategoryProdMng', label: '카테고리상품관리' },
+      { group: '상품옵션관리' },
+      { id: 'pdOptCodeMng', label: '상품옵션관리' },
       { group: '상품템플릿' },
       { id: 'pdDlivTmpltMng', label: '배송템플릿관리' },
       { group: '상품정보관리' },
@@ -509,6 +511,7 @@
         pdCategoryMng: 'pd-category-mng',
         pdCategoryDtl: 'pd-category-dtl',
         pdCategoryProdMng: 'pd-category-prod-mng',
+        pdOptCodeMng: 'pd-opt-code-mng-page',
         syUserMng: 'sy-user-mng',
         syUserDtl: 'sy-user-dtl',
         syBatchMng: 'sy-batch-mng',
@@ -2561,10 +2564,10 @@
                   style="display:flex;align-items:center;gap:6px;padding:4px 6px;">
                   <span style="width:18px;text-align:center;font-size:12.5px;">{{ it.icon }}</span>
                   <span style="flex:1;font-size:12.5px;color:#333;">{{ it.label }}</span>
-                  <button @click="openRelatedLink('disp-fo-ui.html' + it.hash)"
+                  <button @click="openRelatedLink('fo-disp-ui.html' + it.hash)"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:5px;cursor:pointer;"
                     title="사용자 미리보기">사용자 ↗</button>
-                  <button @click="openRelatedLink('disp-bo-ui.html' + it.hash)"
+                  <button @click="openRelatedLink('bo-disp-ui.html' + it.hash)"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#fef3eb;color:#c2410c;border:1px solid #f5e8de;border-radius:5px;cursor:pointer;"
                     title="관리자 미리보기">관리자 ↗</button>
                 </div>
@@ -2656,6 +2659,7 @@
             <pd-category-mng v-else-if="page==='pdCategoryMng'" :navigate="navigate" />
             <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate" :dtl-id="dtlId" />
             <pd-category-prod-mng v-else-if="page==='pdCategoryProdMng'" :navigate="navigate" />
+            <pd-opt-code-mng-page v-else-if="page==='pdOptCodeMng'" :navigate="navigate" />
             <sy-user-mng  v-else-if="page==='syUserMng'"  :navigate="navigate" />
             <sy-user-dtl  v-else-if="page==='syUserDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <sy-batch-mng  v-else-if="page==='syBatchMng'"  :navigate="navigate" />
@@ -3166,6 +3170,7 @@
     .component('PdCategoryMng', window.PdCategoryMng)
     .component('PdCategoryDtl', window.PdCategoryDtl)
     .component('PdCategoryProdMng', window.PdCategoryProdMng)
+    .component('PdOptCodeMngPage', window.PdOptCodeMngPage)
     /* ── pages/bo/ec/ — 이벤트/공지 ── */
     .component('PmEventMng', window.PmEventMng)
     .component('PmEventDtl', window.PmEventDtl)
@@ -3256,6 +3261,7 @@
     .component('BoMenuTreeCard', window.BoMenuTreeCard)
     .component('BoLocalTreeCard', window.BoLocalTreeCard)
     .component('BoModal', window.BoModal)
+    .component('BoAddrSearchModal', window.BoAddrSearchModal)
     .component('BoCronModal', window.BoCronModal)
     .component('BoTreeSelectorModal', window.BoTreeSelectorModal)
     .component('BoRowCancelDelete', window.BoRowCancelDelete)

@@ -409,14 +409,15 @@ window.PdProdMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
-    /* fnOpenOptCodeMng — 상품옵션코드관리 팝업 */
-    const fnOpenOptCodeMng = () => {
-      window.open('sy-code-tree-mng.html', 'pdOptCodeMng', 'width=1100,height=720,resizable=yes,scrollbars=yes');
-    };
+    /* 상품옵션코드관리 모달 (별도 창 대신 iframe 인라인 — bo-pd-opt-code-mng.html 재사용) */
+    const optCodeModal = reactive({ show: false });
+    const fnOpenOptCodeMng = () => { optCodeModal.show = true; };
+    const cfOptCodeMngUrl = computed(() => window.pageUrl('bo-pd-opt-code-mng.html'));
 
     return {
       columns,
-      products, uiState, searchParam, baseGridPager, detailPanel, catModal,       // 상태 / 데이터
+      products, uiState, searchParam, baseGridPager, detailPanel, catModal, optCodeModal,       // 상태 / 데이터
+      cfOptCodeMngUrl,                                    // 외부URL 모달 경로 표시
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                        // computed
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
@@ -495,6 +496,17 @@ window.PdProdMng = {
     :fixed-prod-type-cd="fixedProdTypeCd"
     />
   <!-- ===== □. 하단 상세: ProdDtl 임베드 ====================================== -->
+  <!-- ===== ■. 상품옵션코드관리 모달 (bo-pd-opt-code-mng.html iframe 인라인) ============== -->
+  <bo-modal v-if="optCodeModal.show" title="⚙ 상품옵션코드관리" width="1100px" height="720px" body-pad="0"
+    @close="optCodeModal.show = false">
+    <template #header-extra>
+      <span style="font-size:11px;color:#bbb;">{{ cfOptCodeMngUrl }}</span>
+    </template>
+    <div style="position:relative;width:100%;height:660px;overflow:hidden;">
+      <iframe src="bo-pd-opt-code-mng.html" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>
+    </div>
+  </bo-modal>
+  <!-- ===== □. 상품옵션코드관리 모달 ============================================ -->
 </bo-page>
 `,
 };

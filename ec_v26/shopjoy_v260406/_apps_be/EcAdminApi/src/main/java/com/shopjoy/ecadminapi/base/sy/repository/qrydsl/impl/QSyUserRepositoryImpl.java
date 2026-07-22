@@ -231,7 +231,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(SyUserDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyUserDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

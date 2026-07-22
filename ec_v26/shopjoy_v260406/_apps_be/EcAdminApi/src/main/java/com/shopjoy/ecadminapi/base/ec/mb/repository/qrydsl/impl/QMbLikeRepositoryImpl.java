@@ -152,7 +152,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(MbLikeDto.Request search) {
+    private BooleanExpression andSearchValueLike(MbLikeDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

@@ -156,7 +156,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(SyhBatchHistDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyhBatchHistDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

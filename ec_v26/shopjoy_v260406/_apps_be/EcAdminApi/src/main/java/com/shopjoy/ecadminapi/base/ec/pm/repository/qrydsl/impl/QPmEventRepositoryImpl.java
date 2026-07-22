@@ -164,7 +164,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(PmEventDto.Request search) {
+    private BooleanExpression andSearchValueLike(PmEventDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

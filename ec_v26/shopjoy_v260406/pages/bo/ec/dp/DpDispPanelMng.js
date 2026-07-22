@@ -159,7 +159,7 @@ window.DpDispPanelMng = {
 
     /* handleOpenPreview — 미리보기 팝업 */
     const handleOpenPreview = (mode, id) => {
-      window.open(window.pageUrl('disp-bo-ui.html') + '?mode=' + mode + '&id=' + id,
+      window.open(window.pageUrl('bo-disp-ui.html') + '?mode=' + mode + '&id=' + id,
         '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes');
     };
 

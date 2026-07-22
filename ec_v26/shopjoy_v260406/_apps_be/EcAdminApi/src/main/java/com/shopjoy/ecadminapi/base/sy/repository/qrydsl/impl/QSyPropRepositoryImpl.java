@@ -212,7 +212,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return hasProfile.or(isAll);
     }
 
-private BooleanExpression andSearchValueLike(SyPropDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyPropDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

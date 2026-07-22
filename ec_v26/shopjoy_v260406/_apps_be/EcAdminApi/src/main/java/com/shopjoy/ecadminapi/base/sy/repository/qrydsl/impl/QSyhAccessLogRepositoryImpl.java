@@ -204,7 +204,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 ? syhAccessLog.uiNm.likeIgnoreCase("%" + search.getUiNm().trim() + "%") : null;
     }
 
-private BooleanExpression andSearchValueLike(SyhAccessLogDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyhAccessLogDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

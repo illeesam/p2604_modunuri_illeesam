@@ -177,7 +177,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(DpPanelItemDto.Request search) {
+    private BooleanExpression andSearchValueLike(DpPanelItemDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

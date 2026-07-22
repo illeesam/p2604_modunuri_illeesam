@@ -180,7 +180,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         return ids.isEmpty() ? null : pdCategoryProd.categoryId.in(ids);
     }
 
-private BooleanExpression andSearchValueLike(PdCategoryProdDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdCategoryProdDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

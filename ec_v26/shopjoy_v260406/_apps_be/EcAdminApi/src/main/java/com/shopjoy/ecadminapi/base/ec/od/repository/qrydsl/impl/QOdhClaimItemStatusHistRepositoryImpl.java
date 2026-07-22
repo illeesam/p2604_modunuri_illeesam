@@ -139,7 +139,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(OdhClaimItemStatusHistDto.Request search) {
+    private BooleanExpression andSearchValueLike(OdhClaimItemStatusHistDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

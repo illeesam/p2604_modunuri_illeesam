@@ -72,12 +72,16 @@ window.Login = {
       // 이메일 회원가입 제출
       } else if (cmd === 'form-signup') {
         return doSignup();
-      // 카카오 주소 검색 열기 (이메일 가입)
+      // 주소 검색 모달 열기 (이메일 가입, 카카오 우편번호 인라인 레이어)
       } else if (cmd === 'form-openAddr') {
-        return openKakaoAddr();
-      // 카카오 주소 검색 열기 (SNS 가입)
+        addrSearchModal.target = 'email';
+        addrSearchModal.show = true;
+        return;
+      // 주소 검색 모달 열기 (SNS 가입, 카카오 우편번호 인라인 레이어)
       } else if (cmd === 'form-openAddrSns') {
-        return openKakaoAddrSns();
+        addrSearchModal.target = 'sns';
+        addrSearchModal.show = true;
+        return;
       // SNS 휴대폰 인증코드 발송
       } else if (cmd === 'form-sendSnsPhoneCode') {
         return sendSnsPhoneCode();
@@ -304,6 +308,19 @@ window.Login = {
       birthdate: '', gender: '',
     });
     const sf       = _initSf();
+    const addrSearchModal = reactive({ show: false, target: 'email' }); // 주소검색 모달 (target: 'email'|'sns' — 어느 폼에 반영할지)
+
+    /* fnCallbackModal — 모달 콜백 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답 결과 (null=닫기) */
+    const fnCallbackModal = (cmd, param, result) => {
+      if (cmd === 'addr-search') {
+        addrSearchModal.show = false;
+        if (result == null) { return; }
+        const target = addrSearchModal.target === 'sns' ? snsSf : sf;
+        target.postcode = result.zonecode;
+        target.address  = result.address;
+        return;
+      }
+    };
 
     /* sendEmailCode — 전송 이메일 코드 */
     const sendEmailCode = () => {
@@ -331,14 +348,6 @@ window.Login = {
     const verifyPhone = () => {
       if (sf.phoneCode === uiState._pc) { sf.phoneVerified = true; uiState.signupErr = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
       else { uiState.signupErr = '인증코드가 올바르지 않습니다.'; }
-    };
-
-    /* openKakaoAddr — 열기 */
-    const openKakaoAddr = () => {
-      if (typeof daum === 'undefined' || !daum.Postcode) { props.showToast('주소 검색 서비스를 불러오는 중입니다.', 'info'); return; }
-      new daum.Postcode({
-        oncomplete(data) { sf.postcode = data.zonecode; sf.address = data.roadAddress || data.jibunAddress; }
-      }).open();
     };
 
     /* doSignup — 실행 */
@@ -392,14 +401,6 @@ window.Login = {
     /* SNS 선택 정보 */
     const snsSf = reactive({ postcode: '', address: '', addressDetail: '', birthdate: '', gender: '' });
 
-    /* openKakaoAddrSns — 열기 */
-    const openKakaoAddrSns = () => {
-      if (typeof daum === 'undefined' || !daum.Postcode) { props.showToast('주소 검색 서비스를 불러오는 중입니다.', 'info'); return; }
-      new daum.Postcode({
-        oncomplete(data) { snsSf.postcode = data.zonecode; snsSf.address = data.roadAddress || data.jibunAddress; }
-      }).open();
-    };
-
     /* doSnsSignup — 실행 */
     const doSnsSignup = async () => {
       uiState.snsErr = '';
@@ -426,8 +427,8 @@ window.Login = {
 
     return {
       columns,
-      uiState,       // 상태
-      handleBtnAction, handleSelectAction, // dispatch
+      uiState, addrSearchModal,       // 상태
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       form, sf, snsSf, snsPhone, terms, // 폼/약관
       IS, // 스타일
       providerLabel, providerColor, providerTextColor, // 헬퍼
@@ -906,6 +907,8 @@ window.Login = {
 </div>
 <!-- ===== □.□. ════ SNS 회원가입 추가 정보 ════ ============================== -->
 <!-- ===== □. 로그인 화면 ================================================== -->
+<!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
+<fo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
 </fo-page>
 `
 };

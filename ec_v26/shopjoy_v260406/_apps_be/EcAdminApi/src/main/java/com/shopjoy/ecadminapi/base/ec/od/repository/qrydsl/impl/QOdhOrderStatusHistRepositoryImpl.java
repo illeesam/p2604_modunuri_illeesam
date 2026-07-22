@@ -135,7 +135,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(OdhOrderStatusHistDto.Request search) {
+    private BooleanExpression andSearchValueLike(OdhOrderStatusHistDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

@@ -8225,3 +8225,69 @@ window.PmGiftPickModal = {
 </bo-modal>
 `,
 };
+
+/* ── BoAddrSearchModal — 카카오 우편번호 검색 (인라인 레이어) ───────────────
+   목적: daum.Postcode({...}).open() 이 뜨는 별도 브라우저 팝업창을 화면 내
+         모달로 대체 — 팝업 위치가 화면 밖/엉뚱한 곳에 뜨는 문제 해결.
+         daum.Postcode 는 .open() 대신 .embed(엘리먼트) 사용 시 그 엘리먼트
+         안에 검색 UI(iframe)를 레이어로 그려준다 — 별도 창이 뜨지 않음.
+
+   props:
+     modalName  {String}   - 콜백 식별자 (기본: 'addr-search')
+     onCallback {Function} - 콜백(modalName, null, {zonecode,address}|null)
+
+   사용 (호출부):
+     const addrSearchModal = reactive({ show: false });
+     const openAddrSearch  = () => { addrSearchModal.show = true; };
+     const onAddrPicked = (data) => {
+       addrSearchModal.show = false;
+       if (!data) return;
+       form.zipCode = data.zonecode; form.address = data.address;
+     };
+     <bo-addr-search-modal v-if="addrSearchModal.show" @select="onAddrPicked" @close="addrSearchModal.show=false" />
+   ─────────────────────────────────────────────────────────────────────── */
+window.BoAddrSearchModal = {
+  name: 'BoAddrSearchModal',
+  inheritAttrs: false,
+  props: {
+    modalName:  { type: String,   default: 'addr-search' },
+    onCallback: { type: Function, default: null },
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, onMounted } = Vue;
+    const layerRef = ref(null);
+
+    const onPicked = (data) => {
+      if (props.onCallback) props.onCallback(props.modalName, null, { zonecode: data.zonecode, address: data.roadAddress || data.jibunAddress });
+      else emit('select', { zonecode: data.zonecode, address: data.roadAddress || data.jibunAddress });
+    };
+    const onClose = () => {
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
+      else emit('close');
+    };
+
+    /* fnEmbed — 레이어 엘리먼트에 카카오 검색 UI 임베드 (팝업 대체) */
+    const fnEmbed = () => {
+      if (!layerRef.value) return;
+      new window.daum.Postcode({ oncomplete: onPicked }).embed(layerRef.value);
+    };
+    onMounted(() => {
+      if (window.daum && window.daum.Postcode) { fnEmbed(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+      s.onload = fnEmbed;
+      document.head.appendChild(s);
+    });
+
+    return { layerRef, onClose };
+  },
+  template: `
+<bo-modal :show="true" title="주소 검색" width="520px" height="540px" body-pad="0" @close="onClose">
+  <template #header-extra>
+    <span style="font-size:11px;color:#bbb;">https://postcode.map.kakao.com/search</span>
+  </template>
+  <div ref="layerRef" style="width:100%;height:100%;overflow:hidden;"></div>
+</bo-modal>
+`,
+};

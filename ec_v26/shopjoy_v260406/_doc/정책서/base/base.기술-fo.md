@@ -295,12 +295,12 @@ const html = marked.parse(markdownText);
 
 ---
 
-## 14. 전시 UI 미리보기 (disp-fo-ui.html)
+## 14. 전시 UI 미리보기 (fo-disp-ui.html)
 
 관리자가 제작한 전시 구성을 실사용자 관점으로 독립 화면에서 검증.
 
 ```
-disp-fo-ui.html
+fo-disp-ui.html
 ├─ Vue, axios, yup, boGlobalStyle0N.css
 ├─ lib/utils/boUtil.js (visibilityUtil 등) + 실 API(boApiSvc)
 ├─ components/comp/BaseComp.js

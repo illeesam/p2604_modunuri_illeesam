@@ -274,9 +274,9 @@ window.foAppFooter = {
       } else if (root === 'boOffice') {
         window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispFoUi') {
-        window.open((window.pageUrl ? window.pageUrl('disp-fo-ui.html') : 'disp-fo-ui.html') + (target ? '#page=' + target : ''), '_blank');
+        window.open((window.pageUrl ? window.pageUrl('fo-disp-ui.html') : 'fo-disp-ui.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispBoUi') {
-        window.open((window.pageUrl ? window.pageUrl('disp-bo-ui.html') : 'disp-bo-ui.html') + (target ? '#page=' + target : ''), '_blank');
+        window.open((window.pageUrl ? window.pageUrl('bo-disp-ui.html') : 'bo-disp-ui.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'foSite') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?SITE_NO=' + target;
       } else if (root === 'foOnly') {

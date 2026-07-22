@@ -172,7 +172,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(SyTemplateDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyTemplateDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

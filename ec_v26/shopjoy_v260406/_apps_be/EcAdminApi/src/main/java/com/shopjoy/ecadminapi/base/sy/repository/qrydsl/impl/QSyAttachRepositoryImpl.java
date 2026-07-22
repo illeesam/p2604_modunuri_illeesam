@@ -172,7 +172,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(SyAttachDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyAttachDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

@@ -154,7 +154,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(PmGiftCondDto.Request search) {
+    private BooleanExpression andSearchValueLike(PmGiftCondDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

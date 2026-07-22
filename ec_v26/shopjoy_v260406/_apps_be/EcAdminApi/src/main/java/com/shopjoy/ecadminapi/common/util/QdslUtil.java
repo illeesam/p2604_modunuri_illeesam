@@ -126,7 +126,7 @@ public class QdslUtil {
      *     Map.entry("prodNm", xxx.prodNm),
      *     Map.entry("prodCode", xxx.prodCode)
      * );
-     * private BooleanExpression andSearchValueLike(XxxDto.Request s) {
+     *     private BooleanExpression andSearchValueLike(XxxDto.Request s) {
      *     return s == null ? null : QdslUtil.searchValueLike(s.getSearchValue(), s.getSearchType(), SEARCH_FIELDS);
      * }
      * </pre>

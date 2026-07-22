@@ -170,7 +170,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(OdCartDto.Request search) {
+    private BooleanExpression andSearchValueLike(OdCartDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

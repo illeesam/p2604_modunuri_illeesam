@@ -150,7 +150,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(PdProdOptDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdProdOptDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

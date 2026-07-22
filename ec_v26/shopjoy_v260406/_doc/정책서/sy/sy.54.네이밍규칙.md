@@ -940,3 +940,4 @@ const baseSearchColumns = [
 - `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·상세화면 ID 표시 + §4.6 BoGrid 컬럼 속성화
 - `base.기술-bo.md` — 관리자 기술 스택 및 컴포넌트 구조
 - `base.기술-fo.md` — 사용자 기술 스택 및 컴포넌트 구조
+- `CLAUDE-프로젝트지침.md` "독립 HTML 파일 명명 규칙" — 루트 독립 HTML 진입점은 `bo-`/`fo-` 접두어 (`index.html`/`bo.html` 예외)

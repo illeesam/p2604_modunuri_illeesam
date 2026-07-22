@@ -175,7 +175,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(SyBbmDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyBbmDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

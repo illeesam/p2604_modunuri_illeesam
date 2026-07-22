@@ -189,7 +189,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(SySiteDto.Request search) {
+    private BooleanExpression andSearchValueLike(SySiteDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

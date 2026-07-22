@@ -175,7 +175,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(DpPanelDto.Request search) {
+    private BooleanExpression andSearchValueLike(DpPanelDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

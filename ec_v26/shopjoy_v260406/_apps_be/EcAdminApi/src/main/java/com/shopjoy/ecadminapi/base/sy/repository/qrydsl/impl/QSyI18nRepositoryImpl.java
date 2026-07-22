@@ -144,7 +144,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(SyI18nDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyI18nDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

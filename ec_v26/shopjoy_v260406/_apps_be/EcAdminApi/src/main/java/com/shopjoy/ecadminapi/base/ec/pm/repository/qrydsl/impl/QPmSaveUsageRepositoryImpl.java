@@ -152,7 +152,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(PmSaveUsageDto.Request search) {
+    private BooleanExpression andSearchValueLike(PmSaveUsageDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

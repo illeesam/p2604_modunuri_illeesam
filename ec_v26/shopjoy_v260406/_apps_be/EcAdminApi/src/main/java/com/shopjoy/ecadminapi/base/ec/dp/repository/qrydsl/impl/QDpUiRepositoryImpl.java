@@ -171,7 +171,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(DpUiDto.Request search) {
+    private BooleanExpression andSearchValueLike(DpUiDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

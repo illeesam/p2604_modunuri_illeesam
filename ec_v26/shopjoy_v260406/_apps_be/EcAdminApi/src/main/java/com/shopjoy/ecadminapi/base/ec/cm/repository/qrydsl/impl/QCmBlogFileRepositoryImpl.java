@@ -138,7 +138,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(CmBlogFileDto.Request search) {
+    private BooleanExpression andSearchValueLike(CmBlogFileDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

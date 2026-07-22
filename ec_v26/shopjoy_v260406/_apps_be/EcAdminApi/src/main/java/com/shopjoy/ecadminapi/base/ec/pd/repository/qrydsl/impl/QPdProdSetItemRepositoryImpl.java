@@ -153,7 +153,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
-private BooleanExpression andSearchValueLike(PdProdSetItemDto.Request search) {
+    private BooleanExpression andSearchValueLike(PdProdSetItemDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

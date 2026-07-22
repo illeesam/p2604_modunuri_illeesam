@@ -28,6 +28,7 @@ window.SyUserDtl = {
     });
     const errors = reactive({});                   // 폼 검증 에러
     const addrDetailRef = ref(null);               // 상세주소 input ref
+    const addrSearchModal = reactive({ show: false }); // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
 
     const schema = yup.object({                    // 폼 검증 스키마
       loginId:  yup.string().required('로그인ID를 입력해주세요.'),
@@ -59,9 +60,10 @@ window.SyUserDtl = {
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
         return props.navigate('__cancelEdit__');
-      // 카카오 우편번호 팝업 열기
+      // 주소 검색 모달 열기 (카카오 우편번호, 인라인 레이어)
       } else if (cmd === 'addr-search') {
-        return openKakaoPostcode();
+        addrSearchModal.show = true;
+        return;
       // 주소 초기화
       } else if (cmd === 'addr-clear') {
         form.zipcode = '';
@@ -96,6 +98,14 @@ window.SyUserDtl = {
         form.deptNm = result.deptNm;
         deptModal.show = false;
         return;
+      // 주소검색 모달 콜백 → 우편번호/주소 반영
+      } else if (cmd === 'addr-search') {
+        addrSearchModal.show = false;
+        if (result == null) { return; }
+        form.zipcode = result.zonecode;
+        form.address = result.address;
+        if (addrDetailRef.value) { addrDetailRef.value.focus(); }
+        return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
@@ -118,24 +128,6 @@ window.SyUserDtl = {
       } finally {
         uiState.loading = false;
       }
-    };
-
-    /* openKakaoPostcode — 카카오 우편번호 팝업 열기 */
-    const openKakaoPostcode = () => {
-      const run = () => {
-        new window.daum.Postcode({
-          oncomplete(data) {
-            form.zipcode = data.zonecode;
-            form.address = data.roadAddress || data.jibunAddress;
-            if (addrDetailRef.value) { addrDetailRef.value.focus(); }
-          },
-        }).open();
-      };
-      if (window.daum && window.daum.Postcode) { run(); return; }
-      const s = document.createElement('script');
-      s.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
-      s.onload = run;
-      document.head.appendChild(s);
     };
 
     /* handleSave — 저장 */
@@ -249,7 +241,7 @@ window.SyUserDtl = {
 
     return {
       columns,
-      form, errors, addrDetailRef, deptModal,                // 상태 / 데이터
+      form, errors, addrDetailRef, deptModal, addrSearchModal,                // 상태 / 데이터
       cfUserRoles,                                   // 역할 목록 (하단)
       handleBtnAction, handleSelectAction, fnCallbackModal,                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, // computed
@@ -333,6 +325,8 @@ window.SyUserDtl = {
 <!-- ===== □. 적용 역할 목록 ================================================ -->
 <!-- ===== ■. 부서 선택 팝업 ================================================ -->
 <dept-tree-modal v-if="deptModal ? (deptModal.show) : false" :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />
+<!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
+<bo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
 <!-- ===== □. 부서 선택 팝업 ================================================ -->
 `,
 };

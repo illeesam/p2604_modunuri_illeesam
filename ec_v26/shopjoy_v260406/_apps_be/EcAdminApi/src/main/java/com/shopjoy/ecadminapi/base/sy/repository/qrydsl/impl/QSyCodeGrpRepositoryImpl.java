@@ -167,7 +167,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(SyCodeGrpDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyCodeGrpDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

@@ -13,6 +13,7 @@ window.foAppHeader = {
     const uiState = reactive({ userMenuOpen: false, profileOpen: false, pwOpen: false, loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
     const userMenuRoot = ref(null);
+    const addrSearchModal = reactive({ show: false }); // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
 
     /* ── Profile 모달 ── */
     const pf = reactive({ memberNm: '', email: '', phone: '', birthdate: '', gender: '',
@@ -80,9 +81,10 @@ window.foAppHeader = {
       // 프로필 저장
       } else if (cmd === 'profile-save') {
         return saveProfile();
-      // 카카오 주소 검색
+      // 주소 검색 모달 열기 (카카오 우편번호, 인라인 레이어)
       } else if (cmd === 'profile-search-addr') {
-        return openKakaoAddrProfile();
+        addrSearchModal.show = true;
+        return;
       // 비밀번호 변경 모달 열기
       } else if (cmd === 'pw-open') {
         return openPw();
@@ -160,13 +162,15 @@ window.foAppHeader = {
       uiState.profileOpen = false;
     };
 
-    /* openKakaoAddrProfile — 카카오 주소 검색 */
-    const openKakaoAddrProfile = () => {
-      if (typeof daum === 'undefined' || !daum.Postcode) { return; }
-      new daum.Postcode({ oncomplete(d) {
-        pf.postcode = d.zonecode;
-        pf.address  = d.roadAddress || d.jibunAddress;
-      }}).open();
+    /* fnCallbackModal — 모달 콜백 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답 결과 (null=닫기) */
+    const fnCallbackModal = (cmd, param, result) => {
+      if (cmd === 'addr-search') {
+        addrSearchModal.show = false;
+        if (result == null) { return; }
+        pf.postcode = result.zonecode;
+        pf.address  = result.address;
+        return;
+      }
     };
 
     /* genderLabel — gender 라벨 */
@@ -239,8 +243,8 @@ window.foAppHeader = {
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes, userMenuRoot,                                         // 상태 / refs
-      handleBtnAction, handleSelectAction,                                  // dispatch
+      uiState, codes, userMenuRoot, addrSearchModal,                        // 상태 / refs
+      handleBtnAction, handleSelectAction, fnCallbackModal,                 // dispatch
       pf, pw, IS, cfMenuItems, genderLabel,                                 // 프로필/비번/입력
       cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu,                    // computed - 인증/메뉴
       foSiteNo: window.FO_SITE_NO || '01',
@@ -559,6 +563,8 @@ window.foAppHeader = {
     </div>
   </div>
   </Teleport>
+  <!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
+  <fo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
 
   <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. ══ 비밀번호 변경 모달 ══ ======================================== -->

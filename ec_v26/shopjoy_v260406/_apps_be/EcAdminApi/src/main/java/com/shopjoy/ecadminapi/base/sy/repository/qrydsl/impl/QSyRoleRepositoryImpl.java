@@ -208,7 +208,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         return syRole.roleId.in(roleIds);
     }
 
-private BooleanExpression andSearchValueLike(SyRoleDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyRoleDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 

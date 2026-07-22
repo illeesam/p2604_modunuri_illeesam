@@ -184,7 +184,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 : null;
     }
 
-private BooleanExpression andSearchValueLike(SyAlarmDto.Request search) {
+    private BooleanExpression andSearchValueLike(SyAlarmDto.Request search) {
         return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
     }
 
