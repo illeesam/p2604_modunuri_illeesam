@@ -171,6 +171,10 @@ window.DashboardBoAppMonitor = {
         brush: {
           toolbox: ['rect','clear'],
           xAxisIndex: 0,
+          /* series 를 scatter 1개로 단순화(경고선은 markLine 으로 이동)하고 seriesIndex:0 명시.
+           * 예전엔 line(경고선) 시리즈 + scatter(large:true) 조합이라 ECharts 5.6.0 brush 의
+           * overallReset 내부에서 TypeError(undefined.push) 발생 → brushSelected 미발생. */
+          seriesIndex: 0,
           throttleType: 'debounce', throttleDelay: 300,
         },
         grid: { top:48, right:24, bottom:48, left:64 },
@@ -197,13 +201,22 @@ window.DashboardBoAppMonitor = {
           ],
           right: 16, bottom: 48, textStyle:{ fontSize:10 },
         },
+        /* brush 는 scatter 단일 시리즈(index 0)만 대상. 경고선(500/3000ms)은 별도 line 시리즈
+         * 대신 scatter 의 markLine 으로 그려 series 배열을 1개로 유지 → brush overallReset 오류 회피.
+         * large:true 도 제거(brush 선택 index 집계와 상충). */
         series: [
-          { type:'line', data:[[from,500],[now,500]],   lineStyle:{ type:'dashed',color:'#f59e0b',width:1.5 }, symbol:'none', tooltip:{ show:false }, z:5 },
-          { type:'line', data:[[from,3000],[now,3000]], lineStyle:{ type:'dashed',color:'#ef4444',width:1.5 }, symbol:'none', tooltip:{ show:false }, z:5 },
           {
             type:'scatter', data: pts,
-            symbolSize: 4, large: true, largeThreshold: 200,
+            symbolSize: 4,
             encode: { x:0, y:1, itemName:0 },
+            markLine: {
+              symbol: 'none', silent: true,
+              label: { show: false },
+              data: [
+                { yAxis: 500,  lineStyle:{ type:'dashed', color:'#f59e0b', width:1.5 } },
+                { yAxis: 3000, lineStyle:{ type:'dashed', color:'#ef4444', width:1.5 } },
+              ],
+            },
           },
         ],
       };
@@ -228,13 +241,16 @@ window.DashboardBoAppMonitor = {
     let xviewPendingRows = [];
 
     const onXviewBrush = (params) => {
-      if (!params.areas || !params.areas.length) return;
-      const area = params.areas[0];
-      if (!area.coordRange || !area.coordRange[0]) return;
-      const [tFrom, tTo] = area.coordRange[0];
-      const [rtFrom, rtTo] = area.coordRange[1] || [0, 99999];
-      const selected = xviewData.value
-        .filter(p => p.t >= tFrom && p.t <= tTo && p.rt >= rtFrom && p.rt <= rtTo)
+      /* brushSelected payload 구조: params.batch[0].selected[0].dataIndex 에
+       * 선택된 scatter 포인트의 데이터 인덱스 배열이 담김. (params.areas 아님) */
+      const batch = params.batch && params.batch[0];
+      if (!batch) return;
+      const sel = batch.selected && batch.selected[0];
+      const idxList = sel && sel.dataIndex;
+      if (!idxList || !idxList.length) return;
+      const selected = idxList
+        .map(i => xviewData.value[i])
+        .filter(Boolean)
         .map(p => {
           const d = new Date(p.t);
           return {
