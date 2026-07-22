@@ -8,6 +8,7 @@
   - 03: 프로모션 제외 */
   const _BO_SITE_NO = window.BO_SITE_NO || '01';
   const _ALL_TOP_MENUS = [
+    { id: 'home', label: '홈' },
     { id: 'member', label: '회원관리' },
     { id: 'product', label: '상품관리' },
     { id: 'order', label: '주문관리' },
@@ -26,6 +27,11 @@
   });
 
   const LEFT_MENUS = {
+    home: [
+      { group: '대시보드' },
+      { id: 'dashboard', label: 'EC대시보드' },
+      { id: 'appMonitorDashboard', label: 'App모니터대시보드' },
+    ],
     member: [
       { group: '회원' },
       { id: 'mbMemberMng', label: '회원관리' },
@@ -212,7 +218,7 @@
   };
 
   /* 페이지 → 상위메뉴 매핑 */
-  const PAGE_TO_TOP = {};
+  const PAGE_TO_TOP = { dashboard: 'home' };
   const PAGE_LABELS = {};
   Object.entries(LEFT_MENUS).forEach(([top, items]) => {
     items
@@ -409,7 +415,7 @@
       const initSearchValue = ref(null); // ZdSimul BO상세 클릭 시 Mng 자동 조회용
 
       /* ── 탭 관리 ── */
-      const openTabs = reactive([{ id: 'dashboard', label: '대시보드' }]);
+      const openTabs = reactive([{ id: 'dashboard', label: 'EC대시보드' }]);
       const cfActiveTabId = computed(() => toTabId(page.value, dtlId.value));
       const refreshKeys = reactive({}); // pageId → 재마운트 카운터
 
@@ -423,6 +429,7 @@
       };
       const PAGE_COMP_MAP = {
         dashboard: 'dashboard-bo-ec' + (window.BO_SITE_NO || '01'),
+        appMonitorDashboard: 'dashboard-bo-app-monitor',
         mbMemberMng: 'mb-member-mng',
         mbMemberDtl: 'mb-member-dtl',
         mbMemGradeMng: 'mb-mem-grade-mng',
@@ -709,7 +716,7 @@
       );
 
       /* ── 메뉴 상태 ── */
-      const activeTop = ref('member');
+      const activeTop = ref('home');
       const leftMenuOpen = ref(true);
 
       /* ── Embed 모드 (URL에 embed=1 이면 상단 nav, 탭바, 좌측 사이드바 숨김) ── */
@@ -719,6 +726,8 @@
       /* setTopMenu */
       const setTopMenu = (topId) => {
         activeTop.value = topId;
+        // 홈: 좌측 메뉴 없이 대시보드로 바로 이동
+        if (topId === 'home') { navigate('dashboard'); return; }
         leftMenuOpen.value = true;
         const first = LEFT_MENUS[topId]?.find((p) => p.id);
         if (first) navigate(first.id);
@@ -2601,6 +2610,7 @@
           <!-- 비고정 현재 탭: 전환 시 재마운트 -->
           <div v-if="!keptTabIds.has(cfActiveTabId)" :key="cfActiveTabId + '_' + (refreshKeys[cfActiveTabId] || 0)" style="display:contents;">
             <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate" />
+            <dashboard-bo-app-monitor v-else-if="page==='appMonitorDashboard'" :navigate="navigate" />
             <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
@@ -3210,6 +3220,7 @@
     .component('MbCustInfoMng', window.MbCustInfoMng)
     /* ── pages/bo/sy/ — 대시보드 ── */
     .component('SyDashboardMng', window.SyDashboardMng)
+    .component('DashboardBoAppMonitor', window.DashboardBoAppMonitor)
     .component('DashboardBoEc01', window.DashboardBoEc01)
     .component('DashboardBoEc02', window.DashboardBoEc02)
     .component('DashboardBoEc03', window.DashboardBoEc03)

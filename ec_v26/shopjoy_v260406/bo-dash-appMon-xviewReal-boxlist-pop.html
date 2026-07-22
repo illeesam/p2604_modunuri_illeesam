@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X-View 박스 선택 트랜잭션 목록</title>
+  <link rel="stylesheet" href="assets/css/boGlobalStyle01.css">
+  <style>
+    /* 팝업 전용 기본 */
+    body { margin: 0; background: #f5f6fa; font-size: 13px; }
+    #app { height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+    .xv-header {
+      flex-shrink: 0; padding: 10px 16px; background: #fff; border-bottom: 1px solid #eee;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .xv-body { flex: 1; display: flex; overflow: hidden; }
+
+    /* 좌측 목록 */
+    .xv-list { width: 62%; overflow-y: auto; border-right: 1px solid #eee; background: #fff; }
+    .xv-list-row {
+      display: grid; grid-template-columns: 64px 76px 60px 1fr; gap: 8px;
+      padding: 7px 12px; border-bottom: 1px solid #f5f5f5; cursor: pointer; font-size: 11.5px; align-items: center;
+    }
+    .xv-list-row:hover { background: #fff8fa; }
+    .xv-list-row.selected { background: #fff0f4; border-left: 3px solid #e8587a; }
+    .xv-list-head { position: sticky; top: 0; background: #fafbfc; font-weight: 700; color: #888; font-size: 10.5px; z-index: 1; }
+
+    /* 우측 상세 */
+    .xv-detail { width: 38%; overflow-y: auto; padding: 16px; background: #fbfbfc; }
+    .xv-detail-row { display: flex; padding: 7px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+    .xv-detail-label { width: 96px; flex-shrink: 0; color: #888; }
+    .xv-detail-value { flex: 1; color: #222; word-break: break-all; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Vue 3 core -->
+<script src="assets/cdn/pkg/vue/3.4.21/vue.global.prod.js"></script>
+
+<script>
+  const { createApp, ref, reactive, computed, onMounted, onUnmounted } = Vue;
+
+  const app = createApp({
+    setup() {
+      const rows = reactive([]);
+      const selectedIdx = ref(null);
+      const loading = ref(true);
+
+      const cfSelected = computed(() => selectedIdx.value != null ? rows[selectedIdx.value] : null);
+
+      const selectRow = (idx) => { selectedIdx.value = idx; };
+
+      const fnStatusColor = (row) => row.statusColor || '#999';
+
+      /* postMessage 로 부모(오프너)에서 실 데이터 수신 — URL 에는 데이터를 싣지 않으므로 건수 제한 없음 */
+      const _onMsg = (e) => {
+        if (e.origin !== window.location.origin) return;
+        if (!e.data || e.data.type !== 'xview-data') return;
+        const list = Array.isArray(e.data.rows) ? e.data.rows.slice() : [];
+        list.sort((a, b) => b.rt - a.rt);
+        rows.splice(0, rows.length, ...list);
+        selectedIdx.value = rows.length ? 0 : null;
+        loading.value = false;
+      };
+
+      onMounted(() => {
+        window.addEventListener('message', _onMsg);
+        /* 오프너에게 준비 완료 신호 — 오프너가 이 신호를 받으면 xview-data 를 postMessage 로 회신 */
+        if (window.opener) window.opener.postMessage({ type: 'xview-ready' }, window.location.origin);
+      });
+      onUnmounted(() => { window.removeEventListener('message', _onMsg); });
+
+      return { rows, selectedIdx, loading, cfSelected, selectRow, fnStatusColor };
+    },
+    template: `
+<div class="xv-header">
+  <span style="font-size:14px;font-weight:800;color:#e8587a;">🔥 박스 선택 트랜잭션 목록</span>
+  <span style="font-size:11px;color:#888;">{{ loading ? '불러오는 중...' : '총 ' + rows.length + '건 · 응답시간 내림차순' }}</span>
+  <span style="flex:1;"></span>
+  <button class="btn btn_close" style="font-size:11px;" @click="window.close()">✕ 닫기</button>
+</div>
+<div class="xv-body">
+  <!-- 좌측: 목록 -->
+  <div class="xv-list">
+    <div class="xv-list-row xv-list-head">
+      <span>시각</span><span>응답시간</span><span>상태</span><span>URL / X-UI-Nm / X-Cmd-Nm</span>
+    </div>
+    <div v-if="loading" style="padding:40px;text-align:center;color:#aaa;">불러오는 중... (오프너 창에서 응답이 없으면 팝업 차단 설정을 확인하세요)</div>
+    <div v-else-if="!rows.length" style="padding:40px;text-align:center;color:#aaa;">선택된 범위에 트랜잭션이 없습니다.</div>
+    <div v-for="(row, idx) in rows" :key="idx"
+      class="xv-list-row" :class="{ selected: selectedIdx === idx }"
+      @click="selectRow(idx)">
+      <span style="color:#666;white-space:nowrap;">{{ row.time }}</span>
+      <span style="font-weight:700;" :style="{ color: fnStatusColor(row) }">{{ row.rt }}ms</span>
+      <span :style="{ color: fnStatusColor(row) }">{{ row.status }}</span>
+      <span style="font-family:monospace;color:#3b82f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ row.url }}</span>
+    </div>
+  </div>
+
+  <!-- 우측: 선택된 행 상세정보 -->
+  <div class="xv-detail">
+    <template v-if="cfSelected">
+      <div style="font-size:13px;font-weight:800;color:#444;margin-bottom:10px;">트랜잭션 상세</div>
+      <div class="xv-detail-row"><span class="xv-detail-label">시각</span><span class="xv-detail-value">{{ cfSelected.time }}</span></div>
+      <div class="xv-detail-row"><span class="xv-detail-label">응답시간</span>
+        <span class="xv-detail-value" :style="{ color: fnStatusColor(cfSelected), fontWeight: 700 }">{{ cfSelected.rt }}ms</span></div>
+      <div class="xv-detail-row"><span class="xv-detail-label">상태</span>
+        <span class="xv-detail-value" :style="{ color: fnStatusColor(cfSelected), fontWeight: 700 }">{{ cfSelected.status }}</span></div>
+      <div class="xv-detail-row"><span class="xv-detail-label">URL</span>
+        <span class="xv-detail-value" style="font-family:monospace;color:#3b82f6;">{{ cfSelected.url }}</span></div>
+      <div class="xv-detail-row"><span class="xv-detail-label">X-UI-Nm</span><span class="xv-detail-value">{{ cfSelected.uiNm || '-' }}</span></div>
+      <div class="xv-detail-row"><span class="xv-detail-label">X-Cmd-Nm</span><span class="xv-detail-value">{{ cfSelected.cmdNm || '-' }}</span></div>
+    </template>
+    <div v-else style="color:#aaa;text-align:center;padding:40px;">좌측 목록에서 트랜잭션을 선택하세요.</div>
+  </div>
+</div>
+`,
+  });
+
+  app.mount('#app');
+</script>
+</body>
+</html>

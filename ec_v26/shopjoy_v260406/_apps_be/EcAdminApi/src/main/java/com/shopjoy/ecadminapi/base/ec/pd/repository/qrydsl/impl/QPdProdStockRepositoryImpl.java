@@ -15,6 +15,7 @@ import java.util.Optional;
 public class QPdProdStockRepositoryImpl implements QPdProdStockRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdStockRepositoryImpl";
     private static final QPdProdStock sc = QPdProdStock.pdProdStock;
 
     /*
@@ -30,6 +31,7 @@ public class QPdProdStockRepositoryImpl implements QPdProdStockRepository {
     public Optional<PdProdStock> selectByStockCode(String stockCode) {
         PdProdStock result = queryFactory
                 .selectFrom(sc)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectByStockCode()")
                 .where(sc.stockCode.eq(stockCode))
                 .fetchOne();
         return Optional.ofNullable(result);

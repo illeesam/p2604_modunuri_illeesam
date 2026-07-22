@@ -33,7 +33,6 @@ window.DashboardBoEc01 = {
 
     const uiState = reactive({
       filterExpand: false, activeTab: 'sales', tabMode: '4col', loading: false,
-      xviewDrillRows: [], xviewDrillVisible: false,
       infoPanel: null, /* { title, optJson, dataJson, top, left } */
       dailyStatsLoading: false,
     });
@@ -76,7 +75,6 @@ window.DashboardBoEc01 = {
       { key:'radar',       label:'영업지표',         icon:'⚡' },
       { key:'economy',     label:'경제 수준별',      icon:'💼' },
       { key:'shipping',    label:'배송 조건',        icon:'🚚' },
-      { key:'xview',       label:'X-View',           icon:'🔥' },
     ];
 
     const VIEW_MODES = [
@@ -96,7 +94,6 @@ window.DashboardBoEc01 = {
       if (cmd === 'filters-toggleExpand')      { uiState.filterExpand = !uiState.filterExpand; return; }
       if (cmd === 'filters-toggleAll')         return toggleAll(param.key, param.all);
       if (cmd === 'filters-toggle')            return toggle(filters[param.key], param.v);
-      if (cmd === 'xview-drill-close')         { uiState.xviewDrillVisible = false; return; }
       if (cmd === 'info-close')                { uiState.infoPanel = null; return; }
       if (cmd === 'infoTab-set')               { if (uiState.infoPanel) uiState.infoPanel.tab = param; return; }
       if (cmd === 'clipboard-copy')            { if (param) navigator.clipboard.writeText(param); return; }
@@ -160,9 +157,6 @@ window.DashboardBoEc01 = {
       COMP0403: { compId:'COMP0403', chartType:'pie (파이 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0403', fields:'col1Nm(배송유형) / col1Num(비중%)', desc:'무료·유료·조건부무료·새벽배송 비중.',
         tag:'<co-echart\n  :option="cfOpt0403"\n  height="220px"\n/>',
         attrs:[{k:':option',v:'cfOpt0403',d:'pie series — 배송유형 4종 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
-      XVIEW:    { compId:'(없음)', chartType:'scatter + brush (X-View 히트맵)', url:'(로컬 목업 — 실시간 생성)', dataKey:'xviewData', fields:'t(timestamp ms) / rt(응답시간ms) / err(boolean)', desc:'브라우저 로컬에서 800개 랜덤 포인트 생성. 10초마다 새 포인트 추가. 실제 구현 시 APM 에이전트 데이터 연동 필요.',
-        tag:'<co-echart\n  :option="cfOptXview"\n  height="360px"\n  @brush-selected="onXviewBrush"\n/>',
-        attrs:[{k:':option',v:'cfOptXview',d:'scatter series — 정상(파랑)/에러(빨강), brush toolbox 포함'},{k:'height',v:'"360px"',d:'드릴다운 영역 포함 높이'},{k:'@brush-selected',v:'onXviewBrush',d:'브러시 선택 시 드릴다운 테이블 갱신 emit 핸들러'}] },
     };
 
     /* 공통 API 요청 파라미터 (loadDashboard에서 실제로 전송하는 값) */
@@ -207,11 +201,6 @@ window.DashboardBoEc01 = {
         top:  rect.bottom + scrollY + 6,
         left: Math.min(rect.left  + scrollX, window.innerWidth - 560),
       };
-    };
-
-    /* X-View 전용 팝오버 열기 */
-    const fnOpenXviewInfo = (e) => {
-      fnOpenInfo(e, 'X-View 히트맵', () => cfOptXview, null, xviewData.value.slice(0, 10), 'XVIEW');
     };
 
     /* 팝오버 탭 전환 */
@@ -281,44 +270,6 @@ window.DashboardBoEc01 = {
       r.info0403 = [{ col1Nm:'무료배송', col1Num:48 }, { col1Nm:'유료배송', col1Num:27 }, { col1Nm:'조건부무료', col1Num:18 }, { col1Nm:'새벽배송', col1Num:7 }];
       return r;
     };
-
-    /* X-View 히트맵 목업 데이터 */
-    const XVIEW_URLS = [
-      { url:'/bo/ec/mb/member/page',        uiNm:'회원관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/pd/prod/page',           uiNm:'상품관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/od/order/page',          uiNm:'주문관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/od/claim/page',          uiNm:'클레임관리',   cmdNm:'목록조회' },
-      { url:'/bo/ec/pm/coupon/page',         uiNm:'쿠폰관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/cm/dashboard/data',      uiNm:'대시보드',     cmdNm:'조회' },
-      { url:'/bo/sy/user/page',              uiNm:'사용자관리',   cmdNm:'목록조회' },
-      { url:'/bo/sy/code/list',              uiNm:'코드관리',     cmdNm:'코드목록' },
-      { url:'/bo/ec/pd/prod/save/base',      uiNm:'상품관리',     cmdNm:'저장' },
-      { url:'/bo/ec/od/order/save/base',     uiNm:'주문관리',     cmdNm:'저장' },
-      { url:'/bo/ec/mb/member/save/base',    uiNm:'회원관리',     cmdNm:'저장' },
-      { url:'/bo/ec/dp/ui/list',             uiNm:'전시관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/pm/event/page',          uiNm:'이벤트관리',   cmdNm:'목록조회' },
-      { url:'/co/sy/code/grp-codes',         uiNm:'공통',         cmdNm:'코드조회' },
-      { url:'/bo/sy/menu/list',              uiNm:'메뉴관리',     cmdNm:'목록조회' },
-    ];
-    const buildXviewData = () => {
-      const now = Date.now();
-      const pts = [];
-      for (let i = 0; i < 800; i++) {
-        const t = now - Math.random() * 10 * 60 * 1000;
-        const rt = Math.random() < 0.75
-          ? Math.random() * 500
-          : Math.random() < 0.7
-            ? 500 + Math.random() * 2500
-            : 3000 + Math.random() * 5000;
-        const err = rt > 5000 && Math.random() < 0.3;
-        const src = XVIEW_URLS[Math.floor(Math.random() * XVIEW_URLS.length)];
-        pts.push({ t, rt: Math.round(rt), err, url: src.url, uiNm: src.uiNm, cmdNm: src.cmdNm });
-      }
-      return pts;
-    };
-
-    const xviewData = ref(buildXviewData());
-    let xviewTimer  = null;
 
     /* ##### [03] 데이터 로드 ##################################################### */
 
@@ -653,125 +604,17 @@ window.DashboardBoEc01 = {
       }],
     }));
 
-    /* ── X-View 히트맵 option ─────────────────────────── */
-    const cfOptXview = computed(() => {
-      const now  = Date.now();
-      const from = now - 10 * 60 * 1000;
-      const pts  = xviewData.value.map(p => [p.t, p.rt, p.err ? 2 : p.rt > 3000 ? 2 : p.rt > 500 ? 1 : 0, p.url||'', p.uiNm||'', p.cmdNm||'']);
-
-      return {
-        tooltip: {
-          trigger: 'item',
-          formatter: p => {
-            const d   = new Date(p.data[0]);
-            const hms = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
-            const lbl = ['정상','느림','오류'][p.data[2]] || '';
-            const url   = p.data[3] || '';
-            const uiNm  = p.data[4] || '';
-            const cmdNm = p.data[5] || '';
-            return hms + '<br/>응답시간: <b>' + p.data[1].toFixed(0) + 'ms</b><br/>상태: ' + lbl
-              + (url   ? '<br/><span style="color:#7dd3fc;font-family:monospace;font-size:11px;">' + url + '</span>' : '')
-              + (uiNm  ? '<br/><span style="color:#c4b5fd;">X-UI-Nm: <b>' + uiNm + '</b></span>' : '')
-              + (cmdNm ? ' &nbsp;<span style="color:#6ee7b7;">X-Cmd-Nm: <b>' + cmdNm + '</b></span>' : '');
-          },
-        },
-        toolbox: {
-          feature: { dataZoom:{ yAxisIndex:'none', title:{ zoom:'범위 드래그', back:'초기화' } }, restore:{ title:'초기화' } },
-          right: 16, top: 6,
-        },
-        brush: {
-          toolbox: ['rect','clear'],
-          xAxisIndex: 0,
-          throttleType: 'debounce', throttleDelay: 300,
-        },
-        grid: { top:48, right:24, bottom:48, left:64 },
-        xAxis: {
-          type: 'time', min: from, max: now,
-          axisLabel: {
-            fontSize: 10, color: '#888',
-            formatter: v => { const d = new Date(v); return d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0'); },
-          },
-          splitLine: { lineStyle:{ color:'#f0f0f0' } },
-        },
-        yAxis: {
-          type: 'value', name: '응답시간(ms)', nameTextStyle:{ fontSize:10, color:'#888' },
-          min: 0,
-          axisLabel: { fontSize:10, color:'#888', formatter: v => v + 'ms' },
-          splitLine: { lineStyle:{ color:'#f0f0f0' } },
-        },
-        visualMap: {
-          show: true, type:'piecewise', categories: [0,1,2], dimension: 2,
-          pieces: [
-            { value:0, label:'정상 (<500ms)',    color:'#3b82f6' },
-            { value:1, label:'느림 (<3000ms)',   color:'#f59e0b' },
-            { value:2, label:'오류 / 매우 느림', color:'#ef4444' },
-          ],
-          right: 16, bottom: 48, textStyle:{ fontSize:10 },
-        },
-        series: [
-          { type:'line', data:[[from,500],[now,500]],   lineStyle:{ type:'dashed',color:'#f59e0b',width:1.5 }, symbol:'none', tooltip:{ show:false }, z:5 },
-          { type:'line', data:[[from,3000],[now,3000]], lineStyle:{ type:'dashed',color:'#ef4444',width:1.5 }, symbol:'none', tooltip:{ show:false }, z:5 },
-          {
-            type:'scatter', data: pts,
-            symbolSize: 4, large: true, largeThreshold: 200,
-            encode: { x:0, y:1, itemName:0 },
-          },
-        ],
-      };
-    });
-
-    const onXviewBrush = (params) => {
-      if (!params.areas || !params.areas.length) return;
-      const area = params.areas[0];
-      if (!area.coordRange || !area.coordRange[0]) return;
-      const [tFrom, tTo] = area.coordRange[0];
-      const [rtFrom, rtTo] = area.coordRange[1] || [0, 99999];
-      const selected = xviewData.value.filter(p => p.t >= tFrom && p.t <= tTo && p.rt >= rtFrom && p.rt <= rtTo);
-      uiState.xviewDrillRows = selected.map(p => {
-        const d = new Date(p.t);
-        return {
-          time: d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0'),
-          rt: p.rt,
-          status: p.err ? '오류' : p.rt > 3000 ? '매우 느림' : p.rt > 500 ? '느림' : '정상',
-          statusColor: p.err ? '#ef4444' : p.rt > 3000 ? '#ef4444' : p.rt > 500 ? '#f59e0b' : '#10b981',
-          url: p.url || '',
-          uiNm: p.uiNm || '',
-          cmdNm: p.cmdNm || '',
-        };
-      }).sort((a,b) => b.rt - a.rt);
-      uiState.xviewDrillVisible = true;
-    };
-
     /* ##### [06] 라이프사이클 #################################################### */
 
     onMounted(() => {
       document.addEventListener('click', _onDocClick);
       loadDailyStats();
       loadDashboard();
-      xviewTimer = setInterval(() => {
-        const now = Date.now();
-        const rt  = Math.random() < 0.75 ? Math.random()*500 : Math.random()<0.7 ? 500+Math.random()*2500 : 3000+Math.random()*5000;
-        const err = rt > 5000 && Math.random() < 0.3;
-        const src = XVIEW_URLS[Math.floor(Math.random() * XVIEW_URLS.length)];
-        xviewData.value = [...xviewData.value.filter(p => p.t > now - 10*60*1000), { t:now, rt:Math.round(rt), err, url:src.url, uiNm:src.uiNm, cmdNm:src.cmdNm }];
-      }, 2000);
     });
 
     onUnmounted(() => {
-      if (xviewTimer) clearInterval(xviewTimer);
       document.removeEventListener('click', _onDocClick);
     });
-
-    const xviewDrillColumns = [
-      { key: 'time',   label: '시각',   style: 'width:72px;', cellStyle: 'white-space:nowrap;' },
-      { key: 'rt',     label: '응답시간', style: 'width:88px;', align: 'right',
-        fmt: v => v + 'ms', cellStyle: 'font-weight:700;' },
-      { key: 'status', label: '상태',   style: 'width:76px;', align: 'center',
-        badge: row => ({ text: row.status, style: `background:${row.statusColor};color:#fff;font-size:10px;` }) },
-      { key: 'url',    label: 'URL',    cellStyle: 'font-family:monospace;font-size:10.5px;color:#3b82f6;white-space:nowrap;' },
-      { key: 'uiNm',  label: 'X-UI-Nm',  style: 'width:90px;', cellStyle: 'font-size:10.5px;color:#6366f1;white-space:nowrap;' },
-      { key: 'cmdNm', label: 'X-Cmd-Nm', style: 'width:90px;', cellStyle: 'font-size:10.5px;color:#10b981;white-space:nowrap;' },
-    ];
 
     const attrsGridColumns = [
       { key: 'k', label: '속성', style: 'width:38%;', cellStyle: 'color:#7dd3fc;font-size:10.5px;white-space:nowrap;font-weight:700;' },
@@ -782,7 +625,7 @@ window.DashboardBoEc01 = {
     return {
       uiState, filters, dash, dailyStats,
       handleBtnAction, handleSelectAction,
-      cfBaseGridColumns, showPanel, isSel, xviewDrillColumns, attrsGridColumns,
+      cfBaseGridColumns, showPanel, isSel, attrsGridColumns,
       TABS, VIEW_MODES, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
       fmt, pct,
       cfMonthLabels, cfTotalSales, cfTotalQtyComp, marginRate, cfAvgOrderValue,
@@ -790,8 +633,7 @@ window.DashboardBoEc01 = {
       cfOpt0201, cfOpt0203, cfOpt0204,
       cfOpt0301, cfOpt0302, cfOpt0303, cfOpt0304,
       cfOpt0401, cfOpt0402, cfOpt0403,
-      cfOptXview, onXviewBrush,
-      fnOpenInfo, fnOpenXviewInfo, fnInfoTab, fnBuildApiParams,
+      fnOpenInfo, fnInfoTab, fnBuildApiParams,
     };
   },
 
@@ -1061,33 +903,6 @@ window.DashboardBoEc01 = {
         배송 조건별 매출현황
       </div>
       <co-echart :option="cfOpt0403" height="220px" />
-    </bo-container>
-
-    <!-- 16) X-View 실시간 히트맵 -->
-    <bo-container v-show="showPanel('xview')" card-style="padding:14px;" style="grid-column:1/-1;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
-        <button class="dash-info-btn" @click.stop="fnOpenXviewInfo($event)" title="위젯 정보">🔥</button>
-        X-View 실시간 트랜잭션 히트맵
-        <span style="font-size:10px;font-weight:400;color:#10b981;background:#f0fdf4;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;">● LIVE</span>
-        <span style="flex:1;"></span>
-        <span style="font-size:10px;color:#888;">드래그하여 범위 선택 → 트랜잭션 상세</span>
-        <span style="font-size:10px;color:#888;">━ ━ 500ms 경고 &amp; ━ ━ 3000ms 오류</span>
-      </div>
-      <co-echart :option="cfOptXview" height="360px" @brush-selected="onXviewBrush" />
-
-      <!-- X-View 드릴다운 테이블 -->
-      <div v-if="uiState.xviewDrillVisible" style="margin-top:12px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
-        <div style="display:flex;align-items:center;padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;">
-          <span style="font-size:12px;font-weight:700;color:#444;">선택 범위 트랜잭션 <span style="color:#e8587a;">{{ uiState.xviewDrillRows.length }}건</span></span>
-          <span style="flex:1;"></span>
-          <button class="btn btn_close" @click="handleBtnAction('xview-drill-close')" style="font-size:11px;padding:3px 10px;">✕ 닫기</button>
-        </div>
-        <div style="max-height:260px;overflow-y:auto;overflow-x:auto;">
-          <bo-grid bare :columns="xviewDrillColumns" :rows="uiState.xviewDrillRows"
-            empty-text="선택 범위에 데이터가 없습니다."
-            style="font-size:11px;min-width:640px;" />
-        </div>
-      </div>
     </bo-container>
 
   </div>
