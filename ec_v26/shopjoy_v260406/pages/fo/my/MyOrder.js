@@ -320,7 +320,7 @@ window.MyOrder = {
     );
 
     /* fnBuildParams — 현재 검색조건(기간) → 서버 파라미터 */
-    const fnBuildParams = () => ({ dateType: 'order_date', dateStart: dateRange.start, dateEnd: dateRange.end });
+    const fnBuildParams = () => ({ dateRangeType: 'order_date', dateRangeStart: dateRange.start, dateRangeEnd: dateRange.end });
 
     /* handleLoadPage — 서버사이드 페이징 조회 (현재 pager 기준) + 연관(클레임/쿠폰) 로드 */
     const handleLoadPage = async () => {

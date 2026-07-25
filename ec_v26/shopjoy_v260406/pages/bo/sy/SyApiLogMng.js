@@ -19,8 +19,8 @@ window.SyApiLogMng = {
       srchOpen: false,
       isPageCodeLoad: false,
       dateRange: '1week',
-      dateStart: '',
-      dateEnd: '',
+      dateRangeStart: '',
+      dateRangeEnd: '',
       searchType: '',
       searchValue: '',
       searchMethod: '',
@@ -182,9 +182,9 @@ window.SyApiLogMng = {
       const p = {
         pageNo:      accessGridPager.pageNo,
         pageSize:    accessGridPager.pageSize,
-        dateType:    'reg_date',
-        dateStart:   uiState.dateStart       || undefined,
-        dateEnd:     uiState.dateEnd         || undefined,
+        dateRangeType:    'reg_date',
+        dateRangeStart:   uiState.dateRangeStart       || undefined,
+        dateRangeEnd:     uiState.dateRangeEnd         || undefined,
         searchType: uiState.searchType      || undefined,
         searchValue: uiState.searchValue        || undefined,
         method:      uiState.searchMethod    || undefined,
@@ -315,7 +315,7 @@ window.SyApiLogMng = {
     // 기본 검색
     columns.baseSearch = [
       { key: 'dateRange', type: 'dateRange', label: '등록기간',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

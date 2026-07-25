@@ -106,7 +106,7 @@ window.PmGiftMng = {
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, giftTypeCd: '', giftStatusCd: '' };
+      return { searchType: '', searchValue: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, giftTypeCd: '', giftStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
     // ===== 공통코드 로딩 ===================================================
@@ -287,7 +287,7 @@ window.PmGiftMng = {
       { key: 'giftTypeCd', type: 'select', label: '유형', options: () => codes.gift_cond_types, nullLabel: '유형 전체' },
       { key: 'giftStatusCd', type: 'select', label: '상태', options: () => codes.gift_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '시작일',
-        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => codes.gift_date_types,
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

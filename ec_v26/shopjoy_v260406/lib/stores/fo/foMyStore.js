@@ -72,7 +72,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   };
 
   /* handleLoadOrders
-     - params: 서버 검색 조건(dateStart/dateEnd/dateType/orderStatusCd 등). 전달 시 항상 재조회.
+     - params: 서버 검색 조건(dateRangeStart/dateRangeEnd/dateRangeType/orderStatusCd 등). 전달 시 항상 재조회.
      - 무인자 호출은 기존 동작(미로드 시 1회 조회) 유지하여 호환.
      - 백엔드 Item 을 _adaptOrder 로 화면 기대 형태로 변환해 적재. */
   const handleLoadOrders = async (params) => {

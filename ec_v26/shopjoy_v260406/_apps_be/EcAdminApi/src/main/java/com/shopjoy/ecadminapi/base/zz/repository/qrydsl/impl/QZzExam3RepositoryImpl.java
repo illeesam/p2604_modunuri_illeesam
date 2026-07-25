@@ -135,12 +135,6 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     }
 
     /* searchType 사용 예  searchType = "col31,col32" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
 
     /* zz_exam3 buildOrder */
     @SuppressWarnings({"rawtypes","unchecked"})

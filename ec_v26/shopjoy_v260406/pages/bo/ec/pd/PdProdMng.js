@@ -34,7 +34,7 @@ window.PdProdMng = {
       console.log(' ■■ PdProdMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
+        if ((searchParam.dateRangeStart || searchParam.dateRangeEnd) && !searchParam.dateRangeType) {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
@@ -139,7 +139,7 @@ window.PdProdMng = {
       const today = new Date();
       const thisYear = today.getFullYear();
       return {
-        searchType: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, cate: '', status: '',
+        searchType: '', searchValue: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, cate: '', status: '',
         prodTypeCd: props.fixedProdTypeCd || '',
         vendorId: '',   // onMounted 에서 로그인 사용자의 소속 업체로 기본값 설정
         mdUserId: '',   // onMounted 에서 로그인 사용자로 기본값 설정
@@ -346,7 +346,7 @@ window.PdProdMng = {
       if (isAppReady.value) { fnLoadCodes(); }
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
-        searchParam.dateStart = ''; searchParam.dateEnd = '';
+        searchParam.dateRangeStart = ''; searchParam.dateRangeEnd = '';
       }
       await Promise.all([fnLoadVendorsAndMdUsers(), fnApplyLoginDefaults()]);
       handleSearchList('DEFAULT');
@@ -388,7 +388,7 @@ window.PdProdMng = {
         options: () => mdUsers.map(u => ({ value: u.userId, label: u.userNm })), nullLabel: 'MD 전체' },
       { key: 'status', label: '상태', type: 'select', options: () => codes.product_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', label: '등록일', type: 'dateRange',
-        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => codes.prod_date_types,
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

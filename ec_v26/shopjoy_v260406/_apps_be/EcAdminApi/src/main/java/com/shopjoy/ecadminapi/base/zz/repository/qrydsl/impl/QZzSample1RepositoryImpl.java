@@ -123,7 +123,7 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
                 QdslUtil.strIn(zzSample1.sample1Id, search.getSample1Ids()),
                 QdslUtil.strEq(zzSample1.sample1Id, search.getSample1Id()),
                 QdslUtil.strEq(zzSample1.useYn, search.getUseYn()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -149,7 +149,7 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
                 QdslUtil.strIn(zzSample1.sample1Id, search.getSample1Ids()),
                 QdslUtil.strEq(zzSample1.sample1Id, search.getSample1Id()),
                 QdslUtil.strEq(zzSample1.useYn, search.getUseYn()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -173,17 +173,6 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         ZzSample1Dto.PageResponse res = new ZzSample1Dto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(ZzSample1Dto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

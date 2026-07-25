@@ -15,7 +15,7 @@ window.StStatusMng = {
       claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: '',
     });
     const showToast    = window.boApp.showToast;  // 토스트 알림
-const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchValue: '', orderSearchValue: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: ''});;
+const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '', vendorSearchValue: '', orderSearchValue: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: ''});;
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
 
@@ -123,10 +123,10 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendo
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        // 기간(uiState.dateStart~dateEnd)을 서버 검색 파라미터로 전달.
+        // 기간(uiState.dateRangeStart~dateRangeEnd)을 서버 검색 파라미터로 전달.
         // 빈 값이면 날짜조건 미전달(전체). 클라이언트 inRange 는 집계 정합성 위해 유지(서버가 거른 데이터에 동일조건 재적용 → 결과 불변).
-        const dS = uiState.dateStart, dE = uiState.dateEnd;
-        const dateP = (dateType) => (dS || dE) ? { dateType, dateStart: dS, dateEnd: dE } : {};
+        const dS = uiState.dateRangeStart, dE = uiState.dateRangeEnd;
+        const dateP = (dateRangeType) => (dS || dE) ? { dateRangeType, dateRangeStart: dS, dateRangeEnd: dE } : {};
         const PG = { pageNo: 1, pageSize: 10000 };
         const [resO, resC, resV, resCp, resCa] = await Promise.all([
           boApiSvc.odOrder.getPage({ ...PG, ...dateP('order_date') }, '정산상태관리', '목록조회'),
@@ -153,8 +153,8 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendo
     /* inRange — 에서 범위 */
     const inRange = (dateStr) => {
       const d = String(dateStr || '').slice(0, 10);
-      if (uiState.dateStart && d < uiState.dateStart) { return false; }
-      if (uiState.dateEnd   && d > uiState.dateEnd) { return false; }
+      if (uiState.dateRangeStart && d < uiState.dateRangeStart) { return false; }
+      if (uiState.dateRangeEnd   && d > uiState.dateRangeEnd) { return false; }
       return true;
     };
 
@@ -482,9 +482,9 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendo
     columns.dateSearch = [
       { key: 'dateRange', label: '기간', type: 'select', options: () => codes.date_range_opts,
         nullLabel: '기간 선택', onChange: () => handleBtnAction('searchParam-dateRange') },
-      { key: 'dateStart', type: 'date' },
+      { key: 'dateRangeStart', type: 'date' },
       { type: 'label', label: '~' },
-      { key: 'dateEnd',   type: 'date' },
+      { key: 'dateRangeEnd',   type: 'date' },
     ];
     // 판매업체 검색
     columns.vendorSearch = [

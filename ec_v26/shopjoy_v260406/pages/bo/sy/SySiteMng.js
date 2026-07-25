@@ -124,7 +124,7 @@ window.SySiteMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', typeCd: '', status: '', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', typeCd: '', status: '', dateRange: '', dateRangeType: 'reg_date', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -167,7 +167,7 @@ window.SySiteMng = {
 
     /* handleLoadSiteTreeNodeCounts — 좌 트리 노드별 사이트수 집계 (검색조건 동기)
      *   백엔드 GET /bo/sy/site/path-counts — PostgreSQL 재귀 CTE 로 자손 누적 + 검색조건 적용.
-     *   handleSearchList 와 동일한 searchParam(searchValue/status/typeCd/dateStart/dateEnd)
+     *   handleSearchList 와 동일한 searchParam(searchValue/status/typeCd/dateRangeStart/dateRangeEnd)
      *   을 그대로 전달해 트리 뱃지 카운트가 페이지 그리드와 항상 일치하게 유지.
      *   응답: [{pathId, cnt}, ...] — '__total__'/'__orphan__' 특수 path 행 포함 */
     const handleLoadSiteTreeNodeCounts = async () => {
@@ -388,7 +388,7 @@ window.SySiteMng = {
       { key: 'typeCd', type: 'select', label: '유형', options: () => cfTypeOptions.value, nullLabel: '유형 전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.site_oper_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];

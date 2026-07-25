@@ -57,15 +57,15 @@
   }
 
   /* bofApplyDateRange — range 옵션(예: '1month','이번달')을 obj 의 시작/종료 키에 적용.
-   *   각 화면의 `if(p.dateRange){const r=bofGetDateRange(...);p.dateStart=r?r.from:'';...}` 복붙 대체.
+   *   각 화면의 `if(p.dateRange){const r=bofGetDateRange(...);p.dateRangeStart=r?r.from:'';...}` 복붙 대체.
    *   range 인자 생략 시 obj[rangeKey](기본 'dateRange') 값을 사용.
    *   range 가 빈값이면 시작/종료를 비우지 않고 그대로 둔다(직접 입력 보존).
    *   사용:
-   *     boUtil.bofApplyDateRange(searchParam);                       // obj.dateRange → dateStart/dateEnd
-   *     boUtil.bofApplyDateRange(uiState, '이번달', 'dateStart', 'dateEnd'); */
+   *     boUtil.bofApplyDateRange(searchParam);                       // obj.dateRange → dateRangeStart/dateRangeEnd
+   *     boUtil.bofApplyDateRange(uiState, '이번달', 'dateRangeStart', 'dateRangeEnd'); */
   function bofApplyDateRange(obj, range, startKey, endKey, rangeKey) {
     if (!obj) return;
-    const sk = startKey || 'dateStart', ek = endKey || 'dateEnd';
+    const sk = startKey || 'dateRangeStart', ek = endKey || 'dateRangeEnd';
     const rg = range !== undefined ? range : obj[rangeKey || 'dateRange'];
     if (!rg) return;
     const r = bofGetDateRange(rg);

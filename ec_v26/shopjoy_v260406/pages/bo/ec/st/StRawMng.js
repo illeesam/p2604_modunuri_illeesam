@@ -103,7 +103,7 @@ window.StRawMng = {
     };
 
     // 검색 필드
-  const _initSearchParam = () => ({ dateRange: '이번달', dateType: 'order_date', dateStart: '', dateEnd: '', searchMoreOpen: false, searchType: '', searchValue: '', rawTypeCd: '', rawStatusCd: '', vendorTypeCd: '', payMethodCd: '', buyConfirmYn: '', closeYn: '', erpSendYn: '', settlePeriod: '', orderItemStatusCd: '', amtFrom: '', amtTo: '' });
+  const _initSearchParam = () => ({ dateRange: '이번달', dateRangeType: 'order_date', dateRangeStart: '', dateRangeEnd: '', searchMoreOpen: false, searchType: '', searchValue: '', rawTypeCd: '', rawStatusCd: '', vendorTypeCd: '', payMethodCd: '', buyConfirmYn: '', closeYn: '', erpSendYn: '', settlePeriod: '', orderItemStatusCd: '', amtFrom: '', amtTo: '' });
   const searchParam = reactive(_initSearchParam());
   boUtil.bofApplyDateRange(searchParam, '이번달');
 
@@ -266,7 +266,7 @@ const raws = reactive([]);
       const ok = await showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = await boApiSvc.stSettleRaw.collect({ dateStart: searchParam.dateStart, dateEnd: searchParam.dateEnd }, '원장관리', '저장');
+        const res = await boApiSvc.stSettleRaw.collect({ dateRangeStart: searchParam.dateRangeStart, dateRangeEnd: searchParam.dateRangeEnd }, '원장관리', '저장');
         if (showToast) { showToast('재수집이 완료되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
@@ -288,7 +288,7 @@ const raws = reactive([]);
     /* baseSearchColumns — 검색 영역 컬럼 (1+2행 평면화) */
     columns.baseSearch = [
       { key: 'dateRange', type: 'dateRange', label: '기간',
-        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => [{ value: 'order_date', label: '거래일' }, { value: 'reg_date', label: '등록일' }, { value: 'upd_date', label: '수정일' }],
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',

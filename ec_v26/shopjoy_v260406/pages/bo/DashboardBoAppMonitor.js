@@ -34,34 +34,48 @@ window.DashboardBoAppMonitor = {
     const cfTopUrlRangeLabel = computed(() => RANGE_OPTS.find(o => o.value === topUrlRange.value)?.label || '');
     const cfRtTopRangeLabel  = computed(() => RANGE_OPTS.find(o => o.value === rtTopRange.value)?.label  || '');
 
-    /* 응답시간 4단계 등급 — 전 위젯(히트맵/응답시간Top10/상태분포) 공통 색상·기준
-     * 쾌적 <500ms(초록) / 보통 <1500ms(파랑) / 경고 <3000ms(오렌지) / 위험 ≥3000ms(적색) */
+    /* 응답시간 등급(집계값 전용, err 없음) — 응답시간Top10 등 평균값 집계 위젯에서 사용
+     * 쾌적 <500ms(초록) / 보통 <1500ms(파랑) / 경고·위험 ≥1500ms(오렌지) */
     const RT_GRADES = [
-      { max: 500,      key: 'good', label: '쾌적', color: '#10b981' },
-      { max: 1500,     key: 'ok',   label: '보통', color: '#3b82f6' },
-      { max: 3000,     key: 'warn', label: '경고', color: '#f59e0b' },
-      { max: Infinity, key: 'bad',  label: '위험', color: '#ef4444' },
+      { max: 500,      key: 'good', label: '쾌적',    color: '#10b981' },
+      { max: 1500,     key: 'ok',   label: '보통',    color: '#3b82f6' },
+      { max: Infinity, key: 'warn', label: '경고·위험', color: '#f59e0b' },
     ];
     const fnRtGrade = (rt) => RT_GRADES.find(g => rt < g.max) || RT_GRADES[RT_GRADES.length - 1];
-    /* 히트맵 산점도의 등급 인덱스 (0~3) */
-    const fnRtGradeIdx = (rt) => RT_GRADES.findIndex(g => rt < g.max);
+
+    /* 개별 트랜잭션 등급(err 플래그 포함) — 히트맵/브러시팝업/상태분포에서 사용
+     * 쾌적 <500ms(초록) / 보통 <1500ms(파랑) / 경고·위험 ≥1500ms(오렌지) / 오류(err=true, 빨강) */
+    const PT_GRADES = [
+      { key: 'good', label: '쾌적',    color: '#10b981' },
+      { key: 'ok',   label: '보통',    color: '#3b82f6' },
+      { key: 'warn', label: '경고·위험', color: '#f59e0b' },
+      { key: 'err',  label: '오류',    color: '#ef4444' },
+    ];
+    /* 개별 포인트({rt, err})를 받아 PT_GRADES 인덱스(0~3) 반환. err=true 는 응답시간과 무관하게 항상 '오류' */
+    const fnPtGradeIdx = (p) => {
+      if (p.err) return 3;
+      if (p.rt < 500) return 0;
+      if (p.rt < 1500) return 1;
+      return 2;
+    };
+    const fnPtGrade = (p) => PT_GRADES[fnPtGradeIdx(p)];
 
     const WIDGET_SRC = {
-      XVIEW: { compId:'(없음)', chartType:'scatter + brush (X-View 히트맵)', url:'(로컬 목업 — 실시간 생성)', dataKey:'xviewData', fields:'t(timestamp ms) / rt(응답시간ms) / err(boolean)', desc:'브라우저 로컬에서 800개 랜덤 포인트 생성. 2초마다 새 포인트 추가. 실제 구현 시 APM 에이전트 데이터 연동 필요.',
+      XVIEW: { compId:'(없음)', chartType:'scatter + brush (X-View 히트맵)', url:'(로컬 목업 — 실시간 생성)', dataKey:'xviewData', fields:'t(timestamp ms) / rt(응답시간ms) / err(boolean) / method(GET/POST) / url / uiNm / cmdNm', desc:'브라우저 로컬에서 800개 랜덤 포인트 생성. 2초마다 새 포인트 추가. 실제 구현 시 APM 에이전트 데이터 연동 필요.',
         tag:'<co-echart\n  :option="cfOptXview"\n  height="360px"\n  @brush-selected="onXviewBrush"\n/>',
-        attrs:[{k:':option',v:'cfOptXview',d:'scatter series — 4단계(쾌적 초록/보통 파랑/경고 오렌지/위험 적색), brush toolbox 포함'},{k:'height',v:'"360px"',d:'드릴다운 영역 포함 높이'},{k:'@brush-selected',v:'onXviewBrush',d:'브러시 선택 시 트랜잭션 목록 새창(postMessage) emit 핸들러'}] },
+        attrs:[{k:':option',v:'cfOptXview',d:'scatter series — 4단계(쾌적 초록/보통 파랑/경고·위험 오렌지/오류 적색×마커), brush toolbox 포함'},{k:'height',v:'"360px"',d:'드릴다운 영역 포함 높이'},{k:'@brush-selected',v:'onXviewBrush',d:'브러시 선택 시 트랜잭션 목록 새창(postMessage) emit 핸들러'}] },
       TOPURL:   { compId:'(없음)', chartType:'bar (수평 막대)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'url / uiNm / cmdNm 별 호출건수 집계 (선택 기간)', desc:'선택한 기간(10분~2일) 트랜잭션을 URL 기준 집계해 호출량 상위 10개를 표시.',
         tag:'<co-echart\n  :option="cfOptTopUrl"\n  height="260px"\n/>',
         attrs:[{k:':option',v:'cfOptTopUrl',d:'bar horizontal — url 별 count 내림차순 Top10, topUrlRange 기간 필터'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
-      RTTOP:    { compId:'(없음)', chartType:'bar (수평 막대, 4단계 색상)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'url 별 평균 응답시간(ms) 집계 (선택 기간)', desc:'선택한 기간(10분~2일) 트랜잭션을 URL 기준 평균 응답시간 집계해 상위 10개 표시. 쾌적(<500ms 초록)/보통(<1500ms 파랑)/경고(<3000ms 오렌지)/위험(≥3000ms 적색) 4단계 색상.',
+      RTTOP:    { compId:'(없음)', chartType:'bar (수평 막대, 3단계 색상)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'url 별 평균 응답시간(ms) 집계 (선택 기간)', desc:'선택한 기간(10분~2일) 트랜잭션을 URL 기준 평균 응답시간 집계해 상위 10개 표시. 쾌적(<500ms 초록)/보통(<1500ms 파랑)/경고·위험(≥1500ms 오렌지) 3단계 색상 (평균값 집계라 개별 오류 플래그는 반영되지 않음).',
         tag:'<co-echart\n  :option="cfOptRtTop"\n  height="260px"\n/>',
         attrs:[{k:':option',v:'cfOptRtTop',d:'bar horizontal — url 별 평균 응답시간 내림차순 Top10, rtTopRange 기간 필터, itemStyle.color 콜백으로 4단계 색상'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
       RTTREND:  { compId:'(없음)', chartType:'line (10초 버킷 평균/최대 응답시간)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'t(10초 버킷) / avgRt / maxRt', desc:'10초 단위로 평균·최대 응답시간을 집계한 추이선.',
         tag:'<co-echart\n  :option="cfOptRtTrend"\n  height="220px"\n/>',
         attrs:[{k:':option',v:'cfOptRtTrend',d:'line 2 series — 평균/최대 응답시간'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
-      STATUSPIE:{ compId:'(없음)', chartType:'pie (파이 차트)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'상태별(쾌적/보통/경고/위험) 비중', desc:'최근 10분 트랜잭션의 상태 분포(4단계 등급).',
+      STATUSPIE:{ compId:'(없음)', chartType:'pie (파이 차트)', url:'(로컬 목업 — xviewData 집계)', dataKey:'xviewData', fields:'상태별(쾌적/보통/경고·위험/오류) 비중', desc:'최근 10분 트랜잭션의 상태 분포(4단계 등급, 오류는 err 플래그 기준).',
         tag:'<co-echart\n  :option="cfOptStatusPie"\n  height="220px"\n/>',
-        attrs:[{k:':option',v:'cfOptStatusPie',d:'pie series — 쾌적/보통/경고/위험 4종 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+        attrs:[{k:':option',v:'cfOptStatusPie',d:'pie series — 쾌적/보통/경고·위험/오류 4종 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
     };
 
     /* 위젯 정보 팝오버 열기
@@ -114,21 +128,21 @@ window.DashboardBoAppMonitor = {
     /* ##### [03] X-View 히트맵 목업 데이터 ######################################## */
 
     const XVIEW_URLS = [
-      { url:'/bo/ec/mb/member/page',        uiNm:'회원관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/pd/prod/page',           uiNm:'상품관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/od/order/page',          uiNm:'주문관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/od/claim/page',          uiNm:'클레임관리',   cmdNm:'목록조회' },
-      { url:'/bo/ec/pm/coupon/page',         uiNm:'쿠폰관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/cm/dashboard/data',      uiNm:'대시보드',     cmdNm:'조회' },
-      { url:'/bo/sy/user/page',              uiNm:'사용자관리',   cmdNm:'목록조회' },
-      { url:'/bo/sy/code/list',              uiNm:'코드관리',     cmdNm:'코드목록' },
-      { url:'/bo/ec/pd/prod/save/base',      uiNm:'상품관리',     cmdNm:'저장' },
-      { url:'/bo/ec/od/order/save/base',     uiNm:'주문관리',     cmdNm:'저장' },
-      { url:'/bo/ec/mb/member/save/base',    uiNm:'회원관리',     cmdNm:'저장' },
-      { url:'/bo/ec/dp/ui/list',             uiNm:'전시관리',     cmdNm:'목록조회' },
-      { url:'/bo/ec/pm/event/page',          uiNm:'이벤트관리',   cmdNm:'목록조회' },
-      { url:'/co/sy/code/grp-codes',         uiNm:'공통',         cmdNm:'코드조회' },
-      { url:'/bo/sy/menu/list',              uiNm:'메뉴관리',     cmdNm:'목록조회' },
+      { method:'GET',  url:'/bo/ec/mb/member/page',        uiNm:'회원관리',     cmdNm:'목록조회' },
+      { method:'GET',  url:'/bo/ec/pd/prod/page',           uiNm:'상품관리',     cmdNm:'목록조회' },
+      { method:'GET',  url:'/bo/ec/od/order/page',          uiNm:'주문관리',     cmdNm:'목록조회' },
+      { method:'GET',  url:'/bo/ec/od/claim/page',          uiNm:'클레임관리',   cmdNm:'목록조회' },
+      { method:'GET',  url:'/bo/ec/pm/coupon/page',         uiNm:'쿠폰관리',     cmdNm:'목록조회' },
+      { method:'GET',  url:'/bo/ec/cm/dashboard/data',      uiNm:'대시보드',     cmdNm:'조회' },
+      { method:'GET',  url:'/bo/sy/user/page',              uiNm:'사용자관리',   cmdNm:'목록조회' },
+      { method:'GET',  url:'/bo/sy/code/list',              uiNm:'코드관리',     cmdNm:'코드목록' },
+      { method:'POST', url:'/bo/ec/pd/prod/save/base',      uiNm:'상품관리',     cmdNm:'저장' },
+      { method:'POST', url:'/bo/ec/od/order/save/base',     uiNm:'주문관리',     cmdNm:'저장' },
+      { method:'POST', url:'/bo/ec/mb/member/save/base',    uiNm:'회원관리',     cmdNm:'저장' },
+      { method:'GET',  url:'/bo/ec/dp/ui/list',             uiNm:'전시관리',     cmdNm:'목록조회' },
+      { method:'GET',  url:'/bo/ec/pm/event/page',          uiNm:'이벤트관리',   cmdNm:'목록조회' },
+      { method:'GET',  url:'/co/sy/code/grp-codes',         uiNm:'공통',         cmdNm:'코드조회' },
+      { method:'GET',  url:'/bo/sy/menu/list',              uiNm:'메뉴관리',     cmdNm:'목록조회' },
     ];
     const _buildPoint = (t) => {
       const rt = Math.random() < 0.75
@@ -138,7 +152,7 @@ window.DashboardBoAppMonitor = {
           : 3000 + Math.random() * 5000;
       const err = rt > 5000 && Math.random() < 0.3;
       const src = XVIEW_URLS[Math.floor(Math.random() * XVIEW_URLS.length)];
-      return { t, rt: Math.round(rt), err, url: src.url, uiNm: src.uiNm, cmdNm: src.cmdNm };
+      return { t, rt: Math.round(rt), err, method: src.method, url: src.url, uiNm: src.uiNm, cmdNm: src.cmdNm };
     };
 
     /* X-View 히트맵(최근 10분)은 밀도 800포인트 유지 + 기간선택(최대 2일)용 저밀도 포인트를 추가 생성 */
@@ -158,7 +172,7 @@ window.DashboardBoAppMonitor = {
     const cfOptXview = computed(() => {
       const now  = Date.now();
       const from = now - 10 * 60 * 1000;
-      const pts  = xviewData.value.map(p => [p.t, p.rt, fnRtGradeIdx(p.rt), p.url||'', p.uiNm||'', p.cmdNm||'']);
+      const pts  = xviewData.value.map(p => [p.t, p.rt, fnPtGradeIdx(p), p.url||'', p.uiNm||'', p.cmdNm||'']);
 
       return {
         tooltip: {
@@ -166,7 +180,7 @@ window.DashboardBoAppMonitor = {
           formatter: p => {
             const d   = new Date(p.data[0]);
             const hms = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
-            const lbl = (RT_GRADES[p.data[2]] || {}).label || '';
+            const lbl = (PT_GRADES[p.data[2]] || {}).label || '';
             const url   = p.data[3] || '';
             const uiNm  = p.data[4] || '';
             const cmdNm = p.data[5] || '';
@@ -207,27 +221,34 @@ window.DashboardBoAppMonitor = {
         visualMap: {
           show: true, type:'piecewise', categories: [0,1,2,3], dimension: 2,
           pieces: [
-            { value:0, label:'쾌적 (<500ms)',   color: RT_GRADES[0].color },
-            { value:1, label:'보통 (<1500ms)',  color: RT_GRADES[1].color },
-            { value:2, label:'경고 (<3000ms)',  color: RT_GRADES[2].color },
-            { value:3, label:'위험 (≥3000ms)',  color: RT_GRADES[3].color },
+            { value:0, label:'쾌적 (<500ms)',      color: PT_GRADES[0].color },
+            { value:1, label:'보통 (<1500ms)',     color: PT_GRADES[1].color },
+            { value:2, label:'경고·위험 (≥1500ms)', color: PT_GRADES[2].color },
+            { value:3, label:'오류',              color: PT_GRADES[3].color },
           ],
           right: 16, bottom: 40, textStyle:{ fontSize:10 },
         },
-        /* brush 는 scatter 단일 시리즈(index 0)만 대상. 경고선(1500/3000ms)은 별도 line 시리즈
+        /* brush 는 scatter 단일 시리즈(index 0)만 대상. 경고선(1500ms)은 별도 line 시리즈
          * 대신 scatter 의 markLine 으로 그려 series 배열을 1개로 유지 → brush overallReset 오류 회피.
-         * large:true 도 제거(brush 선택 index 집계와 상충). */
+         * large:true 도 제거(brush 선택 index 집계와 상충). 오류(err=true, 등급 인덱스 3)만 X 마커,
+         * 나머지는 원형 마커 — symbol 콜백으로 데이터별 분기(단일 series 유지).
+         * ⚠ path:// 는 stroke(단순 선분 M..L..)가 아니라 fill 가능한 다각형(닫힌 Z 서브패스)만
+         * 렌더링됨 — 대각 막대 2개를 채움 다각형으로 구성한 X자 아이콘. */
         series: [
           {
             type:'scatter', data: pts,
-            symbolSize: 4,
+            /* 기본 원형 마커 30% 확대(4→5.2px). X 마커(오류)는 path 자체 여백 때문에
+             * 동일 시각 크기를 내려면 다소 더 키워야 균형이 맞음 */
+            symbolSize: (value, params) => (params.data[2] === 3 ? 7.5 : 5.2),
+            symbol: (value, params) => (params.data[2] === 3
+              ? 'path://M4,0 L10,0 L24,14 L24,20 L18,20 L4,6 Z M24,0 L24,6 L10,20 L4,20 L4,14 L18,0 Z'
+              : 'circle'),
             encode: { x:0, y:1, itemName:0 },
             markLine: {
               symbol: 'none', silent: true,
               label: { show: false },
               data: [
-                { yAxis: 1500, lineStyle:{ type:'dashed', color: RT_GRADES[2].color, width:1.5 } },
-                { yAxis: 3000, lineStyle:{ type:'dashed', color: RT_GRADES[3].color, width:1.5 } },
+                { yAxis: 1500, lineStyle:{ type:'dashed', color: PT_GRADES[2].color, width:1.5 } },
               ],
             },
           },
@@ -253,6 +274,33 @@ window.DashboardBoAppMonitor = {
     };
     let xviewPendingRows = [];
 
+    /* fnToPopupRow — 원본 xviewData 포인트 → 팝업 표시용 row 변환 */
+    const fnToPopupRow = (p) => {
+      const d = new Date(p.t);
+      const g = fnPtGrade(p);
+      return {
+        time: d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0'),
+        rt: p.rt,
+        status: g.label,
+        statusColor: g.color,
+        method: p.method || '',
+        url: p.url || '',
+        uiNm: p.uiNm || '',
+        cmdNm: p.cmdNm || '',
+      };
+    };
+
+    /* fnOpenXviewPopup — 트랜잭션 배열을 박스 선택 목록 팝업(postMessage)으로 전달 */
+    const fnOpenXviewPopup = (points) => {
+      const selected = points.map(fnToPopupRow).sort((a,b) => b.rt - a.rt);
+      if (!selected.length) return;
+      xviewPendingRows = selected;
+      xviewPopupWin = window.open(
+        window.pageUrl('bo-dash-appMon-xviewReal-boxlist-pop.html'),
+        'xviewBoxList', 'width=1040,height=680,resizable=yes,scrollbars=yes',
+      );
+    };
+
     const onXviewBrush = (params) => {
       /* brushSelected payload 구조: params.batch[0].selected[0].dataIndex 에
        * 선택된 scatter 포인트의 데이터 인덱스 배열이 담김. (params.areas 아님) */
@@ -261,29 +309,22 @@ window.DashboardBoAppMonitor = {
       const sel = batch.selected && batch.selected[0];
       const idxList = sel && sel.dataIndex;
       if (!idxList || !idxList.length) return;
-      const selected = idxList
-        .map(i => xviewData.value[i])
-        .filter(Boolean)
-        .map(p => {
-          const d = new Date(p.t);
-          const g = fnRtGrade(p.rt);
-          return {
-            time: d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0'),
-            rt: p.rt,
-            status: g.label,
-            statusColor: g.color,
-            url: p.url || '',
-            uiNm: p.uiNm || '',
-            cmdNm: p.cmdNm || '',
-          };
-        })
-        .sort((a,b) => b.rt - a.rt);
-      if (!selected.length) return;
-      xviewPendingRows = selected;
-      xviewPopupWin = window.open(
-        window.pageUrl('bo-dash-appMon-xviewReal-boxlist-pop.html'),
-        'xviewBoxList', 'width=1040,height=680,resizable=yes,scrollbars=yes',
-      );
+      fnOpenXviewPopup(idxList.map(i => xviewData.value[i]).filter(Boolean));
+    };
+
+    /* onTopUrlClick / onRtTopClick — 호출량·응답시간 Top10 막대 클릭 시 해당 URL의
+     * (각 위젯이 표시 중인) 선택 기간 트랜잭션 전체를 박스 선택과 동일한 팝업으로 표시 */
+    const onTopUrlClick = (params) => {
+      const url = params && params.name;
+      if (!url) return;
+      const from = Date.now() - topUrlRange.value;
+      fnOpenXviewPopup(xviewData.value.filter(p => p.url === url && p.t >= from));
+    };
+    const onRtTopClick = (params) => {
+      const url = params && params.name;
+      if (!url) return;
+      const from = Date.now() - rtTopRange.value;
+      fnOpenXviewPopup(xviewData.value.filter(p => p.url === url && p.t >= from));
     };
 
     /* ── 호출량 Top10 (URL 집계, 선택 기간 필터) option ─────────────────────────── */
@@ -361,16 +402,16 @@ window.DashboardBoAppMonitor = {
       };
     });
 
-    /* ── 상태 분포 파이 option (4단계 등급) ─────────────────────────── */
+    /* ── 상태 분포 파이 option (쾌적/보통/경고·위험/오류 4단계 등급) ─────────────────────────── */
     const cfOptStatusPie = computed(() => {
       const cnt = [0, 0, 0, 0];
-      xviewData.value.forEach(p => { cnt[fnRtGradeIdx(p.rt)]++; });
+      xviewData.value.forEach(p => { cnt[fnPtGradeIdx(p)]++; });
       return {
         tooltip: { trigger:'item', formatter: p => p.name + ': ' + p.value + '건 (' + p.percent + '%)' },
         legend: { orient:'vertical', right:8, top:'center', textStyle:{ fontSize:10 } },
         series: [{
           type:'pie', radius:['40%','68%'], center:['38%','50%'],
-          data: RT_GRADES.map((g, i) => ({ name: g.label, value: cnt[i], itemStyle:{ color: g.color } })),
+          data: PT_GRADES.map((g, i) => ({ name: g.label, value: cnt[i], itemStyle:{ color: g.color } })),
           label:{ show:false },
           emphasis:{ label:{ show:true, fontSize:11 } },
         }],
@@ -407,7 +448,7 @@ window.DashboardBoAppMonitor = {
       uiState, attrsGridColumns, cfXviewSample,
       RANGE_OPTS, topUrlRange, rtTopRange, cfTopUrlRangeLabel, cfRtTopRangeLabel,
       cfOptXview, cfOptTopUrl, cfOptRtTop, cfOptRtTrend, cfOptStatusPie,
-      onXviewBrush, fnXviewChartReady, fnOpenInfo, fnInfoTab,
+      onXviewBrush, fnXviewChartReady, onTopUrlClick, onRtTopClick, fnOpenInfo, fnInfoTab,
       handleBtnAction,
     };
   },
@@ -423,8 +464,8 @@ window.DashboardBoAppMonitor = {
         X-View 실시간 트랜잭션 히트맵
         <span style="font-size:10px;font-weight:400;color:#10b981;background:#f0fdf4;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;">● LIVE</span>
         <span style="flex:1;"></span>
-        <span style="font-size:10px;color:#888;">박스 드래그 → 트랜잭션 목록 새창</span>
-        <span style="font-size:10px;color:#888;">━ ━ 1500ms 경고 &amp; ━ ━ 3000ms 위험</span>
+        <span style="font-size:10px;color:#888;">박스 드래그 → 트랜잭션 목록 새창 · ✕ 표시 = 오류</span>
+        <span style="font-size:10px;color:#888;">━ ━ 1500ms 경고·위험</span>
       </div>
       <co-echart :option="cfOptXview" height="360px" @brush-selected="onXviewBrush" @ready="fnXviewChartReady" />
     </bo-container>
@@ -439,8 +480,9 @@ window.DashboardBoAppMonitor = {
         </select>
         <span style="flex:1;"></span>
         <span style="font-size:10px;color:#888;">최근 {{ cfTopUrlRangeLabel }}</span>
+        <span style="font-size:10px;color:#888;">막대 클릭 → 트랜잭션 목록 새창</span>
       </div>
-      <co-echart :option="cfOptTopUrl" height="260px" />
+      <co-echart :option="cfOptTopUrl" height="260px" @click="onTopUrlClick" />
     </bo-container>
 
     <!-- 3) 응답시간 Top10 -->
@@ -453,9 +495,10 @@ window.DashboardBoAppMonitor = {
         </select>
         <span style="flex:1;"></span>
         <span style="font-size:10px;color:#888;">최근 {{ cfRtTopRangeLabel }}</span>
-        <span style="font-size:10px;color:#888;">🟢 쾌적 &lt;500ms · 🔵 보통 &lt;1500ms · 🟠 경고 &lt;3000ms · 🔴 위험 ≥3000ms</span>
+        <span style="font-size:10px;color:#888;">🟢 쾌적 &lt;500ms · 🔵 보통 &lt;1500ms · 🟠 경고·위험 ≥1500ms</span>
+        <span style="font-size:10px;color:#888;">막대 클릭 → 트랜잭션 목록 새창</span>
       </div>
-      <co-echart :option="cfOptRtTop" height="260px" />
+      <co-echart :option="cfOptRtTop" height="260px" @click="onRtTopClick" />
     </bo-container>
 
     <!-- 4) 상태 분포 -->

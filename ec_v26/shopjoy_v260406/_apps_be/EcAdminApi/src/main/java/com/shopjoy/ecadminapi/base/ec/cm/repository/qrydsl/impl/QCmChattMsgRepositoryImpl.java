@@ -31,7 +31,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattMsgRepositoryImpl";
     private static final QCmChattMsg cmChattMsg = QCmChattMsg.cmChattMsg;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "send_date", cmChattMsg.sendDate,
         "reg_date", cmChattMsg.regDate,
         "upd_date", cmChattMsg.updDate
@@ -94,7 +94,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
                         QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()),
                         QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()),
                         QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId()),
-                        QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
+                        QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                         andSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -118,7 +118,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
                 QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()),
                 QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()),
                 QdslUtil.strGt(cmChattMsg.chattMsgId, search.getAfterMsgId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search)
         };
 

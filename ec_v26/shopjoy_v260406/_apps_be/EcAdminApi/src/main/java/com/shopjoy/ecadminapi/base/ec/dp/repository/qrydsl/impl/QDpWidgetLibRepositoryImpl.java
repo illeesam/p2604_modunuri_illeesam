@@ -35,7 +35,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetLibRepositoryImpl";
     private static final QDpWidgetLib dpWidgetLib = QDpWidgetLib.dpWidgetLib;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", dpWidgetLib.regDate,
         "upd_date", dpWidgetLib.updDate
     );
@@ -108,8 +108,8 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                     QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId()),
                     QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd()),
                     QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -136,8 +136,8 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                 QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId()),
                 QdslUtil.strEq(dpWidgetLib.widgetTypeCd, search.getWidgetTypeCd()),
                 QdslUtil.strEq(dpWidgetLib.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery();
@@ -160,11 +160,6 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(DpWidgetLibDto.Request search) {
@@ -172,11 +167,6 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                 ? dpWidgetLib.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_widget_lib"))
                 : null;
     }
-
-    private BooleanExpression andSearchValueLike(DpWidgetLibDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드
@@ -337,13 +327,13 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
 
     private void pathtreeAndDateRange(DpWidgetLibDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null) return;
-        if (StringUtils.hasText(s.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            p.put("dateStart", s.getDateStart());
+        if (StringUtils.hasText(s.getDateRangeStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateRangeStart AS timestamp)\n");
+            p.put("dateRangeStart", s.getDateRangeStart());
         }
-        if (StringUtils.hasText(s.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            p.put("dateEnd", s.getDateEnd());
+        if (StringUtils.hasText(s.getDateRangeEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateRangeEnd", s.getDateRangeEnd());
         }
     }
 }

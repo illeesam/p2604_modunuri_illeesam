@@ -39,7 +39,7 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
     private static final QSyDept   syDept   = QSyDept.syDept;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyCode   cd_at    = new QSyCode("cd_at");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhAccessErrorLog.regDate
     );
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
@@ -151,7 +151,7 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
                 andUiNmLike(search),
                 QdslUtil.strEqTrim(syhAccessErrorLog.traceId, search.getTraceId()),
                 QdslUtil.strEq(syhAccessErrorLog.appTypeCd, search.getAppTypeCd()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
@@ -178,11 +178,6 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* reqPath LIKE (경로 부분 검색) */
     private BooleanExpression andPathLike(SyhAccessErrorLogDto.Request search) {

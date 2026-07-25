@@ -67,7 +67,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private static final QSyCode      cdOis = new QSyCode("cd_ois");
     private static final QSyCode      cdVt  = new QSyCode("cd_vt");
     private static final QSyCode      cdPmc = new QSyCode("cd_pmc");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "order_date", stSettleRaw.orderDate,
         "reg_date", stSettleRaw.regDate,
         "upd_date", stSettleRaw.updDate
@@ -275,8 +275,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                     QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()),
                     QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()),
                     QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -316,8 +316,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 QdslUtil.strEq(stSettleRaw.orderItemStatusCd, search.getOrderItemStatusCd()),
                 QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()),
                 QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -343,16 +343,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(StSettleRawDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

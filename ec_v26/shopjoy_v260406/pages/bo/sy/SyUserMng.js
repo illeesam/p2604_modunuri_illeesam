@@ -128,7 +128,7 @@ window.SyUserMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', role: '', status: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', role: '', status: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -379,7 +379,7 @@ window.SyUserMng = {
       { key: 'role',   type: 'select', label: '권한', options: () => codes.user_roles,  nullLabel: '권한 전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.user_status, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
-        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => codes.user_date_types,
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

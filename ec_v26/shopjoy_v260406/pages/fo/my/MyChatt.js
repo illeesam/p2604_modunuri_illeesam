@@ -54,7 +54,7 @@ window.MyChatt = {
     const { dateRange, onDateSearch } = window.myDateFilterHelper();
 
     /* fnBuildParams — 현재 검색조건(기간) → 서버 파라미터 */
-    const fnBuildParams = () => ({ dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end });
+    const fnBuildParams = () => ({ dateRangeType: 'reg_date', dateRangeStart: dateRange.start, dateRangeEnd: dateRange.end });
 
     /* handleLoadPage — 서버사이드 페이징 조회 (현재 chatPager 기준) */
     const handleLoadPage = async () => {

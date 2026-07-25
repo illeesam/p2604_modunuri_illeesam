@@ -29,7 +29,7 @@ window.OdDlivMng = {
       console.log(' ■■ OdDlivMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
+        if ((searchParam.dateRangeStart || searchParam.dateRangeEnd) && !searchParam.dateRangeType) {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
@@ -154,7 +154,7 @@ window.OdDlivMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', memberId: '', memberNm: '', dlivStatusCd: '', dateType: 'dliv_ship_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', memberId: '', memberNm: '', dlivStatusCd: '', dateRangeType: 'dliv_ship_date', dateRange: '', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -481,7 +481,7 @@ window.OdDlivMng = {
         onClear: () => handleBtnAction('memberPickModal-clear') },
       { key: 'dlivStatusCd', type: 'select', label: '상태', options: () => codes.dliv_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '배송일',
-        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => codes.dliv_date_types,
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

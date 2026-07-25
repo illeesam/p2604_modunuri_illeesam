@@ -87,7 +87,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                     QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
                     QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
                     QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -114,7 +114,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                 QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
                 QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
                 QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -138,16 +138,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         SyI18nDto.PageResponse res = new SyI18nDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(SyI18nDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

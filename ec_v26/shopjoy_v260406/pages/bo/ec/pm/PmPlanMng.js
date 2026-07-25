@@ -105,7 +105,7 @@ window.PmPlanMng = {
 
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchValue: '', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, planStatusCd: '' };
+      return { searchValue: '', dateRange: '', dateRangeType: 'reg_date', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, planStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
     /* 프로모션 플랜 fnLoadCodes */
@@ -177,7 +177,7 @@ window.PmPlanMng = {
       if (isAppReady.value) { fnLoadCodes(); }
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
-        searchParam.dateStart = ''; searchParam.dateEnd = '';
+        searchParam.dateRangeStart = ''; searchParam.dateRangeEnd = '';
       }
       handleSearchList('DEFAULT');
     });
@@ -261,7 +261,7 @@ window.PmPlanMng = {
       { key: 'searchValue', type: 'text', label: '기획전명', placeholder: '기획전명 검색' },
       { key: 'planStatusCd', type: 'select', label: '상태', options: () => codes.plan_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];

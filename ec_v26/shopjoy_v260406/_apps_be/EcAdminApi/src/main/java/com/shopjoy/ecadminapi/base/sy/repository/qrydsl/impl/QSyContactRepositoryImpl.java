@@ -102,7 +102,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                     QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()),
                     QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()),
                     andDateRangeBetween(search),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -131,7 +131,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                 QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()),
                 QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()),
                 andDateRangeBetween(search),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -156,32 +156,22 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
-    /* 등록일(regDate) 기간 검색 — dateStart/dateEnd (yyyy-MM-dd) 포함 범위 */
+    /* 등록일(regDate) 기간 검색 — dateRangeStart/dateRangeEnd (yyyy-MM-dd) 포함 범위 */
     private BooleanExpression andDateRangeBetween(SyContactDto.Request search) {
         if (search == null) return null;
         BooleanExpression expr = null;
-        if (StringUtils.hasText(search.getDateStart())) {
-            LocalDateTime from = LocalDate.parse(search.getDateStart(), DF).atStartOfDay();
+        if (StringUtils.hasText(search.getDateRangeStart())) {
+            LocalDateTime from = LocalDate.parse(search.getDateRangeStart(), DF).atStartOfDay();
             expr = syContact.regDate.goe(from);
         }
-        if (StringUtils.hasText(search.getDateEnd())) {
-            LocalDateTime to = LocalDate.parse(search.getDateEnd(), DF).atTime(23, 59, 59);
+        if (StringUtils.hasText(search.getDateRangeEnd())) {
+            LocalDateTime to = LocalDate.parse(search.getDateRangeEnd(), DF).atTime(23, 59, 59);
             BooleanExpression toExpr = syContact.regDate.loe(to);
             expr = expr == null ? toExpr : expr.and(toExpr);
         }
         return expr;
     }
-
-    private BooleanExpression andSearchValueLike(SyContactDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

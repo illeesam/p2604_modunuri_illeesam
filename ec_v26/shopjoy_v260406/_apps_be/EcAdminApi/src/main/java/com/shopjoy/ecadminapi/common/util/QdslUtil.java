@@ -89,29 +89,29 @@ public class QdslUtil {
     }
 
     /**
-     * 기간 검색 — dateType 값으로 dateFields 에서 대상 컬럼(DateTimePath)을 찾아 [dateStart, dateEnd]
-     * 범위(끝일 포함, yyyy-MM-dd) 조건을 만든다. dateType/dateStart/dateEnd 중 하나라도 blank 이거나
-     * dateFields 에 dateType 키가 없으면(알 수 없는 dateType) 조건 미적용(null 반환).
+     * 기간 검색 — dateRangeType 값으로 dateFields 에서 대상 컬럼(DateTimePath)을 찾아 [dateRangeStart, dateRangeEnd]
+     * 범위(끝일 포함, yyyy-MM-dd) 조건을 만든다. dateRangeType/dateRangeStart/dateRangeEnd 중 하나라도 blank 이거나
+     * dateFields 에 dateRangeType 키가 없으면(알 수 없는 dateRangeType) 조건 미적용(null 반환).
      *
      * <p>사용 예:
      * <pre>
-     * private static final Map&lt;String, DateTimePath&lt;LocalDateTime&gt;&gt; DATE_FIELDS = Map.of(
+     * private static final Map&lt;String, DateTimePath&lt;LocalDateTime&gt;&gt; DATE_RANGE_FIELDS = Map.of(
      *     "reg_date", xxx.regDate,
      *     "upd_date", xxx.updDate
      * );
      * private BooleanExpression andDateRangeBetween(XxxDto.Request s) {
-     *     return s == null ? null : QdslUtil.dateBetween(s.getDateType(), s.getDateStart(), s.getDateEnd(), DATE_FIELDS);
+     *     return s == null ? null : QdslUtil.dateBetween(s.getDateRangeType(), s.getDateRangeStart(), s.getDateRangeEnd(), DATE_RANGE_FIELDS);
      * }
      * </pre>
      */
-    public static BooleanExpression dateBetween(String dateType, String dateStart, String dateEnd,
+    public static BooleanExpression dateBetween(String dateRangeType, String dateRangeStart, String dateRangeEnd,
                                                        Map<String, DateTimePath<LocalDateTime>> dateFields) {
-        if (!StringUtils.hasText(dateType) || !StringUtils.hasText(dateStart) || !StringUtils.hasText(dateEnd)) return null;
-        DateTimePath<LocalDateTime> path = dateFields.get(dateType);
+        if (!StringUtils.hasText(dateRangeType) || !StringUtils.hasText(dateRangeStart) || !StringUtils.hasText(dateRangeEnd)) return null;
+        DateTimePath<LocalDateTime> path = dateFields.get(dateRangeType);
         if (path == null) return null;
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(dateStart, fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(dateEnd,   fmt).plusDays(1).atStartOfDay();
+        LocalDateTime start   = LocalDate.parse(dateRangeStart, fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(dateRangeEnd,   fmt).plusDays(1).atStartOfDay();
         return path.goe(start).and(path.lt(endExcl));
     }
 

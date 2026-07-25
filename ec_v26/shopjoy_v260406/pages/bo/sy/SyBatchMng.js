@@ -138,7 +138,7 @@ window.SyBatchMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', status: '', runStatus: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', status: '', runStatus: '', dateRange: '', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -406,7 +406,7 @@ window.SyBatchMng = {
       { key: 'status', type: 'select', label: '활성여부', options: () => codes.active_statuses, nullLabel: '활성여부 전체' },
       { key: 'runStatus', type: 'select', label: '실행상태', options: () => codes.batch_run_statuses, nullLabel: '실행상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];

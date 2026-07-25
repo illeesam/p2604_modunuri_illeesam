@@ -102,7 +102,7 @@ window.PmVoucherMng = {
 
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, voucherStatusCd: '' };
+      return { searchType: '', searchValue: '', dateRange: '', dateRangeType: 'reg_date', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, voucherStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
     /* 바우처(상품권) fnLoadCodes */
@@ -264,7 +264,7 @@ window.PmVoucherMng = {
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'voucherStatusCd', type: 'select', label: '상태', options: () => codes.voucher_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '판매기간',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];

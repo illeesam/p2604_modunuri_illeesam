@@ -47,7 +47,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     }
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyCode cdRt = new QSyCode("cd_rt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syRole.regDate,
         "upd_date", syRole.updDate
     );
@@ -116,8 +116,8 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 andParentRoleIdIn(search),
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
                 QdslUtil.strEq(syRole.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -145,8 +145,8 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 andParentRoleIdIn(search),
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
                 QdslUtil.strEq(syRole.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -180,18 +180,13 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 andParentRoleIdIn(search),
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
                 QdslUtil.strEq(syRole.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         ).fetchOne();
         return total == null ? 0L : total;
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* parentRoleId 트리 — 선택 노드 + 모든 자손 역할 포함 (sy_role 자기참조 재귀 CTE 인라인) */
     @SuppressWarnings("unchecked")
@@ -207,11 +202,6 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         List<String> roleIds = (List<String>) q.getResultList();
         return syRole.roleId.in(roleIds);
     }
-
-    private BooleanExpression andSearchValueLike(SyRoleDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

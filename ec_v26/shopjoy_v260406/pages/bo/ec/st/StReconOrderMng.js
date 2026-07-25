@@ -9,7 +9,7 @@ window.StReconOrderMng = {
     /* ##### [01] 초기 변수 정의 ################################################## */
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
-const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: ''});
     const codes = reactive({
       order_statuses: [],
       recon_results: [],
@@ -65,7 +65,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* handleDateRangeChange — 기간 변경 (searchParam.dateRange → dateStart/dateEnd) */
+    /* handleDateRangeChange — 기간 변경 (searchParam.dateRange → dateRangeStart/dateRangeEnd) */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
     };
@@ -73,7 +73,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const rows = reactive([]);
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', reconStatusCd: '', dateType: 'reg_date', dateRange: '', dateStart: '', dateEnd: '' });
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', reconStatusCd: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
     const searchParam = reactive(_initSearchParam());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
@@ -138,7 +138,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const columns = {};
     columns.baseSearch = [
       { key: 'dateRange', label: '대사일', type: 'dateRange',
-        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => [{ value: 'reg_date', label: '등록일' }, { value: 'upd_date', label: '수정일' }],
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px',

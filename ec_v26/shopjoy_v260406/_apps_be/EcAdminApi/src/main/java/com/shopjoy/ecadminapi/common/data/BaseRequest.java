@@ -32,17 +32,17 @@ public abstract class BaseRequest {
     @Size(max = 100, message = "searchValue 는 100자 이내여야 합니다.")
     private String searchValue;
 
-    /** 기간 검색 대상 컬럼 토큰. 예: "reg_date", "upd_date", "last_login_date" — Mapper XML 에서 dateType 으로 분기 */
-    @Size(max = 50, message = "dateType 는 50자 이내여야 합니다.")
-    private String dateType;
+    /** 기간 검색 대상 컬럼 토큰. 예: "reg_date", "upd_date", "last_login_date" — Mapper XML 에서 dateRangeType 으로 분기 */
+    @Size(max = 50, message = "dateRangeType 는 50자 이내여야 합니다.")
+    private String dateRangeType;
 
-    /** 기간 검색 시작일 (포함). 형식 yyyy-MM-dd, 최대 10자. dateType 컬럼 기준 비교. */
-    @Size(max = 10, message = "dateStart 는 10자 이내여야 합니다.")
-    private String dateStart;
+    /** 기간 검색 시작일 (포함). 형식 yyyy-MM-dd, 최대 10자. dateRangeType 컬럼 기준 비교. */
+    @Size(max = 10, message = "dateRangeStart 는 10자 이내여야 합니다.")
+    private String dateRangeStart;
 
-    /** 기간 검색 종료일 (포함). 형식 yyyy-MM-dd, 최대 10자. dateType 컬럼 기준 비교. */
-    @Size(max = 10, message = "dateEnd 는 10자 이내여야 합니다.")
-    private String dateEnd;
+    /** 기간 검색 종료일 (포함). 형식 yyyy-MM-dd, 최대 10자. dateRangeType 컬럼 기준 비교. */
+    @Size(max = 10, message = "dateRangeEnd 는 10자 이내여야 합니다.")
+    private String dateRangeEnd;
 
     /** 정렬 지정 토큰. 예: "regDate desc" — Mapper XML 의 ORDER BY 분기에 사용. */
     @Size(max = 50, message = "sort 는 50자 이내여야 합니다.")

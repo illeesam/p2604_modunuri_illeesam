@@ -35,7 +35,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     private static final QSySite   sySite     = QSySite.sySite;
     private static final QSyCode   cdGr  = new QSyCode("cd_gr");
     private static final QSyCode   cdMs  = new QSyCode("cd_ms");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "join_date", mbMember.joinDate,
         "reg_date", mbMember.regDate,
         "upd_date", mbMember.updDate
@@ -120,8 +120,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                     QdslUtil.strEq(mbMember.memberId, search.getMemberId()),
                     QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()),
                     QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -148,8 +148,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                 QdslUtil.strEq(mbMember.memberId, search.getMemberId()),
                 QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()),
                 QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -176,16 +176,6 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
     /** 공용 base query */
     /* searchType 사용 예  searchType = "memberId,memberNm,loginId,memberPhone" (Entity 필드명) */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(MbMemberDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

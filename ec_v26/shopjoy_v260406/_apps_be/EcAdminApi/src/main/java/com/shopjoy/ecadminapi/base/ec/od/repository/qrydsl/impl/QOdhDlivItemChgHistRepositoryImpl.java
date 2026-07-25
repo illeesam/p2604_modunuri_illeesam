@@ -84,7 +84,7 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
                 .where(
                     QdslUtil.strEq(odhDlivItemChgHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhDlivItemChgHist.dlivItemChgHistId, search.getDlivItemChgHistId()),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -109,7 +109,7 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odhDlivItemChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhDlivItemChgHist.dlivItemChgHistId, search.getDlivItemChgHistId()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -133,17 +133,6 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         OdhDlivItemChgHistDto.PageResponse res = new OdhDlivItemChgHistDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(OdhDlivItemChgHistDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

@@ -224,7 +224,7 @@ public class SyBrandService {
 
     }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyBrand 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
-     *   검색조건 (vendorId / searchValue / dateStart / dateEnd) 이 있으면 그 조건에 부합하는 row 만 카운트.
+     *   검색조건 (vendorId / searchValue / dateRangeStart / dateRangeEnd) 이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyBrandDto.Request req) {
         return syBrandRepository.selectPathTreeBrandCnts(req);

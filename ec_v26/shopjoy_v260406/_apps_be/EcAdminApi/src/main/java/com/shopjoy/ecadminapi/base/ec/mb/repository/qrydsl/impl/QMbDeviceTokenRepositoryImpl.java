@@ -31,7 +31,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbDeviceTokenRepositoryImpl";
     private static final QMbDeviceToken mbDeviceToken   = QMbDeviceToken.mbDeviceToken;
     private static final QMbMember      mbMember = QMbMember.mbMember;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", mbDeviceToken.regDate,
         "upd_date", mbDeviceToken.updDate
     );
@@ -86,8 +86,8 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
                 .where(
                     QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()),
                     QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -111,8 +111,8 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()),
                 QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -136,16 +136,6 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         MbDeviceTokenDto.PageResponse res = new MbDeviceTokenDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(MbDeviceTokenDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

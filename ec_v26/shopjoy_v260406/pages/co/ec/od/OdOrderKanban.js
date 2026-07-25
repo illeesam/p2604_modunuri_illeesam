@@ -387,8 +387,8 @@ window.OdOrderKanban = {
       type: '',       // 'order' | 'claim'
       keyword: '',
       memberNm: '',
-      dateStart: '',
-      dateEnd: '',
+      dateRangeStart: '',
+      dateRangeEnd: '',
       loading: false,
       rows: [],
       pageNo: 1,
@@ -401,8 +401,8 @@ window.OdOrderKanban = {
       pickerState.type           = type;
       pickerState.keyword        = '';
       pickerState.memberNm       = '';
-      pickerState.dateStart      = '';
-      pickerState.dateEnd        = '';
+      pickerState.dateRangeStart      = '';
+      pickerState.dateRangeEnd        = '';
       pickerState.rows           = [];
       pickerState.pageNo         = 1;
       pickerState.pageTotalCount = 0;
@@ -420,8 +420,8 @@ window.OdOrderKanban = {
         const params = {
           searchValue: (pickerState.keyword || '').trim(),
           memberNm: pickerState.memberNm,
-          dateStart: pickerState.dateStart,
-          dateEnd: pickerState.dateEnd,
+          dateRangeStart: pickerState.dateRangeStart,
+          dateRangeEnd: pickerState.dateRangeEnd,
           pageNo: pickerState.pageNo,
           pageSize: pickerState.pageSize,
         };
@@ -1777,9 +1777,9 @@ window.OdOrderKanban = {
             <div class="od-kanban-pick-search-row">
               <span class="od-kanban-pick-search-lbl">생성일</span>
               <div class="od-kanban-pick-search-fields">
-                <input type="date" v-model="pickerState.dateStart" @keyup.enter="handlePickerSearch" style="flex:1;" />
+                <input type="date" v-model="pickerState.dateRangeStart" @keyup.enter="handlePickerSearch" style="flex:1;" />
                 <span style="color:#94a3b8;font-size:13px;">~</span>
-                <input type="date" v-model="pickerState.dateEnd" @keyup.enter="handlePickerSearch" style="flex:1;" />
+                <input type="date" v-model="pickerState.dateRangeEnd" @keyup.enter="handlePickerSearch" style="flex:1;" />
                 <button @click="handlePickerSearch">조회</button>
               </div>
             </div>

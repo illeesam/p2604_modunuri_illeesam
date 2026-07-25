@@ -152,7 +152,7 @@ window.MyClaim = {
 
     /* fnBuildParams — 현재 검색조건(기간 + 유형 claimTypeCd) → 서버 파라미터 */
     const fnBuildParams = () => {
-      const p = { dateType: 'request_date', dateStart: dateRange.start, dateEnd: dateRange.end };
+      const p = { dateRangeType: 'request_date', dateRangeStart: dateRange.start, dateRangeEnd: dateRange.end };
       const typeCd = CLAIM_TYPE_CD[claimFilter.value];
       if (typeCd) { p.claimTypeCd = typeCd; }   // '전체'면 미전송
       return p;

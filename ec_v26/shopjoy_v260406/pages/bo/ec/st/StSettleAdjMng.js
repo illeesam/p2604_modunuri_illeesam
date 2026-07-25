@@ -11,7 +11,7 @@ window.StSettleAdjMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_adj_types: [],
       settle_adj_statuses: [],
@@ -133,7 +133,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const errors = reactive({});
 
     /* 정산 조정 _initSearchParam */
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', adjTypeCd: '', aprvStatusCd: '', dateRange: '이번달', dateType: 'reg_date', dateStart: '', dateEnd: '' });
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', adjTypeCd: '', aprvStatusCd: '', dateRange: '이번달', dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '' });
     const searchParam = reactive(_initSearchParam());
     boUtil.bofApplyDateRange(searchParam, '이번달');
 
@@ -241,7 +241,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         const columns = {};
         columns.baseSearch = [
       { key: 'dateRange', label: '정산일', type: 'dateRange',
-        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => [{ value: 'reg_date', label: '등록일' }, { value: 'upd_date', label: '수정일' }],
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',

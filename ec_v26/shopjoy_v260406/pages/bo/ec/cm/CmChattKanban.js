@@ -31,8 +31,8 @@ window.CmChattKanban = {
     const _initSearch = () => ({
       searchValue: '',
       chattStatusCd: '',
-      dateStart: `${new Date().getFullYear() - 1}-01-01`,
-      dateEnd:   `${new Date().getFullYear()}-12-31`,
+      dateRangeStart: `${new Date().getFullYear() - 1}-01-01`,
+      dateRangeEnd:   `${new Date().getFullYear()}-12-31`,
     });
     const searchParam = reactive(_initSearch());
 
@@ -373,10 +373,10 @@ window.CmChattKanban = {
         <option value="">상태 전체</option>
         <option v-for="c in codes.chatt_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
-      <input type="date" v-model="searchParam.dateStart"
+      <input type="date" v-model="searchParam.dateRangeStart"
         style="height:30px;width:126px;border:1px solid #d1d5db;border-radius:6px;padding:0 6px;font-size:12px;outline:none;" />
       <span style="color:#bbb;font-size:11px;">~</span>
-      <input type="date" v-model="searchParam.dateEnd"
+      <input type="date" v-model="searchParam.dateRangeEnd"
         style="height:30px;width:126px;border:1px solid #d1d5db;border-radius:6px;padding:0 6px;font-size:12px;outline:none;" />
       <button class="btn btn_search" style="height:30px;font-size:12px;" @click="handleBtnAction('search-list')">조회</button>
       <button class="btn btn_reset"  style="height:30px;font-size:12px;" @click="handleBtnAction('search-reset')">초기화</button>

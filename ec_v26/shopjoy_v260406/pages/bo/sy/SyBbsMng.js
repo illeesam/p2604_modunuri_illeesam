@@ -26,7 +26,7 @@ window.SyBbsMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', bbmId: '', status: '', dateRange: '', dateType: 'regDate', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', bbmId: '', status: '', dateRange: '', dateRangeType: 'regDate', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -308,7 +308,7 @@ window.SyBbsMng = {
       { key: 'bbmId', type: 'select', label: '게시판', options: () => cfBbmOptions.value, nullLabel: '게시판 전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.bbs_post_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];

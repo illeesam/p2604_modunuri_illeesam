@@ -37,7 +37,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     private static final QSyVendor    syVendor    = QSyVendor.syVendor;
     private static final QSyCode      cdDm   = new QSyCode("cd_dm");
     private static final QSyCode      cdDpt  = new QSyCode("cd_dpt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdDlivTmplt.regDate,
         "upd_date", pdDlivTmplt.updDate
     );
@@ -117,8 +117,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                     QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()),
                     QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()),
                     QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -145,8 +145,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()),
                 QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()),
                 QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -171,16 +171,6 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(PdDlivTmpltDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

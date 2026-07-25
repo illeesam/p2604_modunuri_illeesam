@@ -104,7 +104,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                     QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()),
                     QdslUtil.strEq(syProp.useYn, search.getUseYn()),
                     andPropProfileLike(search),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -135,7 +135,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()),
                 QdslUtil.strEq(syProp.useYn, search.getUseYn()),
                 andPropProfileLike(search),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -159,12 +159,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         SyPropDto.PageResponse res = new SyPropDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함.
      * '__orphan__' 특수값: sy_path 에 등록되지 않은 path_id 를 가진 행 (또는 NULL) 필터. */
@@ -211,11 +205,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         BooleanExpression isAll = col.isNull().or(col.eq("")).or(col.like("%^all^%"));
         return hasProfile.or(isAll);
     }
-
-    private BooleanExpression andSearchValueLike(SyPropDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드
@@ -398,13 +387,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
 
     private void pathtreeAndDateRange(SyPropDto.Request s, StringBuilder sql, Map<String, Object> syProp) {
         if (s == null) return;
-        if (StringUtils.hasText(s.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            syProp.put("dateStart", s.getDateStart());
+        if (StringUtils.hasText(s.getDateRangeStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateRangeStart AS timestamp)\n");
+            syProp.put("dateRangeStart", s.getDateRangeStart());
         }
-        if (StringUtils.hasText(s.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            syProp.put("dateEnd", s.getDateEnd());
+        if (StringUtils.hasText(s.getDateRangeEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day'\n");
+            syProp.put("dateRangeEnd", s.getDateRangeEnd());
         }
     }
 }

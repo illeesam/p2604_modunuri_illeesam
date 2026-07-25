@@ -55,7 +55,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         Map.entry("templateId", syAlarm.templateId)
     );
 
-
     /*
      * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
      * ALARM_TYPE        {ORDER: '주문', DELIVERY: '배송', CLAIM: '클레임', MARKETING: '마케팅', SYSTEM: '시스템'}
@@ -117,7 +116,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                     QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()),
                     QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()),
                     QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -145,7 +144,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()),
                 QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()),
                 QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -171,11 +170,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SyAlarmDto.Request search) {
@@ -183,11 +177,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 ? syAlarm.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_alarm"))
                 : null;
     }
-
-    private BooleanExpression andSearchValueLike(SyAlarmDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드
@@ -348,16 +337,16 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         p.put("searchValue", s.getSearchValue());
     }
 
-    /* AND t.reg_date >= :dateStart AND t.reg_date <= :dateEnd + 1 day */
+    /* AND t.reg_date >= :dateRangeStart AND t.reg_date <= :dateRangeEnd + 1 day */
     private void pathtreeAndDateRange(SyAlarmDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null) return;
-        if (StringUtils.hasText(s.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            p.put("dateStart", s.getDateStart());
+        if (StringUtils.hasText(s.getDateRangeStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateRangeStart AS timestamp)\n");
+            p.put("dateRangeStart", s.getDateRangeStart());
         }
-        if (StringUtils.hasText(s.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            p.put("dateEnd", s.getDateEnd());
+        if (StringUtils.hasText(s.getDateRangeEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateRangeEnd", s.getDateRangeEnd());
         }
     }
 }

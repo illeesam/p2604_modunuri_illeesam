@@ -100,7 +100,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                     QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
                     andParentCategoryIdIn(search),
                     QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -127,7 +127,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
                 andParentCategoryIdIn(search),
                 QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -154,11 +154,6 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
     /** 단건/목록/페이지 공용 base query */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* 카테고리 트리 — 선택 노드 + 모든 자손 카테고리 포함 */
     private BooleanExpression andParentCategoryIdIn(PdCategoryDto.Request search) {
@@ -166,11 +161,6 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 ? pdCategory.categoryId.in(pdCategoryRepository.findTreeCategoryIds(search.getParentCategoryId()))
                 : null;
     }
-
-    private BooleanExpression andSearchValueLike(PdCategoryDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

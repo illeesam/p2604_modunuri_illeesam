@@ -46,7 +46,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private static final QSyCode   cdEc = new QSyCode("cd_ec");
     private static final QSyCode   cdAp = new QSyCode("cd_ap");
     private static final QSyCode   cdAt = new QSyCode("cd_at");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "request_date", odClaim.requestDate,
         "proc_date", odClaim.procDate,
         "claim_cancel_date", odClaim.claimCancelDate,
@@ -347,8 +347,8 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                     QdslUtil.strEq(odClaim.memberId, search.getMemberId()),
                     QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
                     QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -377,8 +377,8 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 QdslUtil.strEq(odClaim.memberId, search.getMemberId()),
                 QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
                 QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -404,16 +404,6 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(OdClaimDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

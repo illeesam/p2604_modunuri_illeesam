@@ -11,7 +11,7 @@ window.StErpReconMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: ''});
     const codes = reactive({
       erp_recon_statuses: [],
       erp_voucher_types: [],
@@ -104,7 +104,7 @@ const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, d
       try {
         const res = await boApiSvc.stErp.getReconPage({
           pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
-          dateType: 'reg_date', dateStart: uiState.dateStart, dateEnd: uiState.dateEnd,
+          dateRangeType: 'reg_date', dateRangeStart: uiState.dateRangeStart, dateRangeEnd: uiState.dateRangeEnd,
           ...coUtil.cofOmitEmpty(searchParam)
         }, 'ERP전표대사', '목록조회');
         const data = res.data?.data;
@@ -159,7 +159,7 @@ const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, d
         const columns = {};
         columns.baseSearch = [
       { key: 'dateRange', label: '대사일', type: 'dateRange', paramObj: uiState,
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },

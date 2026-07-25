@@ -45,7 +45,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final QSyCode     cdPs = new QSyCode("cd_ps");
     private static final QSyCode     cdPt = new QSyCode("cd_pt");
     private static final QSyCode     cdSz = new QSyCode("cd_sz");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProd.regDate,
         "upd_date", pdProd.updDate
     );
@@ -271,8 +271,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                     QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
                     QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
                     QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -303,8 +303,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
                 QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
                 QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -331,16 +331,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(PdProdDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

@@ -109,7 +109,7 @@ window.PmEventMng = {
 
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchValue: '', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, eventStatusCd: '' };
+      return { searchValue: '', dateRange: '', dateRangeType: 'reg_date', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, eventStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
     /* 이벤트 fnLoadCodes */
@@ -180,7 +180,7 @@ window.PmEventMng = {
       if (isAppReady.value) { fnLoadCodes(); }
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
-        searchParam.dateStart = ''; searchParam.dateEnd = '';
+        searchParam.dateRangeStart = ''; searchParam.dateRangeEnd = '';
       }
       handleSearchList('DEFAULT');
     });
@@ -266,7 +266,7 @@ window.PmEventMng = {
       { key: 'searchValue', type: 'text', label: '이벤트 제목', placeholder: '이벤트 제목 검색' },
       { key: 'eventStatusCd', type: 'select', label: '상태', options: () => codes.event_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];

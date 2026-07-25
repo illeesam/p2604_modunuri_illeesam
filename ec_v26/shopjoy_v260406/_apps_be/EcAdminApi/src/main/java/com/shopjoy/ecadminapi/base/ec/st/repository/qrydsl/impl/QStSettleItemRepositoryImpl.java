@@ -38,7 +38,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     private static final QOdOrderItem  odOrderItem  = QOdOrderItem.odOrderItem;
     private static final QSySite       sySite  = QSySite.sySite;
     private static final QSyCode       cdSit = new QSyCode("cd_sit");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "order_date", stSettleItem.orderDate,
         "reg_date", stSettleItem.regDate,
         "upd_date", stSettleItem.updDate
@@ -111,8 +111,8 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                 .where(
                     QdslUtil.strEq(stSettleItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -137,8 +137,8 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettleItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -162,17 +162,6 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         StSettleItemDto.PageResponse res = new StSettleItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(StSettleItemDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

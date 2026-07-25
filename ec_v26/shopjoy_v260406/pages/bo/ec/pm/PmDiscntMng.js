@@ -185,7 +185,7 @@ window.PmDiscntMng = {
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, discntTypeCd: '', discntStatusCd: '' };
+      return { searchType: '', searchValue: '', dateRange: '', dateRangeType: 'reg_date', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, discntTypeCd: '', discntStatusCd: '' };
     };
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
@@ -309,7 +309,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       { key: 'discntTypeCd', type: 'select', label: '유형', options: () => codes.discnt_types, nullLabel: '유형 전체' },
       { key: 'discntStatusCd', type: 'select', label: '상태', options: () => codes.promo_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '시작일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
     ];

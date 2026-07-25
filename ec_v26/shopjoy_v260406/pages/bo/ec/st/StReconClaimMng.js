@@ -9,7 +9,7 @@ window.StReconClaimMng = {
     /* ##### [01] 초기 변수 정의 ################################################## */
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
-const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: ''});
     const codes = reactive({
       claim_statuses: [],
       recon_results: [],
@@ -145,7 +145,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         const columns = {};
         columns.baseSearch = [
       { key: 'dateRange', label: '요청일', type: 'dateRange', paramObj: uiState,
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },

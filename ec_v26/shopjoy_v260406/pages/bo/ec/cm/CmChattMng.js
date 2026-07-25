@@ -96,7 +96,7 @@ window.CmChattMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, chattStatusCd: '' };
+      return { searchType: '', searchValue: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, chattStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -272,7 +272,7 @@ window.CmChattMng = {
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'chattStatusCd', type: 'select', label: '상태', options: () => codes.chatt_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '기간',
-        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => [{ value: 'reg_date', label: '등록일' }, { value: 'upd_date', label: '수정일' }],
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

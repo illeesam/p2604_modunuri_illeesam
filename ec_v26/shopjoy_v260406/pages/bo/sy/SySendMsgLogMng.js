@@ -16,8 +16,8 @@ window.SySendMsgLogMng = {
       activeTab: 'email',
       isPageCodeLoad: false,
       dateRange: '1week',
-      dateStart: '',
-      dateEnd: '',
+      dateRangeStart: '',
+      dateRangeEnd: '',
       searchValue: '',
       searchResult: '',   // 발송결과 (SUCCESS/FAILED/PENDING)
       searchChannel: '',  // 메시지 탭 채널 (SMS/KAKAO/PUSH)
@@ -163,9 +163,9 @@ window.SySendMsgLogMng = {
       const p = {
         pageNo:      baseGridPager.pageNo,
         pageSize:    baseGridPager.pageSize,
-        dateType:    'send_date',
-        dateStart:   uiState.dateStart  || undefined,
-        dateEnd:     uiState.dateEnd    || undefined,
+        dateRangeType:    'send_date',
+        dateRangeStart:   uiState.dateRangeStart  || undefined,
+        dateRangeEnd:     uiState.dateRangeEnd    || undefined,
         searchValue: uiState.searchValue || undefined,
       };
       // 발송결과 필터 (3탭 공통)
@@ -240,7 +240,7 @@ window.SySendMsgLogMng = {
     /* 기본 검색 (3탭 공통) */
     columns.baseSearch = [
       { key: 'dateRange', type: 'dateRange', label: '발송기간',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

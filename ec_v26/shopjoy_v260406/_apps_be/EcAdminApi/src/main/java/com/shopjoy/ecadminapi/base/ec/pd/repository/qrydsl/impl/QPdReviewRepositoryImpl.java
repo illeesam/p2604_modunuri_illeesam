@@ -32,7 +32,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewRepositoryImpl";
     private static final QPdReview pdReview = QPdReview.pdReview;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdReview.regDate,
         "upd_date", pdReview.updDate
     );
@@ -93,8 +93,8 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                     QdslUtil.strEq(pdReview.prodId, search.getProdId()),
                     QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()),
                     andRatingGoe(search),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -122,8 +122,8 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                 QdslUtil.strEq(pdReview.prodId, search.getProdId()),
                 QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()),
                 andRatingGoe(search),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -151,11 +151,6 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     /** 단건/목록/페이지 공용 base query (DTO Item 필드만 매핑) */
     /** 검색조건 빌드 — Mapper XML pdReviewCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* rating — 점수대(floor) 범위 (예: "4" => 4.0 이상 5.0 미만) */
     private BooleanExpression andRatingGoe(PdReviewDto.Request search) {
@@ -170,11 +165,6 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         BigDecimal hi = BigDecimal.valueOf(floor + 1L);
         return pdReview.rating.goe(lo).and(pdReview.rating.lt(hi));
     }
-
-    private BooleanExpression andSearchValueLike(PdReviewDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

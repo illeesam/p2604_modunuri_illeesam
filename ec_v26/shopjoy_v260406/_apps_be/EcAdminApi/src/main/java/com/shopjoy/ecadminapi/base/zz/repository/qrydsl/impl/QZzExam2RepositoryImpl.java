@@ -77,7 +77,7 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
                 QdslUtil.strIn(zzExam2.exam1Id, search.getExam1Ids()),
                 QdslUtil.strEq(zzExam2.exam1Id, search.getExam1Id()),
                 QdslUtil.strEq(zzExam2.exam2Id, search.getExam2Id()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -103,7 +103,7 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
                 QdslUtil.strIn(zzExam2.exam1Id, search.getExam1Ids()),
                 QdslUtil.strEq(zzExam2.exam1Id, search.getExam1Id()),
                 QdslUtil.strEq(zzExam2.exam2Id, search.getExam2Id()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -129,16 +129,6 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
     }
 
     /* searchType 사용 예  searchType = "col21,col22" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(ZzExam2Dto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /* zz_exam2 buildOrder */
     @SuppressWarnings({"rawtypes","unchecked"})

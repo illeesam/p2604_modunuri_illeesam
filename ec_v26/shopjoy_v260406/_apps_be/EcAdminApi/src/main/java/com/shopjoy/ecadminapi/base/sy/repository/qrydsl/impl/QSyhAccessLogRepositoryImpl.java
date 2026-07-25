@@ -39,7 +39,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private static final QSyDept   syDept   = QSyDept.syDept;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyCode   cd_at    = new QSyCode("cd_at");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhAccessLog.regDate
     );
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
@@ -149,8 +149,8 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 andUiNmLike(search),
                 QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()),
                 QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -176,11 +176,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* respStatus 정확 일치 (숫자만 파싱, 비숫자면 무시) */
     private BooleanExpression andStatusEq(SyhAccessLogDto.Request search) {
@@ -203,11 +198,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         return search != null && StringUtils.hasText(search.getUiNm())
                 ? syhAccessLog.uiNm.likeIgnoreCase("%" + search.getUiNm().trim() + "%") : null;
     }
-
-    private BooleanExpression andSearchValueLike(SyhAccessLogDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

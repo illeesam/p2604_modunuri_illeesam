@@ -35,7 +35,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     private static final QSyCode  cdCs = new QSyCode("cd_cs");
     private static final QSyCode  cdTt = new QSyCode("cd_tt");
     private static final QSyCode  cdMg = new QSyCode("cd_mg");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmCoupon.regDate,
         "upd_date", pmCoupon.updDate
     );
@@ -133,8 +133,8 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                     QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()),
                     QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -162,8 +162,8 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()),
                 QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -188,16 +188,6 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(PmCouponDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

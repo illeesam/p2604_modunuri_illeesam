@@ -26,7 +26,7 @@ window.CmNoticeMng = {
     const _initSearchParam = () => {
       const y = new Date().getFullYear();
       return {
-        searchValue: '', type: '', status: '', dateRange: '', dateStart: `${y - 3}-01-01`, dateEnd: `${y}-12-31` };
+        searchValue: '', type: '', status: '', dateRange: '', dateRangeStart: `${y - 3}-01-01`, dateRangeEnd: `${y}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -211,7 +211,7 @@ window.CmNoticeMng = {
       { key: 'searchValue', label: '제목', type: 'text', placeholder: '제목 검색' },
       { key: 'type',        label: '유형', type: 'select', options: () => codes.noticeTypes,    nullLabel: '유형 전체' },
       { key: 'status',      label: '상태', type: 'select', options: () => codes.noticeStatuses, nullLabel: '상태 전체' },
-      { key: 'dateRange', label: '등록일', type: 'dateRange', startKey: 'dateStart', endKey: 'dateEnd',
+      { key: 'dateRange', label: '등록일', type: 'dateRange', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];

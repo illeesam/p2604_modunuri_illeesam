@@ -39,7 +39,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyCode cdSt = new QSyCode("cd_st");
     private static final QSyCode cdSs = new QSyCode("cd_ss");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", sySite.regDate,
         "upd_date", sySite.updDate
     );
@@ -121,8 +121,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                     andPathIdIn(search),
                     QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
                     QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -149,8 +149,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 andPathIdIn(search),
                 QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
                 QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -176,11 +176,6 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathIdIn(SySiteDto.Request search) {
@@ -188,11 +183,6 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 ? sySite.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_site"))
                 : null;
     }
-
-    private BooleanExpression andSearchValueLike(SySiteDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드
@@ -378,16 +368,16 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         p.put("searchValue", sySite.getSearchValue());
     }
 
-    /* AND a.reg_date >= :dateStart AND a.reg_date <= :dateEnd + 1 day */
+    /* AND a.reg_date >= :dateRangeStart AND a.reg_date <= :dateRangeEnd + 1 day */
     private void pathtreeAndDateRange(SySiteDto.Request sySite, StringBuilder sql, Map<String, Object> p) {
         if (sySite == null) return;
-        if (StringUtils.hasText(sySite.getDateStart())) {
-            sql.append("      AND a.reg_date >= CAST(:dateStart AS timestamp) \n");
-            p.put("dateStart", sySite.getDateStart());
+        if (StringUtils.hasText(sySite.getDateRangeStart())) {
+            sql.append("      AND a.reg_date >= CAST(:dateRangeStart AS timestamp) \n");
+            p.put("dateRangeStart", sySite.getDateRangeStart());
         }
-        if (StringUtils.hasText(sySite.getDateEnd())) {
-            sql.append("      AND a.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day' \n");
-            p.put("dateEnd", sySite.getDateEnd());
+        if (StringUtils.hasText(sySite.getDateRangeEnd())) {
+            sql.append("      AND a.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day' \n");
+            p.put("dateRangeEnd", sySite.getDateRangeEnd());
         }
     }
 }

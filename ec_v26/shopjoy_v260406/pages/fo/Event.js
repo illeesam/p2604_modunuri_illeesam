@@ -108,7 +108,7 @@ window.EventPage = {
     /* handleSearchList — 목록 조회.
      *   진행중 탭: ACTIVE 조회 → 0건이면 상태필터 해제하고 전체(기간 무제한) 재조회(폴백 안내).
      *   ⚠️ 백엔드 기간검색은 reg_date/upd_date 만 지원하고 이벤트 진행기간(start/end_date) 검색은
-     *      미지원 → dateType 미전송이 곧 '기간 무제한'. 폴백은 상태필터 해제로 기간을 최대로 넓힌다. */
+     *      미지원 → dateRangeType 미전송이 곧 '기간 무제한'. 폴백은 상태필터 해제로 기간을 최대로 넓힌다. */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.broadened = false;

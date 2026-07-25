@@ -17,7 +17,7 @@ window.SyUserLoginHist = {
     const searchParam = reactive({
       descOpen: false, isPageCodeLoad: false, srchOpen: false,
       activeTab: 'log',
-      dateRange: '1week', dateStart: '', dateEnd: '',
+      dateRange: '1week', dateRangeStart: '', dateRangeEnd: '',
       searchType: '', searchValue: '', searchResultCd: '', searchIp: '',
       searchUiNm: '', searchTraceId: '',
     });
@@ -182,8 +182,8 @@ window.SyUserLoginHist = {
     const buildParams = () => {
       const p = {
         pageNo: logGridPager.pageNo, pageSize: logGridPager.pageSize,
-        dateStart:  searchParam.dateStart    || undefined,
-        dateEnd:    searchParam.dateEnd      || undefined,
+        dateRangeStart:  searchParam.dateRangeStart    || undefined,
+        dateRangeEnd:    searchParam.dateRangeEnd      || undefined,
         resultCd:   searchParam.searchResultCd || undefined,
         ip:         searchParam.searchIp     || undefined,
         uiNm:       searchParam.searchUiNm   || undefined,
@@ -288,7 +288,7 @@ window.SyUserLoginHist = {
     const columns = {};
     columns.baseSearch = [
       { key: 'dateRange', type: 'dateRange', label: '등록기간',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

@@ -42,7 +42,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QSyCode cdDt = new QSyCode("cd_dt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syDept.regDate,
         "upd_date", syDept.updDate
     );
@@ -108,8 +108,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 andParentDeptIdIn(search),
                 QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syDept.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -136,8 +136,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 andParentDeptIdIn(search),
                 QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syDept.useYn, search.getUseYn()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -163,11 +163,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* 부서 트리 — 선택 노드 + 모든 자손 부서 포함 (자기참조 재귀 CTE) */
     private BooleanExpression andParentDeptIdIn(SyDeptDto.Request search) {
@@ -175,11 +170,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 ? syDept.deptId.in(syDeptRepository.findTreeDeptIds(search.getParentDeptId()))
                 : null;
     }
-
-    private BooleanExpression andSearchValueLike(SyDeptDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

@@ -32,7 +32,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdChgHistRepositoryImpl";
     private static final QPdhProdChgHist pdhProdChgHist   = QPdhProdChgHist.pdhProdChgHist;
     private static final QSySite        sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdhProdChgHist.regDate,
         "upd_date", pdhProdChgHist.updDate
     );
@@ -89,8 +89,8 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(pdhProdChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdChgHist.prodChgHistId, search.getProdChgHistId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -115,8 +115,8 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdhProdChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdChgHist.prodChgHistId, search.getProdChgHistId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -142,16 +142,6 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     }
 
     /** 검색조건 빌드 — Mapper XML pdhProdChgHistCond 와 동일 동작 */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(PdhProdChgHistDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

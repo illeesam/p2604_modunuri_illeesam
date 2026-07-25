@@ -31,7 +31,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdOptRepositoryImpl";
     private static final QPdProdOpt pdProdOpt = QPdProdOpt.pdProdOpt;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProdOpt.regDate,
         "upd_date", pdProdOpt.updDate
     );
@@ -97,8 +97,8 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                     QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProdOpt.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProdOpt.prodOptId, search.getProdOptId()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -123,8 +123,8 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                 QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdOpt.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProdOpt.prodOptId, search.getProdOptId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         JPAQuery<PdProdOptDto.Item> query = baseSelColumnQuery();
@@ -145,15 +145,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         PdProdOptDto.PageResponse res = new PdProdOptDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(PdProdOptDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdProdOptDto.Request req) {

@@ -11,7 +11,7 @@ window.StSettleEtcAdjMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_etc_adj_types: [],
       settle_adj_statuses: [],
@@ -81,7 +81,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* handleDateRangeChange — 기간 변경 (searchParam.dateRange → dateStart/dateEnd) */
+    /* handleDateRangeChange — 기간 변경 (searchParam.dateRange → dateRangeStart/dateRangeEnd) */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
     };
@@ -133,7 +133,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const errors = reactive({});
 
     /* 정산 기타 조정 _initSearchParam */
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', etcAdjTypeCd: '', status: '', dateType: 'reg_date', dateRange: '', dateStart: '', dateEnd: '' });
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', etcAdjTypeCd: '', status: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* openNew — 신규 열기 */
@@ -219,7 +219,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         const columns = {};
         columns.baseSearch = [
       { key: 'dateRange', label: '정산일', type: 'dateRange',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },

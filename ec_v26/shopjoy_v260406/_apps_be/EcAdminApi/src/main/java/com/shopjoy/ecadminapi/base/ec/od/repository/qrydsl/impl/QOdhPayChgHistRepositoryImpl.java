@@ -89,7 +89,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
                 .where(
                     QdslUtil.strEq(odhPayChgHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhPayChgHist.payChgHistId, search.getPayChgHistId()),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -114,7 +114,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odhPayChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhPayChgHist.payChgHistId, search.getPayChgHistId()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -138,17 +138,6 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         OdhPayChgHistDto.PageResponse res = new OdhPayChgHistDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(OdhPayChgHistDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

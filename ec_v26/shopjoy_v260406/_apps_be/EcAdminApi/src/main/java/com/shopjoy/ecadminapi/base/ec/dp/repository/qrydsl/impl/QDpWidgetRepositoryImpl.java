@@ -104,7 +104,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
                     QdslUtil.strEq(dpWidget.siteId, search.getSiteId()),
                     QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()),
                     QdslUtil.strEq(dpWidget.useYn, search.getUseYn()),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -129,7 +129,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
                 QdslUtil.strEq(dpWidget.siteId, search.getSiteId()),
                 QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()),
                 QdslUtil.strEq(dpWidget.useYn, search.getUseYn()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpWidgetDto.Item> query = baseQuery();
@@ -152,16 +152,6 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(DpWidgetDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드
@@ -325,13 +315,13 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
 
     private void pathtreeAndDateRange(DpWidgetDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null) return;
-        if (StringUtils.hasText(s.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            p.put("dateStart", s.getDateStart());
+        if (StringUtils.hasText(s.getDateRangeStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateRangeStart AS timestamp)\n");
+            p.put("dateRangeStart", s.getDateRangeStart());
         }
-        if (StringUtils.hasText(s.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            p.put("dateEnd", s.getDateEnd());
+        if (StringUtils.hasText(s.getDateRangeEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateRangeEnd", s.getDateRangeEnd());
         }
     }
 }

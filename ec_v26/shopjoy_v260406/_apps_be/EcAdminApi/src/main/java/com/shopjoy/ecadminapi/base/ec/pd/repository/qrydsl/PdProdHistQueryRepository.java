@@ -157,21 +157,21 @@ public class PdProdHistQueryRepository {
     }
 
     /**
-     * dateType 이 지정한 컬럼명과 일치할 때만 [dateStart, dateEnd+1day) 범위 조건 생성.
+     * dateRangeType 이 지정한 컬럼명과 일치할 때만 [dateRangeStart, dateRangeEnd+1day) 범위 조건 생성.
      * 일치하지 않거나 값이 비면 null 반환 → BooleanBuilder 에서 조건 무시.
      */
     private com.querydsl.core.types.Predicate dateBetween(
             PdProdHistDto.Request req, String column,
             com.querydsl.core.types.dsl.DateTimePath<LocalDateTime> path) {
         if (req == null) return null;
-        String dateType  = req.getDateType();
-        String dateStart = req.getDateStart();
-        String dateEnd   = req.getDateEnd();
-        if (!StringUtils.hasText(dateType) || !column.equals(dateType)) return null;
-        if (!StringUtils.hasText(dateStart) || !StringUtils.hasText(dateEnd)) return null;
+        String dateRangeType  = req.getDateRangeType();
+        String dateRangeStart = req.getDateRangeStart();
+        String dateRangeEnd   = req.getDateRangeEnd();
+        if (!StringUtils.hasText(dateRangeType) || !column.equals(dateRangeType)) return null;
+        if (!StringUtils.hasText(dateRangeStart) || !StringUtils.hasText(dateRangeEnd)) return null;
 
-        LocalDateTime start   = LocalDate.parse(dateStart, DT_FMT).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(dateEnd, DT_FMT).plusDays(1).atStartOfDay();
+        LocalDateTime start   = LocalDate.parse(dateRangeStart, DT_FMT).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(dateRangeEnd, DT_FMT).plusDays(1).atStartOfDay();
         return new BooleanBuilder().and(path.goe(start)).and(path.lt(endExcl));
     }
 

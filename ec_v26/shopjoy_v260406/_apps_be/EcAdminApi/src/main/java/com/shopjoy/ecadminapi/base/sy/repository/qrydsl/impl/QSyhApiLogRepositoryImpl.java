@@ -32,7 +32,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhApiLogRepositoryImpl";
     private static final QSyhApiLog syhApiLog   = QSyhApiLog.syhApiLog;
     private static final QSySite    sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhApiLog.regDate,
         "upd_date", syhApiLog.updDate
     );
@@ -110,8 +110,8 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                 QdslUtil.strEq(syhApiLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -137,8 +137,8 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                 QdslUtil.strEq(syhApiLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -164,16 +164,6 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(SyhApiLogDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

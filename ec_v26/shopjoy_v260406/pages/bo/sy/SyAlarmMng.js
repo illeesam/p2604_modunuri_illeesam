@@ -122,7 +122,7 @@ window.SyAlarmMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', typeCd: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', typeCd: '', status: '', dateRange: '', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -385,7 +385,7 @@ window.SyAlarmMng = {
       { key: 'typeCd', type: 'select', label: '유형', options: () => codes.alarm_type, nullLabel: '유형 전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.alarm_status, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '발송일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];

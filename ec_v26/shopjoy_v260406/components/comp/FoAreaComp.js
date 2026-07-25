@@ -134,7 +134,7 @@
  *      { key: 'cat',    type: 'select', options: () => codes.cats,   nullLabel: '카테고리 전체' },
  *      { key: 'status', type: 'select', options: () => codes.status, nullLabel: '상태 전체' },
  *      { key: 'dateRange', type: 'dateRange',
- *        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+ *        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
  *        typeOptions: () => codes.date_types, rangeOptions: () => codes.date_range_opts,
  *        onRangeChange: fn },
  *      { label: '추가:', type: 'label' },                // 라벨 텍스트
@@ -341,12 +341,12 @@ window.FoSearchArea = {
         <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
         <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
-      <input type="date" v-model="po(col)[col.startKey || 'dateStart']"
+      <input type="date" v-model="po(col)[col.startKey || 'dateRangeStart']"
           :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
       <span :style="col.sepStyle || ''">
         ~
       </span>
-      <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
+      <input type="date" v-model="po(col)[col.endKey || 'dateRangeEnd']"
           :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
       <select v-if="fnHasRange2(col)" v-model="po(col)[col.key]"
           @change="handleSelectAction('field-range-change', { col, event: $event })">

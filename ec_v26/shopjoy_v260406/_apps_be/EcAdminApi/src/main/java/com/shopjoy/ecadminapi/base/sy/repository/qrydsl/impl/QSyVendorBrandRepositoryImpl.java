@@ -38,7 +38,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyBrand syBrand = QSyBrand.syBrand;
     private static final QSyCode cdVbc = new QSyCode("cd_vbc");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syVendorBrand.regDate,
         "upd_date", syVendorBrand.updDate
     );
@@ -107,8 +107,8 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                 QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()),
                 QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -135,8 +135,8 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                 QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()),
                 QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -160,17 +160,6 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         SyVendorBrandDto.PageResponse res = new SyVendorBrandDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(SyVendorBrandDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

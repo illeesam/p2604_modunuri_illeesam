@@ -40,7 +40,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
     private static final QOdOrder     odOrder  = QOdOrder.odOrder;
     private static final QSySite      sySite  = QSySite.sySite;
     private static final QSyCode      cdGis = new QSyCode("cd_gis");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "issue_date", pmGiftIssue.issueDate,
         "reg_date", pmGiftIssue.regDate,
         "upd_date", pmGiftIssue.updDate
@@ -101,8 +101,8 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                 .where(
                     QdslUtil.strEq(pmGiftIssue.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -127,8 +127,8 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmGiftIssue.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -152,17 +152,6 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         PmGiftIssueDto.PageResponse res = new PmGiftIssueDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(PmGiftIssueDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

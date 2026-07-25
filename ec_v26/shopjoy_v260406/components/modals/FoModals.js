@@ -735,7 +735,7 @@ window.OrderPickModal = {
 
     const uiState = reactive({
       loading: false, list: [], expandedId: null,
-      dateStart: _ymd(_yearAgo), dateEnd: _ymd(_today), searchValue: '',
+      dateRangeStart: _ymd(_yearAgo), dateRangeEnd: _ymd(_today), searchValue: '',
       pager: { pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 50] },
       loaded: false,
     });
@@ -798,7 +798,7 @@ window.OrderPickModal = {
       uiState.loading = true;
       uiState.expandedId = null;
       try {
-        const params = { dateType: 'order_date', dateStart: uiState.dateStart, dateEnd: uiState.dateEnd };
+        const params = { dateRangeType: 'order_date', dateRangeStart: uiState.dateRangeStart, dateRangeEnd: uiState.dateRangeEnd };
         if (uiState.searchValue) { params.searchValue = uiState.searchValue; params.searchType = 'orderId'; }
         const res = await foApiSvc.myOrder.getList(params, '주문선택', '목록조회');
         const list = res.data?.data || [];
@@ -865,9 +865,9 @@ window.OrderPickModal = {
   <!-- 검색바 (등록기간 + 검색어) -->
   <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--bg-base);border:1px solid var(--border);border-radius:10px;">
     <span style="font-size:0.78rem;color:var(--text-muted);font-weight:600;white-space:nowrap;">등록기간</span>
-    <input type="date" class="form-input" v-model="uiState.dateStart" style="width:140px;padding:6px 8px;font-size:0.8rem;" />
+    <input type="date" class="form-input" v-model="uiState.dateRangeStart" style="width:140px;padding:6px 8px;font-size:0.8rem;" />
     <span style="color:var(--text-muted);">~</span>
-    <input type="date" class="form-input" v-model="uiState.dateEnd" style="width:140px;padding:6px 8px;font-size:0.8rem;" />
+    <input type="date" class="form-input" v-model="uiState.dateRangeEnd" style="width:140px;padding:6px 8px;font-size:0.8rem;" />
     <input type="text" class="form-input" v-model="uiState.searchValue" placeholder="주문번호 검색"
       style="flex:1;min-width:120px;padding:6px 10px;font-size:0.8rem;"
       @keyup.enter="handleBtnAction('modal-search')" />

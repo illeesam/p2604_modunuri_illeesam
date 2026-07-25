@@ -10,7 +10,7 @@ window.StErpViewMng = {
 
     const { reactive, onMounted } = Vue;
     const { showToast, showConfirm } = window.boApp;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateType: 'voucher_date', dateRange: '이번달', dateStart: '', dateEnd: '' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateRangeType: 'voucher_date', dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '' });
     const codes = reactive({ erp_statuses: [], erp_voucher_types: [], erp_voucher_statuses: [], date_range_opts: [] });
     const slips = reactive([]);
 
@@ -101,13 +101,13 @@ window.StErpViewMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'dateRange', label: '전표일', type: 'dateRange', paramObj: uiState,
-        typeKey: 'dateType',
+        typeKey: 'dateRangeType',
         typeOptions: [
           { value: 'voucher_date', label: '전표일자' },
           { value: 'reg_date', label: '등록일' },
           { value: 'upd_date', label: '수정일' },
         ],
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

@@ -6235,16 +6235,16 @@ window.BoExcelUploadModal = {
     const summary = reactive({ total: 0, insert: 0, update: 0, errors: 0 });
 
     /* 다운로드 시 함께 전달할 검색조건 — 모달 공통 영역에 노출.
-     *   dateType : 백엔드 BaseRequest 가 받는 기간 컬럼 토큰 (기본 reg_date)
+     *   dateRangeType : 백엔드 BaseRequest 가 받는 기간 컬럼 토큰 (기본 reg_date)
      *   useYn    : USE_YN 코드값 (ACTIVE/INACTIVE/Y/N 등). 도메인별로 매핑되는 컬럼이 다르므로
      *              상태/사용여부 어느 쪽이든 매핑되도록 status 와 useYn 양쪽으로 전송.
      * 도메인이 받지 않는 필드는 Spring @ModelAttribute 가 자동으로 무시한다. */
     const _today = new Date();
     const _thisYear = _today.getFullYear();
     const searchParam = reactive({
-      dateType:  'reg_date',
-      dateStart: `${_thisYear - 3}-01-01`,
-      dateEnd:   `${_thisYear}-12-31`,
+      dateRangeType:  'reg_date',
+      dateRangeStart: `${_thisYear - 3}-01-01`,
+      dateRangeEnd:   `${_thisYear}-12-31`,
       useYn:     '',
     });
     const useYnOptions = ref([]);    // [{value,label}] — USE_YN 코드 그룹
@@ -6666,9 +6666,9 @@ window.BoExcelUploadModal = {
     const onDownloadAll = async () => {
       if (!cfAllDataUrl.value) { fnShowToast('대상 도메인을 먼저 선택하세요.', 'error'); return; }
       const params = {};
-      if (searchParam.dateType)  params.dateType  = searchParam.dateType;
-      if (searchParam.dateStart) params.dateStart = searchParam.dateStart;
-      if (searchParam.dateEnd)   params.dateEnd   = searchParam.dateEnd;
+      if (searchParam.dateRangeType)  params.dateRangeType  = searchParam.dateRangeType;
+      if (searchParam.dateRangeStart) params.dateRangeStart = searchParam.dateRangeStart;
+      if (searchParam.dateRangeEnd)   params.dateRangeEnd   = searchParam.dateRangeEnd;
       if (searchParam.useYn)     { params.useYn = searchParam.useYn; params.status = searchParam.useYn; }
       loading.value = true;
       try {
@@ -7087,13 +7087,13 @@ if (props.onCallback) props.onCallback(props.modalName, null, null);
   <!-- 다운로드 검색조건 (등록기간 + 사용여부). [조건데이타 다운로드] 시 백엔드로 함께 전달 -->
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:#fffaf3;border:1px solid #fde6c4;border-radius:8px;">
     <label style="font-size:12px;color:#92400e;font-weight:600;min-width:48px;">조건</label>
-    <select v-model="searchParam.dateType" class="form-control" style="font-size:12px;width:110px;">
+    <select v-model="searchParam.dateRangeType" class="form-control" style="font-size:12px;width:110px;">
       <option value="reg_date">등록일</option>
       <option value="upd_date">수정일</option>
     </select>
-    <input type="date" v-model="searchParam.dateStart" class="form-control" style="font-size:12px;width:140px;" />
+    <input type="date" v-model="searchParam.dateRangeStart" class="form-control" style="font-size:12px;width:140px;" />
     <span style="color:#94a3b8;">~</span>
-    <input type="date" v-model="searchParam.dateEnd" class="form-control" style="font-size:12px;width:140px;" />
+    <input type="date" v-model="searchParam.dateRangeEnd" class="form-control" style="font-size:12px;width:140px;" />
     <label style="font-size:12px;color:#92400e;font-weight:600;margin-left:8px;">사용여부</label>
     <select v-model="searchParam.useYn" class="form-control" style="font-size:12px;width:120px;">
       <option value="">전체</option>

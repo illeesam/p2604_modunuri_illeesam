@@ -33,7 +33,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
     private static final QPdProdTag pdProdTag   = QPdProdTag.pdProdTag;
     private static final QPdProd    pdProd = QPdProd.pdProd;
     private static final QSySite    sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProdTag.regDate,
         "upd_date", pdProdTag.updDate
     );
@@ -78,8 +78,8 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
                 .where(
                     QdslUtil.strEq(pdProdTag.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -104,8 +104,8 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdProdTag.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -129,16 +129,6 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         PdProdTagDto.PageResponse res = new PdProdTagDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(PdProdTagDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

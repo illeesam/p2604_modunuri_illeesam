@@ -71,7 +71,7 @@ public class FoMyController {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCouponsPage(req)));
     }
 
-    /** getCashInfo — 조회 (history 는 기간 검색 지원: dateType/dateStart/dateEnd) */
+    /** getCashInfo — 조회 (history 는 기간 검색 지원: dateRangeType/dateRangeStart/dateRangeEnd) */
     @GetMapping("/cash/info")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCashInfo(@jakarta.validation.Valid @ModelAttribute PmCacheDto.Request req) {
         List<PmCacheDto.Item> history = foMyPageService.getMyCacheHistory(req);

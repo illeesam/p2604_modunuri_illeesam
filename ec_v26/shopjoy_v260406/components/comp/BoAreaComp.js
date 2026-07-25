@@ -130,7 +130,7 @@
  *      { key: 'role', type: 'select', options: () => codes.user_roles, nullable: true, nullLabel: '권한 전체' },
  *      { key: 'status', type: 'select', options: () => codes.user_status, nullable: true, nullLabel: '상태 전체' },
  *      { key: 'dateRange', type: 'dateRange',
- *        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+ *        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
  *        typeOptions: () => codes.user_date_types, rangeOptions: () => codes.date_range_opts,
  *        onRangeChange: fn },
  *      { label: '추가:', type: 'label' },                // 라벨 텍스트
@@ -328,12 +328,12 @@ window.BoSearchArea = {
     <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
     <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
   </select>
-  <input type="date" v-model="po(col)[col.startKey || 'dateStart']"
+  <input type="date" v-model="po(col)[col.startKey || 'dateRangeStart']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
   <span :class="col.sepClass || 'date-range-sep'" :style="col.sepStyle || ''">
     ~
   </span>
-  <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
+  <input type="date" v-model="po(col)[col.endKey || 'dateRangeEnd']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
   <select v-if="!col.rangeFirst ? (col.rangeOptions) : false" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })">
   <option value="">옵션선택</option>

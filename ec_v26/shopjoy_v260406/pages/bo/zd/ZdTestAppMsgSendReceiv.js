@@ -84,7 +84,7 @@ window.ZdTestAppMsgSendReceiv = {
     // ── 발송 이력 ─────────────────────────────────────────
     const hist = reactive({
       rows:         [],
-      filter:       { memberId: '', channel: '', dateStart: '', dateEnd: '' },
+      filter:       { memberId: '', channel: '', dateRangeStart: '', dateRangeEnd: '' },
       pager:        { pageNo: 1, pageSize: 20, pageTotalCount: 0 },
     });
 
@@ -184,8 +184,8 @@ window.ZdTestAppMsgSendReceiv = {
         ],
       },
       { key: 'memberId',  label: '회원 ID', type: 'text', hint: 'memberId',  placeholder: 'MB000001' },
-      { key: 'dateStart', label: '시작일',   type: 'date', hint: 'dateStart' },
-      { key: 'dateEnd',   label: '종료일',   type: 'date', hint: 'dateEnd' },
+      { key: 'dateRangeStart', label: '시작일',   type: 'date', hint: 'dateRangeStart' },
+      { key: 'dateRangeEnd',   label: '종료일',   type: 'date', hint: 'dateRangeEnd' },
     ];
 
     // ── 디바이스 그리드 컬럼 ─────────────────────────────
@@ -432,8 +432,8 @@ window.ZdTestAppMsgSendReceiv = {
           params: {
             memberId:  hist.filter.memberId  || undefined,
             channel:   hist.filter.channel   || undefined,
-            dateStart: hist.filter.dateStart || undefined,
-            dateEnd:   hist.filter.dateEnd   || undefined,
+            dateRangeStart: hist.filter.dateRangeStart || undefined,
+            dateRangeEnd:   hist.filter.dateRangeEnd   || undefined,
             pageNo:    hist.pager.pageNo,
             pageSize:  hist.pager.pageSize,
           },

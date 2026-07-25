@@ -51,7 +51,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /* 같은 sy_code 테이블이 두 번 조인되므로 역할별 alias 부여 */
     private static final QSyCode syCode_userStatusCd = new QSyCode("code_userStatusCd");
     private static final QSyCode syCode_authMethodCd = new QSyCode("code_authMethodCd");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syUser.regDate,
         "upd_date", syUser.updDate,
         "last_login_date", syUser.lastLoginDate
@@ -145,8 +145,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     andDeptIdIn(search),
                     QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                     QdslUtil.strEq(syRole.roleNm, search.getRole()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -173,8 +173,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 andDeptIdIn(search),
                 QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                 QdslUtil.strEq(syRole.roleNm, search.getRole()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -211,18 +211,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     andDeptIdIn(search),
                     QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                     QdslUtil.strEq(syRole.roleNm, search.getRole()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .fetchOne();
         return total == null ? 0L : total;
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* 부서 트리 — 선택 노드 + 모든 자손 부서 사용자까지 포함 */
     private BooleanExpression andDeptIdIn(SyUserDto.Request search) {
@@ -230,11 +224,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 ? syUser.deptId.in(syDeptRepository.findTreeDeptIds(search.getDeptId()))
                 : null;
     }
-
-    private BooleanExpression andSearchValueLike(SyUserDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /* ============================================================
      * 정렬조건 — sort 문자열 파싱 ("userId asc, regDate desc")
@@ -418,13 +407,13 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
     private void depttreeAndDateRange(SyUserDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null) return;
-        if (StringUtils.hasText(s.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            p.put("dateStart", s.getDateStart());
+        if (StringUtils.hasText(s.getDateRangeStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateRangeStart AS timestamp)\n");
+            p.put("dateRangeStart", s.getDateRangeStart());
         }
-        if (StringUtils.hasText(s.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            p.put("dateEnd", s.getDateEnd());
+        if (StringUtils.hasText(s.getDateRangeEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateRangeEnd", s.getDateRangeEnd());
         }
     }
 }

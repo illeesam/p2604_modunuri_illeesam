@@ -27,7 +27,7 @@ window.SyAttachMng = {
       pageNums: [], pageSizes: [5, 10, 20, 50],
     });
 
-    const searchParam = reactive({ searchType: '', searchValue: '', attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', attachGrpId: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
 
     /* -- 첨부그룹 -- */
     const grpForm = reactive({ attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
@@ -225,7 +225,7 @@ window.SyAttachMng = {
 
     /* onReset — 초기화 */
     const onReset = () => {
-      Object.assign(searchParam, { attachGrpId: '', dateStart: '', dateEnd: '', dateRange: '' });
+      Object.assign(searchParam, { attachGrpId: '', dateRangeStart: '', dateRangeEnd: '', dateRange: '' });
       uiState.selectedGrpId = null;
       fileGridPager.pageNo = 1;
       handleSearchData();
@@ -433,7 +433,7 @@ window.SyAttachMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
       { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '150px' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px',
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },

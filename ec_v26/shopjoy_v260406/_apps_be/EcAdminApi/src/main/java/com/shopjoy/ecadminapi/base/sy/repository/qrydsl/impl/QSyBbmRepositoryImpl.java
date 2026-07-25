@@ -108,7 +108,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                     andPathIdIn(search),
                     QdslUtil.strEq(syBbm.bbmTypeCd, search.getTypeCd()),
                     QdslUtil.strEq(syBbm.useYn, search.getUseYn()),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -136,7 +136,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 andPathIdIn(search),
                 QdslUtil.strEq(syBbm.bbmTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syBbm.useYn, search.getUseYn()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -162,11 +162,6 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로의 게시판까지 포함 */
     private BooleanExpression andPathIdIn(SyBbmDto.Request search) {
@@ -174,11 +169,6 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 ? syBbm.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_bbm"))
                 : null;
     }
-
-    private BooleanExpression andSearchValueLike(SyBbmDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드
@@ -338,13 +328,13 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
 
     private void pathtreeAndDateRange(SyBbmDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null) return;
-        if (StringUtils.hasText(s.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            p.put("dateStart", s.getDateStart());
+        if (StringUtils.hasText(s.getDateRangeStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateRangeStart AS timestamp)\n");
+            p.put("dateRangeStart", s.getDateRangeStart());
         }
-        if (StringUtils.hasText(s.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            p.put("dateEnd", s.getDateEnd());
+        if (StringUtils.hasText(s.getDateRangeEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateRangeEnd", s.getDateRangeEnd());
         }
     }
 }

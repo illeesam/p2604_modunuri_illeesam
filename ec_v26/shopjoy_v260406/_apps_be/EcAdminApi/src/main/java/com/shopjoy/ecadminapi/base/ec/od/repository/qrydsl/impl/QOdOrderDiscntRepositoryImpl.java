@@ -37,7 +37,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     private static final QOdOrder       ord = new QOdOrder("ord");
     private static final QPmCoupon      cpn = new QPmCoupon("cpn");
     private static final QSyCode        cdOdt = new QSyCode("cd_odt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_FIELDS = Map.of(
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odOrderDiscnt.regDate,
         "upd_date", odOrderDiscnt.updDate
     );
@@ -100,8 +100,8 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                     QdslUtil.strEq(odOrderDiscnt.orderId, search.getOrderId()),
                     QdslUtil.strEq(odOrderDiscnt.siteId, search.getSiteId()),
                     QdslUtil.strEq(odOrderDiscnt.orderDiscntId, search.getOrderDiscntId()),
-                    QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                    andSearchValueLike(search)
+                    QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -128,8 +128,8 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                 QdslUtil.strEq(odOrderDiscnt.orderId, search.getOrderId()),
                 QdslUtil.strEq(odOrderDiscnt.siteId, search.getSiteId()),
                 QdslUtil.strEq(odOrderDiscnt.orderDiscntId, search.getOrderDiscntId()),
-                QdslUtil.dateBetween(search.getDateType(), search.getDateStart(), search.getDateEnd(), DATE_FIELDS),
-                andSearchValueLike(search)
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -153,17 +153,6 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         OdOrderDiscntDto.PageResponse res = new OdOrderDiscntDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andXxxEq(search), andYyyIn(search), ...) 형태로 직접 나열 사용
-     * null 반환은 .where(Predicate...) vararg 가 자동 무시
-     * ============================================================ */
-
-    private BooleanExpression andSearchValueLike(OdOrderDiscntDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드

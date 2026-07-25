@@ -100,7 +100,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
                     QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
                     andPathTreeIn(search),
                     QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
-                    andSearchValueLike(search)
+                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -125,7 +125,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
                 QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
                 andPathTreeIn(search),
                 QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
-                andSearchValueLike(search)
+                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery();
@@ -147,21 +147,12 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* ============================================================
-     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * ============================================================ */
-
     /* pathId — 선택 노드 + 모든 자손 path 포함 (트리 클릭 시 하위까지 조회) */
     private BooleanExpression andPathTreeIn(CmFaqDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPathId())) return null;
         List<String> ids = syPathRepository.findTreePathIds(search.getPathId(), "cm_faq");
         return (ids == null || ids.isEmpty()) ? cmFaq.pathId.eq(search.getPathId()) : cmFaq.pathId.in(ids);
     }
-
-    private BooleanExpression andSearchValueLike(CmFaqDto.Request search) {
-        return search == null ? null : QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS);
-    }
-
 
     /**
      * 정렬조건 빌드 — 기본: sortOrd ASC, regDate DESC, faqId ASC (안정 정렬)

@@ -29,7 +29,7 @@ window.OdCartMng = {
       console.log(' ■■ OdCartMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
+        if ((searchParam.dateRangeStart || searchParam.dateRangeEnd) && !searchParam.dateRangeType) {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
@@ -107,7 +107,7 @@ window.OdCartMng = {
       }
     };
 
-    const _initSearchParam = () => ({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
+    const _initSearchParam = () => ({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
@@ -137,9 +137,9 @@ window.OdCartMng = {
           ...(searchParam.memberId  && { memberId:  searchParam.memberId }),
           ...(searchParam.searchType && { searchType: searchParam.searchType }),
           ...(searchParam.searchValue && { searchValue: searchParam.searchValue }),
-          ...(searchParam.dateType    && { dateType:    searchParam.dateType }),
-          ...(searchParam.dateStart   && { dateStart:   searchParam.dateStart }),
-          ...(searchParam.dateEnd     && { dateEnd:     searchParam.dateEnd }),
+          ...(searchParam.dateRangeType    && { dateRangeType:    searchParam.dateRangeType }),
+          ...(searchParam.dateRangeStart   && { dateRangeStart:   searchParam.dateRangeStart }),
+          ...(searchParam.dateRangeEnd     && { dateRangeEnd:     searchParam.dateRangeEnd }),
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
@@ -236,7 +236,7 @@ window.OdCartMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '180px' },
       { key: '_dateRange', type: 'dateRange', label: '기간',
-        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => codes.cart_date_types,
         dateWidth: '136px' },
     ];

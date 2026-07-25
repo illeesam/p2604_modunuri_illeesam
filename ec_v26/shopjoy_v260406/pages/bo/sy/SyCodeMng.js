@@ -147,9 +147,9 @@ window.SyCodeMng = {
       return {
         searchType: '', searchValue: '',
         grp: '', useYn: 'Y', dateRange: '',
-        dateType: 'reg_date',
-        dateStart: `${thisYear - 3}-01-01`,
-        dateEnd:   `${thisYear}-12-31`,
+        dateRangeType: 'reg_date',
+        dateRangeStart: `${thisYear - 3}-01-01`,
+        dateRangeEnd:   `${thisYear}-12-31`,
       };
     };
 
@@ -654,7 +654,7 @@ window.SyCodeMng = {
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => pageCodes.use_yn, nullLabel: '사용여부 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => pageCodes.date_range_opts,
         onRangeChange: () => {
           boUtil.bofApplyDateRange(searchParam);

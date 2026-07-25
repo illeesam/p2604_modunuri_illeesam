@@ -121,7 +121,7 @@ window.PmCouponMng = {
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, couponStatusCd: '' };
+      return { searchType: '', searchValue: '', dateRange: '', dateRangeType: 'reg_date', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, couponStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
     /* 쿠폰 handleDateRangeChange */
@@ -186,7 +186,7 @@ window.PmCouponMng = {
       if (isAppReady.value) { fnLoadCodes(); }
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
-        searchParam.dateStart = ''; searchParam.dateEnd = '';
+        searchParam.dateRangeStart = ''; searchParam.dateRangeEnd = '';
       }
       handleSearchList('DEFAULT');
     });
@@ -279,7 +279,7 @@ window.PmCouponMng = {
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'couponStatusCd', type: 'select', label: '상태', options: () => codes.coupon_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
     ];

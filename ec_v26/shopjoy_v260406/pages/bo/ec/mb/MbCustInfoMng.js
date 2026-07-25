@@ -185,28 +185,28 @@
 
       /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-      /* ===== 영역별 메타 정의 (api / dateType / pager / rows / dateField) ===== */
+      /* ===== 영역별 메타 정의 (api / dateRangeType / pager / rows / dateField) ===== */
       const HIST_META = {
-        orders:   { api: boApiSvc.odOrder,        dateType: 'order_date',   pager: ordersPager,   rows: orders,         label: '주문조회' },
-        claims:   { api: boApiSvc.odClaim,        dateType: 'request_date', pager: claimsPager,   rows: claims,         label: '클레임조회' },
-        dliv:     { api: boApiSvc.odDliv,         dateType: 'reg_date',     pager: dlivPager,     rows: deliveries,     label: '배송조회' },
-        cache:    { api: boApiSvc.pmCache,        dateType: 'reg_date',     pager: cachePager,    rows: caches,         label: '캐쉬조회' },
-        contacts: { api: boApiSvc.syContact,      dateType: 'reg_date',     pager: contactsPager, rows: contacts,       label: '문의조회' },
-        chats:    { api: boApiSvc.cmChatt,        dateType: 'reg_date',     pager: chatsPager,    rows: chats,          label: '채팅조회' },
-        login:    { api: boApiSvc.syUserLoginLog, dateType: 'reg_date',     pager: loginPager,    rows: loginHistories, label: '로그인조회' },
-        coupon:   { api: boApiSvc.pmCouponUsage,  dateType: 'reg_date',     pager: couponPager,   rows: couponUsages,   label: '쿠폰조회' },
-        send:     { api: boApiSvc.syAlarm,        dateType: 'reg_date',     pager: sendPager,     rows: sendHistories,  label: '발송조회' },
+        orders:   { api: boApiSvc.odOrder,        dateRangeType: 'order_date',   pager: ordersPager,   rows: orders,         label: '주문조회' },
+        claims:   { api: boApiSvc.odClaim,        dateRangeType: 'request_date', pager: claimsPager,   rows: claims,         label: '클레임조회' },
+        dliv:     { api: boApiSvc.odDliv,         dateRangeType: 'reg_date',     pager: dlivPager,     rows: deliveries,     label: '배송조회' },
+        cache:    { api: boApiSvc.pmCache,        dateRangeType: 'reg_date',     pager: cachePager,    rows: caches,         label: '캐쉬조회' },
+        contacts: { api: boApiSvc.syContact,      dateRangeType: 'reg_date',     pager: contactsPager, rows: contacts,       label: '문의조회' },
+        chats:    { api: boApiSvc.cmChatt,        dateRangeType: 'reg_date',     pager: chatsPager,    rows: chats,          label: '채팅조회' },
+        login:    { api: boApiSvc.syUserLoginLog, dateRangeType: 'reg_date',     pager: loginPager,    rows: loginHistories, label: '로그인조회' },
+        coupon:   { api: boApiSvc.pmCouponUsage,  dateRangeType: 'reg_date',     pager: couponPager,   rows: couponUsages,   label: '쿠폰조회' },
+        send:     { api: boApiSvc.syAlarm,        dateRangeType: 'reg_date',     pager: sendPager,     rows: sendHistories,  label: '발송조회' },
       };
 
       /* fnPagerOf — which → pager 객체 */
       const fnPagerOf = (which) => HIST_META[which]?.pager || null;
 
       /* fnDateParams — 기간 검색 파라미터 (period='all' 면 미전달) */
-      const fnDateParams = (dateType) => {
+      const fnDateParams = (dateRangeType) => {
         const from = calcFrom(searchParam.period, searchParam.customFrom);
         if (!from) return {};
         const to = searchParam.period === 'custom' ? searchParam.customTo : today();
-        return { dateType, dateStart: from, dateEnd: to };
+        return { dateRangeType, dateRangeStart: from, dateRangeEnd: to };
       };
 
       /* fnLoadHist — 단일 영역 서버사이드 페이지 조회 */
@@ -218,7 +218,7 @@
           const params = {
             pageNo: meta.pager.pageNo, pageSize: meta.pager.pageSize,
             userId: uiState.customer.userId,
-            ...fnDateParams(meta.dateType),
+            ...fnDateParams(meta.dateRangeType),
           };
           const res = await meta.api.getPage(params, '고객종합정보', meta.label);
           const d = res.data?.data || {};
