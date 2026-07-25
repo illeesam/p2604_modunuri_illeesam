@@ -45,6 +45,10 @@ public class CmDashboard extends BaseEntity {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
+    @Comment("소유 사용자ID (개인화 대시보드, NULL=공용)")
+    @Column(name = "owner_user_id", length = 21)
+    private String ownerUserId;
+
     @Comment("비고")
     @Column(name = "remark", length = 500)
     private String remark;

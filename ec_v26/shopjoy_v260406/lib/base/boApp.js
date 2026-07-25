@@ -31,6 +31,10 @@
       { group: '대시보드' },
       { id: 'dashboard', label: 'EC대시보드' },
       { id: 'appMonitorDashboard', label: 'App모니터대시보드' },
+      { id: 'cmDashboardMyMng', label: '개인화 대시보드' },
+      { group: '대시보드 관리' },
+      { id: 'cmDashboardMng', label: '대시보드 기준관리' },
+      { id: 'cmDashboardLayoutMng', label: '대시보드 배치설정' },
     ],
     member: [
       { group: '회원' },
@@ -529,6 +533,9 @@
         cmNoticeMng: 'cm-notice-mng',
         cmFaqMng: 'cm-faq-mng',
         cmBlogMng: 'cm-blog-mng',
+        cmDashboardMng: 'cm-dashboard-mng',
+        cmDashboardLayoutMng: 'cm-dashboard-layout-mng',
+        cmDashboardMyMng: 'cm-dashboard-my-mng',
         syAlarmMng: 'sy-alarm-mng',
         syPropMng: 'sy-prop-mng',
         syPathMng: 'sy-path-mng',
@@ -2610,7 +2617,7 @@
           <!-- 비고정 현재 탭: 전환 시 재마운트 -->
           <div v-if="!keptTabIds.has(cfActiveTabId)" :key="cfActiveTabId + '_' + (refreshKeys[cfActiveTabId] || 0)" style="display:contents;">
             <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate" />
-            <dashboard-bo-app-monitor v-else-if="page==='appMonitorDashboard'" :navigate="navigate" />
+            <dashboard-bo-app-monitor v-else-if="page==='appMonitorDashboard'" :navigate="navigate" :show-toast="showToast" />
             <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
@@ -2680,6 +2687,9 @@
             <cm-notice-mng  v-else-if="page==='cmNoticeMng'"  :navigate="navigate" />
             <cm-faq-mng  v-else-if="page==='cmFaqMng'"  :navigate="navigate" />
             <cm-blog-mng  v-else-if="page==='cmBlogMng'"  :navigate="navigate" />
+            <cm-dashboard-mng  v-else-if="page==='cmDashboardMng'"  :navigate="navigate" />
+            <cm-dashboard-layout-mng  v-else-if="page==='cmDashboardLayoutMng'"  :navigate="navigate" :dtl-id="dtlId" />
+            <cm-dashboard-my-mng  v-else-if="page==='cmDashboardMyMng'"  :navigate="navigate" />
             <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" />
             <sy-prop-mng  v-else-if="page==='syPropMng'"  :navigate="navigate" />
             <sy-path-mng  v-else-if="page==='syPathMng'"  :navigate="navigate" />
@@ -3213,6 +3223,9 @@
     .component('CmNoticeDtl', window.CmNoticeDtl)
     .component('CmFaqMng', window.CmFaqMng)
     .component('CmFaqDtl', window.CmFaqDtl)
+    .component('CmDashboardMng', window.CmDashboardMng)
+    .component('CmDashboardLayoutMng', window.CmDashboardLayoutMng)
+    .component('CmDashboardMyMng', window.CmDashboardMyMng)
     /* ── pages/bo/ec/ — 채팅/고객 ── */
     .component('CmChattMng', window.CmChattMng)
     .component('CmChattDtl', window.CmChattDtl)

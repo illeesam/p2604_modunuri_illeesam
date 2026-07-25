@@ -318,7 +318,9 @@ window.DashboardBoEc03 = {
       try {
         const startYmd = (filters.startDt || '').replace(/-/g, '');
         const endYmd   = (filters.endDt   || '').replace(/-/g, '');
-        const items = COMP_IDS.map(compId => ({ compId, uiNm: 'DashboardBoEc03', startYmd, endYmd }));
+        /* siteId 필수 — 미전송 시 백엔드가 전체 아이템에서 itemKey 첫 매칭을 잡아 오연결될 수 있음 */
+        const siteId = window.boCommonFilter?.siteId || '2604010000000001';
+        const items = COMP_IDS.map(compId => ({ compId, uiNm: 'DashboardBoEc03', siteId, startYmd, endYmd }));
         const res = await boApiSvc.cmDashboard.getData(items, '대시보드', '조회');
         const d = res.data?.data || {};
         Object.keys(dash).forEach(k => { dash[k] = d[k] || []; });

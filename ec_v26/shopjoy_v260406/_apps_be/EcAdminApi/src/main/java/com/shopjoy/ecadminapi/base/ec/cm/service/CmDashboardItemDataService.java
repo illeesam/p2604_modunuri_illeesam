@@ -30,11 +30,19 @@ public class CmDashboardItemDataService {
         String siteId = (String) p.get("siteId");
         String dashboardItemId = (String) p.get("dashboardItemId");
         String yyyymmdd = (String) p.get("yyyymmdd");
+        String startYmd = (String) p.get("startYmd");
+        String endYmd   = (String) p.get("endYmd");
 
         if (siteId != null && dashboardItemId != null && yyyymmdd != null) {
             return List.of(cmDashboardItemDataRepository
                 .findBySiteIdAndDashboardItemIdAndYyyymmdd(siteId, dashboardItemId, yyyymmdd)
                 .orElse(null));
+        }
+        /* 기간 서버 필터 — startYmd/endYmd (YYYYMMDD) BETWEEN */
+        if (siteId != null && dashboardItemId != null && startYmd != null && endYmd != null) {
+            return cmDashboardItemDataRepository
+                .findBySiteIdAndDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
+                    siteId, dashboardItemId, startYmd, endYmd);
         }
         if (siteId != null && dashboardItemId != null) {
             return cmDashboardItemDataRepository

@@ -86,11 +86,13 @@ public class BoCmDashboardController {
             @PathVariable("id") String id, @RequestBody CmDashboard body) {
         CmDashboard entity = cmDashboardRepository.findById(id)
             .orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않습니다: " + id));
+        checkOwner(entity);
         if (body.getDashboardNm() != null) entity.setDashboardNm(body.getDashboardNm());
         if (body.getUiCompNm() != null)    entity.setUiCompNm(body.getUiCompNm());
         if (body.getLayoutCols() != null)  entity.setLayoutCols(body.getLayoutCols());
         if (body.getSortOrd() != null)     entity.setSortOrd(body.getSortOrd());
         if (body.getUseYn() != null)       entity.setUseYn(body.getUseYn());
+        if (body.getOwnerUserId() != null) entity.setOwnerUserId(body.getOwnerUserId().isBlank() ? null : body.getOwnerUserId());
         if (body.getRemark() != null)      entity.setRemark(body.getRemark());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
@@ -99,8 +101,19 @@ public class BoCmDashboardController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
+        cmDashboardRepository.findById(id).ifPresent(this::checkOwner);
         cmDashboardRepository.deleteById(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+
+    /** 개인화(owner_user_id 지정) 대시보드는 소유자 본인만 수정/삭제 가능 */
+    private void checkOwner(CmDashboard entity) {
+        String owner = entity.getOwnerUserId();
+        if (owner == null || owner.isBlank()) return; /* 공용 대시보드 */
+        String authId = SecurityUtil.getAuthUser().authId();
+        if (!owner.equals(authId))
+            throw new com.shopjoy.ecadminapi.common.exception.CmBizException(
+                "본인 소유의 개인화 대시보드만 수정/삭제할 수 있습니다. (소유자: " + owner + ")");
     }
 
     /* ── 패널 정의 (CmDashboardItem) ──────────────────────────── */
@@ -121,6 +134,7 @@ public class BoCmDashboardController {
     public ResponseEntity<ApiResponse<CmDashboardItem>> itemSave(
             @PathVariable("cmd") String cmd,
             @RequestBody CmDashboardItem body) {
+        validateSrcItemRef(body);
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemService.save(cmd, body)));
     }
 
@@ -128,8 +142,27 @@ public class BoCmDashboardController {
     public ResponseEntity<ApiResponse<Void>> itemSaveList(
             @PathVariable("cmd") String cmd,
             @RequestBody List<CmDashboardItem> rows) {
+        rows.forEach(this::validateSrcItemRef);
         cmDashboardItemService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /** optionJson._srcItemId(개인화 위젯의 원본 패널 참조) 무결성 검증 — 존재하지 않는 원본이면 저장 차단 */
+    private void validateSrcItemRef(CmDashboardItem body) {
+        if ("D".equals(body.getRowStatus())) return; /* 삭제 행은 검증 불필요 */
+        String json = body.getOptionJson();
+        if (json == null || !json.contains("_srcItemId")) return;
+        try {
+            com.fasterxml.jackson.databind.JsonNode node =
+                new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
+            com.fasterxml.jackson.databind.JsonNode src = node.get("_srcItemId");
+            if (src != null && src.isTextual() && !src.asText().isBlank()) {
+                cmDashboardItemService.getById(src.asText()); /* 미존재 시 CmBizException */
+            }
+        } catch (com.fasterxml.jackson.core.JacksonException e) {
+            throw new com.shopjoy.ecadminapi.common.exception.CmBizException(
+                "optionJson 형식이 올바르지 않습니다: " + e.getOriginalMessage());
+        }
     }
 
     /* ── 집계 데이터 (CmDashboardItemData) ───────────────────── */

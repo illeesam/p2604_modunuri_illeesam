@@ -97,15 +97,16 @@ public class CmDashboardService {
         String endYmd   = str(p.get("endYmd"));
         Object limitObj = p.get("limit");
 
-        List<CmDashboardItemData> rows;
-        if (startYmd != null && endYmd != null) {
-            rows = cmDashboardItemDataRepository
-                .findBySiteIdAndDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
-                    panel.getSiteId(), panel.getDashboardItemId(), startYmd, endYmd);
-        } else {
-            rows = cmDashboardItemDataRepository
-                .findBySiteIdAndDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(
-                    panel.getSiteId(), panel.getDashboardItemId());
+        List<CmDashboardItemData> rows = queryRows(panel.getSiteId(), panel.getDashboardItemId(), startYmd, endYmd);
+
+        /* 자체 데이터가 없고 optionJson._srcItemId(원본 패널 참조)가 있으면 원본 데이터로 폴백
+         * — 파생 대시보드(EC02/03·개인화)가 원본(EC01) 집계 데이터를 공유하는 규약 */
+        if (rows.isEmpty()) {
+            String srcItemId = extractSrcItemId(panel.getOptionJson());
+            if (srcItemId != null) {
+                CmDashboardItem src = cmDashboardItemRepository.findById(srcItemId).orElse(null);
+                if (src != null) rows = queryRows(src.getSiteId(), src.getDashboardItemId(), startYmd, endYmd);
+            }
         }
 
         if (limitObj instanceof Number n) {
@@ -113,6 +114,29 @@ public class CmDashboardService {
         }
 
         return rows.stream().map(this::toDto).toList();
+    }
+
+    private List<CmDashboardItemData> queryRows(String siteId, String itemId, String startYmd, String endYmd) {
+        if (startYmd != null && endYmd != null) {
+            return cmDashboardItemDataRepository
+                .findBySiteIdAndDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
+                    siteId, itemId, startYmd, endYmd);
+        }
+        return cmDashboardItemDataRepository
+            .findBySiteIdAndDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(siteId, itemId);
+    }
+
+    /** optionJson 에서 _srcItemId 문자열 추출 (없거나 파싱 실패 시 null) */
+    private String extractSrcItemId(String optionJson) {
+        if (optionJson == null || !optionJson.contains("_srcItemId")) return null;
+        try {
+            com.fasterxml.jackson.databind.JsonNode node =
+                new com.fasterxml.jackson.databind.ObjectMapper().readTree(optionJson);
+            com.fasterxml.jackson.databind.JsonNode src = node.get("_srcItemId");
+            return src != null && src.isTextual() && !src.asText().isBlank() ? src.asText() : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private CmDashboardDto toDto(CmDashboardItemData d) {

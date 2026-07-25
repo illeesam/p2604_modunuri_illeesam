@@ -57,6 +57,9 @@
     update(id, body, uiNm, cmdNm)     { return global.boApi.put('/bo/ec/cm/dashboard/' + id, body, hdr(uiNm, cmdNm)); },
     remove(id, uiNm, cmdNm)           { return global.boApi.delete('/bo/ec/cm/dashboard/' + id, hdr(uiNm, cmdNm)); },
     getItemList(params, uiNm, cmdNm)  { return global.boApi.get('/bo/ec/cm/dashboard/item/list', { params, ...hdr(uiNm, cmdNm) }); },
+    itemSave(cmd, body, uiNm, cmdNm)     { return global.boApi.post('/bo/ec/cm/dashboard/item/save/' + cmd, body, hdr(uiNm, cmdNm)); },
+    itemSaveList(cmd, rows, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/item/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
+    getItemDataList(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/cm/dashboard/item-data/list', { params, ...hdr(uiNm, cmdNm) }); },
     itemDataUpsert(body, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/item-data/upsert', body, hdr(uiNm, cmdNm)); },
   };
 
