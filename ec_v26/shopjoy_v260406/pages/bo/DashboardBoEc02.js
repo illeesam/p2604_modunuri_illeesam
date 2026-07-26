@@ -560,24 +560,32 @@ window.DashboardBoEc02 = {
     /* COMP0401 레이더 */
     const radarValues = computed(() => dash.info0401.map(r => ({ label:r.col1Nm||'', value:r.col1Num||0 })));
 
-    const cfOpt0401 = computed(() => ({
-      tooltip: { trigger:'item' },
-      radar: {
-        indicator: radarValues.value.map(v => ({ name:v.label, max:100 })),
-        center:['50%','52%'], radius:'68%',
-        axisName:{ fontSize:11, color:'#555' },
-        splitArea:{ areaStyle:{ color:['rgba(232,88,122,0.04)','rgba(232,88,122,0.08)'] } },
-        splitLine:{ lineStyle:{ color:'#e5e7eb' } },
-      },
-      series: [{
-        type:'radar',
-        data:[{ value: radarValues.value.map(v => v.value), name:'영업지표',
-          areaStyle:{ color:'rgba(232,88,122,0.2)' },
-          lineStyle:{ color:'#e8587a', width:2 },
-          itemStyle:{ color:'#e8587a' },
-        }],
-      }],
-    }));
+    /* 데이터 로드 전에는 indicator 가 빈 배열이 되는데, ECharts radar 는 축이 0개면
+       좌표계 생성에 실패해 렌더 중 예외를 던진다(Cannot read properties of undefined).
+       빈 축 3개로 프레임만 그리고 series 는 비워 크래시를 막는다. */
+    const RADAR_EMPTY_AXES = [{ name:'', max:100 }, { name:'', max:100 }, { name:'', max:100 }];
+
+    const cfOpt0401 = computed(() => {
+      const vals = radarValues.value;
+      return {
+        tooltip: { trigger:'item' },
+        radar: {
+          indicator: vals.length ? vals.map(v => ({ name:v.label, max:100 })) : RADAR_EMPTY_AXES,
+          center:['50%','52%'], radius:'68%',
+          axisName:{ fontSize:11, color:'#555' },
+          splitArea:{ areaStyle:{ color:['rgba(232,88,122,0.04)','rgba(232,88,122,0.08)'] } },
+          splitLine:{ lineStyle:{ color:'#e5e7eb' } },
+        },
+        series: vals.length ? [{
+          type:'radar',
+          data:[{ value: vals.map(v => v.value), name:'영업지표',
+            areaStyle:{ color:'rgba(232,88,122,0.2)' },
+            lineStyle:{ color:'#e8587a', width:2 },
+            itemStyle:{ color:'#e8587a' },
+          }],
+        }] : [],
+      };
+    });
 
     /* COMP0402 경제 수준별 면적 꺾은선 */
     const economySales = computed(() => ({

@@ -49,6 +49,18 @@ public class CmDashboard extends BaseEntity {
     @Column(name = "owner_user_id", length = 21)
     private String ownerUserId;
 
+    @Comment("공개여부 — PUBLIC:전체공개 / PRIVATE:비공개(소유자+공유대상) (NULL=PRIVATE)")
+    @Column(name = "share_scope_cd", length = 10)
+    private String shareScopeCd;
+
+    @Comment("공유 부서ID 목록 (^구분 예: ^DEPT001^DEPT002^)")
+    @Column(name = "share_dept_id", length = 2000)
+    private String shareDeptId;
+
+    @Comment("공유 사용자ID 목록 (^구분 예: ^US001^US002^)")
+    @Column(name = "share_user_ids", length = 2000)
+    private String shareUserIds;
+
     @Comment("비고")
     @Column(name = "remark", length = 500)
     private String remark;

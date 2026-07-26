@@ -87,6 +87,11 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn_row_delete:hover:not(:disabled){ box-shadow: 0 4px 12px rgba(255,77,79,.35); }
 
 .bo-table { width: 100%; min-width: 720px; border-collapse: collapse; }
+/* 좁은 선택 패널용 그리드 — 전역 min-width(720px)를 풀어 가로 스크롤 없이 다 보이게.
+   좌측 트리/목록 같은 사이드 패널에서만 컨테이너에 .bo-grid-narrow 를 준다. */
+.bo-grid-narrow .bo-table { min-width: 0; }
+.bo-grid-narrow .bo-table th,
+.bo-grid-narrow .bo-table td { padding-left: 6px; padding-right: 6px; }
 /* 표준 행 높이: 세로 패딩 6px(th)/3px(td) — 코드목록(crud-grid) 행높이 기준으로 전 BO 그리드 통일 */
 .bo-table th { background: #fafafa; padding: 6px 10px; text-align: center; font-size: 12px; font-weight: 600; color: #555; border-bottom: 1px solid #e8e8e8; border-right: 1px solid #ececec; white-space: nowrap; }
 .bo-table th:last-child { border-right: none; }

@@ -41,6 +41,7 @@ window.DashboardBoAppMonitor = {
     /* X-View 히트맵 전용 조회기간 옵션 — 10분/20분/30분/1시간/2시간/6시간/12시간/1일 */
     const XVIEW_RANGE_OPTS = [
       { value: 10   * 60 * 1000, label: '10분' },
+      { value: 15   * 60 * 1000, label: '15분' },
       { value: 20   * 60 * 1000, label: '20분' },
       { value: 30   * 60 * 1000, label: '30분' },
       { value: 60   * 60 * 1000, label: '1시간' },
@@ -49,7 +50,7 @@ window.DashboardBoAppMonitor = {
       { value: 12*60* 60 * 1000, label: '12시간' },
       { value: 24*60* 60 * 1000, label: '1일' },
     ];
-    const XVIEW_RANGE_DEFAULT = XVIEW_RANGE_OPTS[3].value;      /* 최근조회 기본 1시간 */
+    const XVIEW_RANGE_DEFAULT = XVIEW_RANGE_OPTS[1].value;      /* 최근조회 기본 15분 */
     const XVIEW_RANGE_MODE_RANGE_DEFAULT = 30 * 60 * 1000;      /* 기간조회 전환 시 고정 기본값 30분 */
     /* xviewMode: 'recent'(최근조회, 실시간 창) | 'range'(기간조회, 고정 스냅샷) */
     const xviewMode  = ref('recent');

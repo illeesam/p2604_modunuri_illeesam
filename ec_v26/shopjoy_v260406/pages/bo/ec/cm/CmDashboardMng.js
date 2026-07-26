@@ -271,6 +271,12 @@ window.CmDashboardMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
 
+    /* 공개여부 라벨 (사용자대시보드 화면과 동일 규약, 레거시 코드 호환) */
+    const SHARE_SCOPE_LABELS = {
+      PUBLIC: '🌐 전체공개', PRIVATE: '🔒 비공개',
+      ALL: '🌐 전체공개', DEPT: '🔒 비공개', USER: '🔒 비공개', ME: '🔒 비공개',
+    };
+
     const columns = {};
     columns.baseSearch = [
       { key: 'searchValue', label: '대시보드명', type: 'text', placeholder: '대시보드명/컴포넌트명 검색' },
@@ -286,6 +292,8 @@ window.CmDashboardMng = {
       { key: '_type',     label: '유형', style: 'width:90px;',
         badge: (row) => fnIsMyDash(row) ? 'badge-purple' : 'badge-blue',
         fmt: (v, row) => fnIsMyDash(row) ? '개인화' : '공용' },
+      { key: 'shareScopeCd', label: '공개여부', style: 'width:100px;',
+        fmt: (v, row) => fnIsMyDash(row) ? (SHARE_SCOPE_LABELS[v || 'PRIVATE'] || v || '-') : '-' },
       { key: '_panelCnt', label: '패널수', style: 'width:70px;', align: 'right',
         fmt: (v, row) => (panelCnt[row.dashboardId] || 0) + '개' },
       { key: 'layoutCols', label: '열수', style: 'width:60px;', align: 'center', fmt: (v) => (v || 4) + '열' },

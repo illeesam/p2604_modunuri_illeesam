@@ -7,6 +7,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemDataService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardService;
+import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -49,10 +50,20 @@ public class BoCmDashboardController {
 
     /* ── cm_dashboard CRUD ─────────────────────────────────────── */
 
+    /**
+     * 대시보드 목록.
+     *
+     * @param scope 접근범위 필터 (선택)
+     *              - "accessible" : 현재 사용자가 볼 수 있는 것만 (공용 + 내 것 + 나에게 공유된 것)
+     *              - "mine"       : 내가 소유한 개인 대시보드만
+     *              - "shared"     : 나에게 공유된(내 소유 아닌) 개인 대시보드만
+     *              - 미지정        : 전체 (기준관리 화면용)
+     */
     @GetMapping("/list")
     public ResponseEntity<ApiResponse<List<CmDashboard>>> list(
             @RequestParam(required = false) String siteId,
-            @RequestParam(required = false) String useYn) {
+            @RequestParam(required = false) String useYn,
+            @RequestParam(required = false) String scope) {
         List<CmDashboard> result;
         if (siteId != null && useYn != null) {
             result = cmDashboardRepository.findBySiteIdAndUseYnOrderBySortOrdAsc(siteId, useYn);
@@ -61,7 +72,54 @@ public class BoCmDashboardController {
         } else {
             result = cmDashboardRepository.findAll();
         }
+        if (scope != null && !scope.isBlank()) {
+            AuthPrincipal me = SecurityUtil.getAuthUser();
+            result = result.stream().filter(d -> switch (scope) {
+                case "mine"   -> isOwner(d, me);
+                case "shared" -> !isOwner(d, me) && isPersonal(d) && isVisibleTo(d, me);
+                default       -> isVisibleTo(d, me); /* accessible */
+            }).toList();
+        }
         return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /* ── 공유범위 판정 ─────────────────────────────────────────── */
+
+    private boolean isPersonal(CmDashboard d) {
+        return d.getOwnerUserId() != null && !d.getOwnerUserId().isBlank();
+    }
+
+    private boolean isOwner(CmDashboard d, AuthPrincipal me) {
+        return isPersonal(d) && d.getOwnerUserId().equals(me.authId());
+    }
+
+    /**
+     * 현재 사용자에게 이 대시보드가 보이는지 판정.
+     * 공용(owner 없음)은 항상 노출. 개인 대시보드는 공개여부 + 공유대상으로 판정한다.
+     *
+     * <p>share_scope_cd = 공개여부
+     *   PUBLIC : 전체 공개
+     *   PRIVATE(기본) : 소유자 + 공유대상(부서/사용자)만. 대상이 없으면 소유자만(=나만 보기).
+     * <p>공유대상은 부서(share_dept_id)와 사용자(share_user_ids)를 각각 ^구분 다중 저장하며 OR 로 판정.
+     * <p>레거시 호환: ME→PRIVATE(대상 없음), ALL→PUBLIC, DEPT/USER→PRIVATE(각 대상 보유)
+     */
+    private boolean isVisibleTo(CmDashboard d, AuthPrincipal me) {
+        if (!isPersonal(d)) return true;          /* 공용 */
+        if (isOwner(d, me)) return true;          /* 내 것 — 항상 접근 */
+        String scopeCd = d.getShareScopeCd() == null || d.getShareScopeCd().isBlank()
+            ? "PRIVATE" : d.getShareScopeCd();
+        if ("PUBLIC".equals(scopeCd) || "ALL".equals(scopeCd)) return true;
+        if ("ME".equals(scopeCd)) return false;   /* 레거시: 나만 */
+        /* PRIVATE (+ 레거시 DEPT/USER): 공유대상 포함 여부 (부서 OR 사용자) */
+        return containsToken(d.getShareDeptId(), me.deptId())
+            || containsToken(d.getShareUserIds(), me.authId());
+    }
+
+    /** ^구분 다중값(^A^B^) 또는 단일값에 target 이 포함되는지 */
+    private boolean containsToken(String stored, String target) {
+        if (stored == null || stored.isBlank() || target == null || target.isBlank()) return false;
+        if (stored.contains("^")) return stored.contains("^" + target + "^");
+        return stored.equals(target);             /* 레거시 단일 deptId */
     }
 
     @GetMapping("/{id}")
@@ -93,6 +151,9 @@ public class BoCmDashboardController {
         if (body.getSortOrd() != null)     entity.setSortOrd(body.getSortOrd());
         if (body.getUseYn() != null)       entity.setUseYn(body.getUseYn());
         if (body.getOwnerUserId() != null) entity.setOwnerUserId(body.getOwnerUserId().isBlank() ? null : body.getOwnerUserId());
+        if (body.getShareScopeCd() != null) entity.setShareScopeCd(body.getShareScopeCd().isBlank() ? null : body.getShareScopeCd());
+        if (body.getShareDeptId() != null)  entity.setShareDeptId(body.getShareDeptId().isBlank() ? null : body.getShareDeptId());
+        if (body.getShareUserIds() != null) entity.setShareUserIds(body.getShareUserIds().isBlank() ? null : body.getShareUserIds());
         if (body.getRemark() != null)      entity.setRemark(body.getRemark());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());

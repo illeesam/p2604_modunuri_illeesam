@@ -31,10 +31,12 @@
       { group: '대시보드' },
       { id: 'dashboard', label: 'EC대시보드' },
       { id: 'appMonitorDashboard', label: 'App모니터대시보드' },
-      { id: 'cmDashboardMyMng', label: '개인화 대시보드' },
       { group: '대시보드 관리' },
       { id: 'cmDashboardMng', label: '대시보드 기준관리' },
       { id: 'cmDashboardLayoutMng', label: '대시보드 배치설정' },
+      { group: '사용자대시보드' },
+      { id: 'cmDashboardMyMng', label: '내 대시보드 관리' },
+      /* ↓ 내 대시보드/공유받은 대시보드는 cfUserDashMenus 로 동적 추가 (boApp.js §사용자대시보드 메뉴) */
     ],
     member: [
       { group: '회원' },
@@ -158,6 +160,9 @@
       { group: '메뉴' },
       { id: 'syMenuMng', label: '메뉴관리' },
       { id: 'syRoleMng', label: '역할관리' },
+      { group: '화면관리' },
+      { id: 'cmPopupMng', label: '팝업관리' },
+      { id: 'cmPopupItemMng', label: '팝업항목관리' },
       { group: '이력조회' },
       { id: 'syMemberLoginHist', label: '회원로그인이력' },
       { id: 'syUserLoginHist', label: '사용자로그인이력' },
@@ -536,6 +541,8 @@
         cmDashboardMng: 'cm-dashboard-mng',
         cmDashboardLayoutMng: 'cm-dashboard-layout-mng',
         cmDashboardMyMng: 'cm-dashboard-my-mng',
+        cmPopupMng: 'cm-popup-mng',
+        cmPopupItemMng: 'cm-popup-item-mng',
         syAlarmMng: 'sy-alarm-mng',
         syPropMng: 'sy-prop-mng',
         syPathMng: 'sy-path-mng',
@@ -1532,6 +1539,8 @@
         setTimeout(() => {
           window.useBoAppInitStore?.()?.saRestoreFromStorage?.();
         }, 0);
+        /* 이미 로그인된 상태(F5 등)에서도 사용자대시보드 좌측메뉴 로드 */
+        setTimeout(() => { fnLoadUserDashMenus(); }, 300);
         _loadApiLogsFromStorage();
         setTimeout(() => {
           if (typeof boApi !== 'undefined' && boApi.raw) {
@@ -1938,6 +1947,7 @@
           loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
+          fnLoadUserDashMenus(); /* 사용자대시보드 좌측메뉴 로드 */
           showToast(`${currentAuthUser?.authNm || currentAuthUser?.name || '사용자'}님 환영합니다.`);
         } catch (err) {
           console.error('[catch-info]', err);
@@ -2179,6 +2189,31 @@
         }),
       );
 
+      /* ── 사용자대시보드 메뉴 (동적) ──────────────────────────────
+       * 내가 만든 대시보드 + 나에게 공유된 대시보드를 좌측메뉴 '사용자대시보드' 그룹 아래에 표시.
+       * 클릭 시 cmDashboardMyMng 로 이동하면서 dtlId 에 대시보드ID 전달. */
+      const userDashMenus = reactive([]); /* [{ dashboardId, dashboardNm, mine }] */
+      const fnLoadUserDashMenus = async () => {
+        try {
+          if (!localStorage.getItem('modu-bo-auth-accessToken')) return;
+          const siteId = window.boCommonFilter?.siteId || '';
+          const res = await boApiSvc.cmDashboard.getList(
+            { siteId, scope: 'accessible' }, '사용자대시보드', '메뉴조회');
+          const authStore = window.sfGetBoAuthStore ? window.sfGetBoAuthStore() : null;
+          const myId = authStore?.svAuthUser?.authId || '';
+          const list = (res.data?.data || [])
+            .filter((d) => d.ownerUserId)                  /* 개인 대시보드만 */
+            .map((d) => ({ dashboardId: d.dashboardId, dashboardNm: d.dashboardNm,
+                           mine: d.ownerUserId === myId }));
+          list.sort((a, b) => (b.mine - a.mine) || a.dashboardNm.localeCompare(b.dashboardNm, 'ko'));
+          userDashMenus.splice(0, userDashMenus.length, ...list);
+        } catch (e) {
+          console.warn('[사용자대시보드 메뉴 조회 오류]', e);
+        }
+      };
+      /* 개인화 화면에서 대시보드 추가/삭제/이름변경 시 메뉴 갱신 신호 */
+      window.addEventListener('user-dashboard-changed', fnLoadUserDashMenus);
+
       /* 루트 클릭 → 컨텍스트 메뉴·유저메뉴 닫기 */
       const onRootClick = () => {
         closeCtxMenu();
@@ -2196,6 +2231,7 @@
         cfDashboardComp,
         TOP_MENUS,
         LEFT_MENUS,
+        userDashMenus,
         AUTH_METHODS,
         openTabs,
         closeTab,
@@ -2468,6 +2504,15 @@
               @click.stop="toggleFav(item.id)" :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
           </div>
         </template>
+        <!-- 사용자대시보드: 내 대시보드 + 공유받은 대시보드 (동적) -->
+        <template v-if="activeTop==='home'">
+          <div v-for="d in userDashMenus" :key="d.dashboardId"
+            class="left-nav-item left-nav-sub-item" style="padding-left:24px;"
+            @click="navigate('cmDashboardMyMng', { id: d.dashboardId })"
+            :title="d.mine ? '내 대시보드' : '공유받은 대시보드'">
+            <span style="margin-right:4px;">{{ d.mine ? '👤' : '🔗' }}</span>{{ d.dashboardNm }}
+          </div>
+        </template>
       </div>
 
       <!-- 열린화면 / 즐겨찾기 (하단 고정) -->
@@ -2690,6 +2735,8 @@
             <cm-dashboard-mng  v-else-if="page==='cmDashboardMng'"  :navigate="navigate" />
             <cm-dashboard-layout-mng  v-else-if="page==='cmDashboardLayoutMng'"  :navigate="navigate" :dtl-id="dtlId" />
             <cm-dashboard-my-mng  v-else-if="page==='cmDashboardMyMng'"  :navigate="navigate" />
+            <cm-popup-mng  v-else-if="page==='cmPopupMng'"  :navigate="navigate" />
+            <cm-popup-item-mng  v-else-if="page==='cmPopupItemMng'"  :navigate="navigate" :dtl-id="dtlId" />
             <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" />
             <sy-prop-mng  v-else-if="page==='syPropMng'"  :navigate="navigate" />
             <sy-path-mng  v-else-if="page==='syPathMng'"  :navigate="navigate" />
@@ -3226,6 +3273,8 @@
     .component('CmDashboardMng', window.CmDashboardMng)
     .component('CmDashboardLayoutMng', window.CmDashboardLayoutMng)
     .component('CmDashboardMyMng', window.CmDashboardMyMng)
+    .component('CmPopupMng', window.CmPopupMng)
+    .component('CmPopupItemMng', window.CmPopupItemMng)
     /* ── pages/bo/ec/ — 채팅/고객 ── */
     .component('CmChattMng', window.CmChattMng)
     .component('CmChattDtl', window.CmChattDtl)
@@ -3285,6 +3334,7 @@
     .component('BoMenuTreeCard', window.BoMenuTreeCard)
     .component('BoLocalTreeCard', window.BoLocalTreeCard)
     .component('BoModal', window.BoModal)
+    .component('BoPickModal', window.BoPickModal)
     .component('BoAddrSearchModal', window.BoAddrSearchModal)
     .component('BoCronModal', window.BoCronModal)
     .component('BoTreeSelectorModal', window.BoTreeSelectorModal)

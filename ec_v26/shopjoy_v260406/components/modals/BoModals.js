@@ -124,1108 +124,243 @@
 window.SiteSelectModal = {
   name: 'SiteSelectModal',
   inheritAttrs: false,
+  /* 사이트 선택 — 팝업관리(cm_popup 'site') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pageSize = 10;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
-    const searchParam = reactive({ searchType: '', searchValue: '' });
-    const list = reactive([]);
-    const loading = ref(false);
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ SiteSelectModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      // 페이지 이동
-      } else if (cmd === 'pager-set') {
-        return onSetPage(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ SiteSelectModal : handleSelectAction -> ', cmd, param);
-      // 사이트 선택
-      if (cmd === 'list-select') {
-        emit('select', param);
-        if (props.onCallback) props.onCallback(props.modalName, null, param);
-        return;
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      loading.value = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'siteId,siteCode,siteNm,siteDomain';
-        }
-        const res = await boApiSvc.sySite.getPage(params, '사이트관리', '목록조회');
-        const data = res.data?.data;
-        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
-    };
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* handleSearchListWrap */
-    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
-    onMounted(() => { handleSearchListWrap(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-
-    /* onSetPage */
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
-
-    /* onSizeChange — 페이지사이즈 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchListWrap(); };
-    /* pageSizes 보강 (BoPager 가 요구) */
-    if (!pager.pageSizes) pager.pageSizes = [5, 10, 20, 30, 50];
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'siteId',     label: '사이트번호' },
-          { value: 'siteCode',   label: '사이트코드' },
-          { value: 'siteNm',     label: '사이트명' },
-          { value: 'siteDomain', label: '도메인' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 */
-    const listGridColumns = [
-      { key: 'siteNm',   label: '사이트명', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
-      { key: 'siteCode', label: '사이트코드', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
-      { key: 'siteId',   label: '사이트번호', align: 'right', cellStyle: 'font-family:monospace;font-weight:700;color:#e8587a;', fmt: (v) => String(v).padStart(2, '0') },
-    ];
-
-    return {
-      cfSiteNm, searchParam, list, loading, pager,                          // 데이터
-      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
-      onSetPage, onSizeChange,                                               // BoPager 콜백
-      handleBtnAction, handleSelectAction,                                  // dispatch
-    };
-  },
-  template: /* html */`
-<bo-modal :show="true" @close="handleBtnAction('modal-close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
-    <span class="modal-title">
-      사이트 선택
-      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-        {{ cfSiteNm }}
-      </span>
-      <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
-        :title="['사이트번호 : 프로그램 작업코드 (01, 02, 03…)','사이트코드 : 라이선스코드 (ST0001 형식)'].join(String.fromCharCode(10))">
-        ?
-      </span>
-    </span>
-    <span class="modal-close" @click="handleBtnAction('modal-close')">
-      ✕
-    </span>
-  </div>
-  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-    @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="siteId"
-    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)"
-    @row-dblclick="row => handleSelectAction('list-select', row)">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
-        선택
-      </button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-</bo-modal>
-`,
-};
-
-/* ── 판매업체 선택 모달 ── */
-window.VendorSelectModal = {
-  name: 'VendorSelectModal',
-  inheritAttrs: false,
-  props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
-  },
-  emits: ['select', 'close'],
-  setup(props, { emit }) {
-    const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pageSize = 8;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
-    const searchParam = reactive({ searchType: '', searchValue: '' });
-    const list = reactive([]);
-    const loading = ref(false);
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ VendorSelectModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      // 페이지 이동
-      } else if (cmd === 'pager-set') {
-        return onSetPage(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ VendorSelectModal : handleSelectAction -> ', cmd, param);
-      // 업체 선택
-      if (cmd === 'list-select') {
-        emit('select', param);
-        if (props.onCallback) props.onCallback(props.modalName, null, param);
-        return;
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      loading.value = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'vendorNm,corpNo';
-        }
-        const res = await boApiSvc.syVendor.getPage(params, '판매자관리', '목록조회');
-        const data = res.data?.data;
-        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
-    };
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* handleSearchListWrap */
-    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
-    onMounted(() => { handleSearchListWrap(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-
-    /* onSetPage */
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'vendorNm', label: '업체명' },
-          { value: 'corpNo',   label: '사업자번호' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 */
-    const listGridColumns = [
-      { key: 'vendorNm', label: '업체명', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
-      { key: 'vendorId', label: 'ID', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
-    ];
-
-    return {
-      cfSiteNm, searchParam, list, loading, pager,                          // 데이터
-      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
-      onSetPage,                                                             // BoGrid pager 콜백
-      handleBtnAction, handleSelectAction,                                  // dispatch
-    };
-  },
-  template: /* html */`
-<bo-modal :show="true" @close="handleBtnAction('modal-close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
-    <span class="modal-title">
-      판매업체 선택
-      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-        {{ cfSiteNm }}
-      </span>
-    </span>
-    <span class="modal-close" @click="handleBtnAction('modal-close')">
-      ✕
-    </span>
-  </div>
-  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-    @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="vendorId"
-    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)"
-    @row-dblclick="row => handleSelectAction('list-select', row)">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
-        선택
-      </button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="() => onSetPage(1)" />
-</bo-modal>
-`,
-};
-
-/* ── 브랜드 선택 모달 (단건 선택, VendorSelectModal 패턴) ── */
-window.BrandSelectModal = {
-  name: 'BrandSelectModal',
-  inheritAttrs: false,
-  props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
-  },
-  emits: ['select', 'close'],
-  setup(props, { emit }) {
-    const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pageSize = 8;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
-    const searchParam = reactive({ searchType: '', searchValue: '' });
-    const list = reactive([]);
-    const loading = ref(false);
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ BrandSelectModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      // 페이지 이동
-      } else if (cmd === 'pager-set') {
-        return onSetPage(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ BrandSelectModal : handleSelectAction -> ', cmd, param);
-      // 브랜드 선택
-      if (cmd === 'list-select') {
-        emit('select', param);
-        if (props.onCallback) props.onCallback(props.modalName, null, param);
-        return;
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      loading.value = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'brandCode,brandNm,brandEnNm';
-        }
-        const res = await boApiSvc.syBrand.getPage(params, '브랜드관리', '목록조회');
-        const data = res.data?.data;
-        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
-    };
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* handleSearchListWrap */
-    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
-    onMounted(() => { handleSearchListWrap(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-
-    /* onSetPage */
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'brandNm',   label: '브랜드명' },
-          { value: 'brandCode', label: '브랜드코드' },
-          { value: 'brandEnNm', label: '영문명' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 */
-    const listGridColumns = [
-      { key: 'brandNm',   label: '브랜드명', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
-      { key: 'brandCode', label: '코드', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
-      { key: 'brandId',   label: 'ID', mono: true, cellStyle: 'color:#aaa;font-size:11px;', fmt: (v) => v || '-' },
-    ];
-
-    return {
-      cfSiteNm, searchParam, list, loading, pager,                          // 데이터
-      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
-      onSetPage,                                                             // BoGrid pager 콜백
-      handleBtnAction, handleSelectAction,                                  // dispatch
-    };
-  },
-  template: /* html */`
-<bo-modal :show="true" @close="handleBtnAction('modal-close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
-    <span class="modal-title">
-      브랜드 선택
-      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-        {{ cfSiteNm }}
-      </span>
-    </span>
-    <span class="modal-close" @click="handleBtnAction('modal-close')">
-      ✕
-    </span>
-  </div>
-  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-    @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="brandId"
-    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)"
-    @row-dblclick="row => handleSelectAction('list-select', row)">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
-        선택
-      </button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="() => onSetPage(1)" />
-</bo-modal>
-`,
-};
-
-/* ── 사용자 선택 모달 (부서트리 + 멀티) ── */
-window.BoUserSelectModal = {
-  name: 'BoUserSelectModal',
-  inheritAttrs: false,
-  props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
-  },
-  emits: ['select', 'close'],
-  setup(props, { emit }) {
-    const { computed, reactive, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
-    /* ##### [01] 초기 변수 정의 #################################################### */
-
-    const depts = reactive([]);                          // 부서 전체
-    const deptCounts = reactive({});                     // 부서별 사용자 카운트
-    const expanded = reactive(new Set());                // 트리 펼침 상태
-    const uiState = reactive({
-      loading: false,
-      deptSearchValue: '',
-      selectedDeptId: null,
-    });
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50] });
-    const userList = reactive([]);                       // 현재 페이지 사용자 목록
-
-    /* ##### [02] 부서 트리 (재귀 빌드) ############################################## */
-
-    /* cfTree — BoDeptTreeNode 가 받는 단일 루트 노드 ("전체") */
-    const cfTree = computed(() => {
-      const searchVal = uiState.deptSearchValue.trim().toLowerCase();
-      const base = searchVal
-        ? depts.filter(d => d.useYn === 'Y' && (d.deptNm || '').toLowerCase().includes(searchVal))
-        : depts.filter(d => d.useYn === 'Y');
-
-      const build = (parentId) =>
-        base.filter(d => (d.parentDeptId || null) === (parentId || null))
-          .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-          .map(d => ({ ...d, children: build(d.deptId) }));
-
-      return { deptId: null, deptNm: '전체', children: build(null) };
-    });
-
-    /* ##### [03] 데이터 조회 ######################################################## */
-
-    /* fnBuildPagerNums — 페이지 번호 배열 생성 */
-    const fnBuildPagerNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-
-    /* fnLoadDepts — 부서 전체 로드 + 트리 자동 펼침 */
-    const fnLoadDepts = async () => {
-      try {
-        const deptRes = await boApiSvc.syDept.getList({ pageSize: 10000 }, '사용자선택', '부서조회');
-        depts.splice(0, depts.length, ...(deptRes.data?.data || []));
-        /* 트리 기본 펼침 — 모든 부서 노드 + 루트 ("전체") */
-        expanded.clear();
-        expanded.add(null);
-        depts.forEach(d => expanded.add(d.deptId));
-      } catch (e) { depts.splice(0); }
-    };
-
-    /* fnLoadDeptCounts — 부서별 사용자 카운트 (ACTIVE 고정) */
-    const fnLoadDeptCounts = async () => {
-      try {
-        const params = { userStatusCd: 'ACTIVE' };
-        if (searchParam.searchValue.trim()) params.searchValue = searchParam.searchValue.trim();
-        const res = await boApiSvc.syUser.getDeptTreeNodeCounts(params, '사용자선택', '부서별카운트');
-        const rows = res.data?.data || [];
-        Object.keys(deptCounts).forEach(k => { delete deptCounts[k]; });
-        for (const r of rows) { if (r && r.deptId != null) deptCounts[r.deptId] = r.cnt; }
-      } catch (e) { /* silent */ }
-    };
-
-    /* handleSearchUsers — 사용자 페이지 조회 (ACTIVE 고정) */
-    const handleSearchUsers = async () => {
-      uiState.loading = true;
-      userList.splice(0, userList.length);
-      pager.pageTotalCount = 0;
-      pager.pageTotalPage = 1;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, userStatusCd: 'ACTIVE' };
-        if (searchParam.searchValue.trim()) params.searchValue = searchParam.searchValue.trim();
-        if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
-        const res = await boApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
-        const d = res.data?.data;
-        userList.splice(0, userList.length, ...(d?.pageList || d?.list || []));
-        pager.pageTotalCount = d?.pageTotalCount || 0;
-        pager.pageTotalPage = d?.pageTotalPage || 1;
-        fnBuildPagerNums();
-      } catch (e) { userList.splice(0, userList.length); } finally { uiState.loading = false; }
-    };
-
-    /* handleSearchList — 초기/전체 조회 (부서 + 카운트 + 사용자) */
-    const handleSearchList = async () => {
-      uiState.loading = true;
-      try {
-        await Promise.all([fnLoadDepts(), fnLoadDeptCounts()]);
-      } finally { uiState.loading = false; }
-      await handleSearchUsers();
-    };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-
-    /* ##### [04] 선택 처리 ######################################################### */
-
-    /* handlePickUser — 단건 선택 → 즉시 emit + 모달 닫기 */
-    const handlePickUser = (u) => {
-      emit('select', [u]);
-      if (props.onCallback) props.onCallback(props.modalName, null, [u]);
+    const onClose = () => {
       emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* onSearch — 검색 (페이지 1 부터) */
-    const onSearch = async () => {
-      pager.pageNo = 1;
-      await fnLoadDeptCounts();
-      await handleSearchUsers();
-    };
-
-    /* onReset — 초기화 */
-    const onReset = async () => {
-      searchParam.searchValue = '';
-      uiState.selectedDeptId = null;
-      pager.pageNo = 1;
-      await fnLoadDeptCounts();
-      await handleSearchUsers();
-    };
-
-    /* setPage — 페이지 이동 */
-    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchUsers(); } };
-    /* onSizeChange — 사이즈 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchUsers(); };
-
-    /* ##### [05] dispatch ########################################################## */
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ BoUserSelectModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        return onSearch();
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      } else if (cmd === 'deptTree-expandAll') {
-        depts.forEach(d => expanded.add(d.deptId));
-        return;
-      } else if (cmd === 'deptTree-collapseAll') {
-        expanded.clear();
-        return;
-      } else if (cmd === 'deptTree-toggle') {
-        if (expanded.has(param)) expanded.delete(param); else expanded.add(param);
-        return;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ BoUserSelectModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'deptTree-select') {
-        uiState.selectedDeptId = param;
-        pager.pageNo = 1;
-        return handleSearchUsers();
-      } else if (cmd === 'users-pick') {
-        return handlePickUser(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* ##### [06] 컬럼 정의 ######################################################### */
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '이름 / 로그인ID / 이메일 검색' },
-    ];
-
-    /* userGridColumns — 사용자 목록 그리드 컬럼 (SyUserMng 패턴 준용) */
-    const userGridColumns = [
-      { key: 'userNm',       label: '이름',
-        cellInnerStyle: 'font-weight:600;color:#1a1a2e;' },
-      { key: 'userEmail',    label: '이메일' },
-      { key: 'userPhone',    label: '연락처' },
-      { key: 'deptNm',       label: '부서', cellStyle: 'color:#666;' },
-      { key: '_act',         label: '선택', style: 'width:80px;text-align:center;', html: true,
-        fmt: () => `<button class="btn btn_select" data-act="pick">선택</button>` },
-    ];
-
-    return {
-      cfSiteNm, depts, deptCounts, expanded, uiState, searchParam, pager, userList, cfTree,  // 데이터
-      baseSearchColumns, userGridColumns,                                  // 컬럼 정의
-      setPage, onSizeChange,                                                // BoGrid pager 콜백
-      handleBtnAction, handleSelectAction,                                 // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" width="1000px" max-width="95vw" height="auto" max-height="86vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="background:#fff;border-radius:14px;width:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <!-- ===== ■. 헤더 ===================================================== -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 50%,#ffd5e1 100%);">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:16px;font-weight:800;color:#1a1a2e;">
-          👤 사용자 선택
-        </span>
-        <span style="font-size:11px;font-weight:600;color:#2563eb;background:#fff;padding:2px 10px;border-radius:20px;">
-          {{ cfSiteNm }}
-        </span>
-      </div>
-      <span style="cursor:pointer;font-size:22px;color:#888;line-height:1;" @click="handleBtnAction('modal-close')">
-        ✕
-      </span>
-    </div>
-    <!-- ===== ■. 검색 영역 ================================================== -->
-    <div style="padding:10px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="uiState.loading"
-        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-    </div>
-    <!-- ===== ■. 바디 (좌:부서트리 / 우:사용자목록) ============================= -->
-    <div style="display:flex;min-height:0;overflow:hidden;">
-      <!-- ===== ■.■. 좌: 부서 트리 ========================================== -->
-      <div style="width:240px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#fafbfc;">
-        <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
-          <div style="font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">
-            📁 부서
-          </div>
-          <input v-model="uiState.deptSearchValue" placeholder="🔍 부서 검색"
-            style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
-        </div>
-        <div style="display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid #ebebeb;">
-          <button class="btn btn_expand_all" @click="handleBtnAction('deptTree-expandAll')" style="flex:1;font-size:11px;padding:3px 4px;">
-            ▼ 전체펼치기
-          </button>
-          <button class="btn btn_collapse_all" @click="handleBtnAction('deptTree-collapseAll')" style="flex:1;font-size:11px;padding:3px 4px;">
-            ▶ 전체닫기
-          </button>
-        </div>
-        <div style="flex:1;overflow-y:auto;padding:6px;max-height:560px;">
-          <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedDeptId"
-            :on-toggle="id => handleBtnAction('deptTree-toggle', id)"
-            :on-select="id => handleSelectAction('deptTree-select', id)"
-            :depth="0" :counts="deptCounts" />
-        </div>
-      </div>
-      <!-- ===== ■.■. 우: 사용자 목록 ======================================== -->
-      <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff;">
-        <!-- ===== ■.■.■. 카운트 바 =========================================== -->
-        <div style="display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
-          <span style="margin-left:auto;font-size:12px;color:#9ca3af;">
-            사용자목록
-            <b style="color:#e8587a;margin:0 2px;">
-              {{ pager.pageTotalCount }}
-            </b>
-            건
-          </span>
-        </div>
-        <!-- ===== ■.■.■. 그리드 + 페이저 (BoGrid 내장) ======================= -->
-        <div style="display:flex;flex-direction:column;">
-          <bo-grid :columns="userGridColumns" :rows="userList" :pager="pager" row-key="userId"
-            row-clickable
-            :empty-text="uiState.loading ? '로딩 중...' : '🔍 검색 결과가 없습니다.'"
-            @row-click="row => handleSelectAction('users-pick', row)"
-            @row-dblclick="row => handleSelectAction('users-pick', row)"
- />
-          <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-        </div>
-      </div>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal popup-code="site" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
+window.VendorSelectModal = {
+  name: 'VendorSelectModal',
+  inheritAttrs: false,
+  /* 판매업체 선택 — 팝업관리(cm_popup 'vendor') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
+  props: {
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-/* ── 회원 선택 모달 ── */
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
+    };
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
+    };
+
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
+  },
+  template: /* html */`
+<bo-pick-modal popup-code="vendor" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
+`,
+};
+window.BrandSelectModal = {
+  name: 'BrandSelectModal',
+  inheritAttrs: false,
+  /* 브랜드 선택 — 팝업관리(cm_popup 'brand') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
+  props: {
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
+
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
+    };
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
+    };
+
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
+  },
+  template: /* html */`
+<bo-pick-modal popup-code="brand" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
+`,
+};
+window.BoUserSelectModal = {
+  name: 'BoUserSelectModal',
+  inheritAttrs: false,
+  /* 사용자 선택(부서 트리) — 팝업관리(cm_popup 'userByDept') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
+  props: {
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
+
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload).
+       이 모달은 원래 다건 선택 UI 라 호출부가 배열을 기대한다 — 단건도 배열로 감싼다. */
+    const onSelect = (row) => {
+      const users = row ? [row] : [];
+      emit('select', users);
+      if (props.onCallback) props.onCallback(props.modalName, null, users);
+    };
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
+    };
+
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
+  },
+  template: /* html */`
+<bo-pick-modal popup-code="userByDept" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
+`,
+};
 window.MemberSelectModal = {
   name: 'MemberSelectModal',
   inheritAttrs: false,
+  /* 회원 선택 — 팝업관리(cm_popup 'member') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pageSize = 8;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
-    const searchParam = reactive({ searchType: '', searchValue: '' });
-    const list = reactive([]);
-    const loading = ref(false);
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ MemberSelectModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      // 페이지 이동
-      } else if (cmd === 'pager-set') {
-        return onSetPage(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
+    };
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ MemberSelectModal : handleSelectAction -> ', cmd, param);
-      // 회원 선택
-      if (cmd === 'list-select') {
-        emit('select', param);
-        if (props.onCallback) props.onCallback(props.modalName, null, param);
-        return;
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      loading.value = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'memberNm,memberEmail,memberId';
-        }
-        const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
-        const data = res.data?.data;
-        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
-    };
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* handleSearchListWrap */
-    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
-    onMounted(() => { handleSearchListWrap(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-
-    /* onSetPage */
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'memberNm',    label: '이름' },
-          { value: 'memberEmail', label: '이메일' },
-          { value: 'memberId',    label: 'ID' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 */
-    const listGridColumns = [
-      { key: 'memberNm',    label: '이름', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
-      { key: 'memberEmail', label: '이메일', cellStyle: 'color:#888;font-size:11px;', fmt: (v, row) => row.memberEmail || row.email || '-' },
-      { key: '_id',         label: 'ID', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v, row) => row.memberId || row.userId || '-' },
-    ];
-
-    return {
-      cfSiteNm, searchParam, list, loading, pager,                          // 데이터
-      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
-      onSetPage,                                                             // BoGrid pager 콜백
-      handleBtnAction, handleSelectAction,                                  // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" @close="handleBtnAction('modal-close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
-    <span class="modal-title">
-      회원 선택
-      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-        {{ cfSiteNm }}
-      </span>
-    </span>
-    <span class="modal-close" @click="handleBtnAction('modal-close')">
-      ✕
-    </span>
-  </div>
-  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-    @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="memberId"
-    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)"
-    @row-dblclick="row => handleSelectAction('list-select', row)">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
-        선택
-      </button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="() => onSetPage(1)" />
-</bo-modal>
+<bo-pick-modal popup-code="member" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── 주문 선택 모달 ── */
 window.OrderSelectModal = {
   name: 'OrderSelectModal',
   inheritAttrs: false,
+  /* 주문 선택 — 팝업관리(cm_popup 'order') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pageSize = 8;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
-    const searchParam = reactive({ searchType: '', searchValue: '' });
-    const list = reactive([]);
-    const loading = ref(false);
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ OrderSelectModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      // 페이지 이동
-      } else if (cmd === 'pager-set') {
-        return onSetPage(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
+    };
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ OrderSelectModal : handleSelectAction -> ', cmd, param);
-      // 주문 선택
-      if (cmd === 'list-select') {
-        emit('select', param);
-        if (props.onCallback) props.onCallback(props.modalName, null, param);
-        return;
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      loading.value = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'orderId,memberNm,prodNm';
-        }
-        const res = await boApiSvc.odOrder.getPage(params, '주문관리', '목록조회');
-        const data = res.data?.data;
-        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
-    };
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* handleSearchListWrap */
-    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
-    onMounted(() => { handleSearchListWrap(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-
-    /* onSetPage */
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'orderId',  label: '주문ID' },
-          { value: 'memberNm', label: '회원명' },
-          { value: 'prodNm',   label: '상품명' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 */
-    const listGridColumns = [
-      { key: 'orderId',  label: '주문ID', mono: true, cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
-      { key: '_member',  label: '회원', cellStyle: 'color:#888;font-size:11px;', fmt: (v, row) => row.memberNm || row.userNm || '-' },
-      { key: '_total',   label: '결제금액', align: 'right', cellStyle: 'color:#389e0d;font-weight:700;', fmt: (v, row) => (row.totalAmt || row.totalPrice || 0).toLocaleString() + '원' },
-    ];
-
-    return {
-      cfSiteNm, searchParam, list, loading, pager,                          // 데이터
-      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
-      onSetPage,                                                             // BoGrid pager 콜백
-      handleBtnAction, handleSelectAction,                                  // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" @close="handleBtnAction('modal-close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
-    <span class="modal-title">
-      주문 선택
-      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-        {{ cfSiteNm }}
-      </span>
-    </span>
-    <span class="modal-close" @click="handleBtnAction('modal-close')">
-      ✕
-    </span>
-  </div>
-  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-    @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="orderId"
-    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)"
-    @row-dblclick="row => handleSelectAction('list-select', row)">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
-        선택
-      </button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="() => onSetPage(1)" />
-</bo-modal>
+<bo-pick-modal popup-code="order" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── 게시판 선택 모달 ── */
 window.BbmSelectModal = {
   name: 'BbmSelectModal',
   inheritAttrs: false,
+  /* 게시판 선택 — 팝업관리(cm_popup 'bbm') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, watch, onMounted } = Vue;
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pageSize = 6;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
-    const searchParam = reactive({ searchType: '', searchValue: '' });
-    const list = reactive([]);
-    const loading = ref(false);
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ BbmSelectModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      // 페이지 이동
-      } else if (cmd === 'pager-set') {
-        return onSetPage(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
+    };
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ BbmSelectModal : handleSelectAction -> ', cmd, param);
-      // 게시판 선택
-      if (cmd === 'list-select') {
-        emit('select', param);
-        if (props.onCallback) props.onCallback(props.modalName, null, param);
-        return;
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      loading.value = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'bbmNm,bbmCode,bbmType';
-        }
-        const res = await boApiSvc.syBbm.getPage(params, '게시판모드관리', '목록조회');
-        const data = res.data?.data;
-        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
-    };
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* handleSearchListWrap */
-    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
-    onMounted(() => { handleSearchListWrap(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-
-    /* onSetPage */
-    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
-
-    /* fnTypeBadge */
-    const fnTypeBadge = t => ({ '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' }[t] || 'badge-gray');
-
-    /* fnScopeBadge */
-    const fnScopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'bbmNm',   label: '게시판명' },
-          { value: 'bbmCode', label: '코드' },
-          { value: 'bbmType', label: '유형' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 */
-    const listGridColumns = [
-      { key: 'bbmNm',     label: '게시판명', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
-      { key: 'bbmType',   label: '유형',     badge: (row) => fnTypeBadge(row.bbmType), fmt: (v) => v || '-' },
-      { key: 'scopeType', label: '공개범위', badge: (row) => fnScopeBadge(row.scopeType), fmt: (v) => v || '-' },
-      { key: 'bbmCode',   label: '코드',     mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
-      { key: 'bbmId',     label: 'ID',       cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
-    ];
-
-    return {
-      cfSiteNm, searchParam, list, loading, pager,                          // 데이터
-      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
-      onSetPage,                                                             // BoGrid pager 콜백
-      fnTypeBadge, fnScopeBadge,                                            // 헬퍼
-      handleBtnAction, handleSelectAction,                                  // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="640px" @close="handleBtnAction('modal-close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
-    <span class="modal-title">
-      게시판 선택
-      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-        {{ cfSiteNm }}
-      </span>
-    </span>
-    <span class="modal-close" @click="handleBtnAction('modal-close')">
-      ✕
-    </span>
-  </div>
-  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-    @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="bbmId"
-    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="row => handleSelectAction('list-select', row)"
-    @row-dblclick="row => handleSelectAction('list-select', row)">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
-        선택
-      </button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="() => onSetPage(1)" />
-</bo-modal>
+<bo-pick-modal popup-code="bbm" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── 템플릿 미리보기 모달 ── */
 window.TemplatePreviewModal = {
   name: 'TemplatePreviewModal',
   inheritAttrs: false,
@@ -1823,831 +958,143 @@ window.TemplateSendModal = {
 window.RoleTreeModal = {
   name: 'RoleTreeModal',
   inheritAttrs: false,
+  /* 권한 트리 선택 — 팝업관리(cm_popup 'role') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    excludeId:     { type: String,    default: null },                    // 제외할 ID
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    excludeId: { type: String,   default: null },                    // 목록에서 제외할 ID
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, computed, onMounted, watch } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const allRoles = reactive([]);
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
+    const cfExcludeIds = Vue.computed(() => props.excludeId ? [props.excludeId] : []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      try {
-        const res = await boApiSvc.syRole.getList({ pageSize: 10000 }, '역할관리', '목록조회');
-        allRoles.splice(0, allRoles.length, ...(res.data?.data || []));
-      } catch (e) { allRoles.splice(0, allRoles.length); }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-
-    /* fnBuildTree */
-    const fnBuildTree = (items, parentId, depth) => {
-      return items
-        .filter(r => (r.parentRoleId || null) === (parentId || null))
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(r => ({ ...r, _depth: depth, _kids: fnBuildTree(items, r.roleId, depth + 1) }));
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* fnFlatten */
-    const fnFlatten = (nodes, result = []) => {
-      nodes.forEach(n => { result.push(n); fnFlatten(n._kids, result); });
-      return result;
-    };
-
-    const cfFlatTree = computed(() => {
-      const excSet = new Set();
-      if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); allRoles.filter(r => r.parentRoleId === id).forEach(r => mark(r.roleId)); };
-        mark(props.excludeId);
-      }
-      const base = allRoles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
-      const kwVal = searchParam.searchValue.trim().toLowerCase();
-      const list  = kwVal ? base.filter(r => (r.roleNm || '').toLowerCase().includes(kwVal) || (r.roleCode || '').toLowerCase().includes(kwVal)) : base;
-      return fnFlatten(fnBuildTree(list, null, 0));
-    });
-
-    /* fnBuildPagerNums + cfPageRows (클라이언트 페이징) */
-    const fnBuildPagerNums = () => {
-      pager.pageTotalCount = cfFlatTree.value.length;
-      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-    const cfPageRows = computed(() => {
-      fnBuildPagerNums();
-      const start = (pager.pageNo - 1) * pager.pageSize;
-      return cfFlatTree.value.slice(start, start + pager.pageSize);
-    });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
-
-    /* onSearch / onReset */
-    const onSearch    = () => { pager.pageNo = 1; };
-    const onReset     = () => { searchParam.searchValue = ''; pager.pageNo = 1; };
-
-    /* onSetPage / onSizeChange */
-    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = ()  => { pager.pageNo = 1; };
-
-    /* onSelect */
-    const onSelect = (role) => {
-      emit('select', { roleId: role.roleId, roleNm: role.roleNm });
-      if (props.onCallback) props.onCallback(props.modalName, null, { roleId: role.roleId, roleNm: role.roleNm });
-    };
-
-    /* onSelectNone */
-    const onSelectNone = () => {
-      emit('select', { roleId: null, roleNm: '' });
-      if (props.onCallback) props.onCallback(props.modalName, null, { roleId: null, roleNm: '' });
-    };
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ RoleTreeModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        return onSearch();
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ RoleTreeModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'rolesTree-select') {
-        return onSelect(param);
-      } else if (cmd === 'rolesTree-select-none') {
-        return onSelectNone();
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '역할명 또는 역할코드 검색' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 (트리 들여쓰기 + 코드) */
-    const _MARKERS = ['●', '◦', '·', '-'];
-    const _MARKER_COLORS = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
-    const listGridColumns = [
-      { key: '_role', label: '역할', html: true, fmt: (v, row) => {
-        const d = row._depth || 0;
-        const m = _MARKERS[Math.min(d, 3)];
-        const c = _MARKER_COLORS[Math.min(d, 3)];
-        const sz = d === 0 ? '7px' : '12px';
-        return `<span style="display:inline-block;margin-left:${d*14}px;margin-right:7px;font-weight:700;font-size:${sz};color:${c};">${m}</span>`
-             + `<span style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.roleNm || '-'}</span>`
-             + `<code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">${row.roleCode || ''}</code>`;
-      } },
-    ];
-
-    return {
-      cfSiteNm, searchParam, cfPageRows, pager,                               // 데이터
-      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
-      onSetPage, onSizeChange,                                                // 페이저 콜백
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="720px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <div class="tree-modal-header">
-      <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">
-          상위역할 선택
-          <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-            {{ cfSiteNm }}
-          </span>
-        </div>
-        <div style="font-size:11px;color:#aaa;margin-top:1px;">
-          역할을 클릭하면 상위역할로 지정됩니다
-        </div>
-      </div>
-      <span class="modal-close" @click="handleBtnAction('modal-close')">
-        ✕
-      </span>
-    </div>
-    <!-- 검색 영역 -->
-    <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-    </div>
-    <!-- 상위없음 옵션 (고정 행) -->
-    <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;flex-shrink:0;"
-      @click="handleSelectAction('rolesTree-select-none')">
-      <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
-        ●
-      </span>
-      <div style="flex:1;">
-        <span style="font-size:13px;font-weight:700;color:#1a1a2e;">
-          상위없음
-        </span>
-        <span style="font-size:11px;color:#aaa;margin-left:6px;">
-          최상위 권한으로 등록
-        </span>
-      </div>
-    </div>
-    <!-- 목록 + 페이저 (BoGrid 내장) -->
-    <div style="flex:1;overflow-y:auto;">
-      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="roleId" row-clickable
-        :list-title="'총 ' + pager.pageTotalCount + '건'"
-        :empty-text="searchParam.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.'"
-        @row-click="row => handleSelectAction('rolesTree-select', row)"
- />
-      <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-    </div>
-    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
-        취소
-      </button>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal popup-code="role" clearable :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
 window.MenuTreeModal = {
   name: 'MenuTreeModal',
   inheritAttrs: false,
+  /* 메뉴 트리 선택 — 팝업관리(cm_popup 'menu') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    excludeId:     { type: String,    default: null },                    // 제외할 ID
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    excludeId: { type: String,   default: null },                    // 목록에서 제외할 ID
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, computed, onMounted, watch } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const allMenus = reactive([]);
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
+    const cfExcludeIds = Vue.computed(() => props.excludeId ? [props.excludeId] : []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      try {
-        const res = await boApiSvc.syMenu.getList({ pageSize: 10000 }, '메뉴관리', '목록조회');
-        allMenus.splice(0, allMenus.length, ...(res.data?.data || []));
-      } catch (e) { allMenus.splice(0, allMenus.length); }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-
-    /* fnBuildTree */
-    const fnBuildTree = (items, parentId, depth) => {
-      return items
-        .filter(m => (m.parentMenuId || null) === (parentId || null))
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(m => ({ ...m, _depth: depth, _kids: fnBuildTree(items, m.menuId, depth + 1) }));
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* fnFlatten */
-    const fnFlatten = (nodes, result = []) => {
-      nodes.forEach(n => { result.push(n); fnFlatten(n._kids, result); });
-      return result;
-    };
-
-    const cfFlatTree = computed(() => {
-      const excSet = new Set();
-      if (props.excludeId) {
-        const markExclude = (id) => {
-          excSet.add(id);
-          allMenus.filter(m => m.parentMenuId === id).forEach(m => markExclude(m.menuId));
-        };
-        markExclude(props.excludeId);
-      }
-      const base = allMenus.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
-      const kwVal = searchParam.searchValue.trim().toLowerCase();
-      const list  = kwVal
-        ? base.filter(m => (m.menuNm || '').toLowerCase().includes(kwVal) || (m.menuCode || '').toLowerCase().includes(kwVal))
-        : base;
-      return fnFlatten(fnBuildTree(list, null, 0));
-    });
-
-    /* fnBuildPagerNums + cfPageRows */
-    const fnBuildPagerNums = () => {
-      pager.pageTotalCount = cfFlatTree.value.length;
-      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-    const cfPageRows = computed(() => {
-      fnBuildPagerNums();
-      const start = (pager.pageNo - 1) * pager.pageSize;
-      return cfFlatTree.value.slice(start, start + pager.pageSize);
-    });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
-
-    /* onSetPage / onSizeChange */
-    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = ()  => { pager.pageNo = 1; };
-
-    /* onSelect */
-    const onSelect = (menu) => {
-      emit('select', { menuId: menu.menuId, menuNm: menu.menuNm });
-      if (props.onCallback) props.onCallback(props.modalName, null, { menuId: menu.menuId, menuNm: menu.menuNm });
-    };
-
-    /* onSelectNone */
-    const onSelectNone = () => {
-      emit('select', { menuId: null, menuNm: '' });
-      if (props.onCallback) props.onCallback(props.modalName, null, { menuId: null, menuNm: '' });
-    };
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ MenuTreeModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        pager.pageNo = 1;
-      } else if (cmd === 'searchParam-reset') {
-        searchParam.searchValue = ''; pager.pageNo = 1;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ MenuTreeModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'menuTree-select') {
-        return onSelect(param);
-      } else if (cmd === 'menuTree-select-none') {
-        return onSelectNone();
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '메뉴명 또는 메뉴코드 검색' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 (트리 들여쓰기 + 코드) */
-    const _MARKERS = ['●', '◦', '·', '-'];
-    const _MARKER_COLORS = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
-    const listGridColumns = [
-      { key: '_menu', label: '메뉴', html: true, fmt: (v, row) => {
-        const d = row._depth || 0;
-        const m = _MARKERS[Math.min(d, 3)];
-        const c = _MARKER_COLORS[Math.min(d, 3)];
-        const sz = d === 0 ? '7px' : '12px';
-        return `<span style="display:inline-block;margin-left:${d*14}px;margin-right:7px;font-weight:700;font-size:${sz};color:${c};">${m}</span>`
-             + `<span style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.menuNm || '-'}</span>`
-             + `<code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">${row.menuCode || ''}</code>`;
-      } },
-    ];
-
-    return {
-      cfSiteNm, searchParam, cfPageRows, pager,                               // 데이터
-      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
-      onSetPage, onSizeChange,                                                // 페이저 콜백
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="720px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <!-- ── 헤더 ── -->
-    <div class="tree-modal-header">
-      <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">
-          상위메뉴 선택
-          <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-            {{ cfSiteNm }}
-          </span>
-        </div>
-        <div style="font-size:11px;color:#aaa;margin-top:1px;">
-          메뉴를 클릭하면 상위메뉴로 지정됩니다
-        </div>
-      </div>
-      <span class="modal-close" @click="handleBtnAction('modal-close')">
-        ✕
-      </span>
-    </div>
-    <!-- ── 검색 ── -->
-    <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-    </div>
-    <!-- ── 상위없음 옵션 (고정 행) ── -->
-    <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;flex-shrink:0;"
-      @click="handleSelectAction('menuTree-select-none')">
-      <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
-        ●
-      </span>
-      <div style="flex:1;">
-        <span style="font-size:13px;font-weight:700;color:#1a1a2e;">
-          상위없음
-        </span>
-        <span style="font-size:11px;color:#aaa;margin-left:6px;">
-          최상위 메뉴로 등록
-        </span>
-      </div>
-    </div>
-    <!-- ── 목록 + 페이저 ── -->
-    <div style="flex:1;overflow-y:auto;">
-      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="menuId" row-clickable
-        :list-title="'총 ' + pager.pageTotalCount + '건'"
-        :empty-text="searchParam.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.'"
-        @row-click="row => handleSelectAction('menuTree-select', row)"
- />
-      <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-    </div>
-    <!-- ── 푸터 ── -->
-    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
-        취소
-      </button>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal popup-code="menu" clearable :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
 window.DeptTreeModal = {
   name: 'DeptTreeModal',
   inheritAttrs: false,
+  /* 부서 트리 선택 — 팝업관리(cm_popup 'dept') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    excludeId:     { type: String,    default: null },                    // 제외할 ID
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    excludeId: { type: String,   default: null },                    // 목록에서 제외할 ID
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, computed, onMounted, watch } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const allDepts = reactive([]);
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
+    const cfExcludeIds = Vue.computed(() => props.excludeId ? [props.excludeId] : []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      try {
-        const res = await boApiSvc.syDept.getList({ pageSize: 10000 }, '부서관리', '목록조회');
-        allDepts.splice(0, allDepts.length, ...(res.data?.data || []));
-      } catch (e) { allDepts.splice(0, allDepts.length); }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-
-    /* ── 트리 구성 ── */
-    const buildTree = (items, parentId, depth) => {
-      return items
-        .filter(d => (d.parentDeptId || null) === (parentId || null))
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(d => ({ ...d, _depth: depth, _kids: buildTree(items, d.deptId, depth + 1) }));
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* flatten */
-    const flatten = (nodes, result = []) => {
-      nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
-      return result;
-    };
-
-    const cfFlatTree = computed(() => {
-      const excSet = new Set();
-      if (props.excludeId) {
-        const markExclude = (id) => {
-          excSet.add(id);
-          allDepts.filter(d => d.parentDeptId === id).forEach(d => markExclude(d.deptId));
-        };
-        markExclude(props.excludeId);
-      }
-      const base = allDepts.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
-      const kwVal = searchParam.searchValue.trim().toLowerCase();
-      const list  = kwVal
-        ? base.filter(d => (d.deptNm || '').toLowerCase().includes(kwVal) || (d.deptCode || '').toLowerCase().includes(kwVal))
-        : base;
-      return flatten(buildTree(list, null, 0));
-    });
-
-    /* fnBuildPagerNums + cfPageRows */
-    const fnBuildPagerNums = () => {
-      pager.pageTotalCount = cfFlatTree.value.length;
-      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-    const cfPageRows = computed(() => {
-      fnBuildPagerNums();
-      const start = (pager.pageNo - 1) * pager.pageSize;
-      return cfFlatTree.value.slice(start, start + pager.pageSize);
-    });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
-
-    /* onSetPage / onSizeChange */
-    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = ()  => { pager.pageNo = 1; };
-
-    /* select */
-    const select = (dept) => {
-      emit('select', { deptId: dept.deptId, deptNm: dept.deptNm });
-      if (props.onCallback) props.onCallback(props.modalName, null, { deptId: dept.deptId, deptNm: dept.deptNm });
-    };
-
-    /* selectNone */
-    const selectNone = () => {
-      emit('select', { deptId: null, deptNm: '' });
-      if (props.onCallback) props.onCallback(props.modalName, null, { deptId: null, deptNm: '' });
-    };
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ DeptTreeModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        pager.pageNo = 1;
-      } else if (cmd === 'searchParam-reset') {
-        searchParam.searchValue = ''; pager.pageNo = 1;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ DeptTreeModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'deptTree-select') {
-        return select(param);
-      } else if (cmd === 'deptTree-select-none') {
-        return selectNone();
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '부서명 또는 부서코드 검색' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 (트리 들여쓰기 + 코드) */
-    const _MARKERS = ['●', '◦', '·', '-'];
-    const _MARKER_COLORS = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
-    const listGridColumns = [
-      { key: '_dept', label: '부서', html: true, fmt: (v, row) => {
-        const d = row._depth || 0;
-        const m = _MARKERS[Math.min(d, 3)];
-        const c = _MARKER_COLORS[Math.min(d, 3)];
-        const sz = d === 0 ? '7px' : '12px';
-        return `<span style="display:inline-block;margin-left:${d*14}px;margin-right:7px;font-weight:700;font-size:${sz};color:${c};">${m}</span>`
-             + `<span style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.deptNm || '-'}</span>`
-             + `<code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">${row.deptCode || ''}</code>`;
-      } },
-    ];
-
-    return {
-      cfSiteNm, searchParam, cfPageRows, pager,                               // 데이터
-      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
-      onSetPage, onSizeChange,                                                // 페이저 콜백
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="720px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <!-- ── 헤더 ── -->
-    <div class="tree-modal-header">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:18px;line-height:1;">
-          🌳
-        </span>
-        <div>
-          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">
-            상위부서 선택
-            <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-              {{ cfSiteNm }}
-            </span>
-          </div>
-          <div style="font-size:11px;color:#aaa;margin-top:1px;">
-            부서를 클릭하면 상위부서로 지정됩니다
-          </div>
-        </div>
-      </div>
-      <span class="modal-close" @click="handleBtnAction('modal-close')">
-        ✕
-      </span>
-    </div>
-    <!-- ── 검색 ── -->
-    <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-    </div>
-    <!-- ── 상위없음 옵션 (고정 행) ── -->
-    <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;flex-shrink:0;"
-      @click="handleSelectAction('deptTree-select-none')">
-      <div style="width:4px;align-self:stretch;border-radius:3px;background:#e8587a;flex-shrink:0;opacity:0.7;">
-      </div>
-      <span style="font-size:20px;flex-shrink:0;line-height:1;">
-        🏢
-      </span>
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:700;color:#1a1a2e;">
-          상위없음
-        </div>
-        <div style="font-size:11px;color:#aaa;margin-top:2px;">
-          최상위 부서로 등록
-        </div>
-      </div>
-    </div>
-    <!-- ── 목록 + 페이저 ── -->
-    <div style="flex:1;overflow-y:auto;">
-      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="deptId" row-clickable
-        :list-title="'총 ' + pager.pageTotalCount + '건'"
-        :empty-text="searchParam.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.'"
-        @row-click="row => handleSelectAction('deptTree-select', row)"
- />
-      <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-    </div>
-    <!-- ── 푸터 ── -->
-    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
-        취소
-      </button>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal popup-code="dept" clearable :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ─────────────────────────────────────────────
-   CategoryTreeModal  상위카테고리 선택 팝업
-───────────────────────────────────────────── */
 window.CategoryTreeModal = {
   name: 'CategoryTreeModal',
   inheritAttrs: false,
+  /* 카테고리 트리 선택 — 팝업관리(cm_popup 'category') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
-    excludeId:     { type: String,    default: null },                    // 제외할 ID
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    dispDataset: { type: Object,   default: () => ({}) },              // (호환용) 미사용
+    excludeId: { type: String,   default: null },                    // 목록에서 제외할 ID
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, computed, onMounted, watch } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const allCategories = reactive([]);
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
+    const cfExcludeIds = Vue.computed(() => props.excludeId ? [props.excludeId] : []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      try {
-        const res = await boApiSvc.pdCategory.getList({ pageSize: 10000 }, '카테고리관리', '목록조회');
-        allCategories.splice(0, allCategories.length, ...(res.data?.data || []));
-      } catch (e) { allCategories.splice(0, allCategories.length); }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-    onMounted(() => { handleSearchList(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-
-    /* buildTree */
-    const buildTree = (items, parentId, depth) => {
-      return items
-        .filter(c => (c.parentCategoryId || null) === (parentId || null))
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(c => ({ ...c, _depth: depth, _kids: buildTree(items, c.categoryId, depth + 1) }));
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* flatten */
-    const flatten = (nodes, result = []) => {
-      nodes.forEach(n => { result.push(n); flatten(n._kids, result); });
-      return result;
-    };
-
-    const cfFlatTree = computed(() => {
-      const excSet = new Set();
-      if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); allCategories.filter(c => c.parentCategoryId === id).forEach(c => mark(c.categoryId)); };
-        mark(props.excludeId);
-      }
-      const base   = allCategories.filter(c => !excSet.has(c.categoryId) && (c.useYn === 'Y' || c.status === '활성'));
-      const kwVal  = searchParam.searchValue.trim().toLowerCase();
-      const list   = kwVal ? base.filter(c => (c.categoryNm || '').toLowerCase().includes(kwVal)) : base;
-      return flatten(buildTree(list, null, 0));
-    });
-
-    /* fnBuildPagerNums + cfPageRows */
-    const fnBuildPagerNums = () => {
-      pager.pageTotalCount = cfFlatTree.value.length;
-      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-    const cfPageRows = computed(() => {
-      fnBuildPagerNums();
-      const start = (pager.pageNo - 1) * pager.pageSize;
-      return cfFlatTree.value.slice(start, start + pager.pageSize);
-    });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
-
-    /* onSetPage / onSizeChange */
-    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = ()  => { pager.pageNo = 1; };
-
-    /* select */
-    const select     = (cat) => {
-      emit('select', { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
-      if (props.onCallback) props.onCallback(props.modalName, null, { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
-    };
-
-    /* selectNone */
-    const selectNone = () => {
-      emit('select', { categoryId: null, categoryNm: '' });
-      if (props.onCallback) props.onCallback(props.modalName, null, { categoryId: null, categoryNm: '' });
-    };
-    const cfSiteNm   = computed(() => boUtil.bofGetSiteNm());
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ CategoryTreeModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        pager.pageNo = 1;
-      } else if (cmd === 'searchParam-reset') {
-        searchParam.searchValue = ''; pager.pageNo = 1;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ CategoryTreeModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'categoryTree-select') {
-        return select(param);
-      } else if (cmd === 'categoryTree-select-none') {
-        return selectNone();
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '카테고리명 검색' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 (트리 들여쓰기 + 단계) */
-    const _MARKERS = ['●', '◦', '·', '-'];
-    const _MARKER_COLORS = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
-    const listGridColumns = [
-      { key: '_cat', label: '카테고리', html: true, fmt: (v, row) => {
-        const d = row._depth || 0;
-        const m = _MARKERS[Math.min(d, 3)];
-        const c = _MARKER_COLORS[Math.min(d, 3)];
-        const sz = d === 0 ? '7px' : '12px';
-        return `<span style="display:inline-block;margin-left:${d*14}px;margin-right:7px;font-weight:700;font-size:${sz};color:${c};">${m}</span>`
-             + `<span style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.categoryNm || '-'}</span>`
-             + `<span style="font-size:11px;color:#aaa;margin-left:6px;">${row.depth || ''}단계</span>`;
-      } },
-    ];
-
-    return {
-      cfSiteNm, searchParam, cfPageRows, pager,                               // 데이터
-      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
-      onSetPage, onSizeChange,                                                // 페이저 콜백
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="720px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <div class="tree-modal-header">
-      <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">
-          상위카테고리 선택
-          <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
-            {{ cfSiteNm }}
-          </span>
-        </div>
-        <div style="font-size:11px;color:#aaa;margin-top:1px;">
-          카테고리를 클릭하면 상위카테고리로 지정됩니다
-        </div>
-      </div>
-      <span class="modal-close" @click="handleBtnAction('modal-close')">
-        ✕
-      </span>
-    </div>
-    <!-- ── 검색 ── -->
-    <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-    </div>
-    <!-- ── 상위없음 옵션 (고정 행) ── -->
-    <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;flex-shrink:0;"
-      @click="handleSelectAction('categoryTree-select-none')">
-      <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
-        ●
-      </span>
-      <div style="flex:1;">
-        <span style="font-size:13px;font-weight:700;color:#1a1a2e;">
-          상위없음
-        </span>
-        <span style="font-size:11px;color:#aaa;margin-left:6px;">
-          최상위 카테고리로 등록
-        </span>
-      </div>
-    </div>
-    <!-- ── 목록 + 페이저 ── -->
-    <div style="flex:1;overflow-y:auto;">
-      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="categoryId" row-clickable
-        :list-title="'총 ' + pager.pageTotalCount + '건'"
-        :empty-text="searchParam.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.'"
-        @row-click="row => handleSelectAction('categoryTree-select', row)"
- />
-      <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-    </div>
-    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
-        취소
-      </button>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal popup-code="category" clearable :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── 위젯미리보기 모달 ─────────────────────────────────
-   Props:
-     show       Boolean   표시 여부
-     mode       String    'all' | 'single'
-                          all    → area 전체 위젯 (DispPanel)
-                          single → 현재 form 단일 위젯 (DispWidget)
-     tabLabel   String    탭 이름 (모달 제목용)
-     area       String    mode=all 시 사용할 영역코드
-     widgets    Array     mode=all 시 dispDataset.displays 배열
-     widget     Object    mode=single 시 미리볼 위젯 데이터 (form 스냅샷)
-   Emits: close
-   ─────────────────────────────────────────────────────────── */
 window.DispPreviewModal = {
   name: 'DispPreviewModal',
   inheritAttrs: false,
@@ -2901,209 +1348,40 @@ window.DispUiModal = {
 window.CategorySelectModal = {
   name: 'CategorySelectModal',
   inheritAttrs: false,
+  /* 카테고리 다중 선택 — 팝업관리(cm_popup 'category') 메타 기반 어댑터.
+     체크를 켰다 껐다 하다가 닫을 때 확정하는 기존 UX 라, 토글 모드로 로컬 선택을 누적한 뒤
+     기존 계약대로 categoryId 배열을 apply 로 올린다. */
   props: {
-    show:        { type: Boolean, default: false, reloadTrigger: { type: Number, default: 0 } },
-    selectedIds: { type: Array,   default: () => [] },
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    show:        { type: Boolean,  default: true },                   // 표시 여부
+    selectedIds: { type: Array,    default: () => ([]) },             // 초기 선택된 카테고리ID
+    modalName:   { type: String,   default: '' },                     // 모달 식별자
+    onCallback:  { type: Function, default: null },                   // 통합 콜백
   },
-  emits: ['close', 'apply'],
+  emits: ['apply', 'close'],
   setup(props, { emit }) {
-    const { reactive, computed, watch } = Vue;
-
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
-
-    /* cfAllCats — 활성 카테고리 (parent-child 평탄화, _depth 부여) */
-    const cfAllCats = computed(() => {
-      const all = ((window.dispDataset || {}).categories || [])
-        .filter(c => c.status === '활성')
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      const roots = all.filter(c => !c.parentCategoryId);
-      const out = [];
-      roots.forEach(r => {
-        out.push({ ...r, _depth: 0 });
-        all.filter(c => c.parentCategoryId === r.categoryId).forEach(c => out.push({ ...c, _depth: 1 }));
-      });
-      return out;
+    const localSel = Vue.reactive([...(props.selectedIds || [])]);
+    Vue.watch(() => props.selectedIds, (v) => {
+      localSel.splice(0, localSel.length, ...(v || []));
     });
 
-    /* cfFiltered — 검색어 필터링 (자식이 매치하면 부모도 함께 노출) */
-    const cfFiltered = computed(() => {
-      const kwv = searchParam.searchValue.trim().toLowerCase();
-      if (!kwv) return cfAllCats.value;
-      const matches = cfAllCats.value.filter(c => c.categoryNm.toLowerCase().includes(kwv));
-      const ids = new Set(matches.map(c => c.categoryId));
-      const parentIds = new Set(matches.map(c => c.parentCategoryId).filter(Boolean));
-      return cfAllCats.value.filter(c => ids.has(c.categoryId) || parentIds.has(c.categoryId));
-    });
-
-    /* fnBuildPagerNums + cfPageRows */
-    const fnBuildPagerNums = () => {
-      const total = cfFiltered.value.length;
-      pager.pageTotalCount = total;
-      pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.pageSize));
-      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    const onToggle = (row) => {
+      const id = row ? row.id : null;
+      if (id == null) return;
+      const i = localSel.findIndex(x => String(x) === String(id));
+      if (i >= 0) localSel.splice(i, 1); else localSel.push(id);
     };
-    const cfPageRows = computed(() => {
-      fnBuildPagerNums();
-      const start = (pager.pageNo - 1) * pager.pageSize;
-      return cfFiltered.value.slice(start, start + pager.pageSize);
-    });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
-
-    /* onSetPage / onSizeChange */
-    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
-
-    /* 선택 상태 (로컬 복사) */
-    const localSel = reactive(new Set());
-    watch(() => props.show, (v) => {
-      if (v) { localSel.clear(); props.selectedIds.forEach(id => localSel.add(id)); }
-    }, { immediate: true });
-
-    /* 전체 선택 (현재 필터된 전체 토글) */
-    const isAllOn = computed(() => cfFiltered.value.length > 0 && cfFiltered.value.every(c => localSel.has(c.categoryId)));
-    const cfIsSomeOn = computed(() => !isAllOn.value && cfFiltered.value.some(c => localSel.has(c.categoryId)));
-    const toggleAll = () => {
-      if (isAllOn.value) cfFiltered.value.forEach(c => localSel.delete(c.categoryId));
-      else cfFiltered.value.forEach(c => localSel.add(c.categoryId));
-    };
-
-    /* 행 토글 */
-    const toggleRow = (row) => { if (localSel.has(row.categoryId)) localSel.delete(row.categoryId); else localSel.add(row.categoryId); };
-
-    /* onReset / apply */
-    const onReset = () => localSel.clear();
-    const apply = () => {
-      emit('apply', [...localSel]);
-      if (props.onCallback) props.onCallback(props.modalName, null, [...localSel]);
+    /* 닫을 때 확정 — 기존 모달의 [적용] 과 동일한 시점 */
+    const onClose = () => {
+      const picked = [...localSel];
+      emit('apply', picked);
+      if (props.onCallback) props.onCallback(props.modalName, null, picked);
       emit('close');
-      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ CategorySelectModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'modal-reset') {
-        return onReset();
-      } else if (cmd === 'modal-apply') {
-        return apply();
-      } else if (cmd === 'category-toggle-all') {
-        return toggleAll();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ CategorySelectModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'category-toggle-row') {
-        return toggleRow(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '카테고리명 검색' },
-    ];
-
-    /* listGridColumns — BoGrid 컬럼 정의 (체크박스 + 카테고리명 들여쓰기) */
-    const listGridColumns = [
-      { key: '_check', label: '', style: 'width:32px;text-align:center;', html: true, fmt: (v, row) => {
-        return localSel.has(row.categoryId)
-          ? `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#e8587a;color:#fff;font-size:9px;line-height:14px;font-weight:700;">✓</span>`
-          : `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;border:1.5px solid #d1d5db;background:#fff;"></span>`;
-      } },
-      { key: '_cat', label: '카테고리', html: true, fmt: (v, row) => {
-        const d = row._depth || 0;
-        const indent = d * 16;
-        const weight = d === 0 ? 700 : 400;
-        const color  = d === 0 ? '#222' : '#555';
-        const marker = d === 0 ? '●' : '◦';
-        const mc     = d === 0 ? '#e8587a' : '#2563eb';
-        return `<span style="display:inline-block;margin-left:${indent}px;margin-right:6px;color:${mc};font-weight:700;">${marker}</span>`
-             + `<span style="font-size:12px;font-weight:${weight};color:${color};">${row.categoryNm || '-'}</span>`;
-      } },
-    ];
-
-    /* fnRowStyle — 선택된 행 강조 */
-    const fnRowStyle = (row) => localSel.has(row.categoryId) ? 'background:#fff4f6;cursor:pointer;' : 'cursor:pointer;';
-
-    return {
-      searchParam, pager, cfFiltered, cfPageRows, localSel,                   // 데이터
-      isAllOn, cfIsSomeOn,                                                    // computed
-      baseSearchColumns, listGridColumns, fnRowStyle,                         // 컬럼 정의
-      onSetPage, onSizeChange,                                                // BoGrid pager 콜백
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { localSel, onToggle, onClose };
   },
   template: /* html */`
-<bo-modal :show="show" width="460px" max-height="80vh" box-pad="0" body-pad="0" :z-index="500" @close="handleBtnAction('modal-close')">
-  <div style="background:#fff;border-radius:10px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <!-- 헤더 -->
-    <div style="padding:11px 16px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <span style="font-size:13px;font-weight:700;color:#222;">
-        📂 카테고리 선택
-      </span>
-      <button @click="handleBtnAction('modal-close')" style="background:none;border:none;cursor:pointer;font-size:15px;color:#aaa;padding:2px 5px;line-height:1;">
-        ✕
-      </button>
-    </div>
-    <!-- 검색 -->
-    <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="searchParam" :show-actions="false" />
-    </div>
-    <!-- 전체선택 바 -->
-    <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;cursor:pointer;"
-      @click="handleBtnAction('category-toggle-all')">
-      <div style="width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
-        :style="isAllOn?'border-color:#e8587a;background:#e8587a;':cfIsSomeOn?'border-color:#e8587a;background:#fce4ec;':'border-color:#aaa;background:#fff;'">
-        <span v-if="isAllOn" style="color:#fff;font-size:9px;line-height:1;">
-          ✓
-        </span>
-        <span v-else-if="cfIsSomeOn" style="color:#e8587a;font-size:11px;font-weight:900;line-height:1;margin-top:-1px;">
-          −
-        </span>
-      </div>
-      <span style="font-size:12px;font-weight:700;color:#333;">
-        전체선택
-      </span>
-      <span style="margin-left:auto;font-size:11px;color:#aaa;">
-        총 <b style="color:#374151;">{{ pager.pageTotalCount }}</b>건
-      </span>
-    </div>
-    <!-- 목록 + 페이저 (BoGrid 내장) -->
-    <div style="flex:1;overflow-y:auto;">
-      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="categoryId"
-        row-clickable :row-style="fnRowStyle"
-        empty-text="검색 결과가 없습니다."
-        @row-click="row => handleSelectAction('category-toggle-row', row)"
- />
-      <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-    </div>
-    <!-- 하단 버튼 -->
-    <div style="padding:9px 12px;border-top:1px solid #e0e0e0;display:flex;align-items:center;gap:8px;flex-shrink:0;">
-      <span style="font-size:11px;color:#aaa;flex:1;">
-        {{ localSel.size }}개 선택
-      </span>
-      <button @click="handleBtnAction('modal-reset')" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;">
-        초기화
-      </button>
-      <button @click="handleBtnAction('modal-apply')" style="font-size:12px;padding:4px 16px;border:none;border-radius:6px;background:#e8587a;color:#fff;font-weight:700;cursor:pointer;">
-        적용
-      </button>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal :show="show" popup-code="category" :selected-ids="localSel"
+  @toggle="onToggle" @close="onClose" />
 `,
 };
 
@@ -3492,315 +1770,29 @@ window.RowPickModal = {
 window.WidgetLibPickModal = {
   name: 'WidgetLibPickModal',
   inheritAttrs: false,
+  /* 전시 위젯 선택 — 팝업관리(cm_popup 'widgetLib') 메타 기반 어댑터.
+     mode(copy/insert)는 부모가 자체 상태로 들고 있으므로 여기서는 전달만 받고 쓰지 않는다.
+     기존 계약대로 pick 으로 올린다. */
   props: {
-    mode: { type: String, default: 'copy', reloadTrigger: { type: Number, default: 0 } },     /* 'copy' | 'ref' */
-    widgetLibs: { type: Array, default: () => [] },
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    mode:       { type: String,   default: '' },                      // (호환용) copy/insert
+    widgetLibs: { type: Array,    default: () => ([]) },              // (호환용) 구 로컬 목록
+    modalName:  { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
-  emits: ['close', 'pick'],
+  emits: ['pick', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed } = Vue;
-    const searchParam = reactive({ searchType: '', searchValue: '', type: '', status: '' });
-    const pager = reactive({ page: 1, size: 5 });
-    const PAGE_SIZES = [2, 3, 4, 5, 10, 20, 50, 100];
-
-    const cfFiltered = computed(() => (props.widgetLibs || []).filter(d => {
-      const searchVal = searchParam.searchValue.trim().toLowerCase();
-      if (searchVal) {
-        const types = searchParam.searchType || 'nm,desc,tag';
-        const hits = [];
-        if (types.includes('nm'))   hits.push((d.name || '').toLowerCase().includes(searchVal));
-        if (types.includes('desc')) hits.push((d.desc || '').toLowerCase().includes(searchVal));
-        if (types.includes('tag'))  hits.push((d.tags || '').toLowerCase().includes(searchVal));
-        if (!hits.some(Boolean)) return false;
-      }
-      if (searchParam.type && d.widgetType !== searchParam.type) return false;
-      if (searchParam.status && d.status !== searchParam.status) return false;
-      return true;
-    }).sort((a,b) => b.libId - a.libId));
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => {
-      const total = cfFiltered.value.length;
-      pager.pageTotalCount = total;
-      pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.size));
-      pager.pageList = cfFiltered.value.slice((pager.page-1)*pager.size, pager.page*pager.size);
-      const cur=pager.page, last=pager.pageTotalPage, s=Math.max(1,cur-2), e=Math.min(last,s+4);
-      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+    const onSelect = (row) => {
+      emit('pick', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-    Vue.watch(cfFiltered, () => { pager.page = 1; fnBuildPagerNums(); }, { immediate: true });
-
-    /* 사용위치 트리 */
-    const selectedTreeKey = ref('');
-    const treeOpen = reactive(new Set(['__root__']));
-
-    /* toggleTree */
-    const toggleTree = k => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
-
-    /* isTreeOpen */
-    const isTreeOpen = k => treeOpen.has(k);
-
-    /* selectTree */
-    const selectTree = k => { selectedTreeKey.value = selectedTreeKey.value === k ? '' : k; pager.page = 1; };
-    const cfTree = computed(() => {
-      const map = {};
-
-      /* add */
-      const add = (lib, p) => {
-        const parts = p.split('>').map(x => x.trim()).filter(Boolean);
-        if (!parts.length) return;
-        const top = parts[0], rest = parts.slice(1).join(' > ') || '(루트)';
-        if (!map[top]) map[top] = {};
-        if (!map[top][rest]) map[top][rest] = [];
-        map[top][rest].push(lib);
-      };
-      cfFiltered.value.forEach(lib => {
-        if (!lib.usedPaths || !lib.usedPaths.length) add(lib, '(미등록) > (미등록)');
-        else lib.usedPaths.forEach(p => add(lib, p));
-      });
-      return Object.keys(map).sort().map(top => ({
-        label: top,
-        count: Object.values(map[top]).reduce((a,b) => a+b.length, 0),
-        children: Object.keys(map[top]).sort().map(sub => ({ label: sub, count: map[top][sub].length })),
-      }));
-    });
-
-    const WIDGET_TYPES = [
-      { value:'', label:'전체 유형' },
-      { value:'image_banner', label:'이미지 배너' }, { value:'product_slider', label:'상품 슬라이더' },
-      { value:'product', label:'상품' }, { value:'text_banner', label:'텍스트 배너' },
-      { value:'info_card', label:'정보카드' }, { value:'popup', label:'팝업' },
-      { value:'file', label:'파일' }, { value:'coupon', label:'쿠폰' },
-      { value:'html_editor', label:'HTML 에디터' }, { value:'widget_embed', label:'위젯' },
-    ];
-
-    /* statusCls */
-    const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
-
-    /* onPick */
-    const onPick = (lib) => {
-      emit('pick', lib);
-      if (props.onCallback) props.onCallback(props.modalName, null, lib);
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
-    const activeStatuses = reactive([]);
-    Vue.onMounted(() => {
-      /* 상태 = 어댑터 '활성'/'비활성' 값 (구 ACTIVE_STATUS 코드그룹 미사용) */
-      activeStatuses.splice(0, activeStatuses.length,
-        { codeValue: '활성', codeLabel: '활성' }, { codeValue: '비활성', codeLabel: '비활성' });
-    });
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ WidgetLibPickModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'pager-set') {
-        pager.page = param;
-        return;
-      } else if (cmd === 'pager-size') {
-        pager.size = param;
-        pager.page = 1;
-        return fnBuildPagerNums();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ WidgetLibPickModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'tree-toggle') {
-        return toggleTree(param);
-      } else if (cmd === 'tree-select') {
-        return selectTree(param);
-      } else if (cmd === 'tree-toggle-select') {
-        toggleTree(param);
-        return selectTree(param);
-      } else if (cmd === 'list-pick') {
-        return onPick(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    return {
-      searchParam, WIDGET_TYPES, activeStatuses,                              // 데이터
-      pager, PAGE_SIZES,                                                      // 페이저
-      cfTree, selectedTreeKey, isTreeOpen, statusCls,                         // 헬퍼
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" width="1100px" max-width="98vw" max-height="92vh"
-  box-pad="0" body-pad="0" :z-index="9999" @close="handleBtnAction('modal-close')">
-  <div style="background:#fafafa;border-radius:14px;display:flex;flex-direction:column;height:100%;overflow:hidden;">
-    <!-- 헤더 -->
-    <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:14px;font-weight:700;">
-        {{ mode==='copy' ? '📋 전시위젯Lib 내용복사' : '🔗 전시위젯Lib 참조' }}
-      </span>
-      <button @click="handleBtnAction('modal-close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">
-        ×
-      </button>
-    </div>
-    <!-- 검색 -->
-    <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-        { value: 'nm',   label: '이름' },
-        { value: 'desc', label: '설명' },
-        { value: 'tag',  label: '태그' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;" />
-      <select v-model="searchParam.type" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
-        <option v-for="t in WIDGET_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
-      </select>
-      <select v-model="searchParam.status" style="padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:12px;">
-        <option value="">상태 전체</option>
-        <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-      </select>
-    </div>
-    <!-- 본문: 좌측 트리 + 우측 목록 -->
-    <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
-      <!-- 트리 -->
-      <div style="width:220px;flex-shrink:0;background:#fff;border-radius:8px;padding:12px;overflow-y:auto;">
-        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;">
-          사용위치 트리
-        </div>
-        <div @click="handleSelectAction('tree-toggle', '__root__'); handleSelectAction('tree-select', '')"
-          :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
-          <span>
-            {{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체
-          </span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">
-            {{ pager.pageTotalCount }}
-          </span>
-        </div>
-        <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
-          <div v-for="node in cfTree" :key="node.label">
-            <div @click="handleSelectAction('tree-toggle-select', node.label)"
-              :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'5px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'2px',background: selectedTreeKey===node.label ? '#e3f2fd' : 'transparent',color: selectedTreeKey===node.label ? '#1565c0' : '#333',fontWeight: selectedTreeKey===node.label ? 700 : 500 }">
-              <span>
-                {{ isTreeOpen(node.label) ? '▼' : '▶' }} {{ node.label }}
-              </span>
-              <span style="font-size:10px;background:#f0f2f5;color:#666;border-radius:10px;padding:1px 7px;">
-                {{ node.count }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- 목록 -->
-      <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
-        <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;">
-          총
-          <b>
-            {{ pager.pageTotalCount }}
-          </b>
-          건
-        </div>
-        <div style="flex:1;overflow-y:auto;">
-          <table class="bo-table" style="margin:0;">
-            <thead>
-              <tr>
-                <th style="width:56px;">
-                  ID
-                </th>
-                <th>
-                  위젯 정보
-                </th>
-                <th style="width:90px;text-align:right;">
-                  선택
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="!(pager.pageList||[]).length">
-                <td colspan="3" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">
-                  표시할 데이터가 없습니다.
-                </td>
-              </tr>
-              <tr v-for="d in pager.pageList" :key="d.libId">
-                <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">
-                  #{{ String(d.libId).padStart(4,'0') }}
-                </td>
-                <td style="padding:10px 12px;">
-                  <div style="margin-bottom:4px;">
-                    <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">
-                      {{ d.widgetType }}
-                    </span>
-                    <span style="font-size:14px;font-weight:700;color:#222;margin-left:8px;">
-                      {{ d.name }}
-                    </span>
-                    <span class="badge" :class="statusCls(d.status)" style="font-size:11px;margin-left:8px;">
-                      {{ d.status }}
-                    </span>
-                  </div>
-                  <div style="font-size:11px;color:#555;line-height:1.5;">
-                    <span v-if="d.usedPaths ? (d.usedPaths.length) : false">
-                    <b style="color:#888;">
-                      사용위치:
-                    </b>
-                    <span v-for="(p,pi) in d.usedPaths" :key="pi"
-                        style="background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                      {{ p }}
-                    </span>
-                  </span>
-                  <span v-if="d.tags" style="margin-left:8px;">
-                    <b style="color:#888;">
-                      태그:
-                    </b>
-                    {{ d.tags }}
-                  </span>
-                </div>
-              </td>
-              <td style="vertical-align:top;padding-top:10px;text-align:right;">
-                <button @click="handleSelectAction('list-pick', d)" class="btn btn-primary btn-sm" style="font-size:11px;">
-                  {{ mode==='copy' ? '복사' : '참조' }}
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <!-- 페이저 -->
-      <div class="pagination" style="padding:10px 16px;border-top:1px solid #f0f0f0;margin-top:0;">
-        <div>
-        </div>
-        <div class="pager">
-          <button :disabled="pager.page===1" @click="handleBtnAction('pager-set', 1)">
-            «
-          </button>
-          <button :disabled="pager.page===1" @click="handleBtnAction('pager-set', pager.page-1)">
-            ‹
-          </button>
-          <button v-for="n in pager.pageNums" :key="n" :class="{active:pager.page===n}" @click="handleBtnAction('pager-set', n)">
-            {{ n }}
-          </button>
-          <button :disabled="pager.page===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.page+1)">
-            ›
-          </button>
-          <button :disabled="pager.page===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageTotalPage)">
-            »
-          </button>
-        </div>
-        <div class="pager-right">
-          <select class="size-select" :value="pager.size" @change="handleBtnAction('pager-size', Number($event.target.value))">
-            <option v-for="s in PAGE_SIZES" :key="s" :value="s">{{ s }}개</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-</bo-modal>
+<bo-pick-modal popup-code="widgetLib" @select="onSelect" @close="onClose" />
 `,
 };
 
@@ -3812,345 +1804,42 @@ window.WidgetLibPickModal = {
 window.PathPickModal = {
   name: 'PathPickModal',
   inheritAttrs: false,
+  /* 표시경로 선택 — 팝업관리(cm_popup 'path') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    bizCd:         { type: String,    default: '' },                      // 비즈 코드 (분류)
-    value:         { type: String,    default: '' },                      // 값
-    title:         { type: String,    default: '' },                      // 제목
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    bizCd: { type: String,   default: '' },                      // 표시경로 업무코드 고정 필터
+    value: { type: String,   default: null },                    // (호환용) 현재값
+    title: { type: String,   default: '' },                      // 제목 override
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed } = Vue;
-    const cfTree = computed(() => boUtil.bofBuildPathTree(props.bizCd));
-    const expanded = reactive(new Set([null]));
+    const cfExcludeIds = Vue.computed(() => []);
+    /* bizCd 는 고정 필터 — 팝업 메타에서 EQ 검색 항목으로 등록돼 있다 */
+    const cfInitParam = Vue.computed(() => props.bizCd ? { bizCd: props.bizCd } : {});
 
-    /* toggle */
-    const toggle = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-
-    /* expandAll */
-    const expandAll = () => { expanded.clear(); expanded.add(null); const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(cfTree.value); };
-
-    /* collapseAll */
-    const collapseAll = () => { expanded.clear(); expanded.add(null); };
-
-    /* 3레벨 자동 펼침 (모달 오픈 시) */
-    const expandLevels = (maxDepth) => {
-      expanded.clear(); expanded.add(null);
-
-      /* walk */
-      const walk = (n, d) => {
-        if (d >= maxDepth) return;
-        (n.children || []).forEach(ch => { expanded.add(ch.pathId); walk(ch, d + 1); });
-      };
-      walk(cfTree.value, 0);
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload).
+       표시경로는 호출부가 payload 를 그대로 form.pathId 에 넣으므로 ID 문자열을 넘긴다. */
+    const onSelect = (row) => {
+      const pathId = row ? row.id : null;
+      emit('select', pathId);
+      if (props.onCallback) props.onCallback(props.modalName, null, pathId);
     };
-    /* 모달 마운트 시 최신 경로 목록 API 재조회 → window._boCmPaths 갱신 */
-    Vue.onMounted(async () => {
-      try {
-        const res = await boApiSvc.syPath.getPage({ pageNo: 1, pageSize: 10000 }, '표시경로', '목록조회');
-        const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        if (list.length > 0) window._boCmPaths = list;
-      } catch (e) {
-        console.error('[PathPickModal] 경로 조회 실패', e);
-      }
-      expandLevels(2);
-    });
-
-    const selectedId = ref(props.value || null);
-
-    /* select */
-    const select = (id) => { selectedId.value = id; };
-
-    /* confirm */
-    const confirm = () => {
-      emit('select', selectedId.value);
-      if (props.onCallback) props.onCallback(props.modalName, null, selectedId.value);
+    const onClose = () => {
       emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
-    const addParent = ref(null);
-    const addLabel = ref('');
 
-    /* setAddParent */
-    const setAddParent = (id) => { addParent.value = id; };
-
-    /* doAdd */
-    const doAdd = () => {
-      const txt = addLabel.value.trim();
-      if (!txt) {
-        if (window.boToast) window.boToast('새 경로명을 입력해주세요.', 'warning');
-        else alert('새 경로명을 입력해주세요.');
-        return;
-      }
-      window._boCmPaths = window._boCmPaths || [];
-      const list = window._boCmPaths;
-      /* 동일 부모 + 동일 라벨 중복 체크 */
-      const dup = list.find(p => p.bizCd === props.bizCd && p.parentPathId === addParent.value && p.pathLabel === txt);
-      if (dup) {
-        if (window.boToast) window.boToast(`'${txt}' 경로가 이미 존재합니다.`, 'error');
-        else alert('이미 존재하는 경로입니다: ' + txt);
-        return;
-      }
-
-      /* newId */
-      const newId = (list.reduce((m,x) => Math.max(m, x.pathId), 0) || 0) + 1;
-      list.push({ pathId: newId, bizCd: props.bizCd, parentPathId: addParent.value,
-        pathLabel: txt, sortOrd: 99, useYn: 'Y', remark: '', _userAdded: true });
-      addLabel.value = '';
-      expanded.add(addParent.value);
-      selectedId.value = newId;
-      if (window.boToast) window.boToast(`'${txt}' 경로가 추가되었습니다.`, 'success');
-    };
-
-    /* 인라인 수정 */
-    const editingId = ref(null);
-    const editLabel = ref('');
-
-    /* startEdit */
-    const startEdit = (node) => { editingId.value = node.pathId; editLabel.value = node.pathLabel; };
-
-    /* saveEdit */
-    const saveEdit = () => {
-      const id = editingId.value;
-      if (id != null && editLabel.value.trim()) {
-        const item = (window._boCmPaths || []).find(p => p.pathId === id);
-        if (item) item.pathLabel = editLabel.value.trim();
-      }
-      editingId.value = null;
-    };
-
-    /* cancelEdit */
-    const cancelEdit = () => { editingId.value = null; };
-
-    /* 삭제 (자식 없는 경우만) — boConfirm 디자인 다이얼로그 사용 */
-    const deleteNode = async (node) => {
-      if ((node.children || []).length > 0) {
-        if (window.boConfirm) await window.boConfirm('삭제 불가', '하위 경로가 있어 삭제할 수 없습니다.', { btnCancel: '' });
-        else alert('하위 경로가 있어 삭제할 수 없습니다.');
-        return;
-      }
-      const ok = window.boConfirm
-        ? await window.boConfirm('표시경로 삭제', '이 경로를 삭제하시겠습니까?', { details: node.pathLabel })
-        : window.confirm('이 경로를 삭제하시겠습니까?\n\n' + node.pathLabel);
-      if (!ok) return;
-      const idx = (window._boCmPaths || []).findIndex(p => p.pathId === node.pathId);
-      if (idx >= 0) window._boCmPaths.splice(idx, 1);
-      if (selectedId.value === node.pathId) selectedId.value = null;
-      if (addParent.value === node.pathId) addParent.value = null;
-    };
-
-    /* labelOf */
-    const labelOf = (id) => boUtil.bofGetPathLabel(id);
-
-    /* hover 효과 헬퍼 — 인라인 표현식 SyntaxError 회피 */
-    const onRootHover = (evt) => {
-      if (selectedId.value !== null && addParent.value !== null && evt && evt.currentTarget) {
-        evt.currentTarget.style.background = '#f9fafb';
-      }
-    };
-
-    /* onRootLeave */
-    const onRootLeave = (evt) => {
-      if (selectedId.value !== null && addParent.value !== null && evt && evt.currentTarget) {
-        evt.currentTarget.style.background = 'transparent';
-      }
-    };
-
-    /* onCloseHover */
-    const onCloseHover = (evt) => {
-      if (!evt || !evt.currentTarget) return;
-      evt.currentTarget.style.background = '#f3f4f6';
-      evt.currentTarget.style.color = '#374151';
-    };
-
-    /* onCloseLeave */
-    const onCloseLeave = (evt) => {
-      if (!evt || !evt.currentTarget) return;
-      evt.currentTarget.style.background = 'transparent';
-      evt.currentTarget.style.color = '#9ca3af';
-    };
-
-    /* onAddHover */
-    const onAddHover = (evt) => { if (evt && evt.currentTarget) evt.currentTarget.style.background = '#059669'; };
-
-    /* onAddLeave */
-    const onAddLeave = (evt) => { if (evt && evt.currentTarget) evt.currentTarget.style.background = '#10b981'; };
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ PathPickModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      // 확인 (선택 적용)
-      } else if (cmd === 'modal-confirm') {
-        return confirm();
-      // 전체 펼치기
-      } else if (cmd === 'pathTree-expand-all') {
-        return expandAll();
-      // 전체 접기
-      } else if (cmd === 'pathTree-collapse-all') {
-        return collapseAll();
-      // 경로 추가
-      } else if (cmd === 'pathTree-add') {
-        return doAdd();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ PathPickModal : handleSelectAction -> ', cmd, param);
-      // 경로 선택 + 부모설정 (루트)
-      if (cmd === 'pathTree-select-root') {
-        select(null);
-        return setAddParent(null);
-      // 더블클릭으로 확정 (루트)
-      } else if (cmd === 'pathTree-confirm-root') {
-        select(null);
-        return confirm();
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    return {
-      cfTree, expanded, selectedId,                                            // 데이터
-      addParent, addLabel, labelOf,                                            // 추가
-      editingId, editLabel,                                                    // 편집
-      toggle, select, setAddParent, confirm,                                   // 트리 헬퍼 (자식 컴포넌트 props로 전달)
-      startEdit, saveEdit, cancelEdit, deleteNode,                             // 편집 헬퍼
-      onRootHover, onRootLeave, onCloseHover, onCloseLeave, onAddHover, onAddLeave,  // hover 헬퍼
-      handleBtnAction, handleSelectAction,                                     // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="640px" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="overflow:hidden;border-radius:14px;display:flex;flex-direction:column;height:100%;">
-    <!-- 헤더 -->
-    <div style="background:#ffffff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#eef2ff;color:#6366f1;font-size:16px;">
-          📂
-        </span>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;color:#1f2937;letter-spacing:-0.2px;">
-            {{ title || '표시경로 선택' }}
-          </div>
-          <div style="font-size:10.5px;color:#9ca3af;font-family:monospace;margin-top:1px;">
-            biz_cd · {{ bizCd }}
-          </div>
-        </div>
-        <span class="modal-close" style="color:#9ca3af;cursor:pointer;font-size:20px;line-height:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;"
-          @click="handleBtnAction('modal-close')"
-          @mouseover="onCloseHover($event)"
-          @mouseout="onCloseLeave($event)">
-          ✕
-        </span>
-      </div>
-      <!-- 선택 경로 미리보기 -->
-      <div style="margin-top:12px;padding:10px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:10.5px;color:#6b7280;font-weight:600;">
-          현재 선택
-        </span>
-        <span style="flex:1;font-size:13px;font-weight:600;color:selectedId==null?'#9ca3af':'#1f2937';">
-          <span v-if="selectedId == null" style="color:#9ca3af;font-weight:400;">
-            — 선택된 경로가 없습니다 —
-          </span>
-          <span v-else style="color:#e8587a;">
-            {{ labelOf(selectedId) || ('#'+selectedId) }}
-          </span>
-        </span>
-      </div>
-    </div>
-    <!-- 본문 -->
-    <div style="padding:14px 22px 18px;background:#fafbfc;">
-      <!-- 트리 도구 -->
-      <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;">
-        <span style="font-size:11.5px;font-weight:700;color:#374151;">
-          경로 트리
-        </span>
-        <span style="font-size:10px;color:#9ca3af;background:#fff;border:1px solid #e5e7eb;padding:2px 8px;border-radius:10px;">
-          클릭: 선택 · 더블클릭: 즉시 적용
-        </span>
-        <span style="flex:1;">
-        </span>
-        <button @click="handleBtnAction('pathTree-expand-all')" style="font-size:10.5px;padding:4px 9px;border:1px solid #e5e7eb;background:#fff;border-radius:5px;cursor:pointer;color:#6b7280;">
-          ▼ 펼치기
-        </button>
-        <button @click="handleBtnAction('pathTree-collapse-all')" style="font-size:10.5px;padding:4px 9px;border:1px solid #e5e7eb;background:#fff;border-radius:5px;cursor:pointer;color:#6b7280;">
-          ▶ 접기
-        </button>
-      </div>
-      <div style="height:340px;overflow:auto;border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:8px;margin-bottom:14px;">
-        <div @click="handleSelectAction('pathTree-select-root')"
-          @dblclick="handleSelectAction('pathTree-confirm-root')"
-          :style="{padding:'8px 12px',cursor:'pointer',borderRadius:'8px',transition:'all .12s',marginBottom:'2px',
-          background: selectedId===null ? '#fef2f4' : (addParent===null ? '#ecfdf5' : 'transparent'),
-          color:      selectedId===null ? '#e8587a' : '#374151',
-          fontWeight: selectedId===null ? 700 : 500, fontSize:'13px',
-          border:     selectedId===null ? '1px solid #fecdd3' : (addParent===null ? '1px solid #a7f3d0' : '1px solid transparent')}"
-          @mouseover="onRootHover($event)"
-          @mouseout="onRootLeave($event)">
-          <span style="margin-right:8px;">
-            📁
-          </span>
-          (루트)
-          <span style="font-size:10px;color:#6b7280;background:#fff;padding:1px 8px;border-radius:10px;border:1px solid #e5e7eb;margin-left:8px;font-weight:500;">
-            {{ cfTree.count }}
-          </span>
-        </div>
-        <path-pick-tree-node :node="cfTree" :expanded="expanded" :selected="selectedId" :add-parent="addParent"
-          :editing-id="editingId" :edit-label="editLabel"
-          :on-toggle="toggle" :on-select="select" :on-set-parent="setAddParent" :on-confirm="confirm"
-          :on-start-edit="startEdit" :on-save-edit="saveEdit" :on-cancel-edit="cancelEdit"
-          :on-update-label="(v) => editLabel = v" :on-delete="deleteNode" :depth="0" />
-      </div>
-      <!-- 추가 입력 -->
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
-        <div style="display:flex;gap:8px;align-items:center;font-size:11px;color:#6b7280;margin-bottom:8px;">
-          <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#10b981;color:#fff;font-size:11px;font-weight:700;">
-            +
-          </span>
-          <span style="font-weight:600;">
-            하위 추가 위치:
-          </span>
-          <span style="background:#ecfdf5;color:#059669;padding:2px 10px;border-radius:6px;font-weight:700;font-size:11px;">
-            {{ addParent == null ? '(루트)' : (labelOf(addParent) || ('#'+addParent)) }}
-          </span>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <input class="form-control" v-model="addLabel" placeholder="새 경로명 입력 후 Enter" style="flex:1;height:34px;font-size:12.5px;" @keyup.enter="handleBtnAction('pathTree-add')" />
-          <button @click="handleBtnAction('pathTree-add')"
-            style="padding:0 16px;font-size:12px;font-weight:700;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;"
-            @mouseover="onAddHover($event)"
-            @mouseout="onAddLeave($event)">
-            + 추가
-          </button>
-        </div>
-      </div>
-      <!-- 액션 -->
-      <div style="display:flex;justify-content:flex-end;gap:8px;">
-        <button @click="handleBtnAction('modal-close')"
-          style="padding:9px 20px;font-size:12.5px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #d1d5db;border-radius:7px;cursor:pointer;">
-          취소
-        </button>
-        <button @click="handleBtnAction('modal-confirm')"
-          style="padding:9px 22px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg,#e8587a,#d14165);color:#fff;border:none;border-radius:7px;cursor:pointer;box-shadow:0 2px 6px rgba(232,88,122,.25);">
-          ✓ 선택
-        </button>
-      </div>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal popup-code="path" :title="title" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
 window.PathPickTreeNode = {
   name: 'PathPickTreeNode',
   inheritAttrs: false,
@@ -4318,499 +2007,101 @@ window.PathPickTreeNode = {
 window.BizPickModal = {
   name: 'BizPickModal',
   inheritAttrs: false,
+  /* 업체 선택 — 팝업관리(cm_popup 'vendor') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    value:         { type: String,    default: '' },                      // 값
-    title:         { type: String,    default: '' },                      // 제목
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    value: { type: String,   default: null },                    // (호환용) 현재값
+    title: { type: String,   default: '' },                      // 제목 override
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
-    const searchParam = reactive({ searchType: '', searchValue: '', type: '' });
-    const bizs = reactive([]);
-    const loading = ref(false);
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* 좌측 표시경로 트리 (sy_biz) */
-    const selectedPathId = ref(null);
-    const expanded = reactive(new Set([null]));
-    const cfTree = computed(() => boUtil.bofBuildPathTree('sy_biz'));
-
-    /* toggleNode */
-    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-
-    /* selectNode */
-    const selectNode = (id) => { selectedPathId.value = id; pager.pageNo = 1; handleSearchListWrap(); };
-
-    /* 목록조회 (서버사이드 페이징) */
-    const handleSearchList = async () => {
-      loading.value = true;
-      try {
-        const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
-          searchValue: searchParam.searchValue || undefined,
-          searchType: searchParam.searchType || undefined,
-          type: searchParam.type || undefined,
-          pathId: selectedPathId.value || undefined,
-        };
-        if (params.searchValue && !params.searchType) { params.searchType = 'bizNo,bizNm,ceoNm'; }
-        const res = await boApiSvc.syVendor.getPage(params, '판매자관리', '목록조회');
-        const data = res.data?.data;
-        bizs.splice(0, bizs.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (_) { bizs.splice(0, bizs.length); } finally { loading.value = false; }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => { const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4); pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i); };
-
-    /* handleSearchListWrap */
-    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
-
-    /* onSearch / onReset */
-    const onSearch = () => { pager.pageNo = 1; handleSearchListWrap(); };
-    const onReset  = () => { Object.assign(searchParam, { searchType: '', searchValue: '', type: '' }); pager.pageNo = 1; handleSearchListWrap(); };
-
-    /* onSetPage / onSizeChange */
-    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
-    const onSizeChange = ()  => { pager.pageNo = 1; handleSearchListWrap(); };
-
-    onMounted(() => {
-      const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
-      handleSearchListWrap();
-    });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-
-    /* vtLabel */
-    const vtLabel = (cd) => boConsts.vendorTypeLabel(cd);
-
-    /* vtBadge */
-    const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
-
-    /* pickAndClose */
-    const pickAndClose = (b) => {
-      emit('select', b);
-      if (props.onCallback) props.onCallback(props.modalName, null, b);
+    const onClose = () => {
       emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ BizPickModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        return onSearch();
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ BizPickModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'pathTree-toggle') {
-        return toggleNode(param);
-      } else if (cmd === 'pathTree-select') {
-        return selectNode(param);
-      } else if (cmd === 'list-pick') {
-        return pickAndClose(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* bizGridColumns — BoGrid 컬럼 정의 */
-    const bizGridColumns = [
-      { key: 'vendorTypeCd', label: '업체유형', badge: (row) => vtBadge(row.vendorTypeCd), fmt: (v) => vtLabel(v) },
-      { key: 'bizNo',        label: '사업자번호', cellInnerStyle: 'font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-family:monospace;', fmt: (v) => v || '-' },
-      { key: 'bizNm',        label: '상호', cellStyle: 'font-weight:600;', fmt: (v) => v || '-' },
-      { key: 'ceoNm',        label: '대표자', fmt: (v) => v || '-' },
-    ];
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'bizNo', label: '사업자번호' },
-          { value: 'bizNm', label: '상호' },
-          { value: 'ceoNm', label: '대표자' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'type',        type: 'select',
-        options: () => VENDOR_TYPES.map(v => ({ value: v[0], label: v[1] })),
-        nullLabel: '업체유형 전체', width: '140px' },
-    ];
-
-    return {
-      searchParam, VENDOR_TYPES, vtLabel, vtBadge, bizs, pager, loading,      // 데이터
-      bizGridColumns, baseSearchColumns,                                       // 컬럼 정의
-      selectedPathId, expanded, cfTree,                                       // 트리
-      toggleNode, selectNode,                                                 // 트리 헬퍼 (자식 컴포넌트 props 전달용)
-      onSetPage, onSizeChange,                                                // 페이저 콜백
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="820px" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="overflow:hidden;border-radius:14px;display:flex;flex-direction:column;height:100%;">
-    <div style="background:#fff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#fff0f4;color:#e8587a;font-size:16px;">
-          🏢
-        </span>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;color:#1f2937;">
-            {{ title || '사업자 선택' }}
-          </div>
-          <div style="font-size:10.5px;color:#9ca3af;font-family:monospace;margin-top:1px;">
-            sy_biz
-          </div>
-        </div>
-        <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="handleBtnAction('modal-close')">
-          ✕
-        </span>
-      </div>
-      <div style="margin-top:12px;">
-        <bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="loading"
-          @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-      </div>
-    </div>
-    <div style="background:#fafbfc;display:grid;grid-template-columns:200px 1fr;max-height:55vh;">
-      <!-- 좌측 표시경로 트리 -->
-      <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;padding:8px;">
-        <div style="font-size:11px;font-weight:700;color:#666;margin-bottom:6px;padding:0 4px;">
-          📂 표시경로
-        </div>
-        <bo-prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPathId"
-          :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
-      </div>
-      <!-- 우측 사업자 목록 -->
-      <div style="overflow:auto;">
-        <bo-grid :columns="bizGridColumns" :rows="bizs" :pager="pager" row-key="bizId"
-          :list-title="'총 ' + pager.pageTotalCount + '건'"
-          :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-          row-clickable :row-actions="true"
-          @row-click="row => handleSelectAction('list-pick', row)"
-    @row-dblclick="row => handleSelectAction('list-pick', row)">
-          <template #row-actions="{ row }">
-            <button class="btn btn_select" @click.stop="handleSelectAction('list-pick', row)">
-              선택
-            </button>
-          </template>
-        </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-      </div>
-    </div>
-    <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
-      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
-        취소
-      </button>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal popup-code="vendor" :title="title" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ─────────────────────────────────────────────────────────────
-   SimpleUserPickModal — 단일 사용자 선택 (sy_user / boUsers)
-───────────────────────────────────────────────────────────── */
 window.SimpleUserPickModal = {
   name: 'SimpleUserPickModal',
   inheritAttrs: false,
+  /* 사용자 선택 — 팝업관리(cm_popup 'user') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    title:         { type: String,    default: '' },                      // 제목
-    excludeIds:    { type: Array,     default: () => [] },                // 제외할 ID 목록
-    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    title: { type: String,   default: '' },                      // 제목 override
+    excludeIds: { type: Array,    default: () => ([]) },              // 목록에서 제외할 ID 목록
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
-    const searchParam = reactive({ searchType: '', searchValue: '' });
-    const boUsers = reactive([]);
-    const loading = ref(false);
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
+    const cfExcludeIds = Vue.computed(() => props.excludeIds || []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* 목록조회 (서버사이드 페이징) */
-    const handleSearchList = async () => {
-      loading.value = true;
-      try {
-        const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
-          searchValue: searchParam.searchValue || undefined,
-          searchType: searchParam.searchType || undefined,
-        };
-        if (params.searchValue && !params.searchType) { params.searchType = 'name,loginId,email'; }
-        const res = await boApiSvc.syUser.getPage(params, '사용자관리', '목록조회');
-        const data = res.data?.data;
-        let list = data?.pageList || data?.list || [];
-        // 제외 ID 적용 (클라이언트 측 필터링은 어쩔 수 없음 - 서버에 excludeIds 파라미터 없는 경우)
-        const excl = new Set(props.excludeIds || []);
-        if (excl.size > 0) { list = list.filter(u => !excl.has(u.boUserId) && !excl.has(u.userId)); }
-        boUsers.splice(0, boUsers.length, ...list);
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-      } catch (_) { boUsers.splice(0, boUsers.length); } finally { loading.value = false; }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => { const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4); pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i); };
-
-    /* handleSearchListWrap */
-    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
-
-    /* onSearch / onReset */
-    const onSearch = () => { pager.pageNo = 1; handleSearchListWrap(); };
-    const onReset = () => { searchParam.searchType = ''; searchParam.searchValue = ''; pager.pageNo = 1; handleSearchListWrap(); };
-
-    /* onSetPage / onSizeChange */
-    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
-    const onSizeChange = ()  => { pager.pageNo = 1; handleSearchListWrap(); };
-
-    onMounted(() => { handleSearchListWrap(); });
-    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-
-    /* pick */
-    const pick = (u) => {
-      emit('select', u);
-      if (props.onCallback) props.onCallback(props.modalName, null, u);
+    const onClose = () => {
       emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ SimpleUserPickModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        return onSearch();
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ SimpleUserPickModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'list-pick') {
-        return pick(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-    /* userGridColumns — BoGrid 컬럼 정의 */
-    const userGridColumns = [
-      { key: 'name',    label: '이름',     cellStyle: 'font-weight:600;', fmt: (v) => v || '-' },
-      { key: 'loginId', label: '로그인ID', mono: true, cellStyle: 'color:#2563eb;font-size:11px;', fmt: (v) => v || '-' },
-      { key: 'email',   label: '이메일',   cellStyle: 'color:#0369a1;font-size:11.5px;', fmt: (v) => v || '-' },
-      { key: 'dept',    label: '부서',     cellStyle: 'color:#666;font-size:11.5px;', fmt: (v) => v || '-' },
-    ];
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'nm',      label: '이름' },
-          { value: 'loginId', label: '로그인ID' },
-          { value: 'email',   label: '이메일' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-    ];
-
-    return {
-      searchParam, boUsers, pager, loading,                                   // 데이터
-      userGridColumns, baseSearchColumns,                                      // 컬럼 정의
-      onSetPage, onSizeChange,                                                // 페이저 콜백
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="760px" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="overflow:hidden;border-radius:14px;display:flex;flex-direction:column;height:100%;">
-    <div style="background:#fff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#eef2ff;color:#6366f1;font-size:16px;">
-          👤
-        </span>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;color:#1f2937;">
-            {{ title || '사용자 선택' }}
-          </div>
-          <div style="font-size:10.5px;color:#9ca3af;font-family:monospace;margin-top:1px;">
-            sy_user
-          </div>
-        </div>
-        <span style="color:#9ca3af;cursor:pointer;font-size:20px;" @click="handleBtnAction('modal-close')">
-          ✕
-        </span>
-      </div>
-      <div style="margin-top:12px;">
-        <bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="loading"
-          @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-      </div>
-    </div>
-    <div style="background:#fafbfc;max-height:55vh;overflow:auto;">
-      <bo-grid :columns="userGridColumns" :rows="boUsers" :pager="pager" row-key="boUserId"
-        :list-title="'총 ' + pager.pageTotalCount + '건'"
-        :empty-text="loading ? '로딩 중...' : '결과가 없습니다.'"
-        row-clickable :row-actions="true"
-        @row-click="row => handleSelectAction('list-pick', row)"
-    @row-dblclick="row => handleSelectAction('list-pick', row)">
-        <template #row-actions="{ row }">
-          <button class="btn btn_select" @click.stop="handleSelectAction('list-pick', row)">
-            선택
-          </button>
-        </template>
-      </bo-grid>
-      <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-    </div>
-    <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
-      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
-        취소
-      </button>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal popup-code="user" :title="title" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── 간단 판매업체 선택 모달 (Pm Dtl 8종 공통 패턴) ──
-   부모에서 이미 로드한 vendors 배열을 prop 으로 받아 단건 선택. */
 window.SimpleVendorPickModal = {
   name: 'SimpleVendorPickModal',
   inheritAttrs: false,
+  /* 판매업체 선택 — 팝업관리(cm_popup 'vendor') 메타 기반 어댑터.
+     기존에는 부모가 :vendors 로 전체 목록을 넘겼으나 이제 서버에서 검색·페이징한다. */
   props: {
-    show:       { type: Boolean, default: false },
-    vendors:    { type: Array,   default: () => [] },
-    selectedId: { type: [String, Number], default: '' },
-    title:      { type: String,  default: '판매업체 선택' },
-    width:      { type: String,  default: '460px' },
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    show:       { type: Boolean,  default: true },                    // 표시 여부
+    vendors:    { type: Array,    default: () => ([]) },              // (호환용) 구 로컬 목록
+    selectedId: { type: String,   default: null },                    // (호환용) 현재 선택값
+    title:      { type: String,   default: '' },                      // 제목 override
+    width:      { type: String,   default: '' },                      // (호환용) 폭
+    modalName:  { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, computed, watch } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
-
-    const cfFiltered = computed(() => {
-      const k = (searchParam.searchValue || '').trim().toLowerCase();
-      if (!k) return props.vendors || [];
-      return (props.vendors || []).filter(v => (v.vendorNm || '').toLowerCase().includes(k) || String(v.vendorId || '').toLowerCase().includes(k));
-    });
-
-    const fnBuildPagerNums = () => {
-      pager.pageTotalCount = cfFiltered.value.length;
-      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-
-    const cfPageRows = computed(() => {
-      fnBuildPagerNums();
-      const start = (pager.pageNo - 1) * pager.pageSize;
-      return cfFiltered.value.slice(start, start + pager.pageSize);
-    });
-
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
-    watch(() => props.vendors, () => { pager.pageNo = 1; }, { deep: true });
-
-    const onSearch = () => { pager.pageNo = 1; };
-    const onReset = () => { searchParam.searchValue = ''; pager.pageNo = 1; };
-    const onSetPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
-
-    const onPick = (v) => {
-      emit('select', v);
-      if (props.onCallback) props.onCallback(props.modalName, null, v);
+    const onClose = () => {
       emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ SimpleVendorPickModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        return onSearch();
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ SimpleVendorPickModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'vendors-pick') {
-        return onPick(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '판매업체명 검색' },
-    ];
-
-    const listGridColumns = [
-      { key: 'vendorNm', label: '판매업체명', cellStyle: 'font-weight:600;', fmt: (v) => v || '-' },
-      { key: 'vendorId', label: 'ID', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
-    ];
-
-    const fnRowStyle = (row) => props.selectedId === row.vendorId ? 'background:#f0f4ff;color:#1565c0;font-weight:700;cursor:pointer;' : 'cursor:pointer;';
-
-    return {
-      searchParam, cfPageRows, pager,                                         // 데이터
-      baseSearchColumns, listGridColumns, fnRowStyle,                         // 컬럼 정의
-      onSetPage, onSizeChange,                                                // 페이저 콜백
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="show" :title="title" :width="width" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">
-    <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-      @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
-  <div style="max-height:55vh;overflow-y:auto;">
-    <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="vendorId"
-      :list-title="'총 ' + pager.pageTotalCount + '건'" :row-style="fnRowStyle"
-      empty-text="판매업체가 없습니다." row-clickable
-      @row-click="row => handleSelectAction('vendors-pick', row)"
-      @row-dblclick="row => handleSelectAction('vendors-pick', row)"
- />
-    <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-  </div>
-  <template #footer>
-    <button class="btn btn_close" @click="handleBtnAction('modal-close')">
-      닫기
-    </button>
-  </template>
-</bo-modal>
+<bo-pick-modal :show="show" popup-code="vendor" :title="title" @select="onSelect" @close="onClose" />
 `,
 };
 
@@ -4821,287 +2112,73 @@ window.SimpleVendorPickModal = {
 window.OdMemberPickModal = {
   name: 'OdMemberPickModal',
   inheritAttrs: false,
+  /* 회원 선택 — 팝업관리(cm_popup 'member') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    show:     { type: Boolean, default: false },
-    title:    { type: String,  default: '회원 선택' },
-    subtitle: { type: String,  default: '회원을 선택해주세요' },
-    uiNm:     { type: String,  default: '주문관리' },
-    pageSize: { type: Number,  default: 20 },
-    reloadTrigger: { type: Number, default: 0 },
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    show: { type: Boolean,  default: true },                    // 표시 여부
+    title: { type: String,   default: '' },                      // 제목 override
+    subtitle: { type: String,   default: '' },                      // (호환용) 부제
+    uiNm: { type: String,   default: '' },                      // (호환용) 화면명
+    pageSize: { type: Number,   default: 10 },                      // (호환용) 페이지 크기
+    reloadTrigger: { type: Number,   default: 0 },                       // (호환용) 재조회 트리거
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, watch } = Vue;
-    const searchParam = reactive({ searchType: '', searchValue: '' });
-    const state = reactive({ loading: false });
-    const rows = reactive([]);
-    const pager = reactive({ pageNo: 1, pageSize: props.pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50]});
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* handleSearch */
-    const handleSearch = async () => {
-      state.loading = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize,
-          searchValue: searchParam.searchValue || undefined,
-          searchType: searchParam.searchType || undefined };
-        if (params.searchValue && !params.searchType) params.searchType = 'memberNm,loginId';
-        const res = await boApiSvc.mbMember.getPage(params, props.uiNm, '회원검색');
-        const d = res.data?.data || {};
-        rows.splice(0, rows.length, ...(d.pageList || []));
-        pager.pageTotalCount = d.pageTotalCount || 0;
-        pager.pageTotalPage = d.pageTotalPage || 1;
-        fnBuildPagerNums();
-      } catch (_) { rows.splice(0, rows.length); pager.pageTotalCount = 0; pager.pageTotalPage = 1; }
-      finally { state.loading = false; }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-    const onPickSearch = () => { pager.pageNo = 1; handleSearch(); };
-    const onPickPage   = (n) => { pager.pageNo = n; handleSearch(); };
-    const onSizeChange = () => { pager.pageNo = 1; handleSearch(); };
-    const onSelect     = (m) => {
-      emit('select', m);
-      if (props.onCallback) props.onCallback(props.modalName, null, m);
+    const onClose = () => {
       emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ OdMemberPickModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        return onPickSearch();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ OdMemberPickModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'members-pick') {
-        return onSelect(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* show=true 또는 reloadTrigger 증가 시 초기화 + 재조회 */
-    const reset = () => { searchParam.searchType=''; searchParam.searchValue=''; rows.splice(0, rows.length); pager.pageNo=1; handleSearch(); };
-    watch(() => props.show, v => { if (v) reset(); });
-    watch(() => props.reloadTrigger, () => { if (props.show) handleSearch(); });
-
-    const memberPickGridColumns = [
-      { key: 'memberNm',       label: '이름',
-        fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
-      { key: 'loginId',        label: '로그인ID', mono: true, cellStyle: 'font-size:12px;' },
-      { key: 'gradeCdNm',      label: '등급', style: 'width:80px;text-align:center;',
-        fmt: (v) => v || '-',
-        cellInnerStyle: 'background:#f3e8ff;color:#7c3aed;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
-      { key: 'memberStatusCd', label: '상태', style: 'width:80px;text-align:center;',
-        fmt: (v, row) => row.memberStatusCdNm || v || '-',
-        cellInnerStyle: (v) => (v==='ACTIVE'?'background:#d1fae5;color:#065f46;':'background:#fee2e2;color:#991b1b;') + 'border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;' },
-      { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
-    ];
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'memberNm', label: '이름' },
-          { value: 'loginId',  label: '아이디' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-    ];
-
-    return {
-      state, searchParam, rows, pager,                                       // 데이터
-      memberPickGridColumns, baseSearchColumns,                              // 컬럼 정의
-      onPickPage, onSizeChange,                                              // BoGrid pager 콜백
-      handleBtnAction, handleSelectAction,                                   // dispatch
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="show" width="820px" max-height="90vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="border-radius:16px;display:flex;flex-direction:column;height:100%;overflow:hidden;">
-    <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:18px 24px 14px;border-bottom:1px solid #fce7f3;flex-shrink:0;">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div>
-          <div style="font-size:17px;font-weight:700;color:#1e293b;">
-            {{ title }}
-          </div>
-          <div style="font-size:12px;color:#9ca3af;margin-top:2px;">
-            {{ subtitle }}
-          </div>
-        </div>
-        <button @click="handleBtnAction('modal-close')" style="width:32px;height:32px;border-radius:50%;border:none;background:#fff;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#fce7f3';this.style.color='#e11d48'" onmouseout="this.style.background='#fff';this.style.color='#6b7280'">
-          ✕
-        </button>
-      </div>
-      <div style="margin-top:12px;">
-        <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-          @search="handleBtnAction('searchParam-search')" />
-      </div>
-    </div>
-    <div style="padding:8px 24px;background:#fafafa;border-bottom:1px solid #f0f0f0;font-size:12px;color:#6b7280;flex-shrink:0;">
-      총
-      <strong style="color:#e11d48;">
-        {{ pager.pageTotalCount.toLocaleString() }}
-      </strong>
-      명
-    </div>
-    <div style="flex:1;overflow-y:auto;">
-      <bo-grid row-clickable :columns="memberPickGridColumns" :rows="rows" :pager="pager" row-key="memberId"
-        :row-style="() => 'cursor:pointer;'"
-        :empty-text="state.loading ? '조회 중...' : '조회 결과가 없습니다.'"
-        @row-click="(row) => handleSelectAction('members-pick', row)"
-        @row-dblclick="(row) => handleSelectAction('members-pick', row)"
- row-actions>
-        <template #row-actions="{ row }">
-          <button class="btn btn_select" @click.stop="handleSelectAction('members-pick', row)" style="border-radius:6px;font-size:11px;">
-            선택
-          </button>
-        </template>
-      </bo-grid>
-      <bo-pager :pager="pager" :on-set-page="onPickPage" :on-size-change="onSizeChange" />
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal :show="show" popup-code="member" :title="title" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── 간단 상품 선택 모달 (PmPlanDtl / PmEventDtl 공통 패턴) ──
-   부모에서 이미 로드한 prods 배열을 prop 으로 받아 다중 토글.
-   부모는 selectedIds(productId 배열)와 toggle(productId) emit 으로 동기화. */
 window.SimpleProdPickModal = {
   name: 'SimpleProdPickModal',
   inheritAttrs: false,
+  /* 상품 선택(체크 토글) — 팝업관리(cm_popup 'prod') 메타 기반 어댑터.
+     체크한 행을 켰다 껐다 하는 UX 라 BoPickModal 의 토글 모드(selectedIds)를 쓴다.
+     기존 계약대로 상품ID 문자열을 toggle 로 올린다. */
   props: {
-    show:        { type: Boolean, default: false },
-    prods:       { type: Array,   default: () => [] },
-    selectedIds: { type: Array,   default: () => [] },
-    title:       { type: String,  default: '상품 선택' },
-    width:       { type: String,  default: '600px' },
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    show:        { type: Boolean,  default: true },                   // 표시 여부
+    prods:       { type: Array,    default: () => ([]) },             // (호환용) 구 로컬 목록
+    selectedIds: { type: Array,    default: () => ([]) },             // 현재 선택된 상품ID 목록
+    title:       { type: String,   default: '' },                     // 제목 override
+    width:       { type: String,   default: '' },                     // (호환용) 폭
+    modalName:   { type: String,   default: '' },                     // 모달 식별자
+    onCallback:  { type: Function, default: null },                   // 통합 콜백
   },
   emits: ['toggle', 'close'],
   setup(props, { emit }) {
-    const { reactive, computed, watch } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
-
-    const cfFiltered = computed(() => {
-      const k = (searchParam.searchValue || '').trim().toLowerCase();
-      if (!k) return props.prods || [];
-      return (props.prods || []).filter(p => (p.prodNm || '').toLowerCase().includes(k));
-    });
-
-    const fnBuildPagerNums = () => {
-      pager.pageTotalCount = cfFiltered.value.length;
-      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
-      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    const cfSelectedIds = Vue.computed(() => props.selectedIds || []);
+    const onToggle = (row) => {
+      const prodId = row ? row.id : null;
+      emit('toggle', prodId);
+      if (props.onCallback) props.onCallback(props.modalName, null, prodId);
     };
-
-    const cfPageRows = computed(() => {
-      fnBuildPagerNums();
-      const start = (pager.pageNo - 1) * pager.pageSize;
-      return cfFiltered.value.slice(start, start + pager.pageSize);
-    });
-
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
-    watch(() => props.prods, () => { pager.pageNo = 1; }, { deep: true });
-
-    const onSearch = () => { pager.pageNo = 1; };
-    const onReset = () => { searchParam.searchValue = ''; pager.pageNo = 1; };
-    const onSetPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
-
-    const isSelected = (id) => (props.selectedIds || []).includes(id);
-    const onToggle = (p) => {
-      emit('toggle', p.productId);
-      if (props.onCallback) props.onCallback(props.modalName, null, p.productId);
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ SimpleProdPickModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        return onSearch();
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ SimpleProdPickModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'prods-toggle') {
-        return onToggle(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '상품명 검색' },
-    ];
-
-    const listGridColumns = [
-      { key: '_check', label: '', style: 'width:32px;text-align:center;', html: true, fmt: (v, row) => {
-        return isSelected(row.productId)
-          ? `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7e57c2;color:#fff;font-size:9px;line-height:14px;font-weight:700;">✓</span>`
-          : `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;border:1.5px solid #d1d5db;background:#fff;"></span>`;
-      } },
-      { key: 'prodNm', label: '상품명', cellStyle: 'font-weight:600;font-size:12px;color:#222;', fmt: (v) => v || '-' },
-      { key: 'price',  label: '가격', align: 'right', cellStyle: 'font-size:11px;color:#888;', fmt: (v) => (v || 0).toLocaleString() + '원' },
-    ];
-
-    const fnRowStyle = (row) => isSelected(row.productId) ? 'background:#ede7f6;cursor:pointer;' : 'cursor:pointer;';
-
-    return {
-      searchParam, cfPageRows, pager, isSelected,                             // 데이터
-      baseSearchColumns, listGridColumns, fnRowStyle,                         // 컬럼 정의
-      onSetPage, onSizeChange,                                                // 페이저 콜백
-      handleBtnAction, handleSelectAction,                                    // dispatch
-    };
+    return { cfSelectedIds, onToggle, onClose };
   },
   template: /* html */`
-<bo-modal :show="show" :title="title" :width="width" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">
-    <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-      @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
-  <div style="max-height:55vh;overflow-y:auto;">
-    <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="productId"
-      :list-title="'총 ' + pager.pageTotalCount + '건'" :row-style="fnRowStyle"
-      empty-text="상품이 없습니다." row-clickable
-      @row-click="row => handleSelectAction('prods-toggle', row)"
-      @row-dblclick="row => handleSelectAction('prods-toggle', row)"
- />
-    <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-  </div>
-  <template #footer>
-    <button class="btn btn-primary" @click="handleBtnAction('modal-close')">
-      확인 ({{ (selectedIds||[]).length }}개)
-    </button>
-  </template>
-</bo-modal>
+<bo-pick-modal :show="show" popup-code="prod" :title="title" :selected-ids="cfSelectedIds"
+  @toggle="onToggle" @close="onClose" />
 `,
 };
 
@@ -5324,273 +2401,33 @@ window.BoRefModal = {
 window.BoCodeGrpModal = {
   name: 'BoCodeGrpModal',
   inheritAttrs: false,
+  /* 공통코드 값 선택 — 팝업관리(cm_popup 'code') 메타 기반 어댑터.
+     이 모달은 "코드그룹"이 아니라 지정된 그룹 "안의 코드"를 고르는 것이라
+     codeGrp 을 고정 필터(EQ)로 넘긴다. */
   props: {
-    show:    { type: Boolean, default: false },
-    codeGrp: { type: String,  default: '' },
-    title:   { type: String,  default: '' },
-    modalName:  { type: String,   default: '' },                       // 모달 식별자
-    onCallback: { type: Function, default: null },                     // 통합 콜백
+    show:       { type: Boolean,  default: true },                    // 표시 여부
+    codeGrp:    { type: String,   default: '' },                      // 조회할 코드그룹 (고정 필터)
+    title:      { type: String,   default: '' },                      // 제목 override
+    modalName:  { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
-  emits: ['close', 'select'],
+  emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, watch } = Vue;
-    const codes = ref([]);
-    const loading = ref(false);
-    const error = ref('');
-    const tab = ref('list'); // 'list' | 'tree'
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
-
-    /* 원본 row 키(codeVal/codeNm/codeSortOrd/codeLevel/parentCodeValue) → 화면용 정규화 */
-    const fnNorm = (c) => ({
-      codeId:          c.codeId,
-      codeValue:       c.codeVal ?? c.codeValue ?? '',
-      codeLabel:       c.codeNm  ?? c.codeLabel ?? c.codeVal ?? '',
-      codeLevel:       Number(c.codeLevel ?? 1),
-      parentCodeValue: c.parentCodeValue ?? null,
-      sortOrd:         Number(c.codeSortOrd ?? c.sortOrd ?? 0),
-      useYn:           c.useYn ?? 'Y',
-      codeRemark:      c.codeRemark ?? '',
-    });
-
-    /* fnLoad */
-    const fnLoad = async () => {
-      if (!props.codeGrp) { codes.value = []; return; }
-      loading.value = true;
-      error.value = '';
-      try {
-        /* 1차: 클라이언트 코드 스토어에서 시도 (네트워크 0회) */
-        const store = window.sfGetBoCodeStore?.();
-        const local = store?.sgGetCodesByGroup?.(props.codeGrp);
-        if (Array.isArray(local) && local.length) {
-          codes.value = local.map(fnNorm).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-          return;
-        }
-        /* 2차: API 직접 조회 */
-        const res = await window.coApiSvc.syCode.getGrpCodes(props.codeGrp, '공통코드', '코드그룹조회');
-        const list = res?.data?.data?.pageList || res?.data?.data || [];
-        codes.value = (Array.isArray(list) ? list : []).map(fnNorm).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      } catch (err) {
-        console.error('[BoCodeGrpModal:fnLoad]', err);
-        error.value = err.message || '코드 조회 실패';
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    /* show=true 또는 codeGrp 변경 시 자동 로드 */
-    watch(() => [props.show, props.codeGrp], ([show]) => {
-      if (show) { tab.value = 'list'; fnLoad(); }
-    }, { immediate: true });
-
-    /* 트리 빌드: parentCodeValue 로 부모-자식 연결 */
-    const cfTree = computed(() => {
-      const all = codes.value || [];
-      if (!all.length) return [];
-      const byParent = new Map();
-      all.forEach(c => {
-        const p = c.parentCodeValue || '';
-        if (!byParent.has(p)) byParent.set(p, []);
-        byParent.get(p).push(c);
-      });
-      const known = new Set(all.map(c => c.codeValue));
-
-      /* buildChildren */
-      const buildChildren = (parentVal) => {
-        const list = byParent.get(parentVal) || [];
-        return list
-          .slice()
-          .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-          .map(c => ({ ...c, children: buildChildren(c.codeValue) }));
-      };
-      // 루트: parentCodeValue 가 없거나, 부모가 같은 그룹 안에 존재하지 않는 항목
-      const roots = all.filter(c => !c.parentCodeValue || !known.has(c.parentCodeValue));
-      return roots
-        .slice()
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(r => ({ ...r, children: buildChildren(r.codeValue) }));
-    });
-
-    const cfHasTree = computed(() => codes.value.some(c => Number(c.codeLevel || 1) > 1 || c.parentCodeValue));
-
-    /* cfFilteredCodes — 검색어로 필터링된 코드 목록 */
-    const cfFilteredCodes = computed(() => {
-      const k = (searchParam.searchValue || '').trim().toLowerCase();
-      if (!k) return codes.value;
-      return codes.value.filter(c =>
-        (c.codeId || '').toLowerCase().includes(k) ||
-        (c.codeValue || '').toLowerCase().includes(k) ||
-        (c.codeLabel || '').toLowerCase().includes(k)
-      );
-    });
-
-    /* fnBuildPagerNums */
-    const fnBuildPagerNums = () => {
-      const total = cfFilteredCodes.value.length;
-      pager.pageTotalCount = total;
-      pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.pageSize));
-      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-
-    /* cfPageCodes — 페이지에 해당하는 코드 슬라이스 */
-    const cfPageCodes = computed(() => {
-      fnBuildPagerNums();
-      const start = (pager.pageNo - 1) * pager.pageSize;
-      return cfFilteredCodes.value.slice(start, start + pager.pageSize);
-    });
-
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
-
-    /* onSetPage / onSizeChange */
-    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-    const onSizeChange = () => { pager.pageNo = 1; };
-
-    /* onClose */
-    const onClose  = () => {
-      emit('close');
-      if (props.onCallback) props.onCallback(props.modalName, null, null);
-    };
-
-    /* onSelect */
+    const cfInitParam = Vue.computed(() => props.codeGrp ? { codeGrp: props.codeGrp } : {});
     const onSelect = (row) => {
       emit('select', row);
       if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ BoCodeGrpModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        return onClose();
-      } else if (cmd === 'tab-change') {
-        tab.value = param;
-        return;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
-
-    /* handleSelectAction — 행/선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ BoCodeGrpModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'codes-pick') {
-        return onSelect(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* codeGridColumns — BoGrid 컬럼 정의 */
-    const codeGridColumns = [
-      { key: 'codeId',          label: '코드ID',     style: 'width:120px;', cellInnerStyle: 'background:#f3e5f5;padding:2px 6px;border-radius:4px;font-family:monospace;color:#6a1b9a;font-size:11px;', fmt: (v) => v || '-' },
-      { key: 'codeValue',       label: '코드값',     style: 'width:160px;', cellInnerStyle: 'background:#f5f5f7;padding:2px 6px;border-radius:4px;font-family:monospace;color:#1565c0;', fmt: (v) => v || '-' },
-      { key: 'codeLabel',       label: '코드명',     fmt: (v) => v || '-' },
-      { key: 'codeLevel',       label: '레벨',       style: 'width:60px;', align: 'center', badge: (row) => row.codeLevel === 1 ? 'badge-blue' : row.codeLevel === 2 ? 'badge-green' : 'badge-orange', fmt: (v) => 'L' + (v || '-') },
-      { key: 'parentCodeValue', label: '부모코드값', style: 'width:140px;', html: true, fmt: (v) => v ? `<code style="background:#fafafa;padding:2px 6px;border-radius:4px;font-family:monospace;color:#888;font-size:11px;">${v}</code>` : '<span style="color:#ccc;">-</span>' },
-      { key: 'sortOrd',         label: '정렬',       style: 'width:60px;', align: 'right', cellStyle: 'color:#666;', fmt: (v) => v != null ? v : '-' },
-      { key: 'useYn',           label: '사용',       style: 'width:50px;', align: 'center', badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', fmt: (v) => v || '-' },
-    ];
-
-    /* baseSearchColumns — 검색 영역 컬럼 */
-    const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '코드ID / 코드값 / 코드명 검색' },
-    ];
-
-    return {
-      codes, loading, error, tab, cfTree, cfHasTree, onSelect,                 // 데이터
-      searchParam, pager, cfFilteredCodes, cfPageCodes,                        // 검색 / 페이저
-      onSetPage, onSizeChange,                                                 // BoGrid pager 콜백
-      codeGridColumns, baseSearchColumns,                                      // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                     // dispatch
-    };
+    return { cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="show" width="960px" max-width="94vw" max-height="84vh" box-pad="0" body-pad="0" :z-index="1500" @close="handleBtnAction('modal-close')">
-  <div style="background:#fff;border-radius:16px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <!-- 헤더 -->
-    <div class="tree-modal-header" style="padding:14px 20px;border-bottom:1px solid #f0e0e7;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:14px;font-weight:700;color:#222;">
-          {{ title || '공통코드 미리보기' }}
-        </span>
-        <code style="font-size:11px;background:#fff;color:#6a1b9a;padding:2px 8px;border-radius:4px;border:1px solid #e1bee7;font-family:monospace;">
-          {{ codeGrp }}
-        </code>
-        </div>
-        <button @click="handleBtnAction('modal-close')" style="border:none;background:transparent;color:#888;font-size:18px;cursor:pointer;">
-          ✕
-        </button>
-      </div>
-      <!-- 탭 바 -->
-      <div style="display:flex;gap:0;border-bottom:1px solid #eee;background:#fafafa;padding:0 14px;">
-        <button type="button" @click="handleBtnAction('tab-change', 'list')"
-        :style="(tab==='list'
-        ? 'border:none;background:#fff;border-top:2px solid #ec4899;color:#222;font-weight:700;'
-        : 'border:none;background:transparent;color:#888;font-weight:500;')
-        + 'padding:10px 16px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;'"
-        >
-          📋 일반 코드목록
-        </button>
-        <button type="button" @click="handleBtnAction('tab-change', 'tree')"
-        :style="(tab==='tree'
-        ? 'border:none;background:#fff;border-top:2px solid #ec4899;color:#222;font-weight:700;'
-        : 'border:none;background:transparent;color:#888;font-weight:500;')
-        + 'padding:10px 16px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;'"
-        >
-          🌲 트리목록
-          <span v-if="!cfHasTree" style="font-size:10px;color:#bbb;margin-left:4px;">
-            (단층)
-          </span>
-        </button>
-      </div>
-      <!-- 본문 -->
-      <div style="padding:14px 20px;overflow-y:auto;flex:1;">
-        <!-- 검색 (list 탭에서만) -->
-        <div v-if="tab==='list' ? (codes.length) : false" style="margin-bottom:10px;">
-          <bo-search-area :columns="baseSearchColumns" :param="searchParam" :show-actions="false" />
-        </div>
-        <div v-if="loading" style="padding:32px;text-align:center;color:#999;font-size:13px;">
-          불러오는 중...
-        </div>
-        <div v-else-if="error" style="padding:24px;text-align:center;color:#d32f2f;font-size:13px;">
-          {{ error }}
-        </div>
-        <div v-else-if="!codes.length" style="padding:32px;text-align:center;color:#aaa;font-size:13px;">
-          등록된 코드가 없습니다.
-        </div>
-        <!-- ── 일반 코드목록 ── -->
-        <template v-else-if="tab==='list'">
-          <bo-grid :columns="codeGridColumns" :rows="cfPageCodes" :pager="pager"
-            row-key="codeId" row-clickable
-            empty-text="검색 결과가 없습니다."
-            @row-click="row => handleSelectAction('codes-pick', row)"
- />
-          <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
-        </template>
-        <!-- ── 트리목록 ── -->
-        <div v-else-if="tab==='tree'" style="font-size:12px;">
-          <div v-if="!cfTree.length" style="padding:32px;text-align:center;color:#aaa;">
-            표시할 트리가 없습니다.
-          </div>
-          <ul v-else style="list-style:none;padding-left:0;margin:0;">
-            <bo-code-grp-tree-node v-for="node in cfTree" :key="node.codeId || node.codeValue"
-              :node="node" :depth="0" @select="(row) => handleSelectAction('codes-pick', row)" />
-          </ul>
-        </div>
-      </div>
-      <!-- 푸터 -->
-      <div style="padding:12px 20px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:11px;color:#888;">
-          총 {{ codes.length }}건 · 행 클릭 시 선택
-        </span>
-        <button class="btn btn_close" @click="handleBtnAction('modal-close')">
-          닫기
-        </button>
-      </div>
-    </div>
-  </bo-modal>
-`
+<bo-pick-modal :show="show" popup-code="code" :title="title" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
+`,
 };
 
 /* ── BoCodeGrpTreeNode (재귀 노드 컴포넌트) ───────────────────── */
@@ -7294,791 +4131,266 @@ if (props.onCallback) props.onCallback(props.modalName, null, null);
 window.BoProdCatePickModal = {
   name: 'BoProdCatePickModal',
   inheritAttrs: false,
+  /* 상품 선택(카테고리 트리) — 팝업관리(cm_popup 'prodByCategory') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    excludeIds: { type: Array,    default: () => [] },                  // 제외할 prodId 목록
-    title:      { type: String,   default: '상품 선택' },               // 모달 타이틀
-    modalName:  { type: String,   default: '' },                        // 모달 식별자
-    onCallback: { type: Function, default: null },                      // 통합 콜백
+    excludeIds: { type: Array,    default: () => ([]) },              // 목록에서 제외할 ID 목록
+    title: { type: String,   default: '' },                      // 제목 override
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, computed, onMounted, watch } = Vue;
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const cfExcludeIds = Vue.computed(() => props.excludeIds || []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    /* ── 상태 ───────────────────────────────────────────── */
-    const categories = reactive([]);                          // 전체 카테고리
-    const expanded   = reactive(new Set());                   // 트리 펼침
-    const uiState    = reactive({ loading: false, catSearchValue: '', selectedCategoryId: null });
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50] });
-    const prodList = reactive([]);
-
-    /* ── 좌측 카테고리 트리 ─────────────────────────────── */
-    const cfTree = computed(() => {
-      const k = uiState.catSearchValue.trim().toLowerCase();
-      const base = k
-        ? categories.filter(c => (c.categoryNm || '').toLowerCase().includes(k))
-        : categories.filter(c => c.useYn !== 'N');
-      const build = (parentId) =>
-        base.filter(c => (c.parentCategoryId || null) === (parentId || null))
-          .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-          .map(c => ({ ...c, children: build(c.categoryId) }));
-      return { categoryId: null, categoryNm: '전체', children: build(null) };
-    });
-
-    /* ── API ────────────────────────────────────────────── */
-    const fnLoadCategories = async () => {
-      try {
-        const res = await boApiSvc.pdCategory.getList({ pageSize: 10000 }, '상품선택', '카테고리조회');
-        categories.splice(0, categories.length, ...(res.data?.data || []));
-        /* 카테고리 트리 기본 펼침 */
-        expanded.clear();
-        expanded.add(null);
-        categories.forEach(c => expanded.add(c.categoryId));
-      } catch (e) { categories.splice(0); }
-    };
-
-    const fnBuildPagerNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-
-    const handleSearchProds = async () => {
-      uiState.loading = true;
-      prodList.splice(0, prodList.length);
-      pager.pageTotalCount = 0; pager.pageTotalPage = 1;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
-        if (searchParam.searchValue.trim()) params.searchValue = searchParam.searchValue.trim();
-        if (uiState.selectedCategoryId != null) params.categoryId = uiState.selectedCategoryId;
-        const res = await boApiSvc.pdProd.getPage(params, '상품선택', '상품조회');
-        const d = res.data?.data;
-        prodList.splice(0, prodList.length, ...(d?.pageList || d?.list || []));
-        pager.pageTotalCount = d?.pageTotalCount || 0;
-        pager.pageTotalPage = d?.pageTotalPage || 1;
-        fnBuildPagerNums();
-      } catch (e) { prodList.splice(0); } finally { uiState.loading = false; }
-    };
-
-    onMounted(async () => {
-      await fnLoadCategories();
-      await handleSearchProds();
-    });
-
-    /* ── 행 클릭 → 선택 ────────────────────────────────── */
-    const onPick = (row) => {
-      if ((props.excludeIds || []).includes(row.prodId)) { return; }
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
       emit('select', row);
       if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
-
-    const onSearch = () => { pager.pageNo = 1; handleSearchProds(); };
-    const onReset  = () => {
-      searchParam.searchValue = '';
-      uiState.selectedCategoryId = null;
-      pager.pageNo = 1;
-      handleSearchProds();
-    };
-    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchProds(); } };
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchProds(); };
-
-    /* ── dispatch ───────────────────────────────────────── */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ BoProdCatePickModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        emit('close');
-        if (props.onCallback) props.onCallback(props.modalName, null, null);
-        return;
-      } else if (cmd === 'searchParam-search') {
-        return onSearch();
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      } else if (cmd === 'catTree-expandAll') {
-        categories.forEach(c => expanded.add(c.categoryId));
-        return;
-      } else if (cmd === 'catTree-collapseAll') {
-        expanded.clear();
-        return;
-      } else if (cmd === 'catTree-toggle') {
-        if (expanded.has(param)) expanded.delete(param); else expanded.add(param);
-        return;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
+    const onClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
 
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ BoProdCatePickModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'catTree-select') {
-        uiState.selectedCategoryId = param;
-        pager.pageNo = 1;
-        return handleSearchProds();
-      } else if (cmd === 'prods-pick') {
-        return onPick(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* ── 컬럼 정의 ──────────────────────────────────────── */
-    const baseSearchColumns = [
-      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '상품명 검색' },
-    ];
-
-    const prodGridColumns = [
-      { key: 'prodId',        label: 'ID',     style: 'width:100px;',
-        cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace;' },
-      { key: 'prodNm',        label: '상품명', cellInnerStyle: 'font-weight:600;color:#1a1a2e;' },
-      { key: 'categoryNm',    label: '카테고리', cellStyle: 'color:#666;' },
-      { key: 'price',         label: '가격',   align: 'right',
-        fmt: (v) => v != null ? Number(v).toLocaleString() + '원' : '-' },
-      { key: '_act',          label: '선택',   style: 'width:80px;text-align:center;',
-        cellStyle: (v, row) => (props.excludeIds || []).includes(row.prodId) ? 'color:#aaa;' : 'color:#e8587a;font-weight:700;cursor:pointer;',
-        fmt: (v, row) => (props.excludeIds || []).includes(row.prodId) ? '이미 선택됨' : '✔ 선택',
-        link: true },
-    ];
-
-    return {
-      cfSiteNm, categories, expanded, uiState, searchParam, pager, prodList, cfTree,
-      baseSearchColumns, prodGridColumns,
-      setPage, onSizeChange,
-      handleBtnAction, handleSelectAction,
-    };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
   template: /* html */`
-<bo-modal :show="true" width="1100px" max-width="95vw" height="auto" max-height="86vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="background:#fff;border-radius:14px;width:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <!-- 헤더 -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 50%,#ffd5e1 100%);">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:16px;font-weight:800;color:#1a1a2e;">
-          🛍 {{ title }}
-        </span>
-        <span style="font-size:11px;font-weight:600;color:#2563eb;background:#fff;padding:2px 10px;border-radius:20px;">
-          {{ cfSiteNm }}
-        </span>
-      </div>
-      <span style="cursor:pointer;font-size:22px;color:#888;line-height:1;" @click="handleBtnAction('modal-close')">
-        ✕
-      </span>
-    </div>
-    <!-- 검색 -->
-    <div style="padding:10px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="uiState.loading"
-        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
-    </div>
-    <!-- 바디 -->
-    <div style="display:flex;min-height:0;overflow:hidden;">
-      <!-- 좌: 카테고리 트리 -->
-      <div style="width:240px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#fafbfc;">
-        <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
-          <div style="font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">
-            📁 카테고리
-          </div>
-          <input v-model="uiState.catSearchValue" placeholder="🔍 카테고리 검색"
-            style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
-        </div>
-        <div style="display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid #ebebeb;">
-          <button class="btn btn_expand_all" @click="handleBtnAction('catTree-expandAll')" style="flex:1;font-size:11px;padding:3px 4px;">
-            ▼ 전체펼치기
-          </button>
-          <button class="btn btn_collapse_all" @click="handleBtnAction('catTree-collapseAll')" style="flex:1;font-size:11px;padding:3px 4px;">
-            ▶ 전체닫기
-          </button>
-        </div>
-        <div style="flex:1;overflow-y:auto;padding:6px;max-height:560px;">
-          <!-- 전체 -->
-          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;"
-            :style="uiState.selectedCategoryId===null?'background:#e8587a;color:#fff;':''"
-            @click="handleSelectAction('catTree-select', null)">
-            <span style="font-size:8px;font-weight:900;flex-shrink:0;"
-              :style="{ color: uiState.selectedCategoryId===null?'#fff':'#e8587a' }">●</span>
-            <span style="font-size:13px;font-weight:700;flex:1;"
-              :style="{ color: uiState.selectedCategoryId===null?'#fff':'#374151' }">전체</span>
-          </div>
-          <!-- 카테고리 트리 (재귀 노드 단순 평면 표시) -->
-          <div v-for="c in cfTree.children" :key="c.categoryId" style="margin-left:8px;">
-            <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;"
-              :style="uiState.selectedCategoryId===c.categoryId?'background:#e8587a;color:#fff;':''"
-              @click="handleSelectAction('catTree-select', c.categoryId)">
-              <span style="font-size:10px;color:#2563eb;flex-shrink:0;"
-                :style="{ color: uiState.selectedCategoryId===c.categoryId?'#fff':'#2563eb' }">●</span>
-              <span style="font-size:12px;flex:1;"
-                :style="{ color: uiState.selectedCategoryId===c.categoryId?'#fff':'#374151' }">
-                {{ c.categoryNm }}
-              </span>
-            </div>
-            <div v-for="c2 in c.children" :key="c2.categoryId" style="margin-left:14px;">
-              <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:11px;"
-                :style="uiState.selectedCategoryId===c2.categoryId?'background:#e8587a;color:#fff;':''"
-                @click="handleSelectAction('catTree-select', c2.categoryId)">
-                <span style="font-size:8px;color:#52c41a;flex-shrink:0;"
-                  :style="{ color: uiState.selectedCategoryId===c2.categoryId?'#fff':'#52c41a' }">◦</span>
-                <span :style="{ color: uiState.selectedCategoryId===c2.categoryId?'#fff':'#374151' }">
-                  {{ c2.categoryNm }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- 우: 상품 목록 -->
-      <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff;">
-        <div style="display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
-          <span style="margin-left:auto;font-size:12px;color:#9ca3af;">
-            상품목록 <b style="color:#e8587a;margin:0 2px;">{{ pager.pageTotalCount }}</b> 건
-          </span>
-        </div>
-        <div style="display:flex;flex-direction:column;">
-          <bo-grid :columns="prodGridColumns" :rows="prodList" :pager="pager" row-key="prodId"
-            :empty-text="uiState.loading ? '로딩 중...' : '🔍 검색 결과가 없습니다.'"
-            @cell-click="e => handleSelectAction('prods-pick', e.row)"
-            @row-dblclick="row => handleSelectAction('prods-pick', row)"
- />
-          <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-        </div>
-      </div>
-    </div>
-  </div>
-</bo-modal>
+<bo-pick-modal popup-code="prodByCategory" :title="title" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── 프로모션 픽커 모달 4종 — 쿠폰/적립금/할인/사은품 ─────────────────────
- * 각 모달이 <bo-modal>을 루트로 직접 포함 → 부모(PdProdDtl)는 v-if로 마운트.
- * bo-modal 자체 teleport(body) 가 오버레이 처리하므로 부모 bo-modal 래퍼 불필요.
- * ─────────────────────────────────────────────────────────────────────────── */
-
-/* ── PmCouponPickModal — 쿠폰 선택 모달 ────────────────────────────────── */
 window.PmCouponPickModal = {
   name: 'PmCouponPickModal',
   inheritAttrs: false,
+  /* 쿠폰 선택 — 팝업관리(cm_popup 'coupon') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    showToast:  { type: Function, default: () => {} },
-    modalName:  { type: String,   default: 'coupon-pick' },
-    onCallback: { type: Function, default: null },
-    excludeIds: { type: Array,    default: () => [] },
+    showToast: { type: Function, default: () => {} },                // (호환용) 토스트
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
+    excludeIds: { type: Array,    default: () => ([]) },              // 목록에서 제외할 ID 목록
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, ref, onMounted } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const rows = ref([]);
-    const loading = ref(false);
-    const columns = [
-      { key: 'couponId', label: '쿠폰 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;' },
-      { key: 'couponNm', label: '쿠폰명' },
-      { key: 'useYn',    label: '사용', style: 'width:60px;', align: 'center',
-        badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
-        fmt: v => v === 'Y' ? '사용' : '미사용' },
-    ];
-    const fnLoad = async () => {
-      loading.value = true;
-      try {
-        const res = await boApiSvc.pmCoupon.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '쿠폰피커', '조회');
-        const d = res.data?.data || {};
-        rows.value = d.pageList || [];
-        pager.pageTotalCount = d.pageTotalCount || 0;
-        pager.pageTotalPage  = d.pageTotalPage  || 1;
-      } catch (err) {
-        props.showToast(err.response?.data?.message || '조회 실패', 'error', 0);
-      } finally { loading.value = false; }
-    };
-    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
-    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
-    const onPick = (row) => {
+    const cfExcludeIds = Vue.computed(() => props.excludeIds || []);
+    const cfInitParam = Vue.computed(() => ({}));
+
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
       if (props.onCallback) props.onCallback(props.modalName, null, row);
-      else emit('select', row);
     };
     const onClose = () => {
+      emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
-      else emit('close');
     };
-    onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
+
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
-  template: `
-<bo-modal :show="true" title="쿠폰 선택" width="780px" @close="onClose">
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="쿠폰명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
-    <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
-  </div>
-  <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="couponId"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-dblclick="onPick">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
-  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn_close" @click="onClose">닫기</button>
-  </div>
-</bo-modal>
+  template: /* html */`
+<bo-pick-modal popup-code="coupon" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── PmSavePickModal — 적립금 선택 모달 ─────────────────────────────────── */
 window.PmSavePickModal = {
   name: 'PmSavePickModal',
   inheritAttrs: false,
+  /* 적립금 선택 — 팝업관리(cm_popup 'save') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    showToast:  { type: Function, default: () => {} },
-    modalName:  { type: String,   default: 'save-pick' },
-    onCallback: { type: Function, default: null },
+    showToast: { type: Function, default: () => {} },                // (호환용) 토스트
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, ref, onMounted } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const rows = ref([]);
-    const loading = ref(false);
-    const columns = [
-      { key: 'saveId', label: '적립금 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;' },
-      { key: 'saveNm', label: '적립금명' },
-      { key: 'useYn',  label: '사용', style: 'width:60px;', align: 'center',
-        badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
-        fmt: v => v === 'Y' ? '사용' : '미사용' },
-    ];
-    const fnLoad = async () => {
-      loading.value = true;
-      try {
-        const res = await boApiSvc.pmSave.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '적립금피커', '조회');
-        const d = res.data?.data || {};
-        rows.value = d.pageList || [];
-        pager.pageTotalCount = d.pageTotalCount || 0;
-        pager.pageTotalPage  = d.pageTotalPage  || 1;
-      } catch (err) {
-        props.showToast(err.response?.data?.message || '조회 실패', 'error', 0);
-      } finally { loading.value = false; }
-    };
-    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
-    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
-    const onPick = (row) => {
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
+
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
       if (props.onCallback) props.onCallback(props.modalName, null, row);
-      else emit('select', row);
     };
     const onClose = () => {
+      emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
-      else emit('close');
     };
-    onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
+
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
-  template: `
-<bo-modal :show="true" title="적립금 선택" width="780px" @close="onClose">
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="적립금명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
-    <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
-  </div>
-  <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="saveId"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-dblclick="onPick">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
-  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn_close" @click="onClose">닫기</button>
-  </div>
-</bo-modal>
+  template: /* html */`
+<bo-pick-modal popup-code="save" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── PmDiscntPickModal — 할인 선택 모달 ─────────────────────────────────── */
 window.PmDiscntPickModal = {
   name: 'PmDiscntPickModal',
   inheritAttrs: false,
+  /* 할인 선택 — 팝업관리(cm_popup 'discnt') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    showToast:  { type: Function, default: () => {} },
-    modalName:  { type: String,   default: 'discnt-pick' },
-    onCallback: { type: Function, default: null },
+    showToast: { type: Function, default: () => {} },                // (호환용) 토스트
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, ref, onMounted } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const rows = ref([]);
-    const loading = ref(false);
-    const columns = [
-      { key: 'discntId', label: '할인 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;' },
-      { key: 'discntNm', label: '할인명' },
-      { key: 'useYn',    label: '사용', style: 'width:60px;', align: 'center',
-        badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
-        fmt: v => v === 'Y' ? '사용' : '미사용' },
-    ];
-    const fnLoad = async () => {
-      loading.value = true;
-      try {
-        const res = await boApiSvc.pmDiscnt.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '할인피커', '조회');
-        const d = res.data?.data || {};
-        rows.value = d.pageList || [];
-        pager.pageTotalCount = d.pageTotalCount || 0;
-        pager.pageTotalPage  = d.pageTotalPage  || 1;
-      } catch (err) {
-        props.showToast(err.response?.data?.message || '조회 실패', 'error', 0);
-      } finally { loading.value = false; }
-    };
-    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
-    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
-    const onPick = (row) => {
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
+
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
       if (props.onCallback) props.onCallback(props.modalName, null, row);
-      else emit('select', row);
     };
     const onClose = () => {
+      emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
-      else emit('close');
     };
-    onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
+
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
-  template: `
-<bo-modal :show="true" title="할인 선택" width="780px" @close="onClose">
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="할인명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
-    <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
-  </div>
-  <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="discntId"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-dblclick="onPick">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
-  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn_close" @click="onClose">닫기</button>
-  </div>
-</bo-modal>
+  template: /* html */`
+<bo-pick-modal popup-code="discnt" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── PmCategoryPickModal — 카테고리 선택 모달 ───────────────────────────── */
 window.PmCategoryPickModal = {
   name: 'PmCategoryPickModal',
+  inheritAttrs: false,
+  /* 카테고리 선택 — 팝업관리(cm_popup 'category') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    modalName:  { type: String,   default: 'category-pick' },
-    onCallback: { type: Function, default: null },
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, ref, onMounted } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const rows = ref([]);
-    const loading = ref(false);
-    const columns = [
-      { key: 'categoryId', label: 'ID', width: '80px', align: 'center', mono: true },
-      { key: 'categoryNm', label: '카테고리명' },
-      { key: 'categoryLevel', label: '레벨', width: '50px', align: 'center' },
-    ];
-    const fnLoad = async () => {
-      loading.value = true;
-      try {
-        const res = await boApiSvc.pdCategory.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize });
-        const d = res.data?.data || {};
-        rows.value = d.pageList || [];
-        pager.pageTotalCount = d.pageTotalCount || 0;
-        pager.pageTotalPage = d.pageTotalPage || 1;
-      } catch (e) { rows.value = []; } finally { loading.value = false; }
-    };
-    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
-    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
-    const onPick = (row) => {
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
+
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
       if (props.onCallback) props.onCallback(props.modalName, null, row);
-      else emit('select', row);
     };
     const onClose = () => {
+      emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
-      else emit('close');
     };
-    onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
+
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
-  template: `
-<bo-modal :show="true" title="카테고리 선택" width="780px" @close="onClose">
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="카테고리명 검색" @keyup.enter="fnLoad" style="flex:1;" />
-    <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
-  </div>
-  <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="categoryId"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-dblclick="onPick">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
-  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn_close" @click="onClose">닫기</button>
-  </div>
-</bo-modal>
+  template: /* html */`
+<bo-pick-modal popup-code="category" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── PmBrandPickModal — 브랜드 선택 모달 ────────────────────────────────── */
 window.PmBrandPickModal = {
   name: 'PmBrandPickModal',
+  inheritAttrs: false,
+  /* 브랜드 선택 — 팝업관리(cm_popup 'brand') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    modalName:  { type: String,   default: 'brand-pick' },
-    onCallback: { type: Function, default: null },
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, ref, onMounted } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const rows = ref([]);
-    const loading = ref(false);
-    const columns = [
-      { key: 'brandId', label: 'ID', width: '80px', align: 'center', mono: true },
-      { key: 'brandNm', label: '브랜드명' },
-      { key: 'useYn', label: '사용', width: '60px', align: 'center',
-        badge: (r) => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
-        fmt: (v) => v === 'Y' ? '사용' : '미사용' },
-    ];
-    const fnLoad = async () => {
-      loading.value = true;
-      try {
-        const res = await boApiSvc.syBrand.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize });
-        const d = res.data?.data || {};
-        rows.value = d.pageList || [];
-        pager.pageTotalCount = d.pageTotalCount || 0;
-        pager.pageTotalPage = d.pageTotalPage || 1;
-      } catch (e) { rows.value = []; } finally { loading.value = false; }
-    };
-    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
-    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
-    const onPick = (row) => {
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
+
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
       if (props.onCallback) props.onCallback(props.modalName, null, row);
-      else emit('select', row);
     };
     const onClose = () => {
+      emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
-      else emit('close');
     };
-    onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
+
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
-  template: `
-<bo-modal :show="true" title="브랜드 선택" width="780px" @close="onClose">
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="브랜드명 검색" @keyup.enter="fnLoad" style="flex:1;" />
-    <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
-  </div>
-  <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="brandId"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-dblclick="onPick">
-    <template #row-actions="{ row }">
-      <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
-    </template>
-  </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
-  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn_close" @click="onClose">닫기</button>
-  </div>
-</bo-modal>
+  template: /* html */`
+<bo-pick-modal popup-code="brand" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── PdProdPickModal — 상품 검색/단건 선택 모달 ─────────────────────────────
-   서버사이드 페이징 + 다중 검색타입(상품명/ID) 필터.
-   선택 시 onCallback(modalName, null, row) 또는 emit('select', row).
-   사용처:
-     - PdCategoryProdMng.js : 카테고리 내 상품 추가
-   props:
-     show        {Boolean}  - 모달 표시 여부
-     title       {String}   - 모달 제목 (기본: '상품 선택')
-     excludeIds  {Array}    - 선택 목록에서 제외할 prodId 배열
-     uiNm        {String}   - API 헤더 UI명 (기본: '상품피커')
-     modalName   {String}   - 콜백 식별자 (기본: 'prod-pick')
-     onCallback  {Function} - 콜백(modalName, null, row|null)
-   ─────────────────────────────────────────────────────────────────────── */
 window.PdProdPickModal = {
   name: 'PdProdPickModal',
   inheritAttrs: false,
+  /* 상품 선택 — 팝업관리(cm_popup 'prod') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    show:       { type: Boolean,   default: false },
-    title:      { type: String,    default: '상품 선택' },
-    excludeIds: { type: Array,     default: () => [] },   // 제외할 prodId 목록
-    uiNm:       { type: String,    default: '상품피커' },
-    modalName:  { type: String,    default: 'prod-pick' },
-    onCallback: { type: Function,  default: null },
-    showToast:  { type: Function,  default: () => {} },
+    show: { type: Boolean,  default: true },                    // 표시 여부
+    title: { type: String,   default: '' },                      // 제목 override
+    excludeIds: { type: Array,    default: () => ([]) },              // 목록에서 제외할 ID 목록
+    uiNm: { type: String,   default: '' },                      // (호환용) 화면명
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
+    showToast: { type: Function, default: () => {} },                // (호환용) 토스트
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, ref, computed, watch, onMounted } = Vue;
-    const searchType  = ref('');
-    const searchValue = ref('');
-    const rows        = ref([]);
-    const loading     = ref(false);
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1 });
+    const cfExcludeIds = Vue.computed(() => props.excludeIds || []);
+    const cfInitParam = Vue.computed(() => ({}));
 
-    const columns = [
-      { key: 'prodId',   label: 'ID',    style: 'width:130px;', cellStyle: 'font-family:monospace;font-size:11px;color:#aaa;' },
-      { key: 'prodNm',   label: '상품명' },
-      { key: 'salePrice', label: '판매가', style: 'width:100px;', align: 'right',
-        fmt: v => v ? Number(v).toLocaleString() + '원' : '-' },
-    ];
-
-    const fnLoad = async () => {
-      loading.value = true;
-      try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
-        const sv = (searchValue.value || '').trim();
-        if (sv) { params.searchValue = sv; }
-        if (sv && searchType.value) { params.searchType = searchType.value; }
-        const res = await boApiSvc.pdProd.getPage(params, props.uiNm, '조회');
-        const d = res.data?.data || {};
-        rows.value = (d.pageList || []).map(p => ({ ...p, prodId: p.prodId ?? p.productId }));
-        pager.pageTotalCount = d.pageTotalCount || 0;
-        pager.pageTotalPage  = d.pageTotalPage  || 1;
-      } catch (err) {
-        props.showToast(err.response?.data?.message || '조회 실패', 'error', 0);
-      } finally { loading.value = false; }
-    };
-
-    const cfRows = computed(() => {
-      const excl = new Set(props.excludeIds || []);
-      return rows.value.filter(r => !excl.has(r.prodId));
-    });
-
-    const onSearch = () => { pager.pageNo = 1; fnLoad(); };
-    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
-    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
-
-    const onPick = (row) => {
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
       if (props.onCallback) props.onCallback(props.modalName, null, row);
-      else emit('select', row);
     };
     const onClose = () => {
+      emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
-      else emit('close');
     };
 
-    // 모달이 열릴 때마다 초기화 후 조회
-    watch(() => props.show, (v) => {
-      if (v) { searchType.value = ''; searchValue.value = ''; pager.pageNo = 1; fnLoad(); }
-    });
-
-    return { searchType, searchValue, rows, cfRows, loading, pager, columns,
-      fnLoad, onSearch, setPage, onSizeChange, onPick, onClose };
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
-  template: `
-<bo-modal :show="show" :title="title" width="780px" box-pad="0" @close="onClose">
-  <div style="padding:16px 20px;display:flex;flex-direction:column;gap:8px;">
-    <div style="display:flex;gap:6px;align-items:center;">
-      <select class="form-control" v-model="searchType" style="width:110px;flex-shrink:0;">
-        <option value="">전체</option>
-        <option value="prodNm">상품명</option>
-        <option value="prodId">ID</option>
-      </select>
-      <input class="form-control" v-model="searchValue" placeholder="검색어 입력 후 Enter"
-        style="flex:1;" @keyup.enter="onSearch" />
-      <button class="btn btn_search btn-sm" @click="onSearch">조회</button>
-    </div>
-    <bo-grid bare :columns="columns" :rows="cfRows" row-key="prodId"
-      :loading="loading" empty-text="조회 버튼으로 상품을 검색하세요."
-      @row-dblclick="onPick">
-      <template #row-actions="{ row }">
-        <button class="btn btn_select" style="white-space:nowrap;" @click="onPick(row)">선택</button>
-      </template>
-    </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
-      :page-sizes="[10,20,50]" style="margin-top:4px;" />
-  </div>
-  <template #footer>
-    <button class="btn btn_close" @click="onClose">닫기</button>
-  </template>
-</bo-modal>
+  template: /* html */`
+<bo-pick-modal :show="show" popup-code="prod" :title="title" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── PdCatParentPickModal — 상위 카테고리 선택 모달 ──────────────────────────
-   로드된 카테고리 목록을 계층 인덴트로 표시, 클라이언트 필터.
-   사용처:
-     - PdCategoryMng.js : 카테고리 상위 변경
-   props:
-     show        {Boolean}  - 모달 표시 여부
-     categories  {Array}    - 전체 카테고리 목록 (categoryId, categoryNm, categoryDepth)
-     excludeId   {String}   - 자기 자신 + 자손 제외용 ID (없으면 전체 표시)
-     modalName   {String}   - 콜백 식별자 (기본: 'cat-parent-pick')
-     onCallback  {Function} - 콜백(modalName, null, category|null)
-                              null = 최상위(상위없음) 선택
-   ─────────────────────────────────────────────────────────────────────── */
 window.PdCatParentPickModal = {
   name: 'PdCatParentPickModal',
   inheritAttrs: false,
+  /* 상위 카테고리 선택 — 팝업관리(cm_popup 'category', 트리 전용) 메타 기반 어댑터.
+     자기 자신을 상위로 지정하지 못하도록 excludeId 를 제외 목록으로 넘긴다. */
   props: {
-    show:       { type: Boolean,   default: false },
-    categories: { type: Array,     default: () => [] },
-    excludeId:  { type: String,    default: null },
-    modalName:  { type: String,    default: 'cat-parent-pick' },
-    onCallback: { type: Function,  default: null },
+    show:       { type: Boolean,  default: true },                    // 표시 여부
+    categories: { type: Array,    default: () => ([]) },              // (호환용) 구 로컬 목록
+    excludeId:  { type: String,   default: null },                    // 자기 자신 제외
+    modalName:  { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, computed } = Vue;
-    const local = reactive({ search: '' });
-
-    const DEPTH_COLORS  = ['#1677ff', '#52c41a', '#fa8c16', '#722ed1'];
-    const DEPTH_BULLETS = ['■', '▶', '◆', '●'];
-    const fnDepthColor  = (d) => DEPTH_COLORS[d % DEPTH_COLORS.length];
-    const fnDepthBullet = (d) => DEPTH_BULLETS[d % DEPTH_BULLETS.length];
-
-    const cfList = computed(() => {
-      const kw = (local.search || '').trim().toLowerCase();
-      return (props.categories || []).filter(c => {
-        if (props.excludeId && c.categoryId === props.excludeId) return false;
-        if (kw && !(c.categoryNm || '').toLowerCase().includes(kw)) return false;
-        return true;
-      });
-    });
-
-    const onSelect = (cat) => {
-      if (props.onCallback) props.onCallback(props.modalName, null, cat);
-      else emit('select', cat);
+    const cfExcludeIds = Vue.computed(() => props.excludeId ? [props.excludeId] : []);
+    const onSelect = (row) => {
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
     };
     const onClose = () => {
-      if (props.onCallback) props.onCallback(props.modalName, null, undefined);
-      else emit('close');
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
     };
-
-    return { local, cfList, fnDepthColor, fnDepthBullet, onSelect, onClose };
+    return { cfExcludeIds, onSelect, onClose };
   },
-  template: `
-<bo-modal :show="show" title="상위 카테고리 선택" width="460px" max-height="70vh" @close="onClose">
-  <input class="form-control" v-model="local.search" placeholder="카테고리명 검색" style="margin-bottom:10px;" />
-  <div style="overflow-y:auto;border:1px solid #eee;border-radius:8px;max-height:48vh;">
-    <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;color:#1677ff;cursor:pointer;"
-      @click="onSelect(null)">
-      최상위 (상위없음)
-    </div>
-    <div v-for="c in cfList" :key="(c?.categoryId)"
-      style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;display:flex;align-items:center;gap:6px;cursor:pointer;"
-      :style="{ paddingLeft: ((c.categoryDepth||1) * 14 + 12) + 'px' }"
-      @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
-      @mouseleave="$event.currentTarget.style.background=''"
-      @click="onSelect(c)" @dblclick="onSelect(c)">
-      <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
-        {{ fnDepthBullet((c.categoryDepth||1)-1) }}
-      </span>
-      <span>{{ c.categoryNm }}</span>
-      <span style="font-size:11px;color:#aaa;margin-left:auto;">depth {{ c.categoryDepth }}</span>
-    </div>
-    <div v-if="!cfList.length" style="text-align:center;padding:20px;color:#aaa;">
-      검색 결과 없음
-    </div>
-  </div>
-  <template #footer>
-    <button class="btn btn_close" @click="onClose">닫기</button>
-  </template>
-</bo-modal>
+  template: /* html */`
+<bo-pick-modal :show="show" popup-code="category" clearable :exclude-ids="cfExcludeIds"
+  @select="onSelect" @close="onClose" />
 `,
 };
 
@@ -8163,89 +4475,36 @@ window.PdReviewStatusModal = {
 window.PmGiftPickModal = {
   name: 'PmGiftPickModal',
   inheritAttrs: false,
+  /* 사은품 선택 — 팝업관리(cm_popup 'gift') 메타로 구성되는 공통 선택 팝업 어댑터.
+     조회항목·목록컬럼·트리 여부는 전부 팝업관리 화면에서 바꾼다.
+     기존 props/emits 계약을 그대로 유지하므로 호출부는 수정이 필요 없다. */
   props: {
-    showToast:  { type: Function, default: () => {} },
-    modalName:  { type: String,   default: 'gift-pick' },
-    onCallback: { type: Function, default: null },
+    showToast: { type: Function, default: () => {} },                // (호환용) 토스트
+    modalName: { type: String,   default: '' },                      // 모달 식별자
+    onCallback: { type: Function, default: null },                    // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { reactive, ref, onMounted } = Vue;
-    const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const rows = ref([]);
-    const loading = ref(false);
-    const columns = [
-      { key: 'giftId', label: '사은품 ID', style: 'width:160px;', cellStyle: 'font-family:monospace;font-size:11px;' },
-      { key: 'giftNm', label: '사은품명' },
-      { key: 'useYn',  label: '사용', style: 'width:60px;', align: 'center',
-        badge: r => r.useYn === 'Y' ? 'badge-green' : 'badge-gray',
-        fmt: v => v === 'Y' ? '사용' : '미사용' },
-      { key: '_pick', label: '선택', style: 'width:70px;text-align:center;',
-        cellStyle: 'color:#e8587a;font-weight:700;cursor:pointer;', fmt: () => '✔ 선택', link: true },
-    ];
-    const fnLoad = async () => {
-      loading.value = true;
-      try {
-        const res = await boApiSvc.pmGift.getPage({ ...searchParam, pageNo: pager.pageNo, pageSize: pager.pageSize }, '사은품피커', '조회');
-        const d = res.data?.data || {};
-        rows.value = d.pageList || [];
-        pager.pageTotalCount = d.pageTotalCount || 0;
-        pager.pageTotalPage  = d.pageTotalPage  || 1;
-      } catch (err) {
-        props.showToast(err.response?.data?.message || '조회 실패', 'error', 0);
-      } finally { loading.value = false; }
-    };
-    const setPage = (n) => { pager.pageNo = n; fnLoad(); };
-    const onSizeChange = () => { pager.pageNo = 1; fnLoad(); };
-    const onPick = (row) => {
+    const cfExcludeIds = Vue.computed(() => []);
+    const cfInitParam = Vue.computed(() => ({}));
+
+    /* 기존 규약: emit 후 onCallback(modalName, null, payload) */
+    const onSelect = (row) => {
+      emit('select', row);
       if (props.onCallback) props.onCallback(props.modalName, null, row);
-      else emit('select', row);
     };
     const onClose = () => {
+      emit('close');
       if (props.onCallback) props.onCallback(props.modalName, null, null);
-      else emit('close');
     };
-    onMounted(fnLoad);
-    return { searchParam, pager, rows, loading, columns, fnLoad, setPage, onSizeChange, onPick, onClose };
+
+    return { cfExcludeIds, cfInitParam, onSelect, onClose };
   },
-  template: `
-<bo-modal :show="true" title="사은품 선택" width="620px" @close="onClose">
-  <div style="display:flex;gap:8px;margin-bottom:12px;">
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="사은품명/ID 검색" @keyup.enter="fnLoad" style="flex:1;" />
-    <button class="btn btn_search btn-sm" @click="fnLoad">조회</button>
-  </div>
-  <bo-grid :columns="columns" :rows="rows" :pager="pager" row-key="giftId"
-    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
-    @row-click="onPick" @row-dblclick="onPick" @cell-click="e => e.colKey === '_pick' ? onPick(e.row) : null" />
-  <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" :page-sizes="[5,10,20,50]" style="margin-top:8px;" />
-  <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
-    <button class="btn btn_close" @click="onClose">닫기</button>
-  </div>
-</bo-modal>
+  template: /* html */`
+<bo-pick-modal popup-code="gift" :exclude-ids="cfExcludeIds" :init-param="cfInitParam"
+  @select="onSelect" @close="onClose" />
 `,
 };
-
-/* ── BoAddrSearchModal — 카카오 우편번호 검색 (인라인 레이어) ───────────────
-   목적: daum.Postcode({...}).open() 이 뜨는 별도 브라우저 팝업창을 화면 내
-         모달로 대체 — 팝업 위치가 화면 밖/엉뚱한 곳에 뜨는 문제 해결.
-         daum.Postcode 는 .open() 대신 .embed(엘리먼트) 사용 시 그 엘리먼트
-         안에 검색 UI(iframe)를 레이어로 그려준다 — 별도 창이 뜨지 않음.
-
-   props:
-     modalName  {String}   - 콜백 식별자 (기본: 'addr-search')
-     onCallback {Function} - 콜백(modalName, null, {zonecode,address}|null)
-
-   사용 (호출부):
-     const addrSearchModal = reactive({ show: false });
-     const openAddrSearch  = () => { addrSearchModal.show = true; };
-     const onAddrPicked = (data) => {
-       addrSearchModal.show = false;
-       if (!data) return;
-       form.zipCode = data.zonecode; form.address = data.address;
-     };
-     <bo-addr-search-modal v-if="addrSearchModal.show" @select="onAddrPicked" @close="addrSearchModal.show=false" />
-   ─────────────────────────────────────────────────────────────────────── */
 window.BoAddrSearchModal = {
   name: 'BoAddrSearchModal',
   inheritAttrs: false,
