@@ -324,7 +324,7 @@ window.SyUserDtl = {
 </bo-container>
 <!-- ===== □. 적용 역할 목록 ================================================ -->
 <!-- ===== ■. 부서 선택 팝업 ================================================ -->
-<dept-tree-modal v-if="deptModal ? (deptModal.show) : false" :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />
+<bo-pick-modal v-if="deptModal ? (deptModal.show) : false" popup-code="dept" clearable :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />
 <!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
 <bo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
 <!-- ===== □. 부서 선택 팝업 ================================================ -->

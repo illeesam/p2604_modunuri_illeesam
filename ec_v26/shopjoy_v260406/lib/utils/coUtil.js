@@ -775,7 +775,9 @@
     });
     d.editId   = computed(() => d.selectedId === '__new__' ? null : d.selectedId);
     d.panelKey = computed(() => `${d.selectedId}_${d.openMode}`);
-    d.dtlMode  = computed(() => d.openMode === 'edit' ? (d.editId.value ? 'edit' : 'new') : 'view');
+    /* d 가 reactive 라 d.editId 는 이미 값으로 언래핑된다.
+       .value 를 또 붙이면 editId 가 null 일 때 TypeError 가 난다. */
+    d.dtlMode  = computed(() => d.openMode === 'edit' ? (d.editId ? 'edit' : 'new') : 'view');
     return d;
   }
 

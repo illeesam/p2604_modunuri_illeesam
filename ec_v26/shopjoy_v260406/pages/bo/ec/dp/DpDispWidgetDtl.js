@@ -758,8 +758,7 @@ window.DpDispWidgetDtl = {
     </template>
   </template>
   <!-- ===== ■.■. 위젯Lib 선택 팝업 =========================================== -->
-  <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
-    :widget-libs="pickLibs" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="libPickOpen" popup-code="widgetLib" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:0;">
@@ -979,7 +978,7 @@ window.DpDispWidgetDtl = {
   <!-- ===== □.□. 오른쪽: 위젯미리보기 =========================================== -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <path-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" biz-cd="ec_disp_widget" :value="form.pathId" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_widget' }" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
 `

@@ -788,9 +788,7 @@ window.XsSample13 = {
         </div>
       </div>
     </div>
-    <category-select-modal
-  :show="uiState.showCatModal"
-  :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
+    <bo-pick-modal popup-code="category" result-type="idArray" :multi="true" :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
     <!-- ===== □.□. 패널별 카드 (좌: 패널정보 | 중앙: 위젯 콘텐츠 | 우: 소스) ================= -->
     <!-- ===== □. 영역 ====================================================== -->
 </fo-page>

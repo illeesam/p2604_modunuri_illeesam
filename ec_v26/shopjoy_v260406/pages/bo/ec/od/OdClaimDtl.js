@@ -697,14 +697,10 @@ window.OdClaimDtl = {
 <!-- ===== □.□. 정보수정이력 탭 ============================================== -->
 <!-- ===== ■. 주문 선택 모달 ================================================= -->
 <div v-if="orderPick.open">
-  <order-select-modal modal-name="order-pick" :on-callback="fnCallbackModal"
-    @close="handleBtnAction('orderPickModal-close')" />
+  <bo-pick-modal popup-code="order" modal-name="order-pick" :on-callback="fnCallbackModal" @close="handleBtnAction('orderPickModal-close')" />
 </div>
 <!-- ===== ■. 회원 선택 모달 ================================================= -->
-<od-member-pick-modal :show="memberPick.open" ui-nm="클레임관리"
-  subtitle="클레임 등록할 회원을 선택해주세요" modal-name="member-pick"
-  :on-callback="fnCallbackModal"
-  @close="handleBtnAction('memberPickModal-close')" />
+<bo-pick-modal popup-code="member" :show="memberPick.open" modal-name="member-pick" :on-callback="fnCallbackModal" @close="handleBtnAction('memberPickModal-close')" />
 <!-- ===== ■. 환불 계산 모달 ================================================= -->
 <od-claim-calc-modal :show="dtlCalcDialog.show" :claim-id="dtlCalcDialog.claimId" @close="handleBtnAction('calc-close')" />
 `

@@ -478,7 +478,7 @@ window.SyTemplateMng = {
   <!-- ===== ■. 미리보기 / 발송 / 경로 선택 모달 =============================== -->
   <template-preview-modal v-if="previewModal ? (previewModal.show) : false" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
   <template-send-modal v-if="sendModal ? (sendModal.show) : false" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
-  <path-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" biz-cd="sy_template" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_template' }" modal-name="path-pick" :on-callback="fnCallbackModal" />
 </bo-page>
 `,
 };

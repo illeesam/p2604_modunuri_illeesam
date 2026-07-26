@@ -452,7 +452,7 @@ window.PmPlanDtl = {
         </bo-form-area>
       </div>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+      <bo-pick-modal popup-code="vendor" :show="showVendorModal" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="active ? (cfDtlMode) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -609,8 +609,7 @@ window.PmPlanDtl = {
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <!-- ===== □.□. 미리보기 ================================================== -->
 <!-- ===== ■. 상품선택 모달 ================================================= -->
-<simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.productIds"
-  title="상품선택" modal-name="prod-pick" :on-callback="fnCallbackModal" />
+<bo-pick-modal popup-code="prod" result-type="id" :show="showProdPopup" :selected-ids="form.productIds" title="상품선택" modal-name="prod-pick" :on-callback="fnCallbackModal" />
 <!-- ===== □. 상품선택 모달 ================================================= -->
 `
 };

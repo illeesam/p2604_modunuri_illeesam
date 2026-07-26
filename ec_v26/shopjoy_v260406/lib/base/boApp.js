@@ -2986,12 +2986,12 @@
   </div><!-- /bo-body -->
 
   <!-- 선택 모달들 -->
-  <site-select-modal v-if="selectModal.show ? (selectModal.type==='site') : false" modal-name="site-select"  @select="onSelectItem('site', $event)" @close="closeSelectModal" />
-  <vendor-select-modal v-if="selectModal.show ? (selectModal.type==='vendor') : false" modal-name="vendor-select"  @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
-  <vendor-select-modal v-if="selectModal.show ? (selectModal.type==='dlivVendor') : false" modal-name="dliv-vendor-select"  @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
-  <bo-user-select-modal v-if="selectModal.show ? (selectModal.type==='boUser') : false" modal-name="bo-user-select"  @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
-  <member-select-modal v-if="selectModal.show ? (selectModal.type==='member') : false" modal-name="member-select"  @select="onSelectItem('member', $event)" @close="closeSelectModal" />
-  <order-select-modal v-if="selectModal.show ? (selectModal.type==='order') : false" modal-name="order-select"  @select="onSelectItem('order', $event)" @close="closeSelectModal" />
+  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='site') : false" popup-code="site" modal-name="site-select" @select="onSelectItem('site', $event)" @close="closeSelectModal" />
+  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='vendor') : false" popup-code="vendor" modal-name="vendor-select" @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
+  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='dlivVendor') : false" popup-code="vendor" modal-name="dliv-vendor-select" @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
+  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='boUser') : false" popup-code="userByDept" result-type="array" modal-name="bo-user-select" @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
+  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='member') : false" popup-code="member" modal-name="member-select" @select="onSelectItem('member', $event)" @close="closeSelectModal" />
+  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='order') : false" popup-code="order" modal-name="order-select" @select="onSelectItem('order', $event)" @close="closeSelectModal" />
 
   <!-- 참조 모달 -->
   <bo-ref-modal v-if="refModal ? (refModal.show) : false" :state="refModal" modal-name="bo-ref"  @close="closeRefModal" />
@@ -3173,8 +3173,6 @@
     .component('BaseTossPayWidget', window.BaseTossPayWidget)
     /* ── pages/bo/ (공통) ── */
     .component('BoRefModal', window.BoRefModal)
-    .component('BoCodeGrpModal', window.BoCodeGrpModal)
-    .component('BoCodeGrpTreeNode', window.BoCodeGrpTreeNode)
     .component('BoExcelUploadModal', window.BoExcelUploadModal)
     /* ── pages/bo/ec/ — 회원 ── */
     .component('MbMemberMng', window.MbMemberMng)
@@ -3341,23 +3339,7 @@
     .component('BoRowCancelDelete', window.BoRowCancelDelete)
     .component('BoRoleSelectModal', window.BoRoleSelectModal)
     .component('BoPathParentSelector', window.BoPathParentSelector)
-    .component('PathPickModal', window.PathPickModal)
-    .component('BizPickModal', window.BizPickModal)
-    .component('SimpleUserPickModal', window.SimpleUserPickModal)
-    .component('SimpleVendorPickModal', window.SimpleVendorPickModal)
-    .component('SimpleProdPickModal', window.SimpleProdPickModal)
-    .component('PdProdPickModal', window.PdProdPickModal)
-    .component('PdCatParentPickModal', window.PdCatParentPickModal)
     .component('PdReviewStatusModal', window.PdReviewStatusModal)
-    .component('BoProdCatePickModal', window.BoProdCatePickModal)
-    .component('OdMemberPickModal', window.OdMemberPickModal)
-    .component('PmCouponPickModal', window.PmCouponPickModal)
-    .component('PmSavePickModal', window.PmSavePickModal)
-    .component('PmDiscntPickModal', window.PmDiscntPickModal)
-    .component('PmBrandPickModal', window.PmBrandPickModal)
-    .component('PmCategoryPickModal', window.PmCategoryPickModal)
-    .component('PmGiftPickModal', window.PmGiftPickModal)
-    .component('PathPickTreeNode', window.PathPickTreeNode)
     .component('BoPropTreeNode', window.BoPropTreeNode)
     .component('SyAlarmDtl', window.SyAlarmDtl)
     .component('SyBbmMng', window.SyBbmMng)
@@ -3376,23 +3358,10 @@
     /* ── components/modals/ — 도움말 모달 ── */
     .component('HelpBoModal', window.HelpBoModal)
     /* ── components/modals/ — 선택 모달 ── */
-    .component('BoUserSelectModal', window.BoUserSelectModal)
-    .component('BbmSelectModal', window.BbmSelectModal)
-    .component('MemberSelectModal', window.MemberSelectModal)
-    .component('OrderSelectModal', window.OrderSelectModal)
-    .component('SiteSelectModal', window.SiteSelectModal)
-    .component('VendorSelectModal', window.VendorSelectModal)
-    .component('BrandSelectModal', window.BrandSelectModal)
     /* ── components/modals/ — 트리 모달 ── */
-    .component('CategoryTreeModal', window.CategoryTreeModal)
-    .component('DeptTreeModal', window.DeptTreeModal)
     .component('BoDeptTreeNode', window.BoDeptTreeNode)
-    .component('MenuTreeModal', window.MenuTreeModal)
-    .component('RoleTreeModal', window.RoleTreeModal)
     /* ── components/modals/ — 미리보기/전송 모달 ── */
     .component('DispPreviewModal', window.DispPreviewModal || { template: '<div/>' })
-    .component('DispUiModal', window.DispUiModal || { template: '<div/>' })
-    .component('WidgetLibPickModal', window.WidgetLibPickModal || { template: '<div/>' })
     .component('RowPickModal', window.RowPickModal || { template: '<div/>' })
     .component('TemplatePreviewModal', window.TemplatePreviewModal)
     .component('TemplateSendModal', window.TemplateSendModal)

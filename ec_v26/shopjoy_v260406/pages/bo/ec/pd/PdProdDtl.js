@@ -2550,25 +2550,13 @@ window.PdProdDtl = {
       </bo-grid>
       </fieldset>
       <!-- 프로모션 피커 모달 4개 — fieldset 밖에 배치 (fieldset disabled 영향 차단) -->
-      <pm-coupon-pick-modal v-if="uiState.promoPicker === 'coupon'"
-        :show-toast="showToast"
-        @select="r => handleBtnAction('promo-coupon-pick', r)"
-        @close="uiState.promoPicker = null">
+      <bo-pick-modal v-if="uiState.promoPicker === 'coupon'" popup-code="coupon" @select="r => handleBtnAction('promo-coupon-pick', r)" @close="uiState.promoPicker = null" />
       </pm-coupon-pick-modal>
-      <pm-save-pick-modal v-if="uiState.promoPicker === 'save'"
-        :show-toast="showToast"
-        @select="r => handleBtnAction('promo-save-pick', r)"
-        @close="uiState.promoPicker = null">
+      <bo-pick-modal v-if="uiState.promoPicker === 'save'" popup-code="save" @select="r => handleBtnAction('promo-save-pick', r)" @close="uiState.promoPicker = null" />
       </pm-save-pick-modal>
-      <pm-discnt-pick-modal v-if="uiState.promoPicker === 'discnt'"
-        :show-toast="showToast"
-        @select="r => handleBtnAction('promo-discnt-pick', r)"
-        @close="uiState.promoPicker = null">
+      <bo-pick-modal v-if="uiState.promoPicker === 'discnt'" popup-code="discnt" @select="r => handleBtnAction('promo-discnt-pick', r)" @close="uiState.promoPicker = null" />
       </pm-discnt-pick-modal>
-      <pm-gift-pick-modal v-if="uiState.promoPicker === 'gift'"
-        :show-toast="showToast"
-        @select="r => handleBtnAction('promo-gift-pick', r)"
-        @close="uiState.promoPicker = null">
+      <bo-pick-modal v-if="uiState.promoPicker === 'gift'" popup-code="gift" @select="r => handleBtnAction('promo-gift-pick', r)" @close="uiState.promoPicker = null" />
       </pm-gift-pick-modal>
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
@@ -2738,11 +2726,7 @@ window.PdProdDtl = {
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
       <!-- ===== ■.■.■. 상품 추가 피커 모달 (좌:카테고리트리 / 우:상품목록) ===================== -->
-      <bo-prod-cate-pick-modal v-if="prodPickerOpen"
-        :title="prodPickerOpen==='rel' ? '연관상품 추가' : '코디상품 추가'"
-        :exclude-ids="(prodPickerOpen==='rel' ? relProds : codeProds).map(r => r.prodId)"
-        modal-name="prod-cate-pick"
-        :on-callback="fnProdPickerCallback" />
+      <bo-pick-modal v-if="prodPickerOpen" popup-code="prodByCategory" :title="prodPickerOpen==='rel' ? '연관상품 추가' : '코디상품 추가'" :exclude-ids="(prodPickerOpen==='rel' ? relProds : codeProds).map(r => r.prodId)" modal-name="prod-cate-pick" :on-callback="fnProdPickerCallback" />
     </div>
     <!-- ══════════════════════════════════════
      💰 옵션(가격/재고)  (SKU별 가격·재고)
@@ -3138,10 +3122,7 @@ window.PdProdDtl = {
 <!-- ===== □. 이력 ====================================================== -->
 <!-- ===== ■. 공통코드 그룹 미리보기 모달 (BoModals.js / window.BoCodeGrpModal) ===== -->
 <!-- ===== ■. 영역 ====================================================== -->
-<bo-code-grp-modal
-  :show="codeGrpModal.show"
-  :code-grp="codeGrpModal.codeGrp"
-  :title="codeGrpModal.title" modal-name="code-grp" :on-callback="fnCallbackModal" />
+<bo-pick-modal popup-code="code" :init-param="{ codeGrp: codeGrpModal.codeGrp }" :show="codeGrpModal.show" :title="codeGrpModal.title" modal-name="code-grp" :on-callback="fnCallbackModal" />
 <!-- ===== □. 영역 ====================================================== -->
 `
 };

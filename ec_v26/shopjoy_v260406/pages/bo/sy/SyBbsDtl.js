@@ -329,8 +329,7 @@ window.SyBbsDtl = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 게시판 선택 팝업 =============================================== -->
-  <bbm-select-modal
-    v-if="showBbmModal" modal-name="bbm-select" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="showBbmModal" popup-code="bbm" modal-name="bbm-select" :on-callback="fnCallbackModal" />
   <!-- ===== □. 게시판 선택 팝업 =============================================== -->
   <!-- ===== ■. 게시판 상세보기 팝업 ============================================= -->
   <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"

@@ -247,9 +247,7 @@ window.SySiteDtl = {
   </bo-form-area>
 </bo-container>
 <!-- ===== ■. 표시경로 선택 모달 (형제 루트 — Vue3 fragment) ============================ -->
-<path-pick-modal v-if="pathPickModal.show" biz-cd="sy_site"
-  :value="form.pathId"
-  title="사이트 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+<bo-pick-modal v-if="pathPickModal.show" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_site' }" title="사이트 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 <!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
 <bo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
 `,

@@ -1836,7 +1836,7 @@ window.XsSample14 = {
 <!-- ===== □.□. 컨텐츠 미리보기 ============================================== -->
 <!-- ===== □. 위젯 정보 팝오버 =============================================== -->
 <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
-<category-select-modal :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
+<bo-pick-modal popup-code="category" result-type="idArray" :multi="true" :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
 </div>
 <!-- ===== □. 카테고리 선택 모달 ============================================== -->
 </fo-page>

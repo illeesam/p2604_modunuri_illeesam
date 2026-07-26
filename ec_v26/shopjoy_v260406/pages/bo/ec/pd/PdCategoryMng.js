@@ -508,7 +508,8 @@ window.PdCategoryMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'siteId', label: '사이트 *', type: 'select', nullable: false,
-        options: () => sites.map(s => ({ value: s.siteId, label: s.siteId + ' ' + s.siteNm })),
+        /* sites 는 computed — .value 로 배열을 꺼내야 한다 */
+        options: () => sites.value.map(s => ({ value: s.siteId, label: s.siteId + ' ' + s.siteNm })),
         onChange: () => handleSelectAction('searchParam-siteChange') },
       { key: 'searchValue', label: '카테고리명', type: 'text', placeholder: '카테고리명 검색' },
       { key: 'categoryDepth', label: '단계', type: 'select', options: () => codes.category_depths, nullLabel: '전체' },
@@ -736,9 +737,7 @@ window.PdCategoryMng = {
 <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->
 <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
 <!-- ===== ■. 상위카테고리 선택 모달 (BoModals.js / PdCatParentPickModal) ======== -->
-<pd-cat-parent-pick-modal :show="catPickerModal.show"
-  :categories="categories" :exclude-id="catPickerModal.forCategoryId"
-  modal-name="cat-parent-pick" :on-callback="fnCallbackModal" />
+<bo-pick-modal popup-code="category" clearable :show="catPickerModal.show" :exclude-id="catPickerModal.forCategoryId" modal-name="cat-parent-pick" :on-callback="fnCallbackModal" />
 <!-- ===== □. 상위카테고리 선택 모달 ============================================ -->
 </bo-page>
 <!-- ===== □. 상위카테고리 선택 모달 ============================================ -->

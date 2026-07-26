@@ -188,9 +188,7 @@ window.DpDispUiDtl = {
     </template>
   </div>
   <!-- ===== ■. 표시경로 선택 모달 ============================================ -->
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="ec_disp_ui"
-    :value="baseForm.pathId"
-    title="전시UI 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="pathPickModal.show" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_ui' }" title="전시UI 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 </bo-container>
 `,
 };

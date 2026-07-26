@@ -947,8 +947,7 @@
   </template>
   <!-- ===== □. 고객 정보 영역 ================================================ -->
   <!-- ===== ■. 고객 선택 모달 ================================================ -->
-  <member-select-modal v-if="memberModalOpen"
-    modal-name="member-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="memberModalOpen" popup-code="member" modal-name="member-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 고객 선택 모달 ================================================ -->
 </bo-page>
 `,

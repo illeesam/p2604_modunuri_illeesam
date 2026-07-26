@@ -31,6 +31,7 @@ window.BoPickModal = {
     title:      { type: String,  default: '' },                   // 제목 override (미지정 시 메타의 popup_nm)
     multi:      { type: Boolean, default: null },                 // 다중선택 override (미지정 시 메타의 multi_yn)
     excludeIds: { type: Array,   default: () => ([]) },           // 이미 선택된 ID (목록에서 제외)
+    excludeId:  { type: [String, Number], default: null },        // 제외할 ID 1건 (자기 자신을 상위로 못 고르게 등)
     initParam:  { type: Object,  default: () => ({}) },           // 고정 추가 검색조건
     clearable:  { type: Boolean, default: false },                // 트리 전용에서 "선택 안함" 노출
     /* 토글 모드 — 배열을 주면 각 행에 체크 상태가 표시되고, 클릭 시 모달을 닫지 않고
@@ -41,6 +42,17 @@ window.BoPickModal = {
     debug:       { type: Boolean, default: false },
     /* 호출 식별자. response 응답정보에 그대로 실려 돌아온다 (여러 팝업을 한 화면에서 쓸 때 분기용) */
     popupCmd:    { type: String,  default: '' },
+    /* ── 화면 통합 규약 ──────────────────────────────────────────────
+       modalName + onCallback(modalName, null, payload) 은 BO 전 화면이 쓰는 모달 호출 규약이다.
+       팝업마다 래퍼 컴포넌트를 두지 않고 이 컴포넌트 하나로 받기 위해 여기서 직접 지원한다. */
+    modalName:   { type: String,   default: '' },   // 모달 식별자
+    onCallback:  { type: Function, default: null }, // 통합 콜백
+    /* 호출부가 기대하는 결과 형태. 화면마다 달라서 옵션으로 맞춘다.
+         row     : 행 객체 (기본)          — 대부분의 선택 모달
+         id      : 행의 ID 문자열           — 표시경로처럼 ID 만 폼에 넣는 화면
+         array   : 행 1건을 배열로 감싼 것  — 원래 다건 UI 였던 화면
+         idArray : ID 배열                  — 카테고리 다중선택처럼 ID 목록을 받는 화면 */
+    resultType:  { type: String,   default: 'row' },
   },
   emits: ['select', 'toggle', 'close', 'api-log', 'response'],
   setup(props, { emit }) {
@@ -59,6 +71,29 @@ window.BoPickModal = {
        모달 자체에는 표시하지 않는다 — 실제 사용 화면에서 보일 이유가 없다. */
     /* 마지막으로 조회에 사용한 파라미터 — 응답정보에 그대로 돌려준다 */
     const lastParams = reactive({ page: null, tree: null });
+
+    /** 호출부가 기대하는 형태로 결과를 변환 (resultType) */
+    const fnToPayload = (rowOrRows) => {
+      const t = props.resultType;
+      const one = (r) => (r == null ? null : (t === 'id' ? r.id : r));
+      if (Array.isArray(rowOrRows)) {
+        return (t === 'id' || t === 'idArray') ? rowOrRows.map(r => r.id) : rowOrRows;
+      }
+      if (t === 'array')   return rowOrRows == null ? [] : [rowOrRows];
+      if (t === 'idArray') return rowOrRows == null ? [] : [rowOrRows.id];
+      return one(rowOrRows);
+    };
+
+    /**
+     * 결과 발행 — emit 과 onCallback 규약을 한 곳에서 처리한다.
+     * 화면은 @select 를 쓰든 :on-callback 을 쓰든 같은 값을 받는다.
+     */
+    const fnEmitResult = (evName, rowOrRows) => {
+      const payload = fnToPayload(rowOrRows);
+      emit(evName, payload);
+      if (props.onCallback) props.onCallback(props.modalName, null, payload);
+      return payload;
+    };
 
     /**
      * 응답정보 — 호출부가 "무엇을 어떤 조건으로 골랐는지" 한 번에 받도록 감싼 결과.
@@ -115,10 +150,16 @@ window.BoPickModal = {
     const cfSelectedSet = computed(() => new Set((props.selectedIds || []).map(String)));
     /* 선택목록은 다중선택일 때만 — 패턴과 무관. 토글 모드는 자체 체크 UI 를 쓴다 */
     const cfHasPickList = computed(() => cfIsMulti.value && !cfIsToggle.value);
+    /* 체크형(토글·다중) — 행에 체크 표시가 붙고 어느 셀을 눌러도 담기/빼기가 된다 */
+    const cfIsCheckMode = computed(() => cfIsToggle.value || cfHasPickList.value);
 
     /* 제외 ID — 부모가 넘긴 것만. 이번에 담은 항목은 목록에 그대로 두어
        선택 상태를 보여주고 다시 누르면 해제되게 한다. */
-    const cfExcludeIds = computed(() => [...new Set((props.excludeIds || []).map(String))]);
+    const cfExcludeIds = computed(() => {
+      const ids = (props.excludeIds || []).map(String);
+      if (props.excludeId != null && props.excludeId !== '') ids.push(String(props.excludeId));
+      return [...new Set(ids)];
+    });
 
     /* 이번에 담은 항목 (행 강조·체크 표시·토글 판정용) */
     const cfPickedSet = computed(() => new Set(picked.map(p => String(p.id))));
@@ -211,7 +252,7 @@ window.BoPickModal = {
       if (cmd === 'picked-clear')      { picked.splice(0, picked.length); return; }
       if (cmd === 'picked-remove')     { fnUnpick(param); return; }
       if (cmd === 'modal-confirm')     return handleConfirm();
-      if (cmd === 'modal-close')       return emit('close');
+      if (cmd === 'modal-close')       return handleClose();
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -229,16 +270,16 @@ window.BoPickModal = {
         const empty = { id: null, nm: '' };
         if (cfg.idField) empty[cfg.idField] = null;
         if (cfg.nmField) empty[cfg.nmField] = '';
-        emit('select', empty);
+        fnEmitResult('select', empty);
         fnEmitResponse('clear', empty);
-        return emit('close');
+        return handleClose();
       }
       if (cmd === 'tree-toggle')     { expanded[param] = !expanded[param]; return; }
       if (cmd === 'tree-expandAll')  { cfTreeVisible.value; treeRows.forEach(n => { expanded[String(n.id)] = true; }); return; }
       if (cmd === 'tree-collapseAll'){ Object.keys(expanded).forEach(k => { expanded[k] = false; }); return; }
       if (cmd === 'row-pick')        return handlePickRow(param);
       /* 토글 모드 — 닫지 않고 알린다. 체크 상태는 부모가 selectedIds 로 다시 내려준다 */
-      if (cmd === 'row-toggle')      { emit('toggle', param); return fnEmitResponse('toggle', param); }
+      if (cmd === 'row-toggle')      { fnEmitResult('toggle', param); return fnEmitResponse('toggle', param); }
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
@@ -402,9 +443,9 @@ window.BoPickModal = {
     const handlePickRow = (row) => {
       if (!row) return;
       if (!cfIsMulti.value) {
-        emit('select', row);
+        fnEmitResult('select', row);
         fnEmitResponse('select', row);
-        emit('close');
+        handleClose();
         return;
       }
       /* 이미 담긴 항목을 다시 누르면 해제 */
@@ -418,14 +459,20 @@ window.BoPickModal = {
       if (i >= 0) picked.splice(i, 1);
     };
 
+    /** 닫기 — 기존 규약대로 onCallback(modalName, null, null) 도 함께 알린다 */
+    const handleClose = () => {
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
+    };
+
     const handleConfirm = () => {
       if (cfHasPickList.value) {
         if (!picked.length) return window.boApp?.showToast('선택된 항목이 없습니다.', 'error');
         const rows = picked.slice();
-        emit('select', rows);
+        fnEmitResult('select', rows);
         fnEmitResponse('select', rows);
       }
-      emit('close');
+      handleClose();
     };
 
     /* ##### [05] 사용자 함수 ####################################################### */
@@ -463,7 +510,7 @@ window.BoPickModal = {
       cfg, uiState, rows, picked, searchParam, gridPager, treeState,
       cfIsMulti, cfTitle, cfHasTree, cfTreeOnly, cfHasList, cfHasPickList, cfHasPager, cfIsToggle, cfSelectedSet,
       cfGridColumns, cfSearchColumns, cfTreeVisible, cfTreeLayoutStyle, cfTreeCardStyle,
-      cfPickedSet, fnIsPicked, fnRowStyle,
+      cfPickedSet, cfIsCheckMode, fnIsPicked, fnRowStyle,
       fnTreeArrow, fnTreeNodeIcon, fnTreeNodeStyle, handleBtnAction, handleSelectAction, handleGridCellAction,
     };
   },
@@ -511,8 +558,11 @@ window.BoPickModal = {
       </div>
 
       <div v-if="cfHasList">
+        <!-- 체크형(토글·다중)은 어느 셀을 눌러도 담기/빼기가 되어야 하므로 row-clickable 필요
+             (BoGrid 는 이 옵션이 없으면 번호·링크 셀에서만 cell-click 을 올린다) -->
         <bo-grid :columns="cfGridColumns" :rows="rows" row-key="id" :loading="uiState.loading"
           :pager="gridPager" empty-text="조회 결과가 없습니다." :row-style="fnRowStyle"
+          :row-clickable="cfIsCheckMode"
           grid-id="pickGrid-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
         <bo-pager v-if="cfHasPager" :pager="gridPager"
           :on-set-page="n => handleBtnAction('grid-setPage', n)"

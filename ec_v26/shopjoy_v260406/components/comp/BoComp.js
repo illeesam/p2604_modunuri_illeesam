@@ -1337,10 +1337,7 @@ window.BoPathPickField = {
       🔍
     </button>
   </div>
-  <path-pick-modal v-if="show" :biz-cd="bizCd"
-    :value="row ? row[pathField] : null"
-    :title="modalTitle"
-    @select="handleSelectAction('pathPick-picked', $event)" @close="handleBtnAction('pathPick-close')" />
+  <bo-pick-modal v-if="show" popup-code="path" result-type="id" :init-param="{ bizCd: bizCd }" :title="modalTitle" @select="handleSelectAction('pathPick-picked', $event)" @close="handleBtnAction('pathPick-close')" />
 </component>
 `,
 };

@@ -1010,28 +1010,28 @@ window.XsSample04 = {
 <!-- ===== □. 영역 ====================================================== -->
 <!-- ===== ■. ④~⑨ 선택 모달 — 조건부 마운트 방식 ================================== -->
 <template v-if="bModal.type==='siteSelect'">
-  <site-select-modal modal-name="site-select" :bo-data="boData" @select="bShowToast('선택: '+$event.siteNm,'success'); closeBModal()" @close="closeBModal" />
+  <bo-pick-modal popup-code="site" modal-name="site-select" @select="bShowToast('선택: '+$event.siteNm,'success'); closeBModal()" @close="closeBModal" />
 </template>
 <!-- ===== □. ④~⑨ 선택 모달 — 조건부 마운트 방식 ================================== -->
 <!-- ===== ■. 조건부 영역 ================================================== -->
 <template v-if="bModal.type==='vendorSelect'">
-  <vendor-select-modal modal-name="vendor-select" :bo-data="boData" @select="bShowToast('선택: '+$event.vendorNm,'success'); closeBModal()" @close="closeBModal" />
+  <bo-pick-modal popup-code="vendor" modal-name="vendor-select" @select="bShowToast('선택: '+$event.vendorNm,'success'); closeBModal()" @close="closeBModal" />
 </template>
 <template v-if="bModal.type==='boUserSelect'">
-  <bo-user-select-modal modal-name="bo-user-select" :bo-data="boData" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
+  <bo-pick-modal popup-code="userByDept" result-type="array" modal-name="bo-user-select" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
 </template>
 <!-- ===== □. 조건부 영역 ================================================== -->
 <!-- ===== ■. 조건부 영역 ================================================== -->
 <template v-if="bModal.type==='memberSelect'">
-  <member-select-modal modal-name="member-select" :bo-data="boData" @select="bShowToast('선택: '+$event.memberNm,'success'); closeBModal()" @close="closeBModal" />
+  <bo-pick-modal popup-code="member" modal-name="member-select" @select="bShowToast('선택: '+$event.memberNm,'success'); closeBModal()" @close="closeBModal" />
 </template>
 <template v-if="bModal.type==='orderSelect'">
-  <order-select-modal modal-name="order-select" :bo-data="boData" @select="bShowToast('선택: '+$event.orderId,'success'); closeBModal()" @close="closeBModal" />
+  <bo-pick-modal popup-code="order" modal-name="order-select" @select="bShowToast('선택: '+$event.orderId,'success'); closeBModal()" @close="closeBModal" />
 </template>
 <!-- ===== □. 조건부 영역 ================================================== -->
 <!-- ===== ■. 조건부 영역 ================================================== -->
 <template v-if="bModal.type==='bbmSelect'">
-  <bbm-select-modal modal-name="bbm-select" :bo-data="boData" @select="bShowToast('선택: '+$event.bbmNm,'success'); closeBModal()" @close="closeBModal" />
+  <bo-pick-modal popup-code="bbm" modal-name="bbm-select" @select="bShowToast('선택: '+$event.bbmNm,'success'); closeBModal()" @close="closeBModal" />
 </template>
 <!-- ===== □. 조건부 영역 ================================================== -->
 <!-- ===== ■. ⑩~⑪ 템플릿 모달 ============================================== -->
@@ -1046,15 +1046,15 @@ window.XsSample04 = {
 <!-- ===== □. 조건부 영역 ================================================== -->
 <!-- ===== ■. ⑫~⑮ 트리 모달 =============================================== -->
 <template v-if="bModal.type==='roleTree'">
-  <role-tree-modal modal-name="role-tree" :bo-data="boData" @select="bShowToast('선택: '+$event.roleNm,'success'); closeBModal()" @close="closeBModal" />
+  <bo-pick-modal popup-code="role" clearable modal-name="role-tree" @select="bShowToast('선택: '+$event.roleNm,'success'); closeBModal()" @close="closeBModal" />
 </template>
 <!-- ===== □. ⑫~⑮ 트리 모달 =============================================== -->
 <!-- ===== ■. 조건부 영역 ================================================== -->
 <template v-if="bModal.type==='menuTree'">
-  <menu-tree-modal modal-name="menu-tree" :bo-data="boData" @select="bShowToast($event.menuId?'선택: '+$event.menuNm:'상위없음 선택','success'); closeBModal()" @close="closeBModal" />
+  <bo-pick-modal popup-code="menu" clearable modal-name="menu-tree" @select="bShowToast($event.menuId?'선택: '+$event.menuNm:'상위없음 선택','success'); closeBModal()" @close="closeBModal" />
 </template>
 <template v-if="bModal.type==='deptTree'">
-  <dept-tree-modal modal-name="dept-tree" :bo-data="boData" @select="bShowToast($event.deptId?'선택: '+$event.deptNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
+  <bo-pick-modal popup-code="dept" clearable modal-name="dept-tree" @select="bShowToast($event.deptId?'선택: '+$event.deptNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
 </template>
 <!-- ===== □. 조건부 영역 ================================================== -->
 <!-- ===== ■. 조건부 영역 ================================================== -->
@@ -1073,11 +1073,7 @@ window.XsSample04 = {
     @close="closeBModal" />
 <!-- ===== □. ⑯ 전시 미리보기 =============================================== -->
 <!-- ===== ■. ⑰ 카테고리 멀티선택 ============================================= -->
-<category-select-modal modal-name="category-select"
-    :show="bModal.type==='catSelect'"
-    :selected-ids="catSelIds"
-    @close="closeBModal"
-    @apply="ids => { catSelIds.splice(0, catSelIds.length, ...ids); bShowToast(ids.length+'개 카테고리 선택됨','success'); closeBModal(); }" />
+<bo-pick-modal popup-code="category" result-type="idArray" :multi="true" modal-name="category-select" :show="bModal.type==='catSelect'" :selected-ids="catSelIds" @close="closeBModal" @select="ids => { catSelIds.splice(0, catSelIds.length, ...ids); bShowToast(ids.length+'개 카테고리 선택됨','success'); closeBModal(); }" />
 <!-- ===== □. ⑰ 카테고리 멀티선택 ============================================= -->
 <!-- ===== ■. 영역 ====================================================== -->
 <style>

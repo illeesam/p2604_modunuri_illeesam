@@ -311,8 +311,7 @@ window.OdCartMng = {
     <bo-pager v-if="listGridPager.pageTotalCount > 0" :pager="listGridPager" :on-set-page="n => handleBtnAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
-  <od-member-pick-modal :show="memberPick.open" ui-nm="장바구니관리"
-    subtitle="장바구니를 조회할 회원을 선택해주세요" modal-name="member-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal popup-code="member" :show="memberPick.open" modal-name="member-pick" :on-callback="fnCallbackModal" />
 </bo-page>
 `
 };

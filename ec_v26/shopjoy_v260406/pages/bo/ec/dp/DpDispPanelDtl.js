@@ -1975,8 +1975,7 @@ window.DpDispPanelDtl = {
   </bo-modal>
   <!-- ===== □. 패널미리보기 오버레이 ============================================= -->
   <!-- ===== ■. 전시위젯Lib 선택 팝업 =========================================== -->
-  <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
-    :widget-libs="pickData.libs" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="libPickOpen" popup-code="widgetLib" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 전시위젯Lib 선택 팝업 =========================================== -->
   <!-- ===== ■. 전시항목 복사 팝업 ============================================== -->
   <row-pick-modal v-if="rowCopyOpen"
@@ -1986,7 +1985,7 @@ window.DpDispPanelDtl = {
     :exclude-panel-id="form.dispId" modal-name="row-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 전시항목 복사 팝업 ============================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <path-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" biz-cd="ec_disp_panel" :value="form.pathId" title="표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_panel' }" title="표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
 `,

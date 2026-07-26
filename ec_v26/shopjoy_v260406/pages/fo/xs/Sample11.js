@@ -531,7 +531,7 @@ window.XsSample11 = {
       <!-- ===== □.□. 상세(expand) 모드 ========================================= -->
       <!-- ===== □. 영역 ====================================================== -->
       <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
-      <category-select-modal :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
+      <bo-pick-modal popup-code="category" result-type="idArray" :multi="true" :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □. 카테고리 선택 모달 ============================================== -->
 </fo-page>

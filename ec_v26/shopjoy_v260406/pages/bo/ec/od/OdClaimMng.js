@@ -849,8 +849,7 @@ window.OdClaimMng = {
     </div>
   </bo-modal>
   <!-- ===== □. 회원 선택 팝업 ================================================ -->
-  <od-member-pick-modal :show="memberPick.open" ui-nm="클레임관리"
-    subtitle="클레임 조회 기준 회원을 선택해주세요" modal-name="member-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal popup-code="member" :show="memberPick.open" modal-name="member-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 회원 선택 팝업 (end) ========================================== -->
   <!-- ===== ■. 클레임 금액 계산 모달 ========================================= -->
   <od-claim-calc-modal :show="mngCalcDialog.show" :claim-id="mngCalcDialog.claimId" @close="handleCloseMngCalc" />

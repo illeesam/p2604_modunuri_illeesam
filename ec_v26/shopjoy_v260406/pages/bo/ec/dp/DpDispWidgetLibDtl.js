@@ -731,8 +731,7 @@ window.DpDispWidgetLibDtl = {
       </button>
       <button @click="handleBtnAction('form-close')" class="btn btn_close" style="font-size:13px;">닫기</button>
     </div>
-    <widget-lib-pick-modal v-if="libPickOpen" mode="copy"
-      :widget-libs="[] || []" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
+    <bo-pick-modal v-if="libPickOpen" popup-code="widgetLib" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
   </template>
   <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
@@ -915,7 +914,7 @@ window.DpDispWidgetLibDtl = {
   <!-- ===== □.□. 오른쪽: 위젯Lib미리보기 ======================================== -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <path-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" biz-cd="ec_disp_widget_lib" :value="form.pathId" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_widget_lib' }" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
 `

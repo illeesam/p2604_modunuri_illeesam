@@ -454,7 +454,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       </bo-form-area>
       <!-- ===== □.□. 폼 영역 ================================================== -->
       <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+      <bo-pick-modal popup-code="vendor" :show="showVendorModal" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="active ? (cfDtlMode) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>

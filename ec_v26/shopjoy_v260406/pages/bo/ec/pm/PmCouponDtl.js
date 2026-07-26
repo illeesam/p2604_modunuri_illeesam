@@ -547,7 +547,7 @@ window.PmCouponDtl = {
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+      <bo-pick-modal popup-code="vendor" :show="showVendorModal" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
@@ -780,15 +780,10 @@ window.PmCouponDtl = {
     <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')" style="min-width:120px;">취소</button>
   </div>
 <!-- 발급대상 피커 모달 -->
-<bo-prod-cate-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='상품')"
-  :exclude-ids="form.issueTargets.map(t => t.targetId)"
-  modal-name="target-prod-pick" :on-callback="fnCallbackModal" />
-<simple-vendor-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='판매업체')"
-  :show="true" :vendors="vendors" modal-name="vendor-target-pick" :on-callback="fnCallbackModal" />
-<pm-brand-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='브랜드')"
-  modal-name="target-brand-pick" :on-callback="fnCallbackModal" />
-<pm-category-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='카테고리')"
-  modal-name="target-category-pick" :on-callback="fnCallbackModal" />
+<bo-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='상품')" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" modal-name="target-prod-pick" :on-callback="fnCallbackModal" />
+<bo-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='판매업체')" popup-code="vendor" :show="true" modal-name="vendor-target-pick" :on-callback="fnCallbackModal" />
+<bo-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='브랜드')" popup-code="brand" modal-name="target-brand-pick" :on-callback="fnCallbackModal" />
+<bo-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='카테고리')" popup-code="category" modal-name="target-category-pick" :on-callback="fnCallbackModal" />
 </bo-container>
 <!-- ===== □. 본문 영역 =================================================== -->
 `

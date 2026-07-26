@@ -16,6 +16,10 @@ UPDATE shopjoy_2604.cm_popup SET paging_yn = 'Y' WHERE paging_yn IS NULL;
 COMMENT ON COLUMN shopjoy_2604.cm_popup.paging_yn IS '페이징 사용 여부 Y/N. N 이면 페이저 없이 전체 표시';
 COMMENT ON COLUMN shopjoy_2604.cm_popup.page_size IS '페이지 크기(paging_yn=Y). N 이면 최대 표시 건수로 쓰임';
 
--- 건수가 적어 한 화면에 다 보이는 편이 나은 팝업은 페이징 해제
-UPDATE shopjoy_2604.cm_popup SET paging_yn = 'N', page_size = 200
- WHERE popup_code IN ('site', 'brand', 'bbm', 'codeGrp');
+-- 기본은 전 팝업 페이징 사용.
+-- (한때 site/brand/bbm/codeGrp 을 '전체 표시'로 뒀으나, 목록이 길어져 스크롤이 생기고
+--  다중선택 시 어디까지 봤는지 가늠이 안 돼 되돌렸다. 필요하면 화면에서 개별 해제한다.)
+UPDATE shopjoy_2604.cm_popup
+   SET paging_yn = 'Y',
+       page_size = CASE WHEN page_size IS NULL OR page_size > 100 THEN 10 ELSE page_size END
+ WHERE paging_yn IS DISTINCT FROM 'Y';

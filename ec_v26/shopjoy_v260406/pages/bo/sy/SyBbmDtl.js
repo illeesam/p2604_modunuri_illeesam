@@ -232,9 +232,7 @@ window.SyBbmDtl = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
-    :value="form.pathId"
-    title="게시판 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="pathPickModal.show" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_bbm' }" title="게시판 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 </bo-container>
 <!-- ===== □. 조건부 영역 ================================================== -->
 `

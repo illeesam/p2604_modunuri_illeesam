@@ -706,8 +706,7 @@ window.OdDlivMng = {
   </bo-modal>
   <!-- ===== □. 변경작업 모달 ================================================= -->
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
-  <od-member-pick-modal :show="memberPick.open" ui-nm="배송관리"
-    subtitle="배송 조회 기준 회원을 선택해주세요" modal-name="member-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal popup-code="member" :show="memberPick.open" modal-name="member-pick" :on-callback="fnCallbackModal" />
 </bo-page>
 `
 };

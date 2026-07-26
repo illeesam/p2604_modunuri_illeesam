@@ -1072,13 +1072,11 @@ window.SyRoleMng = {
   <!-- ===== □. 하단: 메뉴 배분 + 사용자 배분 (전체 폭) ============================ -->
   <!-- ===== ■. 조건부 영역 (모달) ============================================ -->
   <!-- ===== ■.■. 사용자 선택 모달 =========================================== -->
-  <bo-user-select-modal v-if="uiState.userSelectOpen" modal-name="user-select" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="uiState.userSelectOpen" popup-code="userByDept" result-type="array" modal-name="user-select" :on-callback="fnCallbackModal" />
   <!-- ===== ■.■. 상위역할 선택 모달 ========================================== -->
-  <role-tree-modal v-if="roleTreeModal ? (roleTreeModal.show) : false"
-    :exclude-id="roleTreeModal.targetRow?.roleId > 0 ? roleTreeModal.targetRow.roleId : null" modal-name="parent-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="roleTreeModal ? (roleTreeModal.show) : false" popup-code="role" clearable :exclude-id="roleTreeModal.targetRow?.roleId > 0 ? roleTreeModal.targetRow.roleId : null" modal-name="parent-pick" :on-callback="fnCallbackModal" />
   <!-- ===== ■.■. 표시경로 선택 모달 ========================================== -->
-  <path-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" biz-cd="sy_role"
-    :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_role' }" modal-name="path-pick" :on-callback="fnCallbackModal" />
   <!-- ===== ■.■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
   <bo-excel-upload-modal v-if="excelUploadModal.show"
     default-domain="role" modal-name="excel-upload" :on-callback="fnCallbackModal" />

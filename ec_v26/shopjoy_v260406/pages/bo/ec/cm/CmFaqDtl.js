@@ -223,9 +223,7 @@ window.CmFaqDtl = {
     </template>
   </div>
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="cm_faq"
-    :value="form.pathId"
-    title="FAQ 분류(표시경로) 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-pick-modal v-if="pathPickModal.show" popup-code="path" result-type="id" :init-param="{ bizCd: 'cm_faq' }" title="FAQ 분류(표시경로) 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 </bo-container>
 `
 };
