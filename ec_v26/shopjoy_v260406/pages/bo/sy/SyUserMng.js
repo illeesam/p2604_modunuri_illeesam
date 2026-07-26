@@ -114,14 +114,14 @@ window.SyUserMng = {
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyUserMng : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'excel-upload') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyUserMng : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'excel-upload') {
         if (result == null) { excelUploadModal.show = false; return; }
         /* saved: 목록 재조회 */
         return handleSearchList();
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 

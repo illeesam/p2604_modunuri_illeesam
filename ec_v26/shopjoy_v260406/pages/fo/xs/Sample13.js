@@ -98,9 +98,9 @@ window.XsSample13 = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ Sample13 : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'category-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ Sample13 : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-category-pick') {
         if (result == null) {
             uiState.showCatModal = false;
           // 전체 소스 복사
@@ -108,7 +108,7 @@ window.XsSample13 = {
         }
         return onCatApply(result);
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -788,7 +788,7 @@ window.XsSample13 = {
         </div>
       </div>
     </div>
-    <bo-pick-modal popup-code="category" result-type="idArray" :multi="true" :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
+    <bo-cm-popup-modal popup-cmd="cmPopup-category-pick" popup-code="category" :multi="true" result-type="idArray" :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" :on-callback="fnCallbackModal" />
     <!-- ===== □.□. 패널별 카드 (좌: 패널정보 | 중앙: 위젯 콘텐츠 | 우: 소스) ================= -->
     <!-- ===== □. 영역 ====================================================== -->
 </fo-page>

@@ -509,7 +509,17 @@
         updateProdPicker.show = false;
       };
 
+      /* 공통팝업 결과 수신 — 기존 onSelectX 를 그대로 재사용한다 */
+      const fnCmPopupCallback = (popCmd, response, result) => {
+        if (popCmd === 'cmPopup-updateProd-pick') {
+          updateProdPicker.show = false;
+          if (result != null) onSelectUpdateProd(result);
+          return;
+        }
+      };
+
       return {
+        fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         defaults, cfTypeTotal, cfOptPresetTotal, categories, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
@@ -661,35 +671,8 @@
   <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- 수정 대상 상품 picker 모달 -->
-  <bo-modal :show="updateProdPicker.show" title="수정 대상 상품 선택" width="720px" @close="updateProdPicker.show=false">
-    <div style="display:flex;gap:6px;margin-bottom:10px;">
-      <input type="text" v-model="updateProdPicker.searchValue" placeholder="상품ID/상품명 검색" class="form-control"
-        style="flex:1;" @keyup.enter="_loadUpdateProdPicker" />
-      <button class="btn btn-sm btn_search" @click="_loadUpdateProdPicker">조회</button>
-    </div>
-    <table class="admin-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <th>상품ID</th>
-        <th>상품명</th>
-        <th>상태</th>
-        <th style="text-align:right;">판매가</th>
-        <th style="width:60px;"></th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="updateProdPicker.loading"><td colspan="6" style="text-align:center;padding:16px;color:#94a3b8;">조회 중...</td></tr>
-        <tr v-else-if="!updateProdPicker.rows.length"><td colspan="6" style="text-align:center;padding:16px;color:#94a3b8;">조회 결과 없음</td></tr>
-        <tr v-for="(row,idx) in updateProdPicker.rows" :key="row.prodId">
-          <td style="text-align:center;">{{ idx+1 }}</td>
-          <td style="font-family:monospace;font-size:11px;">{{ row.prodId }}</td>
-          <td>{{ row.prodNm }}</td>
-          <td>{{ row.prodStatusCd }}</td>
-          <td style="text-align:right;">{{ (row.salePrice||0).toLocaleString() }}원</td>
-          <td><button class="btn btn-xs btn_select" @click="onSelectUpdateProd(row)">선택</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="updateProdPicker.show" popup-cmd="cmPopup-updateProd-pick" popup-code="prod"
+    title="수정 대상 상품 선택" :on-callback="fnCmPopupCallback" @close="updateProdPicker.show = false" />
 </div>`,
   };
 })();

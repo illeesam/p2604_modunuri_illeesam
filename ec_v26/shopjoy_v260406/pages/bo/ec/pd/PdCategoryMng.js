@@ -294,8 +294,8 @@ window.PdCategoryMng = {
     };
 
     /* fnCallbackModal — 모달 통합 콜백 */
-    const fnCallbackModal = (cmd, param, result) => {
-      if (cmd === 'cat-parent-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (popCmd === 'cmPopup-cat-parent-pick') {
         catPickerModal.show = false;
         if (result !== undefined) return onParentSelect(result);
         return;
@@ -737,7 +737,7 @@ window.PdCategoryMng = {
 <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->
 <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
 <!-- ===== ■. 상위카테고리 선택 모달 (BoModals.js / PdCatParentPickModal) ======== -->
-<bo-pick-modal popup-code="category" clearable :show="catPickerModal.show" :exclude-id="catPickerModal.forCategoryId" modal-name="cat-parent-pick" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal popup-cmd="cmPopup-cat-parent-pick" popup-code="category" clearable :show="catPickerModal.show" :exclude-id="catPickerModal.forCategoryId" :on-callback="fnCallbackModal" />
 <!-- ===== □. 상위카테고리 선택 모달 ============================================ -->
 </bo-page>
 <!-- ===== □. 상위카테고리 선택 모달 ============================================ -->

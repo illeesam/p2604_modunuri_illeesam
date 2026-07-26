@@ -166,7 +166,17 @@
       const onOpenDiscntPicker = async () => { discntPicker.show = true; discntPicker.searchValue = ''; await _loadDiscntPicker(); };
       const onSelectDiscnt = (row) => { domCfg.fixedDiscntId = row.discntId; discntPicker.show = false; };
 
+      /* 공통팝업 결과 수신 — 기존 onSelectX 를 그대로 재사용한다 */
+      const fnCmPopupCallback = (popCmd, response, result) => {
+        if (popCmd === 'cmPopup-discnt-pick') {
+          discntPicker.show = false;
+          if (result != null) onSelectDiscnt(result);
+          return;
+        }
+      };
+
       return {
+        fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, discntCfgColumns,
         cfDiscntTypeCdTotal, cfDiscntValTypeTotal,
@@ -264,32 +274,8 @@
     @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- picker 모달 -->
-  <bo-modal :show="discntPicker.show" title="할인정책 선택" @close="discntPicker.show=false" box-width="600px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="discntPicker.searchValue" placeholder="할인정책명 / ID 검색" @keyup.enter="_loadDiscntPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadDiscntPicker">조회</button>
-      </div>
-      <div v-if="discntPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th><th>할인ID</th><th>할인명</th><th>타입</th><th>할인</th><th style="width:60px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!discntPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in discntPicker.rows" :key="r.discntId" style="cursor:pointer;" @click="onSelectDiscnt(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:11px;">{{ r.discntId }}</td>
-            <td>{{ r.discntNm }}</td>
-            <td style="font-size:11px;color:#64748b;">{{ r.discntTypeCd || '-' }}</td>
-            <td style="font-size:11px;color:#2563eb;">{{ r.discntTypeCd==='SHIP_FREE' ? '무료배송' : (r.discntValTypeCd==='RATE' ? r.discVal+'%' : (r.discVal||0).toLocaleString()+'원') }}</td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="discntPicker.show" popup-cmd="cmPopup-discnt-pick" popup-code="discnt"
+    title="할인정책 선택" :on-callback="fnCmPopupCallback" @close="discntPicker.show = false" />
 </div>`,
   };
 })();

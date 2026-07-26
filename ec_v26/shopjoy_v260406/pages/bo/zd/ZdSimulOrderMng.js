@@ -527,7 +527,37 @@
       };
       const fnProdHasOpt = (p) => !!(p.optTypeNms && p.optTypeNms.length);
 
+      /* 공통팝업 결과 수신 — 기존 onSelectX 를 그대로 재사용한다 */
+      const fnCmPopupCallback = (popCmd, response, result) => {
+        if (popCmd === 'cmPopup-member-pick') {
+          memberPicker.show = false;
+          if (result != null) onSelectMember(result);
+          return;
+        }
+        if (popCmd === 'cmPopup-prod-pick') {
+          prodPicker.show = false;
+          if (result != null) onSelectProd(result);
+          return;
+        }
+        if (popCmd === 'cmPopup-coupon-pick') {
+          couponPicker.show = false;
+          if (result != null) onSelectCoupon(result);
+          return;
+        }
+        if (popCmd === 'cmPopup-discnt-pick') {
+          discntPicker.show = false;
+          if (result != null) onSelectDiscnt(result);
+          return;
+        }
+        if (popCmd === 'cmPopup-order-pick') {
+          orderPicker.show = false;
+          if (result != null) onSelectOrder(result);
+          return;
+        }
+      };
+
       return {
+        fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfPayMethodTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
@@ -797,168 +827,24 @@
   <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- 회원 picker 모달 -->
-  <bo-modal :show="memberPicker.show" title="시뮬 회원 선택" @close="memberPicker.show=false" box-width="660px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="memberPicker.searchValue" placeholder="이름 / 이메일 / 회원ID 검색" @keyup.enter="()=>{ memberPicker.pageNo=1; _loadMemberPicker(); }"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:6px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 14px;" @click="()=>{ memberPicker.pageNo=1; _loadMemberPicker(); }">조회</button>
-      </div>
-      <bo-grid
-        :columns="[
-          { key:'_no', label:'번호', width:'44px', align:'center', fmt:(_,r,i)=>(memberPicker.pageNo-1)*memberPicker.pageSize+(i+1) },
-          { key:'memberId', label:'회원ID', width:'160px', cellStyle:'font-family:monospace;font-size:11px;' },
-          { key:'memberNm', label:'이름', width:'90px' },
-          { key:'loginId', label:'이메일/로그인ID', cellStyle:'font-size:11px;color:#64748b;' },
-          { key:'memberStatusCd', label:'상태', width:'70px', align:'center', badge:(r)=>r.memberStatusCd==='ACTIVE'?'badge-green':'badge-gray' },
-          { key:'btn_select', label:'선택', width:'60px', align:'center' },
-        ]"
-        :rows="memberPicker.rows"
-        :loading="memberPicker.loading"
-        :pager="memberPicker"
-        grid-id="memberPickerGrid"
-        row-clickable
-        @cell-click="(e)=>{ if(e.colKey!=='btn_select') onSelectMember(e.row); }"
-        @row-click="(r)=>onSelectMember(r)"
-      >
-        <template #cell-btn_select="{ row }">
-          <button class="btn btn_select" style="font-size:11px;padding:2px 10px;height:24px;" @click.stop="onSelectMember(row)">선택</button>
-        </template>
-      </bo-grid>
-      <bo-pager :pager="memberPicker" style="margin-top:8px;" :on-set-page="onMemberPickerPage" :on-size-change="()=>{ memberPicker.pageNo=1; _loadMemberPicker(); }" />
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="memberPicker.show" popup-cmd="cmPopup-member-pick" popup-code="member"
+    title="시뮬 회원 선택" :on-callback="fnCmPopupCallback" @close="memberPicker.show = false" />
 
   <!-- 상품 picker 모달 -->
-  <bo-modal :show="prodPicker.show" title="상품 선택" @close="prodPicker.show=false" box-width="640px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="prodPicker.searchValue" placeholder="상품명 / 상품ID 검색" @keyup.enter="_loadProdPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadProdPicker">조회</button>
-      </div>
-      <div v-if="prodPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th>
-          <th>상품ID</th>
-          <th>상품명</th>
-          <th style="text-align:right;">판매가</th>
-          <th>상태</th>
-          <th style="width:60px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!prodPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in prodPicker.rows" :key="r.prodId" style="cursor:pointer;" @click="onSelectProd(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:11px;">{{ r.prodId }}</td>
-            <td>{{ r.prodNm }}</td>
-            <td style="text-align:right;">{{ (r.salePrice||0).toLocaleString() }}원</td>
-            <td style="text-align:center;"><span class="badge badge-green" style="font-size:10px;">{{ r.prodStatusCd }}</span></td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="prodPicker.show" popup-cmd="cmPopup-prod-pick" popup-code="prod"
+    title="상품 선택" :on-callback="fnCmPopupCallback" @close="prodPicker.show = false" />
 
   <!-- 쿠폰 picker 모달 -->
-  <bo-modal :show="couponPicker.show" title="쿠폰 선택" @close="couponPicker.show=false" box-width="620px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="couponPicker.searchValue" placeholder="쿠폰명 검색" @keyup.enter="_loadCouponPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadCouponPicker">조회</button>
-      </div>
-      <div v-if="couponPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th>
-          <th>쿠폰ID</th>
-          <th>쿠폰명</th>
-          <th>유형</th>
-          <th>할인</th>
-          <th style="width:60px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!couponPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in couponPicker.rows" :key="r.couponId" style="cursor:pointer;" @click="onSelectCoupon(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:11px;">{{ r.couponId }}</td>
-            <td>{{ r.couponNm }}</td>
-            <td style="text-align:center;"><span class="badge badge-purple" style="font-size:10px;">{{ r.couponTypeCd }}</span></td>
-            <td style="text-align:right;font-size:11px;">{{ r.discntRate ? r.discntRate + '%' : (r.discntAmt ? (r.discntAmt).toLocaleString() + '원' : '-') }}</td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="couponPicker.show" popup-cmd="cmPopup-coupon-pick" popup-code="coupon"
+    title="쿠폰 선택" :on-callback="fnCmPopupCallback" @close="couponPicker.show = false" />
 
   <!-- 할인 picker 모달 -->
-  <bo-modal :show="discntPicker.show" title="할인 선택" @close="discntPicker.show=false" box-width="620px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="discntPicker.searchValue" placeholder="할인명 검색" @keyup.enter="_loadDiscntPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadDiscntPicker">조회</button>
-      </div>
-      <div v-if="discntPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th>
-          <th>할인ID</th>
-          <th>할인명</th>
-          <th>유형</th>
-          <th>할인율/금액</th>
-          <th style="width:60px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!discntPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in discntPicker.rows" :key="r.discntId" style="cursor:pointer;" @click="onSelectDiscnt(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:11px;">{{ r.discntId }}</td>
-            <td>{{ r.discntNm }}</td>
-            <td style="text-align:center;"><span class="badge badge-orange" style="font-size:10px;">{{ r.discntTypeCd }}</span></td>
-            <td style="text-align:right;font-size:11px;">{{ r.discntRate ? r.discntRate + '%' : (r.discntAmt ? (r.discntAmt).toLocaleString() + '원' : '-') }}</td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="discntPicker.show" popup-cmd="cmPopup-discnt-pick" popup-code="discnt"
+    title="할인 선택" :on-callback="fnCmPopupCallback" @close="discntPicker.show = false" />
 
   <!-- 주문 picker 모달 -->
-  <bo-modal :show="orderPicker.show" title="시뮬 주문 선택" @close="orderPicker.show=false" box-width="700px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="orderPicker.searchValue" placeholder="주문ID 검색" @keyup.enter="()=>{ orderPicker.pageNo=1; _loadOrderPicker(); }"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:6px;font-family:monospace;" />
-        <button class="btn btn_search" style="height:32px;padding:0 14px;" @click="()=>{ orderPicker.pageNo=1; _loadOrderPicker(); }">조회</button>
-      </div>
-      <bo-grid
-        :columns="[
-          { key:'_no', label:'번호', width:'44px', align:'center', fmt:(_,r,i)=>(orderPicker.pageNo-1)*orderPicker.pageSize+(i+1) },
-          { key:'orderId', label:'주문ID', width:'180px', cellStyle:'font-family:monospace;font-size:11px;' },
-          { key:'memberNm', label:'주문자', width:'90px', fmt:(v)=>v||'-' },
-          { key:'orderStatusCd', label:'상태', width:'90px', align:'center', badge:(r)=>({PENDING:'badge-gray',PAID:'badge-blue',PREPARING:'badge-orange',SHIPPED:'badge-purple',COMPLT:'badge-green',COMPLT:'badge-green'}[r.orderStatusCd]||'badge-gray') },
-          { key:'totalPayAmt', label:'결제금액', width:'100px', align:'right', fmt:(v)=>(v||0).toLocaleString()+'원' },
-          { key:'btn_select', label:'선택', width:'60px', align:'center' },
-        ]"
-        :rows="orderPicker.rows"
-        :loading="orderPicker.loading"
-        :pager="orderPicker"
-        grid-id="orderPickerGrid"
-        row-clickable
-        @row-click="(r)=>onSelectOrder(r)"
-      >
-        <template #cell-btn_select="{ row }">
-          <button class="btn btn_select" style="font-size:11px;padding:2px 10px;height:24px;" @click.stop="onSelectOrder(row)">선택</button>
-        </template>
-      </bo-grid>
-      <bo-pager :pager="orderPicker" style="margin-top:8px;" :on-set-page="onOrderPickerPage" :on-size-change="()=>{ orderPicker.pageNo=1; _loadOrderPicker(); }" />
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="orderPicker.show" popup-cmd="cmPopup-order-pick" popup-code="order"
+    title="시뮬 주문 선택" :on-callback="fnCmPopupCallback" @close="orderPicker.show = false" />
 
 </div>`,
   };

@@ -102,22 +102,22 @@ window.SyBbsDtl = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyBbsDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'bbm-select') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyBbsDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-bbm-select') {
         if (result == null) {
             showBbmModal.value = false;
             return;
         }
         return onBbmSelect(result);
-      } else if (cmd === 'bbm-detail') {
+      } else if (popCmd === 'bbm-detail') {
         if (result == null) {
           uiState.showBbmDetail = false;
           return;
         }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -329,7 +329,7 @@ window.SyBbsDtl = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 게시판 선택 팝업 =============================================== -->
-  <bo-pick-modal v-if="showBbmModal" popup-code="bbm" modal-name="bbm-select" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="showBbmModal" popup-cmd="cmPopup-bbm-select" popup-code="bbm" :on-callback="fnCallbackModal" />
   <!-- ===== □. 게시판 선택 팝업 =============================================== -->
   <!-- ===== ■. 게시판 상세보기 팝업 ============================================= -->
   <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"

@@ -49,15 +49,15 @@ window.Contact = {
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답(null=닫기/취소, 값=선택) */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ Contact.js : fnCallbackModal -> ', cmd, param, result);
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ Contact.js : fnCallbackModal -> ', popCmd, param, result);
       // 주문 선택 모달 (result==null: 닫기, result=주문객체: 선택)
-      if (cmd === 'orderModal') {
+      if (popCmd === 'orderModal') {
         orderModal.show = false;
         if (result) form.orderNo = result.orderId;
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 

@@ -2986,12 +2986,12 @@
   </div><!-- /bo-body -->
 
   <!-- 선택 모달들 -->
-  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='site') : false" popup-code="site" modal-name="site-select" @select="onSelectItem('site', $event)" @close="closeSelectModal" />
-  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='vendor') : false" popup-code="vendor" modal-name="vendor-select" @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
-  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='dlivVendor') : false" popup-code="vendor" modal-name="dliv-vendor-select" @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
-  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='boUser') : false" popup-code="userByDept" result-type="array" modal-name="bo-user-select" @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
-  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='member') : false" popup-code="member" modal-name="member-select" @select="onSelectItem('member', $event)" @close="closeSelectModal" />
-  <bo-pick-modal v-if="selectModal.show ? (selectModal.type==='order') : false" popup-code="order" modal-name="order-select" @select="onSelectItem('order', $event)" @close="closeSelectModal" />
+  <bo-cm-popup-modal v-if="selectModal.show ? (selectModal.type==='site') : false" popup-cmd="cmPopup-site-select" popup-code="site" @select="onSelectItem('site', $event)" @close="closeSelectModal" />
+  <bo-cm-popup-modal v-if="selectModal.show ? (selectModal.type==='vendor') : false" popup-cmd="cmPopup-vendor-select" popup-code="vendor" @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
+  <bo-cm-popup-modal v-if="selectModal.show ? (selectModal.type==='dlivVendor') : false" popup-cmd="cmPopup-dliv-vendor-select" popup-code="vendor" @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
+  <bo-cm-popup-modal v-if="selectModal.show ? (selectModal.type==='boUser') : false" popup-cmd="cmPopup-bo-user-select" popup-code="userByDept" result-type="array" @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
+  <bo-cm-popup-modal v-if="selectModal.show ? (selectModal.type==='member') : false" popup-cmd="cmPopup-member-select" popup-code="member" @select="onSelectItem('member', $event)" @close="closeSelectModal" />
+  <bo-cm-popup-modal v-if="selectModal.show ? (selectModal.type==='order') : false" popup-cmd="cmPopup-order-select" popup-code="order" @select="onSelectItem('order', $event)" @close="closeSelectModal" />
 
   <!-- 참조 모달 -->
   <bo-ref-modal v-if="refModal ? (refModal.show) : false" :state="refModal" modal-name="bo-ref"  @close="closeRefModal" />
@@ -3332,7 +3332,7 @@
     .component('BoMenuTreeCard', window.BoMenuTreeCard)
     .component('BoLocalTreeCard', window.BoLocalTreeCard)
     .component('BoModal', window.BoModal)
-    .component('BoPickModal', window.BoPickModal)
+    .component('BoCmPopupModal', window.BoCmPopupModal)
     .component('BoAddrSearchModal', window.BoAddrSearchModal)
     .component('BoCronModal', window.BoCronModal)
     .component('BoTreeSelectorModal', window.BoTreeSelectorModal)

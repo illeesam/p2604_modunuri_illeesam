@@ -177,6 +177,10 @@ window.PdProdDtl = {
       // 담당MD 선택 확정
       } else if (cmd === 'md-select') {
         return selectMdUser(param);
+      // 카테고리 피커 닫기
+      } else if (cmd === 'catPicker-close') {
+        uiState.catPickerOpen = false;
+        return;
       // 담당MD 선택 모달 닫기
       } else if (cmd === 'mdModal-close') {
         uiState.mdModalOpen = false;
@@ -265,20 +269,12 @@ window.PdProdDtl = {
         bundlePickerOpen.value = true;
       } else if (cmd === 'bundleItem-remove') {
         return removeBundleItem(param);
-      } else if (cmd === 'bundlePicker-search') {
-        return fnLoadBundlePicker();
-      } else if (cmd === 'bundlePicker-select') {
-        return addBundleItem(param);
       } else if (cmd === 'setPicker-open') {
         setPickerOpen.value = true;
       } else if (cmd === 'setItem-addEmpty') {
         return addSetItem(null);
       } else if (cmd === 'setItem-remove') {
         return removeSetItem(param);
-      } else if (cmd === 'setPicker-search') {
-        return fnLoadSetPicker();
-      } else if (cmd === 'setPicker-select') {
-        return addSetItem(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -291,16 +287,25 @@ window.PdProdDtl = {
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ PdProdDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'category-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ PdProdDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-category-pick') {
         if (result == null) { uiState.catPickerOpen = false; return; }
         return addCategory(result);
-      } else if (cmd === 'code-grp') {
+      } else if (popCmd === 'cmPopup-bundle-pick') {
+        if (result == null) { bundlePickerOpen.value = false; return; }
+        return addBundleItem(result);
+      } else if (popCmd === 'cmPopup-set-pick') {
+        if (result == null) { setPickerOpen.value = false; return; }
+        return addSetItem(result);
+      } else if (popCmd === 'cmPopup-md-pick') {
+        if (result == null) { uiState.mdModalOpen = false; return; }
+        return handleBtnAction('md-select', result);
+      } else if (popCmd === 'cmPopup-code-grp') {
         if (result == null) { codeGrpModal.show = false; return; }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -1058,8 +1063,8 @@ window.PdProdDtl = {
     };
 
     /* fnProdPickerCallback — BoProdCatePickModal 콜백 (선택 시 행 추가, 닫기 시 모달 종료) */
-    const fnProdPickerCallback = (cmd, param, result) => {
-      if (cmd !== 'prod-cate-pick') return;
+    const fnProdPickerCallback = (popCmd, param, result) => {
+      if (popCmd !== 'cmPopup-prod-cate-pick') return;
       if (result == null) { uiState.prodPickerOpen = ''; return; }
       selectProdItem(result);
     };
@@ -1511,22 +1516,7 @@ window.PdProdDtl = {
     // 묶음구성 상품 피커 상태
     let _bundleSeq = 1;
     const bundlePickerOpen = ref(false);
-    const bundlePickerSearch = ref('');
-    const bundlePickerRows = reactive([]);
-    const bundlePickerPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const bundlePickerLoading = ref(false);
 
-    /* fnLoadBundlePicker — 묶음 상품 검색 */
-    const fnLoadBundlePicker = async () => {
-      bundlePickerLoading.value = true;
-      try {
-        const res = await boApiSvc.pdProd.getPage({ searchValue: bundlePickerSearch.value, pageNo: bundlePickerPager.pageNo, pageSize: bundlePickerPager.pageSize }, '상품관리', '묶음상품검색');
-        const d = res.data?.data || {};
-        bundlePickerRows.splice(0, bundlePickerRows.length, ...(d.pageList || []));
-        bundlePickerPager.pageTotalCount = d.pageTotalCount || 0;
-        bundlePickerPager.pageTotalPage  = d.pageTotalPage  || 1;
-      } catch (err) { console.error(err); } finally { bundlePickerLoading.value = false; }
-    };
 
     /* addBundleItem — 묶음구성 행 추가 */
     const addBundleItem = (prod) => {
@@ -1549,22 +1539,7 @@ window.PdProdDtl = {
     // 세트구성 상품 피커 상태
     let _setSeq = 1;
     const setPickerOpen = ref(false);
-    const setPickerSearch = ref('');
-    const setPickerRows = reactive([]);
-    const setPickerPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const setPickerLoading = ref(false);
 
-    /* fnLoadSetPicker — 세트 상품 검색 */
-    const fnLoadSetPicker = async () => {
-      setPickerLoading.value = true;
-      try {
-        const res = await boApiSvc.pdProd.getPage({ searchValue: setPickerSearch.value, pageNo: setPickerPager.pageNo, pageSize: setPickerPager.pageSize }, '상품관리', '세트상품검색');
-        const d = res.data?.data || {};
-        setPickerRows.splice(0, setPickerRows.length, ...(d.pageList || []));
-        setPickerPager.pageTotalCount = d.pageTotalCount || 0;
-        setPickerPager.pageTotalPage  = d.pageTotalPage  || 1;
-      } catch (err) { console.error(err); } finally { setPickerLoading.value = false; }
-    };
 
     /* addSetItem — 세트구성 행 추가 (상품 없이도 추가 가능) */
     const addSetItem = (prod) => {
@@ -1630,14 +1605,6 @@ window.PdProdDtl = {
       { key: 'itemDesc',   label: '구성품 설명', edit: 'text', placeholder: '예: 선물박스, 엽서' },
     ];
     // 묶음/세트 상품 피커 공통 그리드
-    columns.bundlePickerGrid = [
-      { key: 'prodId',     label: 'ID',     style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
-      { key: 'prodNm',     label: '상품명', cellStyle: 'font-weight:600;' },
-      { key: 'salePrice',  label: '판매가', style: 'width:100px;', align: 'right',
-        fmt: (v) => (v || 0).toLocaleString() + '원' },
-      { key: 'prodStatusCd', label: '상태', style: 'width:60px;',
-        badge: (row) => row.prodStatusCd === 'SALE' ? 'badge-green' : 'badge-gray' },
-    ];
     // 상품 선택 모달 그리드
     columns.prodPickerGrid = [
       { key: 'productId', label: 'ID',       style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
@@ -1838,10 +1805,8 @@ window.PdProdDtl = {
       removeRelProd, removeCodeProd,
       onRelDrop,
       onCodeDrop,
-      bundlePickerOpen, bundlePickerSearch, bundlePickerRows, bundlePickerPager, bundlePickerLoading,
-      fnLoadBundlePicker, addBundleItem, removeBundleItem, cfBundleRateSum, cfBundleRateOk,
-      setPickerOpen, setPickerSearch, setPickerRows, setPickerPager, setPickerLoading,
-      fnLoadSetPicker, addSetItem, removeSetItem,
+      bundlePickerOpen, addBundleItem, removeBundleItem, cfBundleRateSum, cfBundleRateOk,
+      setPickerOpen, addSetItem, removeSetItem,
       cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked,
       cfMarginRateCalc, cfDiscountRate, cfPlatformFeeDisp, cfNetRevenueDisp,
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
@@ -1952,36 +1917,13 @@ window.PdProdDtl = {
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
-      <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet" modal-name="category-pick" :on-callback="fnCallbackModal" />
+      <bo-cm-popup-modal v-if="catPickerOpen" popup-cmd="cmPopup-category-pick" popup-code="category"
+        :exclude-ids="[...cfCatExcludeSet]" :on-callback="fnCallbackModal"
+        @close="handleBtnAction('catPicker-close')" />
       <!-- ===== ■.■.■. 담당MD 선택 모달 ========================================== -->
-      <bo-modal :show="mdModalOpen" title="담당MD 선택" width="480px" box-pad="0" @close="handleBtnAction('mdModal-close')">
-        <div style="display:flex;flex-direction:column;max-height:500px;">
-            <!-- ===== ■.■.■.■.■.■. 검색 ============================================ -->
-            <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
-              <bo-multi-check-select
-                v-model="uiState.mdSearchType"
-                :options="[
-                { value: 'userNm', label: '이름' },
-                { value: 'deptId', label: '부서' },
-                { value: 'roleId', label: '역할' },
-                ]"
-                placeholder="검색대상 전체"
-                all-label="전체 선택"
-                min-width="160px" />
-              <input class="form-control" v-model="uiState.mdSearch" placeholder="검색어 입력" autofocus style="font-size:13px;margin-top:6px;" />
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 목록 ============================================ -->
-            <div style="overflow-y:auto;flex:1;padding:8px 12px;">
-              <!-- ===== ■.■.■.■.■.■.■. 목록 영역 ======================================= -->
-              <bo-grid bare :columns="columns.mdUserGrid" :rows="cfMdUserListFiltered" row-key="userId" :selected-key="form.mdUserId"
-                :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." @cell-click="e => handleBtnAction('md-select', e.row)"></bo-grid>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 푸터 ============================================ -->
-            <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;">
-              <button class="btn btn_close" @click="handleBtnAction('mdModal-close')">닫기</button>
-            </div>
-        </div>
-      </bo-modal>
+      <bo-cm-popup-modal v-if="mdModalOpen" popup-cmd="cmPopup-md-pick" popup-code="user"
+        title="담당MD 선택" :on-callback="fnCallbackModal"
+        @close="handleBtnAction('mdModal-close')" />
       <!-- ===== ■.■.■. 체크박스 그룹 (세로 슬림) ===================================== -->
       <div style="display:flex;flex-wrap:wrap;gap:16px;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
@@ -2550,13 +2492,13 @@ window.PdProdDtl = {
       </bo-grid>
       </fieldset>
       <!-- 프로모션 피커 모달 4개 — fieldset 밖에 배치 (fieldset disabled 영향 차단) -->
-      <bo-pick-modal v-if="uiState.promoPicker === 'coupon'" popup-code="coupon" @select="r => handleBtnAction('promo-coupon-pick', r)" @close="uiState.promoPicker = null" />
+      <bo-cm-popup-modal v-if="uiState.promoPicker === 'coupon'" popup-code="coupon" @select="r => handleBtnAction('promo-coupon-pick', r)" @close="uiState.promoPicker = null" />
       </pm-coupon-pick-modal>
-      <bo-pick-modal v-if="uiState.promoPicker === 'save'" popup-code="save" @select="r => handleBtnAction('promo-save-pick', r)" @close="uiState.promoPicker = null" />
+      <bo-cm-popup-modal v-if="uiState.promoPicker === 'save'" popup-code="save" @select="r => handleBtnAction('promo-save-pick', r)" @close="uiState.promoPicker = null" />
       </pm-save-pick-modal>
-      <bo-pick-modal v-if="uiState.promoPicker === 'discnt'" popup-code="discnt" @select="r => handleBtnAction('promo-discnt-pick', r)" @close="uiState.promoPicker = null" />
+      <bo-cm-popup-modal v-if="uiState.promoPicker === 'discnt'" popup-code="discnt" @select="r => handleBtnAction('promo-discnt-pick', r)" @close="uiState.promoPicker = null" />
       </pm-discnt-pick-modal>
-      <bo-pick-modal v-if="uiState.promoPicker === 'gift'" popup-code="gift" @select="r => handleBtnAction('promo-gift-pick', r)" @close="uiState.promoPicker = null" />
+      <bo-cm-popup-modal v-if="uiState.promoPicker === 'gift'" popup-code="gift" @select="r => handleBtnAction('promo-gift-pick', r)" @close="uiState.promoPicker = null" />
       </pm-gift-pick-modal>
       <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
@@ -2726,7 +2668,7 @@ window.PdProdDtl = {
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
       <!-- ===== ■.■.■. 상품 추가 피커 모달 (좌:카테고리트리 / 우:상품목록) ===================== -->
-      <bo-pick-modal v-if="prodPickerOpen" popup-code="prodByCategory" :title="prodPickerOpen==='rel' ? '연관상품 추가' : '코디상품 추가'" :exclude-ids="(prodPickerOpen==='rel' ? relProds : codeProds).map(r => r.prodId)" modal-name="prod-cate-pick" :on-callback="fnProdPickerCallback" />
+      <bo-cm-popup-modal v-if="prodPickerOpen" popup-cmd="cmPopup-prod-cate-pick" popup-code="prodByCategory" :title="prodPickerOpen==='rel' ? '연관상품 추가' : '코디상품 추가'" :exclude-ids="(prodPickerOpen==='rel' ? relProds : codeProds).map(r => r.prodId)" :on-callback="fnProdPickerCallback" />
     </div>
     <!-- ══════════════════════════════════════
      💰 옵션(가격/재고)  (SKU별 가격·재고)
@@ -3000,16 +2942,9 @@ window.PdProdDtl = {
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
       <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
-      <bo-modal :show="bundlePickerOpen" title="묶음 상품 선택" box-style="width:640px;max-height:80vh;" @close="bundlePickerOpen=false">
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <input class="form-control" v-model="bundlePickerSearch" placeholder="상품명 검색" style="flex:1;" @keyup.enter="fnLoadBundlePicker" />
-          <button class="btn btn_search" @click="handleBtnAction('bundlePicker-search')">조회</button>
-        </div>
-        <bo-grid bare :columns="columns.bundlePickerGrid" :rows="bundlePickerRows" row-key="prodId"
-          :loading="bundlePickerLoading" empty-text="조회 버튼으로 상품을 검색하세요."
-          @cell-click="e => handleBtnAction('bundlePicker-select', e.row)" />
-        <bo-pager :pager="bundlePickerPager" :on-set-page="n => { bundlePickerPager.pageNo=n; fnLoadBundlePicker(); }" :on-size-change="() => { bundlePickerPager.pageNo=1; fnLoadBundlePicker(); }" style="margin-top:8px;" />
-      </bo-modal>
+      <bo-cm-popup-modal v-if="bundlePickerOpen" popup-cmd="cmPopup-bundle-pick" popup-code="prod"
+        title="묶음 상품 선택" :exclude-ids="tabData.bundleItems.map(r => r.prodId)"
+        :on-callback="fnCallbackModal" @close="bundlePickerOpen = false" />
     </div>
     <!-- ══════════════════════════════════════
      🎁 세트구성  (pd_prod_set_item)
@@ -3050,16 +2985,9 @@ window.PdProdDtl = {
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
       <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
-      <bo-modal :show="setPickerOpen" title="세트 구성 상품 선택" box-style="width:640px;max-height:80vh;" @close="setPickerOpen=false">
-        <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <input class="form-control" v-model="setPickerSearch" placeholder="상품명 검색" style="flex:1;" @keyup.enter="fnLoadSetPicker" />
-          <button class="btn btn_search" @click="handleBtnAction('setPicker-search')">조회</button>
-        </div>
-        <bo-grid bare :columns="columns.bundlePickerGrid" :rows="setPickerRows" row-key="prodId"
-          :loading="setPickerLoading" empty-text="조회 버튼으로 상품을 검색하세요."
-          @cell-click="e => handleBtnAction('setPicker-select', e.row)" />
-        <bo-pager :pager="setPickerPager" :on-set-page="n => { setPickerPager.pageNo=n; fnLoadSetPicker(); }" :on-size-change="() => { setPickerPager.pageNo=1; fnLoadSetPicker(); }" style="margin-top:8px;" />
-      </bo-modal>
+      <bo-cm-popup-modal v-if="setPickerOpen" popup-cmd="cmPopup-set-pick" popup-code="prod"
+        title="세트 구성 상품 선택" :exclude-ids="tabData.setItems.map(r => r.prodId)"
+        :on-callback="fnCallbackModal" @close="setPickerOpen = false" />
     </div>
   </div>
   <!-- ===== /dtl-tab-grid ============================================== -->
@@ -3122,7 +3050,7 @@ window.PdProdDtl = {
 <!-- ===== □. 이력 ====================================================== -->
 <!-- ===== ■. 공통코드 그룹 미리보기 모달 (BoModals.js / window.BoCodeGrpModal) ===== -->
 <!-- ===== ■. 영역 ====================================================== -->
-<bo-pick-modal popup-code="code" :init-param="{ codeGrp: codeGrpModal.codeGrp }" :show="codeGrpModal.show" :title="codeGrpModal.title" modal-name="code-grp" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal popup-cmd="cmPopup-code-grp" popup-code="code" :init-param="{ codeGrp: codeGrpModal.codeGrp }" :show="codeGrpModal.show" :title="codeGrpModal.title" :on-callback="fnCallbackModal" />
 <!-- ===== □. 영역 ====================================================== -->
 `
 };

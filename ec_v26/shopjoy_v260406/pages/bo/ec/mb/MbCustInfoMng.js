@@ -172,14 +172,14 @@
       };
 
       /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-      const fnCallbackModal = (cmd, param, result) => {
-        console.log(' ■■ MbCustInfoMng : fnCallbackModal -> ', cmd, param, result);
-        if (cmd === 'member-pick') {
+      const fnCallbackModal = (popCmd, param, result) => {
+        console.log(' ■■ MbCustInfoMng : fnCallbackModal -> ', popCmd, param, result);
+        if (popCmd === 'cmPopup-member-pick') {
           memberModalOpen.value = false;
           if (result) selectMember(result);
           return;
         } else {
-          console.warn('[fnCallbackModal] unknown cmd:', cmd);
+          console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
         }
       };
 
@@ -947,7 +947,7 @@
   </template>
   <!-- ===== □. 고객 정보 영역 ================================================ -->
   <!-- ===== ■. 고객 선택 모달 ================================================ -->
-  <bo-pick-modal v-if="memberModalOpen" popup-code="member" modal-name="member-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="memberModalOpen" popup-cmd="cmPopup-member-pick" popup-code="member" :on-callback="fnCallbackModal" />
   <!-- ===== □. 고객 선택 모달 ================================================ -->
 </bo-page>
 `,

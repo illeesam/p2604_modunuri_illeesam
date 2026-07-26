@@ -130,9 +130,9 @@ window.OdClaimDtl = {
     };
 
     /* fnCallbackModal — 모달 선택 결과 처리 (cmd = modalName) */
-    const fnCallbackModal = (cmd, param, result) => {
+    const fnCallbackModal = (popCmd, param, result) => {
       // 주문 선택
-      if (cmd === 'order-pick') {
+      if (popCmd === 'cmPopup-order-pick') {
         orderPick.open = false;
         if (result) {
           form.orderId  = result.orderId || '';
@@ -141,7 +141,7 @@ window.OdClaimDtl = {
         }
         return;
       // 회원 선택
-      } else if (cmd === 'member-pick') {
+      } else if (popCmd === 'cmPopup-member-pick') {
         memberPick.open = false;
         if (result) {
           form.memberId = result.memberId || '';
@@ -697,10 +697,10 @@ window.OdClaimDtl = {
 <!-- ===== □.□. 정보수정이력 탭 ============================================== -->
 <!-- ===== ■. 주문 선택 모달 ================================================= -->
 <div v-if="orderPick.open">
-  <bo-pick-modal popup-code="order" modal-name="order-pick" :on-callback="fnCallbackModal" @close="handleBtnAction('orderPickModal-close')" />
+  <bo-cm-popup-modal popup-cmd="cmPopup-order-pick" popup-code="order" :on-callback="fnCallbackModal" @close="handleBtnAction('orderPickModal-close')" />
 </div>
 <!-- ===== ■. 회원 선택 모달 ================================================= -->
-<bo-pick-modal popup-code="member" :show="memberPick.open" modal-name="member-pick" :on-callback="fnCallbackModal" @close="handleBtnAction('memberPickModal-close')" />
+<bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="memberPick.open" :on-callback="fnCallbackModal" @close="handleBtnAction('memberPickModal-close')" />
 <!-- ===== ■. 환불 계산 모달 ================================================= -->
 <od-claim-calc-modal :show="dtlCalcDialog.show" :claim-id="dtlCalcDialog.claimId" @close="handleBtnAction('calc-close')" />
 `

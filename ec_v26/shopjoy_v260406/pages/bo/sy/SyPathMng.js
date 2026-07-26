@@ -110,15 +110,15 @@ window.SyPathMng = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyPathMng : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'parent-path') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyPathMng : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'parent-path') {
         if (result == null) {
             return closeParentModal();
         }
         return selectParent(result);
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     const _initSearchParam = () => {

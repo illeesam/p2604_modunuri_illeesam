@@ -86,22 +86,22 @@ window.SyTemplateDtl = {
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyTemplateDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'template-preview') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyTemplateDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'template-preview') {
         if (result == null) {
             uiState.previewOpen = false;
             return;
         }
         return;
-      } else if (cmd === 'template-send') {
+      } else if (popCmd === 'template-send') {
         if (result == null) {
           uiState.sendOpen = false;
           return;
         }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 

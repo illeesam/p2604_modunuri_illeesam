@@ -123,16 +123,16 @@ window.PdProdMng = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ PdProdMng : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'category-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ PdProdMng : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-category-pick') {
         if (result == null) {
             catModal.show = false;
             return;
         }
         return onCatSelect(result);
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     const _initSearchParam = () => {
@@ -282,7 +282,8 @@ window.PdProdMng = {
 
     /* onCatSelect — 카테고리 선택 */
     const onCatSelect = (cat) => {
-      searchParam.cate = cat.categoryNm || '';
+      /* 트리에서 '선택 안함' 을 고르면 categoryNm 이 빈 값으로 와 검색조건이 비워진다 */
+      searchParam.cate = (cat ? cat.categoryNm : '') || '';
       catModal.show = false;
     };
 
@@ -480,9 +481,9 @@ window.PdProdMng = {
   </bo-container>
   <!-- ===== □. 목록 ======================================================= -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
-  <bo-category-tree-modal
-    v-if="catModal ? (catModal.show) : false"
-    :exclude-id="null" modal-name="category-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="catModal ? (catModal.show) : false"
+    popup-cmd="cmPopup-category-pick" popup-code="category" clearable
+    :on-callback="fnCallbackModal" @close="catModal.show = false" />
   <!-- ===== □. 카테고리 선택 모달 ============================================== -->
   <!-- ===== ■. 하단 상세: ProdDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============== -->
   <pd-prod-dtl

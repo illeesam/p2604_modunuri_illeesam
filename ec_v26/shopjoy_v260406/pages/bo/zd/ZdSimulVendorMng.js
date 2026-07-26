@@ -136,7 +136,17 @@
       const onOpenVendorPicker = async () => { vendorPicker.show = true; vendorPicker.searchValue = ''; await _loadVendorPicker(); };
       const onSelectVendor = (row) => { domCfg.fixedVendorId = row.vendorId; domCfg.fixedVendorNm = row.vendorNm || row.vendorId; vendorPicker.show = false; };
 
+      /* 공통팝업 결과 수신 — 기존 onSelectX 를 그대로 재사용한다 */
+      const fnCmPopupCallback = (popCmd, response, result) => {
+        if (popCmd === 'cmPopup-vendor-pick') {
+          vendorPicker.show = false;
+          if (result != null) onSelectVendor(result);
+          return;
+        }
+      };
+
       return {
+        fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns, cfTypeTotal,
         onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog,
@@ -217,37 +227,8 @@
     @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- 업체 picker 모달 -->
-  <bo-modal :show="vendorPicker.show" title="수정할 업체 선택" @close="vendorPicker.show=false" box-width="560px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="vendorPicker.searchValue" placeholder="업체명 / 대표자명 검색" @keyup.enter="_loadVendorPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadVendorPicker">조회</button>
-      </div>
-      <div v-if="vendorPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th>
-          <th>업체명</th>
-          <th>유형</th>
-          <th>대표자</th>
-          <th>상태</th>
-          <th style="width:50px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!vendorPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in vendorPicker.rows" :key="r.vendorId" style="cursor:pointer;" @click="onSelectVendor(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td>{{ r.vendorNm }}</td>
-            <td style="text-align:center;font-size:11px;">{{ r.vendorType }}</td>
-            <td style="color:#64748b;">{{ r.ceoNm }}</td>
-            <td style="text-align:center;"><span class="badge badge-green" style="font-size:10px;">{{ r.vendorStatusCd }}</span></td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="vendorPicker.show" popup-cmd="cmPopup-vendor-pick" popup-code="vendor"
+    title="수정할 업체 선택" :on-callback="fnCmPopupCallback" @close="vendorPicker.show = false" />
 </div>`,
   };
 })();

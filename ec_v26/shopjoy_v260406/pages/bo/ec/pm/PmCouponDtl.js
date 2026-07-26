@@ -173,21 +173,21 @@ window.PmCouponDtl = {
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ PmCouponDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'vendor-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ PmCouponDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-vendor-pick') {
         if (result == null) { uiState.showVendorModal = false; return; }
         return selectVendor(result.vendorId, result.vendorNm);
-      } else if (cmd === 'target-prod-pick') {
+      } else if (popCmd === 'cmPopup-target-prod-pick') {
         return _addTarget(result, 'prodId', 'prodNm');
-      } else if (cmd === 'target-brand-pick') {
+      } else if (popCmd === 'cmPopup-target-brand-pick') {
         return _addTarget(result, 'brandId', 'brandNm');
-      } else if (cmd === 'target-category-pick') {
+      } else if (popCmd === 'cmPopup-target-category-pick') {
         return _addTarget(result, 'categoryId', 'categoryNm');
-      } else if (cmd === 'vendor-target-pick') {
+      } else if (popCmd === 'cmPopup-vendor-target-pick') {
         return _addTarget(result, 'vendorId', 'vendorNm');
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     // 단건 조회
@@ -547,7 +547,7 @@ window.PmCouponDtl = {
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <bo-pick-modal popup-code="vendor" :show="showVendorModal" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+      <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
@@ -780,10 +780,10 @@ window.PmCouponDtl = {
     <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')" style="min-width:120px;">취소</button>
   </div>
 <!-- 발급대상 피커 모달 -->
-<bo-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='상품')" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" modal-name="target-prod-pick" :on-callback="fnCallbackModal" />
-<bo-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='판매업체')" popup-code="vendor" :show="true" modal-name="vendor-target-pick" :on-callback="fnCallbackModal" />
-<bo-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='브랜드')" popup-code="brand" modal-name="target-brand-pick" :on-callback="fnCallbackModal" />
-<bo-pick-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='카테고리')" popup-code="category" modal-name="target-category-pick" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='상품')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='판매업체')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='브랜드')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='카테고리')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
 </bo-container>
 <!-- ===== □. 본문 영역 =================================================== -->
 `

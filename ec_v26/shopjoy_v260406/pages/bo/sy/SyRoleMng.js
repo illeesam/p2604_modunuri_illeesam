@@ -197,12 +197,12 @@ window.SyRoleMng = {
      *   cmd    = 모달 이름 (예: 'user-select', 'parent-pick', 'path-pick', 'excel-upload')
      *   params = { action: 'select'|'close', data: payload }
      */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyRoleMng : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'user-select') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyRoleMng : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-user-select') {
         if (result == null) { uiState.userSelectOpen = false; return; }
         return onUserSelect(Array.isArray(result) ? result : [result]);
-      } else if (cmd === 'parent-pick') {
+      } else if (popCmd === 'cmPopup-parent-pick') {
         if (result == null) { roleTreeModal.show = false; return; }
         if (roleTreeModal.targetRow) {
           roleTreeModal.targetRow.parentRoleId = result.roleId;
@@ -211,15 +211,15 @@ window.SyRoleMng = {
         }
         roleTreeModal.show = false;
         return;
-      } else if (cmd === 'path-pick') {
+      } else if (popCmd === 'cmPopup-path-pick') {
         if (result == null) { pathPickModal.show = false; pathPickModal.row = null; return; }
         return onPathPicked(result);
-      } else if (cmd === 'excel-upload') {
+      } else if (popCmd === 'excel-upload') {
         if (result == null) { excelUploadModal.show = false; return; }
         excelUploadModal.show = false;
         return handleSearchList();
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -1072,11 +1072,11 @@ window.SyRoleMng = {
   <!-- ===== □. 하단: 메뉴 배분 + 사용자 배분 (전체 폭) ============================ -->
   <!-- ===== ■. 조건부 영역 (모달) ============================================ -->
   <!-- ===== ■.■. 사용자 선택 모달 =========================================== -->
-  <bo-pick-modal v-if="uiState.userSelectOpen" popup-code="userByDept" result-type="array" modal-name="user-select" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="uiState.userSelectOpen" popup-cmd="cmPopup-user-select" popup-code="userByDept" result-type="array" :on-callback="fnCallbackModal" />
   <!-- ===== ■.■. 상위역할 선택 모달 ========================================== -->
-  <bo-pick-modal v-if="roleTreeModal ? (roleTreeModal.show) : false" popup-code="role" clearable :exclude-id="roleTreeModal.targetRow?.roleId > 0 ? roleTreeModal.targetRow.roleId : null" modal-name="parent-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="roleTreeModal ? (roleTreeModal.show) : false" popup-cmd="cmPopup-parent-pick" popup-code="role" clearable :exclude-id="roleTreeModal.targetRow?.roleId > 0 ? roleTreeModal.targetRow.roleId : null" :on-callback="fnCallbackModal" />
   <!-- ===== ■.■. 표시경로 선택 모달 ========================================== -->
-  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_role' }" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_role' }" :on-callback="fnCallbackModal" />
   <!-- ===== ■.■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
   <bo-excel-upload-modal v-if="excelUploadModal.show"
     default-domain="role" modal-name="excel-upload" :on-callback="fnCallbackModal" />

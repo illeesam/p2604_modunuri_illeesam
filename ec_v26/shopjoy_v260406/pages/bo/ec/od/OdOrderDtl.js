@@ -149,12 +149,12 @@ window.OdOrderDtl = {
     };
 
     /* fnCallbackModal — 모달 통합 콜백 (회원선택 / 주문복사). cmd=modalName, result=선택값 */
-    const fnCallbackModal = (modalName, param, result) => {
-      console.log(' ■■ OdOrderDtl : fnCallbackModal -> ', modalName, result);
-      if (modalName === 'member-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ OdOrderDtl : fnCallbackModal -> ', popCmd, result);
+      if (popCmd === 'cmPopup-member-pick') {
         odModal.member = false;
         if (result) { onMemberPicked(result); }
-      } else if (modalName === 'order-copy') {
+      } else if (popCmd === 'cmPopup-order-copy') {
         odModal.orderCopy = false;
         if (result) { onOrderCopied(result); }
       }
@@ -915,9 +915,9 @@ window.OdOrderDtl = {
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
   <!-- ===== ■. MD 대리주문 모달 (회원 선택 / 주문 복사 / 상품 선택) =================== -->
   <!-- v-if 미사용: :show false→true 전환을 모달 내부 watch 가 관찰해야 최초 목록 로드됨 -->
-  <bo-pick-modal popup-code="member" :show="odModal.member" modal-name="member-pick" :on-callback="fnCallbackModal" @close="handleBtnAction('memberModal-close')" />
-  <bo-pick-modal v-if="odModal.orderCopy" popup-code="order" modal-name="order-copy" :on-callback="fnCallbackModal" @close="handleBtnAction('orderCopyModal-close')" />
-  <bo-pick-modal popup-code="prod" result-type="id" :show="odModal.prod" :selected-ids="orderItems.map(it => it.productId)" @toggle="onProdToggled" @close="handleBtnAction('prodModal-close')" />
+  <bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="odModal.member" :on-callback="fnCallbackModal" @close="handleBtnAction('memberModal-close')" />
+  <bo-cm-popup-modal v-if="odModal.orderCopy" popup-cmd="cmPopup-order-copy" popup-code="order" :on-callback="fnCallbackModal" @close="handleBtnAction('orderCopyModal-close')" />
+  <bo-cm-popup-modal popup-code="prod" result-type="id" :show="odModal.prod" :selected-ids="orderItems.map(it => it.productId)" @toggle="onProdToggled" @close="handleBtnAction('prodModal-close')" />
   <!-- ===== □. MD 대리주문 모달 ============================================== -->
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->

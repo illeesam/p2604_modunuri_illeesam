@@ -69,9 +69,9 @@ window.SyVendorDtl = {
     };
 
     /* fnCallbackModal — 모달 콜백 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답 결과 (null=닫기) */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyVendorDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'addr-search') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyVendorDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'addr-search') {
         addrSearchModal.show = false;
         if (result == null) { return; }
         form.vendorZipCode = result.zonecode;
@@ -79,7 +79,7 @@ window.SyVendorDtl = {
         if (addrDetailRef.value) { addrDetailRef.value.focus(); }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 

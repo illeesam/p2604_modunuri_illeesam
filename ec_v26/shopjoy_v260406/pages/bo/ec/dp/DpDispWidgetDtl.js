@@ -101,21 +101,21 @@ window.DpDispWidgetDtl = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ DpDispWidgetDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'widget-lib-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ DpDispWidgetDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-widget-lib-pick') {
         if (result == null) {
             uiState.libPickOpen = false;
             return;
         }
           return onLibPicked(result);
-      } else if (cmd === 'path-pick') {
+      } else if (popCmd === 'cmPopup-path-pick') {
         if (result == null) {
             return closePathPick();
         }
           return onPathPicked(result);
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -758,7 +758,7 @@ window.DpDispWidgetDtl = {
     </template>
   </template>
   <!-- ===== ■.■. 위젯Lib 선택 팝업 =========================================== -->
-  <bo-pick-modal v-if="libPickOpen" popup-code="widgetLib" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="libPickOpen" popup-cmd="cmPopup-widget-lib-pick" popup-code="widgetLib" :on-callback="fnCallbackModal" />
   <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:0;">
@@ -978,7 +978,7 @@ window.DpDispWidgetDtl = {
   <!-- ===== □.□. 오른쪽: 위젯미리보기 =========================================== -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_widget' }" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_widget' }" title="위젯 표시경로 선택" :on-callback="fnCallbackModal" />
   <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
 `

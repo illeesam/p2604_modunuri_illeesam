@@ -111,9 +111,9 @@ window.SyDeptMng = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyDeptMng : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'parent-dept') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyDeptMng : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-parent-dept') {
         if (result == null) {
           parentModal.show = false;
           return;
@@ -126,7 +126,7 @@ window.SyDeptMng = {
         parentModal.show = false;
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     const _initSearchParam = () => {
@@ -486,7 +486,7 @@ window.SyDeptMng = {
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위부서 선택 모달 ========================================= -->
-      <bo-pick-modal v-if="parentModal ? (parentModal.show) : false" popup-code="dept" clearable :exclude-id="parentModal.targetRow?.deptId > 0 ? parentModal.targetRow.deptId : null" modal-name="parent-dept" :on-callback="fnCallbackModal" />
+      <bo-cm-popup-modal v-if="parentModal ? (parentModal.show) : false" popup-cmd="cmPopup-parent-dept" popup-code="dept" clearable :exclude-id="parentModal.targetRow?.deptId > 0 ? parentModal.targetRow.deptId : null" :on-callback="fnCallbackModal" />
     </bo-container>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->

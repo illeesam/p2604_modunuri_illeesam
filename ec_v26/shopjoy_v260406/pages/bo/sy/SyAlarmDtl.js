@@ -86,9 +86,9 @@ window.SyAlarmDtl = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyAlarmDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'path-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyAlarmDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-path-pick') {
         if (result == null) {
           pathPickModal.show = false;
           return;
@@ -97,7 +97,7 @@ window.SyAlarmDtl = {
         pathPickModal.show = false;
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     /* pathLabel — 경로 라벨 변환 */
@@ -224,6 +224,6 @@ window.SyAlarmDtl = {
 </bo-container>
 <!-- ===== □. 폼 영역 ==================================================== -->
 <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
-<bo-pick-modal v-if="pathPickModal.show" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_alarm' }" title="알림 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="pathPickModal.show" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_alarm' }" title="알림 표시경로 선택" :on-callback="fnCallbackModal" />
 `,
 };

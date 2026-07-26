@@ -205,7 +205,17 @@
         planPicker.show = false;
       };
 
+      /* 공통팝업 결과 수신 — 기존 onSelectX 를 그대로 재사용한다 */
+      const fnCmPopupCallback = (popCmd, response, result) => {
+        if (popCmd === 'cmPopup-plan-pick') {
+          planPicker.show = false;
+          if (result != null) onSelectPlan(result);
+          return;
+        }
+      };
+
       return {
+        fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
@@ -285,37 +295,8 @@
   <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- 기획전 picker 모달 -->
-  <bo-modal :show="planPicker.show" title="기획전 선택" width="700px" @close="planPicker.show=false">
-    <div style="display:flex;gap:6px;margin-bottom:10px;">
-      <input type="text" v-model="planPicker.searchValue" placeholder="기획전ID/기획전명 검색" class="form-control"
-        style="flex:1;" @keyup.enter="_loadPlanPicker" />
-      <button class="btn btn-sm btn_search" @click="_loadPlanPicker">조회</button>
-    </div>
-    <table class="admin-table">
-      <thead><tr>
-        <th style="width:36px;text-align:center;">번호</th>
-        <th>기획전ID</th>
-        <th>기획전명</th>
-        <th>상태</th>
-        <th>시작일</th>
-        <th>종료일</th>
-        <th style="width:60px;"></th>
-      </tr></thead>
-      <tbody>
-        <tr v-if="planPicker.loading"><td colspan="7" style="text-align:center;padding:16px;color:#94a3b8;">조회 중...</td></tr>
-        <tr v-else-if="!planPicker.rows.length"><td colspan="7" style="text-align:center;padding:16px;color:#94a3b8;">조회 결과 없음</td></tr>
-        <tr v-for="(row,idx) in planPicker.rows" :key="row.planId">
-          <td style="text-align:center;">{{ idx+1 }}</td>
-          <td style="font-family:monospace;font-size:11px;">{{ row.planId }}</td>
-          <td>{{ row.planNm }}</td>
-          <td>{{ row.planStatusCd }}</td>
-          <td>{{ row.startDate }}</td>
-          <td>{{ row.endDate }}</td>
-          <td><button class="btn btn-xs btn_select" @click="onSelectPlan(row)">선택</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="planPicker.show" popup-cmd="cmPopup-plan-pick" popup-code="plan"
+    title="기획전 선택" :on-callback="fnCmPopupCallback" @close="planPicker.show = false" />
 </div>`,
   };
 })();

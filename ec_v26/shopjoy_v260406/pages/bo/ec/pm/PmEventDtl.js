@@ -136,22 +136,22 @@ window.PmEventDtl = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ PmEventDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'vendor-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ PmEventDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-vendor-pick') {
         if (result == null) {
             uiState.showVendorModal = false;
             return;
         }
         return selectVendor(result.vendorId, result.vendorNm);
-      } else if (cmd === 'prod-pick') {
+      } else if (popCmd === 'cmPopup-prod-pick') {
         if (result == null) {
             uiState.showProdPopup = false;
             return;
         }
           return toggleProduct(result);
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     // 단건 조회 + 상품목록 로드
@@ -470,7 +470,7 @@ window.PmEventDtl = {
         </bo-form-area>
       </div>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <bo-pick-modal popup-code="vendor" :show="showVendorModal" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+      <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="active ? (cfDtlMode) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -588,7 +588,7 @@ window.PmEventDtl = {
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <!-- ===== ■. 상품 선택 팝업 ================================================ -->
-<bo-pick-modal popup-code="prod" result-type="id" :show="showProdPopup" :selected-ids="form.targetProducts" title="대상 상품 선택" modal-name="prod-pick" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal popup-cmd="cmPopup-prod-pick" popup-code="prod" result-type="id" :show="showProdPopup" :selected-ids="form.targetProducts" title="대상 상품 선택" :on-callback="fnCallbackModal" />
 <!-- ===== □. 상품 선택 팝업 ================================================ -->
 `
 };

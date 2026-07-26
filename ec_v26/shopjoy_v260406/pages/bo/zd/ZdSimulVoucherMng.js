@@ -149,7 +149,17 @@
 
       const fnVoucherTypeLabel = (v) => VOUCHER_TYPES.find(t => t.value === v)?.label || v || '';
 
+      /* 공통팝업 결과 수신 — 기존 onSelectX 를 그대로 재사용한다 */
+      const fnCmPopupCallback = (popCmd, response, result) => {
+        if (popCmd === 'cmPopup-voucher-pick') {
+          voucherPicker.show = false;
+          if (result != null) onSelectVoucher(result);
+          return;
+        }
+      };
+
       return {
+        fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns, cfTypeTotal,
         onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog,
@@ -231,39 +241,8 @@
     @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- 전표 picker 모달 -->
-  <bo-modal :show="voucherPicker.show" title="수정할 전표 선택" @close="voucherPicker.show=false" box-width="580px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="voucherPicker.searchValue" placeholder="전표ID / 설명 검색" @keyup.enter="_loadVoucherPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadVoucherPicker">조회</button>
-      </div>
-      <div v-if="voucherPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th>
-          <th>전표ID</th>
-          <th>유형</th>
-          <th>설명</th>
-          <th>금액</th>
-          <th>상태</th>
-          <th style="width:50px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!voucherPicker.rows.length"><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in voucherPicker.rows" :key="r.erpVoucherId" style="cursor:pointer;" @click="onSelectVoucher(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:10px;color:#64748b;">{{ r.erpVoucherId }}</td>
-            <td style="text-align:center;">{{ fnVoucherTypeLabel(r.erpVoucherTypeCd) }}</td>
-            <td style="font-size:11px;color:#334155;">{{ r.erpVoucherDesc }}</td>
-            <td style="text-align:right;color:#334155;">{{ (r.totalDebitAmt||0).toLocaleString() }}원</td>
-            <td style="text-align:center;"><span class="badge badge-gray" style="font-size:10px;">{{ r.erpVoucherStatusCd }}</span></td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="voucherPicker.show" popup-cmd="cmPopup-voucher-pick" popup-code="voucher"
+    title="수정할 전표 선택" :on-callback="fnCmPopupCallback" @close="voucherPicker.show = false" />
 </div>`,
   };
 })();

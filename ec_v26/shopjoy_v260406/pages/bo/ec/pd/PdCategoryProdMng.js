@@ -408,8 +408,8 @@ window.PdCategoryProdMng = {
     const pickerOpen = ref(false);
 
     /* fnCallbackModal — 모달 통합 콜백 */
-    const fnCallbackModal = (cmd, param, result) => {
-      if (cmd === 'prod-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (popCmd === 'cmPopup-prod-pick') {
         pickerOpen.value = false;
         if (result) return addProd(result);
         return;
@@ -692,7 +692,7 @@ window.PdCategoryProdMng = {
 <!-- ===== □. 좌 트리 + 우 상품목록 =========================================== -->
 <!-- ===== ■. 상품 추가 피커 모달 ============================================= -->
 <!-- ===== ■. 상품 추가 모달 (BoModals.js / PdProdPickModal) ================== -->
-<bo-pick-modal popup-code="prod" :show="pickerOpen" :title="'상품 추가' + (cfSelectedCat ? ' → ' + cfSelectedCat.categoryNm : '')" :exclude-ids="cfExcludeProdIds" modal-name="prod-pick" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal popup-cmd="cmPopup-prod-pick" popup-code="prod" :show="pickerOpen" :title="'상품 추가' + (cfSelectedCat ? ' → ' + cfSelectedCat.categoryNm : '')" :exclude-ids="cfExcludeProdIds" :on-callback="fnCallbackModal" />
 <!-- ===== □. 상품 추가 모달 ================================================= -->
 </bo-page>
 <!-- ===== □. 상품 추가 피커 모달 ============================================= -->

@@ -110,13 +110,13 @@ window.SyAlarmMng = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyAlarmMng : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'path-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyAlarmMng : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-path-pick') {
         if (result == null) { return closePathPick(); }
         return onPathPicked(result);
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     const _initSearchParam = () => {
@@ -478,7 +478,7 @@ window.SyAlarmMng = {
     :active="detailModal.active"
     :reload-trigger="detailModal.reloadTrigger" />
   <!-- ===== ■. 표시경로 선택 모달 ========================================== -->
-  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_alarm' }" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_alarm' }" :on-callback="fnCallbackModal" />
 </bo-page>
 `,
 };

@@ -102,9 +102,9 @@ window.SyMenuMng = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyMenuMng : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'parent-menu') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyMenuMng : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-parent-menu') {
         if (result == null) {
           parentModal.show = false;
           return;
@@ -117,7 +117,7 @@ window.SyMenuMng = {
         parentModal.show = false;
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     const _initSearchParam = () => {
@@ -413,7 +413,7 @@ window.SyMenuMng = {
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위메뉴 선택 모달 ========================================= -->
-      <bo-pick-modal v-if="parentModal ? (parentModal.show) : false" popup-code="menu" clearable :exclude-id="parentModal.targetRow?.menuId > 0 ? parentModal.targetRow.menuId : null" modal-name="parent-menu" :on-callback="fnCallbackModal" />
+      <bo-cm-popup-modal v-if="parentModal ? (parentModal.show) : false" popup-cmd="cmPopup-parent-menu" popup-code="menu" clearable :exclude-id="parentModal.targetRow?.menuId > 0 ? parentModal.targetRow.menuId : null" :on-callback="fnCallbackModal" />
     </bo-container>
   </div>
 </bo-page>

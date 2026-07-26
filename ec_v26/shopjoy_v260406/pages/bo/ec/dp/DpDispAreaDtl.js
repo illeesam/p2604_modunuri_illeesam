@@ -50,13 +50,13 @@ window.DpDispAreaDtl = {
     };
 
     /* fnCallbackModal — 모달 통합 콜백 (표시경로 선택) */
-    const fnCallbackModal = (cmd, param, result) => {
-      if (cmd === 'path-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (popCmd === 'cmPopup-path-pick') {
         if (result != null) baseForm.pathId = result;
         pathPickModal.show = false;
         return;
       }
-      console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
@@ -204,7 +204,7 @@ window.DpDispAreaDtl = {
     </template>
   </div>
   <!-- ===== ■. 표시경로 선택 모달 ============================================ -->
-  <bo-pick-modal v-if="pathPickModal.show" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_area' }" title="전시영역 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="pathPickModal.show" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_area' }" title="전시영역 표시경로 선택" :on-callback="fnCallbackModal" />
 </bo-container>
 `,
 };

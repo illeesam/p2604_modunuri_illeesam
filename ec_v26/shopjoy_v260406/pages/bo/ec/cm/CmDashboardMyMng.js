@@ -685,8 +685,8 @@ window.CmDashboardMyMng = {
   </bo-container>
 
   <!-- ===== ■. 공유대상 선택 모달 (기존 공통 모달 재사용) ==================== -->
-  <bo-pick-modal v-if="pickModal.user" popup-code="user" title="공유할 사용자 선택" :exclude-ids="cfExcludeUserIds" @select="onPickUser" @close="pickModal.user = false" />
-  <bo-pick-modal v-if="pickModal.dept" popup-code="dept" clearable @select="onPickDept" @close="pickModal.dept = false" />
+  <bo-cm-popup-modal v-if="pickModal.user" popup-code="user" title="공유할 사용자 선택" :exclude-ids="cfExcludeUserIds" @select="onPickUser" @close="pickModal.user = false" />
+  <bo-cm-popup-modal v-if="pickModal.dept" popup-code="dept" clearable @select="onPickDept" @close="pickModal.dept = false" />
 </bo-page>
 `,
 };

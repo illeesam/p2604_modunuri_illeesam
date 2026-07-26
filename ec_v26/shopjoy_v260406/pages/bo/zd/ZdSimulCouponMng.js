@@ -175,7 +175,17 @@
       const onOpenCouponPicker = async () => { couponPicker.show = true; couponPicker.searchValue = ''; await _loadCouponPicker(); };
       const onSelectCoupon = (row) => { domCfg.fixedCouponId = row.couponId; couponPicker.show = false; };
 
+      /* 공통팝업 결과 수신 — 기존 onSelectX 를 그대로 재사용한다 */
+      const fnCmPopupCallback = (popCmd, response, result) => {
+        if (popCmd === 'cmPopup-coupon-pick') {
+          couponPicker.show = false;
+          if (result != null) onSelectCoupon(result);
+          return;
+        }
+      };
+
       return {
+        fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, couponCfgColumns,
         cfCouponTypeTotal, cfDiscTotal,
@@ -273,32 +283,8 @@
     @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- picker 모달 -->
-  <bo-modal :show="couponPicker.show" title="쿠폰 선택" @close="couponPicker.show=false" box-width="600px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="couponPicker.searchValue" placeholder="쿠폰명 / 쿠폰ID 검색" @keyup.enter="_loadCouponPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadCouponPicker">조회</button>
-      </div>
-      <div v-if="couponPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th><th>쿠폰ID</th><th>쿠폰명</th><th>타입</th><th>할인</th><th style="width:60px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!couponPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in couponPicker.rows" :key="r.couponId" style="cursor:pointer;" @click="onSelectCoupon(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:11px;">{{ r.couponId }}</td>
-            <td>{{ r.couponNm }}</td>
-            <td style="font-size:11px;color:#7c3aed;">{{ r.couponTypeCd || '-' }}</td>
-            <td style="font-size:11px;color:#7c3aed;">{{ r.couponDiscTypeCd==='RATE' ? r.discVal+'%' : (r.discVal||0).toLocaleString()+'원' }}</td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="couponPicker.show" popup-cmd="cmPopup-coupon-pick" popup-code="coupon"
+    title="쿠폰 선택" :on-callback="fnCmPopupCallback" @close="couponPicker.show = false" />
 </div>`,
   };
 })();

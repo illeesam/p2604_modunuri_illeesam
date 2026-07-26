@@ -279,8 +279,8 @@ window.PdReviewMng = {
     };
 
     /* fnCallbackModal — 모달 통합 콜백 */
-    const fnCallbackModal = (cmd, param, result) => {
-      if (cmd === 'review-status') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (popCmd === 'review-status') {
         if (!result) return closeStatusModal();
         return confirmStatusChange(result.reason);
       }

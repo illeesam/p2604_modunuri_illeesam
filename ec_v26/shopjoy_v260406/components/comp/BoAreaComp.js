@@ -288,10 +288,10 @@ window.BoSearchArea = {
   </label>
   <!-- 회원/항목 picker 박스 (input readonly + 검색 버튼 + 클리어) — col.type==='pick' -->
   <template v-if="col.type==='pick'">
+    <!-- 값 표시 전용 — 팝업은 옆 🔍 버튼으로만 연다 (칸을 누르다 의도치 않게 뜨는 것 방지) -->
     <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
           readonly :placeholder="col.placeholder || '선택'"
-          class="form-control" :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;cursor:pointer;'"
-          @click="handleSelectAction('field-pick-open', { col, target: po(col) })" />
+          class="form-control" :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;'" />
     <button class="btn btn-secondary btn-sm" style="padding:2px 7px;" @click="handleSelectAction('field-pick-open', { col, target: po(col) })" :title="col.openLabel || '검색'">
       🔍
     </button>

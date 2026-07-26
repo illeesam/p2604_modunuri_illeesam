@@ -123,19 +123,19 @@ window.SyTemplateMng = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyTemplateMng : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'path-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyTemplateMng : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-path-pick') {
         if (result == null) { closePathPick(); return; }
         return onPathPicked(result);
-      } else if (cmd === 'template-preview') {
+      } else if (popCmd === 'template-preview') {
         if (result == null) { previewModal.show = false; return; }
         return;
-      } else if (cmd === 'template-send') {
+      } else if (popCmd === 'template-send') {
         if (result == null) { sendModal.show = false; return; }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     const _initSearchParam = () => {
@@ -478,7 +478,7 @@ window.SyTemplateMng = {
   <!-- ===== ■. 미리보기 / 발송 / 경로 선택 모달 =============================== -->
   <template-preview-modal v-if="previewModal ? (previewModal.show) : false" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
   <template-send-modal v-if="sendModal ? (sendModal.show) : false" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
-  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_template' }" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_template' }" :on-callback="fnCallbackModal" />
 </bo-page>
 `,
 };

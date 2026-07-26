@@ -311,8 +311,8 @@ window.Login = {
     const addrSearchModal = reactive({ show: false, target: 'email' }); // 주소검색 모달 (target: 'email'|'sns' — 어느 폼에 반영할지)
 
     /* fnCallbackModal — 모달 콜백 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답 결과 (null=닫기) */
-    const fnCallbackModal = (cmd, param, result) => {
-      if (cmd === 'addr-search') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (popCmd === 'addr-search') {
         addrSearchModal.show = false;
         if (result == null) { return; }
         const target = addrSearchModal.target === 'sns' ? snsSf : sf;

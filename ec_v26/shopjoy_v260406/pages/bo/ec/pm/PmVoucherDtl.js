@@ -90,22 +90,22 @@ window.PmVoucherDtl = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ PmVoucherDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'vendor-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ PmVoucherDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-vendor-pick') {
         if (result == null) {
             uiState.showVendorModal = false;
             return;
         }
         return selectVendor(result.vendorId, result.vendorNm);
-      } else if (cmd === 'sns') {
+      } else if (popCmd === 'sns') {
         if (result == null) {
             snsModal.show = false;
             return;
         }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
     const loadVendors = async () => {
@@ -454,7 +454,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       </bo-form-area>
       <!-- ===== □.□. 폼 영역 ================================================== -->
       <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
-      <bo-pick-modal popup-code="vendor" :show="showVendorModal" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+      <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="active ? (cfDtlMode) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>

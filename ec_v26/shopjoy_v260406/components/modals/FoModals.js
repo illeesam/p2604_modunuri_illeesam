@@ -773,14 +773,14 @@ window.OrderPickModal = {
     };
 
     /* fnCallbackModal — 모달 응답 (닫기/선택 → 부모 onCallback 으로 통합 전달) */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ OrderPickModal : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'self') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ OrderPickModal : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'self') {
         emit('close');
         if (props.onCallback) props.onCallback(props.modalName, null, result || null);
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 

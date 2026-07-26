@@ -159,15 +159,15 @@ window.OdOrderMng = {
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ OdOrderMng : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'member-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ OdOrderMng : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-member-pick') {
         if (result == null) { memberPick.open = false; return; }
         searchParam.memberId = result.memberId;
         searchParam.memberNm = result.memberNm || result.loginId || result.memberId;
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -722,7 +722,7 @@ window.OdOrderMng = {
   </bo-modal>
   <!-- ===== □. 변경작업 모달 ================================================= -->
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
-  <bo-pick-modal popup-code="member" :show="memberPick.open" modal-name="member-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="memberPick.open" :on-callback="fnCallbackModal" />
   <!-- ===== □. 회원 선택 팝업 ================================================ -->
 </bo-page>
 `

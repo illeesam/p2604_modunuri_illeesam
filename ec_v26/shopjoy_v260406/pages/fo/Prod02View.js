@@ -145,16 +145,16 @@ window.Prod02View = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ Prod02View : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'size-guide') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ Prod02View : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'size-guide') {
         if (result == null) {
             uiState.showSizeGuide = false;
             return;
         }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 

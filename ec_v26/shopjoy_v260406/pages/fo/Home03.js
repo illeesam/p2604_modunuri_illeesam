@@ -82,16 +82,16 @@ window.Home03 = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ Home03 : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'quick-view') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ Home03 : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'quick-view') {
         if (result == null) {
           uiState.quickViewProduct = null; uiState.cartModalMode = false;
           return;
         }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 

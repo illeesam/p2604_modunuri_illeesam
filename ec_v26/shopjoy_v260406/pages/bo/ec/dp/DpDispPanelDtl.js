@@ -167,22 +167,22 @@ window.DpDispPanelDtl = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ DpDispPanelDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'widget-lib-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ DpDispPanelDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-widget-lib-pick') {
         if (result == null) { uiState.libPickOpen = false; return; }
           return onLibPicked(result);
-      } else if (cmd === 'row-pick') {
+      } else if (popCmd === 'row-pick') {
         if (result == null) { uiState.rowCopyOpen = false; return; }
           return onRowCopy(result);
-      } else if (cmd === 'path-pick') {
+      } else if (popCmd === 'cmPopup-path-pick') {
         if (result == null) { pathPickModal.show = false; return; }
           return onPathPicked(result);
-      } else if (cmd === 'disp-preview') {
+      } else if (popCmd === 'disp-preview') {
         if (result == null) return closePreview();
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -1975,7 +1975,7 @@ window.DpDispPanelDtl = {
   </bo-modal>
   <!-- ===== □. 패널미리보기 오버레이 ============================================= -->
   <!-- ===== ■. 전시위젯Lib 선택 팝업 =========================================== -->
-  <bo-pick-modal v-if="libPickOpen" popup-code="widgetLib" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="libPickOpen" popup-cmd="cmPopup-widget-lib-pick" popup-code="widgetLib" :on-callback="fnCallbackModal" />
   <!-- ===== □. 전시위젯Lib 선택 팝업 =========================================== -->
   <!-- ===== ■. 전시항목 복사 팝업 ============================================== -->
   <row-pick-modal v-if="rowCopyOpen"
@@ -1985,7 +1985,7 @@ window.DpDispPanelDtl = {
     :exclude-panel-id="form.dispId" modal-name="row-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 전시항목 복사 팝업 ============================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <bo-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_panel' }" title="표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_panel' }" title="표시경로 선택" :on-callback="fnCallbackModal" />
   <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
 `,

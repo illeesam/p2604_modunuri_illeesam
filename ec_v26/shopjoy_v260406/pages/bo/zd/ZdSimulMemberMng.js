@@ -317,7 +317,17 @@
       const onAgeMinChange = () => { if (domCfg.agentRangeMin >= domCfg.agentRangeMax) domCfg.agentRangeMin = domCfg.agentRangeMax - 1; };
       const onAgeMaxChange = () => { if (domCfg.agentRangeMax <= domCfg.agentRangeMin) domCfg.agentRangeMax = domCfg.agentRangeMin + 1; };
 
+      /* 공통팝업 결과 수신 — 기존 onSelectX 를 그대로 재사용한다 */
+      const fnCmPopupCallback = (popCmd, response, result) => {
+        if (popCmd === 'cmPopup-member-pick') {
+          memberPicker.show = false;
+          if (result != null) onSelectMember(result);
+          return;
+        }
+      };
+
       return {
+        fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         memberDefaults, cfGradeTotal, cfDomainTotal, cfGenderTotal, cfAgeGroupTotal, cfCountryTotal, cfChannelTotal, cfBuyTypeTotal, cfEmpTypeTotal, cfSnsTypeTotal,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
@@ -588,37 +598,8 @@
   <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- 회원 picker 모달 (수정 모드) -->
-  <bo-modal :show="memberPicker.show" title="수정할 회원 선택" @close="memberPicker.show=false" box-width="600px">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="memberPicker.searchValue" placeholder="이름 / 이메일 / ID 검색" @keyup.enter="_loadMemberPicker"
-          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
-        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadMemberPicker">조회</button>
-      </div>
-      <div v-if="memberPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
-      <table v-else class="admin-table" style="width:100%;font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;">번호</th>
-          <th>ID</th>
-          <th>이름</th>
-          <th>이메일</th>
-          <th>상태</th>
-          <th style="width:60px;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="!memberPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-for="(r,i) in memberPicker.rows" :key="r.memberId" style="cursor:pointer;" @click="onSelectMember(r)">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:11px;">{{ r.memberId }}</td>
-            <td>{{ r.memberNm }}</td>
-            <td style="font-size:11px;color:#64748b;">{{ r.loginId }}</td>
-            <td style="text-align:center;"><span class="badge badge-green" style="font-size:10px;">{{ r.memberStatusCd }}</span></td>
-            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="memberPicker.show" popup-cmd="cmPopup-member-pick" popup-code="member"
+    title="수정할 회원 선택" :on-callback="fnCmPopupCallback" @close="memberPicker.show = false" />
 
 </div>`,
   };

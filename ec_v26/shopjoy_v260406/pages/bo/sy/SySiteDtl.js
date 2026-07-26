@@ -80,15 +80,15 @@ window.SySiteDtl = {
     };
 
     /* fnCallbackModal — 모달 콜백 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답 결과 (null=닫기) */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SySiteDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'path-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SySiteDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-path-pick') {
         if (result == null) { pathPickModal.show = false; return; }
         form.pathId = result;
         pathPickModal.show = false;
         return;
       // 주소검색 모달 콜백 → 우편번호/주소 반영
-      } else if (cmd === 'addr-search') {
+      } else if (popCmd === 'addr-search') {
         addrSearchModal.show = false;
         if (result == null) { return; }
         form.siteZipCode = result.zonecode;
@@ -96,7 +96,7 @@ window.SySiteDtl = {
         if (addrDetailRef.value) { addrDetailRef.value.focus(); }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -247,7 +247,7 @@ window.SySiteDtl = {
   </bo-form-area>
 </bo-container>
 <!-- ===== ■. 표시경로 선택 모달 (형제 루트 — Vue3 fragment) ============================ -->
-<bo-pick-modal v-if="pathPickModal.show" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_site' }" title="사이트 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="pathPickModal.show" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_site' }" title="사이트 표시경로 선택" :on-callback="fnCallbackModal" />
 <!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
 <bo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
 `,

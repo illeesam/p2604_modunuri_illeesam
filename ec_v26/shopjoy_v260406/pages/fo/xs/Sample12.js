@@ -116,9 +116,9 @@ window.XsSample12 = {
 
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ Sample12 : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'category-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ Sample12 : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-category-pick') {
         if (result == null) {
             uiState.showCatModal = false;
           // 트리 전체 선택
@@ -126,7 +126,7 @@ window.XsSample12 = {
         }
         return onCatApply(result);
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -892,7 +892,7 @@ window.XsSample12 = {
       <!-- ===== □.□. 우: 위젯 컨텐츠 미리보기 ======================================== -->
       <!-- ===== □. 본문 영역 =================================================== -->
       <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
-      <bo-pick-modal popup-code="category" result-type="idArray" :multi="true" :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
+      <bo-cm-popup-modal popup-cmd="cmPopup-category-pick" popup-code="category" :multi="true" result-type="idArray" :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □. 카테고리 선택 모달 ============================================== -->
 </fo-page>

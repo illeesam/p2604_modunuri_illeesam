@@ -90,16 +90,16 @@ window.SyUserDtl = {
 
 
     /* fnCallbackModal — 모달 콜백 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답 결과 (null=닫기) */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ SyUserDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'dept-pick') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ SyUserDtl : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'cmPopup-dept-pick') {
         if (result == null) { deptModal.show = false; return; }
         form.deptId = result.deptId;
         form.deptNm = result.deptNm;
         deptModal.show = false;
         return;
       // 주소검색 모달 콜백 → 우편번호/주소 반영
-      } else if (cmd === 'addr-search') {
+      } else if (popCmd === 'addr-search') {
         addrSearchModal.show = false;
         if (result == null) { return; }
         form.zipcode = result.zonecode;
@@ -107,7 +107,7 @@ window.SyUserDtl = {
         if (addrDetailRef.value) { addrDetailRef.value.focus(); }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 
@@ -324,7 +324,7 @@ window.SyUserDtl = {
 </bo-container>
 <!-- ===== □. 적용 역할 목록 ================================================ -->
 <!-- ===== ■. 부서 선택 팝업 ================================================ -->
-<bo-pick-modal v-if="deptModal ? (deptModal.show) : false" popup-code="dept" clearable :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="deptModal ? (deptModal.show) : false" popup-cmd="cmPopup-dept-pick" popup-code="dept" clearable :exclude-id="null" :on-callback="fnCallbackModal" />
 <!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
 <bo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
 <!-- ===== □. 부서 선택 팝업 ================================================ -->

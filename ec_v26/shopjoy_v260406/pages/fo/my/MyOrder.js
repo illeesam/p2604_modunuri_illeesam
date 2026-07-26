@@ -107,31 +107,31 @@ window.MyOrder = {
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ MyOrder : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'order-detail') {
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ MyOrder : fnCallbackModal -> ', popCmd, param, result);
+      if (popCmd === 'order-detail') {
         if (result == null) { myStore.orderDetailModal.show = false; return; }
         return;
-      } else if (cmd === 'product') {
+      } else if (popCmd === 'product') {
         if (result == null) { myStore.productModal.show = false; return; }
         return;
-      } else if (cmd === 'customer') {
+      } else if (popCmd === 'customer') {
         if (result == null) { myStore.customerModal.show = false; return; }
         return;
       // 주문흐름 도움말 (닫기)
-      } else if (cmd === 'orders-help') {
+      } else if (popCmd === 'orders-help') {
         if (result == null) { uiState.flowHelpOpen = false; return; }
         return;
       // 리뷰 모달 (닫기)
-      } else if (cmd === 'review') {
+      } else if (popCmd === 'review') {
         if (result == null) { reviewModal.show = false; return; }
         return;
       // 클레임 모달 (닫기)
-      } else if (cmd === 'claim') {
+      } else if (popCmd === 'claim') {
         if (result == null) { claimModal.show = false; return; }
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 

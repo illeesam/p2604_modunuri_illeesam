@@ -298,7 +298,22 @@
         { minKey: 'refundRateMin', maxKey: 'refundRateMax' },
       ]);
 
+      /* 공통팝업 결과 수신 — 기존 onSelectX 를 그대로 재사용한다 */
+      const fnCmPopupCallback = (popCmd, response, result) => {
+        if (popCmd === 'cmPopup-member-pick') {
+          memberPicker.show = false;
+          if (result != null) onSelectMember(result);
+          return;
+        }
+        if (popCmd === 'cmPopup-order-pick') {
+          orderPicker.show = false;
+          if (result != null) onSelectOrder(result);
+          return;
+        }
+      };
+
       return {
+        fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfTypeTotal, cfAutoFlow,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
@@ -482,77 +497,12 @@
   <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 
   <!-- 회원 picker 모달 -->
-  <bo-modal :show="memberPicker.show" title="시뮬 회원 선택" width="640px" @close="memberPicker.show=false">
-    <div style="padding:12px 0 8px;">
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="memberPicker.searchValue" placeholder="회원ID / 이름 / 로그인ID 검색"
-          class="form-control" style="flex:1;height:30px;font-size:12px;"
-          @keyup.enter="onOpenMemberPicker" />
-        <button class="btn btn_search" style="height:30px;font-size:12px;" @click="onOpenMemberPicker">조회</button>
-      </div>
-      <table class="admin-table" style="font-size:11px;">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th>회원ID</th>
-          <th>이름</th>
-          <th>로그인ID</th>
-          <th style="width:70px;text-align:center;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="memberPicker.loading"><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">조회 중...</td></tr>
-          <tr v-else-if="!memberPicker.rows.length"><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-else v-for="(r,i) in memberPicker.rows" :key="r.memberId">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:10px;">{{ r.memberId }}</td>
-            <td>{{ r.memberNm }}</td>
-            <td>{{ r.loginId }}</td>
-            <td style="text-align:center;">
-              <button class="btn btn_select" style="font-size:11px;height:24px;padding:0 8px;" @click="onSelectMember(r)">선택</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="memberPicker.show" popup-cmd="cmPopup-member-pick" popup-code="member"
+    title="시뮬 회원 선택" :on-callback="fnCmPopupCallback" @close="memberPicker.show = false" />
 
   <!-- 주문 picker 모달 -->
-  <bo-modal :show="orderPicker.show" title="시뮬 주문 선택" width="760px" @close="orderPicker.show=false">
-    <div style="padding:12px 0 8px;">
-      <div v-if="domCfg.fixedMemberId" style="font-size:11px;color:#6366f1;margin-bottom:8px;padding:6px 10px;background:#f0f0ff;border-radius:6px;">
-        👤 회원 필터: {{ domCfg.fixedMemberNm || domCfg.fixedMemberId }} ({{ domCfg.fixedMemberId }})
-      </div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <input type="text" v-model="orderPicker.searchValue" placeholder="주문ID 검색"
-          class="form-control" style="flex:1;height:30px;font-size:12px;font-family:monospace;"
-          @keyup.enter="onOpenOrderPicker" />
-        <button class="btn btn_search" style="height:30px;font-size:12px;" @click="onOpenOrderPicker">조회</button>
-      </div>
-      <table class="admin-table" style="font-size:11px;">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th>주문ID</th>
-          <th>회원</th>
-          <th>주문상태</th>
-          <th style="text-align:right;">결제금액</th>
-          <th style="width:70px;text-align:center;">선택</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="orderPicker.loading"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 중...</td></tr>
-          <tr v-else-if="!orderPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
-          <tr v-else v-for="(r,i) in orderPicker.rows" :key="r.orderId">
-            <td style="text-align:center;">{{ i+1 }}</td>
-            <td style="font-family:monospace;font-size:10px;">{{ r.orderId }}</td>
-            <td>{{ r.memberNm || r.memberId }}</td>
-            <td><span class="badge badge-blue" style="font-size:10px;">{{ r.orderStatusCd }}</span></td>
-            <td style="text-align:right;font-family:monospace;">{{ (r.totalPayAmt||0).toLocaleString() }}원</td>
-            <td style="text-align:center;">
-              <button class="btn btn_select" style="font-size:11px;height:24px;padding:0 8px;" @click="onSelectOrder(r)">선택</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </bo-modal>
+    <bo-cm-popup-modal v-if="orderPicker.show" popup-cmd="cmPopup-order-pick" popup-code="order"
+    title="시뮬 주문 선택" :on-callback="fnCmPopupCallback" @close="orderPicker.show = false" />
 </div>`,
   };
 })();

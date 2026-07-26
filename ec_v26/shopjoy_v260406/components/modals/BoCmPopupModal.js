@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 공통 선택/조회 팝업 (BoPickModal)
+/* ShopJoy Admin - 공통 선택/조회 팝업 (BoCmPopupModal)
  *
  * BO 전 화면의 선택 팝업을 이 컴포넌트 하나로 대체한다.
  * 화면 구성(조회항목·목록컬럼·트리 여부·다중선택)은 서버의 cm_popup / cm_popup_item
@@ -16,15 +16,32 @@
  *   다중선택이면 하단에 선택목록(칩) 영역이 자동으로 붙는다 — 패턴에 넣지 않는다.
  *
  * 사용:
- *   <bo-pick-modal popup-code="user" @select="onPickUser" @close="modal.user = false" />
- *   <bo-pick-modal popup-code="user" :multi="true" :exclude-ids="usedIds"
- *     @select="onPickUsers" @close="modal.user = false" />
+ *   <bo-cm-popup-modal popup-cmd="cmPopup-user-pick" popup-code="user"
+ *     :on-callback="fnCallbackModal" @close="pickModal.show = false" />
  *
- * emit('select', row)   — 단일선택 : 행 1건 (id/nm + 엔티티 원본 필드명 그대로)
- * emit('select', rows)  — 다중선택 : 행 배열
+ *   <bo-cm-popup-modal popup-cmd="cmPopup-user-pick" popup-code="user" :multi="true"
+ *     :exclude-ids="usedIds" :on-callback="fnCallbackModal" @close="pickModal.show = false" />
+ *
+ *   popup-cmd 가 호출 식별자 — onCallback 1번째 인자와 response.cmd 로 그대로 돌아온다.
+ *   (구 modal-name 도 식별자로 계속 받는다)
+ *
+ * ■ 결과 받는 법 — 셋 중 편한 것을 쓰면 되고 값은 모두 같다
+ *   1) @select / @toggle          — 고른 값만 (단일=행 1건, 다중=행 배열)
+ *   2) :on-callback               — onCallback(popCmd, param, result)
+ *                                   param 은 넘긴 호출 파라미터 { popupCode, multi? },
+ *                                   result 는 위와 동일. 전문이 필요하면 3) 을 쓴다.
+ *   3) @response                  — 응답정보(감싼 형태)
+ *
+ *      { cmd, params: { popupCode, multi? },
+ *        resultType: 'object' | 'list',
+ *        resultObj:  {…} | {},      // 단건일 때만 값, 아니면 빈 객체
+ *        resultList: [ … ] | [] }   // 다건일 때만 값, 아니면 빈 배열
+ *
+ *   비는 쪽이 null 이 아니라 빈 값이라 resultList.forEach / resultObj.userId 를
+ *   null 검사 없이 바로 쓸 수 있다.
  */
-window.BoPickModal = {
-  name: 'BoPickModal',
+window.BoCmPopupModal = {
+  name: 'BoCmPopupModal',
   props: {
     popupCode:  { type: String,  required: true },                // cm_popup.popup_code
     show:       { type: Boolean, default: true },                 // 표시 여부
@@ -69,9 +86,6 @@ window.BoPickModal = {
 
     /* 어떤 파라미터로 무엇을 조회했는지 부모에게만 알린다(팝업관리 미리보기 패널).
        모달 자체에는 표시하지 않는다 — 실제 사용 화면에서 보일 이유가 없다. */
-    /* 마지막으로 조회에 사용한 파라미터 — 응답정보에 그대로 돌려준다 */
-    const lastParams = reactive({ page: null, tree: null });
-
     /** 호출부가 기대하는 형태로 결과를 변환 (resultType) */
     const fnToPayload = (rowOrRows) => {
       const t = props.resultType;
@@ -84,42 +98,65 @@ window.BoPickModal = {
       return one(rowOrRows);
     };
 
+    /** 호출 식별자 — onCallback 1번째 인자와 response.cmd 가 같은 값이어야 한다.
+        popupCmd > modalName > popupCode 순으로 쓴다.
+        (modalName 만 준 화면에서 cmd 가 popupCode 로 갈려 두 값이 어긋나던 문제) */
+    const fnCmd = () => props.popupCmd || props.modalName || props.popupCode;
+
+    /** 호출 옵션 — 화면이 이 팝업을 부를 때 준 값.
+        호출 정보와 응답정보가 똑같은 값을 쓰도록 한 곳에서 만든다.
+        multi 가 곧 "목록으로 받는다"는 뜻이라 결과 형태를 따로 싣지 않는다. */
+    const fnCallParams = () => ({
+      popupCode: props.popupCode,
+      /* 기본값(단일)이면 싣지 않는다 — 다중일 때만 의미 있는 값 */
+      ...(cfIsMulti.value ? { multi: true } : {}),
+    });
+
     /**
-     * 결과 발행 — emit 과 onCallback 규약을 한 곳에서 처리한다.
-     * 화면은 @select 를 쓰든 :on-callback 을 쓰든 같은 값을 받는다.
+     * 응답정보 — 호출 정보(cmd·params) 위에 결과를 얹은 것.
+     * params 는 호출 정보와 글자 그대로 같다(같은 이름이 다른 뜻이 되지 않도록).
+     *
+     * resultObj 와 resultList 는 동시에 채우지 않는다. 단건이면 resultObj 만,
+     * 다건이면 resultList 만 값을 갖고, resultType 이 object | list 로 그걸 알려준다.
+     * 비는 쪽은 null 이 아니라 빈 값이라 받는 쪽이 null 검사 없이 바로 쓸 수 있다.
+     */
+    const fnBuildResponse = (payload) => {
+      const isList = Array.isArray(payload);
+      return {
+        cmd: fnCmd(),
+        params: fnCallParams(),
+        resultType: isList ? 'list' : 'object',   /* 값이 resultObj 에 있나 resultList 에 있나 */
+        resultObj:  isList ? {} : (payload == null ? {} : payload),
+        resultList: isList ? payload : [],
+      };
+    };
+
+    /**
+     * 결과 발행 — emit / onCallback / response 를 한 곳에서 처리한다.
+     * 세 경로가 모두 같은 값을 보도록 여기서만 만든다.
+     *
+     * onCallback 규약: (popCmd, param, result)
+     *   - popCmd : 호출 식별자 (popup-cmd)
+     *   - param  : 호출할 때 넘긴 파라미터 { popupCode, multi? }  ← 결과가 아니라 요청값
+     *   - result : 고른 값 (단건=행 / 다중=행 배열 / resultType 에 따라 ID)
+     *   전문(cmd·params·resultType·resultObj·resultList)이 필요하면 @response 로 받는다.
+     *
+     * @param evName 화면에 올릴 이벤트명 (select | toggle)
      */
     const fnEmitResult = (evName, rowOrRows) => {
       const payload = fnToPayload(rowOrRows);
+      const response = fnBuildResponse(payload);
       emit(evName, payload);
-      if (props.onCallback) props.onCallback(props.modalName, null, payload);
+      if (props.onCallback) props.onCallback(fnCmd(), fnCallParams(), payload);
+      emit('response', response);
       return payload;
     };
 
-    /**
-     * 응답정보 — 호출부가 "무엇을 어떤 조건으로 골랐는지" 한 번에 받도록 감싼 결과.
-     * select/toggle 은 기존 계약(행 그대로)이라 건드리지 않고, 이 이벤트를 추가로 올린다.
-     */
-    const fnEmitResponse = (action, result) => {
-      emit('response', {
-        cmd: props.popupCmd || props.popupCode,   /* 호출 식별자 (미지정 시 팝업코드) */
-        popupCode: props.popupCode,
-        action,                                   /* select | toggle | clear */
-        multi: cfIsMulti.value,
-        params: {                                 /* 넘겨줬던 조회 파라미터 */
-          page: lastParams.page,
-          tree: lastParams.tree,
-        },
-        result,
-        at: new Date().toLocaleTimeString(),
-      });
-    };
-
-    const fnLog = (kind, params, count, ms) => {
+    /* 호출 로그 — 위 호출 옵션만 올린다.
+       URL·쿼리 파라미터는 popupCode 로 정해지는 값이라 싣지 않는다. */
+    const fnLog = () => {
       if (!props.debug) return;
-      emit('api-log', {
-        kind, params: JSON.parse(JSON.stringify(params || {})),
-        count, ms, at: new Date().toLocaleTimeString(),
-      });
+      emit('api-log', { cmd: fnCmd(), params: fnCallParams() });
     };
 
     const codeMap = reactive({});       /* codeGrp → [{codeValue, codeLabel}] (CODE 유형 항목용) */
@@ -136,6 +173,7 @@ window.BoPickModal = {
     const treeState = reactive({ selectedId: null });
 
     const cfSiteId = computed(() => window.boCommonFilter?.siteId || '');
+    /* 다중 여부는 호출부(:multi)가 최우선, 미지정 시 메타의 기본값 */
     /* 다중 여부는 호출부(:multi)가 최우선, 미지정 시 메타의 기본값 */
     const cfIsMulti = computed(() => props.multi !== null ? props.multi : cfg.multiYn === 'Y');
     const cfTitle = computed(() => props.title || cfg.popupNm || '선택');
@@ -271,7 +309,6 @@ window.BoPickModal = {
         if (cfg.idField) empty[cfg.idField] = null;
         if (cfg.nmField) empty[cfg.nmField] = '';
         fnEmitResult('select', empty);
-        fnEmitResponse('clear', empty);
         return handleClose();
       }
       if (cmd === 'tree-toggle')     { expanded[param] = !expanded[param]; return; }
@@ -279,7 +316,7 @@ window.BoPickModal = {
       if (cmd === 'tree-collapseAll'){ Object.keys(expanded).forEach(k => { expanded[k] = false; }); return; }
       if (cmd === 'row-pick')        return handlePickRow(param);
       /* 토글 모드 — 닫지 않고 알린다. 체크 상태는 부모가 selectedIds 로 다시 내려준다 */
-      if (cmd === 'row-toggle')      { fnEmitResult('toggle', param); return fnEmitResponse('toggle', param); }
+      if (cmd === 'row-toggle')      return fnEmitResult('toggle', param);
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
@@ -306,10 +343,9 @@ window.BoPickModal = {
       uiState.initing = true;
       try {
         const cfgParam = { siteId: cfSiteId.value };
-        const t0 = Date.now();
         const res = await boApiSvc.cmPick.getConfig(props.popupCode, cfgParam, '선택팝업', '구성조회');
         const d = res.data?.data || {};
-        fnLog('config', cfgParam, (d.listCols || []).length, Date.now() - t0);
+        fnLog();
         Object.assign(cfg, {
           popupNm: d.popupNm || '', popupPattern: d.popupPattern || 1,
           multiYn: d.multiYn || 'N', pagingYn: d.pagingYn || 'Y', pageSize: d.pageSize || 10,
@@ -405,11 +441,9 @@ window.BoPickModal = {
       uiState.loading = true;
       try {
         const listParam = fnBuildParam();
-        const t0 = Date.now();
         const res = await boApiSvc.cmPick.getPage(props.popupCode, listParam, '선택팝업', '조회');
         const d = res.data?.data || {};
-        lastParams.page = JSON.parse(JSON.stringify(listParam));
-        fnLog('page', listParam, d.pageTotalCount || 0, Date.now() - t0);
+        fnLog();
         rows.splice(0, rows.length, ...(d.pageList || []));
         gridPager.pageTotalCount = d.pageTotalCount || 0;
         gridPager.pageTotalPage = d.pageTotalPage || 1;
@@ -425,11 +459,9 @@ window.BoPickModal = {
         /* 고정 필터(initParam)는 트리에도 걸어야 목록과 범위가 어긋나지 않는다
            (예: 표시경로 팝업의 bizCd — 해당 업무의 경로만 보여야 한다) */
         const treeParam = { siteId: cfSiteId.value, ...(props.initParam || {}) };
-        const t0 = Date.now();
         const res = await boApiSvc.cmPick.getTree(props.popupCode, treeParam, '선택팝업', '트리조회');
         const list = res.data?.data || [];
-        lastParams.tree = JSON.parse(JSON.stringify(treeParam));
-        fnLog('tree', treeParam, list.length, Date.now() - t0);
+        fnLog();
         treeRows.splice(0, treeRows.length, ...list);
         /* 최상위는 기본 펼침 */
         treeRows.filter(n => n.parentId == null || n.parentId === '')
@@ -444,7 +476,6 @@ window.BoPickModal = {
       if (!row) return;
       if (!cfIsMulti.value) {
         fnEmitResult('select', row);
-        fnEmitResponse('select', row);
         handleClose();
         return;
       }
@@ -462,7 +493,7 @@ window.BoPickModal = {
     /** 닫기 — 기존 규약대로 onCallback(modalName, null, null) 도 함께 알린다 */
     const handleClose = () => {
       emit('close');
-      if (props.onCallback) props.onCallback(props.modalName, null, null);
+      if (props.onCallback) props.onCallback(fnCmd(), null, null);
     };
 
     const handleConfirm = () => {
@@ -470,7 +501,6 @@ window.BoPickModal = {
         if (!picked.length) return window.boApp?.showToast('선택된 항목이 없습니다.', 'error');
         const rows = picked.slice();
         fnEmitResult('select', rows);
-        fnEmitResponse('select', rows);
       }
       handleClose();
     };

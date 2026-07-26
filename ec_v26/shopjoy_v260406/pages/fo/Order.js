@@ -83,27 +83,27 @@ window.Order = {
      *   param  = 호출 파라미터 (미사용 시 null)
      *   result = 'close' → X닫기(선택 없음) / null → 쿠폰 해제(미선택) / 객체 → 쿠폰 적용
      */
-    const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ Order.js : fnCallbackModal -> ', cmd, param, result);
+    const fnCallbackModal = (popCmd, param, result) => {
+      console.log(' ■■ Order.js : fnCallbackModal -> ', popCmd, param, result);
       // 상품 쿠폰 모달
-      if (cmd === 'coupon') {
+      if (popCmd === 'coupon') {
         couponPopup.show = false;
         if (result === 'close') return;             // X 닫기 — 선택 그대로 유지
         return applyCoupon(result);                 // null=해제, 쿠폰객체=적용
       // 배송비 쿠폰 모달
-      } else if (cmd === 'shipCoupon') {
+      } else if (popCmd === 'shipCoupon') {
         uiState.shipCouponPopup = false;
         if (result === 'close') return;
         return applyShipCoupon(result);
       // 주소검색 모달 콜백 → 우편번호/주소 반영
-      } else if (cmd === 'addr-search') {
+      } else if (popCmd === 'addr-search') {
         addrSearchModal.show = false;
         if (result == null) { return; }
         form.postcode = result.zonecode;
         form.address  = result.address;
         return;
       } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
 

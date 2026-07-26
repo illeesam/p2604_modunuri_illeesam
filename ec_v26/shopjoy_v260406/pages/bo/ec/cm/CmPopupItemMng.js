@@ -3,7 +3,7 @@
  *  - 좌측: 팝업 목록 (검색으로 좁힘)
  *  - 우측: 선택한 팝업의 항목 목록 + 인라인 항목 폼
  *  - 항목의 조회항목·목록항목 여부가 곧 팝업 화면의 조회영역·목록컬럼이 된다.
- *  - [미리보기]로 실제 선택 팝업(BoPickModal)을 그대로 띄워 확인
+ *  - [미리보기]로 실제 선택 팝업(BoCmPopupModal)을 그대로 띄워 확인
  */
 window.CmPopupItemMng = {
   name: 'CmPopupItemMng',
@@ -43,8 +43,8 @@ window.CmPopupItemMng = {
     const itemForm = reactive(_initItemForm());
     const itemErrors = reactive({});
 
-    /* 미리보기 — 항목 설정이 실제 팝업에 어떻게 반영됐는지 + 전송 파라미터·선택 결과 */
-    const previewModal = reactive({ show: false, popupCode: '', multi: false, logs: [], response: null, resultAt: '' });
+    /* 미리보기 — 항목 설정이 실제 팝업에 어떻게 반영됐는지 + 호출 정보·응답정보 */
+    const previewModal = reactive({ show: false, popupCode: '', multi: false, logs: [], cbArgs: null, resultAt: '' });
 
     const cfSiteId = computed(() => window.boCommonFilter?.siteId || '');
     const FIELD_TYPES = ['TEXT', 'NUMBER', 'DATE', 'CODE', 'BADGE'];
@@ -67,14 +67,13 @@ window.CmPopupItemMng = {
         previewModal.popupCode = (param ? param.popupCode : previewModal.popupCode) || popupState.popupCode;
         previewModal.multi = (cmd === 'popup-previewMulti');
         previewModal.logs.splice(0, previewModal.logs.length);
-        previewModal.response = null;
+        previewModal.cbArgs = null;
         previewModal.resultAt = '';
         previewModal.show = true;
         return;
       }
       if (cmd === 'preview-apiLog')  { previewModal.logs.unshift(param); if (previewModal.logs.length > 20) previewModal.logs.pop(); return; }
-      if (cmd === 'preview-response') { previewModal.response = param; previewModal.resultAt = param ? param.at : ''; return; }
-      if (cmd === 'preview-clear')   { previewModal.logs.splice(0, previewModal.logs.length); previewModal.response = null; return; }
+      if (cmd === 'preview-clear')   { previewModal.logs.splice(0, previewModal.logs.length); previewModal.cbArgs = null; return; }
       if (cmd === 'popup-goDefine')    return props.navigate('cmPopupMng', { id: popupState.selectedId });
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
@@ -229,9 +228,66 @@ window.CmPopupItemMng = {
       }
     };
 
-    /** 보기 좋게 들여쓴 JSON / 한 줄 JSON (미리보기 결과 표시용) */
+    /* 호출 정보 — 화면이 이 팝업을 부를 때 준 값. cmd(params) 형태로 읽힌다.
+       URL·쿼리는 popupCode 로 정해지므로 싣지 않는다. */
+    const cfPreviewRequest = computed(() => previewModal.logs[0] || null);
+
+    /** 보기 좋게 들여쓴 JSON (미리보기 패널 표시용) */
     const fnPretty = (o) => o == null ? '' : JSON.stringify(o, null, 2);
-    const fnJson = (o) => JSON.stringify(o || {});
+
+    /* 미리보기 수신 — 실제 화면과 똑같이 onCallback(popCmd, param, result) 로 받는다.
+       닫기 콜백은 (popCmd, null, null) 로 오므로 결과가 실린 호출만 기록한다. */
+    const fnPreviewCallback = (popCmd, param, result) => {
+      if (param == null) return;
+      previewModal.cbArgs = { popCmd, param, result };
+      previewModal.resultAt = new Date().toLocaleTimeString();
+    };
+
+    /** 이 팝업을 화면에서 쓰는 예제 코드 — 미리보기가 곧 사용법 문서가 되도록.
+        multi 여부에 따라 결과를 꺼내는 방법이 달라져 그 부분을 바꿔 보여준다. */
+    const cfPreviewSample = computed(() => {
+      const h = previewModal.logs[0];
+      if (!h) return '';
+      const code  = h.params.popupCode;
+      const multi = !!h.params.multi;
+      /* 호출 식별자는 cmPopup- 접두어를 붙인다 — 화면이 다른 모달과 콜백을 공유해도 구분된다 */
+      const name  = 'cmPopup-' + code + '-pick';
+      const NL = String.fromCharCode(10);
+      const lines = [
+        '<!-- template -->',
+        '<bo-cm-popup-modal v-if="pickModal.show" popup-cmd="' + name + '" popup-code="' + code + '"'
+          + (multi ? ' :multi="true"' : ''),
+        '  :on-callback="fnCallbackModal" @close="pickModal.show = false" />',
+        '',
+        '/* setup */',
+        'const fnCallbackModal = (popCmd, response, result) => {',
+        "  if (popCmd === '" + name + "') {",
+        '    if (result == null) { pickModal.show = false; return; }   // 닫기',
+      ];
+      if (multi) {
+        lines.push('    // 다중 — 항상 배열이라 null·타입 검사 불필요');
+        lines.push('    response.resultList.forEach(row => { /* row.' + code + 'Id */ });');
+      } else {
+        lines.push('    // 단건 — result 가 곧 선택한 행 (엔티티 필드명 그대로)');
+        lines.push('    form.' + code + 'Id = result.' + code + 'Id;');
+      }
+      lines.push('    pickModal.show = false;');
+      lines.push('  }');
+      lines.push('};');
+      return lines.join(NL);
+    });
+
+    /** 콜백 인자 3개를 순서대로 — 화면에 하나씩 나눠 보여준다 */
+    const cfPreviewArgs = computed(() => {
+      const a = previewModal.cbArgs;
+      if (!a) return [];
+      return [
+        { name: 'popCmd', value: a.popCmd },
+        { name: 'param',  value: a.param },
+        { name: 'result', value: a.result },
+      ];
+    });
+
 
     /* ##### [05] 사용자 함수 (컬럼정의) ############################################ */
 
@@ -316,7 +372,7 @@ window.CmPopupItemMng = {
 
     return {
       popups, items, codeGrps, codes, uiState, searchParam, popupGridPager,
-      popupState, itemDetail, itemForm, itemErrors, previewModal, columns, fnPretty, fnJson,
+      popupState, itemDetail, itemForm, itemErrors, previewModal, cfPreviewRequest, cfPreviewSample, cfPreviewArgs, fnPreviewCallback, columns, fnPretty,
       handleBtnAction, handleGridCellAction,
     };
   },
@@ -394,7 +450,7 @@ window.CmPopupItemMng = {
   </bo-container>
 
   <!-- ===== ■. 미리보기 (실제 공통 선택 팝업) ================================= -->
-  <!-- ===== ■. 미리보기 결과 (전송 파라미터 / 선택 결과) ====================== -->
+  <!-- ===== ■. 미리보기 결과 (호출 정보 / 응답정보) ============================ -->
   <bo-container v-if="previewModal.popupCode" title="미리보기 결과"
     :count-text="previewModal.popupCode + (previewModal.multi ? ' · 다중선택' : ' · 단일선택')">
     <template #toolbar-actions>
@@ -404,38 +460,38 @@ window.CmPopupItemMng = {
     </template>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;padding:12px;">
       <div>
-        <div class="list-title" style="font-size:12px;margin-bottom:6px;">전송 파라미터</div>
+        <div class="list-title" style="font-size:12px;margin-bottom:6px;">호출 정보</div>
         <div v-if="!previewModal.logs.length" style="padding:14px;color:#aaa;font-size:12px;">
-          [👁 미리보기]로 팝업을 열면 호출 내역이 표시됩니다.
+          [👁 미리보기]로 팝업을 열면 호출 설정과 요청 내용이 표시됩니다.
         </div>
-        <div v-else style="background:#0f172a;border-radius:6px;padding:10px;max-height:260px;overflow:auto;">
-          <div v-for="(g, i) in previewModal.logs" :key="i"
-            style="font-family:monospace;font-size:11px;color:#e2e8f0;line-height:1.7;white-space:pre-wrap;word-break:break-all;">
-            <span style="color:#fbbf24;">[{{ g.kind }}]</span>
-            <span style="color:#94a3b8;">{{ g.at }} · {{ g.ms }}ms · {{ g.count }}건</span>
-            {{ fnJson(g.params) }}
-          </div>
-        </div>
+        <template v-else>
+          <pre style="background:#0f172a;color:#e2e8f0;border-radius:6px;padding:10px;max-height:200px;overflow:auto;font-size:11px;margin:0;">{{ fnPretty(cfPreviewRequest) }}</pre>
+          <!-- 미리보기가 곧 사용법 문서 — 화면에 붙여 쓸 수 있는 예제 -->
+          <div style="font-family:monospace;font-size:11px;color:#64748b;margin:8px 0 2px;">사용 예제</div>
+          <pre style="background:#0f172a;color:#fbbf24;border-radius:6px;padding:10px;max-height:280px;overflow:auto;font-size:11px;margin:0;">{{ cfPreviewSample }}</pre>
+        </template>
       </div>
       <div>
         <div class="list-title" style="font-size:12px;margin-bottom:6px;">
-          응답정보
+          콜백 인자
+          <span style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">fnCallbackModal(popCmd, param, result)</span>
           <span v-if="previewModal.resultAt" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">{{ previewModal.resultAt }}</span>
         </div>
-        <div v-if="previewModal.response == null" style="padding:14px;color:#aaa;font-size:12px;">
-          팝업에서 행을 선택하면 cmd · 넘긴 파라미터 · result 가 함께 표시됩니다.
+        <div v-if="previewModal.cbArgs == null" style="padding:14px;color:#aaa;font-size:12px;">
+          팝업에서 행을 선택하면 화면의 콜백이 받는 인자 3개가 그대로 표시됩니다.
         </div>
-        <pre v-else style="background:#0f172a;color:#a7f3d0;border-radius:6px;padding:10px;max-height:300px;overflow:auto;font-size:11px;margin:0;">{{ fnPretty(previewModal.response) }}</pre>
+        <!-- 좌측(호출정보 200 + 예제 280)과 높이를 맞춰 다중선택 결과가 잘리지 않게 -->
+        <div v-else style="display:flex;flex-direction:column;gap:6px;max-height:640px;overflow:auto;">
+          <div v-for="(a, i) in cfPreviewArgs" :key="i">
+            <div style="font-family:monospace;font-size:11px;color:#64748b;margin-bottom:2px;">{{ i + 1 }}. {{ a.name }}</div>
+            <pre style="background:#0f172a;color:#a7f3d0;border-radius:6px;padding:8px;overflow:auto;font-size:11px;margin:0;">{{ fnPretty(a.value) }}</pre>
+          </div>
+        </div>
       </div>
     </div>
   </bo-container>
 
-  <bo-pick-modal v-if="previewModal.show" :popup-code="previewModal.popupCode" debug
-    :multi="previewModal.multi ? true : null"
-    :popup-cmd="'preview-' + previewModal.popupCode"
-    @api-log="e => handleBtnAction('preview-apiLog', e)"
-    @response="r => handleBtnAction('preview-response', r)"
-    @close="previewModal.show = false" />
+  <bo-cm-popup-modal v-if="previewModal.show" :popup-cmd="'preview-' + previewModal.popupCode" :popup-code="previewModal.popupCode" :multi="previewModal.multi ? true : null" debug :on-callback="fnPreviewCallback" @api-log="e => handleBtnAction('preview-apiLog', e)" @close="previewModal.show = false" />
 </bo-page>
 `,
 };
