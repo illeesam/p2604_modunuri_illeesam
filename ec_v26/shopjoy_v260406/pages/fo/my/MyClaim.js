@@ -483,7 +483,7 @@ window.MyClaim = {
 <!-- ===== ■. 영역 ====================================================== -->
 <Teleport to="body">
   <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" modal-name="order-detail" :on-callback="fnCallbackModal" />
-  <ProductModal :show="myStore.productModal.show" :prod="myStore.productModal.prod" modal-name="product" :on-callback="fnCallbackModal" />
+  <ProductModal :show="myStore.productModal.show" :product="myStore.productModal.prod" modal-name="product" :on-callback="fnCallbackModal" />
   <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" modal-name="customer" :on-callback="fnCallbackModal" />
 </teleport>
 </fo-my-layout>

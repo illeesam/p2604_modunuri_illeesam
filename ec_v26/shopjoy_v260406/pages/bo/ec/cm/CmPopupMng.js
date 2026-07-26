@@ -32,7 +32,7 @@ window.CmPopupMng = {
     const _initBaseForm = () => ({
       popupId: null, popupCode: '', popupNm: '', popupPattern: 1, entityNm: '',
       idField: '', nmField: '', parentField: '', siteField: 'siteId',
-      orderBy: '', baseWhere: '', multiYn: 'N', pagingYn: 'Y', pageSize: 10, modalWidth: '900px',
+      orderBy: '', baseWhere: '', multiYn: 'N', sysScope: '^BO^', pagingYn: 'Y', pageSize: 10, modalWidth: '900px', applyUiMemo: '',
       useYn: 'Y', sortOrd: 10, remark: '',
     });
     const baseForm = reactive(_initBaseForm());
@@ -112,7 +112,7 @@ window.CmPopupMng = {
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.cmPick.getPopupPage({
+        const res = await boApiSvc.cmPopupPick.getPopupPage({
           siteId: cfSiteId.value,
           searchValue: searchParam.searchValue || undefined,
           popupPattern: searchParam.popupPattern || undefined,
@@ -144,8 +144,8 @@ window.CmPopupMng = {
         idField: row.idField, nmField: row.nmField,
         parentField: row.parentField || '', siteField: row.siteField || '',
         orderBy: row.orderBy || '', baseWhere: row.baseWhere || '',
-        multiYn: row.multiYn || 'N', pagingYn: row.pagingYn || 'Y', pageSize: row.pageSize || 10,
-        modalWidth: row.modalWidth || '900px', useYn: row.useYn || 'Y',
+        multiYn: row.multiYn || 'N', sysScope: row.sysScope || '^BO^', pagingYn: row.pagingYn || 'Y', pageSize: row.pageSize || 10,
+        modalWidth: row.modalWidth || '900px', applyUiMemo: row.applyUiMemo || '', useYn: row.useYn || 'Y',
         sortOrd: row.sortOrd || 10, remark: row.remark || '',
       });
     };
@@ -176,18 +176,18 @@ window.CmPopupMng = {
           idField: baseForm.idField, nmField: baseForm.nmField,
           parentField: baseForm.parentField || '', siteField: baseForm.siteField || '',
           orderBy: baseForm.orderBy || '', baseWhere: baseForm.baseWhere || '',
-          multiYn: baseForm.multiYn, pagingYn: baseForm.pagingYn, pageSize: Number(baseForm.pageSize) || 10,
-          modalWidth: baseForm.modalWidth, useYn: baseForm.useYn,
+          multiYn: baseForm.multiYn, sysScope: baseForm.sysScope || '^BO^', pagingYn: baseForm.pagingYn, pageSize: Number(baseForm.pageSize) || 10,
+          modalWidth: baseForm.modalWidth, applyUiMemo: baseForm.applyUiMemo || null, useYn: baseForm.useYn,
           sortOrd: Number(baseForm.sortOrd) || 10, remark: baseForm.remark,
         };
         if (baseDetail.isNew) {
-          const res = await boApiSvc.cmPick.popupCreate(body, '팝업관리', '등록');
+          const res = await boApiSvc.cmPopupPick.popupCreate(body, '팝업관리', '등록');
           const created = res.data?.data || {};
           baseDetail.selectedId = created.popupId || null;
           baseDetail.isNew = false;
           baseForm.popupId = created.popupId || null;
         } else {
-          await boApiSvc.cmPick.popupUpdate(baseForm.popupId, body, '팝업관리', '수정');
+          await boApiSvc.cmPopupPick.popupUpdate(baseForm.popupId, body, '팝업관리', '수정');
         }
         showToast('저장되었습니다.', 'success');
         await handleSearchList();
@@ -199,7 +199,7 @@ window.CmPopupMng = {
     const handleDeletePopup = async (row) => {
       if (!(await showConfirm('삭제', `[${row.popupNm}] 팝업과 소속 항목을 모두 삭제하시겠습니까?`))) return;
       try {
-        await boApiSvc.cmPick.popupRemove(row.popupId, '팝업관리', '삭제');
+        await boApiSvc.cmPopupPick.popupRemove(row.popupId, '팝업관리', '삭제');
         showToast('삭제되었습니다.', 'success');
         if (baseDetail.selectedId === row.popupId) resetPopupDetail();
         await handleSearchList();
@@ -240,13 +240,13 @@ window.CmPopupMng = {
         '  :on-callback="fnCallbackModal" @close="pickModal.show = false" />',
         '',
         '/* setup */',
-        'const fnCallbackModal = (popCmd, response, result) => {',
+        'const fnCallbackModal = (popCmd, param, result) => {',
         "  if (popCmd === '" + name + "') {",
         '    if (result == null) { pickModal.show = false; return; }   // 닫기',
       ];
       if (multi) {
-        lines.push('    // 다중 — 항상 배열이라 null·타입 검사 불필요');
-        lines.push('    response.resultList.forEach(row => { /* row.' + code + 'Id */ });');
+        lines.push('    // 다중 — result 가 행 배열 (param.multi 로도 판별 가능)');
+        lines.push('    result.forEach(row => { /* row.' + code + 'Id */ });');
       } else {
         lines.push('    // 단건 — result 가 곧 선택한 행 (엔티티 필드명 그대로)');
         lines.push('    form.' + code + 'Id = result.' + code + 'Id;');
@@ -293,8 +293,14 @@ window.CmPopupMng = {
         fmt: (v) => v === 'Y' ? '다중' : '단일' },
       { key: 'parentField', label: '트리', style: 'width:60px;', align: 'center',
         fmt: (v) => v ? '🌳' : '-' },
+      { key: 'sysScope', label: '시스템', style: 'width:90px;', align: 'center',
+        fmt: (v) => (v || '^BO^').replace(/\^/g, ' ').trim().replace(/\s+/g, '·') },
       { key: 'pagingYn', label: '페이징', style: 'width:80px;', align: 'center',
         fmt: (v, row) => v === 'N' ? '전체' : ((row.pageSize || 10) + '개') },
+      { key: 'applyUiMemo', label: '적용 UI', style: 'min-width:180px;',
+        cellStyle: 'font-size:11px;color:#666;',
+        cellTitle: (v) => v || '',
+        fmt: (v) => !v ? '-' : (v.length > 46 ? v.slice(0, 46) + '…' : v) },
       { key: 'sortOrd', label: '정렬', style: 'width:60px;', align: 'center' },
       { key: 'useYn', label: '사용', style: 'width:70px;',
         badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
@@ -316,9 +322,12 @@ window.CmPopupMng = {
       { key: 'nmField', label: '표시명 필드', type: 'text', required: true, mono: true, placeholder: 'userNm' },
       { key: 'parentField', label: '트리 부모 필드', type: 'text', mono: true,
         visible: (f) => Number(f.popupPattern) >= 2, placeholder: 'parentDeptId (패턴2·3 필수)' },
-      { key: 'siteField', label: '사이트 필드', type: 'text', mono: true, placeholder: 'siteId (없으면 공백)' },
-      { key: 'orderBy', label: '정렬(JPQL)', type: 'text', mono: true, colSpan: 2, placeholder: 'e.userNm ASC' },
       { key: 'baseWhere', label: '고정조건(JPQL)', type: 'text', mono: true, colSpan: 3, placeholder: "e.useYn = 'Y'" },
+      /* 어느 시스템에서 이 팝업을 열 수 있는지. 서버가 이 값으로 BO/FO 접근을 막는다 */
+      { key: 'sysScope', label: '사용 시스템', type: 'multiCheck',
+        options: [{ value: 'BO', label: '관리자(BO)' }, { value: 'FO', label: '사용자(FO)' }],
+        placeholder: '시스템 선택', allLabel: '전체', emptyValue: '^BO^',
+        hint: 'FO 미포함 팝업은 사용자 화면에서 차단됨' },
       { key: 'pagingYn', label: '페이징 사용', type: 'select',
         options: () => [{ value: 'Y', label: '사용 (페이저 표시)' }, { value: 'N', label: '미사용 (전체 표시)' }],
         hint: '건수 적은 팝업은 미사용이 고르기 쉬움' },
@@ -326,6 +335,9 @@ window.CmPopupMng = {
       { key: 'pageSize', label: '페이지 크기 / 최대건수', type: 'number',
         hint: '페이징 미사용이면 최대 표시 건수 (상한 500)' },
       { key: 'modalWidth', label: '모달 폭', type: 'text', placeholder: '900px' },
+      /* 이 팝업을 쓰는 화면 나열 — 정의를 고치면 여기 적힌 화면 전부에 즉시 반영된다 */
+      { key: 'applyUiMemo', label: '적용 UI (화면 파일명)', type: 'textarea', colSpan: 3, rowSpan: 2,
+        placeholder: 'PdProdDtl.js, OdOrderDtl.js', hint: '수정 전 영향 범위 확인용' },
       { key: 'sortOrd', label: '정렬순서', type: 'number' },
       { key: 'useYn', label: '사용여부', type: 'select',
         options: () => [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] },

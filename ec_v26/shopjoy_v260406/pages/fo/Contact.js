@@ -51,8 +51,8 @@ window.Contact = {
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답(null=닫기/취소, 값=선택) */
     const fnCallbackModal = (popCmd, param, result) => {
       console.log(' ■■ Contact.js : fnCallbackModal -> ', popCmd, param, result);
-      // 주문 선택 모달 (result==null: 닫기, result=주문객체: 선택)
-      if (popCmd === 'orderModal') {
+      // 주문 선택 공통팝업 (result==null: 닫기, result=주문행: 선택)
+      if (popCmd === 'cmPopup-myMemberOrder-pick') {
         orderModal.show = false;
         if (result) form.orderNo = result.orderId;
         return;
@@ -68,7 +68,7 @@ window.Contact = {
       { icon: '✅', title: '답변 완료', desc: '마이페이지 > 문의에서 답변을 확인하세요.', color: '#22c55e' },
     ];
 
-    /* ── 주문 선택 모달 (상세 로직은 OrderPickModal 컴포넌트로 분리) ── */
+    /* ── 주문 선택 모달 (공통팝업 myMemberOrder — 항목 session_cond_field 로 본인 주문만) ── */
     const orderModal = reactive({ show: false });
 
     /* openOrderModal — 모달 열기 (로그인 회원 전용) */
@@ -318,8 +318,9 @@ window.Contact = {
       </fo-container>
     </div>
   </div>
-  <!-- ===== ■. 주문 선택 모달 (컴포넌트 분리) ============================ -->
-  <order-pick-modal :show="orderModal.show" modal-name="orderModal" :on-callback="fnCallbackModal" />
+  <!-- ===== ■. 주문 선택 모달 (공통팝업 — myMemberOrder 는 세션조건 로 본인 주문만) ==== -->
+  <fo-cm-popup-modal popup-cmd="cmPopup-myMemberOrder-pick" popup-code="myMemberOrder"
+    :show="orderModal.show" :on-callback="fnCallbackModal" />
   <!-- ===== □. 주문 선택 모달 ============================================== -->
 </fo-page>
 <!-- ===== □.□. 연락처 + 처리절차 안내 ========================================== -->

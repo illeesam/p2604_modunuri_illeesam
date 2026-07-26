@@ -85,6 +85,10 @@ public class CmPopup extends BaseEntity {
     @Column(name = "multi_yn", length = 1)
     private String multiYn;
 
+    @Comment("사용 시스템 범위 ^BO^ / ^FO^ 멀티값")
+    @Column(name = "sys_scope", length = 20)
+    private String sysScope;
+
     @Comment("페이징 사용 여부 Y/N. N 이면 페이저 없이 전체 표시")
     @Column(name = "paging_yn", length = 1)
     private String pagingYn;
@@ -104,6 +108,10 @@ public class CmPopup extends BaseEntity {
     @Comment("정렬순서")
     @Column(name = "sort_ord")
     private Integer sortOrd;
+
+    @Comment("이 팝업을 사용하는 화면 파일명 나열 (영향 범위 확인용)")
+    @Column(name = "apply_ui_memo", length = 500)
+    private String applyUiMemo;
 
     @Comment("비고")
     @Column(name = "remark", length = 500)

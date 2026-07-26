@@ -21,6 +21,7 @@ window.XsSample12 = {
     const checkedPanels  = reactive(new Set());
     const checkedWidgets = reactive(new Set()); // key: dispId_wi
     const selectedCatIds = reactive(new Set());
+    const selectedCatNms = reactive(new Map());   /* 선택 카테고리 표시명 (공통팝업이 함께 내려줌) */
 
     /* 현재 사용자 인증 상태 */
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
@@ -136,8 +137,7 @@ window.XsSample12 = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
-    const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
-    const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
+    const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => selectedCatNms.get(id) || '').filter(Boolean));
     const cfCatBtnLabel = computed(() => {
       if (selectedCatIds.size === 0) { return '카테고리'; }
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
@@ -146,7 +146,17 @@ window.XsSample12 = {
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
     /* onCatApply — 이벤트 */
-    const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
+    const onCatApply = (list) => {
+      selectedCatIds.clear();
+      selectedCatNms.clear();
+      (list || []).forEach((it) => {
+        const isRow = coUtil.cofAnd(it, typeof it === 'object');
+        const id = isRow ? it.id : it;
+        if (id == null) { return; }
+        selectedCatIds.add(id);
+        if (coUtil.cofAnd(isRow, it.nm)) { selectedCatNms.set(id, it.nm); }
+      });
+    };
 
     /* 검색 필터 */
     const cfAccessibleConds = computed(() => {
@@ -164,7 +174,7 @@ window.XsSample12 = {
     /* fnWIcon — 유틸 */
     const fnWIcon  = (t) => WIDGET_ICONS[t] || '▪';
     const cfAllAreas = computed(() =>
-      window.sfGetBoCodeStore()?.codes||[]
+      (window.useFoCodeStore?.().svCodes || [])
         .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
@@ -892,7 +902,7 @@ window.XsSample12 = {
       <!-- ===== □.□. 우: 위젯 컨텐츠 미리보기 ======================================== -->
       <!-- ===== □. 본문 영역 =================================================== -->
       <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
-      <bo-cm-popup-modal popup-cmd="cmPopup-category-pick" popup-code="category" :multi="true" result-type="idArray" :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" :on-callback="fnCallbackModal" />
+      <fo-cm-popup-modal popup-cmd="cmPopup-category-pick" popup-code="category" :multi="true" result-type="array" :show="uiState.showCatModal" :init-selected-ids="[...selectedCatIds]" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □. 카테고리 선택 모달 ============================================== -->
 </fo-page>

@@ -437,7 +437,7 @@ window.Home01 = {
 </div>
 <!-- ===== □. ══ 블로그 포스트 ══ =========================================== -->
 <!-- ===== ■. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
-<prod-modal :show="!!uiState.quickViewProduct" :prod="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts?.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" modal-name="quick-view" :on-callback="fnCallbackModal" />
+<product-modal :show="!!uiState.quickViewProduct" :product="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts?.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" modal-name="quick-view" :on-callback="fnCallbackModal" />
 </fo-page>
 <!-- ===== □. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
 `

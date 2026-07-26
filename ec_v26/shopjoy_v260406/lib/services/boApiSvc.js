@@ -63,25 +63,6 @@
     itemDataUpsert(body, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/item-data/upsert', body, hdr(uiNm, cmdNm)); },
   };
 
-  /* ── cm: 공통 선택(Pick) 팝업 ─────────────────────────────────
-   * cm_popup / cm_popup_item 메타 기반. 타입별 API 없이 popupCode 하나로 조회.
-   *   getConfig : 조회항목·목록컬럼·패턴 (프론트가 이 값으로 화면 자동 구성)
-   *   getPage   : 목록(검색·페이징) / getTree : 트리(패턴 2·3) */
-  boApiSvc.cmPick = {
-    getConfig(popupCode, params, uiNm, cmdNm) { return global.boApi.get(`/bo/cm/pick/${popupCode}/config`, { params, ...hdr(uiNm, cmdNm) }); },
-    getPage(popupCode, params, uiNm, cmdNm)   { return global.boApi.get(`/bo/cm/pick/${popupCode}/page`,   { params, ...hdr(uiNm, cmdNm) }); },
-    getTree(popupCode, params, uiNm, cmdNm)   { return global.boApi.get(`/bo/cm/pick/${popupCode}/tree`,   { params, ...hdr(uiNm, cmdNm) }); },
-    /* 팝업 정의 관리 */
-    getPopupList(params, uiNm, cmdNm)   { return global.boApi.get('/bo/cm/pick/popup/list', { params, ...hdr(uiNm, cmdNm) }); },
-    getPopupPage(params, uiNm, cmdNm)   { return global.boApi.get('/bo/cm/pick/popup/page', { params, ...hdr(uiNm, cmdNm) }); },
-    getPopupItems(popupId, uiNm, cmdNm) { return global.boApi.get(`/bo/cm/pick/popup/${popupId}/items`, hdr(uiNm, cmdNm)); },
-    popupCreate(body, uiNm, cmdNm)      { return global.boApi.post('/bo/cm/pick/popup', body, hdr(uiNm, cmdNm)); },
-    popupUpdate(popupId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/cm/pick/popup/${popupId}`, body, hdr(uiNm, cmdNm)); },
-    popupRemove(popupId, uiNm, cmdNm)   { return global.boApi.delete(`/bo/cm/pick/popup/${popupId}`, hdr(uiNm, cmdNm)); },
-    itemSave(body, uiNm, cmdNm)         { return global.boApi.post('/bo/cm/pick/popup/item', body, hdr(uiNm, cmdNm)); },
-    itemRemove(itemId, uiNm, cmdNm)     { return global.boApi.delete(`/bo/cm/pick/popup/item/${itemId}`, hdr(uiNm, cmdNm)); },
-  };
-
   /* ── cm: 채팅 ───────────────────────────────────────────────── */
   boApiSvc.cmChatt = {
     getPage(params, uiNm, cmdNm)     { return global.boApi.get(   '/bo/ec/cm/chatt/page', { params, ...hdr(uiNm, cmdNm) }); },
@@ -110,6 +91,25 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/cm/notice', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/cm/notice/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/cm/notice/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── cm: 공통 선택(Pick) 팝업 ─────────────────────────────────
+   * cm_popup / cm_popup_item 메타 기반. 타입별 API 없이 popupCode 하나로 조회.
+   *   getConfig : 조회항목·목록컬럼·패턴 (프론트가 이 값으로 화면 자동 구성)
+   *   getPage   : 목록(검색·페이징) / getTree : 트리(패턴 2·3) */
+  boApiSvc.cmPopupPick = {
+    getConfig(popupCode, params, uiNm, cmdNm) { return global.boApi.get(`/bo/cm/cmPopupPick/${popupCode}/config`, { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(popupCode, params, uiNm, cmdNm)   { return global.boApi.get(`/bo/cm/cmPopupPick/${popupCode}/page`,   { params, ...hdr(uiNm, cmdNm) }); },
+    getTree(popupCode, params, uiNm, cmdNm)   { return global.boApi.get(`/bo/cm/cmPopupPick/${popupCode}/tree`,   { params, ...hdr(uiNm, cmdNm) }); },
+    /* 팝업 정의 관리 */
+    getPopupList(params, uiNm, cmdNm)   { return global.boApi.get('/bo/cm/cmPopupPick/popup/list', { params, ...hdr(uiNm, cmdNm) }); },
+    getPopupPage(params, uiNm, cmdNm)   { return global.boApi.get('/bo/cm/cmPopupPick/popup/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getPopupItems(popupId, uiNm, cmdNm) { return global.boApi.get(`/bo/cm/cmPopupPick/popup/${popupId}/items`, hdr(uiNm, cmdNm)); },
+    popupCreate(body, uiNm, cmdNm)      { return global.boApi.post('/bo/cm/cmPopupPick/popup', body, hdr(uiNm, cmdNm)); },
+    popupUpdate(popupId, body, uiNm, cmdNm) { return global.boApi.put(`/bo/cm/cmPopupPick/popup/${popupId}`, body, hdr(uiNm, cmdNm)); },
+    popupRemove(popupId, uiNm, cmdNm)   { return global.boApi.delete(`/bo/cm/cmPopupPick/popup/${popupId}`, hdr(uiNm, cmdNm)); },
+    itemSave(body, uiNm, cmdNm)         { return global.boApi.post('/bo/cm/cmPopupPick/popup/item', body, hdr(uiNm, cmdNm)); },
+    itemRemove(itemId, uiNm, cmdNm)     { return global.boApi.delete(`/bo/cm/cmPopupPick/popup/item/${itemId}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── dp: 전시영역 ───────────────────────────────────────────── */

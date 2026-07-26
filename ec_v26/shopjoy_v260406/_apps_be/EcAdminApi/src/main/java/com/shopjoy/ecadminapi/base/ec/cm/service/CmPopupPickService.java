@@ -6,7 +6,9 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupItemRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
+import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -40,7 +43,7 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class CmPickService {
+public class CmPopupPickService {
 
     /** JPQL 식별자 허용 패턴 — 메타 값이 오염돼도 임의 구문 주입 차단 */
     private static final Pattern IDENT = Pattern.compile("^[A-Za-z][A-Za-z0-9_.]*$");
@@ -65,6 +68,80 @@ public class CmPickService {
                 "등록되지 않은 팝업코드입니다: " + popupCode + "::" + CmUtil.svcCallerInfo(this)));
     }
 
+    /**
+     * FO 에 <b>조건 없이</b> 공개해도 되는 엔티티 화이트리스트 (공개 카탈로그).
+     *
+     * <p>{@code /api/fo/**} 는 SecurityConfig 기본 permitAll 이라 FO 경로는 비로그인으로도 열린다.
+     * 그래서 FO 노출은 둘 중 하나만 허용한다 — (1) 이 목록의 공개 카탈로그,
+     * (2) 항목에 {@code session_cond_field} 가 있어 로그인 본인 것만 나오는 팝업.</p>
+     *
+     * <p>{@code sys_scope} 는 관리자가 팝업관리 화면에서 바꿀 수 있으므로 그 값만 믿지 않는다.
+     * 회원·주문처럼 개인정보/거래정보 엔티티는 실수로 {@code ^FO^} 가 켜져도 여기서 막힌다.</p>
+     */
+    private static final Set<String> FO_ALLOWED_ENTITIES = Set.of(
+        "PdProd", "PdCategory", "SyBrand", "SyBbm", "PdTag"
+    );
+
+    /**
+     * 사용 시스템 범위 + FO 노출 조건 검증.
+     *
+     * @param sys "BO" 또는 "FO"
+     */
+    public void assertSysScope(CmPopup pop, List<CmPopupItem> items, String sys) {
+        String scope = pop.getSysScope() == null ? "^BO^" : pop.getSysScope();
+        if (!scope.contains("^" + sys + "^")) {
+            throw new CmBizException(sys + " 에서 사용할 수 없는 팝업입니다: " + pop.getPopupCode()
+                + "::" + CmUtil.svcCallerInfo(this));
+        }
+        /* FO 로 내보낼 수 있는 것은 둘 중 하나뿐이다.
+             (1) 공개 카탈로그 엔티티          — 누구나 봐도 되는 것
+             (2) 필수 세션값 항목이 있는 팝업  — 로그인 본인 것만 나오도록 서버가 강제
+           그 외는 sys_scope 가 켜져 있어도 거절한다. */
+        if ("FO".equals(sys) && !hasSessionScope(items)) {
+            for (String e : new String[] { pop.getEntityNm(), pop.getTreeEntityNm() }) {
+                if (e != null && !e.isBlank() && !FO_ALLOWED_ENTITIES.contains(e)) {
+                    throw new CmBizException("FO 에 공개할 수 없는 대상입니다: " + pop.getPopupCode()
+                        + "(" + e + ") — 공개 카탈로그가 아니면 항목에 session_cond_field 로 소유자를 한정해야 합니다"
+                        + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+        }
+    }
+
+    /** 세션값으로 소유자를 한정한 항목이 하나라도 있는가 (FO 노출 허용 조건 2) */
+    private boolean hasSessionScope(List<CmPopupItem> items) {
+        if (items == null) return false;
+        return items.stream().anyMatch(i -> i.getSessionCondField() != null && !i.getSessionCondField().isBlank());
+    }
+
+    /**
+     * 로그인 정보(AuthPrincipal)에서 지정 속성값을 꺼낸다.
+     *
+     * <p>{@code authId} 는 일부러 뺐다 — BO 는 관리자ID, FO 는 회원ID 로 값이 갈려
+     * 같은 팝업을 양쪽에서 쓰면 조용히 다른 대상을 필터한다.
+     * {@code userId} / {@code memberId} 로 명시하게 해서 그 실수를 드러낸다.</p>
+     */
+    private String fnSessionValue(String attr, String popupCode) {
+        AuthPrincipal a = SecurityUtil.getAuthUser();
+        return switch (attr) {
+            case "memberId"    -> a.memberId();
+            case "userId"      -> a.userId();
+            case "vendorId"    -> a.vendorId();
+            case "deptId"      -> a.deptId();
+            case "siteId"      -> a.siteId();
+            case "roleId"      -> a.roleId();
+            case "memberGrade" -> a.memberGrade();
+            default -> throw new CmBizException("허용되지 않는 session_cond_field 입니다: " + attr
+                + " (" + popupCode + ") — 허용: " + String.join(", ", SESSION_ATTRS)
+                + "::" + CmUtil.svcCallerInfo(this));
+        };
+    }
+
+    /** session_cond_field 로 쓸 수 있는 로그인 정보 속성 (authId 제외 — 위 fnSessionValue 주석 참조) */
+    public static final Set<String> SESSION_ATTRS = Set.of(
+        "memberId", "userId", "vendorId", "deptId", "siteId", "roleId", "memberGrade"
+    );
+
     public List<CmPopupItem> getPopupItems(String popupId) {
         return cmPopupItemRepository.findByPopupIdAndUseYnOrderBySortOrdAsc(popupId, "Y");
     }
@@ -73,8 +150,13 @@ public class CmPickService {
      * 팝업 구성(정의 + 항목) 반환 — 프론트가 이 값만으로 조회영역·목록컬럼을 자동 구성한다.
      */
     public Map<String, Object> getConfig(String popupCode, String siteId) {
+        return getConfig(popupCode, siteId, "BO");
+    }
+
+    public Map<String, Object> getConfig(String popupCode, String siteId, String sys) {
         CmPopup p = getPopup(popupCode, siteId);
         List<CmPopupItem> items = getPopupItems(p.getPopupId());
+        assertSysScope(p, items, sys);
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("popupCode", p.getPopupCode());
         out.put("popupNm", p.getPopupNm());
@@ -86,12 +168,19 @@ public class CmPickService {
         out.put("idField", p.getIdField());
         out.put("nmField", p.getNmField());
         out.put("hasTree", p.getParentField() != null && !p.getParentField().isBlank());
+        out.put("sysScope", p.getSysScope() == null ? "^BO^" : p.getSysScope());
+        /* 서버가 강제하는 세션 조건 (프론트 안내·미리보기 표시용) */
+        out.put("sessionCondFields", items.stream()
+            .filter(i -> i.getSessionCondField() != null && !i.getSessionCondField().isBlank())
+            .map(CmPopupItem::getSessionCondField).toList());
         out.put("crossTree", isCrossTree(p));   /* 트리와 목록이 다른 엔티티인지 (프론트 안내용) */
 
         List<Map<String, Object>> searchCols = new ArrayList<>();
         List<Map<String, Object>> listCols = new ArrayList<>();
         for (CmPopupItem it : items) {
-            if ("Y".equals(it.getSearchYn())) searchCols.add(itemToMap(it));
+            /* 세션 자동값 항목은 사용자 입력란이 아니므로 조회영역에 내보내지 않는다 */
+            boolean sessionAuto = it.getSessionCondField() != null && !it.getSessionCondField().isBlank();
+            if ("Y".equals(it.getSearchYn()) && !sessionAuto) searchCols.add(itemToMap(it));
             if ("Y".equals(it.getListYn()))   listCols.add(itemToMap(it));
         }
         out.put("searchCols", searchCols);
@@ -110,6 +199,7 @@ public class CmPickService {
         m.put("align", it.getColAlign());
         m.put("link", "Y".equals(it.getLinkYn()));
         m.put("treeLabel", "Y".equals(it.getTreeLabelYn()));
+        m.put("required", "Y".equals(it.getRequiredYn()));   /* 프론트: 라벨 * + 미입력 시 조회 차단 */
         return m;
     }
 
@@ -168,8 +258,13 @@ public class CmPickService {
      * @param p siteId / searchValue / 필드별 검색값 / parentId / excludeIds(^구분) / pageNo / pageSize
      */
     public PageResult<Map<String, Object>> getPage(String popupCode, Map<String, Object> p) {
+        return getPage(popupCode, p, "BO");
+    }
+
+    public PageResult<Map<String, Object>> getPage(String popupCode, Map<String, Object> p, String sys) {
         CmPopup pop = getPopup(popupCode, str(p.get("siteId")));
         List<CmPopupItem> items = getPopupItems(pop.getPopupId());
+        assertSysScope(pop, items, sys);
 
         /* paging_yn = 'N' 이면 페이저 없이 한 번에 보여준다.
            그래도 무제한은 위험하므로 page_size(=최대 표시 건수, 기본 200)로 상한을 둔다. */
@@ -210,7 +305,12 @@ public class CmPickService {
      * id/nm/parentId 세 값만 담아 내려보낸다 — 트리는 그 이상이 필요 없다.</p>
      */
     public List<Map<String, Object>> getTree(String popupCode, Map<String, Object> p) {
+        return getTree(popupCode, p, "BO");
+    }
+
+    public List<Map<String, Object>> getTree(String popupCode, Map<String, Object> p, String sys) {
         CmPopup pop = getPopup(popupCode, str(p.get("siteId")));
+        assertSysScope(pop, getPopupItems(pop.getPopupId()), sys);
         if (pop.getParentField() == null || pop.getParentField().isBlank())
             throw new CmBizException("트리를 지원하지 않는 팝업입니다: " + popupCode
                 + "::" + CmUtil.svcCallerInfo(this));
@@ -295,6 +395,35 @@ public class CmPickService {
         if (pop.getSiteField() != null && !pop.getSiteField().isBlank() && str(p.get("siteId")) != null) {
             w.append(" AND e.").append(ident(pop.getSiteField(), "site_field")).append(" = :siteId ");
             binds.put("siteId", str(p.get("siteId")));
+        }
+        /* 세션 자동값 항목 — session_cond_field 가 있으면 로그인 정보에서 꺼내 조건을 강제한다.
+           ★ 클라이언트가 같은 이름으로 파라미터를 보내도 여기서 덮으므로 조작할 수 없다.
+           ★ search_yn 과 무관하게 항상 적용한다 (사용자 입력란이 아니라 서버 강제 조건). */
+        int sseq = 0;
+        for (CmPopupItem it : items) {
+            String attr = it.getSessionCondField();
+            if (attr == null || attr.isBlank()) continue;
+            String v = fnSessionValue(attr.trim(), pop.getPopupCode());
+            if (v == null || v.isBlank()) {
+                /* 미로그인과 "로그인했지만 그 속성이 없음"(예: 부서 미배정 관리자)을 구분해 안내한다 */
+                String msg = SecurityUtil.isLogin()
+                    ? "로그인 정보에 " + it.getFieldLabel() + " 값이 없어 조회할 수 없습니다: " + pop.getPopupCode()
+                      + " (" + attr.trim() + ")"
+                    : "로그인이 필요한 팝업입니다: " + pop.getPopupCode() + " (" + it.getFieldLabel() + ")";
+                throw new CmBizException(msg + "::" + CmUtil.svcCallerInfo(this));
+            }
+            String bind = "s" + (sseq++);
+            w.append(" AND e.").append(ident(it.getFieldNm(), "field_nm"))
+             .append(" = :").append(bind).append(" ");
+            binds.put(bind, v);
+        }
+        /* 필수 조회조건 — 사용자가 넣어야 하는 항목(세션 자동은 위에서 이미 처리) */
+        for (CmPopupItem it : items) {
+            if (!"Y".equals(it.getRequiredYn())) continue;
+            if (it.getSessionCondField() != null && !it.getSessionCondField().isBlank()) continue;
+            if (str(p.get(it.getFieldNm())) != null) continue;
+            throw new CmBizException("조회 조건이 필요합니다: " + it.getFieldLabel()
+                + "::" + CmUtil.svcCallerInfo(this));
         }
         /* 통합검색: search_yn='Y' 且 LIKE 인 항목 전체 OR */
         String kw = str(p.get("searchValue"));

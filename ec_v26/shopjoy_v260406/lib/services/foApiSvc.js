@@ -49,6 +49,15 @@
     incrView(faqId, uiNm, cmdNm) { return global.foApi.post('/fo/faq/' + faqId + '/view', {}, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── cm: 공통 선택(Pick) 팝업 ─────────────────────────────────
+   * BO 와 같은 cm_popup 메타를 쓰되 /fo/cm/cmPopupPick/** 로 호출한다.
+   * 서버가 sys_scope 에 ^FO^ 가 있는 팝업만 허용한다. */
+  foApiSvc.cmPopupPick = {
+    getConfig(popupCode, params, uiNm, cmdNm) { return global.foApi.get('/fo/cm/cmPopupPick/' + popupCode + '/config', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(popupCode, params, uiNm, cmdNm)   { return global.foApi.get('/fo/cm/cmPopupPick/' + popupCode + '/page',   { params, ...hdr(uiNm, cmdNm) }); },
+    getTree(popupCode, params, uiNm, cmdNm)   { return global.foApi.get('/fo/cm/cmPopupPick/' + popupCode + '/tree',   { params, ...hdr(uiNm, cmdNm) }); },
+  };
+
   /* ── my: 캐시 ───────────────────────────────────────────────── */
   /* getPage 응답 data: { balance, history: PageResponse(pageList/pageTotalCount/...) } */
   foApiSvc.myCash = {

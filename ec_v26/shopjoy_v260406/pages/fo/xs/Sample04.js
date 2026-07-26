@@ -93,9 +93,9 @@ window.XsSample04 = {
     ];
 
     /*/* ② FO 전용 (1종)
-         window._foCats||[] 직접 참조, 사용자 카테고리 필터용 */
+         공통팝업(fo-cm-popup-modal) — /api/fo/cm/cmPopupPick, sys_scope 에 ^FO^ 있는 팝업만 */
     const CATALOG2_FO = [
-      { id: 'catSelect', icon: '🏷', name: '카테고리 멀티선택', desc: 'CategorySelectModal — 트리+멀티체크', color: '#7e22ce' },
+      { id: 'catSelect', icon: '🏷', name: '카테고리 멀티선택', desc: '공통팝업 category — 트리+멀티체크', color: '#7e22ce' },
     ];
 
     /* ③ BO 전용 (13종)
@@ -288,7 +288,7 @@ window.XsSample04 = {
       openEditConfirm, // 상세 모달 내부 인라인 호출
       fnGradeBadge, fnStatusBadge, fnAlertMeta,
       // ===== bmodal 영역 (BaseModal) ==========================================
-      boData, bModal, openBModal, bShowToast, bShowConfirm,
+      boData, bModal, openBModal, closeBModal, bShowToast, bShowConfirm,
       demoOrder, demoProduct, demoUser, demoTmpl, demoSampleParams, catSelIds,
       CATALOG2_COMMON, CATALOG2_FO, CATALOG2_BO,
     };
@@ -425,7 +425,7 @@ window.XsSample04 = {
         1종
       </span>
       <span style="font-size:11px;color:#86efac;">
-        — window._foCats||[] 직접 참조, 사용자 카테고리 필터
+        — 공통팝업 fo-cm-popup-modal (FO 허용 팝업)
       </span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
@@ -1073,7 +1073,7 @@ window.XsSample04 = {
     @close="closeBModal" />
 <!-- ===== □. ⑯ 전시 미리보기 =============================================== -->
 <!-- ===== ■. ⑰ 카테고리 멀티선택 ============================================= -->
-<bo-cm-popup-modal popup-cmd="cmPopup-category-select" popup-code="category" :multi="true" result-type="idArray" :show="bModal.type==='catSelect'" :selected-ids="catSelIds" @close="closeBModal" @select="ids => { catSelIds.splice(0, catSelIds.length, ...ids); bShowToast(ids.length+'개 카테고리 선택됨','success'); closeBModal(); }" />
+<fo-cm-popup-modal popup-cmd="cmPopup-category-select" popup-code="category" :multi="true" result-type="idArray" :show="bModal.type==='catSelect'" :init-selected-ids="catSelIds" @close="closeBModal" @select="ids => { catSelIds.splice(0, catSelIds.length, ...ids); bShowToast(ids.length+'개 카테고리 선택됨','success'); closeBModal(); }" />
 <!-- ===== □. ⑰ 카테고리 멀티선택 ============================================= -->
 <!-- ===== ■. 영역 ====================================================== -->
 <style>

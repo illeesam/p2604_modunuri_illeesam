@@ -2190,6 +2190,14 @@ window.BoFormArea = {
 <input v-else-if="col.type === 'date'" class="form-control" type="date"
         v-model="form[col.key]" :readonly="readonly"
         :class="errors[col.key] ? 'is-invalid' : ''" @change="handleSelectAction('field-change', { col, event: $event })" />
+<!-- multiCheck (^A^B^ 멀티값) — BoSearchArea 와 같은 컴포넌트를 폼에서도 쓴다 -->
+<bo-multi-check-select v-else-if="col.type === 'multiCheck'"
+      :model-value="form[col.key]"
+      :options="typeof col.options === 'function' ? col.options() : (col.options || [])"
+      :placeholder="col.placeholder || '선택'" :all-label="col.allLabel || '전체'"
+      :separator="col.separator || '^'" :empty-value="col.emptyValue"
+      :min-width="col.width || '180px'" :disabled="readonly"
+      @update:modelValue="v => { form[col.key] = v; handleSelectAction('field-change', { col }); }" />
 <!-- checkbox (Y/N 토글) -->
 <label v-else-if="col.type === 'checkbox'" style="display:flex;align-items:center;gap:6px;cursor:pointer;min-height:34px;position:relative;z-index:1;pointer-events:auto;">
   <input type="checkbox"

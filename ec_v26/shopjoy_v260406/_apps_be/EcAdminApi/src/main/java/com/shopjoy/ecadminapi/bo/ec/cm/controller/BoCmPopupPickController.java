@@ -4,7 +4,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopupItem;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupItemRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmPickService;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmPopupPickService;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -22,18 +23,18 @@ import java.util.Map;
  *
  * <p>BO 전 화면의 선택 팝업이 이 컨트롤러 하나를 사용한다. 타입별 컨트롤러가 필요 없다.
  * <ul>
- *   <li>{@code GET /api/bo/cm/pick/{popupCode}/config} — 팝업 구성(조회항목·목록컬럼·패턴)</li>
- *   <li>{@code GET /api/bo/cm/pick/{popupCode}/page}   — 목록 (검색·페이징)</li>
- *   <li>{@code GET /api/bo/cm/pick/{popupCode}/tree}   — 트리 (패턴 2·3)</li>
+ *   <li>{@code GET /api/bo/cm/cmPopupPick/{popupCode}/config} — 팝업 구성(조회항목·목록컬럼·패턴)</li>
+ *   <li>{@code GET /api/bo/cm/cmPopupPick/{popupCode}/page}   — 목록 (검색·페이징)</li>
+ *   <li>{@code GET /api/bo/cm/cmPopupPick/{popupCode}/tree}   — 트리 (패턴 2·3)</li>
  * </ul>
- * 팝업 정의 관리(CRUD)는 {@code /api/bo/cm/pick/popup/**} 로 제공한다.
+ * 팝업 정의 관리(CRUD)는 {@code /api/bo/cm/cmPopupPick/popup/**} 로 제공한다.
  */
 @RestController
-@RequestMapping("/api/bo/cm/pick")
+@RequestMapping("/api/bo/cm/cmPopupPick")
 @RequiredArgsConstructor
-public class BoCmPickController {
+public class BoCmPopupPickController {
 
-    private final CmPickService cmPickService;
+    private final CmPopupPickService cmPopupPickService;
     private final CmPopupRepository cmPopupRepository;
     private final CmPopupItemRepository cmPopupItemRepository;
 
@@ -43,21 +44,21 @@ public class BoCmPickController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> config(
             @PathVariable("popupCode") String popupCode,
             @RequestParam(required = false) String siteId) {
-        return ResponseEntity.ok(ApiResponse.ok(cmPickService.getConfig(popupCode, siteId)));
+        return ResponseEntity.ok(ApiResponse.ok(cmPopupPickService.getConfig(popupCode, siteId)));
     }
 
     @GetMapping("/{popupCode}/page")
     public ResponseEntity<ApiResponse<PageResult<Map<String, Object>>>> page(
             @PathVariable("popupCode") String popupCode,
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(cmPickService.getPage(popupCode, p)));
+        return ResponseEntity.ok(ApiResponse.ok(cmPopupPickService.getPage(popupCode, p)));
     }
 
     @GetMapping("/{popupCode}/tree")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> tree(
             @PathVariable("popupCode") String popupCode,
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(cmPickService.getTree(popupCode, p)));
+        return ResponseEntity.ok(ApiResponse.ok(cmPopupPickService.getTree(popupCode, p)));
     }
 
     /* ── 팝업 정의 관리 ────────────────────────────────────────── */
@@ -74,13 +75,13 @@ public class BoCmPickController {
     @GetMapping("/popup/page")
     public ResponseEntity<ApiResponse<PageResult<CmPopup>>> popupPage(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(cmPickService.getPopupPage(p)));
+        return ResponseEntity.ok(ApiResponse.ok(cmPopupPickService.getPopupPage(p)));
     }
 
     @GetMapping("/popup/{popupId}/items")
     public ResponseEntity<ApiResponse<List<CmPopupItem>>> popupItems(
             @PathVariable("popupId") String popupId) {
-        return ResponseEntity.ok(ApiResponse.ok(cmPickService.getPopupItems(popupId)));
+        return ResponseEntity.ok(ApiResponse.ok(cmPopupPickService.getPopupItems(popupId)));
     }
 
     @PostMapping("/popup")
@@ -112,11 +113,13 @@ public class BoCmPickController {
         if (body.getOrderBy() != null)      e.setOrderBy(body.getOrderBy());
         if (body.getBaseWhere() != null)    e.setBaseWhere(body.getBaseWhere().isBlank() ? null : body.getBaseWhere());
         if (body.getMultiYn() != null)      e.setMultiYn(body.getMultiYn());
+        if (body.getSysScope() != null)     e.setSysScope(body.getSysScope());
         if (body.getPagingYn() != null)     e.setPagingYn(body.getPagingYn());
         if (body.getPageSize() != null)     e.setPageSize(body.getPageSize());
         if (body.getModalWidth() != null)   e.setModalWidth(body.getModalWidth());
         if (body.getUseYn() != null)        e.setUseYn(body.getUseYn());
         if (body.getSortOrd() != null)      e.setSortOrd(body.getSortOrd());
+        if (body.getApplyUiMemo() != null)  e.setApplyUiMemo(body.getApplyUiMemo());
         if (body.getRemark() != null)       e.setRemark(body.getRemark());
         e.setUpdBy(SecurityUtil.getAuthUser().authId());
         e.setUpdDate(LocalDateTime.now());
@@ -135,6 +138,16 @@ public class BoCmPickController {
 
     @PostMapping("/popup/item")
     public ResponseEntity<ApiResponse<CmPopupItem>> itemSave(@RequestBody CmPopupItem body) {
+        /* 세션 자동값 검증 — 허용 속성만, 그리고 반드시 필수여야 한다.
+           세션값인데 필수가 아니면 미로그인 시 조건이 조용히 빠져 전체 데이터가 노출된다. */
+        String sv = body.getSessionCondField();
+        if (sv != null && !sv.isBlank()) {
+            if (!CmPopupPickService.SESSION_ATTRS.contains(sv.trim())) {
+                throw new CmBizException("허용되지 않는 세션값입니다: " + sv
+                    + " — 허용: " + String.join(", ", CmPopupPickService.SESSION_ATTRS));
+            }
+            body.setRequiredYn("Y");
+        }
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
         if (body.getPopupItemId() == null || body.getPopupItemId().isBlank()) {

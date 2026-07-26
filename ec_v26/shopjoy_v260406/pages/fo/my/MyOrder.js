@@ -1231,7 +1231,7 @@ window.MyOrder = {
 <!-- ===== ■.■. 주문 상세 모달 ============================================== -->
 <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" modal-name="order-detail" :on-callback="fnCallbackModal" />
 <!-- ===== ■.■. 상품 모달 ================================================= -->
-<ProductModal :show="myStore.productModal.show" :prod="myStore.productModal.prod" modal-name="product" :on-callback="fnCallbackModal" />
+<ProductModal :show="myStore.productModal.show" :product="myStore.productModal.prod" modal-name="product" :on-callback="fnCallbackModal" />
 <!-- ===== ■.■. 주문자 모달 ================================================ -->
 <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" modal-name="customer" :on-callback="fnCallbackModal" />
 </teleport>

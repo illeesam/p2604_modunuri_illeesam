@@ -37,7 +37,7 @@ window.CmPopupItemMng = {
     const itemDetail = reactive({ selectedId: null, isNew: false, show: false });
     const _initItemForm = () => ({
       popupItemId: null, fieldNm: '', fieldLabel: '', fieldTypeCd: 'TEXT', codeGrp: '',
-      searchYn: 'N', searchTypeCd: 'LIKE', listYn: 'Y', treeLabelYn: 'N',
+      sessionCondField: '', requiredYn: 'N', searchYn: 'N', searchTypeCd: 'LIKE', listYn: 'Y', treeLabelYn: 'N',
       colWidth: '', colAlign: '', linkYn: 'N', sortOrd: 10, useYn: 'Y',
     });
     const itemForm = reactive(_initItemForm());
@@ -115,7 +115,7 @@ window.CmPopupItemMng = {
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.cmPick.getPopupPage({
+        const res = await boApiSvc.cmPopupPick.getPopupPage({
           siteId: cfSiteId.value,
           searchValue: searchParam.searchValue || undefined,
           popupPattern: searchParam.popupPattern || undefined,
@@ -156,7 +156,7 @@ window.CmPopupItemMng = {
       if (!popupState.selectedId) { items.splice(0, items.length); return; }
       uiState.itemLoading = true;
       try {
-        const res = await boApiSvc.cmPick.getPopupItems(popupState.selectedId, '팝업항목관리', '항목조회');
+        const res = await boApiSvc.cmPopupPick.getPopupItems(popupState.selectedId, '팝업항목관리', '항목조회');
         items.splice(0, items.length, ...(res.data?.data || []));
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
@@ -181,7 +181,7 @@ window.CmPopupItemMng = {
       Object.assign(itemForm, {
         popupItemId: row.popupItemId, fieldNm: row.fieldNm, fieldLabel: row.fieldLabel,
         fieldTypeCd: row.fieldTypeCd || 'TEXT', codeGrp: row.codeGrp || '',
-        searchYn: row.searchYn || 'N', searchTypeCd: row.searchTypeCd || 'LIKE',
+        sessionCondField: row.sessionCondField || '', requiredYn: row.requiredYn || 'N', searchYn: row.searchYn || 'N', searchTypeCd: row.searchTypeCd || 'LIKE',
         listYn: row.listYn || 'Y', treeLabelYn: row.treeLabelYn || 'N',
         colWidth: row.colWidth || '', colAlign: row.colAlign || '',
         linkYn: row.linkYn || 'N', sortOrd: row.sortOrd || 10, useYn: row.useYn || 'Y',
@@ -198,12 +198,12 @@ window.CmPopupItemMng = {
         return showToast('CODE 유형은 공통코드 그룹이 필요합니다.', 'error');
       }
       try {
-        await boApiSvc.cmPick.itemSave({
+        await boApiSvc.cmPopupPick.itemSave({
           popupItemId: itemDetail.isNew ? null : itemForm.popupItemId,
           siteId: cfSiteId.value, popupId: popupState.selectedId,
           fieldNm: itemForm.fieldNm, fieldLabel: itemForm.fieldLabel,
           fieldTypeCd: itemForm.fieldTypeCd, codeGrp: itemForm.codeGrp || null,
-          searchYn: itemForm.searchYn, searchTypeCd: itemForm.searchTypeCd,
+          sessionCondField: itemForm.sessionCondField || null, requiredYn: itemForm.requiredYn, searchYn: itemForm.searchYn, searchTypeCd: itemForm.searchTypeCd,
           listYn: itemForm.listYn, treeLabelYn: itemForm.treeLabelYn,
           colWidth: itemForm.colWidth || null, colAlign: itemForm.colAlign || null,
           linkYn: itemForm.linkYn, sortOrd: Number(itemForm.sortOrd) || 10, useYn: itemForm.useYn,
@@ -219,7 +219,7 @@ window.CmPopupItemMng = {
     const handleDeleteItem = async (row) => {
       if (!(await showConfirm('삭제', `[${row.fieldLabel}] 항목을 삭제하시겠습니까?`))) return;
       try {
-        await boApiSvc.cmPick.itemRemove(row.popupItemId, '팝업항목관리', '항목삭제');
+        await boApiSvc.cmPopupPick.itemRemove(row.popupItemId, '팝업항목관리', '항목삭제');
         showToast('삭제되었습니다.', 'success');
         if (itemDetail.selectedId === row.popupItemId) itemDetail.show = false;
         await handleSearchItems();
@@ -260,13 +260,13 @@ window.CmPopupItemMng = {
         '  :on-callback="fnCallbackModal" @close="pickModal.show = false" />',
         '',
         '/* setup */',
-        'const fnCallbackModal = (popCmd, response, result) => {',
+        'const fnCallbackModal = (popCmd, param, result) => {',
         "  if (popCmd === '" + name + "') {",
         '    if (result == null) { pickModal.show = false; return; }   // 닫기',
       ];
       if (multi) {
-        lines.push('    // 다중 — 항상 배열이라 null·타입 검사 불필요');
-        lines.push('    response.resultList.forEach(row => { /* row.' + code + 'Id */ });');
+        lines.push('    // 다중 — result 가 행 배열 (param.multi 로도 판별 가능)');
+        lines.push('    result.forEach(row => { /* row.' + code + 'Id */ });');
       } else {
         lines.push('    // 단건 — result 가 곧 선택한 행 (엔티티 필드명 그대로)');
         lines.push('    form.' + code + 'Id = result.' + code + 'Id;');
@@ -332,6 +332,12 @@ window.CmPopupItemMng = {
         fmt: (v) => v === 'Y' ? '트리' : '-' },
       { key: 'linkYn', label: '선택', style: 'width:60px;', align: 'center',
         fmt: (v) => v === 'Y' ? '✔' : '-' },
+      { key: 'sessionCondField', label: '세션조건', style: 'width:100px;', align: 'center',
+        badge: (row) => row.sessionCondField ? 'badge-red' : 'badge-gray',
+        cellTitle: (v) => v ? ('로그인 정보의 ' + v + ' 로 서버가 강제') : '',
+        fmt: (v) => v || '-' },
+      { key: 'requiredYn', label: '필수', style: 'width:60px;', align: 'center',
+        fmt: (v) => v === 'Y' ? '✔' : '-' },
       { key: 'sortOrd', label: '정렬', style: 'width:60px;', align: 'center' },
     ];
 
@@ -349,6 +355,13 @@ window.CmPopupItemMng = {
           value: g.codeGrp,
           label: g.codeGrp + (g.grpNm ? ' — ' + g.grpNm : ''),
         })) },
+      /* 세션 자동값 — 지정하면 서버가 로그인 정보로 조건을 강제한다(클라이언트 조작 불가) */
+      { key: 'sessionCondField', label: '세션조건 (자동 주입)', type: 'select',
+        options: () => ['', 'memberId', 'userId', 'vendorId', 'deptId', 'siteId', 'roleId', 'memberGrade'].map(v => ({ value: v, label: v || '(사용 안함)' })),
+        hint: '지정 시 필수로 강제 · 미로그인이면 조회 거절 · 조회영역에 표시 안 됨' },
+      { key: 'requiredYn', label: '필수 조회조건', type: 'select',
+        visible: (fm) => !fm.sessionCondField,
+        options: () => [{ value: 'N', label: '선택' }, { value: 'Y', label: '필수 (없으면 조회 거절)' }] },
       { key: 'searchYn', label: '조회항목 여부', type: 'select',
         options: () => [{ value: 'N', label: '미사용' }, { value: 'Y', label: '조회조건으로 사용' }] },
       { key: 'searchTypeCd', label: '검색연산', type: 'select',

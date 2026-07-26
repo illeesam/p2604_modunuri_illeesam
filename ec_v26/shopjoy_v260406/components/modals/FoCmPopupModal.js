@@ -1,6 +1,8 @@
-/* ShopJoy Admin - 공통 선택/조회 팝업 (BoCmPopupModal)
+/* ShopJoy Front - 공통 선택/조회 팝업 (FoCmPopupModal)
  *
- * BO 전 화면의 선택 팝업을 이 컴포넌트 하나로 대체한다.
+ * FO(사용자) 화면의 선택 팝업. BoCmPopupModal 의 FO 판으로, 같은 cm_popup 메타를 쓰되
+ * /api/fo/cm/cmPopupPick/** 를 호출한다. 서버가 sys_scope 에 ^FO^ 가 있는 팝업만 허용하므로
+ * 사용자·권한·메뉴 같은 관리자 전용 팝업은 여기서 열리지 않는다.
  * 화면 구성(조회항목·목록컬럼·트리 여부·다중선택)은 서버의 cm_popup / cm_popup_item
  * 메타에서 내려오므로, 새 팝업이 필요하면 테이블에 행만 추가하면 된다.
  *
@@ -16,10 +18,10 @@
  *   다중선택이면 하단에 선택목록(칩) 영역이 자동으로 붙는다 — 패턴에 넣지 않는다.
  *
  * 사용:
- *   <bo-cm-popup-modal popup-cmd="cmPopup-user-pick" popup-code="user"
+ *   <fo-cm-popup-modal popup-cmd="cmPopup-user-pick" popup-code="user"
  *     :on-callback="fnCallbackModal" @close="pickModal.show = false" />
  *
- *   <bo-cm-popup-modal popup-cmd="cmPopup-user-pick" popup-code="user" :multi="true"
+ *   <fo-cm-popup-modal popup-cmd="cmPopup-user-pick" popup-code="user" :multi="true"
  *     :exclude-ids="usedIds" :on-callback="fnCallbackModal" @close="pickModal.show = false" />
  *
  *   popup-cmd 가 호출 식별자 — onCallback 1번째 인자와 response.cmd 로 그대로 돌아온다.
@@ -40,8 +42,8 @@
  *   비는 쪽이 null 이 아니라 빈 값이라 resultList.forEach / resultObj.userId 를
  *   null 검사 없이 바로 쓸 수 있다.
  */
-window.BoCmPopupModal = {
-  name: 'BoCmPopupModal',
+window.FoCmPopupModal = {
+  name: 'FoCmPopupModal',
   props: {
     popupCode:  { type: String,  required: true },                // cm_popup.popup_code
     show:       { type: Boolean, default: true },                 // 표시 여부
@@ -174,7 +176,7 @@ window.BoCmPopupModal = {
     });
     const treeState = reactive({ selectedId: null });
 
-    const cfSiteId = computed(() => window.boCommonFilter?.siteId || '');
+    const cfSiteId = computed(() => window.FO_SITE_ID || window.foCommonFilter?.siteId || '');
     /* 다중 여부는 호출부(:multi)가 최우선, 미지정 시 메타의 기본값 */
     /* 다중 여부는 호출부(:multi)가 최우선, 미지정 시 메타의 기본값 */
     const cfIsMulti = computed(() => props.multi !== null ? props.multi : cfg.multiYn === 'Y');
@@ -212,6 +214,9 @@ window.BoCmPopupModal = {
       const key = String(row.id);
       return cfIsToggle.value ? cfSelectedSet.value.has(key) : cfPickedSet.value.has(key);
     };
+    /** 행 전체 클릭 (체크형에서만 연결) — FoGrid 의 row-click prop */
+    const fnRowClick = (row) => handleGridCellAction('pickGrid-cellClick', '_row', row, {});
+
     /** 선택된 행 배경 강조 */
     const fnRowStyle = (row) => fnIsPicked(row)
       ? 'background:#eff6ff;box-shadow:inset 3px 0 0 #2563eb;' : '';
@@ -360,7 +365,7 @@ window.BoCmPopupModal = {
       uiState.initing = true;
       try {
         const cfgParam = { siteId: cfSiteId.value };
-        const res = await boApiSvc.cmPopupPick.getConfig(props.popupCode, cfgParam, '선택팝업', '구성조회');
+        const res = await foApiSvc.cmPopupPick.getConfig(props.popupCode, cfgParam, '선택팝업', '구성조회');
         const d = res.data?.data || {};
         fnLog();
         Object.assign(cfg, {
@@ -465,20 +470,20 @@ window.BoCmPopupModal = {
       const miss = fnMissingRequired();
       if (miss.length) {
         uiState.needCond = true;
-        return window.boApp?.showToast(miss.join(", ") + " 을(를) 입력해주세요.", "error");
+        return window.foApp?.showToast(miss.join(", ") + " 을(를) 입력해주세요.", "error");
       }
       uiState.needCond = false;
       uiState.loading = true;
       try {
         const listParam = fnBuildParam();
-        const res = await boApiSvc.cmPopupPick.getPage(props.popupCode, listParam, '선택팝업', '조회');
+        const res = await foApiSvc.cmPopupPick.getPage(props.popupCode, listParam, '선택팝업', '조회');
         const d = res.data?.data || {};
         fnLog();
         rows.splice(0, rows.length, ...(d.pageList || []));
         gridPager.pageTotalCount = d.pageTotalCount || 0;
         gridPager.pageTotalPage = d.pageTotalPage || 1;
       } catch (err) {
-        window.boApp?.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        window.foApp?.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -489,7 +494,7 @@ window.BoCmPopupModal = {
         /* 고정 필터(initParam)는 트리에도 걸어야 목록과 범위가 어긋나지 않는다
            (예: 표시경로 팝업의 bizCd — 해당 업무의 경로만 보여야 한다) */
         const treeParam = { siteId: cfSiteId.value, ...(props.initParam || {}) };
-        const res = await boApiSvc.cmPopupPick.getTree(props.popupCode, treeParam, '선택팝업', '트리조회');
+        const res = await foApiSvc.cmPopupPick.getTree(props.popupCode, treeParam, '선택팝업', '트리조회');
         const list = res.data?.data || [];
         fnLog();
         treeRows.splice(0, treeRows.length, ...list);
@@ -497,7 +502,7 @@ window.BoCmPopupModal = {
         treeRows.filter(n => n.parentId == null || n.parentId === '')
           .forEach(n => { expanded[String(n.id)] = true; });
       } catch (err) {
-        window.boApp?.showToast(err.response?.data?.message || err.message || '트리 조회 오류', 'error', 0);
+        window.foApp?.showToast(err.response?.data?.message || err.message || '트리 조회 오류', 'error', 0);
       }
     };
 
@@ -528,7 +533,7 @@ window.BoCmPopupModal = {
 
     const handleConfirm = () => {
       if (cfHasPickList.value) {
-        if (!picked.length) return window.boApp?.showToast('선택된 항목이 없습니다.', 'error');
+        if (!picked.length) return window.foApp?.showToast('선택된 항목이 없습니다.', 'error');
         const rows = picked.slice();
         fnEmitResult('select', rows);
       }
@@ -570,19 +575,19 @@ window.BoCmPopupModal = {
       cfg, uiState, rows, picked, searchParam, gridPager, treeState, fnMissingRequired,
       cfIsMulti, cfTitle, cfHeadTitle, cfHasTree, cfTreeOnly, cfHasList, cfHasPickList, cfHasPager, cfIsToggle, cfSelectedSet,
       cfGridColumns, cfSearchColumns, cfTreeVisible, cfTreeLayoutStyle, cfTreeCardStyle,
-      cfPickedSet, cfIsCheckMode, fnIsPicked, fnRowStyle,
+      cfPickedSet, cfIsCheckMode, fnIsPicked, fnRowStyle, fnRowClick,
       fnTreeArrow, fnTreeNodeIcon, fnTreeNodeStyle, handleBtnAction, handleSelectAction, handleGridCellAction,
     };
   },
   template: /* html */`
-<bo-modal :show="show" :title="cfHeadTitle" :width="cfg.modalWidth" max-width="96vw"
+<fo-modal :show="show" :title="cfHeadTitle" :width="cfg.modalWidth" max-width="96vw"
   @close="handleBtnAction('modal-close')">
   <div v-if="uiState.errorMsg" style="padding:24px;text-align:center;color:#dc2626;">
     {{ uiState.errorMsg }}
   </div>
   <template v-else>
     <!-- 1단 조회영역 -->
-    <bo-search-area :loading="uiState.loading" :columns="cfSearchColumns" :param="searchParam"
+    <fo-search-area :loading="uiState.loading" :columns="cfSearchColumns" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
 
     <!-- 2단 트리 / 목록 (패턴3=트리 전용이면 목록 없이 트리만 전체 폭) -->
@@ -620,11 +625,13 @@ window.BoCmPopupModal = {
       <div v-if="cfHasList">
         <!-- 체크형(토글·다중)은 어느 셀을 눌러도 담기/빼기가 되어야 하므로 row-clickable 필요
              (BoGrid 는 이 옵션이 없으면 번호·링크 셀에서만 cell-click 을 올린다) -->
-        <bo-grid :columns="cfGridColumns" :rows="rows" row-key="id" :loading="uiState.loading"
+        <!-- FoGrid 는 grid-id/row-clickable 이 없고 row-click 을 prop 으로 받는다.
+             체크형(토글·다중)일 때만 행 전체 클릭을 열어 준다. -->
+        <fo-grid :columns="cfGridColumns" :rows="rows" row-key="id" :loading="uiState.loading"
           :pager="gridPager" :empty-text="uiState.needCond ? '필수 조회조건을 입력하고 [조회] 를 누르세요.' : '조회 결과가 없습니다.'" :row-style="fnRowStyle"
-          :row-clickable="cfIsCheckMode"
-          grid-id="pickGrid-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
-        <bo-pager v-if="cfHasPager" :pager="gridPager"
+          :row-click="cfIsCheckMode ? fnRowClick : null"
+          @cell-click="e => handleGridCellAction('pickGrid-cellClick', e.colKey, e.row, e)" />
+        <fo-pager v-if="cfHasPager" :pager="gridPager"
           :on-set-page="n => handleBtnAction('grid-setPage', n)"
           :on-size-change="() => handleBtnAction('grid-sizeChange')" />
       </div>
@@ -657,6 +664,6 @@ window.BoCmPopupModal = {
     </button>
     <button class="btn btn_close" @click="handleBtnAction('modal-close')">닫기</button>
   </template>
-</bo-modal>
+</fo-modal>
 `,
 };

@@ -73,6 +73,14 @@ public class CmPopupItem extends BaseEntity {
     @Column(name = "link_yn", length = 1)
     private String linkYn;
 
+    @Comment("로그인 정보에서 자동 주입할 속성명 (memberId/userId/vendorId/deptId 등). 비우면 일반 검색항목")
+    @Column(name = "session_cond_field", length = 30)
+    private String sessionCondField;
+
+    @Comment("필수 조회조건 여부 (Y/N). session_cond_field 지정 시 반드시 Y")
+    @Column(name = "required_yn", length = 1)
+    private String requiredYn;
+
     @Comment("정렬순서")
     @Column(name = "sort_ord")
     private Integer sortOrd;
