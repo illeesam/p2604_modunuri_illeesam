@@ -31,7 +31,7 @@ window.CmPopupMng = {
     const baseDetail = reactive({ selectedId: null, isNew: false });
     const _initBaseForm = () => ({
       popupId: null, popupCode: '', popupNm: '', popupPattern: 1, entityNm: '',
-      idField: '', nmField: '', parentField: '', siteField: 'siteId',
+      idField: '', nmField: '', parentField: '', siteField: 'siteId', joinClause: '',
       orderBy: '', baseWhere: '', multiYn: 'N', sysScope: '^BO^', pagingYn: 'Y', pageSize: 10, modalWidth: '900px', applyUiMemo: '',
       useYn: 'Y', sortOrd: 10, remark: '',
     });
@@ -142,7 +142,7 @@ window.CmPopupMng = {
         popupId: row.popupId, popupCode: row.popupCode, popupNm: row.popupNm,
         popupPattern: row.popupPattern || 1, entityNm: row.entityNm,
         idField: row.idField, nmField: row.nmField,
-        parentField: row.parentField || '', siteField: row.siteField || '',
+        parentField: row.parentField || '', siteField: row.siteField || '', joinClause: row.joinClause || '',
         orderBy: row.orderBy || '', baseWhere: row.baseWhere || '',
         multiYn: row.multiYn || 'N', sysScope: row.sysScope || '^BO^', pagingYn: row.pagingYn || 'Y', pageSize: row.pageSize || 10,
         modalWidth: row.modalWidth || '900px', applyUiMemo: row.applyUiMemo || '', useYn: row.useYn || 'Y',
@@ -174,7 +174,7 @@ window.CmPopupMng = {
           siteId: cfSiteId.value, popupCode: baseForm.popupCode, popupNm: baseForm.popupNm,
           popupPattern: Number(baseForm.popupPattern) || 1, entityNm: baseForm.entityNm,
           idField: baseForm.idField, nmField: baseForm.nmField,
-          parentField: baseForm.parentField || '', siteField: baseForm.siteField || '',
+          parentField: baseForm.parentField || '', siteField: baseForm.siteField || '', joinClause: baseForm.joinClause || null,
           orderBy: baseForm.orderBy || '', baseWhere: baseForm.baseWhere || '',
           multiYn: baseForm.multiYn, sysScope: baseForm.sysScope || '^BO^', pagingYn: baseForm.pagingYn, pageSize: Number(baseForm.pageSize) || 10,
           modalWidth: baseForm.modalWidth, applyUiMemo: baseForm.applyUiMemo || null, useYn: baseForm.useYn,
@@ -322,6 +322,10 @@ window.CmPopupMng = {
       { key: 'nmField', label: '표시명 필드', type: 'text', required: true, mono: true, placeholder: 'userNm' },
       { key: 'parentField', label: '트리 부모 필드', type: 'text', mono: true,
         visible: (f) => Number(f.popupPattern) >= 2, placeholder: 'parentDeptId (패턴2·3 필수)' },
+      /* 라벨 조인 — 드라이빙 별칭은 항상 a, 조인 별칭은 b~z. to-one 만 허용 */
+      { key: 'joinClause', label: '조인절(LEFT JOIN)', type: 'text', mono: true, colSpan: 3,
+        placeholder: 'LEFT JOIN SyDept b ON b.deptId = a.deptId',
+        hint: '항목의 출력식(b.deptNm)과 함께 사용 · 형태 고정' },
       { key: 'baseWhere', label: '고정조건(JPQL)', type: 'text', mono: true, colSpan: 3, placeholder: "e.useYn = 'Y'" },
       /* 어느 시스템에서 이 팝업을 열 수 있는지. 서버가 이 값으로 BO/FO 접근을 막는다 */
       { key: 'sysScope', label: '사용 시스템', type: 'multiCheck',

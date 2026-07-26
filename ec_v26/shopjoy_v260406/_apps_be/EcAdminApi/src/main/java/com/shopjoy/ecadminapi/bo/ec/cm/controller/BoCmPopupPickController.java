@@ -110,6 +110,7 @@ public class BoCmPopupPickController {
         if (body.getTreeNmField() != null)  e.setTreeNmField(body.getTreeNmField().isBlank() ? null : body.getTreeNmField());
         if (body.getTreeLinkField() != null) e.setTreeLinkField(body.getTreeLinkField().isBlank() ? null : body.getTreeLinkField());
         if (body.getSiteField() != null)    e.setSiteField(body.getSiteField().isBlank() ? null : body.getSiteField());
+        if (body.getJoinClause() != null)    e.setJoinClause(body.getJoinClause().isBlank() ? null : body.getJoinClause());
         if (body.getOrderBy() != null)      e.setOrderBy(body.getOrderBy());
         if (body.getBaseWhere() != null)    e.setBaseWhere(body.getBaseWhere().isBlank() ? null : body.getBaseWhere());
         if (body.getMultiYn() != null)      e.setMultiYn(body.getMultiYn());

@@ -73,6 +73,10 @@ public class CmPopup extends BaseEntity {
     @Column(name = "site_field", length = 50)
     private String siteField;
 
+    @Comment("LEFT JOIN 절. 라벨 조인용. 예: LEFT JOIN SyDept b ON b.deptId = a.deptId (드라이빙 별칭은 항상 a)")
+    @Column(name = "join_clause", length = 500)
+    private String joinClause;
+
     @Comment("기본 정렬 (JPQL ORDER BY 내용)")
     @Column(name = "order_by", length = 200)
     private String orderBy;

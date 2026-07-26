@@ -37,7 +37,7 @@ window.CmPopupItemMng = {
     const itemDetail = reactive({ selectedId: null, isNew: false, show: false });
     const _initItemForm = () => ({
       popupItemId: null, fieldNm: '', fieldLabel: '', fieldTypeCd: 'TEXT', codeGrp: '',
-      sessionCondField: '', requiredYn: 'N', searchYn: 'N', searchTypeCd: 'LIKE', listYn: 'Y', treeLabelYn: 'N',
+      selectExpr: '', sessionCondField: '', requiredYn: 'N', searchYn: 'N', searchTypeCd: 'LIKE', listYn: 'Y', treeLabelYn: 'N',
       colWidth: '', colAlign: '', linkYn: 'N', sortOrd: 10, useYn: 'Y',
     });
     const itemForm = reactive(_initItemForm());
@@ -181,7 +181,7 @@ window.CmPopupItemMng = {
       Object.assign(itemForm, {
         popupItemId: row.popupItemId, fieldNm: row.fieldNm, fieldLabel: row.fieldLabel,
         fieldTypeCd: row.fieldTypeCd || 'TEXT', codeGrp: row.codeGrp || '',
-        sessionCondField: row.sessionCondField || '', requiredYn: row.requiredYn || 'N', searchYn: row.searchYn || 'N', searchTypeCd: row.searchTypeCd || 'LIKE',
+        selectExpr: row.selectExpr || '', sessionCondField: row.sessionCondField || '', requiredYn: row.requiredYn || 'N', searchYn: row.searchYn || 'N', searchTypeCd: row.searchTypeCd || 'LIKE',
         listYn: row.listYn || 'Y', treeLabelYn: row.treeLabelYn || 'N',
         colWidth: row.colWidth || '', colAlign: row.colAlign || '',
         linkYn: row.linkYn || 'N', sortOrd: row.sortOrd || 10, useYn: row.useYn || 'Y',
@@ -203,7 +203,7 @@ window.CmPopupItemMng = {
           siteId: cfSiteId.value, popupId: popupState.selectedId,
           fieldNm: itemForm.fieldNm, fieldLabel: itemForm.fieldLabel,
           fieldTypeCd: itemForm.fieldTypeCd, codeGrp: itemForm.codeGrp || null,
-          sessionCondField: itemForm.sessionCondField || null, requiredYn: itemForm.requiredYn, searchYn: itemForm.searchYn, searchTypeCd: itemForm.searchTypeCd,
+          selectExpr: itemForm.selectExpr || null, sessionCondField: itemForm.sessionCondField || null, requiredYn: itemForm.requiredYn, searchYn: itemForm.searchYn, searchTypeCd: itemForm.searchTypeCd,
           listYn: itemForm.listYn, treeLabelYn: itemForm.treeLabelYn,
           colWidth: itemForm.colWidth || null, colAlign: itemForm.colAlign || null,
           linkYn: itemForm.linkYn, sortOrd: Number(itemForm.sortOrd) || 10, useYn: itemForm.useYn,
@@ -332,6 +332,10 @@ window.CmPopupItemMng = {
         fmt: (v) => v === 'Y' ? '트리' : '-' },
       { key: 'linkYn', label: '선택', style: 'width:60px;', align: 'center',
         fmt: (v) => v === 'Y' ? '✔' : '-' },
+      { key: 'selectExpr', label: '출력식', style: 'width:110px;', align: 'center',
+        cellStyle: 'font-family:monospace;font-size:11px;color:#0369a1;',
+        cellTitle: (v) => v ? ('조인 컬럼: ' + v) : '',
+        fmt: (v) => v || '-' },
       { key: 'sessionCondField', label: '세션조건', style: 'width:100px;', align: 'center',
         badge: (row) => row.sessionCondField ? 'badge-red' : 'badge-gray',
         cellTitle: (v) => v ? ('로그인 정보의 ' + v + ' 로 서버가 강제') : '',
@@ -356,6 +360,10 @@ window.CmPopupItemMng = {
           label: g.codeGrp + (g.grpNm ? ' — ' + g.grpNm : ''),
         })) },
       /* 세션 자동값 — 지정하면 서버가 로그인 정보로 조건을 강제한다(클라이언트 조작 불가) */
+      /* 조인 컬럼 출력 — cm_popup.join_clause 의 별칭을 써서 다른 테이블 값을 목록에 표시 */
+      { key: 'selectExpr', label: '출력식 (조인 컬럼)', type: 'text', mono: true,
+        placeholder: 'b.deptNm (비우면 a.필드명)',
+        hint: '팝업의 조인절 별칭 사용 · 결과는 위 필드명 키로 내려감' },
       { key: 'sessionCondField', label: '세션조건 (자동 주입)', type: 'select',
         options: () => ['', 'memberId', 'userId', 'vendorId', 'deptId', 'siteId', 'roleId', 'memberGrade'].map(v => ({ value: v, label: v || '(사용 안함)' })),
         hint: '지정 시 필수로 강제 · 미로그인이면 조회 거절 · 조회영역에 표시 안 됨' },

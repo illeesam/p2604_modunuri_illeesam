@@ -48,7 +48,8 @@ th, td { word-break: keep-all; overflow-wrap: break-word; white-space: normal; v
 
 ```
 FO 공개  (^BO^FO^) : prod prodByCategory category brand bbm     ← 공개 카탈로그
-FO 본인만 (^FO^)   : myOrder                                    ← owner_field=memberId
+FO 본인만 (^FO^)   : myMemberOrder myMemberClaim myMemberCoupon        ← session_cond_field
+                     myMemberAddr myMemberReview myMemberQna
 BO 전용  (^BO^)    : member order coupon user userByDept dept role menu site vendor
                      code codeGrp path widgetLib event plan voucher gift save discnt
 ```
@@ -64,41 +65,132 @@ BO 전용  (^BO^)    : member order coupon user userByDept dept role menu site v
 | 조건 | 판정 | 예 |
 |---|---|---|
 | **공개 카탈로그 엔티티** | `CmPopupPickService.FO_ALLOWED_ENTITIES` 에 있어야 함 — `PdProd` `PdCategory` `SyBrand` `SyBbm` `PdTag` | `prod` `category` `brand` `bbm` |
-| **소유자 한정** | `cm_popup.owner_field` 지정 — 로그인 본인 것만 나온다 | `myOrder` (`owner_field=memberId`) |
+| **소유자 한정** | `cm_popup_item.session_cond_field` 지정 — 로그인 본인 것만 나온다 | `myMemberOrder` (`memberId`) |
 
 `sys_scope` 는 관리자가 팝업관리 화면에서 바꿀 수 있으므로 **그 값만 믿지 않는다.**
 
 ```
-FO 에 공개할 수 없는 대상입니다: member(MbMember) — 공개 카탈로그가 아니면 owner_field 로 소유자를 한정해야 합니다
+FO 에 공개할 수 없는 대상입니다: member(MbMember) — 공개 카탈로그가 아니면 항목에 session_cond_field 로 소유자를 한정해야 합니다
 ```
 
-### 3.2 `owner_field` — 본인 것만 고르게 하기
+### 3.2 `session_cond_field` — 본인 것만 고르게 하기
 
-지정하면 `buildWhere` 가 무조건 다음을 붙인다. **클라이언트 파라미터로 끌 수 없고**, 미로그인이면 거절한다.
-
-```
-AND e.{owner_field} = :__ownerId      -- SecurityUtil.getAuthUser().authId()
-```
+`cm_popup_item.session_cond_field` 에 **로그인 정보의 속성명**을 넣으면, 그 항목의 `field_nm` 에
+서버가 조건을 강제한다.
 
 ```
-로그인이 필요한 팝업입니다: myOrder
+AND a.{field_nm} = <세션의 {session_cond_field}>
 ```
 
-전체 조회용 팝업과 본인 한정 팝업은 **분리해서 등록**한다 — 하나를 겸용하면 `sys_scope` 하나
-잘못 켰을 때 전체 데이터가 새어나간다.
+- **클라이언트가 같은 이름으로 파라미터를 보내도 무시된다** (덮어쓰기 불가)
+- `search_yn` 과 무관하게 항상 적용되며, **조회영역에 렌더되지 않는다** (사용자 입력란이 아님)
+- `session_cond_field` 가 있으면 `required_yn='Y'` 가 강제된다 (항목 저장 시 서버가 설정)
+- 조건이 여러 개면 **항목 행을 여러 개** 둔다 (콤마 나열 아님)
 
-| 팝업코드 | 엔티티 | owner_field | sys_scope | 용도 |
-|---|---|---|---|---|
-| `order` | OdOrder | (없음) | `^BO^` | 관리자 — 전체 주문 |
-| `myOrder` | OdOrder | `memberId` | `^FO^` | 회원 — 본인 주문 (문의하기 주문번호 선택) |
+허용 속성 — `CmPopupPickService.SESSION_ATTRS`:
+```
+memberId  userId  vendorId  deptId  siteId  roleId  memberGrade
+```
+
+> `authId` 는 일부러 제외했다. BO 는 관리자ID, FO 는 회원ID 로 값이 갈려 같은 팝업을 양쪽에서
+> 쓰면 조용히 다른 대상을 필터한다. `userId`/`memberId` 로 명시하게 해서 저장 시점에 막는다.
+
+거절 메시지는 두 상황을 구분한다.
+```
+로그인이 필요한 팝업입니다: myMemberOrder (회원)                       ← 미로그인
+로그인 정보에 부서 값이 없어 조회할 수 없습니다: myDeptUser (deptId)   ← 로그인했으나 부서 미배정
+```
+
+### 3.3 팝업코드 규칙 — `my{신원}{대상}`
+
+세션 한정 팝업은 이름에 **세션 한정 여부(`my`)와 신원**을 함께 담는다. 전체 조회용과 본인 한정용은
+**분리 등록**한다 — 하나를 겸용하면 `sys_scope` 하나 잘못 켰을 때 전체 데이터가 새어나가고,
+BO 에서는 `authId` 가 회원ID 가 아니라 0 건이 된다.
+
+| 팝업코드 | 엔티티 | session_cond_field | sys_scope |
+|---|---|---|---|
+| `order` | OdOrder | (없음) | `^BO^` |
+| `myMemberOrder` | OdOrder | `memberId` | `^FO^` |
+| `myMemberClaim` | OdClaim | `memberId` | `^FO^` |
+| `myMemberCoupon` | PmCouponIssue | `memberId` | `^FO^` |
+| `myMemberAddr` | MbMemberAddr | `memberId` | `^FO^` |
+| `myMemberReview` | PdReview | `memberId` | `^FO^` |
+| `myMemberQna` | PdProdQna | `memberId` | `^FO^` |
+| `myVendorProd` | PdProd | `vendorId` | `^BO^` |
+| `myDeptUser` | SyUser | `deptId` | `^BO^` |
+
+신원이 2개여도 이름에 다 붙이지 않고 **좁은 쪽으로만** 부른다 (`myDeptOrder` 가 이미 요청자의
+부서를 함의하므로 `userId` 조건이 함께 걸려도 이름은 그대로).
 
 > 이력: 2026-07-26 최초 `sys_scope` 투입 시 `member`/`order`/`coupon` 을 `^BO^FO^` 로 열어
 > 인증 없이 회원·주문·쿠폰이 조회되는 상태였다. `migration_20260726_cm_popup_fo_scope_fix.sql`
-> 로 회수하고 화이트리스트를 2차 방어로 추가했으며,
-> `migration_20260726_cm_popup_owner_field.sql` 로 `owner_field` + `myOrder` 를 도입해
-> 전용 모달(`OrderPickModal`, 249줄)을 삭제했다.
+> 로 회수하고 화이트리스트를 2차 방어로 추가했다. 이어 `cm_popup.owner_field` 를 잠시 도입했으나
+> 항목 단위가 더 일반적이라 `migration_20260726_cm_popup_item_session.sql` 로
+> `cm_popup_item.session_cond_field` + `required_yn` 으로 옮기고 `owner_field` 는 DROP 했다.
+> 전용 모달(`OrderPickModal`, 249줄)은 이때 삭제됐다.
 
-### 3.3 공통팝업으로 대체할 수 없는 것
+### 3.4 `required_yn` — 필수 조회조건
+
+`'Y'` 면 값이 없을 때 조회를 거절한다. 대용량 목록을 조건 없이 전체 스캔하는 것을 막는 용도다.
+
+- 프론트는 라벨에 `*` 를 붙이고, 미입력 상태로 `[조회]` 를 누르면 토스트로 막는다
+- **팝업을 열 때 자동 조회하지 않는다** — 그리드에 "필수 조회조건을 입력하고 [조회] 를 누르세요" 표시
+- 세션 자동값 항목은 서버가 값을 채우므로 이 검사에서 제외된다
+
+```
+조회 조건이 필요합니다: 주문일시
+```
+
+### 3.5 조인 출력 — 다른 테이블의 라벨을 목록에 표시
+
+`SyUser` 는 `deptId` 만 갖고 부서명이 없다. 이런 **FK 라벨**은 조인으로 가져온다.
+
+| 설정 | 위치 | 값 예시 |
+|---|---|---|
+| 조인절 | `cm_popup.join_clause` | `LEFT JOIN SyDept b ON b.deptId = a.deptId` |
+| 출력식 | `cm_popup_item.select_expr` | `b.deptNm` (항목의 `field_nm` 은 `deptNm`) |
+
+생성 JPQL:
+```sql
+SELECT a, b.deptNm FROM SyUser a LEFT JOIN SyDept b ON b.deptId = a.deptId WHERE ... ORDER BY a.userNm ASC
+```
+
+드라이빙 엔티티는 **`SELECT a` 로 통째로 가져오고**(호출부가 임의 필드를 꺼내 쓰므로) 조인 컬럼만
+뒤에 덧붙인다. 결과 맵에는 `field_nm` 키로 담기므로 목록컬럼 정의(`field: 'deptNm'`)가 그대로 동작한다.
+
+**제약 — 의도적으로 좁혔다.**
+
+| 항목 | 허용 |
+|---|---|
+| 조인 종류 | `LEFT JOIN` + 단일 등가조건만. `LEFT JOIN <Entity> <별칭> ON <별칭>.<필드> = a.<필드>` 반복 |
+| 별칭 | 드라이빙은 **항상 `a`**, 조인은 `b`~`z` |
+| 출력식 | `<별칭>.<필드>` 하나만. 함수·연산 금지 |
+| 카디널리티 | **to-one 만** — to-many 를 걸면 드라이빙 행이 불어나 `COUNT`/페이징이 어긋난다 |
+
+검증은 `SAFE_JOIN` / `SELECT_EXPR` 정규식이 한다. 형태를 벗어나면 거절한다.
+
+> **유형이 CODE 인 항목은 조인이 필요 없다.** `code_grp` 을 주면 프론트가 `sy_code` 라벨로
+> 표시한다(`codeMap`). 즉 `saveTypeCd` 의 라벨은 `field_type_cd='CODE'` + `code_grp` 으로 끝나고,
+> 조인은 **다른 테이블에 이름이 있는 경우**(부서명·브랜드명·업체명)에만 쓴다.
+
+적용 예: `user`(부서명) / `myVendorProd`(브랜드명 + 업체명, 조인 2개).
+
+### 3.6 드라이빙 별칭은 항상 `a`
+
+생성 JPQL 의 주 엔티티 별칭은 `a` 로 고정한다(`CmPopupPickService.A`). 따라서 DB 에 저장하는
+`order_by` / `base_where` / `select_expr` 도 모두 `a.` 를 쓴다.
+
+```
+order_by   : a.userNm ASC
+base_where : a.useYn = 'Y'
+select_expr: b.deptNm      ← 조인 별칭
+```
+
+> 이력: 원래 `e` 였고 2026-07-26 `a` 로 통일했다. `order_by`/`base_where` 는 DB 에 별칭이 박힌
+> 문자열이라 `migration_20260726_cm_popup_join_select.sql` 에서 33건을 함께 치환했다.
+> 새 팝업을 등록할 때 `e.` 를 쓰면 `Could not interpret path expression 'e.xxx'` 로 실패한다.
+
+### 3.7 공통팝업으로 대체할 수 없는 것
 
 공통팝업은 **"목록/트리에서 골라 값을 돌려주는"** 용도다. 다음은 성격이 달라 대체 대상이 아니다.
 
@@ -169,8 +261,12 @@ const fnCallbackModal = (popCmd, param, result) => {
 
 ## 5. 관리 화면
 
-- **팝업관리** — 정의(패턴·엔티티·ID/표시명 필드·트리·페이징·다중·모달폭·사용 시스템)
-- **팝업항목관리** — 좌측 팝업 목록 + 우측 조회항목/목록컬럼
+- **팝업관리** — 정의(패턴·엔티티·ID/표시명 필드·트리·페이징·다중·모달폭·사용 시스템·적용 UI)
+- **팝업항목관리** — 좌측 팝업 목록 + 우측 조회항목/목록컬럼(세션조건·필수 포함)
+
+`apply_ui_memo` 컬럼에 **이 팝업을 쓰는 화면 파일명**을 나열한다 (예: `PdProdDtl.js, OdOrderDtl.js`).
+팝업 정의를 고치면 여기 적힌 화면 전부에 즉시 반영되므로, **수정 전 영향 범위를 이 값으로 확인**한다.
+갱신은 소스에서 `popup-code="..."` 사용처를 추출해 채웠다.
 
 두 화면 모두 행 `관리` 란의 `👁 미리보기` / `👁 멀티` 로 **실제 팝업을 그 자리에서 열어**
 `호출 정보`(JSON) · `사용 예제`(마크업) · `콜백 인자`(popCmd / param / result)를 확인할 수 있다.

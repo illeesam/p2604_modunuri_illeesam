@@ -73,6 +73,10 @@ public class CmPopupItem extends BaseEntity {
     @Column(name = "link_yn", length = 1)
     private String linkYn;
 
+    @Comment("출력식. 비우면 드라이빙(a) 엔티티 필드. 조인 컬럼은 <별칭>.<필드> (예: b.deptNm)")
+    @Column(name = "select_expr", length = 100)
+    private String selectExpr;
+
     @Comment("로그인 정보에서 자동 주입할 속성명 (memberId/userId/vendorId/deptId 등). 비우면 일반 검색항목")
     @Column(name = "session_cond_field", length = 30)
     private String sessionCondField;

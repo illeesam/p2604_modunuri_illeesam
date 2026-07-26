@@ -52,6 +52,24 @@ public class CmPopupPickService {
     /** 페이징을 끈 팝업의 최대 표시 건수 — 실수로 수만 건을 내려받지 않도록 */
     private static final int NO_PAGING_MAX = 500;
 
+    /** 드라이빙(주) 엔티티 별칭 — 전 쿼리 고정. base_where / order_by / select_expr 도 이 별칭을 쓴다 */
+    public static final String A = "a";
+
+    /**
+     * join_clause 허용 패턴 — {@code LEFT JOIN <Entity> <별칭> ON <별칭>.<필드> = a.<필드>} 반복만.
+     *
+     * <p>일부러 LEFT JOIN + 단일 등가조건만 허용한다. 라벨을 끌어오는 to-one 조인이 목적이고,
+     * to-many 조인을 허용하면 행이 불어나 목록 건수와 페이징이 어긋난다.
+     * 별칭은 {@code a} 를 피해 b, c, d … 를 쓴다(드라이빙 별칭과 충돌 방지).</p>
+     */
+    private static final Pattern SAFE_JOIN = Pattern.compile(
+        "^(\\s*LEFT\\s+JOIN\\s+[A-Za-z][A-Za-z0-9_]*\\s+[b-z][a-z0-9]?"
+      + "\\s+ON\\s+[b-z][a-z0-9]?\\.[A-Za-z][A-Za-z0-9_]*\\s*=\\s*a\\.[A-Za-z][A-Za-z0-9_]*\\s*)+$",
+        Pattern.CASE_INSENSITIVE);
+
+    /** select_expr 허용 패턴 — {@code <별칭>.<필드>} 하나만 (함수·연산 금지) */
+    private static final Pattern SELECT_EXPR = Pattern.compile("^[a-z][a-z0-9]?\\.[A-Za-z][A-Za-z0-9_]*$");
+
     private final CmPopupRepository cmPopupRepository;
     private final CmPopupItemRepository cmPopupItemRepository;
 
@@ -199,7 +217,8 @@ public class CmPopupPickService {
         m.put("align", it.getColAlign());
         m.put("link", "Y".equals(it.getLinkYn()));
         m.put("treeLabel", "Y".equals(it.getTreeLabelYn()));
-        m.put("required", "Y".equals(it.getRequiredYn()));   /* 프론트: 라벨 * + 미입력 시 조회 차단 */
+        m.put("required", "Y".equals(it.getRequiredYn()));
+        m.put("joined", it.getSelectExpr() != null && !it.getSelectExpr().isBlank());   /* 조인 컬럼 여부 */   /* 프론트: 라벨 * + 미입력 시 조회 차단 */
         return m;
     }
 
@@ -215,34 +234,34 @@ public class CmPopupPickService {
         Map<String, Object> binds = new LinkedHashMap<>();
 
         if (str(p.get("siteId")) != null) {
-            w.append(" AND e.siteId = :siteId ");
+            w.append(" AND a.siteId = :siteId ");
             binds.put("siteId", str(p.get("siteId")));
         }
         String kw = str(p.get("searchValue"));
         if (kw != null) {
-            w.append(" AND ( LOWER(e.popupNm) LIKE :kw OR LOWER(e.popupCode) LIKE :kw ")
-             .append(" OR LOWER(e.entityNm) LIKE :kw ) ");
+            w.append(" AND ( LOWER(a.popupNm) LIKE :kw OR LOWER(a.popupCode) LIKE :kw ")
+             .append(" OR LOWER(a.entityNm) LIKE :kw ) ");
             binds.put("kw", "%" + kw.toLowerCase() + "%");
         }
         String pattern = str(p.get("popupPattern"));
         if (pattern != null) {
-            w.append(" AND e.popupPattern = :pattern ");
+            w.append(" AND a.popupPattern = :pattern ");
             binds.put("pattern", Integer.valueOf(pattern));
         }
         String useYn = str(p.get("useYn"));
         if (useYn != null) {
-            w.append(" AND e.useYn = :useYn ");
+            w.append(" AND a.useYn = :useYn ");
             binds.put("useYn", useYn);
         }
 
         int pageNo   = intOf(p.get("pageNo"), 1);
         int pageSize = intOf(p.get("pageSize"), 10);
 
-        Query cntQ = em.createQuery("SELECT COUNT(e) FROM CmPopup e " + w);
+        Query cntQ = em.createQuery("SELECT COUNT(a) FROM CmPopup a " + w);
         binds.forEach(cntQ::setParameter);
         long total = ((Number) cntQ.getSingleResult()).longValue();
 
-        Query listQ = em.createQuery("SELECT e FROM CmPopup e " + w + " ORDER BY e.sortOrd ASC, e.popupCode ASC ");
+        Query listQ = em.createQuery("SELECT a FROM CmPopup a " + w + " ORDER BY a.sortOrd ASC, a.popupCode ASC ");
         binds.forEach(listQ::setParameter);
         listQ.setFirstResult((pageNo - 1) * pageSize);
         listQ.setMaxResults(pageSize);
@@ -277,12 +296,19 @@ public class CmPopupPickService {
         String where = buildWhere(pop, items, p, binds);
 
         String entity = ident(pop.getEntityNm(), "entity_nm");
-        String cntJpql = "SELECT COUNT(e) FROM " + entity + " e " + where;
+        String join   = buildJoin(pop);                 /* LEFT JOIN 절 (없으면 "") */
+        List<CmPopupItem> extras = joinedItems(items);  /* select_expr 로 조인 컬럼을 가져오는 항목들 */
+
+        String cntJpql = "SELECT COUNT(" + A + ") FROM " + entity + " " + A + join + where;
         Query cntQ = em.createQuery(cntJpql);
         binds.forEach(cntQ::setParameter);
         long total = ((Number) cntQ.getSingleResult()).longValue();
 
-        String selJpql = "SELECT e FROM " + entity + " e " + where + buildOrderBy(pop);
+        /* 드라이빙 엔티티는 그대로 SELECT 하고(호출부가 임의 필드를 꺼내 쓰므로),
+           조인 컬럼만 뒤에 덧붙인다 → 결과는 Object[]{ 엔티티, 조인값... } */
+        StringBuilder sel = new StringBuilder("SELECT " + A);
+        for (CmPopupItem it : extras) sel.append(", ").append(selectExpr(it));
+        String selJpql = sel + " FROM " + entity + " " + A + join + where + buildOrderBy(pop);
         Query listQ = em.createQuery(selJpql);
         binds.forEach(listQ::setParameter);
         listQ.setFirstResult((pageNo - 1) * pageSize);
@@ -290,7 +316,16 @@ public class CmPopupPickService {
 
         List<?> rows = listQ.getResultList();
         List<Map<String, Object>> list = new ArrayList<>();
-        for (Object row : rows) list.add(rowToMap(row, pop, items));
+        for (Object row : rows) {
+            Object ent = row;
+            Map<String, Object> joined = new LinkedHashMap<>();
+            if (!extras.isEmpty()) {
+                Object[] tuple = (Object[]) row;
+                ent = tuple[0];
+                for (int i = 0; i < extras.size(); i++) joined.put(extras.get(i).getFieldNm(), tuple[i + 1]);
+            }
+            list.add(rowToMap(ent, pop, items, joined));
+        }
 
         return PageResult.of(list, total, pageNo, pageSize, p);
     }
@@ -326,7 +361,7 @@ public class CmPopupPickService {
                사이트 격리만 적용한다. */
             where = " WHERE 1=1 ";
             if (pop.getSiteField() != null && !pop.getSiteField().isBlank() && str(p.get("siteId")) != null) {
-                where += " AND e." + ident(pop.getSiteField(), "site_field") + " = :siteId ";
+                where += " AND a." + ident(pop.getSiteField(), "site_field") + " = :siteId ";
                 binds.put("siteId", str(p.get("siteId")));
             }
         } else {
@@ -341,8 +376,11 @@ public class CmPopupPickService {
             where = buildWhere(pop, getPopupItems(pop.getPopupId()), treeParam, binds);
         }
 
-        String jpql = "SELECT e FROM " + ident(entity, "tree_entity_nm") + " e " + where
-            + " ORDER BY e." + ident(nmField, "tree_nm_field") + " ASC ";
+        /* 같은 엔티티 트리는 base_where 가 조인 별칭을 참조할 수 있으므로 조인 절도 함께 넣는다.
+           교차 트리는 조인 절이 목록 엔티티 기준이라 쓸 수 없다(위에서 where 도 제외했다). */
+        String treeJoin = isCrossTree(pop) ? " " : buildJoin(pop);
+        String jpql = "SELECT " + A + " FROM " + ident(entity, "tree_entity_nm") + " " + A + treeJoin + where
+            + " ORDER BY a." + ident(nmField, "tree_nm_field") + " ASC ";
         Query q = em.createQuery(jpql);
         binds.forEach(q::setParameter);
 
@@ -393,7 +431,7 @@ public class CmPopupPickService {
             w.append(" AND (").append(bw).append(") ");
         }
         if (pop.getSiteField() != null && !pop.getSiteField().isBlank() && str(p.get("siteId")) != null) {
-            w.append(" AND e.").append(ident(pop.getSiteField(), "site_field")).append(" = :siteId ");
+            w.append(" AND a.").append(ident(pop.getSiteField(), "site_field")).append(" = :siteId ");
             binds.put("siteId", str(p.get("siteId")));
         }
         /* 세션 자동값 항목 — session_cond_field 가 있으면 로그인 정보에서 꺼내 조건을 강제한다.
@@ -413,7 +451,7 @@ public class CmPopupPickService {
                 throw new CmBizException(msg + "::" + CmUtil.svcCallerInfo(this));
             }
             String bind = "s" + (sseq++);
-            w.append(" AND e.").append(ident(it.getFieldNm(), "field_nm"))
+            w.append(" AND a.").append(ident(it.getFieldNm(), "field_nm"))
              .append(" = :").append(bind).append(" ");
             binds.put(bind, v);
         }
@@ -437,7 +475,7 @@ public class CmPopupPickService {
                 for (int i = 0; i < likeCols.size(); i++) {
                     if (i > 0) w.append(" OR ");
                     String f = ident(likeCols.get(i).getFieldNm(), "field_nm");
-                    w.append("LOWER(CAST(e.").append(f).append(" AS string)) LIKE :kw ");
+                    w.append("LOWER(CAST(a.").append(f).append(" AS string)) LIKE :kw ");
                 }
                 w.append(" ) ");
                 binds.put("kw", "%" + kw.toLowerCase() + "%");
@@ -452,17 +490,17 @@ public class CmPopupPickService {
             String f = ident(it.getFieldNm(), "field_nm");
             String bind = "f" + (seq++);
             if ("EQ".equals(it.getSearchTypeCd())) {
-                w.append(" AND e.").append(f).append(" = :").append(bind).append(" ");
+                w.append(" AND a.").append(f).append(" = :").append(bind).append(" ");
                 binds.put(bind, v);
             } else {
-                w.append(" AND LOWER(CAST(e.").append(f).append(" AS string)) LIKE :").append(bind).append(" ");
+                w.append(" AND LOWER(CAST(a.").append(f).append(" AS string)) LIKE :").append(bind).append(" ");
                 binds.put(bind, "%" + v.toLowerCase() + "%");
             }
         }
         /* 트리 노드 선택 → 직속 하위만 */
         if (pop.getParentField() != null && !pop.getParentField().isBlank()
             && str(p.get("parentId")) != null) {
-            w.append(" AND e.").append(ident(pop.getParentField(), "parent_field")).append(" = :parentId ");
+            w.append(" AND a.").append(ident(pop.getParentField(), "parent_field")).append(" = :parentId ");
             binds.put("parentId", str(p.get("parentId")));
         }
         /* 트리 노드 선택 → 노드 자신 + 하위 전체 (프론트가 서브트리 ID 를 계산해 전달).
@@ -471,13 +509,13 @@ public class CmPopupPickService {
         List<String> idIn = splitIds(str(p.get("idIn")));
         if (!idIn.isEmpty()) {
             String linkField = isCrossTree(pop) ? pop.getTreeLinkField() : pop.getIdField();
-            w.append(" AND e.").append(ident(linkField, "tree_link_field")).append(" IN (:idIn) ");
+            w.append(" AND a.").append(ident(linkField, "tree_link_field")).append(" IN (:idIn) ");
             binds.put("idIn", idIn);
         }
         /* 이미 선택된 항목 제외 */
         List<String> excludes = splitIds(str(p.get("excludeIds")));
         if (!excludes.isEmpty()) {
-            w.append(" AND e.").append(ident(pop.getIdField(), "id_field")).append(" NOT IN (:excludeIds) ");
+            w.append(" AND a.").append(ident(pop.getIdField(), "id_field")).append(" NOT IN (:excludeIds) ");
             binds.put("excludeIds", excludes);
         }
         return w.toString();
@@ -485,15 +523,58 @@ public class CmPopupPickService {
 
     private String buildOrderBy(CmPopup pop) {
         String ob = pop.getOrderBy();
-        if (ob == null || ob.isBlank()) return " ORDER BY e." + ident(pop.getIdField(), "id_field") + " ASC ";
+        if (ob == null || ob.isBlank()) return " ORDER BY a." + ident(pop.getIdField(), "id_field") + " ASC ";
         if (!SAFE_CLAUSE.matcher(ob).matches())
             throw new CmBizException("허용되지 않는 order_by 입니다: " + ob);
         return " ORDER BY " + ob + " ";
     }
 
-    /** 엔티티 → { id, nm, parentId?, <표시필드들> } 맵 (리플렉션 getter) */
-    private Map<String, Object> rowToMap(Object row, CmPopup pop, List<CmPopupItem> items) {
+    /* ── 조인 / 출력식 ─────────────────────────────────────────── */
+
+    /**
+     * LEFT JOIN 절을 만든다 (없으면 빈 문자열).
+     *
+     * <p>{@code cm_popup.join_clause} 를 그대로 쓰되 {@link #SAFE_JOIN} 으로 형태를 제한한다 —
+     * {@code LEFT JOIN <Entity> <별칭> ON <별칭>.<필드> = a.<필드>} 반복만 허용.</p>
+     *
+     * <p>왜 to-one 만 허용하나: to-many 조인은 드라이빙 행이 조인 건수만큼 불어나
+     * 목록 건수(COUNT)와 페이징이 어긋난다. 라벨을 끌어오는 것이 목적이므로 제한이 맞다.</p>
+     */
+    private String buildJoin(CmPopup pop) {
+        String jc = pop.getJoinClause();
+        if (jc == null || jc.isBlank()) return " ";
+        String s = jc.trim();
+        if (!SAFE_JOIN.matcher(s).matches()) {
+            throw new CmBizException("허용되지 않는 join_clause 입니다: " + jc
+                + " — 형태는 LEFT JOIN <Entity> <별칭> ON <별칭>.<필드> = a.<필드>"
+                + "::" + CmUtil.svcCallerInfo(this));
+        }
+        return " " + s + " ";
+    }
+
+    /** select_expr 이 지정된 항목들 = 조인 컬럼을 별도 SELECT 로 가져올 항목들 */
+    private List<CmPopupItem> joinedItems(List<CmPopupItem> items) {
+        return items.stream()
+            .filter(i -> i.getSelectExpr() != null && !i.getSelectExpr().isBlank())
+            .toList();
+    }
+
+    /** 항목의 출력식 검증 후 반환 ({@code b.deptNm} 형태만) */
+    private String selectExpr(CmPopupItem it) {
+        String e = it.getSelectExpr().trim();
+        if (!SELECT_EXPR.matcher(e).matches()) {
+            throw new CmBizException("허용되지 않는 select_expr 입니다: " + e
+                + " (" + it.getFieldNm() + ") — 형태는 <별칭>.<필드>"
+                + "::" + CmUtil.svcCallerInfo(this));
+        }
+        return e;
+    }
+
+    /** 엔티티 → { id, nm, parentId?, <표시필드들> } 맵 (리플렉션 getter). joined = 조인으로 가져온 값 */
+    private Map<String, Object> rowToMap(Object row, CmPopup pop, List<CmPopupItem> items,
+                                         Map<String, Object> joined) {
         Map<String, Object> m = new LinkedHashMap<>();
+        if (joined != null) m.putAll(joined);   /* 조인 컬럼 먼저 — 아래 putIfAbsent 가 덮지 않도록 */
         Object idVal = readField(row, pop.getIdField());
         Object nmVal = readField(row, pop.getNmField());
         m.put("id", idVal);
