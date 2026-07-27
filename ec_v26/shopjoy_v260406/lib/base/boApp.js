@@ -26,20 +26,19 @@
     return true;
   });
 
+  /* SYS 메뉴 트리를 한 번도 짜지 않았을 때 좌측 '대시보드' 그룹에 보여줄 기본 항목.
+     지금까지 하드코딩돼 있던 두 개 그대로다 — 설정 전에는 기존과 동일하게 보인다. */
+  const HOME_FALLBACK_DASH = [
+    { id: 'dashboard', label: 'EC대시보드' },
+    { id: 'appMonitorDashboard', label: 'App모니터대시보드' },
+  ];
+
   const LEFT_MENUS = {
-    home: [
-      { group: '대시보드' },
-      { id: 'dashboard', label: 'EC대시보드' },
-      { id: 'appMonitorDashboard', label: 'App모니터대시보드' },
-      { group: '대시보드 관리' },
-      { id: 'cmDashboardMng', label: '대시보드 기준관리' },
-      { id: 'cmDashboardItemMng', label: '대시보드 항목관리' },
-      { id: 'cmDashboardLayoutMng', label: '대시보드 항목배치' },
-      { id: 'cmDashboardMyMng', label: '사용자 대시보드 관리' },
-      { id: 'cmDashboardMenuMng', label: '사용자 대시보드 메뉴관리' },
-      { group: '사용자 대시보드' },
-      /* ↓ 내 대시보드/공유받은 대시보드는 cfUserDashMenus 로 동적 추가 (boApp.js §사용자 대시보드 메뉴) */
-    ],
+    /* home 은 그룹 헤더도 항목도 전부 동적이다 (템플릿 §대시보드 좌측메뉴 참조).
+         대시보드        ← cm_dashboard_menu(SYS) 트리. 없으면 HOME_FALLBACK_DASH 로 폴백
+         사용자 대시보드   ← cm_dashboard_menu(USER) 트리. 없으면 볼 수 있는 개인 대시보드 전체
+         대시보드 관리     ← LEFT_MENUS_TAIL.home (동적 항목 아래) */
+    home: [],
     member: [
       { group: '회원' },
       { id: 'mbMemberMng', label: '회원관리' },
@@ -228,10 +227,31 @@
     ],
   };
 
+  /* 동적 목록(사용자 대시보드) '아래'에 붙는 좌측메뉴.
+     LEFT_MENUS 는 동적 목록보다 먼저 렌더되므로 뒤쪽 메뉴는 이 배열에 둔다. */
+  const LEFT_MENUS_TAIL = {
+    home: [
+      { group: '대시보드 관리' },
+      { id: 'cmDashboardMng', label: '대시보드 기준관리' },
+      { id: 'cmDashboardItemMng', label: '대시보드 항목관리' },
+      { id: 'cmDashboardLayoutMng', label: '대시보드 항목배치' },
+      { id: 'cmDashboardSysMenuMng', label: '대시보드 메뉴관리' },
+      { id: 'cmDashboardMyMng', label: '사용자 대시보드 관리' },
+      { id: 'cmDashboardMenuMng', label: '사용자 대시보드 메뉴관리' },
+    ],
+  };
+
   /* 페이지 → 상위메뉴 매핑 */
+  /* 인덱스(페이지↔상위메뉴, 전체 페이지 목록)는 head + tail 을 합쳐서 만든다.
+     화면 렌더 순서만 둘로 나뉜 것이지 메뉴 자체는 하나다. */
+  const LEFT_MENUS_ALL = Object.fromEntries(
+    Object.keys(LEFT_MENUS).map((top) => [top, [...LEFT_MENUS[top], ...(LEFT_MENUS_TAIL[top] || []),
+                                              ...(top === 'home' ? HOME_FALLBACK_DASH : [])]]),
+  );
+
   const PAGE_TO_TOP = { dashboard: 'home' };
   const PAGE_LABELS = {};
-  Object.entries(LEFT_MENUS).forEach(([top, items]) => {
+  Object.entries(LEFT_MENUS_ALL).forEach(([top, items]) => {
     items
       .filter((item) => item.id)
       .forEach((item) => {
@@ -252,11 +272,11 @@
   const ALL_PAGES = [
     'dashboard',
     'odOrderKanban',
-    ...Object.values(LEFT_MENUS)
+    ...Object.values(LEFT_MENUS_ALL)
       .flat()
       .filter((p) => p.id)
       .map((p) => p.id),
-    ...Object.values(LEFT_MENUS)
+    ...Object.values(LEFT_MENUS_ALL)
       .flat()
       .filter((p) => p.id)
       .map((p) => p.id.replace('Mng', 'Dtl')),
@@ -545,6 +565,7 @@
         cmDashboardLayoutMng: 'cm-dashboard-layout-mng',
         cmDashboardMyMng: 'cm-dashboard-my-mng',
         cmDashboardMenuMng: 'cm-dashboard-menu-mng',
+        cmDashboardSysMenuMng: 'cm-dashboard-sys-menu-mng',
         cmPopupMng: 'cm-popup-mng',
         cmPopupItemMng: 'cm-popup-item-mng',
         syAlarmMng: 'sy-alarm-mng',
@@ -747,7 +768,7 @@
         // 홈: 좌측 메뉴 없이 대시보드로 바로 이동
         if (topId === 'home') { navigate('dashboard'); return; }
         leftMenuOpen.value = true;
-        const first = LEFT_MENUS[topId]?.find((p) => p.id);
+        const first = LEFT_MENUS_ALL[topId]?.find((p) => p.id);
         if (first) navigate(first.id);
       };
 
@@ -1544,7 +1565,7 @@
           window.useBoAppInitStore?.()?.saRestoreFromStorage?.();
         }, 0);
         /* 이미 로그인된 상태(F5 등)에서도 사용자 대시보드 좌측메뉴 로드 */
-        setTimeout(() => { fnLoadUserDashMenus(); }, 300);
+        setTimeout(() => { fnLoadSysDashMenus(); fnLoadUserDashMenus(); }, 300);
         _loadApiLogsFromStorage();
         setTimeout(() => {
           if (typeof boApi !== 'undefined' && boApi.raw) {
@@ -1951,6 +1972,7 @@
           loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
+          fnLoadSysDashMenus();  /* 대시보드 좌측메뉴 로드 (공용) */
           fnLoadUserDashMenus(); /* 사용자 대시보드 좌측메뉴 로드 */
           showToast(`${currentAuthUser?.authNm || currentAuthUser?.name || '사용자'}님 환영합니다.`);
         } catch (err) {
@@ -2196,6 +2218,56 @@
       /* ── 사용자 대시보드 메뉴 (동적) ──────────────────────────────
        * 내가 만든 대시보드 + 나에게 공유된 대시보드를 좌측메뉴 '사용자 대시보드' 그룹 아래에 표시.
        * 클릭 시 cmDashboardMyMng 로 이동하면서 dtlId 에 대시보드ID 전달. */
+      /* ── 좌측 '대시보드' 그룹 (공용) ─────────────────────────
+         cm_dashboard_menu(SYS) 트리를 그대로 그린다. 트리가 비어 있으면(=한 번도 설정 안 함)
+         HOME_FALLBACK_DASH 로 폴백해 기존과 똑같이 보인다.
+         ITEM 노드는 uiComponent 로 열 페이지를 정한다 — 전용 화면이 있으면 그리로,
+         없으면 대시보드 뷰어(cmDashboardMyMng)로 캔버스를 그린다. */
+      const sysDashMenus = reactive([]);  /* [{ pageId?, dashboardId?, label, folder?, depth }] */
+      const fnSysDashPageId = (uiComponent) => {
+        if (uiComponent === 'DashboardBoAppMonitor') return 'appMonitorDashboard';
+        /* EC대시보드는 사이트별 변형(Ec01/02/03) 이 pageId 하나로 묶여 있다 */
+        if (uiComponent === 'DashboardBoEc' + (window.BO_SITE_NO || '01')) return 'dashboard';
+        return null;
+      };
+      const fnLoadSysDashMenus = async () => {
+        try {
+          if (!localStorage.getItem('modu-bo-auth-accessToken')) return;
+          const siteId = window.boCommonFilter?.siteId || '';
+          const [dres, tres] = await Promise.all([
+            boApiSvc.cmDashboard.getList(
+              { siteId, scope: 'accessible' }, '대시보드메뉴', '메뉴조회'),
+            boApiSvc.cmDashboard.getMenuTree(
+              { siteId, scope: 'SYS' }, '대시보드메뉴', '메뉴트리조회'),
+          ]);
+          const dashMap = {};
+          (dres.data?.data || [])
+            /* 공용 = 개인화가 아닌 것. CmDashboardMng.fnIsMyDash 과 같은 판정 */
+            .filter((d) => !d.ownerUserId && (d.uiCompNm || '').indexOf('MY:') !== 0)
+            .forEach((d) => { dashMap[d.dashboardId] = d; });
+          const nodes = tres.data?.data || [];
+          if (!nodes.length) { sysDashMenus.splice(0, sysDashMenus.length); return; }
+          const byParent = {};
+          nodes.forEach((x) => { const p = x.parentNodeId || ''; (byParent[p] = byParent[p] || []).push(x); });
+          const flat = [];
+          const walk = (pid, depth) => (byParent[pid] || []).forEach((x) => {
+            if (x.nodeTypeCd === 'FOLDER') {
+              flat.push({ key: 'F:' + x.menuNodeId, label: x.nodeNm || '폴더', folder: true, depth });
+            } else {
+              const d = dashMap[x.dashboardId];
+              if (d) flat.push({ key: x.menuNodeId, label: d.dashboardNm, depth,
+                                 pageId: fnSysDashPageId(d.uiCompNm), dashboardId: d.dashboardId });
+            }
+            walk(x.menuNodeId, depth + 1);
+          });
+          walk('', 0);
+          sysDashMenus.splice(0, sysDashMenus.length, ...flat);
+        } catch (e) {
+          console.warn('[대시보드 메뉴 조회 오류]', e);
+        }
+      };
+      window.addEventListener('sys-dashboard-changed', fnLoadSysDashMenus);
+
       const userDashMenus = reactive([]); /* [{ dashboardId, dashboardNm, mine }] */
       const fnLoadUserDashMenus = async () => {
         try {
@@ -2273,6 +2345,8 @@
         cfDashboardComp,
         TOP_MENUS,
         LEFT_MENUS,
+        LEFT_MENUS_TAIL,
+        sysDashMenus, HOME_FALLBACK_DASH, fnLoadSysDashMenus,
         userDashMenus,
         AUTH_METHODS,
         openTabs,
@@ -2546,8 +2620,38 @@
               @click.stop="toggleFav(item.id)" :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
           </div>
         </template>
-        <!-- 사용자 대시보드: 내 대시보드 + 공유받은 대시보드 (동적) -->
+        <!-- ── 대시보드 좌측메뉴 (전부 동적) ────────────────────────────
+             대시보드      : SYS 트리(없으면 HOME_FALLBACK_DASH)
+             사용자 대시보드 : USER 트리(없으면 볼 수 있는 개인 대시보드 전체) -->
         <template v-if="activeTop==='home'">
+          <div class="left-nav-group-header">대시보드</div>
+          <!-- SYS 트리 미설정 → 기존 하드코딩 항목 그대로 -->
+          <template v-if="!sysDashMenus.length">
+            <div v-for="item in HOME_FALLBACK_DASH" :key="item.id"
+              class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
+              @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
+              :title="'Ctrl+클릭: 새창'">
+              {{ item.label }}
+              <span class="left-fav-star" :class="{active: isFav(item.id)}"
+                @click.stop="toggleFav(item.id)" :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
+            </div>
+          </template>
+          <template v-for="d in sysDashMenus" :key="d.key">
+            <!-- 폴더 노드: 이동 대상이 아니라 묶음 라벨 -->
+            <div v-if="d.folder" class="left-nav-item left-nav-sub-item"
+              :style="{ paddingLeft: (24 + (d.depth || 0) * 14) + 'px', cursor: 'default', opacity: 0.75 }">
+              <span style="margin-right:4px;">📁</span>{{ d.label }}
+            </div>
+            <!-- 전용 화면이 있으면 그 페이지로, 없으면 대시보드 뷰어로 -->
+            <div v-else class="left-nav-item left-nav-sub-item"
+              :class="{active: d.pageId ? cfActiveTabId===d.pageId : false}"
+              :style="{ paddingLeft: (24 + (d.depth || 0) * 14) + 'px' }"
+              @click="d.pageId ? navigate(d.pageId) : navigate('cmDashboardMyMng', { id: d.dashboardId })"
+              title="공용 대시보드">
+              <span style="margin-right:4px;">📊</span>{{ d.label }}
+            </div>
+          </template>
+          <div class="left-nav-group-header">사용자 대시보드</div>
           <template v-for="d in userDashMenus" :key="d.dashboardId">
             <!-- 폴더 노드: 이동 대상이 아니라 묶음 라벨 -->
             <div v-if="d.folder" class="left-nav-item left-nav-sub-item"
@@ -2561,6 +2665,17 @@
               <span style="margin-right:4px;">{{ d.mine ? '👤' : '🔗' }}</span>{{ d.dashboardNm }}
             </div>
           </template>
+        </template>
+        <!-- 동적 대시보드 아래에 붙는 메뉴 (대시보드 관리 그룹) -->
+        <template v-for="item in (LEFT_MENUS_TAIL[activeTop] || [])" :key="item?.group || item?.id">
+          <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
+          <div v-else class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
+            @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"
+            :title="'Ctrl+클릭: 새창'">
+            {{ item.label }}
+            <span class="left-fav-star" :class="{active: isFav(item.id)}"
+              @click.stop="toggleFav(item.id)" :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
+          </div>
         </template>
       </div>
 
@@ -2786,6 +2901,7 @@
             <cm-dashboard-layout-mng  v-else-if="page==='cmDashboardLayoutMng'"  :navigate="navigate" :dtl-id="dtlId" />
             <cm-dashboard-my-mng  v-else-if="page==='cmDashboardMyMng'"  :navigate="navigate" :dtl-id="dtlId" />
             <cm-dashboard-menu-mng  v-else-if="page==='cmDashboardMenuMng'"  :navigate="navigate" />
+            <cm-dashboard-sys-menu-mng v-else-if="page==='cmDashboardSysMenuMng'" :navigate="navigate" />
             <cm-popup-mng  v-else-if="page==='cmPopupMng'"  :navigate="navigate" />
             <cm-popup-item-mng  v-else-if="page==='cmPopupItemMng'"  :navigate="navigate" :dtl-id="dtlId" />
             <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" />
@@ -3324,6 +3440,7 @@
     .component('CmDashboardLayoutMng', window.CmDashboardLayoutMng)
     .component('CmDashboardMyMng', window.CmDashboardMyMng)
     .component('CmDashboardMenuMng', window.CmDashboardMenuMng)
+    .component('CmDashboardSysMenuMng', window.CmDashboardSysMenuMng)
     .component('CmPopupMng', window.CmPopupMng)
     .component('CmPopupItemMng', window.CmPopupItemMng)
     /* ── pages/bo/ec/ — 채팅/고객 ── */

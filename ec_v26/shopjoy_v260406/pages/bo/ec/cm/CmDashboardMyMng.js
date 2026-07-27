@@ -56,7 +56,7 @@ window.CmDashboardMyMng = {
     /* 공유설정 폼 — targets: [{ type:'DEPT'|'USER', id, nm }] 통합 목록 */
     const shareForm = reactive({ dashboardNm: '', shareScopeCd: 'PRIVATE', targets: [] });
     /* 공유대상 선택 모달 (기존 SimpleUserPickModal / DeptTreeModal 재사용) */
-    const pickModal = reactive({ user: false, dept: false });
+    const pickModal = reactive({ user: false, dept: false, vendor: false });
 
     const cfSiteId = computed(() => window.boCommonFilter?.siteId || '');
     const cfAuthId = computed(() => {
@@ -88,6 +88,7 @@ window.CmDashboardMyMng = {
       if (cmd === 'setting-save')     return handleSaveShare();
       if (cmd === 'setting-pickUser')     { pickModal.user = true; return; }
       if (cmd === 'setting-pickDept')     { pickModal.dept = true; return; }
+      if (cmd === 'setting-pickVendor')   { pickModal.vendor = true; return; }
       if (cmd === 'setting-removeTarget') return fnRemoveTarget(param);
       if (cmd === 'layout-save')      return handleSaveLayout();
       if (cmd === 'layout-reload')    return handleLoadCards();
@@ -111,7 +112,10 @@ window.CmDashboardMyMng = {
       await handleLoadDashes();
       await handleLoadCatalog();
       fnLoadDeptUser();
+      fnFitSoon();
+      window.addEventListener('resize', fnFitCanvas);
     });
+    Vue.onUnmounted(() => window.removeEventListener('resize', fnFitCanvas));
 
     /* 좌측메뉴에서 다른 대시보드 클릭 시 전환 */
     watch(() => props.dtlId, (v) => { if (v && v !== curId.value) handleSelectDash(v); });
@@ -124,7 +128,11 @@ window.CmDashboardMyMng = {
       try {
         const res = await boApiSvc.cmDashboard.getList(
           { siteId: cfSiteId.value, scope: 'accessible' }, '사용자대시보드', '조회');
-        const all = (res.data?.data || []).filter(d => d.ownerUserId);
+        /* 개인 대시보드만 관리 대상이다. 다만 좌측 '대시보드' 그룹에서 전용 화면이 없는
+           공용 대시보드를 클릭하면 이 화면이 뷰어 역할을 하므로, 그 한 건은 통과시킨다
+           (소유자가 아니므로 cfIsMine=false → 보기 전용). */
+        const all = (res.data?.data || [])
+          .filter(d => d.ownerUserId || (props.dtlId && d.dashboardId === props.dtlId));
         const mine   = all.filter(d => d.ownerUserId === cfAuthId.value);
         const shared = all.filter(d => d.ownerUserId !== cfAuthId.value);
         myDashes.splice(0, myDashes.length, ...mine);
@@ -211,6 +219,7 @@ window.CmDashboardMyMng = {
       const t = [];
       fnSplitIds(cur.shareDeptId).forEach(id => t.push({ type: 'DEPT', id, nm: fnDeptNm(id) }));
       fnSplitIds(cur.shareUserIds).forEach(id => t.push({ type: 'USER', id, nm: fnUserNm(id) }));
+      fnSplitIds(cur.shareVendorIds).forEach(id => t.push({ type: 'VENDOR', id, nm: fnVendorNm(id) }));
       shareForm.targets = t;
     };
 
@@ -224,14 +233,16 @@ window.CmDashboardMyMng = {
        따라서 추가가 아니라 해당 유형 전체를 교체한다(모달에서 해제한 대상은 빠진다). */
     const onPickUser = (rows) => { pickModal.user = false; fnReplaceTargets('USER', rows); };
     const onPickDept = (rows) => { pickModal.dept = false; fnReplaceTargets('DEPT', rows); };
+    const onPickVendor = (rows) => { pickModal.vendor = false; fnReplaceTargets('VENDOR', rows); };
     /* fnReplaceTargets — 해당 유형 대상을 모달 결과로 통째 교체 (다른 유형은 유지) */
     const fnReplaceTargets = (type, rows) => {
       const keep = shareForm.targets.filter(t => t.type !== type);
       const next = fnToRows(rows).map(r => ({
         type,
-        id: (type === 'DEPT' ? r.deptId : r.userId) || r.id,
-        nm: (type === 'DEPT' ? (r.deptNm || r.nm) : (r.userNm || r.nm)),
+        id: (type === 'DEPT' ? r.deptId : (type === 'VENDOR' ? r.vendorId : r.userId)) || r.id,
+        nm: (type === 'DEPT' ? (r.deptNm || r.nm) : (type === 'VENDOR' ? (r.vendorNm || r.nm) : (r.userNm || r.nm))),
       })).filter(t => t.id);
+      if (type === 'VENDOR') next.forEach(t => { if (t.nm) vendorNmCache[t.id] = t.nm; });
       shareForm.targets = keep.concat(next);
     };
     /* fnToRows — select 결과를 행 배열로 정규화 */
@@ -244,6 +255,7 @@ window.CmDashboardMyMng = {
     /* 유형별 공유대상 — 사용자란/부서란을 따로 보여주기 위해 분리 */
     const cfUserTargets = computed(() => shareForm.targets.filter(t => t.type === 'USER'));
     const cfDeptTargets = computed(() => shareForm.targets.filter(t => t.type === 'DEPT'));
+    const cfVendorTargets = computed(() => shareForm.targets.filter(t => t.type === 'VENDOR'));
     /* 한 줄에 표시할 최대 칩 수 — 넘치면 ＋N 으로 접는다 */
     const SHARE_CHIP_MAX = 5;
     /* 공유대상 란 정의 — 사용자/부서를 같은 마크업으로 렌더 (동작 공통) */
@@ -261,6 +273,9 @@ window.CmDashboardMyMng = {
       { type: 'DEPT', label: '공유대상(부서)', btn: '부서 추가', icon: '🏢', cmd: 'setting-pickDept',
         bg: '#ecfdf5', fg: '#047857', bd: '#a7f3d0', ...fnChipView(cfDeptTargets.value),
         empty: '공유할 부서가 없습니다.' },
+      { type: 'VENDOR', label: '공유대상(업체)', btn: '업체 추가', icon: '🏭', cmd: 'setting-pickVendor',
+        bg: '#fff7ed', fg: '#c2410c', bd: '#fed7aa', ...fnChipView(cfVendorTargets.value),
+        empty: '공유할 업체가 없습니다.' },
     ]);
 
     /* handleSaveShare — 이름 + 공개여부 + 공유대상 저장 */
@@ -271,11 +286,13 @@ window.CmDashboardMyMng = {
       try {
         const deptIds = shareForm.targets.filter(t => t.type === 'DEPT').map(t => t.id);
         const userIds = shareForm.targets.filter(t => t.type === 'USER').map(t => t.id);
+        const vendorIds = shareForm.targets.filter(t => t.type === 'VENDOR').map(t => t.id);
         await boApiSvc.cmDashboard.update(cur.dashboardId, {
           dashboardNm:  shareForm.dashboardNm,
           shareScopeCd: shareForm.shareScopeCd,
           shareDeptId:  fnJoinIds(deptIds),
           shareUserIds: fnJoinIds(userIds),
+          shareVendorIds: fnJoinIds(vendorIds),
         }, '사용자대시보드', '공유설정저장');
         showToast('저장되었습니다.', 'success');
         await handleLoadDashes();
@@ -486,13 +503,68 @@ window.CmDashboardMyMng = {
     /* 부서/사용자 ID → 이름 (미로드 시 ID 그대로) */
     const fnDeptNm = (id) => (deptList.find(d => d.deptId === id) || {}).deptNm || id;
     const fnUserNm = (id) => (userList.find(u => u.userId === id) || {}).userNm || id;
+    /* 업체명 — 모달 선택 시 받은 이름을 캐시에 넣어두고 재사용 (업체 목록을 따로 안 받는다) */
+    const vendorNmCache = reactive({});
+    const fnVendorNm = (id) => vendorNmCache[id] || id;
     /* 선택 모달에 미리 체크해 둘 ID — 이미 담긴 대상이 팝업에서 체크 상태로 보인다 */
     const cfPickedUserIds = computed(() =>
       shareForm.targets.filter(t => t.type === 'USER').map(t => t.id).filter(Boolean));
     const cfPickedDeptIds = computed(() =>
       shareForm.targets.filter(t => t.type === 'DEPT').map(t => t.id).filter(Boolean));
+    const cfPickedVendorIds = computed(() =>
+      shareForm.targets.filter(t => t.type === 'VENDOR').map(t => t.id).filter(Boolean));
     /* 사용자 모달에서 나 자신은 제외 (소유자는 항상 볼 수 있으므로 고를 이유가 없다) */
     const cfExcludeUserIds = computed(() => [cfAuthId.value].filter(Boolean));
+
+    /* ── 우하단 모서리 드래그 리사이즈 ───────────────────────────────
+       CSS grid 의 span 은 정수라 픽셀 이동량을 셀 단위로 환산해 span 을 바꾼다.
+       셀 폭은 카드 실측폭에서 역산한다 — 컨테이너 폭·gap 을 따로 알 필요가 없다.
+         카드폭 = w*셀폭 + (w-1)*gap  →  셀폭 = (카드폭 - (w-1)*gap) / w
+       (대시보드 항목배치 화면과 동일 규칙) */
+    const GRID_GAP = 12;
+    const ROW_H    = 150;
+    const resizeState = reactive({ idx: null });
+    let   _rs = null;   /* 드래그 중 임시값 (반응성 불필요) */
+
+    const onResizeStart = (idx, ev) => {
+      if (!cfCanEdit.value) return;   /* 보기 모드·공유받은 대시보드는 크기 조절 불가 */
+      const c = cards[idx];
+      if (!c) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      const card = ev.currentTarget.closest('[data-card]');
+      const rect = card ? card.getBoundingClientRect() : { width: 0 };
+      const cols = (cfCur.value ? cfCur.value.layoutCols : 4) || 4;
+      const w0 = Math.min(c.panelWidth || 1, cols);
+      const cellW = w0 > 0 ? (rect.width - (w0 - 1) * GRID_GAP) / w0 : rect.width;
+      _rs = { idx, x0: ev.clientX, y0: ev.clientY, w0, h0: c.panelHeight || 1, cellW, cols };
+      resizeState.idx = idx;
+      window.addEventListener('mousemove', onResizeMove);
+      window.addEventListener('mouseup', onResizeEnd);
+      document.body.style.userSelect = 'none';
+    };
+
+    const onResizeMove = (ev) => {
+      if (!_rs) return;
+      const c = cards[_rs.idx];
+      if (!c) return;
+      const stepW = _rs.cellW + GRID_GAP;
+      const stepH = ROW_H + GRID_GAP;
+      const dw = stepW > 0 ? Math.round((ev.clientX - _rs.x0) / stepW) : 0;
+      const dh = stepH > 0 ? Math.round((ev.clientY - _rs.y0) / stepH) : 0;
+      const w = Math.min(_rs.cols, Math.max(1, _rs.w0 + dw));
+      const h = Math.min(3, Math.max(1, _rs.h0 + dh));
+      if (c.panelWidth !== w)  { c.panelWidth = w;  uiState.dirty = true; }
+      if (c.panelHeight !== h) { c.panelHeight = h; uiState.dirty = true; }
+    };
+
+    const onResizeEnd = () => {
+      _rs = null;
+      resizeState.idx = null;
+      window.removeEventListener('mousemove', onResizeMove);
+      window.removeEventListener('mouseup', onResizeEnd);
+      document.body.style.userSelect = '';
+    };
 
     const fnAdjustSpan = (idx, key, delta) => {
       if (!cfIsMine.value) return;
@@ -520,23 +592,47 @@ window.CmDashboardMyMng = {
     const fnWidget = (c) => simState.widgets[c.dashboardItemId] || null;
     const fnGridCols = () => 'repeat(' + ((cfCur.value ? cfCur.value.layoutCols : 4) || 4) + ', 1fr)';
 
+    /* ── 캔버스 높이 맞춤 ─────────────────────────────────────────
+       설정 패널을 접거나 펼치면 캔버스 시작 위치가 달라져 고정 높이로는 아래가 비거나 잘린다.
+       실제 위치를 재서 화면 아래 끝까지 채운다. */
+    const canvasRef = ref(null);
+    const canvasH   = ref(640);
+    const CANVAS_MIN = 360;
+    const fnFitCanvas = () => {
+      const el = canvasRef.value;
+      if (!el) return;
+      /* .bo-main 이 고정 높이 스크롤 컨테이너라 그 하단을 기준으로 재면 스크롤 위치와 무관하다 */
+      const sc  = el.closest('.bo-main');
+      const end = sc ? sc.getBoundingClientRect().bottom : window.innerHeight;
+      const top = el.getBoundingClientRect().top;
+      canvasH.value = Math.max(CANVAS_MIN, Math.round(end - top - 16));
+    };
+    /* 상세 응답이 늦게 도착해 설정 패널이 뒤늦게 그려지면 nextTick 시점의 높이가 틀린다.
+       한 박자 뒤에 한 번 더 잰다. */
+    const fnFitSoon = () => { Vue.nextTick(fnFitCanvas); setTimeout(fnFitCanvas, 300); };
+    /* 레이아웃이 바뀌는 시점마다 다시 잰다 */
+    watch(() => [uiState.settingOpen, uiState.tab, curId.value, cards.length, props.dtlId], fnFitSoon);
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       myDashes, sharedDashes, cards, catalog, deptList, userList,
       uiState, codes, curId, dragState, simState, shareForm, util,
       SHARE_SCOPES, fnScopeLabel, fnScopeIcon,
-      pickModal, onPickUser, onPickDept, cfExcludeUserIds, cfPickedUserIds, cfPickedDeptIds,
-      cfUserTargets, cfDeptTargets, cfShareGroups,
+      pickModal, onPickUser, onPickDept, onPickVendor,
+      cfExcludeUserIds, cfPickedUserIds, cfPickedDeptIds, cfPickedVendorIds,
+      cfUserTargets, cfDeptTargets, cfVendorTargets, cfShareGroups,
       cfCur, cfIsMine, cfCurTabList, cfAuthId, cfViewMode, cfCanEdit,
+      canvasRef, canvasH,
       handleBtnAction,
       onCardDragStart, onCatalogDragStart, onCardDragOver, onCardDrop, onCanvasDragOver, onCanvasDrop, fnDragReset,
       fnCardStyle, fnChartHeight, fnWidget, fnGridCols,
+      resizeState, onResizeStart,
     };
   },
   template: /* html */`
 <bo-page :title="cfViewMode ? ((cfCur ? cfCur.dashboardNm : '대시보드')) : '사용자 대시보드'"
-  :desc-summary="cfViewMode ? '' : '나만의 대시보드를 여러 개 만들고, 공개여부(비공개·전체공개)와 공유대상(부서·사용자)을 설정할 수 있습니다.'">
+  :desc-summary="cfViewMode ? '' : '나만의 대시보드를 여러 개 만들고, 공개여부(비공개·전체공개)와 공유대상(사용자·부서·업체)을 설정할 수 있습니다.'">
   <!-- ===== ■. 대시보드 탭/툴바 (보기 모드에서는 숨김) ====================== -->
   <bo-container v-if="!cfViewMode">
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid #f0f0f0;">
@@ -663,9 +759,8 @@ window.CmDashboardMyMng = {
       <!-- 좌: 항목 카탈로그(열기/닫기 · 자체 스크롤) / 우: 캔버스 -->
       <div style="display:flex;align-items:flex-start;gap:0;">
         <!-- 카탈로그 항목 -->
-        <div v-if="cfCanEdit" :style="{ width: uiState.catalogOpen ? '260px' : '34px' }"
-          style="flex-shrink:0;border-right:1px solid #eee;background:#f4fafe;display:flex;flex-direction:column;
-                 height:640px;transition:width .12s;">
+        <div v-if="cfCanEdit" :style="{ width: uiState.catalogOpen ? '260px' : '34px', height: canvasH + 'px' }"
+          style="flex-shrink:0;border-right:1px solid #eee;background:#f4fafe;display:flex;flex-direction:column;transition:width .12s;">
           <!-- 헤더(열기/닫기) -->
           <div style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px;border-bottom:1px solid #e3eef6;">
             <button :title="uiState.catalogOpen ? '카탈로그 닫기' : '카탈로그 열기'"
@@ -704,7 +799,7 @@ window.CmDashboardMyMng = {
           </template>
         </div>
         <!-- 캔버스 (남은 폭 · 카탈로그와 같은 높이에서 스크롤) -->
-        <div style="flex:1;min-width:0;height:640px;overflow-y:auto;">
+        <div ref="canvasRef" :style="{ height: canvasH + 'px' }" style="flex:1;min-width:0;overflow-y:auto;">
       <div v-if="!cards.length"
         :style="{ outline: dragState.canvasOver ? '2px dashed #e8587a' : 'none' }"
         style="padding:48px;text-align:center;color:#aaa;border-radius:8px;margin:12px;"
@@ -715,9 +810,9 @@ window.CmDashboardMyMng = {
         :style="{ display:'grid', gridTemplateColumns: fnGridCols(), gap:'12px', padding:'12px',
           outline: dragState.canvasOver ? '2px dashed #e8587a' : 'none' }"
         @dragover.prevent="onCanvasDragOver" @drop.prevent="onCanvasDrop">
-        <div v-for="(c, idx) in cards" :key="c.dashboardItemId"
+        <div v-for="(c, idx) in cards" :key="c.dashboardItemId" data-card
           :style="fnCardStyle(c, idx)"
-          style="background:#fff;border:1px solid #eee;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;flex-direction:column;overflow:hidden;"
+          style="position:relative;background:#fff;border:1px solid #eee;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;flex-direction:column;overflow:hidden;"
           @dragover.prevent.stop="onCardDragOver(idx)" @drop.prevent.stop="onCardDrop(idx)">
           <div :draggable="cfCanEdit" @dragstart="onCardDragStart(idx, $event)" @dragend="fnDragReset"
             :style="{ cursor: cfCanEdit ? 'grab' : 'default' }"
@@ -735,6 +830,15 @@ window.CmDashboardMyMng = {
               <button title="항목 제거" style="border:none;background:none;cursor:pointer;font-size:12px;color:#dc2626;padding:1px 3px;"
                 @click="handleBtnAction('card-remove', idx)">✕</button>
             </template>
+          </div>
+          <!-- 우하단 리사이즈 핸들 (드래그로 폭/높이 조절) -->
+          <div v-if="cfCanEdit" :title="'크기 조절 (' + c.panelWidth + '×' + c.panelHeight + ')'"
+            @mousedown="onResizeStart(idx, $event)"
+            :style="{ background: resizeState.idx === idx ? '#e8587a' : 'transparent' }"
+            style="position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;z-index:2;
+                   border-bottom-right-radius:10px;display:flex;align-items:flex-end;justify-content:flex-end;padding:2px;">
+            <span :style="{ color: resizeState.idx === idx ? '#fff' : '#c7c7c7' }"
+              style="font-size:10px;line-height:1;user-select:none;">◢</span>
           </div>
           <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;">
             <template v-if="fnWidget(c)">
@@ -776,6 +880,9 @@ window.CmDashboardMyMng = {
   <bo-cm-popup-modal v-if="pickModal.user" popup-code="user" title="공유할 사용자 선택"
     :multi="true" result-type="array" :exclude-ids="cfExcludeUserIds" :init-selected-ids="cfPickedUserIds"
     @select="onPickUser" @close="pickModal.user = false" />
+  <bo-cm-popup-modal v-if="pickModal.vendor" popup-code="vendor" title="공유할 업체 선택"
+    :multi="true" result-type="array" :init-selected-ids="cfPickedVendorIds"
+    @select="onPickVendor" @close="pickModal.vendor = false" />
   <bo-cm-popup-modal v-if="pickModal.dept" popup-code="dept" title="공유할 부서 선택"
     :multi="true" result-type="array" :init-selected-ids="cfPickedDeptIds"
     @select="onPickDept" @close="pickModal.dept = false" />

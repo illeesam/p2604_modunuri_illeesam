@@ -1,11 +1,15 @@
-/* ShopJoy - 사용자 대시보드 메뉴관리
+/* ShopJoy - 대시보드 메뉴관리 (좌측메뉴 트리 구성)
  *
- *  좌측메뉴 '사용자 대시보드' 그룹에 어떤 대시보드를 어떤 순서·계층으로 보일지 구성한다.
+ *  scope 로 두 화면을 겸한다 — 구성 방식이 완전히 같고 대상만 다르다.
+  *   USER : 개인 대시보드 → 좌측 '사용자 대시보드' 그룹 (내 트리, 나에게만 보임)
+  *   SYS  : 공용 대시보드 → 좌측 '대시보드' 그룹      (사이트 공통, 전원에게 같게 보임)
+ *
+ *  어느 쪽이든 좌측메뉴에 어떤 대시보드를 어떤 순서·계층으로 보일지 구성한다.
  *   - 좌: 내가 볼 수 있는 대시보드 (작성자 · 공개여부 표시)
  *   - 우: 좌측메뉴 트리 (폴더 + 대시보드 항목)
  *   - 좌→우 드래그로 담고, 트리 안에서 끌어 위치를 바꾸고, ✕ 로 뺀다
  *
- *  저장은 cm_dashboard_menu 를 통째 교체한다(내 노드만). 트리가 비어 있으면
+ *  저장은 cm_dashboard_menu 를 통째 교체한다(해당 범위만). 트리가 비어 있으면
  *  좌측메뉴는 "볼 수 있는 대시보드 전체" 로 폴백하므로, 설정 전에는 기존과 동일하다.
  */
 window.CmDashboardMenuMng = {
@@ -13,6 +17,7 @@ window.CmDashboardMenuMng = {
   props: {
     navigate:  { type: Function, required: true },                       // 페이지 이동
     showToast: { type: Function, default: () => {} },                    // 토스트 알림
+    scope:     { type: String,   default: 'USER' },                      // 메뉴범위 (USER 개인 / SYS 공용)
   },
   setup(props) {
 
@@ -21,7 +26,8 @@ window.CmDashboardMenuMng = {
     const { reactive, computed, onMounted } = Vue;
     const showToast = window.boApp ? window.boApp.showToast : props.showToast;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    /* seeded — 저장된 트리가 없어 현재 좌측메뉴 상태로 채워 넣은 상태 (저장 전) */
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, seeded: false });
     const codes   = reactive({});
 
     const myDashes     = reactive([]);   /* 내가 만든 대시보드 */
@@ -34,11 +40,23 @@ window.CmDashboardMenuMng = {
     let   menuSeq   = 0;
     const fnNewKey  = () => 'TMP' + (++menuSeq) + '_' + Date.now().toString().slice(-5);
 
+    /* 범위별 문구·동작 — 이 한 덩어리만 보면 두 화면 차이를 알 수 있다 */
+    const cfIsSys = computed(() => props.scope === 'SYS');
+    const cfMeta  = computed(() => cfIsSys.value
+      ? { title: '대시보드 메뉴관리',        group: '대시보드',        icon: '📊',
+          listNm: '공용 대시보드',           uiNm:  '대시보드메뉴' }
+      : { title: '사용자 대시보드 메뉴관리', group: '사용자 대시보드', icon: '👤',
+          listNm: '내가 볼 수 있는 대시보드', uiNm: '사용자대시보드메뉴' });
+
     const cfSiteId = computed(() => window.boCommonFilter?.siteId || '');
     const cfAuthId = computed(() => {
       const s = window.sfGetBoAuthStore ? window.sfGetBoAuthStore() : null;
       return s && s.svAuthUser ? (s.svAuthUser.authId || '') : '';
     });
+
+    /* 개인화 대시보드 여부 — ownerUserId(운영 표준) 우선, 구 규약(uiCompNm 'MY:' 접두어) fallback.
+       CmDashboardMng.fnIsMyDash 과 같은 판정이라야 두 화면의 유형이 어긋나지 않는다 */
+    const fnIsMyDash = (d) => !!d.ownerUserId || (d.uiCompNm || '').indexOf('MY:') === 0;
 
     /* 공개여부 표기 — 레거시 코드(ALL/DEPT/USER/ME) 호환 정규화 */
     const fnNormScope  = (cd) => (cd === 'PUBLIC' || cd === 'ALL') ? 'PUBLIC' : 'PRIVATE';
@@ -63,13 +81,20 @@ window.CmDashboardMenuMng = {
       await fnLoadMenuTree();
     });
 
-    /* handleLoadDashes — 내가 볼 수 있는 대시보드 (내 것 + 공유받은 것) */
+    /* handleLoadDashes — 트리에 담을 후보 목록
+       SYS  : 공용 대시보드(주인 없음) / USER : 개인 대시보드(내 것 + 공유받은 것) */
     const handleLoadDashes = async () => {
       uiState.loading = true;
       try {
         const res = await boApiSvc.cmDashboard.getList(
-          { siteId: cfSiteId.value, scope: 'accessible' }, '사용자대시보드메뉴', '대시보드조회');
-        const all = (res.data?.data || []).filter(d => d.ownerUserId);   /* 개인 대시보드만 */
+          { siteId: cfSiteId.value, scope: 'accessible' }, cfMeta.value.uiNm, '대시보드조회');
+        const rows = res.data?.data || [];
+        if (cfIsSys.value) {
+          myDashes.splice(0, myDashes.length, ...rows.filter(d => !fnIsMyDash(d)));
+          sharedDashes.splice(0, sharedDashes.length);
+          return;
+        }
+        const all = rows.filter(fnIsMyDash);
         const me  = cfAuthId.value;
         myDashes.splice(0, myDashes.length, ...all.filter(d => d.ownerUserId === me));
         sharedDashes.splice(0, sharedDashes.length, ...all.filter(d => d.ownerUserId !== me));
@@ -80,11 +105,14 @@ window.CmDashboardMenuMng = {
       }
     };
 
-    /* fnLoadMenuTree — 저장된 트리를 불러온다. 없으면 빈 트리(=폴백 상태) */
+    /* fnLoadMenuTree — 저장된 트리를 불러온다. 없으면 지금 좌측메뉴에 보이는 그대로 채운다 */
     const fnLoadMenuTree = async () => {
       try {
-        const res = await boApiSvc.cmDashboard.getMenuTree({ siteId: cfSiteId.value }, '사용자대시보드메뉴', '메뉴트리조회');
+        const res = await boApiSvc.cmDashboard.getMenuTree(
+          { siteId: cfSiteId.value, scope: props.scope }, cfMeta.value.uiNm, '메뉴트리조회');
         const rows = res.data?.data || [];
+        if (!rows.length) { fnSeedFromFallback(); return; }
+        uiState.seeded = false;
         const byParent = {};
         rows.forEach(r => { const p = r.parentNodeId || ''; (byParent[p] = byParent[p] || []).push(r); });
         const flat = [];
@@ -96,6 +124,30 @@ window.CmDashboardMenuMng = {
         walk('', 0);
         menuNodes.splice(0, menuNodes.length, ...flat);
       } catch (e) { console.warn('[메뉴트리 조회 오류]', e); }
+    };
+
+    /* fnSeedFromFallback — 저장된 트리가 없을 때(=폴백 상태) 화면을 비워두지 않는다.
+       좌측메뉴에는 폴백 항목이 이미 보이고 있는데 트리만 비어 있으면 "현재 구성"을 알 수 없다.
+       지금 메뉴에 나오는 것과 똑같이 채워 넣고, 저장 전임을 배너로 알린다.
+       (boApp 의 폴백 규칙과 짝이다 — 한쪽만 바꾸면 화면과 메뉴가 어긋난다) */
+    const fnSeedFromFallback = () => {
+      const seed = cfIsSys.value
+        /* SYS 폴백 = boApp.HOME_FALLBACK_DASH. pageId 로 열리는 공용 대시보드만 메뉴에 있다 */
+        ? cfAllDashes.value.filter(d => fnIsSysMenuDash(d))
+        /* USER 폴백 = 볼 수 있는 개인 대시보드 전체 */
+        : cfAllDashes.value.slice();
+      menuNodes.splice(0, menuNodes.length, ...seed.map(d => ({
+        key: fnNewKey(), parentKey: '', depth: 0, nodeTypeCd: 'ITEM',
+        nodeNm: null, dashboardId: d.dashboardId,
+      })));
+      uiState.seeded = menuNodes.length > 0;
+    };
+
+    /* fnIsSysMenuDash — 좌측 '대시보드' 그룹에 실제로 나오는 공용 대시보드인가.
+       boApp.fnSysDashPageId 와 같은 규칙 (EC대시보드는 사이트별 변형이 pageId 하나로 묶여 있다) */
+    const fnIsSysMenuDash = (d) => {
+      const c = d.uiCompNm || '';
+      return c === 'DashboardBoAppMonitor' || c === 'DashboardBoEc' + (window.BO_SITE_NO || '01');
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러) #################################### */
@@ -110,7 +162,9 @@ window.CmDashboardMenuMng = {
           nodeNm:       n.nodeTypeCd === 'FOLDER' ? (n.nodeNm || '새 폴더') : null,
           dashboardId:  n.dashboardId || null,
         }));
-        await boApiSvc.cmDashboard.saveMenuTree(nodes, { siteId: cfSiteId.value }, '사용자대시보드메뉴', '메뉴트리저장');
+        await boApiSvc.cmDashboard.saveMenuTree(nodes,
+          { siteId: cfSiteId.value, scope: props.scope }, cfMeta.value.uiNm, '메뉴트리저장');
+        uiState.seeded = false;
         showToast('좌측메뉴 구성을 저장했습니다.', 'success');
         await fnLoadMenuTree();
         fnNotifyMenuChanged();
@@ -192,9 +246,10 @@ window.CmDashboardMenuMng = {
       return false;
     };
 
-    /* fnNotifyMenuChanged — 좌측메뉴(사용자대시보드) 갱신 신호 */
+    /* fnNotifyMenuChanged — 좌측메뉴 갱신 신호. boApp 이 받아 해당 그룹을 다시 그린다 */
     const fnNotifyMenuChanged = () => {
-      try { window.dispatchEvent(new CustomEvent('user-dashboard-changed')); } catch (_) {}
+      const ev = cfIsSys.value ? 'sys-dashboard-changed' : 'user-dashboard-changed';
+      try { window.dispatchEvent(new CustomEvent(ev)); } catch (_) {}
     };
 
     /* ##### [05] 사용자 함수 (헬퍼) ############################################### */
@@ -214,7 +269,7 @@ window.CmDashboardMenuMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes, cfAuthId,
+      uiState, codes, cfAuthId, cfIsSys, cfMeta,
       menuNodes, menuDrag, cfAllDashes, cfMenuDashIds, fnNodeLabel,
       fnScopeIcon, fnScopeLabel,
       onMenuDragStart, onMenuDragEnd, onMenuDragOver, fnDropOn,
@@ -222,41 +277,47 @@ window.CmDashboardMenuMng = {
     };
   },
   template: /* html */ `
-<bo-page title="사용자 대시보드 메뉴관리"
-  desc-summary="좌측메뉴 '사용자 대시보드' 그룹에 보일 대시보드를 폴더로 묶어 순서·계층으로 구성합니다.">
+<bo-page :title="cfMeta.title"
+  :desc-summary="'좌측메뉴 ' + cfMeta.group + ' 그룹에 보일 대시보드를 폴더로 묶어 순서·계층으로 구성합니다.'">
   <bo-container>
     <div style="padding:10px 12px;">
       <div style="font-size:11px;color:#888;margin-bottom:8px;">
         좌측 목록에서 <b>우측 트리로 드래그</b>해 좌측메뉴를 구성합니다. 폴더로 묶고, 트리 안에서 끌어 위치를 바꾸고,
-        <b>✕</b> 로 메뉴에서 뺄 수 있습니다(대시보드는 삭제되지 않습니다). 트리가 비어 있으면 볼 수 있는 대시보드가 전부 표시됩니다.</div>
+        <b>✕</b> 로 메뉴에서 뺄 수 있습니다(대시보드는 삭제되지 않습니다). 트리가 비어 있으면 볼 수 있는 대시보드가 전부 표시됩니다.
+        <span v-if="cfIsSys" style="color:#c2410c;font-weight:700;">이 설정은 사이트 공통이라 모든 사용자에게 같게 보입니다.</span></div>
       <div style="display:flex;align-items:flex-start;gap:10px;">
         <!-- 좌: 볼 수 있는 대시보드 -->
         <div style="width:340px;flex-shrink:0;border:1px solid #e5e7eb;border-radius:8px;background:#fff;display:flex;flex-direction:column;height:480px;">
           <div style="flex-shrink:0;padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:11.5px;font-weight:800;color:#444;">
-            📋 내가 볼 수 있는 대시보드 ({{ cfAllDashes.length }})</div>
+            📋 {{ cfMeta.listNm }} ({{ cfAllDashes.length }})</div>
           <div style="flex:1;min-height:0;overflow-y:auto;padding:8px;">
             <div v-for="d in cfAllDashes" :key="d.dashboardId"
               draggable="true" @dragstart="onMenuDragStart('left', d)" @dragend="onMenuDragEnd"
               :style="{ opacity: cfMenuDashIds.has(d.dashboardId) ? 0.45 : 1 }"
               style="display:flex;align-items:center;gap:6px;border:1px solid #eee;border-radius:6px;padding:6px 8px;margin-bottom:5px;cursor:grab;background:#fafbfc;">
-              <span style="font-size:12px;flex-shrink:0;">{{ fnScopeIcon(d.shareScopeCd) }}</span>
+              <span style="font-size:12px;flex-shrink:0;">{{ cfIsSys ? cfMeta.icon : fnScopeIcon(d.shareScopeCd) }}</span>
               <span style="flex:1;min-width:0;">
                 <span style="display:block;font-size:11.5px;font-weight:700;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ d.dashboardNm }}</span>
                 <span style="display:block;font-size:9.5px;color:#aaa;">
-                  작성자 {{ d.ownerUserId === cfAuthId ? '나' : (d.ownerUserId || '-') }} · {{ fnScopeLabel(d.shareScopeCd) }}</span>
+                  <template v-if="cfIsSys">공용 · {{ d.uiCompNm || '-' }}</template>
+                  <template v-else>작성자 {{ d.ownerUserId === cfAuthId ? '나' : (d.ownerUserId || '-') }} · {{ fnScopeLabel(d.shareScopeCd) }}</template></span>
               </span>
               <span v-if="cfMenuDashIds.has(d.dashboardId)" style="flex-shrink:0;font-size:9.5px;color:#4338ca;background:#eef2ff;padding:1px 6px;border-radius:8px;">담김</span>
             </div>
-            <div v-if="!cfAllDashes.length" style="font-size:11px;color:#aaa;padding:6px;">볼 수 있는 대시보드가 없습니다.</div>
+            <div v-if="!cfAllDashes.length" style="font-size:11px;color:#aaa;padding:6px;">{{ cfMeta.listNm }}가 없습니다.</div>
           </div>
         </div>
         <!-- 우: 좌측메뉴 트리 -->
         <div style="flex:1;min-width:0;border:1px solid #e5e7eb;border-radius:8px;background:#fff;display:flex;flex-direction:column;height:480px;">
           <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #f0f0f0;">
-            <span style="font-size:11.5px;font-weight:800;color:#444;">🗂 좌측메뉴 트리 ({{ menuNodes.length }})</span>
+            <span style="font-size:11.5px;font-weight:800;color:#444;">
+              🗂 좌측메뉴 '{{ cfMeta.group }}' 트리 ({{ menuNodes.length }})</span>
             <button class="btn btn-xs" @click="handleBtnAction('menu-addFolder')"
               style="background:#fffbeb;color:#b45309;border:1px solid #fde68a;font-weight:700;">＋ 폴더 추가</button>
           </div>
+          <!-- 저장된 트리가 없어 현재 좌측메뉴 상태를 그대로 불러온 경우 -->
+          <div v-if="uiState.seeded" style="flex-shrink:0;padding:6px 10px;background:#fffbeb;border-bottom:1px solid #fde68a;font-size:10.5px;color:#b45309;">
+            아직 저장된 구성이 없어 <b>지금 좌측메뉴에 보이는 그대로</b> 불러왔습니다. 원하는 대로 바꾼 뒤 [저장]하세요.</div>
           <!-- 트리 본문 (빈 곳에 놓으면 최상위 끝) -->
           <div style="flex:1;min-height:0;overflow-y:auto;padding:8px;"
             @dragover.prevent="onMenuDragOver(null)" @drop.prevent="fnDropOn(null)"
@@ -268,7 +329,8 @@ window.CmDashboardMenuMng = {
                         background: menuDrag.overKey === n.key ? '#eef2ff' : (n.nodeTypeCd === 'FOLDER' ? '#fffbeb' : '#fff'),
                         border: '1px solid ' + (menuDrag.overKey === n.key ? '#6366f1' : '#eee') }"
               style="display:flex;align-items:center;gap:6px;border-radius:6px;padding:5px 8px;margin-bottom:4px;cursor:grab;">
-              <span style="font-size:12px;flex-shrink:0;">{{ n.nodeTypeCd === 'FOLDER' ? '📁' : '👤' }}</span>
+              <span style="font-size:12px;flex-shrink:0;">
+                {{ n.nodeTypeCd === 'FOLDER' ? '📁' : cfMeta.icon }}</span>
               <input v-if="n.nodeTypeCd === 'FOLDER'" v-model="n.nodeNm"
                 style="flex:1;min-width:0;font-size:11.5px;font-weight:700;color:#b45309;border:1px solid #fde68a;border-radius:4px;padding:2px 6px;background:#fff;" />
               <span v-else style="flex:1;min-width:0;font-size:11.5px;font-weight:700;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ fnNodeLabel(n) }}</span>

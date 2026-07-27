@@ -102,7 +102,7 @@ public class BoCmDashboardController {
      *
      * <p>share_scope_cd = 공개여부
      *   PUBLIC : 전체 공개
-     *   PRIVATE(기본) : 소유자 + 공유대상(부서/사용자)만. 대상이 없으면 소유자만(=나만 보기).
+     *   PRIVATE(기본) : 소유자 + 공유대상(부서/사용자/업체)만. 대상이 없으면 소유자만(=나만 보기).
      * <p>공유대상은 부서(share_dept_id)와 사용자(share_user_ids)를 각각 ^구분 다중 저장하며 OR 로 판정.
      * <p>레거시 호환: ME→PRIVATE(대상 없음), ALL→PUBLIC, DEPT/USER→PRIVATE(각 대상 보유)
      */
@@ -113,9 +113,10 @@ public class BoCmDashboardController {
             ? "PRIVATE" : d.getShareScopeCd();
         if ("PUBLIC".equals(scopeCd) || "ALL".equals(scopeCd)) return true;
         if ("ME".equals(scopeCd)) return false;   /* 레거시: 나만 */
-        /* PRIVATE (+ 레거시 DEPT/USER): 공유대상 포함 여부 (부서 OR 사용자) */
+        /* PRIVATE (+ 레거시 DEPT/USER): 공유대상 포함 여부 (부서 OR 사용자 OR 업체) */
         return containsToken(d.getShareDeptId(), me.deptId())
-            || containsToken(d.getShareUserIds(), me.authId());
+            || containsToken(d.getShareUserIds(), me.authId())
+            || containsToken(d.getShareVendorIds(), me.vendorId());
     }
 
     /** ^구분 다중값(^A^B^) 또는 단일값에 target 이 포함되는지 */
@@ -157,6 +158,7 @@ public class BoCmDashboardController {
         if (body.getShareScopeCd() != null) entity.setShareScopeCd(body.getShareScopeCd().isBlank() ? null : body.getShareScopeCd());
         if (body.getShareDeptId() != null)  entity.setShareDeptId(body.getShareDeptId().isBlank() ? null : body.getShareDeptId());
         if (body.getShareUserIds() != null) entity.setShareUserIds(body.getShareUserIds().isBlank() ? null : body.getShareUserIds());
+        if (body.getShareVendorIds() != null) entity.setShareVendorIds(body.getShareVendorIds().isBlank() ? null : body.getShareVendorIds());
         if (body.getRemark() != null)      entity.setRemark(body.getRemark());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
@@ -242,33 +244,50 @@ public class BoCmDashboardController {
             @RequestBody CmDashboardItemData body) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemDataService.upsert(body)));
     }
-    /* ── 좌측메뉴 트리 (사용자별) ──────────────────────────────
+    /* ── 좌측메뉴 트리 ─────────────────────────────────────────
      * 폴더 + 대시보드 아이템으로 구성. 노드가 하나도 없으면 프론트가
-     * "볼 수 있는 대시보드 전체" 로 폴백한다. */
+     * "볼 수 있는 대시보드 전체" 로 폴백한다.
+     *
+     * scope = USER : 사용자별 트리(좌측 `사용자 대시보드` 그룹). 소유자는 세션 고정
+     * scope = SYS  : 사이트 공통 트리(좌측 `대시보드` 그룹). 주인이 없어 전원에게 같게 보인다 */
+
+    /** 클라이언트가 보낸 scope 를 USER/SYS 둘 중 하나로 좁힌다 — 그 외 값은 USER 로 본다 */
+    private static String normScope(String scope) {
+        return "SYS".equalsIgnoreCase(scope) ? "SYS" : "USER";
+    }
 
     @GetMapping("/menu/tree")
     public ResponseEntity<ApiResponse<List<CmDashboardMenu>>> menuTree(
-            @RequestParam(required = false) String siteId) {
+            @RequestParam(required = false) String siteId,
+            @RequestParam(required = false) String scope) {
         String sid = siteId == null ? SecurityUtil.getSiteId() : siteId;
+        String scp = normScope(scope);
+        if ("SYS".equals(scp)) {
+            return ResponseEntity.ok(ApiResponse.ok(
+                cmDashboardMenuRepository.findBySiteIdAndMenuScopeCdOrderBySortOrdAsc(sid, scp)));
+        }
         String uid = SecurityUtil.getAuthUser().authId();
         return ResponseEntity.ok(ApiResponse.ok(
-            cmDashboardMenuRepository.findBySiteIdAndOwnerUserIdOrderBySortOrdAsc(sid, uid)));
+            cmDashboardMenuRepository.findBySiteIdAndMenuScopeCdAndOwnerUserIdOrderBySortOrdAsc(sid, scp, uid)));
     }
 
     /**
-     * 트리 통째 저장 — 내 노드를 전부 지우고 받은 목록으로 다시 넣는다.
+     * 트리 통째 저장 — 해당 범위의 노드를 전부 지우고 받은 목록으로 다시 넣는다.
      *
      * <p>부분 갱신보다 단순하고 순서·부모가 한 번에 정합하게 맞는다.
-     * 소유자는 서버가 세션에서 채우므로 남의 트리를 건드릴 수 없다.</p>
+     * USER 범위의 소유자는 서버가 세션에서 채우므로 남의 트리를 건드릴 수 없다.</p>
      */
     @PostMapping("/menu/save")
     @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<ApiResponse<Integer>> menuSave(
             @RequestParam(required = false) String siteId,
+            @RequestParam(required = false) String scope,
             @RequestBody List<CmDashboardMenu> nodes) {
         String sid = siteId == null ? SecurityUtil.getSiteId() : siteId;
+        String scp = normScope(scope);
         String uid = SecurityUtil.getAuthUser().authId();
-        cmDashboardMenuRepository.deleteBySiteIdAndOwnerUserId(sid, uid);
+        if ("SYS".equals(scp)) cmDashboardMenuRepository.deleteBySiteIdAndMenuScopeCd(sid, scp);
+        else                   cmDashboardMenuRepository.deleteBySiteIdAndMenuScopeCdAndOwnerUserId(sid, scp, uid);
         cmDashboardMenuRepository.flush();
         LocalDateTime now = LocalDateTime.now();
         /* 클라이언트는 임시 키로 부모를 가리킨다. 실제 ID 를 새로 만들면서 키→ID 로 바꿔준다
@@ -283,7 +302,9 @@ public class BoCmDashboardController {
             n.setParentNodeId(pk == null || pk.isBlank() ? null : keyToId.get(pk));
             n.setMenuNodeId(keyToId.get(n.getMenuNodeId()));
             n.setSiteId(sid);
-            n.setOwnerUserId(uid);            /* 소유자는 세션 고정 — 클라이언트 값 무시 */
+            n.setMenuScopeCd(scp);
+            /* SYS 는 주인이 없다. USER 는 세션 고정 — 클라이언트 값 무시 */
+            n.setOwnerUserId("SYS".equals(scp) ? null : uid);
             n.setSortOrd(++i * 10);
             if (n.getUseYn() == null) n.setUseYn("Y");
             n.setRegBy(uid); n.setRegDate(now);

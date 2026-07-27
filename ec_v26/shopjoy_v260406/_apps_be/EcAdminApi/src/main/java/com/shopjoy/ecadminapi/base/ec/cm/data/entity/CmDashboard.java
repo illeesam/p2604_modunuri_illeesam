@@ -63,6 +63,10 @@ public class CmDashboard extends BaseEntity {
     @Column(name = "share_user_ids", length = 2000)
     private String shareUserIds;
 
+    @Comment("공유대상 업체ID 멀티값 (^V1^V2^)")
+    @Column(name = "share_vendor_ids", length = 1000)
+    private String shareVendorIds;
+
     @Comment("비고")
     @Column(name = "remark", length = 500)
     private String remark;
