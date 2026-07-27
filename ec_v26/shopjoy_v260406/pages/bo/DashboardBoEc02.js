@@ -104,7 +104,7 @@ window.DashboardBoEc02 = {
     const toggleAll = (key, all) => { filters[key] = filters[key].length === all.length ? [] : [...all]; };
     const isSel     = (list, v) => list.includes(v);
 
-    /* 위젯 소스정보 메타 — compId별 API/파라미터/차트 설명 */
+    /* 항목 소스정보 메타 — compId별 API/파라미터/차트 설명 */
     const WIDGET_SRC = {
       COMP0101: { compId:'COMP0101', chartType:'bar (세로 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0101', fields:'col1Nm(월라벨) / col1Num(매출액)', desc:'월별 매출 합계. 14개월 기간 기준 집계.',
         tag:'<co-echart\n  :option="cfOpt0101"\n  height="260px"\n/>',
@@ -164,7 +164,7 @@ window.DashboardBoEc02 = {
       endYmd:   (filters.endDt   || '').replace(/-/g, ''),
     });
 
-    /* 위젯 정보 팝오버 열기
+    /* 항목 정보 팝오버 열기
      * optGetter  : () => ECharts option 반환 함수 (없으면 null)
      * dataKey    : dash[dataKey] 배열을 원시 데이터로 사용 (없으면 null)
      * rawOverride: dash 바깥의 데이터를 직접 전달 (없으면 undefined)
@@ -318,7 +318,7 @@ window.DashboardBoEc02 = {
       try {
         const startYmd = (filters.startDt || '').replace(/-/g, '');
         const endYmd   = (filters.endDt   || '').replace(/-/g, '');
-        /* siteId 필수 — 미전송 시 백엔드가 전체 아이템에서 itemKey 첫 매칭을 잡아 오연결될 수 있음 */
+        /* siteId 필수 — 미전송 시 백엔드가 전체 항목에서 itemKey 첫 매칭을 잡아 오연결될 수 있음 */
         const siteId = window.boCommonFilter?.siteId || '2604010000000001';
         const items = COMP_IDS.map(compId => ({ compId, uiNm: 'DashboardBoEc02', siteId, startYmd, endYmd }));
         const res = await boApiSvc.cmDashboard.getData(items, '대시보드', '조회');
@@ -828,7 +828,7 @@ window.DashboardBoEc02 = {
     <!-- 1) 월별 매출 막대 -->
     <bo-container v-show="showPanel('sales')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'월별 매출현황',()=>cfOpt0101,'info0101',undefined,'COMP0101')" title="위젯 정보">💰</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'월별 매출현황',()=>cfOpt0101,'info0101',undefined,'COMP0101')" title="항목 정보">💰</button>
         월별 매출현황 (14개월)
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(dash.info0101.reduce((a,r)=>a+(r.col1Num||0),0)) }}원</span>
@@ -839,7 +839,7 @@ window.DashboardBoEc02 = {
     <!-- 2) 가입/탈퇴 -->
     <bo-container v-show="showPanel('member')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'가입/탈퇴 현황',()=>cfOpt0102,'info0102',undefined,'COMP0102')" title="위젯 정보">👥</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'가입/탈퇴 현황',()=>cfOpt0102,'info0102',undefined,'COMP0102')" title="항목 정보">👥</button>
         월별 고객 가입/탈퇴자 현황 (14개월)
       </div>
       <co-echart :option="cfOpt0102" height="260px" />
@@ -848,7 +848,7 @@ window.DashboardBoEc02 = {
     <!-- 3) 상품 클릭 -->
     <bo-container v-show="showPanel('click')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'상품상세 클릭',()=>cfOpt0103,'info0103',undefined,'COMP0103')" title="위젯 정보">🖱</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'상품상세 클릭',()=>cfOpt0103,'info0103',undefined,'COMP0103')" title="항목 정보">🖱</button>
         월별 상품상세 클릭 현황 (14개월)
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;">총 {{ fmt(dash.info0103.reduce((a,r)=>a+(r.col1Num||0),0)) }}회</span>
@@ -859,7 +859,7 @@ window.DashboardBoEc02 = {
     <!-- 4) 주문완료 -->
     <bo-container v-show="showPanel('order')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'주문완료 현황',()=>cfOpt0104,'info0104',undefined,'COMP0104')" title="위젯 정보">📋</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'주문완료 현황',()=>cfOpt0104,'info0104',undefined,'COMP0104')" title="항목 정보">📋</button>
         월별 주문완료 현황 (14개월)
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;">총 {{ fmt(dash.info0104.reduce((a,r)=>a+(r.col1Num||0),0)) }}건</span>
@@ -870,7 +870,7 @@ window.DashboardBoEc02 = {
     <!-- 5) 채널별 매출 멀티라인 -->
     <bo-container v-show="showPanel('channel')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'채널별 매출',()=>cfOpt0201,'info0201',undefined,'COMP0201')" title="위젯 정보">📺</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'채널별 매출',()=>cfOpt0201,'info0201',undefined,'COMP0201')" title="항목 정보">📺</button>
         월별 판매채널별 매출현황 (14개월)
       </div>
       <co-echart :option="cfOpt0201" height="300px" />
@@ -879,7 +879,7 @@ window.DashboardBoEc02 = {
     <!-- 6) 핵심지표 KPI -->
     <bo-container v-show="showPanel('kpi')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'핵심지표 KPI',null,'info0202',undefined,'COMP0202')" title="위젯 정보">🎯</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'핵심지표 KPI',null,'info0202',undefined,'COMP0202')" title="항목 정보">🎯</button>
         핵심지표
       </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
@@ -904,7 +904,7 @@ window.DashboardBoEc02 = {
     <!-- 7) 상품 TOP 7 수평 막대 -->
     <bo-container v-show="showPanel('topProducts')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'상품 TOP 7',()=>cfOpt0203,'info0203',undefined,'COMP0203')" title="위젯 정보">📦</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'상품 TOP 7',()=>cfOpt0203,'info0203',undefined,'COMP0203')" title="항목 정보">📦</button>
         상품별 매출 TOP 7
       </div>
       <co-echart :option="cfOpt0203" height="240px" />
@@ -913,7 +913,7 @@ window.DashboardBoEc02 = {
     <!-- 8) 채널 도넛 -->
     <bo-container v-show="showPanel('channelMix')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'판매 채널별',()=>cfOpt0204,'info0204',undefined,'COMP0204')" title="위젯 정보">📱</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'판매 채널별',()=>cfOpt0204,'info0204',undefined,'COMP0204')" title="항목 정보">📱</button>
         판매 채널별
       </div>
       <co-echart :option="cfOpt0204" height="220px" />
@@ -922,7 +922,7 @@ window.DashboardBoEc02 = {
     <!-- 9) 디바이스 도넛 -->
     <bo-container v-show="showPanel('deviceMix')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'디바이스별',()=>cfOpt0301,'info0301',undefined,'COMP0301')" title="위젯 정보">💻</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'디바이스별',()=>cfOpt0301,'info0301',undefined,'COMP0301')" title="항목 정보">💻</button>
         디바이스별
       </div>
       <co-echart :option="cfOpt0301" height="220px" />
@@ -931,7 +931,7 @@ window.DashboardBoEc02 = {
     <!-- 10) 시간대 도넛 -->
     <bo-container v-show="showPanel('timeMix')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'시간대별',()=>cfOpt0302,'info0302',undefined,'COMP0302')" title="위젯 정보">⏰</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'시간대별',()=>cfOpt0302,'info0302',undefined,'COMP0302')" title="항목 정보">⏰</button>
         시간대별
       </div>
       <co-echart :option="cfOpt0302" height="220px" />
@@ -940,7 +940,7 @@ window.DashboardBoEc02 = {
     <!-- 11) 지역별 수평 막대 -->
     <bo-container v-show="showPanel('region')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'지역별 매출',()=>cfOpt0303,'info0303',undefined,'COMP0303')" title="위젯 정보">🗺</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'지역별 매출',()=>cfOpt0303,'info0303',undefined,'COMP0303')" title="항목 정보">🗺</button>
         지역별 매출현황
       </div>
       <co-echart :option="cfOpt0303" height="220px" />
@@ -949,7 +949,7 @@ window.DashboardBoEc02 = {
     <!-- 12) 시간대 추이 꺾은선 -->
     <bo-container v-show="showPanel('hourly')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'시간대별 주문 추이',()=>cfOpt0304,'info0304',undefined,'COMP0304')" title="위젯 정보">⏱</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'시간대별 주문 추이',()=>cfOpt0304,'info0304',undefined,'COMP0304')" title="항목 정보">⏱</button>
         시간대별 주문 추이 (24H)
       </div>
       <co-echart :option="cfOpt0304" height="180px" />
@@ -958,7 +958,7 @@ window.DashboardBoEc02 = {
     <!-- 13) 영업지표 레이더 -->
     <bo-container v-show="showPanel('radar')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'영업 지표',()=>cfOpt0401,'info0401',undefined,'COMP0401')" title="위젯 정보">⚡</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'영업 지표',()=>cfOpt0401,'info0401',undefined,'COMP0401')" title="항목 정보">⚡</button>
         영업 지표 비교
       </div>
       <co-echart :option="cfOpt0401" height="220px" />
@@ -967,7 +967,7 @@ window.DashboardBoEc02 = {
     <!-- 14) 경제 수준별 면적 -->
     <bo-container v-show="showPanel('economy')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'경제 수준별 매출',()=>cfOpt0402,'info0402',undefined,'COMP0402')" title="위젯 정보">💼</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'경제 수준별 매출',()=>cfOpt0402,'info0402',undefined,'COMP0402')" title="항목 정보">💼</button>
         경제 수준별 매출현황
       </div>
       <co-echart :option="cfOpt0402" height="220px" />
@@ -976,7 +976,7 @@ window.DashboardBoEc02 = {
     <!-- 15) 배송 조건 도넛 -->
     <bo-container v-show="showPanel('shipping')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'배송 조건별 매출',()=>cfOpt0403,'info0403',undefined,'COMP0403')" title="위젯 정보">🚚</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'배송 조건별 매출',()=>cfOpt0403,'info0403',undefined,'COMP0403')" title="항목 정보">🚚</button>
         배송 조건별 매출현황
       </div>
       <co-echart :option="cfOpt0403" height="220px" />
@@ -985,7 +985,7 @@ window.DashboardBoEc02 = {
     <!-- 16) X-View 실시간 히트맵 -->
     <bo-container v-show="showPanel('xview')" card-style="padding:14px;" style="grid-column:1/-1;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
-        <button class="dash-info-btn" @click.stop="fnOpenXviewInfo($event)" title="위젯 정보">🔥</button>
+        <button class="dash-info-btn" @click.stop="fnOpenXviewInfo($event)" title="항목 정보">🔥</button>
         X-View 실시간 트랜잭션 히트맵
         <span style="font-size:10px;font-weight:400;color:#10b981;background:#f0fdf4;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;">● LIVE</span>
         <span style="flex:1;"></span>
@@ -1011,7 +1011,7 @@ window.DashboardBoEc02 = {
 
   </div>
 
-  <!-- 위젯 정보 팝오버 -->
+  <!-- 항목 정보 팝오버 -->
   <teleport to="body">
     <div v-if="uiState.infoPanel"
       @click.stop
@@ -1073,7 +1073,7 @@ window.DashboardBoEc02 = {
           </div>
           <!-- 설명 -->
           <div>
-            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">위젯 설명</div>
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">항목 설명</div>
             <div style="background:#f0fdf4;border-left:3px solid #10b981;border-radius:0 6px 6px 0;padding:8px 12px;color:#065f46;font-size:11px;line-height:1.7;font-family:sans-serif;">{{ uiState.infoPanel.src.desc }}</div>
           </div>
           <!-- 템플릿 마크업 -->

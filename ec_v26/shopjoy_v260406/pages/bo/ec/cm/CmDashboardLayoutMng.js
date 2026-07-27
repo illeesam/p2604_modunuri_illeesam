@@ -1,7 +1,7 @@
-/* ShopJoy Admin - 대시보드 배치설정
- * 선택한 대시보드의 패널(cm_dashboard_item)을 CSS Grid 캔버스에 카드로 표시하고
+/* ShopJoy Admin - 대시보드 항목배치
+ * 선택한 대시보드의 항목(cm_dashboard_item)을 CSS Grid 캔버스에 카드로 표시하고
  *  - 카드 헤더 드래그&드롭 → 배치 순서 변경 (sortOrd 재계산)
- *  - ◀▶▲▼ 버튼 → 패널 폭/높이(span) 조절, 👁 → 표시/숨김(useYn)
+ *  - ◀▶▲▼ 버튼 → 항목 폭/높이(span) 조절, 👁 → 표시/숨김(useYn)
  *  - 조건(기간) + [시뮬레이션] → cm_dashboard_item_data 실데이터로 차트 미리보기
  *  - [저장] → item/save-list(base) 일괄 반영
  * 의존: window.cmDashWidgetUtil (CmDashboardWidgetUtil.js 선행 로드)
@@ -21,7 +21,7 @@ window.CmDashboardLayoutMng = {
     const util = window.cmDashWidgetUtil;
 
     const dashboards = reactive([]);  /* 대시보드 select 옵션 */
-    const cards      = reactive([]);  /* 캔버스 카드(패널 편집 사본) — 배열 순서 = 배치 순서 */
+    const cards      = reactive([]);  /* 캔버스 카드(항목 편집 사본) — 배열 순서 = 배치 순서 */
     const uiState = reactive({ loading: false, saving: false, isPageCodeLoad: false, dirty: false });
     const codes = reactive({});
 
@@ -74,7 +74,7 @@ window.CmDashboardLayoutMng = {
     /* handleLoadDashboards — 대시보드 select 옵션 로드 */
     const handleLoadDashboards = async () => {
       try {
-        const res = await boApiSvc.cmDashboard.getList({ siteId: cfSiteId.value }, '대시보드배치설정', '대시보드조회');
+        const res = await boApiSvc.cmDashboard.getList({ siteId: cfSiteId.value }, '대시보드항목배치', '대시보드조회');
         const list = res.data?.data || [];
         dashboards.splice(0, dashboards.length, ...list);
       } catch (err) {
@@ -82,7 +82,7 @@ window.CmDashboardLayoutMng = {
       }
     };
 
-    /* handleSelectDash — 대시보드 선택 → 패널 카드 로드 */
+    /* handleSelectDash — 대시보드 선택 → 항목 카드 로드 */
     const handleSelectDash = async (dashboardId) => {
       layout.dashboardId = dashboardId;
       const dash = cfSelectedDash.value;
@@ -90,13 +90,13 @@ window.CmDashboardLayoutMng = {
       await handleLoadCards();
     };
 
-    /* handleLoadCards — 선택 대시보드의 패널을 카드 사본으로 로드 (되돌리기 겸용) */
+    /* handleLoadCards — 선택 대시보드의 항목을 카드 사본으로 로드 (되돌리기 겸용) */
     const handleLoadCards = async () => {
       if (!layout.dashboardId) { cards.splice(0, cards.length); return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.cmDashboard.getItemList(
-          { siteId: cfSiteId.value, dashboardId: layout.dashboardId }, '대시보드배치설정', '패널조회');
+          { siteId: cfSiteId.value, dashboardId: layout.dashboardId }, '대시보드항목배치', '항목조회');
         const list = (res.data?.data || []).filter(i => i.dashboardId === layout.dashboardId);
         list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
         cards.splice(0, cards.length, ...list.map(i => ({
@@ -110,7 +110,7 @@ window.CmDashboardLayoutMng = {
         Object.keys(simState.widgets).forEach(k => delete simState.widgets[k]);
         if (simState.on) await handleLoadSimData();
       } catch (err) {
-        showToast(err.response?.data?.message || err.message || '패널 조회 오류', 'error', 0);
+        showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
       } finally {
         uiState.loading = false;
       }
@@ -122,7 +122,7 @@ window.CmDashboardLayoutMng = {
       if (simState.on) await handleLoadSimData();
     };
 
-    /* handleLoadSimData — 패널별 실데이터 조회 + 위젯 빌드 (기간 조건 클라이언트 필터) */
+    /* handleLoadSimData — 항목별 실데이터 조회 + 항목 빌드 (기간 조건 클라이언트 필터) */
     const handleLoadSimData = async () => {
       simState.loading = true;
       const startYmd = (cond.dateRangeStart || '').replace(/-/g, '');
@@ -130,7 +130,7 @@ window.CmDashboardLayoutMng = {
       try {
         await Promise.all(cards.map(async (c) => {
           if (c.realtimeYn === 'Y') { simState.widgets[c.dashboardItemId] = { kind: 'realtime' }; return; }
-          /* 개인화 복사 패널은 optionJson._srcItemId 로 원본 데이터 참조 */
+          /* 개인화 복사 항목은 optionJson._srcItemId 로 원본 데이터 참조 */
           let srcId = c.dashboardItemId;
           try {
             const opt = c.optionJson ? JSON.parse(c.optionJson) : null;
@@ -143,7 +143,7 @@ window.CmDashboardLayoutMng = {
           if (startYmd ? !endYmd : endYmd) { /* 한쪽만 입력 시 서버필터 미적용(BETWEEN 불가) */
             delete params.startYmd; delete params.endYmd;
           }
-          const res = await boApiSvc.cmDashboard.getItemDataList(params, '대시보드배치설정', '데이터조회');
+          const res = await boApiSvc.cmDashboard.getItemDataList(params, '대시보드항목배치', '데이터조회');
           const rows = util.filterRows(res.data?.data || [], startYmd, endYmd);
           simState.widgets[c.dashboardItemId] = util.buildWidget(c, rows);
         }));
@@ -165,10 +165,10 @@ window.CmDashboardLayoutMng = {
           sortOrd: (i + 1) * 10,
           panelWidth: c.panelWidth, panelHeight: c.panelHeight, useYn: c.useYn,
         }));
-        if (rows.length) await boApiSvc.cmDashboard.itemSaveList('base', rows, '대시보드배치설정', '배치저장');
+        if (rows.length) await boApiSvc.cmDashboard.itemSaveList('base', rows, '대시보드항목배치', '배치저장');
         const dash = cfSelectedDash.value;
         if (dash ? dash.layoutCols !== layout.layoutCols : false) {
-          await boApiSvc.cmDashboard.update(layout.dashboardId, { layoutCols: layout.layoutCols }, '대시보드배치설정', '열수저장');
+          await boApiSvc.cmDashboard.update(layout.dashboardId, { layoutCols: layout.layoutCols }, '대시보드항목배치', '열수저장');
           dash.layoutCols = layout.layoutCols;
         }
         showToast('배치가 저장되었습니다.', 'success');
@@ -201,6 +201,57 @@ window.CmDashboardLayoutMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼) ############################################### */
 
+    /* ── 우하단 모서리 드래그 리사이즈 ───────────────────────────────
+       CSS grid 의 span 은 정수라 픽셀 이동량을 셀 단위로 환산해 span 을 바꾼다.
+       셀 폭은 카드 실측폭에서 역산한다 — 컨테이너 폭·gap 을 따로 알 필요가 없다.
+         카드폭 = w*셀폭 + (w-1)*gap  →  셀폭 = (카드폭 - (w-1)*gap) / w
+       높이는 fnCardStyle 의 minHeight 규칙(행당 150 + gap 12)을 그대로 쓴다. */
+    const GRID_GAP = 12;
+    const ROW_H    = 150;
+    const resizeState = reactive({ idx: null });
+    let   _rs = null;   /* 드래그 중 임시값 (반응성 불필요) */
+
+    /* onResizeStart — 핸들 mousedown */
+    const onResizeStart = (idx, ev) => {
+      const c = cards[idx];
+      if (!c) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      const card = ev.currentTarget.closest('[data-card]');
+      const rect = card ? card.getBoundingClientRect() : { width: 0 };
+      const w0 = Math.min(c.panelWidth || 1, layout.layoutCols);
+      const cellW = w0 > 0 ? (rect.width - (w0 - 1) * GRID_GAP) / w0 : rect.width;
+      _rs = { idx, x0: ev.clientX, y0: ev.clientY, w0, h0: c.panelHeight || 1, cellW };
+      resizeState.idx = idx;
+      window.addEventListener('mousemove', onResizeMove);
+      window.addEventListener('mouseup', onResizeEnd);
+      document.body.style.userSelect = 'none';   /* 드래그 중 텍스트 선택 방지 */
+    };
+
+    /* onResizeMove — 이동량을 셀 수로 환산해 span 갱신 */
+    const onResizeMove = (ev) => {
+      if (!_rs) return;
+      const c = cards[_rs.idx];
+      if (!c) return;
+      const stepW = _rs.cellW + GRID_GAP;
+      const stepH = ROW_H + GRID_GAP;
+      const dw = stepW > 0 ? Math.round((ev.clientX - _rs.x0) / stepW) : 0;
+      const dh = stepH > 0 ? Math.round((ev.clientY - _rs.y0) / stepH) : 0;
+      const w = Math.min(layout.layoutCols, Math.max(1, _rs.w0 + dw));
+      const h = Math.min(3, Math.max(1, _rs.h0 + dh));
+      if (c.panelWidth !== w)  { c.panelWidth = w;  uiState.dirty = true; }
+      if (c.panelHeight !== h) { c.panelHeight = h; uiState.dirty = true; }
+    };
+
+    /* onResizeEnd — 정리 */
+    const onResizeEnd = () => {
+      _rs = null;
+      resizeState.idx = null;
+      window.removeEventListener('mousemove', onResizeMove);
+      window.removeEventListener('mouseup', onResizeEnd);
+      document.body.style.userSelect = '';
+    };
+
     /* fnAdjustSpan — 카드 폭/높이 span 조절 (폭 1~layoutCols, 높이 1~3) */
     const fnAdjustSpan = (idx, key, delta) => {
       const c = cards[idx];
@@ -232,11 +283,12 @@ window.CmDashboardLayoutMng = {
       cfSelectedDash, util,
       handleBtnAction, onCardDragStart, onCardDragOver, onCardDrop, onCardDragEnd,
       fnCardStyle, fnChartHeight, fnWidget,
+      resizeState, onResizeStart,
     };
   },
   template: /* html */`
-<bo-page title="대시보드 배치설정"
-  desc-summary="패널 카드를 드래그해 배치 순서를 바꾸고, 폭/높이/표시 여부를 조정합니다. 시뮬레이션으로 실데이터 미리보기를 확인한 뒤 저장하세요.">
+<bo-page title="대시보드 항목배치"
+  desc-summary="항목 카드를 드래그해 배치 순서를 바꾸고, 폭/높이/표시 여부를 조정합니다. 시뮬레이션으로 실데이터 미리보기를 확인한 뒤 저장하세요.">
   <!-- ===== ■. 조건/도구 영역 =============================================== -->
   <bo-container>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;">
@@ -269,14 +321,14 @@ window.CmDashboardLayoutMng = {
   </bo-container>
   <!-- ===== ■. 배치 캔버스 ================================================== -->
   <bo-container :title="'배치 캔버스' + (cfSelectedDash ? ' — ' + cfSelectedDash.dashboardNm : '')"
-    :count-text="'패널 ' + cards.length + '개' + (simState.loading ? ' · 데이터 조회중…' : '')">
+    :count-text="'항목 ' + cards.length + '개' + (simState.loading ? ' · 데이터 조회중…' : '')">
     <div v-if="!cards.length" style="padding:48px;text-align:center;color:#aaa;">
-      {{ uiState.loading ? '불러오는 중...' : '패널이 없습니다. 대시보드 기준관리에서 패널을 등록하세요.' }}
+      {{ uiState.loading ? '불러오는 중...' : '항목이 없습니다. 대시보드 항목관리에서 항목을 등록하세요.' }}
     </div>
     <div v-else :style="{ display:'grid', gridTemplateColumns:'repeat(' + layout.layoutCols + ', 1fr)', gap:'12px', padding:'12px' }">
-      <div v-for="(c, idx) in cards" :key="c.dashboardItemId"
+      <div v-for="(c, idx) in cards" :key="c.dashboardItemId" data-card
         :style="fnCardStyle(c, idx)"
-        style="background:#fff;border:1px solid #eee;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;flex-direction:column;overflow:hidden;"
+        style="position:relative;background:#fff;border:1px solid #eee;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;flex-direction:column;overflow:hidden;"
         @dragover.prevent="onCardDragOver(idx)" @drop.prevent="onCardDrop(idx)">
         <!-- 카드 헤더 (드래그 핸들) -->
         <div draggable="true" @dragstart="onCardDragStart(idx, $event)" @dragend="onCardDragEnd"
@@ -294,6 +346,15 @@ window.CmDashboardLayoutMng = {
           <button :title="c.useYn === 'Y' ? '숨기기' : '표시하기'" style="border:none;background:none;cursor:pointer;font-size:12px;padding:1px 3px;"
             @click="handleBtnAction('card-toggleUse', idx)">{{ c.useYn === 'Y' ? '👁' : '🚫' }}</button>
         </div>
+        <!-- 우하단 리사이즈 핸들 (드래그로 폭/높이 조절) -->
+        <div :title="'크기 조절 (' + c.panelWidth + '×' + c.panelHeight + ')'"
+          @mousedown="onResizeStart(idx, $event)"
+          :style="{ background: resizeState.idx === idx ? '#e8587a' : 'transparent' }"
+          style="position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;z-index:2;
+                 border-bottom-right-radius:10px;display:flex;align-items:flex-end;justify-content:flex-end;padding:2px;">
+          <span :style="{ color: resizeState.idx === idx ? '#fff' : '#c7c7c7' }"
+            style="font-size:10px;line-height:1;user-select:none;">◢</span>
+        </div>
         <!-- 카드 본문 -->
         <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;">
           <template v-if="simState.on">
@@ -306,7 +367,7 @@ window.CmDashboardLayoutMng = {
                 </div>
               </div>
               <div v-else-if="fnWidget(c).kind === 'realtime'" style="text-align:center;color:#aaa;font-size:11px;">
-                🔴 실시간 위젯<br/>시뮬레이션 미지원
+                🔴 실시간 항목<br/>시뮬레이션 미지원
               </div>
               <div v-else-if="fnWidget(c).kind === 'empty'" style="text-align:center;color:#ccc;font-size:11px;">데이터 없음</div>
               <co-echart v-else-if="fnWidget(c).kind === 'chart'" :option="fnWidget(c).option" :height="fnChartHeight(c)" style="width:100%;" />

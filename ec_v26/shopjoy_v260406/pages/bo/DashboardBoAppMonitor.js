@@ -123,7 +123,7 @@ window.DashboardBoAppMonitor = {
     };
     const cfXviewRangeSelectValue = computed(() => xviewRangeIsCustom.value ? 'custom' : xviewRange.value);
 
-    /* 응답시간 등급(집계값 전용, err 없음) — 응답시간Top10 등 평균값 집계 위젯에서 사용
+    /* 응답시간 등급(집계값 전용, err 없음) — 응답시간Top10 등 평균값 집계 항목에서 사용
      * 좋음 <500ms(초록) / 보통 <1500ms(파랑) / 경고 ≥1500ms(오렌지) */
     const RT_GRADES = [
       { max: 500,      key: 'good', label: '좋음', color: '#10b981' },
@@ -167,7 +167,7 @@ window.DashboardBoAppMonitor = {
         attrs:[{k:':option',v:'cfOptStatusPie',d:'pie series — 좋음/보통/경고/오류 4종 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
     };
 
-    /* 위젯 정보 팝오버 열기
+    /* 항목 정보 팝오버 열기
      * optGetter  : () => ECharts option 반환 함수 (없으면 null)
      * rawOverride: 원시 데이터로 사용할 배열
      * srcKey     : WIDGET_SRC 키
@@ -512,7 +512,7 @@ window.DashboardBoAppMonitor = {
     };
 
     /* onTopUrlClick / onRtTopClick — 호출량·응답시간 Top10 막대 클릭 시 해당 URL의
-     * (각 위젯이 표시 중인) 선택 기간 트랜잭션 전체를 박스 선택과 동일한 팝업으로 표시 */
+     * (각 항목이 표시 중인) 선택 기간 트랜잭션 전체를 박스 선택과 동일한 팝업으로 표시 */
     const onTopUrlClick = (params) => {
       const url = params && params.name;
       if (!url) return;
@@ -683,7 +683,7 @@ window.DashboardBoAppMonitor = {
     <!-- 1) X-View 실시간 히트맵 -->
     <bo-container card-style="padding:14px;" style="grid-column:1/-1;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'X-View 히트맵',()=>cfOptXview,cfXviewSample,'XVIEW')" title="위젯 정보">🔥</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'X-View 히트맵',()=>cfOptXview,cfXviewSample,'XVIEW')" title="항목 정보">🔥</button>
         X-View 실시간 트랜잭션 히트맵
         <span v-if="xviewMode==='recent'" style="font-size:10px;font-weight:400;color:#10b981;background:#f0fdf4;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;">● LIVE</span>
         <span v-else style="font-size:10px;font-weight:400;color:#b45309;background:#fffbeb;padding:2px 8px;border-radius:10px;border:1px solid #fde68a;">⏸ 기간고정</span>
@@ -747,7 +747,7 @@ window.DashboardBoAppMonitor = {
     <!-- 2) 호출량 Top10 -->
     <bo-container card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'API 호출량 Top10',()=>cfOptTopUrl,null,'TOPURL')" title="위젯 정보">📊</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'API 호출량 Top10',()=>cfOptTopUrl,null,'TOPURL')" title="항목 정보">📊</button>
         API 호출량 Top10
         <select v-model="topUrlRange" class="form-control" style="width:auto;font-size:11px;padding:2px 6px;height:24px;">
           <option v-for="o in RANGE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
@@ -762,7 +762,7 @@ window.DashboardBoAppMonitor = {
     <!-- 3) 응답시간 Top10 -->
     <bo-container card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'API 응답시간 Top10',()=>cfOptRtTop,null,'RTTOP')" title="위젯 정보">⏱</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'API 응답시간 Top10',()=>cfOptRtTop,null,'RTTOP')" title="항목 정보">⏱</button>
         API 응답시간 Top10
         <select v-model="rtTopRange" class="form-control" style="width:auto;font-size:11px;padding:2px 6px;height:24px;">
           <option v-for="o in RANGE_OPTS" :key="o.value" :value="o.value">{{ o.label }}</option>
@@ -778,7 +778,7 @@ window.DashboardBoAppMonitor = {
     <!-- 4) 상태 분포 -->
     <bo-container card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'트랜잭션 상태 분포',()=>cfOptStatusPie,null,'STATUSPIE')" title="위젯 정보">🟢</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'트랜잭션 상태 분포',()=>cfOptStatusPie,null,'STATUSPIE')" title="항목 정보">🟢</button>
         트랜잭션 상태 분포 (최근 10분)
       </div>
       <co-echart :option="cfOptStatusPie" height="220px" />
@@ -787,7 +787,7 @@ window.DashboardBoAppMonitor = {
     <!-- 5) 응답시간 추이 -->
     <bo-container card-style="padding:14px;" style="grid-column:1/-1;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
-        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'응답시간 추이',()=>cfOptRtTrend,null,'RTTREND')" title="위젯 정보">⏱</button>
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'응답시간 추이',()=>cfOptRtTrend,null,'RTTREND')" title="항목 정보">⏱</button>
         응답시간 추이 (10초 버킷 평균/최대)
       </div>
       <co-echart :option="cfOptRtTrend" height="220px" />
@@ -795,7 +795,7 @@ window.DashboardBoAppMonitor = {
 
   </div>
 
-  <!-- 위젯 정보 팝오버 -->
+  <!-- 항목 정보 팝오버 -->
   <teleport to="body">
     <div v-if="uiState.infoPanel"
       @click.stop
@@ -844,7 +844,7 @@ window.DashboardBoAppMonitor = {
           </div>
           <!-- 설명 -->
           <div>
-            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">위젯 설명</div>
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">항목 설명</div>
             <div style="background:#f0fdf4;border-left:3px solid #10b981;border-radius:0 6px 6px 0;padding:8px 12px;color:#065f46;font-size:11px;line-height:1.7;font-family:sans-serif;">{{ uiState.infoPanel.src.desc }}</div>
           </div>
           <!-- 템플릿 마크업 -->

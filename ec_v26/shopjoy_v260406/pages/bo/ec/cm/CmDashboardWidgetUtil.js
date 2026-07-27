@@ -1,5 +1,5 @@
-/* ShopJoy Admin - 대시보드 위젯 공용 렌더 유틸 (window.cmDashWidgetUtil)
- * CmDashboardLayoutMng(배치설정 시뮬레이션) / CmDashboardMyMng(개인화 대시보드) 공용.
+/* ShopJoy Admin - 대시보드 항목 공용 렌더 유틸 (window.cmDashWidgetUtil)
+ * CmDashboardLayoutMng(항목배치 시뮬레이션) / CmDashboardMyMng(개인화 대시보드) 공용.
  * cm_dashboard_item(chartType/seriesJson/optionJson) + cm_dashboard_item_data(rows)
  * 를 받아 ECharts 옵션 또는 KPI 카드 정보를 생성한다.
  * 로드 순서: bo.html 에서 CmDashboardLayoutMng.js / CmDashboardMyMng.js 보다 먼저 로드 필수.
@@ -61,7 +61,7 @@
   };
 
   /* buildWidget(item, rows) → 렌더 정보
-   *   { kind:'realtime' }                          실시간 위젯(시뮬 미지원 안내)
+   *   { kind:'realtime' }                          실시간 항목(시뮬 미지원 안내)
    *   { kind:'empty' }                             데이터 없음
    *   { kind:'kpi', value, label, delta }          KPI 숫자 카드
    *   { kind:'chart', option }                     ECharts 옵션

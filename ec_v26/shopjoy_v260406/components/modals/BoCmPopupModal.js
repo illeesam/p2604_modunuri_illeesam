@@ -528,7 +528,11 @@ window.BoCmPopupModal = {
 
     const handleConfirm = () => {
       if (cfHasPickList.value) {
-        if (!picked.length) return window.boApp?.showToast('선택된 항목이 없습니다.', 'error');
+        /* 프리체크 모드(init-selected-ids)는 "기존 선택을 편집" 하는 것이라
+           전부 해제한 뒤 확정 = 전부 비우기 로 봐야 한다. 그 외(빈 상태에서 담기)만 막는다. */
+        if (!picked.length && !Array.isArray(props.initSelectedIds)) {
+          return window.boApp?.showToast('선택된 항목이 없습니다.', 'error');
+        }
         const rows = picked.slice();
         fnEmitResult('select', rows);
       }

@@ -55,6 +55,9 @@
     getById(id, uiNm, cmdNm)          { return global.boApi.get('/bo/ec/cm/dashboard/' + id, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)         { return global.boApi.post('/bo/ec/cm/dashboard', body, hdr(uiNm, cmdNm)); },
     update(id, body, uiNm, cmdNm)     { return global.boApi.put('/bo/ec/cm/dashboard/' + id, body, hdr(uiNm, cmdNm)); },
+    /* 좌측메뉴 트리 (사용자별 폴더+아이템). 저장은 통째 교체 */
+    getMenuTree(params, uiNm, cmdNm)  { return global.boApi.get('/bo/ec/cm/dashboard/menu/tree', { params, ...hdr(uiNm, cmdNm) }); },
+    saveMenuTree(nodes, params, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/menu/save', nodes, { params, ...hdr(uiNm, cmdNm) }); },
     remove(id, uiNm, cmdNm)           { return global.boApi.delete('/bo/ec/cm/dashboard/' + id, hdr(uiNm, cmdNm)); },
     getItemList(params, uiNm, cmdNm)  { return global.boApi.get('/bo/ec/cm/dashboard/item/list', { params, ...hdr(uiNm, cmdNm) }); },
     itemSave(cmd, body, uiNm, cmdNm)     { return global.boApi.post('/bo/ec/cm/dashboard/item/save/' + cmd, body, hdr(uiNm, cmdNm)); },

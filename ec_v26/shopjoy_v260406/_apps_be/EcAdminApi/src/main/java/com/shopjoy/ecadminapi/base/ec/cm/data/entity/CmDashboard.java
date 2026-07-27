@@ -41,6 +41,8 @@ public class CmDashboard extends BaseEntity {
     @Column(name = "sort_ord")
     private Integer sortOrd;
 
+
+
     @Comment("사용여부 (Y/N)")
     @Column(name = "use_yn", length = 1)
     private String useYn;

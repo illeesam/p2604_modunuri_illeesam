@@ -237,6 +237,41 @@ select_expr: b.deptNm      ← 조인 별칭
 `init-selected-ids` 와 `selected-ids` 는 **서로 다른 모드**다. 헷갈리면 안 된다 —
 `selected-ids` 를 주면 확정 버튼이 사라지고 즉시 토글로 동작한다.
 
+### 4.3 ⭐ 다중선택 표준 — "프리체크 + 전체 교체"
+
+여러 건을 담는 자리(공유대상·태그·담당자 등)는 **다음 형태를 표준으로 한다.**
+
+```html
+<bo-cm-popup-modal popup-code="user" :multi="true" result-type="array"
+  :init-selected-ids="cfPickedUserIds"   <!-- 이미 담은 것이 체크된 채로 열린다 -->
+  @select="onPickUser" @close="pickModal.user = false" />
+```
+
+| 규칙 | 이유 |
+|---|---|
+| `init-selected-ids` 로 **기존 선택을 프리체크** | 팝업만 열면 지금 뭐가 담겼는지 보인다. `exclude-ids` 로 숨기면 확인이 안 된다 |
+| 결과는 **최종 전체 집합** → 해당 유형을 **통째 교체** | 팝업에서 해제한 것이 빠져야 한다. 추가만 되면 제거를 화면에서 또 해야 한다 |
+| **0건 확정 = 전부 비우기** 허용 | 편집 모드이므로 "전부 해제" 가 표현돼야 한다. `init-selected-ids` 가 있을 때만 허용 |
+| `exclude-ids` 는 **고를 수 없는 대상**에만 | 예: 공유대상에서 소유자 자신 |
+
+```js
+/* 해당 유형만 교체 — 다른 유형은 유지 */
+const fnReplaceTargets = (type, rows) => {
+  const keep = shareForm.targets.filter(t => t.type !== type);
+  shareForm.targets = keep.concat(fnToRows(rows).map(/* … */));
+};
+```
+
+**배치**: 버튼과 선택칩은 **한 줄**에 둔다 — 라벨 · [추가 버튼] · 건수배지 · 칩들(우측). 칩이 넘치면
+줄바꿈하지 말고 앞의 N개만 두고 **`＋N`** 으로 접는다(`＋N` 클릭 = 팝업 열기 → 전체 확인·정리).
+칩 하나가 길면 `max-width` + `text-overflow: ellipsis`.
+
+```
+공유대상(사용자)  [👤 사용자 추가] [7건]  👤 홍길동 ✕  👤 김철수 ✕  …  ＋2
+```
+
+적용: `CmDashboardMyMng` 공유대상(사용자/부서). 두 란은 `cfShareGroups` 메타 하나로 같은 마크업을 돌려 쓴다.
+
 ### 4.2 콜백
 
 ```js

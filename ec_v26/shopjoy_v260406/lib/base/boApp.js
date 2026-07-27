@@ -33,10 +33,12 @@
       { id: 'appMonitorDashboard', label: 'App모니터대시보드' },
       { group: '대시보드 관리' },
       { id: 'cmDashboardMng', label: '대시보드 기준관리' },
-      { id: 'cmDashboardLayoutMng', label: '대시보드 배치설정' },
-      { group: '사용자대시보드' },
-      { id: 'cmDashboardMyMng', label: '내 대시보드 관리' },
-      /* ↓ 내 대시보드/공유받은 대시보드는 cfUserDashMenus 로 동적 추가 (boApp.js §사용자대시보드 메뉴) */
+      { id: 'cmDashboardItemMng', label: '대시보드 항목관리' },
+      { id: 'cmDashboardLayoutMng', label: '대시보드 항목배치' },
+      { id: 'cmDashboardMyMng', label: '사용자 대시보드 관리' },
+      { id: 'cmDashboardMenuMng', label: '사용자 대시보드 메뉴관리' },
+      { group: '사용자 대시보드' },
+      /* ↓ 내 대시보드/공유받은 대시보드는 cfUserDashMenus 로 동적 추가 (boApp.js §사용자 대시보드 메뉴) */
     ],
     member: [
       { group: '회원' },
@@ -539,8 +541,10 @@
         cmFaqMng: 'cm-faq-mng',
         cmBlogMng: 'cm-blog-mng',
         cmDashboardMng: 'cm-dashboard-mng',
+        cmDashboardItemMng: 'cm-dashboard-item-mng',
         cmDashboardLayoutMng: 'cm-dashboard-layout-mng',
         cmDashboardMyMng: 'cm-dashboard-my-mng',
+        cmDashboardMenuMng: 'cm-dashboard-menu-mng',
         cmPopupMng: 'cm-popup-mng',
         cmPopupItemMng: 'cm-popup-item-mng',
         syAlarmMng: 'sy-alarm-mng',
@@ -1539,7 +1543,7 @@
         setTimeout(() => {
           window.useBoAppInitStore?.()?.saRestoreFromStorage?.();
         }, 0);
-        /* 이미 로그인된 상태(F5 등)에서도 사용자대시보드 좌측메뉴 로드 */
+        /* 이미 로그인된 상태(F5 등)에서도 사용자 대시보드 좌측메뉴 로드 */
         setTimeout(() => { fnLoadUserDashMenus(); }, 300);
         _loadApiLogsFromStorage();
         setTimeout(() => {
@@ -1947,7 +1951,7 @@
           loginForm.loginPwd = '';
           closeLogin();
           navigate('dashboard');
-          fnLoadUserDashMenus(); /* 사용자대시보드 좌측메뉴 로드 */
+          fnLoadUserDashMenus(); /* 사용자 대시보드 좌측메뉴 로드 */
           showToast(`${currentAuthUser?.authNm || currentAuthUser?.name || '사용자'}님 환영합니다.`);
         } catch (err) {
           console.error('[catch-info]', err);
@@ -2189,8 +2193,8 @@
         }),
       );
 
-      /* ── 사용자대시보드 메뉴 (동적) ──────────────────────────────
-       * 내가 만든 대시보드 + 나에게 공유된 대시보드를 좌측메뉴 '사용자대시보드' 그룹 아래에 표시.
+      /* ── 사용자 대시보드 메뉴 (동적) ──────────────────────────────
+       * 내가 만든 대시보드 + 나에게 공유된 대시보드를 좌측메뉴 '사용자 대시보드' 그룹 아래에 표시.
        * 클릭 시 cmDashboardMyMng 로 이동하면서 dtlId 에 대시보드ID 전달. */
       const userDashMenus = reactive([]); /* [{ dashboardId, dashboardNm, mine }] */
       const fnLoadUserDashMenus = async () => {
@@ -2204,11 +2208,49 @@
           const list = (res.data?.data || [])
             .filter((d) => d.ownerUserId)                  /* 개인 대시보드만 */
             .map((d) => ({ dashboardId: d.dashboardId, dashboardNm: d.dashboardNm,
+                           sortOrd: d.sortOrd == null ? 9999 : d.sortOrd,
                            mine: d.ownerUserId === myId }));
-          list.sort((a, b) => (b.mine - a.mine) || a.dashboardNm.localeCompare(b.dashboardNm, 'ko'));
+          /* 내 것 먼저 → 정렬설정 순서 → 이름 */
+          list.sort((a, b) => (b.mine - a.mine) || (a.sortOrd - b.sortOrd)
+            || a.dashboardNm.localeCompare(b.dashboardNm, 'ko'));
+          /* 부모 바로 아래에 자식이 오도록 평면화 + depth 부여 (정렬설정의 트리를 그대로 반영) */
+          const ids = new Set(list.map((d) => d.dashboardId));
+          const flat = [];
+          list.forEach((d) => {
+            if (d.parentId && ids.has(d.parentId)) return;   /* 자식은 부모 뒤에서 붙인다 */
+            flat.push(Object.assign({ depth: 0 }, d));
+            list.filter((c) => c.parentId === d.dashboardId)
+              .forEach((c) => flat.push(Object.assign({ depth: 1 }, c)));
+          });
+          list.splice(0, list.length, ...flat);
+          /* 저장된 좌측메뉴 트리가 있으면 그 구성을 따른다. 없으면 위 평면 목록으로 폴백 */
+          try {
+            const tres = await boApiSvc.cmDashboard.getMenuTree({ siteId }, '사용자대시보드', '메뉴트리조회');
+            const nodes = tres.data?.data || [];
+            if (nodes.length) {
+              const dashMap = {};
+              list.forEach((d) => { dashMap[d.dashboardId] = d; });
+              const byParent = {};
+              nodes.forEach((x) => { const p = x.parentNodeId || ''; (byParent[p] = byParent[p] || []).push(x); });
+              const flat = [];
+              const walk = (pid, depth) => (byParent[pid] || []).forEach((x) => {
+                if (x.nodeTypeCd === 'FOLDER') {
+                  flat.push({ dashboardId: 'F:' + x.menuNodeId, dashboardNm: x.nodeNm || '폴더',
+                              folder: true, depth, mine: true });
+                } else {
+                  const d = dashMap[x.dashboardId];
+                  if (d) flat.push(Object.assign({}, d, { depth }));
+                }
+                walk(x.menuNodeId, depth + 1);
+              });
+              walk('', 0);
+              userDashMenus.splice(0, userDashMenus.length, ...flat);
+              return;
+            }
+          } catch (e) { console.warn('[메뉴트리 조회 오류]', e); }
           userDashMenus.splice(0, userDashMenus.length, ...list);
         } catch (e) {
-          console.warn('[사용자대시보드 메뉴 조회 오류]', e);
+          console.warn('[사용자 대시보드 메뉴 조회 오류]', e);
         }
       };
       /* 개인화 화면에서 대시보드 추가/삭제/이름변경 시 메뉴 갱신 신호 */
@@ -2504,14 +2546,21 @@
               @click.stop="toggleFav(item.id)" :title="isFav(item.id)?'즐겨찾기 해제':'즐겨찾기 추가'">★</span>
           </div>
         </template>
-        <!-- 사용자대시보드: 내 대시보드 + 공유받은 대시보드 (동적) -->
+        <!-- 사용자 대시보드: 내 대시보드 + 공유받은 대시보드 (동적) -->
         <template v-if="activeTop==='home'">
-          <div v-for="d in userDashMenus" :key="d.dashboardId"
-            class="left-nav-item left-nav-sub-item" style="padding-left:24px;"
-            @click="navigate('cmDashboardMyMng', { id: d.dashboardId })"
-            :title="d.mine ? '내 대시보드' : '공유받은 대시보드'">
-            <span style="margin-right:4px;">{{ d.mine ? '👤' : '🔗' }}</span>{{ d.dashboardNm }}
-          </div>
+          <template v-for="d in userDashMenus" :key="d.dashboardId">
+            <!-- 폴더 노드: 이동 대상이 아니라 묶음 라벨 -->
+            <div v-if="d.folder" class="left-nav-item left-nav-sub-item"
+              :style="{ paddingLeft: (24 + (d.depth || 0) * 14) + 'px', cursor: 'default', opacity: 0.75 }">
+              <span style="margin-right:4px;">📁</span>{{ d.dashboardNm }}
+            </div>
+            <div v-else class="left-nav-item left-nav-sub-item"
+              :style="{ paddingLeft: (24 + (d.depth || 0) * 14) + 'px' }"
+              @click="navigate('cmDashboardMyMng', { id: d.dashboardId })"
+              :title="d.mine ? '내 대시보드' : '공유받은 대시보드'">
+              <span style="margin-right:4px;">{{ d.mine ? '👤' : '🔗' }}</span>{{ d.dashboardNm }}
+            </div>
+          </template>
         </template>
       </div>
 
@@ -2733,8 +2782,10 @@
             <cm-faq-mng  v-else-if="page==='cmFaqMng'"  :navigate="navigate" />
             <cm-blog-mng  v-else-if="page==='cmBlogMng'"  :navigate="navigate" />
             <cm-dashboard-mng  v-else-if="page==='cmDashboardMng'"  :navigate="navigate" />
+            <cm-dashboard-item-mng  v-else-if="page==='cmDashboardItemMng'"  :navigate="navigate" />
             <cm-dashboard-layout-mng  v-else-if="page==='cmDashboardLayoutMng'"  :navigate="navigate" :dtl-id="dtlId" />
-            <cm-dashboard-my-mng  v-else-if="page==='cmDashboardMyMng'"  :navigate="navigate" />
+            <cm-dashboard-my-mng  v-else-if="page==='cmDashboardMyMng'"  :navigate="navigate" :dtl-id="dtlId" />
+            <cm-dashboard-menu-mng  v-else-if="page==='cmDashboardMenuMng'"  :navigate="navigate" />
             <cm-popup-mng  v-else-if="page==='cmPopupMng'"  :navigate="navigate" />
             <cm-popup-item-mng  v-else-if="page==='cmPopupItemMng'"  :navigate="navigate" :dtl-id="dtlId" />
             <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" />
@@ -3269,8 +3320,10 @@
     .component('CmFaqMng', window.CmFaqMng)
     .component('CmFaqDtl', window.CmFaqDtl)
     .component('CmDashboardMng', window.CmDashboardMng)
+    .component('CmDashboardItemMng', window.CmDashboardItemMng)
     .component('CmDashboardLayoutMng', window.CmDashboardLayoutMng)
     .component('CmDashboardMyMng', window.CmDashboardMyMng)
+    .component('CmDashboardMenuMng', window.CmDashboardMenuMng)
     .component('CmPopupMng', window.CmPopupMng)
     .component('CmPopupItemMng', window.CmPopupItemMng)
     /* ── pages/bo/ec/ — 채팅/고객 ── */

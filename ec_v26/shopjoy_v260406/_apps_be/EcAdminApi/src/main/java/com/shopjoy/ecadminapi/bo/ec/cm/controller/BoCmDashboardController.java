@@ -3,6 +3,8 @@ package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboard;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItemData;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardMenu;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardMenuRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemDataService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemService;
@@ -29,6 +31,7 @@ public class BoCmDashboardController {
     private final CmDashboardItemService cmDashboardItemService;
     private final CmDashboardItemDataService cmDashboardItemDataService;
     private final CmDashboardRepository cmDashboardRepository;
+    private final CmDashboardMenuRepository cmDashboardMenuRepository;
 
     /* ── 차트 데이터셋 ────────────────────────────────────────── */
 
@@ -239,4 +242,55 @@ public class BoCmDashboardController {
             @RequestBody CmDashboardItemData body) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemDataService.upsert(body)));
     }
+    /* ── 좌측메뉴 트리 (사용자별) ──────────────────────────────
+     * 폴더 + 대시보드 아이템으로 구성. 노드가 하나도 없으면 프론트가
+     * "볼 수 있는 대시보드 전체" 로 폴백한다. */
+
+    @GetMapping("/menu/tree")
+    public ResponseEntity<ApiResponse<List<CmDashboardMenu>>> menuTree(
+            @RequestParam(required = false) String siteId) {
+        String sid = siteId == null ? SecurityUtil.getSiteId() : siteId;
+        String uid = SecurityUtil.getAuthUser().authId();
+        return ResponseEntity.ok(ApiResponse.ok(
+            cmDashboardMenuRepository.findBySiteIdAndOwnerUserIdOrderBySortOrdAsc(sid, uid)));
+    }
+
+    /**
+     * 트리 통째 저장 — 내 노드를 전부 지우고 받은 목록으로 다시 넣는다.
+     *
+     * <p>부분 갱신보다 단순하고 순서·부모가 한 번에 정합하게 맞는다.
+     * 소유자는 서버가 세션에서 채우므로 남의 트리를 건드릴 수 없다.</p>
+     */
+    @PostMapping("/menu/save")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<ApiResponse<Integer>> menuSave(
+            @RequestParam(required = false) String siteId,
+            @RequestBody List<CmDashboardMenu> nodes) {
+        String sid = siteId == null ? SecurityUtil.getSiteId() : siteId;
+        String uid = SecurityUtil.getAuthUser().authId();
+        cmDashboardMenuRepository.deleteBySiteIdAndOwnerUserId(sid, uid);
+        cmDashboardMenuRepository.flush();
+        LocalDateTime now = LocalDateTime.now();
+        /* 클라이언트는 임시 키로 부모를 가리킨다. 실제 ID 를 새로 만들면서 키→ID 로 바꿔준다
+           (그냥 재생성만 하면 parentNodeId 가 끊어진 키를 가리켜 트리가 무너진다). */
+        java.util.Map<String, String> keyToId = new java.util.LinkedHashMap<>();
+        for (CmDashboardMenu n : nodes) {
+            keyToId.put(n.getMenuNodeId(), CmUtil.generateId("cm_dashboard_menu"));
+        }
+        int i = 0;
+        for (CmDashboardMenu n : nodes) {
+            String pk = n.getParentNodeId();
+            n.setParentNodeId(pk == null || pk.isBlank() ? null : keyToId.get(pk));
+            n.setMenuNodeId(keyToId.get(n.getMenuNodeId()));
+            n.setSiteId(sid);
+            n.setOwnerUserId(uid);            /* 소유자는 세션 고정 — 클라이언트 값 무시 */
+            n.setSortOrd(++i * 10);
+            if (n.getUseYn() == null) n.setUseYn("Y");
+            n.setRegBy(uid); n.setRegDate(now);
+            n.setUpdBy(uid); n.setUpdDate(now);
+        }
+        cmDashboardMenuRepository.saveAll(nodes);
+        return ResponseEntity.ok(ApiResponse.ok(nodes.size(), "저장되었습니다."));
+    }
+
 }
