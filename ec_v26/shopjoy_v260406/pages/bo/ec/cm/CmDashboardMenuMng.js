@@ -9,8 +9,10 @@
  *   - 우: 좌측메뉴 트리 (폴더 + 대시보드 항목)
  *   - 좌→우 드래그로 담고, 트리 안에서 끌어 위치를 바꾸고, ✕ 로 뺀다
  *
- *  저장은 cm_dashboard_menu 를 통째 교체한다(해당 범위만). 트리가 비어 있으면
- *  좌측메뉴는 "볼 수 있는 대시보드 전체" 로 폴백하므로, 설정 전에는 기존과 동일하다.
+ *  저장은 cm_dashboard_menu 를 통째 교체한다(해당 범위만). 저장된 트리가 없으면
+ *  좌측메뉴는 폴백으로 동작하는데(SYS=기본 2개 / USER=볼 수 있는 전체), 그때 이 화면의
+ *  트리를 비워두면 "지금 메뉴가 어떻게 돼 있는지" 를 알 수 없다. 그래서 폴백 상태에서는
+ *  지금 메뉴에 보이는 그대로 채워 놓고 배너로 저장 전임을 알린다(fnSeedFromFallback).
  */
 window.CmDashboardMenuMng = {
   name: 'CmDashboardMenuMng',
@@ -338,7 +340,7 @@ window.CmDashboardMenuMng = {
                 style="flex-shrink:0;border:none;background:none;cursor:pointer;font-size:12px;color:#dc2626;padding:0 3px;">✕</button>
             </div>
             <div v-if="!menuNodes.length" style="font-size:11px;color:#aaa;padding:16px;text-align:center;">
-              비어 있습니다 — 좌측에서 끌어다 놓으세요.<br>비워두면 좌측메뉴에 볼 수 있는 대시보드가 전부 표시됩니다.</div>
+              비어 있습니다 — 좌측에서 끌어다 놓으세요.<br>이대로 저장하면 좌측메뉴에 {{ cfMeta.listNm }}가 전부 표시됩니다.</div>
           </div>
         </div>
       </div>
