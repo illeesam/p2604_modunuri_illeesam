@@ -117,8 +117,10 @@ window.CmDashboardMyMng = {
     });
     Vue.onUnmounted(() => window.removeEventListener('resize', fnFitCanvas));
 
-    /* 좌측메뉴에서 다른 대시보드 클릭 시 전환 */
-    watch(() => props.dtlId, (v) => { if (v && v !== curId.value) handleSelectDash(v); });
+    /* 좌측메뉴에서 다른 대시보드 클릭 시 전환.
+       목록을 다시 읽는다 — 공용 대시보드는 "지금 지정된 dtlId 한 건" 만 목록에 통과시키므로
+       (handleLoadDashes 필터 참조) 목록을 그대로 두면 새 dtlId 를 찾지 못해 빈 화면이 된다. */
+    watch(() => props.dtlId, (v) => { if (v && v !== curId.value) handleLoadDashes(); });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러) #################################### */
 
@@ -312,7 +314,7 @@ window.CmDashboardMyMng = {
       list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       cards.splice(0, cards.length, ...list.map(i => ({
         dashboardItemId: i.dashboardItemId, itemKey: i.itemKey, itemNm: i.itemNm,
-        chartType: i.chartType || 'bar', sortOrd: i.sortOrd || 0,
+        itemTypeCd: util.itemTypeOf(i), chartType: i.chartType || 'bar', sortOrd: i.sortOrd || 0,
         panelWidth: i.panelWidth || 1, panelHeight: i.panelHeight || 1,
         useYn: i.useYn || 'Y', realtimeYn: i.realtimeYn || 'N',
         seriesJson: i.seriesJson || null, optionJson: i.optionJson || null,
@@ -405,7 +407,8 @@ window.CmDashboardMyMng = {
         const maxOrd = cards.reduce((m, p) => Math.max(m, p.sortOrd || 0), 0);
         await boApiSvc.cmDashboard.itemSave('base', {
           rowStatus: 'I', siteId: cfSiteId.value, dashboardId: curId.value,
-          itemKey: fnUniqueItemKey(src.itemKey), itemNm: src.itemNm, chartType: src.chartType,
+          itemKey: fnUniqueItemKey(src.itemKey), itemNm: src.itemNm,
+          itemTypeCd: util.itemTypeOf(src), chartType: src.chartType,
           sortOrd: maxOrd + 10, panelWidth: src.panelWidth || 1, panelHeight: src.panelHeight || 1,
           realtimeYn: src.realtimeYn || 'N', useYn: 'Y',
           seriesJson: src.seriesJson || null, optionJson: JSON.stringify(optObj),
@@ -785,7 +788,7 @@ window.CmDashboardMyMng = {
                 draggable="true" @dragstart="onCatalogDragStart(idx, )" @dragend="fnDragReset"
                 style="display:flex;align-items:center;gap:5px;background:#fff;border:1px solid #e5e7eb;border-radius:7px;
                        padding:5px 7px;cursor:grab;margin-bottom:5px;">
-                <span style="font-size:13px;flex-shrink:0;">{{ util.chartTypeIcon(w.chartType) }}</span>
+                <span style="font-size:13px;flex-shrink:0;">{{ util.itemTypeIcon(util.itemTypeOf(w)) }}</span>
                 <span style="flex:1;min-width:0;">
                   <span style="display:block;font-size:11px;font-weight:700;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
                     :title="w.itemNm">{{ w.itemNm }}</span>
@@ -818,7 +821,7 @@ window.CmDashboardMyMng = {
             :style="{ cursor: cfCanEdit ? 'grab' : 'default' }"
             style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 10px;background:#fafbfc;border-bottom:1px solid #f0f0f0;">
             <span v-if="cfCanEdit" style="color:#bbb;font-size:12px;">⠿</span>
-            <span style="font-size:12px;">{{ util.chartTypeIcon(c.chartType) }}</span>
+            <span style="font-size:12px;">{{ util.itemTypeIcon(util.itemTypeOf(c)) }}</span>
             <span style="font-size:12px;font-weight:700;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.itemNm }}</span>
             <span style="flex:1;"></span>
             <span style="font-size:10px;color:#aaa;font-family:monospace;">{{ c.panelWidth }}×{{ c.panelHeight }}</span>
@@ -853,6 +856,22 @@ window.CmDashboardMyMng = {
                 🔴 실시간 항목<br/>미리보기 미지원
               </div>
               <div v-else-if="fnWidget(c).kind === 'empty'" style="text-align:center;color:#ccc;font-size:11px;">데이터 없음</div>
+              <div v-else-if="fnWidget(c).kind === 'table'"
+                style="width:100%;height:100%;overflow:auto;align-self:stretch;">
+                <table class="bo-table bo-table-narrow" style="font-size:11px;">
+                  <thead><tr>
+                    <th v-for="col in fnWidget(c).columns" :key="col.key"
+                      :style="{ textAlign: col.align }" style="padding:4px 6px;">{{ col.label }}</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr v-for="(r, ri) in fnWidget(c).rows" :key="ri">
+                      <td v-for="(cell, ci) in r" :key="ci"
+                        :style="{ textAlign: fnWidget(c).columns[ci].align }"
+                        style="padding:3px 6px;white-space:nowrap;">{{ cell }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <co-echart v-else-if="fnWidget(c).kind === 'chart'" :option="fnWidget(c).option" :height="fnChartHeight(c)" style="width:100%;" />
             </template>
             <div v-else style="color:#ccc;font-size:11px;">…</div>

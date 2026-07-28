@@ -347,6 +347,11 @@ window.CmChattKanban = {
 
     /* ##### [06] return ######################################################### */
 
+    /* 첨부 URL — attach_url 은 비어 있는 행이 많고 storage_path 는 항상 있다.
+       BaseAttachGrp 와 같은 우선순위로 고르고, '/cdn/...' 경로는 브라우저용으로 보정한다. */
+    const fnFileHref = (f) => coUtil.cofImgSrc(f.cdnImgUrl || f.attachUrl || f.storagePath || '');
+    const fnFileThumb = (f) => coUtil.cofImgSrc(f.thumbCdnUrl || f.thumbUrl || f.cdnImgUrl || '');
+
     return {
       KANBAN_COLS, codes, rooms, uiState, searchParam, openTabs, flashSet,
       expanded, dragState,
@@ -354,6 +359,7 @@ window.CmChattKanban = {
       cfRoomsByCol, fnTabActive,
       fnUnread, fnIsFlashing, fnIsActive, fnMsgTime, fnRoomTime, fnRoomMemberNm,
       fnSetMsgBoxRef, openChat, selectTab,
+      fnFileHref, fnFileThumb,
       fnAttachAdd, fnAttachRemove,
     };
   },
@@ -500,9 +506,9 @@ window.CmChattKanban = {
                 <div style="background:#fff;border:1px solid #e5e7eb;border-radius:0 10px 10px 10px;padding:8px 12px;font-size:13px;line-height:1.6;word-break:break-word;">{{ msg.msgText }}</div>
                 <!-- 첨부 이미지 -->
                 <div v-if="msg.attachFiles &amp;&amp; msg.attachFiles.length" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;">
-                  <a v-for="f in msg.attachFiles" :key="f.attachId" :href="f.attachUrl" target="_blank"
+                  <a v-for="f in msg.attachFiles" :key="f.attachId" :href="fnFileHref(f)" target="_blank"
                     style="display:block;width:80px;height:80px;border-radius:6px;overflow:hidden;border:1px solid #e5e7eb;">
-                    <img v-if="f.thumbUrl" :src="f.thumbUrl" style="width:100%;height:100%;object-fit:cover;" />
+                    <img v-if="fnFileThumb(f)" :src="fnFileThumb(f)" style="width:100%;height:100%;object-fit:cover;" />
                     <span v-else style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:22px;background:#f3f4f6;">📎</span>
                   </a>
                 </div>
@@ -517,9 +523,9 @@ window.CmChattKanban = {
                 <div :style="'background:#e8587a;color:#fff;border-radius:10px 0 10px 10px;padding:8px 12px;font-size:13px;line-height:1.6;word-break:break-word;'+(msg._error?'opacity:.6;':'')">{{ msg.msgText }}</div>
                 <!-- 첨부 이미지 -->
                 <div v-if="msg.attachFiles &amp;&amp; msg.attachFiles.length" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;justify-content:flex-end;">
-                  <a v-for="f in msg.attachFiles" :key="f.attachId" :href="f.attachUrl" target="_blank"
+                  <a v-for="f in msg.attachFiles" :key="f.attachId" :href="fnFileHref(f)" target="_blank"
                     style="display:block;width:80px;height:80px;border-radius:6px;overflow:hidden;border:1px solid #fda4af;">
-                    <img v-if="f.thumbUrl" :src="f.thumbUrl" style="width:100%;height:100%;object-fit:cover;" />
+                    <img v-if="fnFileThumb(f)" :src="fnFileThumb(f)" style="width:100%;height:100%;object-fit:cover;" />
                     <span v-else style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:22px;background:#fce7f3;">📎</span>
                   </a>
                 </div>

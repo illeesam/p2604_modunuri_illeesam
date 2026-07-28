@@ -1,7 +1,9 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItemData;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardItemDataRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardItemRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -22,6 +24,8 @@ import java.util.Optional;
 public class CmDashboardItemDataService {
 
     private final CmDashboardItemDataRepository cmDashboardItemDataRepository;
+    private final CmDashboardItemRepository cmDashboardItemRepository;
+    private final CmDashboardDataSourceRegistry cmDashboardDataSourceRegistry;
 
     @PersistenceContext
     private EntityManager em;
@@ -32,6 +36,14 @@ public class CmDashboardItemDataService {
         String yyyymmdd = (String) p.get("yyyymmdd");
         String startYmd = (String) p.get("startYmd");
         String endYmd   = (String) p.get("endYmd");
+
+        /* 항목에 실데이터 소스가 걸려 있으면 조회 시점에 실제 테이블을 집계한다.
+           소스가 없거나 실행에 실패하면(빈 결과) 아래 저장 데이터로 폴백한다 —
+           대시보드 한 칸 때문에 화면 전체가 비지 않게 하는 것이 목적. */
+        if (dashboardItemId != null) {
+            List<CmDashboardItemData> live = runDataSource(dashboardItemId, siteId);
+            if (!live.isEmpty()) return live;
+        }
 
         if (siteId != null && dashboardItemId != null && yyyymmdd != null) {
             return List.of(cmDashboardItemDataRepository
@@ -49,6 +61,14 @@ public class CmDashboardItemDataService {
                 .findBySiteIdAndDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(siteId, dashboardItemId);
         }
         return cmDashboardItemDataRepository.findAll();
+    }
+
+    /** 항목의 data_source_cd 로 실데이터를 만든다. 소스 미지정/미등록/실패면 빈 목록 */
+    private List<CmDashboardItemData> runDataSource(String dashboardItemId, String siteId) {
+        CmDashboardItem item = cmDashboardItemRepository.findById(dashboardItemId).orElse(null);
+        if (item == null || !cmDashboardDataSourceRegistry.has(item.getDataSourceCd())) return List.of();
+        return cmDashboardDataSourceRegistry.run(item.getDataSourceCd(),
+            siteId != null ? siteId : item.getSiteId());
     }
 
     @Transactional

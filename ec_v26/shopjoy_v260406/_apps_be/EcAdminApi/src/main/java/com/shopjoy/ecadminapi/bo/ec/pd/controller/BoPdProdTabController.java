@@ -128,7 +128,7 @@ public class BoPdProdTabController {
         List<Map<String, Object>> skuRows = body != null && body.get("skus") instanceof List
             ? (List<Map<String, Object>>) body.get("skus") : List.of();
         String authId = SecurityUtil.getAuthUser().authId();
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         LocalDateTime now = LocalDateTime.now();
 
         // 1) 기존 SKU 전체 삭제 (연결된 pd_prod_stock 도 stockCode 기준으로 삭제)
@@ -269,7 +269,7 @@ public class BoPdProdTabController {
             @RequestBody PdProdOptUpdateDto.Request req) {
         List<PdProdOptUpdateDto.OptType> groups = req != null && req.getOptTypes() != null ? req.getOptTypes() : List.of();
         String authId = SecurityUtil.getAuthUser().authId();
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         LocalDateTime now = LocalDateTime.now();
 
         // 1) 기존 opt 값 전체 삭제

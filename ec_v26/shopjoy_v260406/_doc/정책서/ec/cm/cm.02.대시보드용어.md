@@ -15,7 +15,7 @@ th, td { word-break: keep-all; overflow-wrap: break-word; white-space: normal; v
 | 용어 | 가리키는 것 | 근거 |
 |---|---|---|
 | **대시보드** | `cm_dashboard` 한 건 | — |
-| **항목** | `cm_dashboard_item` 한 건 — 대시보드에 놓이는 단위(차트/KPI 카드) | 테이블·엔티티·컬럼이 전부 `item` (`item_key` `item_nm` `dashboardItemId`) |
+| **항목** | `cm_dashboard_item` 한 건 — 대시보드에 놓이는 단위(KPI/차트/목록) | 테이블·엔티티·컬럼이 전부 `item` (`item_key` `item_nm` `dashboardItemId`) |
 | **캔버스** | 사용자 대시보드에서 항목을 끌어 배치하는 편집 영역 | 편집 UI 고유 개념 — 항목과 층위가 다르다 |
 | **기준** | 대시보드 정의 자체(이름·UI컴포넌트·열수·소유자) | 메뉴 `대시보드 기준관리` |
 
@@ -106,7 +106,7 @@ const fnSysDashPageId = (uiCompNm) => {
 
 ---
 
-## 5. 사용자 대시보드 공유대상
+## 3. 사용자 대시보드 공유대상
 
 | 컬럼 | 대상 | 선택 팝업 |
 |---|---|---|
@@ -133,7 +133,7 @@ const cfShareGroups = computed(() => [
 
 ---
 
-## 6. 캔버스 높이
+## 4. 캔버스 높이
 
 캔버스는 고정 높이가 아니라 **스크롤 컨테이너(`.bo-main`) 아래 끝까지** 채운다.
 아래에 회색 빈 영역이 남지 않게 하는 것이 목적이다.
@@ -152,7 +152,7 @@ canvasH.value = Math.max(CANVAS_MIN, Math.round(end - el.getBoundingClientRect()
 
 ---
 
-## 3. 사용자 대시보드의 보기/관리 모드
+## 5. 사용자 대시보드의 보기/관리 모드
 
 같은 화면(`CmDashboardMyMng`)이 진입 경로에 따라 다르게 동작한다.
 
@@ -171,7 +171,7 @@ const cfCanEdit  = computed(() => cfIsMine.value && !cfViewMode.value);
 
 ---
 
-## 4. 항목 복사 시 `item_key`
+## 6. 항목 복사 시 `item_key`
 
 `cm_dashboard_item` 에 `(dashboard_id, item_key)` 유니크 제약이 있다. 카탈로그에서 같은 항목을
 두 번 담거나, 이름이 같고 출처만 다른 항목을 담으면 충돌한다.
@@ -180,3 +180,68 @@ const cfCanEdit  = computed(() => cfIsMine.value && !cfViewMode.value);
 
 키를 바꿔도 안전한 이유: 사용자 대시보드의 데이터 조회는 `item_key` 가 아니라
 `optionJson._srcItemId` 로 원본 항목을 가리킨다.
+
+---
+
+## 7. 항목유형 (`item_type_cd`) — 차트종류와 다르다
+
+`chart_type` 하나가 두 가지 의미를 겸하고 있었다. `kpi` 는 차트가 아닌데 차트종류 자리에 있었고,
+여기에 목록(표)을 더하려니 `chart_type='table'` 이 되는데 **목록은 차트 종류가 아니다**.
+범주가 다른 값을 한 컬럼에 섞으면 "차트유형 선택" UI 가 KPI·목록까지 떠안고,
+차트 전용 속성(축·시리즈)을 언제 물어야 하는지 판단할 근거가 사라진다.
+
+| `item_type_cd` | 뜻 | `chart_type` | `series_json` 의 의미 |
+|---|---|---|---|
+| `KPI` | 숫자 카드 | 무의미(NULL) | 미사용 |
+| `CHART` | 차트 | `bar` `line` `pie` `radar` `heatmap` `scatter` | 시리즈 정의 `[{name,color,type}]` |
+| `TABLE` | 목록(표) | 무의미(NULL) | **컬럼 정의** `[{name,key,align}]` |
+
+- 마이그레이션: [`migration_20260728_cm_dashboard_item_type.sql`](../../../ddl_pgsql/migration_20260728_cm_dashboard_item_type.sql)
+- 프론트는 `cmDashWidgetUtil.itemTypeOf(item)` 로 정규화해 쓴다 —
+  `item_type_cd` 가 없는 구 데이터는 `chart_type` 으로 추정(`kpi`→KPI)하므로 하위호환이 유지된다
+- 항목관리 화면은 `항목유형` 을 먼저 고르고, **CHART 일 때만** `차트종류` 를 묻는다
+
+### 목록(TABLE) 위젯
+
+운영 대시보드는 차트보다 목록이 많다. 목록은 `cm_dashboard_item_data` 의
+`col1Nm~col6Nm`(텍스트) / `col1Num~col9Num`(숫자)을 그대로 표로 그린다.
+
+```json
+[{"name":"주문번호","key":"col1Nm"},{"name":"금액","key":"col1Num","align":"right"}]
+```
+
+- `series_json` 을 안 주면 값이 들어있는 `col*` 을 자동 감지해 컬럼을 만든다
+- 숫자는 천단위 구분, `yyyymmdd` 는 `YYYY-MM-DD` 로 — 차트와 달리 **억/만 단위로 줄이지 않는다**(원값 가독성 우선)
+
+---
+
+## 8. 실데이터 소스 (`data_source_cd`)
+
+대시보드 데이터는 원래 전부 `cm_dashboard_item_data` 에 미리 넣어둔 행이었다.
+집계 배치 결과를 보여주는 데는 맞지만 "지금 미처리 주문이 몇 건인가" 는 조회 시점에 세야 의미가 있다.
+
+```
+item.data_source_cd 있음 → CmDashboardDataSourceRegistry 의 집계 쿼리 실행 (실데이터)
+                  없음/미등록/실패 → cm_dashboard_item_data 읽기 (기존 동작)
+```
+
+- 마이그레이션: [`migration_20260728_cm_dashboard_data_source.sql`](../../../ddl_pgsql/migration_20260728_cm_dashboard_data_source.sql)
+- **SQL 을 DB 컬럼에 담지 않는다** — 임의 SQL 을 값으로 두면 관리 화면에서 편집 가능한 인젝션 경로가 된다.
+  DB 에는 이름만 두고 실제 쿼리는 코드(`CmDashboardDataSourceRegistry`)에 둔다
+- 등록되지 않은 이름은 **조용히 폴백**한다 — 오타로 대시보드가 죽지 않게
+- 소스 SQL 의 SELECT 별칭은 반드시 `col1_nm` / `col1_num` 형식. 사이트 격리는 `:siteId` 바인딩
+- 실행 실패도 폴백 — 한 칸이 깨졌다고 화면 전체가 비면 안 된다(실패는 WARN 로그로 남음)
+
+새 소스를 추가하려면 `SQL.put("이름", "…")` 한 줄 + 항목의 `data_source_cd` 지정이면 끝이다.
+
+---
+
+## 9. 대메뉴별 운영 대시보드 8종
+
+`대시보드` 그룹의 `📁 업무별 대시보드` 폴더에 도메인별 대시보드를 둔다.
+회원 / 상품 / 주문 / 프로모션 / 전시 / 고객센터 / 정산 / 시스템 — 각 8항목
+(**KPI 4 + 차트 1 + 목록 3** — 운영 화면은 목록 비중이 높아야 쓸모가 있다).
+
+- `ui_comp_nm` 은 `DashboardBoDomain*` 규약 — 전용 Vue 컴포넌트가 아니라 **식별자**다.
+  전용 화면이 없으므로 좌측메뉴 클릭 시 대시보드 뷰어(`CmDashboardMyMng`)가 캔버스를 그린다
+- 생성 스크립트는 재실행 안전 — `ui_comp_nm LIKE 'DashboardBoDomain%'` 로 지우고 다시 넣는다

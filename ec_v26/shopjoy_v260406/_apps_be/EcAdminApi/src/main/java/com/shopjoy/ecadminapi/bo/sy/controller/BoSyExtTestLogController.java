@@ -69,7 +69,7 @@ public class BoSyExtTestLogController {
         String authId = SecurityUtil.getAuthUser().authId();
         SyhExtTestLog entity = new SyhExtTestLog();
         entity.setLogId(UUID.randomUUID().toString().replace("-", "")); // 32자 고정
-        entity.setSiteId(str(body, "siteId", "SITE000001"));
+        entity.setSiteId(str(body, "siteId", SecurityUtil.DEFAULT_SITE_ID));
         entity.setChannelKey(str(body, "channelKey", "unknown"));
         entity.setChannelLabel(str(body, "channelLabel", null));
         entity.setTestResult(str(body, "testResult", "FAIL"));
@@ -101,7 +101,7 @@ public class BoSyExtTestLogController {
     /** 사이트별 채널 최신 이력 1건씩 조회 (연동결과 초기값용) */
     @GetMapping("/latest")
     public ResponseEntity<ApiResponse<java.util.List<SyhExtTestLog>>> latest() {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         java.util.List<SyhExtTestLog> list = repository.findLatestByChannel(siteId);
         return ResponseEntity.ok(ApiResponse.ok(list));
     }

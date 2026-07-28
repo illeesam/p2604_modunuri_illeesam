@@ -1342,6 +1342,55 @@ GET /api/od/order/{orderId}
 
 ---
 
+---
+
+## 18. 동적 쿼리는 Service 가 아니라 Repository 에 둔다 (2026-07-28)
+
+Service 는 **정책**(권한·범위 검증, 세션값 해석, 응답 변환)을 다루고,
+**쿼리 조립·실행**은 Repository 가 맡는다. `CmPopupPickService` 가 이 원칙을 어기고 있어 분리했다.
+
+### 18.1 대상 엔티티가 고정이면 → QueryDSL (§14.6)
+
+`CmPopup` 하나로 고정된 팝업 정의 목록은 표준대로 `QCmPopupRepositoryImpl` 로 옮겼다.
+Service 에 JPQL 문자열이 있는 쪽이 예외였다.
+
+### 18.2 대상 엔티티가 런타임에 정해지면 → 일반 동적 JPQL Repository
+
+`cm_popup.entity_nm` 값으로 조회 대상이 정해지는 공통 선택 팝업은 **QueryDSL 로 쓸 수 없다**.
+
+- Spring Data custom fragment 는 `XxxRepository extends JpaRepository<Entity, ID>, QXxxRepository`
+  형태로만 붙는데, 이 조회는 **자기 엔티티가 없다**(`CmPopupPick` 테이블이 없다)
+- QueryDSL 은 컴파일 시점 Q타입(`QSyUser.syUser`)이 필요한데 대상이 런타임에 정해진다.
+  `PathBuilder` 문자열 API 로 우회하면 타입안전성(=QueryDSL 을 쓰는 이유)이 사라지고
+  식별자 화이트리스트 검증은 그대로 필요해서, JPQL 조립보다 읽기 어렵고 안전하지도 않다
+
+→ `CmPopupPickQueryRepository`(`@Repository`, `EntityManager` 보유)로 분리했다.
+**식별자 화이트리스트 검증도 쿼리 문자열을 만드는 쪽에 함께 둔다** — 검증과 조립이 떨어지면
+새 조립 경로가 생겼을 때 검증을 빠뜨린다.
+
+### 18.3 메타로 SQL 을 고르되, SQL 자체를 DB 에 담지 않는다
+
+대시보드 실데이터 소스(`cm_dashboard_item.data_source_cd`)가 같은 원칙이다.
+
+```
+DB 에는 소스 "이름"만  →  실제 SQL 은 코드(CmDashboardDataSourceRegistry)
+```
+
+임의 SQL 을 DB 값으로 두면 관리 화면에서 편집 가능한 인젝션 경로가 된다.
+등록되지 않은 이름·실행 실패는 **조용히 폴백**한다 — 오타 하나로 화면이 죽으면 안 된다.
+
+### 18.4 점검
+
+```bash
+# Service 에 남은 쿼리 조립 흔적
+grep -rn "em.createQuery\|EntityManager"   _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/*/service/*Service.java
+```
+
+`em.flush()` / `em.clear()` 용도의 `EntityManager` 는 정상 — `createQuery` 로 문자열을
+조립하는 곳이 있으면 Repository 로 옮길 대상이다.
+
+---
+
 ## 관련 정책
 
 - `base.인증-bo.md` — 관리자 인증 흐름 (프론트엔드 관점)

@@ -31,7 +31,7 @@ window.CmDashboardItemMng = {
     /* panelDetail — 항목 인라인 폼 상태 */
     const panelDetail = reactive({ selectedId: null, isNew: false, show: false });
     const _initPanelForm = () => ({
-      dashboardItemId: null, itemKey: '', itemNm: '', chartType: 'bar', sortOrd: 10,
+      dashboardItemId: null, itemKey: '', itemNm: '', itemTypeCd: 'CHART', chartType: 'bar', sortOrd: 10,
       panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', seriesJson: '', optionJson: '',
     });
     const panelForm = reactive(_initPanelForm());
@@ -158,7 +158,7 @@ window.CmDashboardItemMng = {
       panelDetail.show = true;
       Object.assign(panelForm, {
         dashboardItemId: row.dashboardItemId, itemKey: row.itemKey, itemNm: row.itemNm,
-        chartType: row.chartType || 'bar', sortOrd: row.sortOrd || 10,
+        itemTypeCd: util.itemTypeOf(row), chartType: row.chartType || 'bar', sortOrd: row.sortOrd || 10,
         panelWidth: row.panelWidth || 1, panelHeight: row.panelHeight || 1,
         realtimeYn: row.realtimeYn || 'N', useYn: row.useYn || 'Y',
         seriesJson: row.seriesJson || '', optionJson: row.optionJson || '',
@@ -176,7 +176,10 @@ window.CmDashboardItemMng = {
           dashboardItemId: panelDetail.isNew ? null : panelForm.dashboardItemId,
           rowStatus: panelDetail.isNew ? 'I' : 'U',
           siteId: cfSiteId.value, dashboardId: dashState.selectedId,
-          itemKey: panelForm.itemKey, itemNm: panelForm.itemNm, chartType: panelForm.chartType,
+          itemKey: panelForm.itemKey, itemNm: panelForm.itemNm,
+          itemTypeCd: panelForm.itemTypeCd,
+          /* 차트가 아닌 유형은 차트종류를 비워 둔다 — 남겨두면 'kpi 차트' 같은 오해가 생긴다 */
+          chartType: panelForm.itemTypeCd === 'CHART' ? panelForm.chartType : null,
           sortOrd: Number(panelForm.sortOrd) || 10,
           panelWidth: Number(panelForm.panelWidth) || 1, panelHeight: Number(panelForm.panelHeight) || 1,
           realtimeYn: panelForm.realtimeYn, useYn: panelForm.useYn,
@@ -217,25 +220,25 @@ window.CmDashboardItemMng = {
         options: () => [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] },
     ];
 
+    /* 좌측은 선택용 목록이라 .bo-2col 의 좁은 폭(17fr)에 들어가는 만큼만 둔다.
+       UI컴포넌트는 선택하면 우측 상단 띠에 나오고, 사용여부는 검색조건으로 거르므로
+       컬럼으로 두면 가로 스크롤만 생기고 정작 대시보드명이 잘린다. */
     columns.dashboards = [
       { key: 'dashboardNm', label: '대시보드명', link: true,
-        fmt: (v, row) => (fnIsMyDash(row) ? '👤 ' : '') + (v || ''),
+        fmt: (v, row) => (fnIsMyDash(row) ? '👤 ' : '') + (v || '') + (row.useYn === 'N' ? ' (미사용)' : ''),
         cellInnerStyle: (v, row) => dashState.selectedId === row.dashboardId ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'uiCompNm', label: 'UI컴포넌트', style: 'width:180px;',
-        cellStyle: 'font-family:monospace;font-size:11px;' },
-      { key: '_panelCnt', label: '항목수', style: 'width:70px;', align: 'center',
+      { key: '_panelCnt', label: '항목', style: 'width:52px;', align: 'center',
         fmt: (v, row) => (panelCnt[row.dashboardId] || 0) + '개' },
-      { key: 'useYn', label: '사용', style: 'width:70px;',
-        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
-        fmt: (v) => v === 'Y' ? '사용' : '미사용' },
     ];
 
     columns.panels = [
       { key: 'itemKey',   label: '항목키', style: 'width:110px;', cellStyle: 'font-family:monospace;font-size:11px;', link: true },
       { key: 'itemNm',    label: '항목명',
         cellInnerStyle: (v, row) => panelDetail.selectedId === row.dashboardItemId ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'chartType', label: '차트유형', style: 'width:110px;',
-        fmt: (v) => util.chartTypeIcon(v) + ' ' + util.chartTypeLabel(v) },
+      { key: 'itemTypeCd', label: '유형', style: 'width:88px;',
+        fmt: (v, row) => util.itemTypeIcon(util.itemTypeOf(row)) + ' ' + util.itemTypeLabel(util.itemTypeOf(row)) },
+      { key: 'chartType', label: '차트종류', style: 'width:96px;',
+        fmt: (v, row) => util.itemTypeOf(row) === 'CHART' ? util.chartTypeIcon(v) + ' ' + util.chartTypeLabel(v) : '-' },
       { key: 'panelWidth',  label: '폭', style: 'width:50px;', align: 'center', fmt: (v) => (v || 1) },
       { key: 'panelHeight', label: '높이', style: 'width:50px;', align: 'center', fmt: (v) => (v || 1) },
       { key: 'sortOrd',   label: '정렬', style: 'width:60px;', align: 'center' },
@@ -250,7 +253,11 @@ window.CmDashboardItemMng = {
     columns.panelForm = [
       { key: 'itemKey', label: '항목 키', type: 'text', required: true, mono: true, placeholder: 'COMP0101' },
       { key: 'itemNm', label: '항목명', type: 'text', required: true, colSpan: 2 },
-      { key: 'chartType', label: '차트유형', type: 'select',
+      { key: 'itemTypeCd', label: '항목유형', type: 'select',
+        options: () => util.ITEM_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
+      /* 차트종류는 차트일 때만 물어본다 — KPI·목록에는 의미가 없다 */
+      { key: 'chartType', label: '차트종류', type: 'select',
+        visible: (form) => form.itemTypeCd === 'CHART',
         options: () => util.CHART_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
       { key: 'panelWidth', label: '항목 폭(열 span)', type: 'select',
         options: () => [1, 2, 3, 4, 5, 6].map(n => ({ value: n, label: n })) },
@@ -261,7 +268,7 @@ window.CmDashboardItemMng = {
         options: () => [{ value: 'N', label: '일반' }, { value: 'Y', label: '실시간' }] },
       { key: 'useYn', label: '사용여부', type: 'select',
         options: () => [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] },
-      { key: 'seriesJson', label: '시리즈 설정 JSON', type: 'textarea', colSpan: 3, mono: true,
+      { key: 'seriesJson', label: '시리즈/컬럼 설정 JSON', type: 'textarea', colSpan: 3, mono: true,
         placeholder: '[{"name":"매출","color":"#6366f1","type":"bar"}]' },
       { key: 'optionJson', label: 'ECharts 옵션 오버라이드 JSON', type: 'textarea', colSpan: 3, mono: true,
         placeholder: '{"legend":{"show":false}}' },
@@ -287,48 +294,48 @@ window.CmDashboardItemMng = {
   <div class="bo-2col">
     <!-- ===== ■. 대시보드 목록 (선택) ======================================= -->
     <bo-container title="대시보드 목록" :count-text="'총 ' + dashboards.length + '건'">
-      <bo-grid bare :columns="columns.dashboards" :rows="dashboards" row-key="dashboardId"
+      <bo-grid bare narrow :columns="columns.dashboards" :rows="dashboards" row-key="dashboardId"
         :loading="uiState.loading" :selected-key="dashState.selectedId"
         :row-class="row => dashState.selectedId === row.dashboardId ? 'active' : ''"
         empty-text="대시보드가 없습니다."
         grid-id="dashboards-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
     </bo-container>
 
-    <!-- ===== ■. 항목 목록 + 인라인 폼 ================================= -->
+    <!-- ===== ■. 항목 목록 + 인라인 폼 (항상 표시 — 미선택 시 빈 그리드 + 안내) ===== -->
     <bo-container title="항목 목록"
       :count-text="dashState.selectedId ? '총 ' + panels.length + '개' : ''">
       <template #toolbar-actions>
-        <button v-if="dashState.selectedId" class="btn" @click="handleBtnAction('dash-layout')"
+        <!-- 영역을 숨기지 않고 버튼만 잠근다 (미선택 상태에서도 무엇을 할 수 있는지 보여야 한다) -->
+        <button class="btn" :disabled="!dashState.selectedId" @click="handleBtnAction('dash-layout')"
           style="background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;font-weight:700;">🧩 항목배치 열기</button>
-        <button v-if="dashState.selectedId" class="btn btn_new" @click="handleBtnAction('panels-add')">+ 항목 추가</button>
+        <button class="btn btn_new" :disabled="!dashState.selectedId" @click="handleBtnAction('panels-add')">+ 항목 추가</button>
       </template>
-      <template v-if="dashState.selectedId">
-        <div style="padding:8px 12px;font-size:11.5px;color:#666;border-bottom:1px solid #f0f0f0;">
+      <div style="padding:8px 12px;font-size:11.5px;color:#666;border-bottom:1px solid #f0f0f0;">
+        <template v-if="dashState.selectedId">
           <b>{{ cfCurDash ? cfCurDash.dashboardNm : '' }}</b>
           <span style="color:#aaa;margin-left:6px;font-family:monospace;font-size:11px;">{{ cfCurDash ? cfCurDash.uiCompNm : '' }}</span>
-        </div>
-        <bo-grid bare :columns="columns.panels" :rows="panels" row-key="dashboardItemId"
-          :loading="uiState.panelLoading" :selected-key="panelDetail.selectedId"
-          :row-class="row => panelDetail.selectedId === row.dashboardItemId ? 'active' : ''"
-          empty-text="항목이 없습니다. [+ 항목 추가]로 등록하세요."
-          grid-id="panels-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
-          <template #row-actions="{ row, gridId }">
-            <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-              <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
-              <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
-            </div>
-          </template>
-        </bo-grid>
-      </template>
-      <div v-else style="padding:32px;text-align:center;color:#aaa;">좌측에서 대시보드를 선택하면 항목 목록이 표시됩니다.</div>
+        </template>
+        <span v-else style="color:#aaa;">대시보드 미선택</span>
+      </div>
+      <bo-grid bare :columns="columns.panels" :rows="panels" row-key="dashboardItemId"
+        :loading="uiState.panelLoading" :selected-key="panelDetail.selectedId"
+        :row-class="row => panelDetail.selectedId === row.dashboardItemId ? 'active' : ''"
+        :empty-text="dashState.selectedId ? '항목이 없습니다. [+ 항목 추가]로 등록하세요.' : '좌측에서 대시보드를 선택하면 항목 목록이 표시됩니다.'"
+        grid-id="panels-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+        <template #row-actions="{ row, gridId }">
+          <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+            <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
+            <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
+          </div>
+        </template>
+      </bo-grid>
     </bo-container>
   </div>
 
-  <!-- ===== ■. 항목 상세 폼 (전체 폭) ======================================= -->
-  <bo-container v-if="panelDetail.show"
-    :title="panelDetail.isNew ? '항목 신규 등록' : '항목 상세 / 수정'">
-    <div style="padding:12px;">
-      <div v-if="!panelDetail.isNew" style="font-size:12px;color:#999;margin-bottom:8px;">#{{ panelForm.dashboardItemId }}</div>
+  <!-- ===== ■. 항목 상세 폼 (전체 폭 · 항상 표시 — 미선택 시 안내) ============ -->
+  <bo-container :title="panelDetail.isNew ? '항목 신규 등록' : '항목 상세 / 수정'"
+    :count-text="panelDetail.selectedId ? '#' + panelForm.dashboardItemId : ''">
+    <div v-if="panelDetail.show" style="padding:12px;">
       <bo-form-area :columns="columns.panelForm" :form="panelForm" :errors="panelErrors"
         :cols="3" :show-actions="false" />
       <div class="form-actions">
@@ -336,6 +343,8 @@ window.CmDashboardItemMng = {
         <button class="btn btn_close" @click="handleBtnAction('panelForm-close')">닫기</button>
       </div>
     </div>
+    <div v-else style="padding:32px;text-align:center;color:#aaa;">
+      항목 목록에서 항목을 선택하거나 [+ 항목 추가]를 클릭하세요.</div>
   </bo-container>
 </bo-page>
 `,

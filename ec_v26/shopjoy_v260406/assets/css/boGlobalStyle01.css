@@ -92,6 +92,8 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn_row_delete:hover:not(:disabled){ box-shadow: 0 4px 12px rgba(255,77,79,.35); }
 
 .bo-table { width: 100%; min-width: 720px; border-collapse: collapse; }
+/* 좁은 선택 목록(.bo-2col 좌측 등) — 720px 하한을 풀어 가로 스크롤 없이 폭에 맞춘다 */
+.bo-table.bo-table-narrow { min-width: 0; }
 /* 좁은 선택 패널용 그리드 — 전역 min-width(720px)를 풀어 가로 스크롤 없이 다 보이게.
    좌측 트리/목록 같은 사이드 패널에서만 컨테이너에 .bo-grid-narrow 를 준다. */
 .bo-grid-narrow .bo-table { min-width: 0; }

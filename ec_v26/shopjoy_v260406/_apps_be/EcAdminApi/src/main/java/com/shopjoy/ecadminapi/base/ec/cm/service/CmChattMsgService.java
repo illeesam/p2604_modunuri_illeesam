@@ -3,6 +3,9 @@ package com.shopjoy.ecadminapi.base.ec.cm.service;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattMsgRepository;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
+import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -15,7 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +29,7 @@ import java.util.List;
 public class CmChattMsgService {
 
     private final CmChattMsgRepository cmChattMsgRepository;
+    private final SyAttachRepository syAttachRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -31,12 +38,15 @@ public class CmChattMsgService {
     public CmChattMsgDto.Item getById(String id) {
         CmChattMsgDto.Item dto = cmChattMsgRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        fnFillAttachFiles(List.of(dto));
         return dto;
     }
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
     public CmChattMsgDto.Item getByIdOrNull(String id) {
-        return cmChattMsgRepository.selectById(id).orElse(null);
+        CmChattMsgDto.Item dto = cmChattMsgRepository.selectById(id).orElse(null);
+        if (dto != null) fnFillAttachFiles(List.of(dto));
+        return dto;
     }
 
     /* 채팅 메시지 상세조회 */
@@ -63,13 +73,60 @@ public class CmChattMsgService {
 
     /* 채팅 메시지 목록조회 */
     public List<CmChattMsgDto.Item> getList(CmChattMsgDto.Request req) {
-        return cmChattMsgRepository.selectList(req);
+        List<CmChattMsgDto.Item> list = cmChattMsgRepository.selectList(req);
+        fnFillAttachFiles(list);
+        return list;
     }
 
     /* 채팅 메시지 페이지조회 */
     public CmChattMsgDto.PageResponse getPageData(CmChattMsgDto.Request req) {
         PageHelper.addPaging(req);
-        return cmChattMsgRepository.selectPageData(req);
+        CmChattMsgDto.PageResponse res = cmChattMsgRepository.selectPageData(req);
+        if (res != null) fnFillAttachFiles(res.getPageList());
+        return res;
+    }
+
+    /**
+     * 메시지 목록에 첨부(sy_attach)를 attachGrpId 기준으로 일괄 주입.
+     *
+     * <p>메시지 조회 쿼리(Projections.bean)는 스칼라 컬럼만 담을 수 있어 첨부를 함께 못 가져온다.
+     * 행마다 조회하면 N+1 이 되므로 그룹ID 를 모아 한 번에 읽고 메모리에서 붙인다
+     * (CmBlogService.attachFiles 와 같은 방식).</p>
+     */
+    private void fnFillAttachFiles(List<CmChattMsgDto.Item> items) {
+        if (items == null || items.isEmpty()) return;
+        List<String> grpIds = items.stream()
+            .map(CmChattMsgDto.Item::getAttachGrpId)
+            .filter(g -> g != null && !g.isBlank())
+            .distinct().toList();
+        if (grpIds.isEmpty()) return;
+
+        Map<String, List<SyAttachDto.Brief>> byGrp = new LinkedHashMap<>();
+        for (SyAttach a : syAttachRepository
+                .findByAttachGrpIdInOrderByAttachGrpIdAscSortOrdAscAttachIdAsc(grpIds)) {
+            byGrp.computeIfAbsent(a.getAttachGrpId(), k -> new ArrayList<>()).add(fnToBrief(a));
+        }
+        for (CmChattMsgDto.Item it : items) {
+            String g = it.getAttachGrpId();
+            if (g != null && byGrp.containsKey(g)) it.setAttachFiles(byGrp.get(g));
+        }
+    }
+
+    /** SyAttach → 화면이 쓰는 축약 항목 (필드명은 sy_attach 컬럼 그대로) */
+    private SyAttachDto.Brief fnToBrief(SyAttach a) {
+        SyAttachDto.Brief b = new SyAttachDto.Brief();
+        b.setAttachId(a.getAttachId());
+        b.setAttachGrpId(a.getAttachGrpId());
+        b.setFileNm(a.getFileNm());
+        b.setFileExt(a.getFileExt());
+        b.setFileSize(a.getFileSize());
+        b.setAttachUrl(a.getAttachUrl());
+        b.setThumbUrl(a.getThumbUrl());
+        b.setCdnImgUrl(a.getCdnImgUrl());
+        b.setThumbCdnUrl(a.getThumbCdnUrl());
+        b.setStoragePath(a.getStoragePath());
+        b.setSortOrd(a.getSortOrd());
+        return b;
     }
 
     /* 채팅 메시지 등록 */

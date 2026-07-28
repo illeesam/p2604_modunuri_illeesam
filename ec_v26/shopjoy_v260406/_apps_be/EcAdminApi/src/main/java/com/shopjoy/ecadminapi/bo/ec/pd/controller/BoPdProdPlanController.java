@@ -51,7 +51,7 @@ public class BoPdProdPlanController {
             ? (List<Map<String, Object>>) body.get("plans") : List.of();
 
         String authId  = SecurityUtil.getAuthUser().authId();
-        String siteId  = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId  = SecurityUtil.getSiteIdOrDefault();
         LocalDateTime now = LocalDateTime.now();
 
         // 기존 전체 삭제

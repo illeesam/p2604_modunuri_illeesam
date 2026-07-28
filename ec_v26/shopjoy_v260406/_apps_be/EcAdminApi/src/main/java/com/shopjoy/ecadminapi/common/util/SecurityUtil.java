@@ -101,6 +101,15 @@ public final class SecurityUtil {
     }
 
     /**
+     * 대표(기본) 사이트 ID — 미인증/미설정 요청이 떨어질 자리.
+     *
+     * <p>여기저기 문자열로 박아두면 값이 갈린다. 실제로 존재하지 않는 {@code SecurityUtil.DEFAULT_SITE_ID} 이
+     * 기본값으로 하드코딩돼 있어 sy_site 에 없는 site_id 로 데이터가 쌓였다(2026-07-28 정리).
+     * 기본 사이트가 필요하면 반드시 이 상수를 쓴다.</p>
+     */
+    public static final String DEFAULT_SITE_ID = "2604010000000001";
+
+    /**
      * 현재 인증된 사용자의 siteId 반환.
      *
      * @return siteId, 미인증/미설정 시 "" (멀티사이트 격리 쿼리 파라미터로 사용)
@@ -121,6 +130,11 @@ public final class SecurityUtil {
     public static String getSiteIdOrDefault(String defaultSiteId) {
         String siteId = getSiteId();
         return (siteId != null && !siteId.isBlank()) ? siteId : defaultSiteId;
+    }
+
+    /** 인증 사이트, 없으면 {@link #DEFAULT_SITE_ID} — 기본값을 호출부마다 적지 않도록 */
+    public static String getSiteIdOrDefault() {
+        return getSiteIdOrDefault(DEFAULT_SITE_ID);
     }
 
     /**

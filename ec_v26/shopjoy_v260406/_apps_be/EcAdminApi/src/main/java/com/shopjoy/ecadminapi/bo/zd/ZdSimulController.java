@@ -122,7 +122,7 @@ public class ZdSimulController {
     @GetMapping("/log/page")
     public ResponseEntity<ApiResponse<PageResult<ZdSimulLog>>> logPage(
             @RequestParam Map<String, Object> p) {
-        String siteId  = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId  = SecurityUtil.getSiteIdOrDefault();
         int pageNo     = p.containsKey("pageNo")   ? Integer.parseInt(p.get("pageNo").toString())   : 1;
         int pageSize   = p.containsKey("pageSize")  ? Integer.parseInt(p.get("pageSize").toString()) : 10;
         String domain  = blankToNull(str(p, "domain",  null));
@@ -144,7 +144,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> logSave(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         ZdSimulLog log = new ZdSimulLog();
         log.setLogId(CmUtil.generateId("zd_simul_log"));
         log.setSiteId(siteId);
@@ -179,7 +179,7 @@ public class ZdSimulController {
 
     @PostMapping("/prod/defaults")
     public ResponseEntity<ApiResponse<Map<String, Object>>> prodDefaults() {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         PdDlivTmpltDto.Request req = new PdDlivTmpltDto.Request();
         req.setSiteId(siteId);
         List<PdDlivTmpltDto.Item> list = pdDlivTmpltService.getList(req);
@@ -191,7 +191,7 @@ public class ZdSimulController {
 
     @PostMapping("/member/defaults")
     public ResponseEntity<ApiResponse<Map<String, Object>>> memberDefaults() {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         MbMemberGradeDto.Request req = new MbMemberGradeDto.Request();
         req.setSiteId(siteId);
         List<MbMemberGradeDto.Item> grades = mbMemberGradeService.getList(req);
@@ -210,7 +210,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> prodCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
 
         /* prodNm 깨짐 방지 */
         if (body.get("prodNm") instanceof String nm) body.put("prodNm", sanitizeText(nm));
@@ -403,7 +403,7 @@ public class ZdSimulController {
     @PostMapping("/order/rand-prod")
     public ResponseEntity<ApiResponse<Map<String, Object>>> orderRandProd(
             @RequestBody(required = false) Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         int count = body != null && body.get("count") instanceof Number
             ? ((Number) body.get("count")).intValue() : 3;
         PdProdDto.Request req = new PdProdDto.Request();
@@ -446,7 +446,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> orderCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         /* memberNm 깨짐 방지 */
         if (body.get("memberNm") instanceof String nm) body.put("memberNm", sanitizeText(nm));
         OdOrder order = new OdOrder();
@@ -534,7 +534,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> claimFromOrder(
             @RequestBody Map<String, Object> body) {
-        String siteId  = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId  = SecurityUtil.getSiteIdOrDefault();
         String orderId = requireStr(body, "orderId");
         String typeCd   = body.getOrDefault("claimTypeCd",   "CANCEL").toString();
         String reasonCd = body.getOrDefault("reasonCd",      "CHANGE_MIND").toString();
@@ -625,7 +625,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> memberCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         /* memberNm 깨짐 방지 */
         if (body.get("memberNm") instanceof String nm) body.put("memberNm", sanitizeText(nm));
         MbMember member = new MbMember();
@@ -658,7 +658,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> eventCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         PmEvent event = new PmEvent();
         VoUtil.mapCopy(body, event, "startDate", "endDate");
         event.setSiteId(siteId);
@@ -691,7 +691,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> planCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         PmPlan plan = new PmPlan();
         VoUtil.mapCopy(body, plan, "items", "addProdIds");
         plan.setSiteId(siteId);
@@ -722,7 +722,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> promoCouponCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         PmCoupon coupon = new PmCoupon();
         VoUtil.mapCopy(body, coupon);
         coupon.setSiteId(siteId);
@@ -736,7 +736,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> promoDiscntCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         PmDiscnt discnt = new PmDiscnt();
         VoUtil.mapCopy(body, discnt);
         discnt.setSiteId(siteId);
@@ -749,7 +749,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> promoSaveCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         PmSave pmSave = new PmSave();
         VoUtil.mapCopy(body, pmSave);
         pmSave.setSiteId(siteId);
@@ -788,7 +788,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> settleCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         StSettle settle = new StSettle();
         VoUtil.mapCopy(body, settle, "settleYm");
         settle.setSiteId(siteId);
@@ -829,7 +829,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> userCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         SyUser user = new SyUser();
         VoUtil.mapCopy(body, user, "loginPwd");
         user.setSiteId(siteId);
@@ -862,7 +862,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> vendorCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         SyVendor vendor = new SyVendor();
         VoUtil.mapCopy(body, vendor);
         vendor.setSiteId(siteId);
@@ -895,7 +895,7 @@ public class ZdSimulController {
     @Transactional
     public ResponseEntity<ApiResponse<Map<String, Object>>> voucherCreate(
             @RequestBody Map<String, Object> body) {
-        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        String siteId = SecurityUtil.getSiteIdOrDefault();
         StErpVoucher voucher = new StErpVoucher();
         VoUtil.mapCopy(body, voucher);
         voucher.setSiteId(siteId);

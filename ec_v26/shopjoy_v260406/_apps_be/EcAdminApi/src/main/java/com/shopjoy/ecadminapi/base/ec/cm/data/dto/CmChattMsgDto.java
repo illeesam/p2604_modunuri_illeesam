@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.data.dto;
 
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
@@ -42,17 +43,9 @@ public class CmChattMsgDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
-        private List<AttachItem> attachFiles;
-    }
-
-    @Getter @Setter @NoArgsConstructor
-    public static class AttachItem {
-        private String attachId;
-        private String attachUrl;
-        private String attachNm;
-        private String attachExt;
-        private Long   attachSize;
-        private String thumbUrl;
+        /* 첨부는 공통 축약 DTO 를 쓴다 — sy_attach 컬럼명 그대로라 도메인마다 키가 갈리지 않는다.
+           attachGrpId 기준으로 CmChattMsgService 가 일괄 주입한다(N+1 회피). */
+        private List<SyAttachDto.Brief> attachFiles;
     }
 
     @Getter @Setter @NoArgsConstructor

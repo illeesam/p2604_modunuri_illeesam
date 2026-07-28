@@ -197,3 +197,59 @@ CREATE POLICY tenant_isolation ON shopjoy_2604.od_order
 - 이력/로그(C)는 FK·NOT NULL 적용 대상이 아니다(스냅샷 불변, 현 DDL 규칙 유지).
 - **B 자식 `site_id` 컬럼은 물리 삭제하지 않는다**(반정규화 유지 — QueryDSL 전반에서 site 직접 필터로 실사용 중, 제거 시 조인 강제·코드 대량 변경). 단 자식 값은 부모 루트와 항상 일치해야 하며 자식 단독 변경을 금지한다.
 - 신규 도메인 테이블 추가 시 본 3분류(A/B/C)에 따라 site_id 정책을 결정하고 [`sy.52.ddl단어사전규칙.md`](sy.52.ddl단어사전규칙.md) 에 반영한다. 신규 자식 테이블도 site 직접 조회가 예상되면 반정규화 site_id 를 둔다.
+
+---
+
+## 11. 기본 사이트 상수 — `SecurityUtil.DEFAULT_SITE_ID` (2026-07-29)
+
+미인증/미설정 요청에도 `site_id` 를 채워야 하는 자리가 있다(FO 공개 조회, 로그, 업로드 등).
+그 **기본값을 호출부마다 문자열로 적으면 값이 갈린다.**
+
+### 실제로 있었던 사고
+
+```java
+// ❌ 존재하지 않는 사이트가 기본값으로 23곳에 하드코딩돼 있었다
+String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+```
+
+`SITE000001` 은 `sy_site` 에 없는 값이다. 이 경로로 들어온 데이터는 사이트 격리가 걸린
+화면에서 **조회되지 않아 "데이터가 반쯤 사라진" 것처럼** 보였다
+(회원 50건 중 20건, 상품 607건 중 30건, 주문 43건 중 10건이 안 보임).
+DB 감사를 돌리기 전에는 알아채기 어렵다 — 에러가 나지 않고 조용히 빠지기 때문이다.
+
+### ✅ 규약
+
+```java
+public static final String DEFAULT_SITE_ID = "2604010000000001";   // SecurityUtil
+
+String siteId = SecurityUtil.getSiteIdOrDefault();      // 기본값 생략 = 대표 사이트
+```
+
+- 기본 사이트가 필요하면 **반드시 이 상수**를 쓴다. 문자열 리터럴 금지
+- 사이트를 특정해야 하는 자리에 "아무 값"을 넣지 않는다 — 없으면 대표 사이트다
+
+### 점검
+
+```bash
+# sy_site 에 없는 site_id 리터럴이 코드에 있는지
+grep -rn '"SITE[0-9]\{6\}"' --include=*.java _apps_be/EcAdminApi/src/main/java
+```
+
+```sql
+-- 데이터 감사: site_id 컬럼을 가진 모든 테이블에서 sy_site 에 없는 값 찾기
+SELECT c.table_name FROM information_schema.columns c
+ WHERE c.table_schema='shopjoy_2604' AND c.column_name='site_id';
+-- → 테이블별 GROUP BY site_id 로 대조 (마이그레이션 SQL 의 DO 블록 참조)
+```
+
+- 정리 마이그레이션: [`migration_20260729_site_id_cleanup.sql`](../../ddl_pgsql/migration_20260729_site_id_cleanup.sql)
+  — 특정 테이블을 나열하지 않고 `site_id` 컬럼을 가진 **모든 테이블**을 돈다. 하나만 고치면 다음에 또 샌다
+- **예외**: `syh_access_error_log.site_id` 는 nullable 이다. 미인증 요청의 에러도 기록해야 하므로
+  NULL 이 정상이며 통일 대상이 아니다
+- `sy_site` 자체는 제외 — 사이트 마스터의 PK 를 옮기면 안 된다
+
+### 왜 FK 를 안 걸었나
+
+`site_id` 에 `sy_site` 참조 FK 가 **하나도 없다**. 그래서 이런 값이 들어갈 수 있었다.
+167개 테이블에 FK 를 다는 것은 로그 테이블 쓰기 성능과 적재 순서에 영향이 크므로,
+지금은 **상수 일원화 + 주기적 감사**로 막는다. FK 도입은 별건으로 판단한다.

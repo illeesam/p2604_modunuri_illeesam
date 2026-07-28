@@ -1,17 +1,18 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPopupDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopupItem;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupItemRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupPickQueryRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupPickQueryRepository.ForcedCond;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupPickQueryRepository.PickRows;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.PageResult;
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * 공통 선택(Pick) 팝업 조회 서비스 — cm_popup / cm_popup_item 메타 기반.
@@ -37,44 +37,25 @@ import java.util.regex.Pattern;
  *   <li>3) 2) + 선택목록        → 프론트에서 선택 누적 (추가 API 불필요)</li>
  * </ul>
  *
- * <p>보안: entity_nm / 필드명은 메타 테이블에서만 오고, 사용 전 식별자 화이트리스트
- * 검증({@link #IDENT})을 거치므로 JPQL 인젝션 위험이 없다. 값 바인딩은 전부 named parameter.</p>
+ * <p>역할 분리: 이 클래스는 <b>정책</b>만 다룬다 — 사용 시스템 범위(BO/FO) 검증, 세션값 해석,
+ * 필수 조회조건 검증, 화면이 쓰는 응답(config/Map) 변환. 실제 <b>쿼리 조립·실행</b>은
+ * {@link com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupPickQueryRepository} 가 맡는다
+ * (식별자 화이트리스트 검증도 쿼리 문자열을 만드는 그쪽에 함께 있다).</p>
+ *
+ * <p>팝업 정의 목록({@link #getPopupPage})만은 대상이 {@code CmPopup} 하나로 고정이라
+ * 표준대로 QueryDSL({@code QCmPopupRepositoryImpl})을 쓴다.</p>
  */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CmPopupPickService {
 
-    /** JPQL 식별자 허용 패턴 — 메타 값이 오염돼도 임의 구문 주입 차단 */
-    private static final Pattern IDENT = Pattern.compile("^[A-Za-z][A-Za-z0-9_.]*$");
-    /** ORDER BY / base_where 허용 패턴 (필드·연산·리터럴만) */
-    private static final Pattern SAFE_CLAUSE = Pattern.compile("^[A-Za-z0-9_.,'= ()<>!]*$");
     /** 페이징을 끈 팝업의 최대 표시 건수 — 실수로 수만 건을 내려받지 않도록 */
     private static final int NO_PAGING_MAX = 500;
 
-    /** 드라이빙(주) 엔티티 별칭 — 전 쿼리 고정. base_where / order_by / select_expr 도 이 별칭을 쓴다 */
-    public static final String A = "a";
-
-    /**
-     * join_clause 허용 패턴 — {@code LEFT JOIN <Entity> <별칭> ON <별칭>.<필드> = a.<필드>} 반복만.
-     *
-     * <p>일부러 LEFT JOIN + 단일 등가조건만 허용한다. 라벨을 끌어오는 to-one 조인이 목적이고,
-     * to-many 조인을 허용하면 행이 불어나 목록 건수와 페이징이 어긋난다.
-     * 별칭은 {@code a} 를 피해 b, c, d … 를 쓴다(드라이빙 별칭과 충돌 방지).</p>
-     */
-    private static final Pattern SAFE_JOIN = Pattern.compile(
-        "^(\\s*LEFT\\s+JOIN\\s+[A-Za-z][A-Za-z0-9_]*\\s+[b-z][a-z0-9]?"
-      + "\\s+ON\\s+[b-z][a-z0-9]?\\.[A-Za-z][A-Za-z0-9_]*\\s*=\\s*a\\.[A-Za-z][A-Za-z0-9_]*\\s*)+$",
-        Pattern.CASE_INSENSITIVE);
-
-    /** select_expr 허용 패턴 — {@code <별칭>.<필드>} 하나만 (함수·연산 금지) */
-    private static final Pattern SELECT_EXPR = Pattern.compile("^[a-z][a-z0-9]?\\.[A-Za-z][A-Za-z0-9_]*$");
-
     private final CmPopupRepository cmPopupRepository;
     private final CmPopupItemRepository cmPopupItemRepository;
-
-    @PersistenceContext
-    private EntityManager em;
+    private final CmPopupPickQueryRepository cmPopupPickQueryRepository;
 
     /* ── 메타 조회 ─────────────────────────────────────────────── */
 
@@ -227,48 +208,12 @@ public class CmPopupPickService {
     /**
      * 팝업관리 화면의 목록. 정의가 늘어나면 한 화면을 넘기므로 서버에서 페이징한다.
      *
-     * @param p siteId / searchValue(팝업명·코드·엔티티명) / popupPattern / pageNo / pageSize
+     * <p>대상이 {@code CmPopup} 하나로 고정이라 표준대로 QueryDSL
+     * ({@code QCmPopupRepositoryImpl#selectPageData})에 맡긴다.
+     * 런타임에 엔티티가 정해지는 {@link #getPage} 계열과 성격이 다르다.</p>
      */
-    public PageResult<CmPopup> getPopupPage(Map<String, Object> p) {
-        StringBuilder w = new StringBuilder(" WHERE 1=1 ");
-        Map<String, Object> binds = new LinkedHashMap<>();
-
-        if (str(p.get("siteId")) != null) {
-            w.append(" AND a.siteId = :siteId ");
-            binds.put("siteId", str(p.get("siteId")));
-        }
-        String kw = str(p.get("searchValue"));
-        if (kw != null) {
-            w.append(" AND ( LOWER(a.popupNm) LIKE :kw OR LOWER(a.popupCode) LIKE :kw ")
-             .append(" OR LOWER(a.entityNm) LIKE :kw ) ");
-            binds.put("kw", "%" + kw.toLowerCase() + "%");
-        }
-        String pattern = str(p.get("popupPattern"));
-        if (pattern != null) {
-            w.append(" AND a.popupPattern = :pattern ");
-            binds.put("pattern", Integer.valueOf(pattern));
-        }
-        String useYn = str(p.get("useYn"));
-        if (useYn != null) {
-            w.append(" AND a.useYn = :useYn ");
-            binds.put("useYn", useYn);
-        }
-
-        int pageNo   = intOf(p.get("pageNo"), 1);
-        int pageSize = intOf(p.get("pageSize"), 10);
-
-        Query cntQ = em.createQuery("SELECT COUNT(a) FROM CmPopup a " + w);
-        binds.forEach(cntQ::setParameter);
-        long total = ((Number) cntQ.getSingleResult()).longValue();
-
-        Query listQ = em.createQuery("SELECT a FROM CmPopup a " + w + " ORDER BY a.sortOrd ASC, a.popupCode ASC ");
-        binds.forEach(listQ::setParameter);
-        listQ.setFirstResult((pageNo - 1) * pageSize);
-        listQ.setMaxResults(pageSize);
-
-        @SuppressWarnings("unchecked")
-        List<CmPopup> rows = (List<CmPopup>) listQ.getResultList();
-        return PageResult.of(rows, total, pageNo, pageSize, p);
+    public CmPopupDto.PageResponse getPopupPage(CmPopupDto.Request search) {
+        return cmPopupRepository.selectPageData(search);
     }
 
     /* ── 목록 조회 (패턴 1·2 공통) ──────────────────────────────── */
@@ -284,50 +229,30 @@ public class CmPopupPickService {
         CmPopup pop = getPopup(popupCode, str(p.get("siteId")));
         List<CmPopupItem> items = getPopupItems(pop.getPopupId());
         assertSysScope(pop, items, sys);
+        assertRequiredParams(items, p);
 
         /* paging_yn = 'N' 이면 페이저 없이 한 번에 보여준다.
-           그래도 무제한은 위험하므로 page_size(=최대 표시 건수, 기본 200)로 상한을 둔다. */
+           그래도 무제한은 위험하므로 page_size(=최대 표시 건수)로 상한을 둔다. */
         boolean paging = !"N".equals(pop.getPagingYn());
         int defSize = pop.getPageSize() == null ? (paging ? 10 : NO_PAGING_MAX) : pop.getPageSize();
         int pageNo   = paging ? intOf(p.get("pageNo"), 1) : 1;
         int pageSize = paging ? intOf(p.get("pageSize"), defSize) : Math.min(defSize, NO_PAGING_MAX);
 
-        Map<String, Object> binds = new LinkedHashMap<>();
-        String where = buildWhere(pop, items, p, binds);
+        PickRows res = cmPopupPickQueryRepository.selectPickPage(
+            pop, items, p, sessionConds(pop, items), pageNo, pageSize);
 
-        String entity = ident(pop.getEntityNm(), "entity_nm");
-        String join   = buildJoin(pop);                 /* LEFT JOIN 절 (없으면 "") */
-        List<CmPopupItem> extras = joinedItems(items);  /* select_expr 로 조인 컬럼을 가져오는 항목들 */
-
-        String cntJpql = "SELECT COUNT(" + A + ") FROM " + entity + " " + A + join + where;
-        Query cntQ = em.createQuery(cntJpql);
-        binds.forEach(cntQ::setParameter);
-        long total = ((Number) cntQ.getSingleResult()).longValue();
-
-        /* 드라이빙 엔티티는 그대로 SELECT 하고(호출부가 임의 필드를 꺼내 쓰므로),
-           조인 컬럼만 뒤에 덧붙인다 → 결과는 Object[]{ 엔티티, 조인값... } */
-        StringBuilder sel = new StringBuilder("SELECT " + A);
-        for (CmPopupItem it : extras) sel.append(", ").append(selectExpr(it));
-        String selJpql = sel + " FROM " + entity + " " + A + join + where + buildOrderBy(pop);
-        Query listQ = em.createQuery(selJpql);
-        binds.forEach(listQ::setParameter);
-        listQ.setFirstResult((pageNo - 1) * pageSize);
-        listQ.setMaxResults(pageSize);
-
-        List<?> rows = listQ.getResultList();
         List<Map<String, Object>> list = new ArrayList<>();
-        for (Object row : rows) {
+        for (Object row : res.rows()) {
             Object ent = row;
             Map<String, Object> joined = new LinkedHashMap<>();
-            if (!extras.isEmpty()) {
+            if (!res.extras().isEmpty()) {
                 Object[] tuple = (Object[]) row;
                 ent = tuple[0];
-                for (int i = 0; i < extras.size(); i++) joined.put(extras.get(i).getFieldNm(), tuple[i + 1]);
+                for (int i = 0; i < res.extras().size(); i++) joined.put(res.extras().get(i).getFieldNm(), tuple[i + 1]);
             }
             list.add(rowToMap(ent, pop, items, joined));
         }
-
-        return PageResult.of(list, total, pageNo, pageSize, p);
+        return PageResult.of(list, res.total(), pageNo, pageSize, p);
     }
 
     /* ── 트리 조회 (패턴 2·3 좌측 트리) ────────────────────────── */
@@ -345,46 +270,22 @@ public class CmPopupPickService {
 
     public List<Map<String, Object>> getTree(String popupCode, Map<String, Object> p, String sys) {
         CmPopup pop = getPopup(popupCode, str(p.get("siteId")));
-        assertSysScope(pop, getPopupItems(pop.getPopupId()), sys);
+        List<CmPopupItem> items = getPopupItems(pop.getPopupId());
+        assertSysScope(pop, items, sys);
         if (pop.getParentField() == null || pop.getParentField().isBlank())
             throw new CmBizException("트리를 지원하지 않는 팝업입니다: " + popupCode
                 + "::" + CmUtil.svcCallerInfo(this));
 
-        String entity   = isCrossTree(pop) ? pop.getTreeEntityNm() : pop.getEntityNm();
+        boolean cross   = isCrossTree(pop);
         String idField  = treeIdField(pop);
         String nmField  = treeNmField(pop);
-        Map<String, Object> binds = new LinkedHashMap<>();
-        String where;
+        /* 교차 트리는 항목 메타가 목록 엔티티 기준이라 세션 조건도 적용할 수 없다 */
+        List<ForcedCond> forced = cross ? List.of() : sessionConds(pop, items);
 
-        if (isCrossTree(pop)) {
-            /* 교차 트리는 항목 메타·base_where 가 목록 엔티티 기준이라 트리에 쓸 수 없다.
-               사이트 격리만 적용한다. */
-            where = " WHERE 1=1 ";
-            if (pop.getSiteField() != null && !pop.getSiteField().isBlank() && str(p.get("siteId")) != null) {
-                where += " AND a." + ident(pop.getSiteField(), "site_field") + " = :siteId ";
-                binds.put("siteId", str(p.get("siteId")));
-            }
-        } else {
-            /* 같은 엔티티 트리는 목록과 조건이 같아야 한다.
-               특히 호출부가 고정 필터를 주는 경우(표시경로의 bizCd 등) 트리도 같이 좁혀야
-               엉뚱한 업무의 노드까지 보이지 않는다. 통합검색어와 선택 관련 조건만 뺀다. */
-            Map<String, Object> treeParam = new LinkedHashMap<>(p);
-            treeParam.remove("searchValue");
-            treeParam.remove("idIn");
-            treeParam.remove("parentId");
-            treeParam.remove("excludeIds");
-            where = buildWhere(pop, getPopupItems(pop.getPopupId()), treeParam, binds);
-        }
+        List<?> rows = cmPopupPickQueryRepository.selectTreeList(
+            pop, items, p, forced, cross,
+            cross ? pop.getTreeEntityNm() : pop.getEntityNm(), nmField);
 
-        /* 같은 엔티티 트리는 base_where 가 조인 별칭을 참조할 수 있으므로 조인 절도 함께 넣는다.
-           교차 트리는 조인 절이 목록 엔티티 기준이라 쓸 수 없다(위에서 where 도 제외했다). */
-        String treeJoin = isCrossTree(pop) ? " " : buildJoin(pop);
-        String jpql = "SELECT " + A + " FROM " + ident(entity, "tree_entity_nm") + " " + A + treeJoin + where
-            + " ORDER BY a." + ident(nmField, "tree_nm_field") + " ASC ";
-        Query q = em.createQuery(jpql);
-        binds.forEach(q::setParameter);
-
-        List<?> rows = q.getResultList();
         List<Map<String, Object>> list = new ArrayList<>();
         for (Object row : rows) {
             Map<String, Object> m = new LinkedHashMap<>();
@@ -417,27 +318,17 @@ public class CmPopupPickService {
             ? pop.getTreeNmField() : pop.getNmField();
     }
 
-    /* ── 내부 헬퍼 ─────────────────────────────────────────────── */
+    /* ── 조회 조건 정책 ────────────────────────────────────────── */
 
-    /** WHERE 절 생성 — base_where + 사이트격리 + 통합검색 + 필드별검색 + 부모필터 + 제외ID */
-    private String buildWhere(CmPopup pop, List<CmPopupItem> items,
-                              Map<String, Object> p, Map<String, Object> binds) {
-        StringBuilder w = new StringBuilder(" WHERE 1=1 ");
-
-        if (pop.getBaseWhere() != null && !pop.getBaseWhere().isBlank()) {
-            String bw = pop.getBaseWhere().trim();
-            if (!SAFE_CLAUSE.matcher(bw).matches())
-                throw new CmBizException("허용되지 않는 base_where 입니다: " + bw);
-            w.append(" AND (").append(bw).append(") ");
-        }
-        if (pop.getSiteField() != null && !pop.getSiteField().isBlank() && str(p.get("siteId")) != null) {
-            w.append(" AND a.").append(ident(pop.getSiteField(), "site_field")).append(" = :siteId ");
-            binds.put("siteId", str(p.get("siteId")));
-        }
-        /* 세션 자동값 항목 — session_cond_field 가 있으면 로그인 정보에서 꺼내 조건을 강제한다.
-           ★ 클라이언트가 같은 이름으로 파라미터를 보내도 여기서 덮으므로 조작할 수 없다.
-           ★ search_yn 과 무관하게 항상 적용한다 (사용자 입력란이 아니라 서버 강제 조건). */
-        int sseq = 0;
+    /**
+     * 세션값으로 소유자를 한정하는 강제조건 목록을 만든다.
+     *
+     * <p>{@code session_cond_field} 가 있는 항목은 사용자 입력란이 아니라 <b>서버 강제 조건</b>이므로
+     * {@code search_yn} 과 무관하게 항상 적용한다. 값 자체는 로그인 정보에서만 꺼내므로
+     * 클라이언트가 같은 이름의 파라미터를 보내도 조작할 수 없다.</p>
+     */
+    private List<ForcedCond> sessionConds(CmPopup pop, List<CmPopupItem> items) {
+        List<ForcedCond> out = new ArrayList<>();
         for (CmPopupItem it : items) {
             String attr = it.getSessionCondField();
             if (attr == null || attr.isBlank()) continue;
@@ -450,12 +341,13 @@ public class CmPopupPickService {
                     : "로그인이 필요한 팝업입니다: " + pop.getPopupCode() + " (" + it.getFieldLabel() + ")";
                 throw new CmBizException(msg + "::" + CmUtil.svcCallerInfo(this));
             }
-            String bind = "s" + (sseq++);
-            w.append(" AND a.").append(ident(it.getFieldNm(), "field_nm"))
-             .append(" = :").append(bind).append(" ");
-            binds.put(bind, v);
+            out.add(new ForcedCond(it.getFieldNm(), v));
         }
-        /* 필수 조회조건 — 사용자가 넣어야 하는 항목(세션 자동은 위에서 이미 처리) */
+        return out;
+    }
+
+    /** 필수 조회조건 검증 — 사용자가 넣어야 하는 항목만 (세션 자동값은 위 sessionConds 가 채운다) */
+    private void assertRequiredParams(List<CmPopupItem> items, Map<String, Object> p) {
         for (CmPopupItem it : items) {
             if (!"Y".equals(it.getRequiredYn())) continue;
             if (it.getSessionCondField() != null && !it.getSessionCondField().isBlank()) continue;
@@ -463,112 +355,9 @@ public class CmPopupPickService {
             throw new CmBizException("조회 조건이 필요합니다: " + it.getFieldLabel()
                 + "::" + CmUtil.svcCallerInfo(this));
         }
-        /* 통합검색: search_yn='Y' 且 LIKE 인 항목 전체 OR */
-        String kw = str(p.get("searchValue"));
-        if (kw != null) {
-            List<CmPopupItem> likeCols = items.stream()
-                .filter(i -> "Y".equals(i.getSearchYn()))
-                .filter(i -> !"RANGE".equals(i.getSearchTypeCd()))
-                .toList();
-            if (!likeCols.isEmpty()) {
-                w.append(" AND ( ");
-                for (int i = 0; i < likeCols.size(); i++) {
-                    if (i > 0) w.append(" OR ");
-                    String f = ident(likeCols.get(i).getFieldNm(), "field_nm");
-                    w.append("LOWER(CAST(a.").append(f).append(" AS string)) LIKE :kw ");
-                }
-                w.append(" ) ");
-                binds.put("kw", "%" + kw.toLowerCase() + "%");
-            }
-        }
-        /* 필드별 검색: 파라미터에 field 명으로 값이 오면 개별 조건 적용 */
-        int seq = 0;
-        for (CmPopupItem it : items) {
-            if (!"Y".equals(it.getSearchYn())) continue;
-            String v = str(p.get(it.getFieldNm()));
-            if (v == null) continue;
-            String f = ident(it.getFieldNm(), "field_nm");
-            String bind = "f" + (seq++);
-            if ("EQ".equals(it.getSearchTypeCd())) {
-                w.append(" AND a.").append(f).append(" = :").append(bind).append(" ");
-                binds.put(bind, v);
-            } else {
-                w.append(" AND LOWER(CAST(a.").append(f).append(" AS string)) LIKE :").append(bind).append(" ");
-                binds.put(bind, "%" + v.toLowerCase() + "%");
-            }
-        }
-        /* 트리 노드 선택 → 직속 하위만 */
-        if (pop.getParentField() != null && !pop.getParentField().isBlank()
-            && str(p.get("parentId")) != null) {
-            w.append(" AND a.").append(ident(pop.getParentField(), "parent_field")).append(" = :parentId ");
-            binds.put("parentId", str(p.get("parentId")));
-        }
-        /* 트리 노드 선택 → 노드 자신 + 하위 전체 (프론트가 서브트리 ID 를 계산해 전달).
-           parentId 는 직속 하위만 걸러 리프 노드 클릭 시 0 건이 되므로 idIn 을 우선한다.
-           트리가 다른 엔티티면(카테고리 트리 + 상품 목록) 목록의 연결 필드로 건다. */
-        List<String> idIn = splitIds(str(p.get("idIn")));
-        if (!idIn.isEmpty()) {
-            String linkField = isCrossTree(pop) ? pop.getTreeLinkField() : pop.getIdField();
-            w.append(" AND a.").append(ident(linkField, "tree_link_field")).append(" IN (:idIn) ");
-            binds.put("idIn", idIn);
-        }
-        /* 이미 선택된 항목 제외 */
-        List<String> excludes = splitIds(str(p.get("excludeIds")));
-        if (!excludes.isEmpty()) {
-            w.append(" AND a.").append(ident(pop.getIdField(), "id_field")).append(" NOT IN (:excludeIds) ");
-            binds.put("excludeIds", excludes);
-        }
-        return w.toString();
     }
 
-    private String buildOrderBy(CmPopup pop) {
-        String ob = pop.getOrderBy();
-        if (ob == null || ob.isBlank()) return " ORDER BY a." + ident(pop.getIdField(), "id_field") + " ASC ";
-        if (!SAFE_CLAUSE.matcher(ob).matches())
-            throw new CmBizException("허용되지 않는 order_by 입니다: " + ob);
-        return " ORDER BY " + ob + " ";
-    }
-
-    /* ── 조인 / 출력식 ─────────────────────────────────────────── */
-
-    /**
-     * LEFT JOIN 절을 만든다 (없으면 빈 문자열).
-     *
-     * <p>{@code cm_popup.join_clause} 를 그대로 쓰되 {@link #SAFE_JOIN} 으로 형태를 제한한다 —
-     * {@code LEFT JOIN <Entity> <별칭> ON <별칭>.<필드> = a.<필드>} 반복만 허용.</p>
-     *
-     * <p>왜 to-one 만 허용하나: to-many 조인은 드라이빙 행이 조인 건수만큼 불어나
-     * 목록 건수(COUNT)와 페이징이 어긋난다. 라벨을 끌어오는 것이 목적이므로 제한이 맞다.</p>
-     */
-    private String buildJoin(CmPopup pop) {
-        String jc = pop.getJoinClause();
-        if (jc == null || jc.isBlank()) return " ";
-        String s = jc.trim();
-        if (!SAFE_JOIN.matcher(s).matches()) {
-            throw new CmBizException("허용되지 않는 join_clause 입니다: " + jc
-                + " — 형태는 LEFT JOIN <Entity> <별칭> ON <별칭>.<필드> = a.<필드>"
-                + "::" + CmUtil.svcCallerInfo(this));
-        }
-        return " " + s + " ";
-    }
-
-    /** select_expr 이 지정된 항목들 = 조인 컬럼을 별도 SELECT 로 가져올 항목들 */
-    private List<CmPopupItem> joinedItems(List<CmPopupItem> items) {
-        return items.stream()
-            .filter(i -> i.getSelectExpr() != null && !i.getSelectExpr().isBlank())
-            .toList();
-    }
-
-    /** 항목의 출력식 검증 후 반환 ({@code b.deptNm} 형태만) */
-    private String selectExpr(CmPopupItem it) {
-        String e = it.getSelectExpr().trim();
-        if (!SELECT_EXPR.matcher(e).matches()) {
-            throw new CmBizException("허용되지 않는 select_expr 입니다: " + e
-                + " (" + it.getFieldNm() + ") — 형태는 <별칭>.<필드>"
-                + "::" + CmUtil.svcCallerInfo(this));
-        }
-        return e;
-    }
+    /* ── 응답 변환 ─────────────────────────────────────────────── */
 
     /** 엔티티 → { id, nm, parentId?, <표시필드들> } 맵 (리플렉션 getter). joined = 조인으로 가져온 값 */
     private Map<String, Object> rowToMap(Object row, CmPopup pop, List<CmPopupItem> items,
@@ -601,25 +390,6 @@ public class CmPopupPickService {
         } catch (ReflectiveOperationException e) {
             return null;
         }
-    }
-
-    /** JPQL 식별자 화이트리스트 검증 */
-    private String ident(String s, String what) {
-        if (s == null || !IDENT.matcher(s).matches())
-            throw new CmBizException("허용되지 않는 " + what + " 입니다: " + s
-                + "::" + CmUtil.svcCallerInfo(this));
-        return s;
-    }
-
-    /** "^A^B^" 또는 "A,B" → [A, B] */
-    private List<String> splitIds(String s) {
-        List<String> out = new ArrayList<>();
-        if (s == null || s.isBlank()) return out;
-        for (String t : s.split("[\\^,]")) {
-            String v = t.trim();
-            if (!v.isEmpty()) out.add(v);
-        }
-        return out;
     }
 
     private String str(Object o) {

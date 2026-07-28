@@ -254,6 +254,67 @@ PK: attach_grp_id (ATG + timestamp + random)
 - ❌ 첨부 컴포넌트를 `v-if="!cfDtlMode"` 로 통째 숨기면 보기모드에서 목록까지 사라짐 → **`:readonly` 로 컨트롤만 숨기고 목록은 유지**.
 - 적용: CmNoticeDtl·SyBbsDtl·SyContactDtl(내용·답변)·SyUserDtl·MyContact(FO). UX 정책 → [base/base.UX-bo.md](../base/base.UX-bo.md) §6.9.
 
+---
+
+## 10. 다른 도메인이 첨부를 물고 갈 때 — `SyAttachDto.Brief` (2026-07-28)
+
+메시지·게시글·리뷰처럼 **본문 DTO 가 첨부 목록을 함께 내려주는** 경우가 있다.
+이때 도메인마다 6~7필드짜리 첨부 클래스를 각자 만들면 안 된다.
+
+### ⛔ 하지 말 것 — 도메인별 첨부 클래스
+
+```java
+// CmChattMsgDto 안에 있던 것 (2026-07-28 제거)
+public static class AttachItem {
+    private String attachId;
+    private String attachUrl;
+    private String attachNm;    // ← sy_attach 는 file_nm
+    private String attachExt;   // ← sy_attach 는 file_ext
+    private Long   attachSize;  // ← sy_attach 는 file_size
+    private String thumbUrl;
+}
+```
+
+같은 `sy_attach` 컬럼을 도메인마다 다른 이름으로 부르게 되어, 프론트가 화면마다 다른 키를 써야 한다.
+
+### ✅ 공통 축약 DTO
+
+```java
+private List<SyAttachDto.Brief> attachFiles;
+```
+
+`SyAttachDto.Brief` — 화면이 파일을 띄우는 데 필요한 것만 담은 공통 투영.
+**필드명은 `sy_attach` 컬럼 그대로**: `attachId` `attachGrpId` `fileNm` `fileExt`
+`fileSize` `attachUrl` `thumbUrl` `sortOrd`.
+
+- `SyAttachDto.Item`(27필드)은 **첨부관리 화면 전용** — 본문 DTO 에 물리지 않는다
+- 첨부 목록이 필요한 새 DTO 는 `Brief` 를 쓴다. 필드가 모자라면 `Brief` 에 더한다(도메인 클래스를 새로 만들지 않는다)
+
+### 채우는 쪽 — N+1 회피 일괄 주입
+
+조회 쿼리(`Projections.bean`)는 스칼라 컬럼만 담을 수 있어 첨부를 함께 못 가져온다.
+행마다 조회하면 N+1 이므로 **그룹ID 를 모아 한 번에 읽고 메모리에서 붙인다**.
+
+```java
+private void fnFillAttachFiles(List<CmChattMsgDto.Item> items) {
+    List<String> grpIds = items.stream().map(CmChattMsgDto.Item::getAttachGrpId)
+        .filter(g -> g != null && !g.isBlank()).distinct().toList();
+    if (grpIds.isEmpty()) return;
+    Map<String, List<SyAttachDto.Brief>> byGrp = ...;   // findByAttachGrpIdIn... 1회
+    items.forEach(it -> { ... it.setAttachFiles(byGrp.get(it.getAttachGrpId())); });
+}
+```
+
+- 조회 메서드 **전부**(`getById` / `getByIdOrNull` / `getList` / `getPageData`)에 걸어야 한다.
+  한 곳만 빠뜨리면 그 경로에서만 첨부가 사라져 원인을 찾기 어렵다
+- 리포지토리에 `findByAttachGrpIdInOrderByAttachGrpIdAscSortOrdAscAttachIdAsc` 를 둔다
+
+> **주의** — DTO 에 `attachFiles` 필드만 선언하고 **채우는 코드를 안 넣는 사고가 실제로 있었다**
+> (`CmChattMsgDto`, 2026-07-28 수정 전). 프론트는 렌더 코드를 갖고 있는데 값이 늘 비어
+> "원래 첨부가 없는 화면"처럼 보였다. 필드를 추가하면 producer 까지 같이 넣는다.
+
+---
+
 ## 구현 참조
 
 | 항목 | 클래스 |

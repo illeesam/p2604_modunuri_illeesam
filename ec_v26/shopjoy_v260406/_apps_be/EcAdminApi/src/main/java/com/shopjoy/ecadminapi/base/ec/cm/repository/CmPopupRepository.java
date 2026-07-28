@@ -1,12 +1,13 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmPopupRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface CmPopupRepository extends JpaRepository<CmPopup, String> {
+public interface CmPopupRepository extends JpaRepository<CmPopup, String>, QCmPopupRepository {
 
     Optional<CmPopup> findBySiteIdAndPopupCodeAndUseYn(String siteId, String popupCode, String useYn);
 

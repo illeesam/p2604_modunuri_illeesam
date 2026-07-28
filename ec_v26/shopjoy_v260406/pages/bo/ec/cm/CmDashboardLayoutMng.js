@@ -101,7 +101,7 @@ window.CmDashboardLayoutMng = {
         list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
         cards.splice(0, cards.length, ...list.map(i => ({
           dashboardItemId: i.dashboardItemId, itemKey: i.itemKey, itemNm: i.itemNm,
-          chartType: i.chartType || 'bar', sortOrd: i.sortOrd || 0,
+          itemTypeCd: util.itemTypeOf(i), chartType: i.chartType || 'bar', sortOrd: i.sortOrd || 0,
           panelWidth: i.panelWidth || 1, panelHeight: i.panelHeight || 1,
           useYn: i.useYn || 'Y', realtimeYn: i.realtimeYn || 'N',
           seriesJson: i.seriesJson || null, optionJson: i.optionJson || null,
@@ -334,7 +334,7 @@ window.CmDashboardLayoutMng = {
         <div draggable="true" @dragstart="onCardDragStart(idx, $event)" @dragend="onCardDragEnd"
           style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 10px;background:#fafbfc;border-bottom:1px solid #f0f0f0;cursor:grab;">
           <span style="color:#bbb;font-size:12px;">⠿</span>
-          <span style="font-size:12px;">{{ util.chartTypeIcon(c.chartType) }}</span>
+          <span style="font-size:12px;">{{ util.itemTypeIcon(util.itemTypeOf(c)) }}</span>
           <span style="font-size:12px;font-weight:700;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.itemNm }}</span>
           <span v-if="c.realtimeYn === 'Y'" class="badge badge-red" style="font-size:9px;">실시간</span>
           <span style="flex:1;"></span>
@@ -370,13 +370,29 @@ window.CmDashboardLayoutMng = {
                 🔴 실시간 항목<br/>시뮬레이션 미지원
               </div>
               <div v-else-if="fnWidget(c).kind === 'empty'" style="text-align:center;color:#ccc;font-size:11px;">데이터 없음</div>
+              <div v-else-if="fnWidget(c).kind === 'table'"
+                style="width:100%;height:100%;overflow:auto;align-self:stretch;">
+                <table class="bo-table bo-table-narrow" style="font-size:11px;">
+                  <thead><tr>
+                    <th v-for="col in fnWidget(c).columns" :key="col.key"
+                      :style="{ textAlign: col.align }" style="padding:4px 6px;">{{ col.label }}</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr v-for="(r, ri) in fnWidget(c).rows" :key="ri">
+                      <td v-for="(cell, ci) in r" :key="ci"
+                        :style="{ textAlign: fnWidget(c).columns[ci].align }"
+                        style="padding:3px 6px;white-space:nowrap;">{{ cell }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <co-echart v-else-if="fnWidget(c).kind === 'chart'" :option="fnWidget(c).option" :height="fnChartHeight(c)" style="width:100%;" />
             </template>
             <div v-else style="color:#ccc;font-size:11px;">…</div>
           </template>
           <div v-else style="text-align:center;color:#d5d9e0;">
-            <div style="font-size:30px;">{{ util.chartTypeIcon(c.chartType) }}</div>
-            <div style="font-size:10px;margin-top:4px;">{{ util.chartTypeLabel(c.chartType) }} · {{ c.itemKey }}</div>
+            <div style="font-size:30px;">{{ util.itemTypeIcon(util.itemTypeOf(c)) }}</div>
+            <div style="font-size:10px;margin-top:4px;">{{ util.itemTypeLabel(util.itemTypeOf(c)) }} · {{ c.itemKey }}</div>
           </div>
         </div>
       </div>

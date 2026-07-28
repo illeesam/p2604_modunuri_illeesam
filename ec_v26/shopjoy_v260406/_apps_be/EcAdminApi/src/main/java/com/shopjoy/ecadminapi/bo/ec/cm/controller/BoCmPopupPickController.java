@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPopupDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopupItem;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPopupItemRepository;
@@ -13,6 +14,8 @@ import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -73,9 +76,9 @@ public class BoCmPopupPickController {
     }
 
     @GetMapping("/popup/page")
-    public ResponseEntity<ApiResponse<PageResult<CmPopup>>> popupPage(
-            @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(cmPopupPickService.getPopupPage(p)));
+    public ResponseEntity<ApiResponse<CmPopupDto.PageResponse>> popupPage(
+            @Valid @ModelAttribute CmPopupDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(cmPopupPickService.getPopupPage(req)));
     }
 
     @GetMapping("/popup/{popupId}/items")

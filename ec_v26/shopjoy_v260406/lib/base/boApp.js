@@ -619,12 +619,14 @@
       };
 
       /* addTab */
-      const addTab = (tabId) => {
+      const addTab = (tabId, labelOverride) => {
         if (!openTabs.find((t) => t.id === tabId)) {
           const pg = toPageFromTabId(tabId);
           const subId = toIdFromTabId(tabId);
           const baseLabel = PAGE_LABELS[pg] || pg;
-          const label = subId ? baseLabel + ' · ' + String(subId).slice(-4) : baseLabel;
+          /* labelOverride — 대상마다 이름이 다른 화면(대시보드 뷰어 등)은 호출부가 이름을 준다.
+             안 주면 기존대로 "화면명 · ID뒤4자리". */
+          const label = labelOverride || (subId ? baseLabel + ' · ' + String(subId).slice(-4) : baseLabel);
           openTabs.push({ id: tabId, label });
         }
       };
@@ -836,7 +838,7 @@
         kanbanClaimId.value = opts.claimId ?? null;
         if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
         const tabId = toTabId(pg, resolvedOrderId);
-        addTab(tabId);
+        addTab(tabId, opts.tabLabel);
         // 즐겨찾기 keep 설정이 있으면 자동으로 탭 고정
         if (favKeepSet.has(tabId)) keptTabIds.add(tabId);
         const p2 = new URLSearchParams();
@@ -2646,7 +2648,7 @@
             <div v-else class="left-nav-item left-nav-sub-item"
               :class="{active: d.pageId ? cfActiveTabId===d.pageId : false}"
               :style="{ paddingLeft: (24 + (d.depth || 0) * 14) + 'px' }"
-              @click="d.pageId ? navigate(d.pageId) : navigate('cmDashboardMyMng', { id: d.dashboardId })"
+              @click="d.pageId ? navigate(d.pageId) : navigate('cmDashboardMyMng', { id: d.dashboardId, tabLabel: d.label })"
               title="공용 대시보드">
               <span style="margin-right:4px;">📊</span>{{ d.label }}
             </div>
@@ -2660,7 +2662,7 @@
             </div>
             <div v-else class="left-nav-item left-nav-sub-item"
               :style="{ paddingLeft: (24 + (d.depth || 0) * 14) + 'px' }"
-              @click="navigate('cmDashboardMyMng', { id: d.dashboardId })"
+              @click="navigate('cmDashboardMyMng', { id: d.dashboardId, tabLabel: d.dashboardNm })"
               :title="d.mine ? '내 대시보드' : '공유받은 대시보드'">
               <span style="margin-right:4px;">{{ d.mine ? '👤' : '🔗' }}</span>{{ d.dashboardNm }}
             </div>

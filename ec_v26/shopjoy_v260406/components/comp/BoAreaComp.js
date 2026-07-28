@@ -526,6 +526,7 @@ window.BoGrid = {
     emptyText:      { type: String, default: '데이터가 없습니다.' },
     tableMaxHeight: { type: String, default: null },             // 테이블 영역 최대 높이 (예: '320px'). null=기본(calc(100vh-380px))
     bare:           { type: Boolean, default: false },           // true=card/toolbar/pager 없이 <table>만 (뷰토글·공용페이저·인라인Dtl 화면용)
+    narrow:         { type: Boolean, default: false },           // true=.bo-table 기본 min-width(720px) 해제. .bo-2col 좌측처럼 좁은 선택 목록용
     selectable: { type: Boolean, default: false },               // true=좌측 체크박스 컬럼 + 헤더 전체선택 (일괄작업 목록용). 기본 off → 기존 화면 무영향
     checkedKey: { type: String,  default: null },                // 체크 식별 필드 (없으면 rowKey 사용). isChecked/toggleCheck 가 받는 값
     isChecked:  { type: Function, default: null },                // (key)=>bool. 행 체크 여부 (부모 Set 기반)
@@ -686,7 +687,7 @@ window.BoGrid = {
     <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
       <span style="font-size:13px;color:#e8587a;background:#fff;border:1px solid #f3c6d4;border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>
     </div>
-    <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
+    <table class="bo-table" :class="{ 'crud-grid': draggable || showSave, 'bo-table-narrow': narrow }">
       <thead>
         <tr>
           <th v-if="selectable" style="width:36px;text-align:center;">
