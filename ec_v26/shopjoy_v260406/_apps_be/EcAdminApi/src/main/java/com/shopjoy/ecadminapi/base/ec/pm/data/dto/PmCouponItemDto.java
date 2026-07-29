@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.ec.pm.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -31,6 +30,4 @@ public class PmCouponItemDto {
         private LocalDateTime regDate;
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

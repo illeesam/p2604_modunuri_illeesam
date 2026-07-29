@@ -36,9 +36,40 @@ public class CmUploadService {
     private final VideoConvertUtil videoConvertUtil;
     private final SyAttachGrpService syAttachGrpService;
     private final SyAttachService syAttachService;
+    private final com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository syPropRepository;
+    private final org.springframework.core.env.Environment environment;
 
-    @Value("${app.file.cdn-host:http://localhost:8080/cdn}")
-    private String cdnHost;
+    /* yml 기본값은 sy_prop 조회가 실패했을 때만 쓰는 최후 폴백이다.
+       실제 값은 sy_prop(app.file.cdn-host) 의 활성 프로파일 행에서 읽는다 — fnCdnHost() 참조. */
+    @Value("${app.file.cdn-host:http://localhost:3000/cdn}")
+    private String cdnHostFallback;
+
+    /**
+     * CDN 호스트 — sy_prop(app.file.cdn-host) 우선, 없으면 yml 폴백.
+     *
+     * <p>yml 은 이 값을 비워두고 "sy_prop(app.file.*) 에서 주입" 하도록 설계돼 있는데
+     * {@code @Value} 는 Spring Environment 만 보므로 sy_prop 값이 반영되지 않았다.
+     * 그래서 첨부 URL 이 코드 기본값(구 포트 8080)으로 만들어져 이미지가 깨졌다(2026-07-29 수정).
+     * 형제 서비스(CmDeliveryTrackerService.getPropValue)와 같은 방식으로 읽는다.</p>
+     */
+    private String fnCdnHost() {
+        String profile = environment.getActiveProfiles().length > 0
+            ? environment.getActiveProfiles()[0] : "-";
+        String v = syPropRepository.findAll().stream()
+            .filter(p -> "Y".equals(p.getUseYn())
+                && "app.file.cdn-host".equals(p.getPropKey())
+                && fnPropProfileMatch(p.getPropProfile(), profile))
+            .map(com.shopjoy.ecadminapi.base.sy.data.entity.SyProp::getPropValue)
+            .filter(x -> x != null && !x.isBlank())
+            .findFirst().orElse(null);
+        return (v != null) ? v : cdnHostFallback;
+    }
+
+    /** prop_profile 은 {@code ^local^} 형태의 멀티값. 비어 있거나 all 이면 모든 프로파일에 적용 */
+    private boolean fnPropProfileMatch(String propProfile, String activeProfile) {
+        if (propProfile == null || propProfile.isBlank() || "all".equals(propProfile)) return true;
+        return propProfile.contains("^" + activeProfile + "^");
+    }
 
     /** 단일 파일 업로드 — 확장자/용량 검증, 썸네일 옵션, DB 저장 */
     @Transactional
@@ -176,7 +207,8 @@ public class CmUploadService {
 
             String storageFolderPath = fileUploadUtil.generateStoragePath(businessCode);
             String folderPath = fileUploadUtil.generateFolderPath(businessCode);
-            String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
+            String cdnHost = fnCdnHost();
+        String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
 
             for (int i = 0; i < files.length; i++) {
                 MultipartFile file = files[i];
@@ -326,6 +358,7 @@ public class CmUploadService {
 
     /** 첨부 그룹 ID로 파일 목록 조회 (CDN URL 보정 포함) */
     public List<SyAttachDto.Item> getAttachGrpFiles(String attachGrpId) {
+        String cdnHost = fnCdnHost();
         String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
         SyAttachDto.Request req = new SyAttachDto.Request();
         req.setAttachGrpId(attachGrpId);

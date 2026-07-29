@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmhPushLog;
 
@@ -16,7 +17,7 @@ public interface QCmhPushLogRepository {
     List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    CmhPushLogDto.PageResponse selectPageData(CmhPushLogDto.Request search);
+    BasePage<CmhPushLogDto.Item> selectPageData(CmhPushLogDto.Request search);
 
     int updateSelective(CmhPushLog entity);
 }

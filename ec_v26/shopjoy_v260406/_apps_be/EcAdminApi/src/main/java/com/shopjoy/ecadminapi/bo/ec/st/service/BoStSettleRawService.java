@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleRawDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleRaw;
 import com.shopjoy.ecadminapi.base.ec.st.service.StSettleRawService;
@@ -24,7 +25,7 @@ public class BoStSettleRawService {
     /* 목록조회 */
     public List<StSettleRawDto.Item> getList(StSettleRawDto.Request req) { return stSettleRawService.getList(req); }
     /* 페이지조회 */
-    public StSettleRawDto.PageResponse getPageData(StSettleRawDto.Request req) { return stSettleRawService.getPageData(req); }
+    public BasePage<StSettleRawDto.Item> getPageData(StSettleRawDto.Request req) { return stSettleRawService.getPageData(req); }
 
     @Transactional public StSettleRaw create(StSettleRaw body) { return stSettleRawService.create(body); }
     @Transactional public StSettleRaw update(String id, StSettleRaw body) { return stSettleRawService.update(id, body); }

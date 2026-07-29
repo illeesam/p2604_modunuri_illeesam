@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewAttachDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewAttach;
 
@@ -16,7 +17,7 @@ public interface QPdReviewAttachRepository {
     List<PdReviewAttachDto.Item> selectList(PdReviewAttachDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    PdReviewAttachDto.PageResponse selectPageData(PdReviewAttachDto.Request search);
+    BasePage<PdReviewAttachDto.Item> selectPageData(PdReviewAttachDto.Request search);
 
     int updateSelective(PdReviewAttach entity);
 }

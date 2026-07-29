@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogGood;
 
@@ -16,7 +17,7 @@ public interface QCmBlogGoodRepository {
     List<CmBlogGoodDto.Item> selectList(CmBlogGoodDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    CmBlogGoodDto.PageResponse selectPageData(CmBlogGoodDto.Request search);
+    BasePage<CmBlogGoodDto.Item> selectPageData(CmBlogGoodDto.Request search);
 
     int updateSelective(CmBlogGood entity);
 }

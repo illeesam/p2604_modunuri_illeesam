@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherSendSnsDto;
@@ -32,7 +33,7 @@ public class BoPmVoucherController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmVoucherDto.PageResponse>> page(@Valid @ModelAttribute PmVoucherDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmVoucherDto.Item>>> page(@Valid @ModelAttribute PmVoucherDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPmVoucherService.getPageData(req)));
     }
 

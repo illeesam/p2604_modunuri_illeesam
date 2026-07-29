@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyAttachService;
@@ -36,7 +37,7 @@ public class BoSyAttachController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyAttachDto.PageResponse>> page(@Valid @ModelAttribute SyAttachDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyAttachDto.Item>>> page(@Valid @ModelAttribute SyAttachDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyAttachService.getPageData(req)));
     }
 

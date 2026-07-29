@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.zz.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample1Dto;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample2Dto;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample3Dto;
@@ -80,9 +81,9 @@ public class ZzSample3Service {
     }
 
     /** getPageData — 조회 (각 항목에 상위 sample1 / sample2 포함) */
-    public ZzSample3Dto.PageResponse getPageData(ZzSample3Dto.Request req) {
+    public BasePage<ZzSample3Dto.Item> getPageData(ZzSample3Dto.Request req) {
         PageHelper.addPaging(req);
-        ZzSample3Dto.PageResponse res = zzSample3Repository.selectPageData(req);
+        BasePage<ZzSample3Dto.Item> res = zzSample3Repository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

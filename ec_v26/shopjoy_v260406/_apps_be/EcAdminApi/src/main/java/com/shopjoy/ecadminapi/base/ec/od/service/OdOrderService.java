@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
@@ -67,7 +68,7 @@ public class OdOrderService {
     }
 
     /* 주문 페이지조회 */
-    public OdOrderDto.PageResponse getPageData(OdOrderDto.Request req) {
+    public BasePage<OdOrderDto.Item> getPageData(OdOrderDto.Request req) {
         PageHelper.addPaging(req);
         return odOrderRepository.selectPageData(req);
     }

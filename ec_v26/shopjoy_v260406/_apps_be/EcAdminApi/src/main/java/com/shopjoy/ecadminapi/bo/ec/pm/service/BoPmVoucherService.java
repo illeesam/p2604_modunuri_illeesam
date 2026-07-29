@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherSendSnsDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
@@ -38,7 +39,7 @@ public class BoPmVoucherService {
     /* 목록조회 */
     public List<PmVoucherDto.Item> getList(PmVoucherDto.Request req) { return pmVoucherService.getList(req); }
     /* 페이지조회 */
-    public PmVoucherDto.PageResponse getPageData(PmVoucherDto.Request req) { return pmVoucherService.getPageData(req); }
+    public BasePage<PmVoucherDto.Item> getPageData(PmVoucherDto.Request req) { return pmVoucherService.getPageData(req); }
 
     @Transactional public PmVoucher create(PmVoucher body) { return pmVoucherService.create(body); }
     @Transactional public PmVoucher update(String id, PmVoucher body) { return pmVoucherService.update(id, body); }

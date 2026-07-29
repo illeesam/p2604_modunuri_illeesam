@@ -9,8 +9,8 @@ import java.util.List;
 /**
  * 페이징 응답 공통 타입 — {@code BasePage<XxxDto.Item>} 하나로 쓴다.
  *
- * <p>{@link BasePageResponse} 는 DTO 마다 {@code PageResponse extends BasePageResponse<Item, Request>}
- * 빈 클래스를 하나씩 두게 했다(168개). 그 클래스들은 <b>필드도 메서드도 없는 껍데기</b>였고,
+ * <p>이전에는 {@code BasePageResponse} 가 DTO 마다 {@code PageResponse extends BasePageResponse<Item, Request>}
+ * 빈 클래스를 하나씩 두게 했다(168개, 2026-07-29 전부 제거). 그 클래스들은 <b>필드도 메서드도 없는 껍데기</b>였고,
  * 두 번째 타입 파라미터 {@code R}(Request) 은 {@code pageCond} 의 선언 타입을 좁히는 것 외에
  * 하는 일이 없었다 — 실제로 자바 코드에서 {@code getPageCond()/setPageCond()} 를 호출하는 곳은
  * <b>한 군데도 없다</b>. 응답 JSON 으로 echo 될 뿐이다.</p>

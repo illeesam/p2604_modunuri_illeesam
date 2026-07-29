@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
@@ -38,7 +39,7 @@ public class BoPdReviewController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PdReviewDto.PageResponse>> page(@Valid @ModelAttribute PdReviewDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PdReviewDto.Item>>> page(@Valid @ModelAttribute PdReviewDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.getPageData(req)));
     }
 

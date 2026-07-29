@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -96,7 +97,7 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
 
     /* 주문 아이템 상태 이력 페이지조회 */
     @Override
-    public OdhOrderItemStatusHistDto.PageResponse selectPageData(OdhOrderItemStatusHistDto.Request search) {
+    public BasePage<OdhOrderItemStatusHistDto.Item> selectPageData(OdhOrderItemStatusHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -127,7 +128,7 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
                 .where(wheres)
                 .fetchOne();
 
-        OdhOrderItemStatusHistDto.PageResponse res = new OdhOrderItemStatusHistDto.PageResponse();
+        BasePage<OdhOrderItemStatusHistDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

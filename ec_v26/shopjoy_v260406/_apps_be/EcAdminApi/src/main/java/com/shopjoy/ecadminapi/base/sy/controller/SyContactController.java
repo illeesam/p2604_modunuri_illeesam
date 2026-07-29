@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.base.sy.service.SyContactService;
@@ -33,7 +34,7 @@ public class SyContactController {
 
     /* 문의 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyContactDto.PageResponse>> page(@Valid @ModelAttribute SyContactDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyContactDto.Item>>> page(@Valid @ModelAttribute SyContactDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

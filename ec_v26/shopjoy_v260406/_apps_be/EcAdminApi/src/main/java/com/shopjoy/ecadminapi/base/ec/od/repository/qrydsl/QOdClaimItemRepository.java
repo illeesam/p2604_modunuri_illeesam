@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaimItem;
 
@@ -13,7 +14,7 @@ public interface QOdClaimItemRepository {
 
     List<OdClaimItemDto.Item> selectList(OdClaimItemDto.Request search);
 
-    OdClaimItemDto.PageResponse selectPageData(OdClaimItemDto.Request search);
+    BasePage<OdClaimItemDto.Item> selectPageData(OdClaimItemDto.Request search);
 
     int updateSelective(OdClaimItem entity);
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPathDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyPath;
 import com.shopjoy.ecadminapi.base.sy.service.SyPathService;
@@ -24,7 +25,7 @@ public class BoSyPathService {
     /* 목록조회 */
     public List<SyPathDto.Item> getList(SyPathDto.Request req) { return syPathService.getList(req); }
     /* 페이지조회 */
-    public SyPathDto.PageResponse getPageData(SyPathDto.Request req) { return syPathService.getPageData(req); }
+    public BasePage<SyPathDto.Item> getPageData(SyPathDto.Request req) { return syPathService.getPageData(req); }
 
     @Transactional public SyPath create(SyPath body) { return syPathService.create(body); }
     @Transactional public SyPath update(String id, SyPath body) { return syPathService.update(id, body); }

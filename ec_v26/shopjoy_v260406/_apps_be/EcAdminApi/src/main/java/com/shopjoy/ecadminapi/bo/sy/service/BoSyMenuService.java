@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.base.sy.service.SyMenuService;
@@ -26,7 +27,7 @@ public class BoSyMenuService {
     /* 목록조회 */
     public List<SyMenuDto.Item> getList(SyMenuDto.Request req) { return syMenuService.getList(req); }
     /* 페이지조회 */
-    public SyMenuDto.PageResponse getPageData(SyMenuDto.Request req) { return syMenuService.getPageData(req); }
+    public BasePage<SyMenuDto.Item> getPageData(SyMenuDto.Request req) { return syMenuService.getPageData(req); }
 
     /* 등록 */
     @Transactional

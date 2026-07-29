@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
 
@@ -13,7 +14,7 @@ public interface QPmEventRepository {
 
     List<PmEventDto.Item> selectList(PmEventDto.Request search);
 
-    PmEventDto.PageResponse selectPageData(PmEventDto.Request search);
+    BasePage<PmEventDto.Item> selectPageData(PmEventDto.Request search);
 
     int updateSelective(PmEvent entity);
 }

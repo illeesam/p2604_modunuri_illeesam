@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlan;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmPlanRepository;
@@ -35,7 +36,7 @@ public class BoPmPlanService {
     /* 목록조회 */
     public List<PmPlanDto.Item> getList(PmPlanDto.Request req) { return pmPlanService.getList(req); }
     /* 페이지조회 */
-    public PmPlanDto.PageResponse getPageData(PmPlanDto.Request req) { return pmPlanService.getPageData(req); }
+    public BasePage<PmPlanDto.Item> getPageData(PmPlanDto.Request req) { return pmPlanService.getPageData(req); }
 
     @Transactional public PmPlan create(PmPlan body) { return pmPlanService.create(body); }
     @Transactional public PmPlan update(String id, PmPlan body) { return pmPlanService.update(id, body); }

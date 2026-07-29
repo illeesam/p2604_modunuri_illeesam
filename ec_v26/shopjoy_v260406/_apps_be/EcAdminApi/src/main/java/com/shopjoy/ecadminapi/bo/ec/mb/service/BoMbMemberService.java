@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto;
@@ -52,8 +53,8 @@ public class BoMbMemberService {
         return list;
     }
     /* 페이지조회 */
-    public MbMemberDto.PageResponse getPageData(MbMemberDto.Request req) {
-        MbMemberDto.PageResponse res = mbMemberService.getPageData(req);
+    public BasePage<MbMemberDto.Item> getPageData(MbMemberDto.Request req) {
+        BasePage<MbMemberDto.Item> res = mbMemberService.getPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhApiLog;
 
@@ -16,7 +17,7 @@ public interface QSyhApiLogRepository {
     List<SyhApiLogDto.Item> selectList(SyhApiLogDto.Request search);
 
     /** 페이지 목록 */
-    SyhApiLogDto.PageResponse selectPageData(SyhApiLogDto.Request search);
+    BasePage<SyhApiLogDto.Item> selectPageData(SyhApiLogDto.Request search);
 
     int updateSelective(SyhApiLog entity);
 }

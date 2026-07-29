@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewComment;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdReviewCommentRepository;
@@ -67,7 +68,7 @@ public class PdReviewCommentService {
     }
 
     /* 리뷰 댓글 페이지조회 */
-    public PdReviewCommentDto.PageResponse getPageData(PdReviewCommentDto.Request req) {
+    public BasePage<PdReviewCommentDto.Item> getPageData(PdReviewCommentDto.Request req) {
         PageHelper.addPaging(req);
         return pdReviewCommentRepository.selectPageData(req);
     }

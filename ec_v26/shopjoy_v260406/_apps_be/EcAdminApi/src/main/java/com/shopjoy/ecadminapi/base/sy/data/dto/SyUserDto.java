@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.sy.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -63,7 +62,6 @@ public class SyUserDto {
         private String authMethodCdNm;
     }
 
-    /** 응답 (pageList + 페이징 메타 + 조회조건 echo). 단순목록/페이징 결과 모두 pageList 에 담김 */
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
+    /* 페이징 응답은 공통 타입을 쓴다 — BasePage<SyUserDto.Item>.
+       DTO 마다 빈 PageResponse 클래스를 두지 않는다(common/data/BasePage 주석 참조). */
 }

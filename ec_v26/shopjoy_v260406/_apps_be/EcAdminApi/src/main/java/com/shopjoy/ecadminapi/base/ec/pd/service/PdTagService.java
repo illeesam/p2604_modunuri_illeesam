@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdTagRepository;
@@ -67,7 +68,7 @@ public class PdTagService {
     }
 
     /* 태그 페이지조회 */
-    public PdTagDto.PageResponse getPageData(PdTagDto.Request req) {
+    public BasePage<PdTagDto.Item> getPageData(PdTagDto.Request req) {
         PageHelper.addPaging(req);
         return pdTagRepository.selectPageData(req);
     }

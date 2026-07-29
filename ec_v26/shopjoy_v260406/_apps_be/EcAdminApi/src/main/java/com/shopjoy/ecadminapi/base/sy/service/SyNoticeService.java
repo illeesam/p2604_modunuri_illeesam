@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.base.sy.repository.SyNoticeRepository;
@@ -67,7 +68,7 @@ public class SyNoticeService {
     }
 
     /* 공지사항 페이지조회 */
-    public SyNoticeDto.PageResponse getPageData(SyNoticeDto.Request req) {
+    public BasePage<SyNoticeDto.Item> getPageData(SyNoticeDto.Request req) {
         PageHelper.addPaging(req);
         return syNoticeRepository.selectPageData(req);
     }

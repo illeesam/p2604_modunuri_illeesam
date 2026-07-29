@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyDept;
 
@@ -13,7 +14,7 @@ public interface QSyDeptRepository {
 
     List<SyDeptDto.Item> selectList(SyDeptDto.Request search);
 
-    SyDeptDto.PageResponse selectPageData(SyDeptDto.Request search);
+    BasePage<SyDeptDto.Item> selectPageData(SyDeptDto.Request search);
 
     int updateSelective(SyDept entity);
 }

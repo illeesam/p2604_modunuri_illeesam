@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -140,7 +141,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
 
     /* 정산 대사(Reconciliation) 페이지조회 */
     @Override
-    public StReconDto.PageResponse selectPageData(StReconDto.Request search) {
+    public BasePage<StReconDto.Item> selectPageData(StReconDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -174,7 +175,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                 .where(wheres)
                 .fetchOne();
 
-        StReconDto.PageResponse res = new StReconDto.PageResponse();
+        BasePage<StReconDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

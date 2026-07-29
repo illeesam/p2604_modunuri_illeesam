@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberAddr;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberAddrService;
@@ -33,7 +34,7 @@ public class MbMemberAddrController {
 
     /* 회원 주소 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<MbMemberAddrDto.PageResponse>> page(@Valid @ModelAttribute MbMemberAddrDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<MbMemberAddrDto.Item>>> page(@Valid @ModelAttribute MbMemberAddrDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

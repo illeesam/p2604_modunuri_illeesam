@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbLike;
 
@@ -13,7 +14,7 @@ public interface QMbLikeRepository {
 
     List<MbLikeDto.Item> selectList(MbLikeDto.Request search);
 
-    MbLikeDto.PageResponse selectPageData(MbLikeDto.Request search);
+    BasePage<MbLikeDto.Item> selectPageData(MbLikeDto.Request search);
 
     int updateSelective(MbLike entity);
 }

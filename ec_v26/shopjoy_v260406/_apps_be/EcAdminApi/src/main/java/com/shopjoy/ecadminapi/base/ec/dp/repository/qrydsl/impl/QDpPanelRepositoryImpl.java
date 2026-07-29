@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -124,7 +125,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
 
     /* 전시 패널 페이지조회 */
     @Override
-    public DpPanelDto.PageResponse selectPageData(DpPanelDto.Request search) {
+    public BasePage<DpPanelDto.Item> selectPageData(DpPanelDto.Request search) {
         int pageNo = search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -158,7 +159,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 .select(dpPanel.count())
                 .where(wheres)
                 .fetchOne();
-        DpPanelDto.PageResponse res = new DpPanelDto.PageResponse();
+        BasePage<DpPanelDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

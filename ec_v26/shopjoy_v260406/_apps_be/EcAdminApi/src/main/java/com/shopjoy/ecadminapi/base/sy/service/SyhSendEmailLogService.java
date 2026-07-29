@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendEmailLog;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhSendEmailLogRepository;
@@ -28,7 +29,7 @@ public class SyhSendEmailLogService {
     }
 
     /** getPageData — 페이징조회 */
-    public SyhSendEmailLogDto.PageResponse getPageData(SyhSendEmailLogDto.Request req) {
+    public BasePage<SyhSendEmailLogDto.Item> getPageData(SyhSendEmailLogDto.Request req) {
         PageHelper.addPaging(req);
         return syhSendEmailLogRepository.selectPageData(req);
     }

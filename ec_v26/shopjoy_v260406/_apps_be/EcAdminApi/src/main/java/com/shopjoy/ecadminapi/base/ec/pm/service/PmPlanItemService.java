@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlanItem;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmPlanItemRepository;
@@ -67,7 +68,7 @@ public class PmPlanItemService {
     }
 
     /* 프로모션 플랜 아이템 페이지조회 */
-    public PmPlanItemDto.PageResponse getPageData(PmPlanItemDto.Request req) {
+    public BasePage<PmPlanItemDto.Item> getPageData(PmPlanItemDto.Request req) {
         PageHelper.addPaging(req);
         return pmPlanItemRepository.selectPageData(req);
     }

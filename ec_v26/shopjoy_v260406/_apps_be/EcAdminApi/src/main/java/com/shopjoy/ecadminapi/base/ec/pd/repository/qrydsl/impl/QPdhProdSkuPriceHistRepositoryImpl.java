@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -95,7 +96,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
 
     /* 상품 SKU 가격 이력 페이지조회 */
     @Override
-    public PdhProdSkuPriceHistDto.PageResponse selectPageData(PdhProdSkuPriceHistDto.Request search) {
+    public BasePage<PdhProdSkuPriceHistDto.Item> selectPageData(PdhProdSkuPriceHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -126,7 +127,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
                 .where(wheres)
                 .fetchOne();
 
-        PdhProdSkuPriceHistDto.PageResponse res = new PdhProdSkuPriceHistDto.PageResponse();
+        BasePage<PdhProdSkuPriceHistDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

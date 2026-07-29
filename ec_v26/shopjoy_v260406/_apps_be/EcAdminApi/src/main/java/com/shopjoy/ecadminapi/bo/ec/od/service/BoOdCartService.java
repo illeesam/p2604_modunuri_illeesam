@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.od.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdCartService;
@@ -41,8 +42,8 @@ public class BoOdCartService {
         return list;
     }
     /* 페이지조회 */
-    public OdCartDto.PageResponse getPageData(OdCartDto.Request req) {
-        OdCartDto.PageResponse res = odCartService.getPageData(req);
+    public BasePage<OdCartDto.Item> getPageData(OdCartDto.Request req) {
+        BasePage<OdCartDto.Item> res = odCartService.getPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken;
 
@@ -13,7 +14,7 @@ public interface QMbDeviceTokenRepository {
 
     List<MbDeviceTokenDto.Item> selectList(MbDeviceTokenDto.Request search);
 
-    MbDeviceTokenDto.PageResponse selectPageData(MbDeviceTokenDto.Request search);
+    BasePage<MbDeviceTokenDto.Item> selectPageData(MbDeviceTokenDto.Request search);
 
     int updateSelective(MbDeviceToken entity);
 }

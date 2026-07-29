@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
@@ -67,7 +68,7 @@ public class SyMenuService {
     }
 
     /* 메뉴 페이지조회 */
-    public SyMenuDto.PageResponse getPageData(SyMenuDto.Request req) {
+    public BasePage<SyMenuDto.Item> getPageData(SyMenuDto.Request req) {
         PageHelper.addPaging(req);
         return syMenuRepository.selectPageData(req);
     }

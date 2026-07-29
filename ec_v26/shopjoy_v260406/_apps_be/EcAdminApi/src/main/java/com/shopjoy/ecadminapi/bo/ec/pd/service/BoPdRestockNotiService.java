@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiSendDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
@@ -27,7 +28,7 @@ public class BoPdRestockNotiService {
     /* 목록조회 */
     public List<PdRestockNotiDto.Item> getList(PdRestockNotiDto.Request req) { return pdRestockNotiService.getList(req); }
     /* 페이지조회 */
-    public PdRestockNotiDto.PageResponse getPageData(PdRestockNotiDto.Request req) { return pdRestockNotiService.getPageData(req); }
+    public BasePage<PdRestockNotiDto.Item> getPageData(PdRestockNotiDto.Request req) { return pdRestockNotiService.getPageData(req); }
 
     @Transactional public PdRestockNoti create(PdRestockNoti body) { return pdRestockNotiService.create(body); }
     @Transactional public PdRestockNoti update(String id, PdRestockNoti body) { return pdRestockNotiService.update(id, body); }

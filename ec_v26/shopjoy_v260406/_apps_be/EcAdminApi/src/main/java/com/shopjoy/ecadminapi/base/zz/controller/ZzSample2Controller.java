@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.zz.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample2Dto;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample2;
 import com.shopjoy.ecadminapi.base.zz.service.ZzSample2Service;
@@ -26,7 +27,7 @@ public class ZzSample2Controller {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<ZzSample2Dto.PageResponse>> page(@Valid @ModelAttribute ZzSample2Dto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<ZzSample2Dto.Item>>> page(@Valid @ModelAttribute ZzSample2Dto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

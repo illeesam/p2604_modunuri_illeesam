@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.ec.pm.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -53,6 +52,4 @@ public class PmCouponIssueDto {
         private PmCouponDto.Item coupon;   // 쿠폰 마스터 단건
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

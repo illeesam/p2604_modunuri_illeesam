@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdContentDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
@@ -56,7 +57,7 @@ public class FoPdProdController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PdProdDto.PageResponse>> page(@Valid @ModelAttribute PdProdDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PdProdDto.Item>>> page(@Valid @ModelAttribute PdProdDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foPdProdService.getPageData(req)));
     }
 

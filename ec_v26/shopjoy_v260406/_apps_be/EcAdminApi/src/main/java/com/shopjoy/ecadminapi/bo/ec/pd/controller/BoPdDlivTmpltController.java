@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdDlivTmplt;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdDlivTmpltService;
@@ -28,7 +29,7 @@ public class BoPdDlivTmpltController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PdDlivTmpltDto.PageResponse>> page(@Valid @ModelAttribute PdDlivTmpltDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PdDlivTmpltDto.Item>>> page(@Valid @ModelAttribute PdDlivTmpltDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPdDlivTmpltService.getPageData(req)));
     }
 

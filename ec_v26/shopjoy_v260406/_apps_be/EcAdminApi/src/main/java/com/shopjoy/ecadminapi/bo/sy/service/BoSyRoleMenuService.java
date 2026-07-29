@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
 import com.shopjoy.ecadminapi.base.sy.service.SyRoleMenuService;
@@ -25,7 +26,7 @@ public class BoSyRoleMenuService {
     /* 목록조회 */
     public List<SyRoleMenuDto.Item> getList(SyRoleMenuDto.Request req) { return syRoleMenuService.getList(req); }
     /* 페이지조회 */
-    public SyRoleMenuDto.PageResponse getPageData(SyRoleMenuDto.Request req) { return syRoleMenuService.getPageData(req); }
+    public BasePage<SyRoleMenuDto.Item> getPageData(SyRoleMenuDto.Request req) { return syRoleMenuService.getPageData(req); }
 
     @Transactional public SyRoleMenu create(SyRoleMenu body) { return syRoleMenuService.create(body); }
     @Transactional public SyRoleMenu update(String id, SyRoleMenu body) { return syRoleMenuService.update(id, body); }

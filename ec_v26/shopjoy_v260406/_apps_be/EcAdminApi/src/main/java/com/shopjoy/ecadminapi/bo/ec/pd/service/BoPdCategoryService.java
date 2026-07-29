@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryUpdateProdsDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
@@ -37,7 +38,7 @@ public class BoPdCategoryService {
     /* 목록조회 */
     public List<PdCategoryDto.Item> getList(PdCategoryDto.Request req) { return pdCategoryService.getList(req); }
     /* 페이지조회 */
-    public PdCategoryDto.PageResponse getPageData(PdCategoryDto.Request req) { return pdCategoryService.getPageData(req); }
+    public BasePage<PdCategoryDto.Item> getPageData(PdCategoryDto.Request req) { return pdCategoryService.getPageData(req); }
 
     @Transactional public PdCategory create(PdCategory body) { return pdCategoryService.create(body); }
     @Transactional public PdCategory update(String id, PdCategory body) { return pdCategoryService.update(id, body); }

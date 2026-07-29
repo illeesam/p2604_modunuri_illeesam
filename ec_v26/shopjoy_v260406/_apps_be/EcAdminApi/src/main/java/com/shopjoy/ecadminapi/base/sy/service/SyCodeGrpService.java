@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCodeGrp;
 import com.shopjoy.ecadminapi.base.sy.repository.SyCodeGrpRepository;
@@ -67,7 +68,7 @@ public class SyCodeGrpService {
     }
 
     /* 공통 코드 그룹 페이지조회 */
-    public SyCodeGrpDto.PageResponse getPageData(SyCodeGrpDto.Request req) {
+    public BasePage<SyCodeGrpDto.Item> getPageData(SyCodeGrpDto.Request req) {
         PageHelper.addPaging(req);
         return syCodeGrpRepository.selectPageData(req);
     }

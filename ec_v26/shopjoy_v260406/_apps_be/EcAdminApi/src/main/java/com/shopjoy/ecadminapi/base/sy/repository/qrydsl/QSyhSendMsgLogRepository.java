@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendMsgLog;
 
@@ -16,7 +17,7 @@ public interface QSyhSendMsgLogRepository {
     List<SyhSendMsgLogDto.Item> selectList(SyhSendMsgLogDto.Request search);
 
     /** 페이지 목록 */
-    SyhSendMsgLogDto.PageResponse selectPageData(SyhSendMsgLogDto.Request search);
+    BasePage<SyhSendMsgLogDto.Item> selectPageData(SyhSendMsgLogDto.Request search);
 
     int updateSelective(SyhSendMsgLog entity);
 }

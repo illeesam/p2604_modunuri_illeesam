@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemberLoginLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -34,7 +35,7 @@ public class BoMbMemberLoginLogController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<MbhMemberLoginLogDto.PageResponse>> page(@Valid @ModelAttribute MbhMemberLoginLogDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<MbhMemberLoginLogDto.Item>>> page(@Valid @ModelAttribute MbhMemberLoginLogDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberLoginLogService.getPageData(req)));
     }
 

@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.sy.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -75,6 +74,4 @@ public class SyhAccessLogDto {
     }
 
     /** 응답 (pageList + 페이징 메타 + 조회조건 echo) */
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmSaveService;
@@ -24,7 +25,7 @@ public class BoPmSaveService {
     /* 목록조회 */
     public List<PmSaveDto.Item> getList(PmSaveDto.Request req) { return pmSaveService.getList(req); }
     /* 페이지조회 */
-    public PmSaveDto.PageResponse getPageData(PmSaveDto.Request req) { return pmSaveService.getPageData(req); }
+    public BasePage<PmSaveDto.Item> getPageData(PmSaveDto.Request req) { return pmSaveService.getPageData(req); }
 
     @Transactional public PmSave create(PmSave body) { return pmSaveService.create(body); }
     @Transactional public PmSave update(String id, PmSave body) { return pmSaveService.update(id, body); }

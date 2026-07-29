@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.ec.mb.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemberService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -22,7 +23,7 @@ public class CoEcMbMemberController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<MbMemberDto.PageResponse>> page(@Valid @ModelAttribute MbMemberDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<MbMemberDto.Item>>> page(@Valid @ModelAttribute MbMemberDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemberService.getPageData(req)));
     }
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -114,7 +115,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
 
     /* 바우처(상품권) 페이지조회 */
     @Override
-    public PmVoucherDto.PageResponse selectPageData(PmVoucherDto.Request search) {
+    public BasePage<PmVoucherDto.Item> selectPageData(PmVoucherDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -148,7 +149,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                 .where(wheres)
                 .fetchOne();
 
-        PmVoucherDto.PageResponse res = new PmVoucherDto.PageResponse();
+        BasePage<PmVoucherDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

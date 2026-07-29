@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMemberDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
@@ -43,7 +44,7 @@ public class BoCmChattService {
 
     public List<CmChattDto.Item> getList(CmChattDto.Request req) { return cmChattService.getList(req); }
 
-    public CmChattDto.PageResponse getPageData(CmChattDto.Request req) { return cmChattService.getPageData(req); }
+    public BasePage<CmChattDto.Item> getPageData(CmChattDto.Request req) { return cmChattService.getPageData(req); }
 
     @Transactional
     public CmChatt create(CmChatt body) {

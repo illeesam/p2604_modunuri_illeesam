@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
@@ -43,7 +44,7 @@ public class FoMyController {
 
     /** getOrdersPage — 서버사이드 페이징 조회 (pageNo/pageSize + 상태/기간 검색) */
     @GetMapping("/order/page")
-    public ResponseEntity<ApiResponse<OdOrderDto.PageResponse>> getOrdersPage(@jakarta.validation.Valid @ModelAttribute OdOrderDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<OdOrderDto.Item>>> getOrdersPage(@jakarta.validation.Valid @ModelAttribute OdOrderDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyOrdersPage(req)));
     }
 
@@ -55,7 +56,7 @@ public class FoMyController {
 
     /** getClaimsPage — 서버사이드 페이징 조회 (pageNo/pageSize + 유형/상태/기간 검색) */
     @GetMapping("/claim/page")
-    public ResponseEntity<ApiResponse<OdClaimDto.PageResponse>> getClaimsPage(@jakarta.validation.Valid @ModelAttribute OdClaimDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<OdClaimDto.Item>>> getClaimsPage(@jakarta.validation.Valid @ModelAttribute OdClaimDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyClaimsPage(req)));
     }
 
@@ -67,7 +68,7 @@ public class FoMyController {
 
     /** getCouponsPage — 서버사이드 페이징 조회 (pageNo/pageSize + 상태/기간 검색) */
     @GetMapping("/coupon/page")
-    public ResponseEntity<ApiResponse<PmCouponDto.PageResponse>> getCouponsPage(@jakarta.validation.Valid @ModelAttribute PmCouponDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmCouponDto.Item>>> getCouponsPage(@jakarta.validation.Valid @ModelAttribute PmCouponDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCouponsPage(req)));
     }
 
@@ -84,7 +85,7 @@ public class FoMyController {
     /** getCashPage — 서버사이드 페이징 조회 (balance + 페이징된 history) */
     @GetMapping("/cash/page")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCashPage(@jakarta.validation.Valid @ModelAttribute PmCacheDto.Request req) {
-        PmCacheDto.PageResponse page = foMyPageService.getMyCacheHistoryPage(req);
+        BasePage<PmCacheDto.Item> page = foMyPageService.getMyCacheHistoryPage(req);
         Map<String, Object> cashInfo = new HashMap<>();
         cashInfo.put("balance", 0);
         cashInfo.put("history", page);
@@ -99,7 +100,7 @@ public class FoMyController {
 
     /** getInquiriesPage — 서버사이드 페이징 조회 (pageNo/pageSize + 상태/기간 검색) */
     @GetMapping("/inquiry/page")
-    public ResponseEntity<ApiResponse<SyContactDto.PageResponse>> getInquiriesPage(@jakarta.validation.Valid @ModelAttribute SyContactDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyContactDto.Item>>> getInquiriesPage(@jakarta.validation.Valid @ModelAttribute SyContactDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyInquiriesPage(req)));
     }
 
@@ -111,7 +112,7 @@ public class FoMyController {
 
     /** getChatsPage — 서버사이드 페이징 조회 (pageNo/pageSize + 기간 검색) */
     @GetMapping("/chat/page")
-    public ResponseEntity<ApiResponse<CmChattRoomDto.PageResponse>> getChatsPage(@jakarta.validation.Valid @ModelAttribute CmChattRoomDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmChattRoomDto.Item>>> getChatsPage(@jakarta.validation.Valid @ModelAttribute CmChattRoomDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyChatsPage(req)));
     }
 }

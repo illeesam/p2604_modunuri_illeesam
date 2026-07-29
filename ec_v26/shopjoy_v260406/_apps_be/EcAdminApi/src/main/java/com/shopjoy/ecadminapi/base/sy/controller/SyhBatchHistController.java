@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto;
 import com.shopjoy.ecadminapi.base.sy.service.SyhBatchHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -33,7 +34,7 @@ public class SyhBatchHistController {
 
     /** page — 페이징조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyhBatchHistDto.PageResponse>> page(@Valid @ModelAttribute SyhBatchHistDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyhBatchHistDto.Item>>> page(@Valid @ModelAttribute SyhBatchHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdDlivTmplt;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdDlivTmpltRepository;
@@ -67,7 +68,7 @@ public class PdDlivTmpltService {
     }
 
     /* 배송 템플릿 페이지조회 */
-    public PdDlivTmpltDto.PageResponse getPageData(PdDlivTmpltDto.Request req) {
+    public BasePage<PdDlivTmpltDto.Item> getPageData(PdDlivTmpltDto.Request req) {
         PageHelper.addPaging(req);
         return pdDlivTmpltRepository.selectPageData(req);
     }

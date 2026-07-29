@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.ec.pd.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -45,6 +44,4 @@ public class PdReviewDto {
         private List<PdReviewAttachDto.Item> attaches;   // 리뷰 첨부 목록
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

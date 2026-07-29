@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGift;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmGiftRepository;
@@ -35,7 +36,7 @@ public class BoPmGiftService {
     /* 목록조회 */
     public List<PmGiftDto.Item> getList(PmGiftDto.Request req) { return pmGiftService.getList(req); }
     /* 페이지조회 */
-    public PmGiftDto.PageResponse getPageData(PmGiftDto.Request req) { return pmGiftService.getPageData(req); }
+    public BasePage<PmGiftDto.Item> getPageData(PmGiftDto.Request req) { return pmGiftService.getPageData(req); }
 
     @Transactional public PmGift create(PmGift body) { return pmGiftService.create(body); }
     @Transactional public PmGift update(String id, PmGift body) { return pmGiftService.update(id, body); }

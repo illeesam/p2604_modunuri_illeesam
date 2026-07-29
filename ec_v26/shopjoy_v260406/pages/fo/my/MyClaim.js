@@ -108,7 +108,13 @@ window.MyClaim = {
     const cfAuthUser = computed(() => window.foAuth.state.user);
 
     /* findProd — 찾기 상품 */
-    const findProd = name => window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
+    /* SITE_CONFIG.prods 는 상품목록 화면이 채운다 — 마이페이지로 바로 들어오면 없다.
+       가드 없이 .find 를 부르면 TypeError 로 화면이 통째로 안 뜬다. */
+    const findProd = (name) => {
+      const list = window.SITE_CONFIG && window.SITE_CONFIG.prods;
+      if (!Array.isArray(list)) return null;
+      return list.find(p => p.prodNm === name) || null;
+    };
 
     /* openProdModal — 열기 */
     const openProdModal = name => {

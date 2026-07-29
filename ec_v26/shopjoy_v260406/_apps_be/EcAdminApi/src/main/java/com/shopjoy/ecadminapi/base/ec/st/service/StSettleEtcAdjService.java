@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleEtcAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleEtcAdj;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleEtcAdjRepository;
@@ -67,7 +68,7 @@ public class StSettleEtcAdjService {
     }
 
     /* 정산 기타 조정 페이지조회 */
-    public StSettleEtcAdjDto.PageResponse getPageData(StSettleEtcAdjDto.Request req) {
+    public BasePage<StSettleEtcAdjDto.Item> getPageData(StSettleEtcAdjDto.Request req) {
         PageHelper.addPaging(req);
         return stSettleEtcAdjRepository.selectPageData(req);
     }

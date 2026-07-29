@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 
@@ -14,7 +15,7 @@ public interface QSySiteRepository {
 
     List<SySiteDto.Item> selectList(SySiteDto.Request search);
 
-    SySiteDto.PageResponse selectPageData(SySiteDto.Request search);
+    BasePage<SySiteDto.Item> selectPageData(SySiteDto.Request search);
 
     int updateSelective(SySite entity);
 

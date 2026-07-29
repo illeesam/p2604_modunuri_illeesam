@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBatchLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -34,7 +35,7 @@ public class BoSyBatchLogController {
 
     /** page — 페이징조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyhBatchLogDto.PageResponse>> page(@Valid @ModelAttribute SyhBatchLogDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyhBatchLogDto.Item>>> page(@Valid @ModelAttribute SyhBatchLogDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyBatchLogService.getPageData(req)));
     }
 }

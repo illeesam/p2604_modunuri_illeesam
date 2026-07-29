@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.dp.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.service.DpWidgetLibService;
@@ -33,7 +34,7 @@ public class DpWidgetLibController {
 
     /* 전시 위젯 라이브러리 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<DpWidgetLibDto.PageResponse>> page(@Valid @ModelAttribute DpWidgetLibDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<DpWidgetLibDto.Item>>> page(@Valid @ModelAttribute DpWidgetLibDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

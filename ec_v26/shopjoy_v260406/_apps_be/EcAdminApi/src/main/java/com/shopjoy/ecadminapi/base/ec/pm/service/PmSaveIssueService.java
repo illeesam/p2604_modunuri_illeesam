@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveIssueDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveIssueRepository;
@@ -67,7 +68,7 @@ public class PmSaveIssueService {
     }
 
     /* 적립금 지급 이력 페이지조회 */
-    public PmSaveIssueDto.PageResponse getPageData(PmSaveIssueDto.Request req) {
+    public BasePage<PmSaveIssueDto.Item> getPageData(PmSaveIssueDto.Request req) {
         PageHelper.addPaging(req);
         return pmSaveIssueRepository.selectPageData(req);
     }

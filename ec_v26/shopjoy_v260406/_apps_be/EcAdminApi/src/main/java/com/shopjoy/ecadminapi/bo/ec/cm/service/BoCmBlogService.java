@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogToggleUseDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
@@ -36,7 +37,7 @@ public class BoCmBlogService {
     /* 목록조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) { return cmBlogService.getList(req); }
     /* 페이지조회 */
-    public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) { return cmBlogService.getPageData(req); }
+    public BasePage<CmBlogDto.Item> getPageData(CmBlogDto.Request req) { return cmBlogService.getPageData(req); }
 
     @Transactional public CmBlog create(CmBlog body) {
         if (body.getUseYn() == null) body.setUseYn("Y");

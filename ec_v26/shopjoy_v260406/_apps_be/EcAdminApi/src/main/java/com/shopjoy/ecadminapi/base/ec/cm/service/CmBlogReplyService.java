@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogReply;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogReplyRepository;
@@ -67,7 +68,7 @@ public class CmBlogReplyService {
     }
 
     /* 게시물 댓글 페이지조회 */
-    public CmBlogReplyDto.PageResponse getPageData(CmBlogReplyDto.Request req) {
+    public BasePage<CmBlogReplyDto.Item> getPageData(CmBlogReplyDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogReplyRepository.selectPageData(req);
     }

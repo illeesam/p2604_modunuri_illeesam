@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.fo.ec.service.FoCmFaqService;
@@ -29,7 +30,7 @@ public class FoCmFaqController {
 
     /** page — 공개 FAQ 페이지 조회 (페이징/분류 필터). pageList/pageTotalCount/pageTotalPage 반환 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<CmFaqDto.PageResponse>> page(@Valid @ModelAttribute CmFaqDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmFaqDto.Item>>> page(@Valid @ModelAttribute CmFaqDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foCmFaqService.getFaqsPage(req)));
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBrand;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBrandService;
@@ -36,7 +37,7 @@ public class BoSyBrandController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyBrandDto.PageResponse>> page(@Valid @ModelAttribute SyBrandDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyBrandDto.Item>>> page(@Valid @ModelAttribute SyBrandDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyBrandService.getPageData(req)));
     }
 

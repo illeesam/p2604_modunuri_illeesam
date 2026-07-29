@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache;
 
@@ -13,7 +14,7 @@ public interface QPmCacheRepository {
 
     List<PmCacheDto.Item> selectList(PmCacheDto.Request search);
 
-    PmCacheDto.PageResponse selectPageData(PmCacheDto.Request search);
+    BasePage<PmCacheDto.Item> selectPageData(PmCacheDto.Request search);
 
     int updateSelective(PmCache entity);
 }

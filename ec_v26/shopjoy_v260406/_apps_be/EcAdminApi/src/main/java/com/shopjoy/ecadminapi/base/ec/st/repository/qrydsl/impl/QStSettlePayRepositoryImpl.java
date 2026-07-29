@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -132,7 +133,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
 
     /* 정산 지급 페이지조회 */
     @Override
-    public StSettlePayDto.PageResponse selectPageData(StSettlePayDto.Request search) {
+    public BasePage<StSettlePayDto.Item> selectPageData(StSettlePayDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -165,7 +166,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 .where(wheres)
                 .fetchOne();
 
-        StSettlePayDto.PageResponse res = new StSettlePayDto.PageResponse();
+        BasePage<StSettlePayDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

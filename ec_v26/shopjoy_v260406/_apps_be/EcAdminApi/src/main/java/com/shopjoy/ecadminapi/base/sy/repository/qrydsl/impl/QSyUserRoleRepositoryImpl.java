@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -109,7 +110,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
     /* 사용자별 역할 페이지조회 */
     @Override
-    public SyUserRoleDto.PageResponse selectPageData(SyUserRoleDto.Request search) {
+    public BasePage<SyUserRoleDto.Item> selectPageData(SyUserRoleDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -142,7 +143,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                 .where(wheres)
                 .fetchOne();
 
-        SyUserRoleDto.PageResponse res = new SyUserRoleDto.PageResponse();
+        BasePage<SyUserRoleDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

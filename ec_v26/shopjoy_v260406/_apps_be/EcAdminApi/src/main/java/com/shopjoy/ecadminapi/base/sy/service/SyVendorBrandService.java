@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorBrandDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorBrand;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorBrandRepository;
@@ -67,7 +68,7 @@ public class SyVendorBrandService {
     }
 
     /* 업체별 브랜드 페이지조회 */
-    public SyVendorBrandDto.PageResponse getPageData(SyVendorBrandDto.Request req) {
+    public BasePage<SyVendorBrandDto.Item> getPageData(SyVendorBrandDto.Request req) {
         PageHelper.addPaging(req);
         return syVendorBrandRepository.selectPageData(req);
     }

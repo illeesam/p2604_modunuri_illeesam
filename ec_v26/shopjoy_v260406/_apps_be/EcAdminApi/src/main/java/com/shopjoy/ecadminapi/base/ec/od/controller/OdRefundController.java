@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefund;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdRefundService;
@@ -33,7 +34,7 @@ public class OdRefundController {
 
     /* 환불 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<OdRefundDto.PageResponse>> page(@Valid @ModelAttribute OdRefundDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<OdRefundDto.Item>>> page(@Valid @ModelAttribute OdRefundDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

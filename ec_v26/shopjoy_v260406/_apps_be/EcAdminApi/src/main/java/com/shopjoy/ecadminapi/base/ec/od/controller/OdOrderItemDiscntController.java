@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItemDiscnt;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderItemDiscntService;
@@ -33,7 +34,7 @@ public class OdOrderItemDiscntController {
 
     /* 주문 아이템 할인 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<OdOrderItemDiscntDto.PageResponse>> page(@Valid @ModelAttribute OdOrderItemDiscntDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<OdOrderItemDiscntDto.Item>>> page(@Valid @ModelAttribute OdOrderItemDiscntDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

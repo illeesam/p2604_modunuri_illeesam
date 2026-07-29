@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVoc;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVocRepository;
@@ -67,7 +68,7 @@ public class SyVocService {
     }
 
     /* 고객의 소리(VOC) 페이지조회 */
-    public SyVocDto.PageResponse getPageData(SyVocDto.Request req) {
+    public BasePage<SyVocDto.Item> getPageData(SyVocDto.Request req) {
         PageHelper.addPaging(req);
         return syVocRepository.selectPageData(req);
     }

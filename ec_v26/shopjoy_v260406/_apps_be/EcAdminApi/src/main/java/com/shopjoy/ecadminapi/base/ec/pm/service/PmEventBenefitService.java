@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventBenefitRepository;
@@ -67,7 +68,7 @@ public class PmEventBenefitService {
     }
 
     /* 이벤트 혜택 페이지조회 */
-    public PmEventBenefitDto.PageResponse getPageData(PmEventBenefitDto.Request req) {
+    public BasePage<PmEventBenefitDto.Item> getPageData(PmEventBenefitDto.Request req) {
         PageHelper.addPaging(req);
         return pmEventBenefitRepository.selectPageData(req);
     }

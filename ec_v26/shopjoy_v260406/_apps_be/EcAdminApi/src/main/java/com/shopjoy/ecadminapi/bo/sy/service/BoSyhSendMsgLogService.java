@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto;
 import com.shopjoy.ecadminapi.base.sy.service.SyhSendMsgLogService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class BoSyhSendMsgLogService {
         return syhSendMsgLogService.getById(id);
     }
 
-    public SyhSendMsgLogDto.PageResponse getPageData(SyhSendMsgLogDto.Request req) {
+    public BasePage<SyhSendMsgLogDto.Item> getPageData(SyhSendMsgLogDto.Request req) {
         return syhSendMsgLogService.getPageData(req);
     }
 }

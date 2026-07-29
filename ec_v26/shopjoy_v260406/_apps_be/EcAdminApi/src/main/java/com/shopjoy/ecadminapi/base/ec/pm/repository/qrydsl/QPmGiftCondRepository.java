@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftCondDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftCond;
 
@@ -13,7 +14,7 @@ public interface QPmGiftCondRepository {
 
     List<PmGiftCondDto.Item> selectList(PmGiftCondDto.Request search);
 
-    PmGiftCondDto.PageResponse selectPageData(PmGiftCondDto.Request search);
+    BasePage<PmGiftCondDto.Item> selectPageData(PmGiftCondDto.Request search);
 
     int updateSelective(PmGiftCond entity);
 }

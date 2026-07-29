@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventRepository;
@@ -35,7 +36,7 @@ public class BoPmEventService {
     /* 목록조회 */
     public List<PmEventDto.Item> getList(PmEventDto.Request req) { return pmEventService.getList(req); }
     /* 페이지조회 */
-    public PmEventDto.PageResponse getPageData(PmEventDto.Request req) { return pmEventService.getPageData(req); }
+    public BasePage<PmEventDto.Item> getPageData(PmEventDto.Request req) { return pmEventService.getPageData(req); }
 
     @Transactional public PmEvent create(PmEvent body) {
         if (body.getEventStatusCd() == null) body.setEventStatusCd("DRAFT");

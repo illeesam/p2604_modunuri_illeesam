@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCacheRepository;
@@ -67,7 +68,7 @@ public class PmCacheService {
     }
 
     /* 캐시(충전금) 페이지조회 */
-    public PmCacheDto.PageResponse getPageData(PmCacheDto.Request req) {
+    public BasePage<PmCacheDto.Item> getPageData(PmCacheDto.Request req) {
         PageHelper.addPaging(req);
         return pmCacheRepository.selectPageData(req);
     }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.dp.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
@@ -40,8 +41,8 @@ public class BoDpUiService {
         return list;
     }
     /* 페이지조회 */
-    public DpUiDto.PageResponse getPageData(DpUiDto.Request req) {
-        DpUiDto.PageResponse res = dpUiService.getPageData(req);
+    public BasePage<DpUiDto.Item> getPageData(DpUiDto.Request req) {
+        BasePage<DpUiDto.Item> res = dpUiService.getPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

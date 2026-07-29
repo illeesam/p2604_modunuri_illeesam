@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit;
 
@@ -13,7 +14,7 @@ public interface QPmEventBenefitRepository {
 
     List<PmEventBenefitDto.Item> selectList(PmEventBenefitDto.Request search);
 
-    PmEventBenefitDto.PageResponse selectPageData(PmEventBenefitDto.Request search);
+    BasePage<PmEventBenefitDto.Item> selectPageData(PmEventBenefitDto.Request search);
 
     int updateSelective(PmEventBenefit entity);
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberSns;
 
@@ -13,7 +14,7 @@ public interface QMbMemberSnsRepository {
 
     List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search);
 
-    MbMemberSnsDto.PageResponse selectPageData(MbMemberSnsDto.Request search);
+    BasePage<MbMemberSnsDto.Item> selectPageData(MbMemberSnsDto.Request search);
 
     int updateSelective(MbMemberSns entity);
 }

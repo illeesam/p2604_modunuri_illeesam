@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.dp.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpAreaRepository;
@@ -67,7 +68,7 @@ public class DpAreaService {
     }
 
     /* 전시 영역 페이지조회 */
-    public DpAreaDto.PageResponse getPageData(DpAreaDto.Request req) {
+    public BasePage<DpAreaDto.Item> getPageData(DpAreaDto.Request req) {
         PageHelper.addPaging(req);
         return dpAreaRepository.selectPageData(req);
     }

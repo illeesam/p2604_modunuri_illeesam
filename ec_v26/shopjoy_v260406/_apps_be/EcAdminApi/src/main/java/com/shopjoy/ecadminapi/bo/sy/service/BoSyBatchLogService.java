@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto;
 import com.shopjoy.ecadminapi.base.sy.service.SyhBatchLogService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class BoSyBatchLogService {
     }
 
     /** getPageData — 페이징조회 */
-    public SyhBatchLogDto.PageResponse getPageData(SyhBatchLogDto.Request req) {
+    public BasePage<SyhBatchLogDto.Item> getPageData(SyhBatchLogDto.Request req) {
         return syhBatchLogService.getPageData(req);
     }
 }

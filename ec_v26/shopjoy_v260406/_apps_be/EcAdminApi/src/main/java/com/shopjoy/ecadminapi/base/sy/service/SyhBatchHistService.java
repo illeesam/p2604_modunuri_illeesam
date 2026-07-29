@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchHist;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhBatchHistRepository;
@@ -28,7 +29,7 @@ public class SyhBatchHistService {
     }
 
     /** getPageData — 페이징조회 */
-    public SyhBatchHistDto.PageResponse getPageData(SyhBatchHistDto.Request req) {
+    public BasePage<SyhBatchHistDto.Item> getPageData(SyhBatchHistDto.Request req) {
         PageHelper.addPaging(req);
         return syhBatchHistRepository.selectPageData(req);
     }

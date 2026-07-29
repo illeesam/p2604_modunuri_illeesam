@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBbmRepository;
@@ -67,7 +68,7 @@ public class SyBbmService {
     }
 
     /* 게시판 마스터 페이지조회 */
-    public SyBbmDto.PageResponse getPageData(SyBbmDto.Request req) {
+    public BasePage<SyBbmDto.Item> getPageData(SyBbmDto.Request req) {
         PageHelper.addPaging(req);
         return syBbmRepository.selectPageData(req);
     }

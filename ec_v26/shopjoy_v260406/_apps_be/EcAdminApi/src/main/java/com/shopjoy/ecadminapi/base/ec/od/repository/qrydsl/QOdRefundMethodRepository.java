@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundMethodDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefundMethod;
 
@@ -13,7 +14,7 @@ public interface QOdRefundMethodRepository {
 
     List<OdRefundMethodDto.Item> selectList(OdRefundMethodDto.Request search);
 
-    OdRefundMethodDto.PageResponse selectPageData(OdRefundMethodDto.Request search);
+    BasePage<OdRefundMethodDto.Item> selectPageData(OdRefundMethodDto.Request search);
 
     int updateSelective(OdRefundMethod entity);
 }

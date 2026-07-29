@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdSkuPriceHistDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuPriceHist;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdhProdSkuPriceHistRepository;
@@ -58,7 +59,7 @@ public class PdhProdSkuPriceHistService {
     }
 
     /* 상품 SKU 가격 이력 페이지조회 */
-    public PdhProdSkuPriceHistDto.PageResponse getPageData(PdhProdSkuPriceHistDto.Request req) {
+    public BasePage<PdhProdSkuPriceHistDto.Item> getPageData(PdhProdSkuPriceHistDto.Request req) {
         PageHelper.addPaging(req);
         return pdhProdSkuPriceHistRepository.selectPageData(req);
     }

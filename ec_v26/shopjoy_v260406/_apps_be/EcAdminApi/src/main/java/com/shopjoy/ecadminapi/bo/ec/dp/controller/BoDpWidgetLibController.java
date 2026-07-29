@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.dp.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.bo.ec.dp.service.BoDpWidgetLibService;
@@ -37,7 +38,7 @@ public class BoDpWidgetLibController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<DpWidgetLibDto.PageResponse>> page(@Valid @ModelAttribute DpWidgetLibDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<DpWidgetLibDto.Item>>> page(@Valid @ModelAttribute DpWidgetLibDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boDpWidgetLibService.getPageData(req)));
     }
 

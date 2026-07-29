@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberLoginLogDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberLoginLog;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbhMemberLoginLogRepository;
@@ -67,7 +68,7 @@ public class MbhMemberLoginLogService {
     }
 
     /* 회원 로그인 로그 페이지조회 */
-    public MbhMemberLoginLogDto.PageResponse getPageData(MbhMemberLoginLogDto.Request req) {
+    public BasePage<MbhMemberLoginLogDto.Item> getPageData(MbhMemberLoginLogDto.Request req) {
         PageHelper.addPaging(req);
         return mbhMemberLoginLogRepository.selectPageData(req);
     }

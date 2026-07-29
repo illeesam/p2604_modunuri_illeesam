@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbLikeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbLike;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbLikeService;
@@ -33,7 +34,7 @@ public class MbLikeController {
 
     /* 좋아요(찜) 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<MbLikeDto.PageResponse>> page(@Valid @ModelAttribute MbLikeDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<MbLikeDto.Item>>> page(@Valid @ModelAttribute MbLikeDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StRecon;
 import com.shopjoy.ecadminapi.base.ec.st.service.StReconService;
@@ -24,7 +25,7 @@ public class BoStReconService {
     /* 목록조회 */
     public List<StReconDto.Item> getList(StReconDto.Request req) { return stReconService.getList(req); }
     /* 페이지조회 */
-    public StReconDto.PageResponse getPageData(StReconDto.Request req) { return stReconService.getPageData(req); }
+    public BasePage<StReconDto.Item> getPageData(StReconDto.Request req) { return stReconService.getPageData(req); }
 
     @Transactional public StRecon create(StRecon body) { return stReconService.create(body); }
     @Transactional public StRecon update(String id, StRecon body) { return stReconService.update(id, body); }

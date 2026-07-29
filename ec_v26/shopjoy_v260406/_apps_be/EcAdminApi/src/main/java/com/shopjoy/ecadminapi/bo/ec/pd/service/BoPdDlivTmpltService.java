@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdDlivTmplt;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdDlivTmpltService;
@@ -24,7 +25,7 @@ public class BoPdDlivTmpltService {
     /* 목록조회 */
     public List<PdDlivTmpltDto.Item> getList(PdDlivTmpltDto.Request req) { return pdDlivTmpltService.getList(req); }
     /* 페이지조회 */
-    public PdDlivTmpltDto.PageResponse getPageData(PdDlivTmpltDto.Request req) { return pdDlivTmpltService.getPageData(req); }
+    public BasePage<PdDlivTmpltDto.Item> getPageData(PdDlivTmpltDto.Request req) { return pdDlivTmpltService.getPageData(req); }
 
     @Transactional public PdDlivTmplt create(PdDlivTmplt body) { return pdDlivTmpltService.create(body); }
     @Transactional public PdDlivTmplt update(String id, PdDlivTmplt body) { return pdDlivTmpltService.update(id, body); }

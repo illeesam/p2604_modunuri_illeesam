@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.ec.mb.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -46,6 +45,4 @@ public class MbhMemberLoginLogDto {
         private String resultCdNm;   // 로그인결과 코드명 — 단건 상세조회(selectById)에서만 채워짐
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

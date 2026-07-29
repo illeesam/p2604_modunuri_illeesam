@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPopupDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopupItem;
@@ -212,7 +213,7 @@ public class CmPopupPickService {
      * ({@code QCmPopupRepositoryImpl#selectPageData})에 맡긴다.
      * 런타임에 엔티티가 정해지는 {@link #getPage} 계열과 성격이 다르다.</p>
      */
-    public CmPopupDto.PageResponse getPopupPage(CmPopupDto.Request search) {
+    public BasePage<CmPopup> getPopupPage(CmPopupDto.Request search) {
         return cmPopupRepository.selectPageData(search);
     }
 

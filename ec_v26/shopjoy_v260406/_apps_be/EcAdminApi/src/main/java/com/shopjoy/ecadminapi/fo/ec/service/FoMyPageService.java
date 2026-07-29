@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
@@ -158,10 +159,10 @@ public class FoMyPageService {
     }
 
     /** getMyOrdersPage — 서버사이드 페이징 조회 (현재 페이지에 orderItems 채워 반환) */
-    public OdOrderDto.PageResponse getMyOrdersPage(OdOrderDto.Request req) {
+    public BasePage<OdOrderDto.Item> getMyOrdersPage(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        OdOrderDto.PageResponse page = orderRepository.selectPageData(req);
+        BasePage<OdOrderDto.Item> page = orderRepository.selectPageData(req);
         _fillOrderItems(page.getPageList());
         return page;
     }
@@ -189,7 +190,7 @@ public class FoMyPageService {
     }
 
     /** getMyClaimsPage — 서버사이드 페이징 조회 */
-    public OdClaimDto.PageResponse getMyClaimsPage(OdClaimDto.Request req) {
+    public BasePage<OdClaimDto.Item> getMyClaimsPage(OdClaimDto.Request req) {
         if (req == null) req = new OdClaimDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         return claimRepository.selectPageData(req);
@@ -203,7 +204,7 @@ public class FoMyPageService {
     }
 
     /** getMyCouponsPage — 서버사이드 페이징 조회 */
-    public PmCouponDto.PageResponse getMyCouponsPage(PmCouponDto.Request req) {
+    public BasePage<PmCouponDto.Item> getMyCouponsPage(PmCouponDto.Request req) {
         if (req == null) req = new PmCouponDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         return couponRepository.selectPageData(req);
@@ -217,7 +218,7 @@ public class FoMyPageService {
     }
 
     /** getMyCacheHistoryPage — 서버사이드 페이징 조회 */
-    public PmCacheDto.PageResponse getMyCacheHistoryPage(PmCacheDto.Request req) {
+    public BasePage<PmCacheDto.Item> getMyCacheHistoryPage(PmCacheDto.Request req) {
         if (req == null) req = new PmCacheDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         return cacheRepository.selectPageData(req);
@@ -231,7 +232,7 @@ public class FoMyPageService {
     }
 
     /** getMyInquiriesPage — 서버사이드 페이징 조회 */
-    public SyContactDto.PageResponse getMyInquiriesPage(SyContactDto.Request req) {
+    public BasePage<SyContactDto.Item> getMyInquiriesPage(SyContactDto.Request req) {
         if (req == null) req = new SyContactDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         return contactRepository.selectPageData(req);
@@ -245,7 +246,7 @@ public class FoMyPageService {
     }
 
     /** getMyChatsPage — 서버사이드 페이징 조회 */
-    public CmChattRoomDto.PageResponse getMyChatsPage(CmChattRoomDto.Request req) {
+    public BasePage<CmChattRoomDto.Item> getMyChatsPage(CmChattRoomDto.Request req) {
         if (req == null) req = new CmChattRoomDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         return chattRoomRepository.selectPageData(req);

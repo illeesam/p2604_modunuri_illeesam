@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserRole;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyUserRoleMapper;
@@ -74,7 +75,7 @@ public class SyUserRoleService {
     }
 
     /* 사용자별 역할 페이지조회 */
-    public SyUserRoleDto.PageResponse getPageData(SyUserRoleDto.Request req) {
+    public BasePage<SyUserRoleDto.Item> getPageData(SyUserRoleDto.Request req) {
         PageHelper.addPaging(req);
         return syUserRoleRepository.selectPageData(req);
     }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto;
 import com.shopjoy.ecadminapi.base.sy.service.SyhSendMsgLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -33,7 +34,7 @@ public class SyhSendMsgLogController {
 
     /** page — 페이징조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyhSendMsgLogDto.PageResponse>> page(@Valid @ModelAttribute SyhSendMsgLogDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyhSendMsgLogDto.Item>>> page(@Valid @ModelAttribute SyhSendMsgLogDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 }

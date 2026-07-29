@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.ec.cm.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -34,6 +33,4 @@ public class CmBlogCateDto {
         private Long blogCnt;   // 카테고리별 블로그 글 수 (FO 사이드바 count, 서비스에서 채움)
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

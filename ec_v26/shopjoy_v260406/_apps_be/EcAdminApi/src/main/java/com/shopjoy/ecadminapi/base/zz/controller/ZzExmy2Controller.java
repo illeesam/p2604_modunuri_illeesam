@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.zz.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy2Dto;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExmy2;
 import com.shopjoy.ecadminapi.base.zz.service.ZzExmy2Service;
@@ -26,7 +27,7 @@ public class ZzExmy2Controller {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<ZzExmy2Dto.PageResponse>> page(@Valid @ModelAttribute ZzExmy2Dto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<ZzExmy2Dto.Item>>> page(@Valid @ModelAttribute ZzExmy2Dto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

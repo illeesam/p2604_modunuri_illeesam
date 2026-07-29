@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -108,7 +109,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 
     /* 정산 마감 페이지조회 */
     @Override
-    public StSettleCloseDto.PageResponse selectPageData(StSettleCloseDto.Request search) {
+    public BasePage<StSettleCloseDto.Item> selectPageData(StSettleCloseDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -140,7 +141,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                 .where(wheres)
                 .fetchOne();
 
-        StSettleCloseDto.PageResponse res = new StSettleCloseDto.PageResponse();
+        BasePage<StSettleCloseDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

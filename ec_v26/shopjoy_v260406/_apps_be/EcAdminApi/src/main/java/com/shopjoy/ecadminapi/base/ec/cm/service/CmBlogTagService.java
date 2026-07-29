@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogTag;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogTagRepository;
@@ -67,7 +68,7 @@ public class CmBlogTagService {
     }
 
     /* 게시물 태그 페이지조회 */
-    public CmBlogTagDto.PageResponse getPageData(CmBlogTagDto.Request req) {
+    public BasePage<CmBlogTagDto.Item> getPageData(CmBlogTagDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogTagRepository.selectPageData(req);
     }

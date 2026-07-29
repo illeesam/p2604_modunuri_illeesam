@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdDlivTmplt;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdDlivTmpltService;
@@ -33,7 +34,7 @@ public class PdDlivTmpltController {
 
     /* 배송 템플릿 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PdDlivTmpltDto.PageResponse>> page(@Valid @ModelAttribute PdDlivTmpltDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PdDlivTmpltDto.Item>>> page(@Valid @ModelAttribute PdDlivTmpltDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

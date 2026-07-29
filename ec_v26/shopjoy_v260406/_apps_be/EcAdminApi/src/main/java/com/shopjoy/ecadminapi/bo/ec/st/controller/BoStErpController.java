@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherGenDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
@@ -33,19 +34,19 @@ public class BoStErpController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<StErpVoucherDto.PageResponse>> page(@Valid @ModelAttribute StErpVoucherDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<StErpVoucherDto.Item>>> page(@Valid @ModelAttribute StErpVoucherDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boStErpService.getPageData(req)));
     }
 
     /** genPage */
     @GetMapping("/gen/page")
-    public ResponseEntity<ApiResponse<StErpVoucherDto.PageResponse>> genPage(@Valid @ModelAttribute StErpVoucherDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<StErpVoucherDto.Item>>> genPage(@Valid @ModelAttribute StErpVoucherDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boStErpService.getPageData(req)));
     }
 
     /** reconPage */
     @GetMapping("/recon/page")
-    public ResponseEntity<ApiResponse<StReconDto.PageResponse>> reconPage(@Valid @ModelAttribute StReconDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<StReconDto.Item>>> reconPage(@Valid @ModelAttribute StReconDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boStErpService.getReconPageData(req)));
     }
 

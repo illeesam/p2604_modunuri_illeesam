@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmFaq;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmFaqService;
@@ -24,7 +25,7 @@ public class BoCmFaqService {
     /* 목록조회 */
     public List<CmFaqDto.Item> getList(CmFaqDto.Request req) { return cmFaqService.getList(req); }
     /* 페이지조회 */
-    public CmFaqDto.PageResponse getPageData(CmFaqDto.Request req) { return cmFaqService.getPageData(req); }
+    public BasePage<CmFaqDto.Item> getPageData(CmFaqDto.Request req) { return cmFaqService.getPageData(req); }
 
     @Transactional public CmFaq create(CmFaq body) { return cmFaqService.create(body); }
     @Transactional public CmFaq update(String id, CmFaq body) { return cmFaqService.update(id, body); }

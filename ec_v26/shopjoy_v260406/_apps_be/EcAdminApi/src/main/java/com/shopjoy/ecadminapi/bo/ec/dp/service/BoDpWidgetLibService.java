@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.dp.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.service.DpWidgetLibService;
@@ -24,7 +25,7 @@ public class BoDpWidgetLibService {
     /* 목록조회 */
     public List<DpWidgetLibDto.Item> getList(DpWidgetLibDto.Request req) { return dpWidgetLibService.getList(req); }
     /* 페이지조회 */
-    public DpWidgetLibDto.PageResponse getPageData(DpWidgetLibDto.Request req) { return dpWidgetLibService.getPageData(req); }
+    public BasePage<DpWidgetLibDto.Item> getPageData(DpWidgetLibDto.Request req) { return dpWidgetLibService.getPageData(req); }
 
     @Transactional public DpWidgetLib create(DpWidgetLib body) { return dpWidgetLibService.create(body); }
     @Transactional public DpWidgetLib update(String id, DpWidgetLib body) { return dpWidgetLibService.update(id, body); }

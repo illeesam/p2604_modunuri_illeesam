@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 
@@ -16,7 +17,7 @@ public interface QCmChattMsgRepository {
     List<CmChattMsgDto.Item> selectList(CmChattMsgDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    CmChattMsgDto.PageResponse selectPageData(CmChattMsgDto.Request search);
+    BasePage<CmChattMsgDto.Item> selectPageData(CmChattMsgDto.Request search);
 
     int updateSelective(CmChattMsg entity);
 }

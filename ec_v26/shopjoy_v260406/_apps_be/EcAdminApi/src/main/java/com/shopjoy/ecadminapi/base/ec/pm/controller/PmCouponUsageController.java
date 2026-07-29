@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponUsageDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmCouponUsageService;
@@ -33,7 +34,7 @@ public class PmCouponUsageController {
 
     /* 쿠폰 사용 이력 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmCouponUsageDto.PageResponse>> page(@Valid @ModelAttribute PmCouponUsageDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmCouponUsageDto.Item>>> page(@Valid @ModelAttribute PmCouponUsageDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

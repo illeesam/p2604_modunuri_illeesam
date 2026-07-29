@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
 import com.shopjoy.ecadminapi.base.sy.repository.SyRoleMenuRepository;
@@ -69,7 +70,7 @@ public class SyRoleMenuService {
     }
 
     /* 역할별 메뉴 권한 페이지조회 */
-    public SyRoleMenuDto.PageResponse getPageData(SyRoleMenuDto.Request req) {
+    public BasePage<SyRoleMenuDto.Item> getPageData(SyRoleMenuDto.Request req) {
         PageHelper.addPaging(req);
         return syRoleMenuRepository.selectPageData(req);
     }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntUsageDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmDiscntUsageRepository;
@@ -67,7 +68,7 @@ public class PmDiscntUsageService {
     }
 
     /* 할인 사용 이력 페이지조회 */
-    public PmDiscntUsageDto.PageResponse getPageData(PmDiscntUsageDto.Request req) {
+    public BasePage<PmDiscntUsageDto.Item> getPageData(PmDiscntUsageDto.Request req) {
         PageHelper.addPaging(req);
         return pmDiscntUsageRepository.selectPageData(req);
     }

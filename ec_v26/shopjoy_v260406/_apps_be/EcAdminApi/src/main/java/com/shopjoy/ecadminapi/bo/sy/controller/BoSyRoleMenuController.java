@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyRoleMenuService;
@@ -36,7 +37,7 @@ public class BoSyRoleMenuController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyRoleMenuDto.PageResponse>> page(@Valid @ModelAttribute SyRoleMenuDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyRoleMenuDto.Item>>> page(@Valid @ModelAttribute SyRoleMenuDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyRoleMenuService.getPageData(req)));
     }
 

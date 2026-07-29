@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUser;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorUserRepository;
@@ -67,7 +68,7 @@ public class SyVendorUserService {
     }
 
     /* 업체 사용자 페이지조회 */
-    public SyVendorUserDto.PageResponse getPageData(SyVendorUserDto.Request req) {
+    public BasePage<SyVendorUserDto.Item> getPageData(SyVendorUserDto.Request req) {
         PageHelper.addPaging(req);
         return syVendorUserRepository.selectPageData(req);
     }

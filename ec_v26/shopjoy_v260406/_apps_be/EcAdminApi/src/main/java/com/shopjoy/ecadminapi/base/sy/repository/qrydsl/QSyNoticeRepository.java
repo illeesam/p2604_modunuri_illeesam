@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 
@@ -10,6 +11,6 @@ import java.util.Optional;
 public interface QSyNoticeRepository {
     Optional<SyNoticeDto.Item> selectById(String noticeId);
     List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search);
-    SyNoticeDto.PageResponse selectPageData(SyNoticeDto.Request search);
+    BasePage<SyNoticeDto.Item> selectPageData(SyNoticeDto.Request search);
     int updateSelective(SyNotice entity);
 }

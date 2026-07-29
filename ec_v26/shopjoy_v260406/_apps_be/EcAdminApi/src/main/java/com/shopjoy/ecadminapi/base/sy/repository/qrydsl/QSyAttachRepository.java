@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 
@@ -10,6 +11,6 @@ import java.util.Optional;
 public interface QSyAttachRepository {
     Optional<SyAttachDto.Item> selectById(String attachId);
     List<SyAttachDto.Item> selectList(SyAttachDto.Request search);
-    SyAttachDto.PageResponse selectPageData(SyAttachDto.Request search);
+    BasePage<SyAttachDto.Item> selectPageData(SyAttachDto.Request search);
     int updateSelective(SyAttach entity);
 }

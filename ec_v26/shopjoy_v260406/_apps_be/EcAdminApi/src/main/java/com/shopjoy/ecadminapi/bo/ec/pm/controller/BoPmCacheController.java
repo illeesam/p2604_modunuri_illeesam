@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmCacheService;
@@ -29,7 +30,7 @@ public class BoPmCacheController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmCacheDto.PageResponse>> page(@Valid @ModelAttribute PmCacheDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmCacheDto.Item>>> page(@Valid @ModelAttribute PmCacheDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPmCacheService.getPageData(req)));
     }
 

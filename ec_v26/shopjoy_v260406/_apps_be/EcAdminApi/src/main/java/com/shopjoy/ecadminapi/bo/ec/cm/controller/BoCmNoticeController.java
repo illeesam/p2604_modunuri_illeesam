@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmNoticeService;
@@ -36,7 +37,7 @@ public class BoCmNoticeController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyNoticeDto.PageResponse>> page(@Valid @ModelAttribute SyNoticeDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyNoticeDto.Item>>> page(@Valid @ModelAttribute SyNoticeDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boCmNoticeService.getPageData(req)));
     }
 

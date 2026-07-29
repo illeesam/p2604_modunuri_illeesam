@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nMsgDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18nMsg;
 import com.shopjoy.ecadminapi.base.sy.repository.SyI18nMsgRepository;
@@ -67,7 +68,7 @@ public class SyI18nMsgService {
     }
 
     /* 다국어 메시지 페이지조회 */
-    public SyI18nMsgDto.PageResponse getPageData(SyI18nMsgDto.Request req) {
+    public BasePage<SyI18nMsgDto.Item> getPageData(SyI18nMsgDto.Request req) {
         PageHelper.addPaging(req);
         return syI18nMsgRepository.selectPageData(req);
     }

@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.ec.od.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -121,6 +120,4 @@ public class OdClaimDto {
         private List<OdClaimItemDto.Item> claimItems;   // 클레임상품 목록
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

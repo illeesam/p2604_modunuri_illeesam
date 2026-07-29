@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUserRole;
 import com.shopjoy.ecadminapi.base.sy.service.SyVendorUserRoleService;
@@ -33,7 +34,7 @@ public class SyVendorUserRoleController {
 
     /* 업체 사용자 역할 연결 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyVendorUserRoleDto.PageResponse>> page(@Valid @ModelAttribute SyVendorUserRoleDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyVendorUserRoleDto.Item>>> page(@Valid @ModelAttribute SyVendorUserRoleDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

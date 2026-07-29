@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
@@ -66,7 +67,7 @@ public class SyAlarmService {
     }
 
     /* 알람 페이지조회 */
-    public SyAlarmDto.PageResponse getPageData(SyAlarmDto.Request req) {
+    public BasePage<SyAlarmDto.Item> getPageData(SyAlarmDto.Request req) {
         PageHelper.addPaging(req);
         return syAlarmRepository.selectPageData(req);
     }

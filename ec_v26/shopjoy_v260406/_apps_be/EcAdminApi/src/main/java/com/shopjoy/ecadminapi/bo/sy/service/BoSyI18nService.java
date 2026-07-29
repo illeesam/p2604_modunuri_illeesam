@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nMsgDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
@@ -31,7 +32,7 @@ public class BoSyI18nService {
     /* 목록조회 */
     public List<SyI18nDto.Item> getList(SyI18nDto.Request req) { return syI18nService.getList(req); }
     /* 페이지조회 */
-    public SyI18nDto.PageResponse getPageData(SyI18nDto.Request req) { return syI18nService.getPageData(req); }
+    public BasePage<SyI18nDto.Item> getPageData(SyI18nDto.Request req) { return syI18nService.getPageData(req); }
 
     /* 등록 */
     @Transactional

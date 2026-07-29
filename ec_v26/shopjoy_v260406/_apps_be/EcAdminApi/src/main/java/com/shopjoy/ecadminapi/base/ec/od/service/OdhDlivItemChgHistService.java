@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhDlivItemChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhDlivItemChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdhDlivItemChgHistRepository;
@@ -67,7 +68,7 @@ public class OdhDlivItemChgHistService {
     }
 
     /* 배송 아이템 변경 이력 페이지조회 */
-    public OdhDlivItemChgHistDto.PageResponse getPageData(OdhDlivItemChgHistDto.Request req) {
+    public BasePage<OdhDlivItemChgHistDto.Item> getPageData(OdhDlivItemChgHistDto.Request req) {
         PageHelper.addPaging(req);
         return odhDlivItemChgHistRepository.selectPageData(req);
     }

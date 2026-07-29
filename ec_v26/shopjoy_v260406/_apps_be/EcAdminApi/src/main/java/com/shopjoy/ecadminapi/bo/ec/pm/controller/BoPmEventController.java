@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
@@ -31,7 +32,7 @@ public class BoPmEventController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmEventDto.PageResponse>> page(@Valid @ModelAttribute PmEventDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmEventDto.Item>>> page(@Valid @ModelAttribute PmEventDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPmEventService.getPageData(req)));
     }
 

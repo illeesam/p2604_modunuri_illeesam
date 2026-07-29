@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository;
@@ -67,7 +68,7 @@ public class SyBatchService {
     }
 
     /* 배치 페이지조회 */
-    public SyBatchDto.PageResponse getPageData(SyBatchDto.Request req) {
+    public BasePage<SyBatchDto.Item> getPageData(SyBatchDto.Request req) {
         PageHelper.addPaging(req);
         return syBatchRepository.selectPageData(req);
     }

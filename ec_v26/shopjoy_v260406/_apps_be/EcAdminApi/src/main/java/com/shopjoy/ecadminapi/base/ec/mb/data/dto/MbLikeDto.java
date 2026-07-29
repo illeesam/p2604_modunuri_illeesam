@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.data.dto;
 
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -37,8 +36,6 @@ public class MbLikeDto {
         private PdProdDto.Item prod;   // 찜 대상 상품 단건
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 
     /** 찜 토글 응답 — { "liked": true/false } */
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor

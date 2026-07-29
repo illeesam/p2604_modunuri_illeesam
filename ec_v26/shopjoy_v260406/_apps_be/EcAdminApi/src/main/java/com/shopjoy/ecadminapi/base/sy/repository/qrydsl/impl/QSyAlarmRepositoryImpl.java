@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -131,7 +132,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
     /* 알람 페이지조회 */
     @Override
-    public SyAlarmDto.PageResponse selectPageData(SyAlarmDto.Request search) {
+    public BasePage<SyAlarmDto.Item> selectPageData(SyAlarmDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -165,7 +166,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 .where(wheres)
                 .fetchOne();
 
-        SyAlarmDto.PageResponse res = new SyAlarmDto.PageResponse();
+        BasePage<SyAlarmDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

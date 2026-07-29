@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbDeviceTokenRepository;
@@ -67,7 +68,7 @@ public class MbDeviceTokenService {
     }
 
     /* 페이지조회 */
-    public MbDeviceTokenDto.PageResponse getPageData(MbDeviceTokenDto.Request req) {
+    public BasePage<MbDeviceTokenDto.Item> getPageData(MbDeviceTokenDto.Request req) {
         PageHelper.addPaging(req);
         return mbDeviceTokenRepository.selectPageData(req);
     }

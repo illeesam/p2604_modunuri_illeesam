@@ -234,6 +234,48 @@ item.data_source_cd 있음 → CmDashboardDataSourceRegistry 의 집계 쿼리 �
 
 새 소스를 추가하려면 `SQL.put("이름", "…")` 한 줄 + 항목의 `data_source_cd` 지정이면 끝이다.
 
+### ⛔ 네이티브 쿼리에 PostgreSQL 캐스트 `::` 금지
+
+Hibernate 는 네이티브 SQL 에서 `:` 를 **명명 파라미터 시작**으로 읽는다.
+`join_date::date` 는 `:date` 파라미터로 오인돼 다음과 같이 깨진다.
+
+```
+ERROR: syntax error at or near ":"
+→ 그 트랜잭션이 오염(current transaction is aborted)
+→ 뒤이은 폴백 조회까지 실패해 대시보드 전체가 500
+```
+
+폴백이 있어도 **소용없다** — 같은 트랜잭션이 이미 죽어 있기 때문이다.
+실제로 회원·프로모션·시스템 세 대시보드가 통째로 안 뜨는 증상으로 나타났다(2026-07-29).
+
+```sql
+-- ❌  CAST 를 :: 로 쓰면 안 된다
+LEFT JOIN mb_member m ON m.join_date::date = d.day
+
+-- ✅
+LEFT JOIN mb_member m ON CAST(m.join_date AS date) = d.day
+```
+
+`:siteId` 처럼 **진짜 바인딩 파라미터만** `:` 를 쓴다.
+
+### 적용 현황 (2026-07-29)
+
+도메인 대시보드 8종 × 8항목 = **64항목 전부 실데이터**. 샘플 데이터 잔존 0.
+
+| 대시보드 | 주요 소스 |
+|---|---|
+| 회원 | `mb_member`(총원·오늘가입·휴면·탈퇴·가입추이·최근가입·등급분포) |
+| 상품 | `pd_prod` / `pd_prod_stock`(재고부족) / `pd_prod_qna`(미답변) / `pd_category` |
+| 주문 | `od_order`(오늘·미처리·추이·결제수단) / `od_claim`(진행중) |
+| 프로모션 | `pm_event` / `pm_coupon` + `pm_coupon_issue`(발급·사용) / `pm_cache` |
+| 전시 | `dp_ui` `dp_area` `dp_panel` `dp_widget` `dp_panel_item` |
+| 고객센터 | `sy_contact`(미답변·오늘접수·평균응답·분류) / `cm_chatt`(진행중) / `cm_faq` |
+| 정산 | `st_settle`(최근마감월·미지급·수수료) / `st_settle_adj`(조정) |
+| 시스템 | `sy_user` `sy_role` `sy_batch` / `syh_access_log` `syh_access_error_log` |
+
+> **로그 테이블은 `site_id` 로 좁히지 않는다** — 미인증 요청 로그는 `site_id` 가 NULL 이라
+> 사이트 조건을 걸면 대부분 빠진다(오늘 오류·API 호출량 소스 참조).
+
 ---
 
 ## 9. 대메뉴별 운영 대시보드 8종

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelItemDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanelItem;
 
@@ -9,6 +10,6 @@ import java.util.Optional;
 public interface QDpPanelItemRepository {
     Optional<DpPanelItemDto.Item> selectById(String panelItemId);
     List<DpPanelItemDto.Item> selectList(DpPanelItemDto.Request search);
-    DpPanelItemDto.PageResponse selectPageData(DpPanelItemDto.Request search);
+    BasePage<DpPanelItemDto.Item> selectPageData(DpPanelItemDto.Request search);
     int updateSelective(DpPanelItem entity);
 }

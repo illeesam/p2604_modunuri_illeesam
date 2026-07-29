@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
@@ -67,7 +68,7 @@ public class SyContactService {
     }
 
     /* 문의 페이지조회 */
-    public SyContactDto.PageResponse getPageData(SyContactDto.Request req) {
+    public BasePage<SyContactDto.Item> getPageData(SyContactDto.Request req) {
         PageHelper.addPaging(req);
         return syContactRepository.selectPageData(req);
     }

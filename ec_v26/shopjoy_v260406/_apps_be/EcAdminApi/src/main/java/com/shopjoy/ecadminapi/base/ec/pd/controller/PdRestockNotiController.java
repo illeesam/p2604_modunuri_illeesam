@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdRestockNotiService;
@@ -33,7 +34,7 @@ public class PdRestockNotiController {
 
     /* 재입고 알림 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PdRestockNotiDto.PageResponse>> page(@Valid @ModelAttribute PdRestockNotiDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PdRestockNotiDto.Item>>> page(@Valid @ModelAttribute PdRestockNotiDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

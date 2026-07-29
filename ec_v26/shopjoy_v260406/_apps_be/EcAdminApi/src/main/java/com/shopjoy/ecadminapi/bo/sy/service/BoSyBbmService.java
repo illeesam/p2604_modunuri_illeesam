@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.base.sy.service.SyBbmService;
@@ -24,7 +25,7 @@ public class BoSyBbmService {
     /* 목록조회 */
     public List<SyBbmDto.Item> getList(SyBbmDto.Request req) { return syBbmService.getList(req); }
     /* 페이지조회 */
-    public SyBbmDto.PageResponse getPageData(SyBbmDto.Request req) { return syBbmService.getPageData(req); }
+    public BasePage<SyBbmDto.Item> getPageData(SyBbmDto.Request req) { return syBbmService.getPageData(req); }
 
     @Transactional public SyBbm create(SyBbm body) { return syBbmService.create(body); }
     @Transactional public SyBbm update(String id, SyBbm body) { return syBbmService.update(id, body); }

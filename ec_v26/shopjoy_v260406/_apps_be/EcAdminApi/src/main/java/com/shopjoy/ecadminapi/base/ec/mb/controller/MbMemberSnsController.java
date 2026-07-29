@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberSns;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberSnsService;
@@ -33,7 +34,7 @@ public class MbMemberSnsController {
 
     /* SNS 연동 회원 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<MbMemberSnsDto.PageResponse>> page(@Valid @ModelAttribute MbMemberSnsDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<MbMemberSnsDto.Item>>> page(@Valid @ModelAttribute MbMemberSnsDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

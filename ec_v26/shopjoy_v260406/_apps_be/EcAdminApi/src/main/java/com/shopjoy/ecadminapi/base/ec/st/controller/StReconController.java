@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StRecon;
 import com.shopjoy.ecadminapi.base.ec.st.service.StReconService;
@@ -33,7 +34,7 @@ public class StReconController {
 
     /* 정산 대사(Reconciliation) 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<StReconDto.PageResponse>> page(@Valid @ModelAttribute StReconDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<StReconDto.Item>>> page(@Valid @ModelAttribute StReconDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

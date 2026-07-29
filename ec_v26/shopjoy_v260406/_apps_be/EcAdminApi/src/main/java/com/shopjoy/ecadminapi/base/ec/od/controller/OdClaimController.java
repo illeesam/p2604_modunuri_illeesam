@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdClaimService;
@@ -33,7 +34,7 @@ public class OdClaimController {
 
     /* 클레임(취소/반품/교환) 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<OdClaimDto.PageResponse>> page(@Valid @ModelAttribute OdClaimDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<OdClaimDto.Item>>> page(@Valid @ModelAttribute OdClaimDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

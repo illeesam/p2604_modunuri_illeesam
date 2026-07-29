@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmCacheService;
@@ -24,7 +25,7 @@ public class BoPmCacheService {
     /* 목록조회 */
     public List<PmCacheDto.Item> getList(PmCacheDto.Request req) { return pmCacheService.getList(req); }
     /* 페이지조회 */
-    public PmCacheDto.PageResponse getPageData(PmCacheDto.Request req) { return pmCacheService.getPageData(req); }
+    public BasePage<PmCacheDto.Item> getPageData(PmCacheDto.Request req) { return pmCacheService.getPageData(req); }
 
     @Transactional public PmCache create(PmCache body) { return pmCacheService.create(body); }
     @Transactional public PmCache update(String id, PmCache body) { return pmCacheService.update(id, body); }

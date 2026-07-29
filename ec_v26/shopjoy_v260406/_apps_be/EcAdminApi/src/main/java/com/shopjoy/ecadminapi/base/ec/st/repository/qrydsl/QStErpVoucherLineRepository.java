@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherLineDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucherLine;
 
@@ -13,7 +14,7 @@ public interface QStErpVoucherLineRepository {
 
     List<StErpVoucherLineDto.Item> selectList(StErpVoucherLineDto.Request search);
 
-    StErpVoucherLineDto.PageResponse selectPageData(StErpVoucherLineDto.Request search);
+    BasePage<StErpVoucherLineDto.Item> selectPageData(StErpVoucherLineDto.Request search);
 
     int updateSelective(StErpVoucherLine entity);
 }

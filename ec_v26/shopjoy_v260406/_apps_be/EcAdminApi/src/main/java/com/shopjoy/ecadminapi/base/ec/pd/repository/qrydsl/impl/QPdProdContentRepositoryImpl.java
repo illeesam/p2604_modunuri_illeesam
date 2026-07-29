@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -102,7 +103,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
 
     /* 상품 상세 콘텐츠 페이지조회 */
     @Override
-    public PdProdContentDto.PageResponse selectPageData(PdProdContentDto.Request search) {
+    public BasePage<PdProdContentDto.Item> selectPageData(PdProdContentDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -135,7 +136,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
                 .where(wheres)
                 .fetchOne();
 
-        PdProdContentDto.PageResponse res = new PdProdContentDto.PageResponse();
+        BasePage<PdProdContentDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberRoleDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberRole;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRoleRepository;
@@ -67,7 +68,7 @@ public class MbMemberRoleService {
     }
 
     /* 회원 역할 연결 페이지조회 */
-    public MbMemberRoleDto.PageResponse getPageData(MbMemberRoleDto.Request req) {
+    public BasePage<MbMemberRoleDto.Item> getPageData(MbMemberRoleDto.Request req) {
         PageHelper.addPaging(req);
         return mbMemberRoleRepository.selectPageData(req);
     }

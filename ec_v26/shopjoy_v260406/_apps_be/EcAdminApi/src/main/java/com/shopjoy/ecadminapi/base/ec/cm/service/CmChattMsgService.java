@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattMsgRepository;
@@ -79,9 +80,9 @@ public class CmChattMsgService {
     }
 
     /* 채팅 메시지 페이지조회 */
-    public CmChattMsgDto.PageResponse getPageData(CmChattMsgDto.Request req) {
+    public BasePage<CmChattMsgDto.Item> getPageData(CmChattMsgDto.Request req) {
         PageHelper.addPaging(req);
-        CmChattMsgDto.PageResponse res = cmChattMsgRepository.selectPageData(req);
+        BasePage<CmChattMsgDto.Item> res = cmChattMsgRepository.selectPageData(req);
         if (res != null) fnFillAttachFiles(res.getPageList());
         return res;
     }

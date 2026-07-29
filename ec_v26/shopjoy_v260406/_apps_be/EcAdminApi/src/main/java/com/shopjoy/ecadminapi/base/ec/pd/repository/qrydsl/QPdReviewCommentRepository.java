@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewComment;
 
@@ -16,7 +17,7 @@ public interface QPdReviewCommentRepository {
     List<PdReviewCommentDto.Item> selectList(PdReviewCommentDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    PdReviewCommentDto.PageResponse selectPageData(PdReviewCommentDto.Request search);
+    BasePage<PdReviewCommentDto.Item> selectPageData(PdReviewCommentDto.Request search);
 
     int updateSelective(PdReviewComment entity);
 }

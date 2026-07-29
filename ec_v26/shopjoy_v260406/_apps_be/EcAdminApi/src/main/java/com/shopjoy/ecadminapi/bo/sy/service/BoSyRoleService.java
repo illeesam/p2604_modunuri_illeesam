@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
@@ -37,7 +38,7 @@ public class BoSyRoleService {
     /* 목록조회 */
     public List<SyRoleDto.Item> getList(SyRoleDto.Request req) { return syRoleService.getList(req); }
     /* 페이지조회 */
-    public SyRoleDto.PageResponse getPageData(SyRoleDto.Request req) { return syRoleService.getPageData(req); }
+    public BasePage<SyRoleDto.Item> getPageData(SyRoleDto.Request req) { return syRoleService.getPageData(req); }
 
     /* 등록 */
     @Transactional

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 
@@ -13,7 +14,7 @@ public interface QPdCategoryRepository {
 
     List<PdCategoryDto.Item> selectList(PdCategoryDto.Request search);
 
-    PdCategoryDto.PageResponse selectPageData(PdCategoryDto.Request search);
+    BasePage<PdCategoryDto.Item> selectPageData(PdCategoryDto.Request search);
 
     int updateSelective(PdCategory entity);
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyUserLoginLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -34,7 +35,7 @@ public class BoSyUserLoginLogController {
 
     /** page — 페이징조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyhUserLoginLogDto.PageResponse>> page(@Valid @ModelAttribute SyhUserLoginLogDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyhUserLoginLogDto.Item>>> page(@Valid @ModelAttribute SyhUserLoginLogDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyUserLoginLogService.getPageData(req)));
     }
 

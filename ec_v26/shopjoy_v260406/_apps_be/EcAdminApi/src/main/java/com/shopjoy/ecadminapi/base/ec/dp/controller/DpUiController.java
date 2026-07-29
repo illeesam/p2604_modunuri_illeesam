@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.dp.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
 import com.shopjoy.ecadminapi.base.ec.dp.service.DpUiService;
@@ -33,7 +34,7 @@ public class DpUiController {
 
     /* 전시 UI 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<DpUiDto.PageResponse>> page(@Valid @ModelAttribute DpUiDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<DpUiDto.Item>>> page(@Valid @ModelAttribute DpUiDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

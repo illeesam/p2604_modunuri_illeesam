@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftIssueDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmGiftIssueRepository;
@@ -67,7 +68,7 @@ public class PmGiftIssueService {
     }
 
     /* 사은품 발행 이력 페이지조회 */
-    public PmGiftIssueDto.PageResponse getPageData(PmGiftIssueDto.Request req) {
+    public BasePage<PmGiftIssueDto.Item> getPageData(PmGiftIssueDto.Request req) {
         PageHelper.addPaging(req);
         return pmGiftIssueRepository.selectPageData(req);
     }

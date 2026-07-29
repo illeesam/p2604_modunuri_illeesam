@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleEtcAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleEtcAdj;
 
@@ -13,7 +14,7 @@ public interface QStSettleEtcAdjRepository {
 
     List<StSettleEtcAdjDto.Item> selectList(StSettleEtcAdjDto.Request search);
 
-    StSettleEtcAdjDto.PageResponse selectPageData(StSettleEtcAdjDto.Request search);
+    BasePage<StSettleEtcAdjDto.Item> selectPageData(StSettleEtcAdjDto.Request search);
 
     int updateSelective(StSettleEtcAdj entity);
 }

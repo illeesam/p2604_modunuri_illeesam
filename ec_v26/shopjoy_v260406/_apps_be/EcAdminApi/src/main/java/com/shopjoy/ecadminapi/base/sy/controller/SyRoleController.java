@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.service.SyRoleService;
@@ -33,7 +34,7 @@ public class SyRoleController {
 
     /* 역할(권한) 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyRoleDto.PageResponse>> page(@Valid @ModelAttribute SyRoleDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyRoleDto.Item>>> page(@Valid @ModelAttribute SyRoleDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

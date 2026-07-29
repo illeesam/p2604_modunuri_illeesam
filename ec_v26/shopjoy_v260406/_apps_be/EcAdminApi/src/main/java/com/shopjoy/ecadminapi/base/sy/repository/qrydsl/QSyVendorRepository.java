@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
 
@@ -14,7 +15,7 @@ public interface QSyVendorRepository {
 
     List<SyVendorDto.Item> selectList(SyVendorDto.Request search);
 
-    SyVendorDto.PageResponse selectPageData(SyVendorDto.Request search);
+    BasePage<SyVendorDto.Item> selectPageData(SyVendorDto.Request search);
 
     int updateSelective(SyVendor entity);
     /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).

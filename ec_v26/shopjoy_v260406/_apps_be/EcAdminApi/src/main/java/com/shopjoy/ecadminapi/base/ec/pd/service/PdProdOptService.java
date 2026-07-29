@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptRepository;
@@ -68,7 +69,7 @@ public class PdProdOptService {
     }
 
     /* 상품 옵션 페이지조회 */
-    public PdProdOptDto.PageResponse getPageData(PdProdOptDto.Request req) {
+    public BasePage<PdProdOptDto.Item> getPageData(PdProdOptDto.Request req) {
         PageHelper.addPaging(req);
         return pdProdOptRepository.selectPageData(req);
     }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StRecon;
 
@@ -13,7 +14,7 @@ public interface QStReconRepository {
 
     List<StReconDto.Item> selectList(StReconDto.Request search);
 
-    StReconDto.PageResponse selectPageData(StReconDto.Request search);
+    BasePage<StReconDto.Item> selectPageData(StReconDto.Request search);
 
     int updateSelective(StRecon entity);
 }

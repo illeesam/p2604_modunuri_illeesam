@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaAnswerDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna;
@@ -36,7 +37,7 @@ public class BoPdQnaService {
     /* 목록조회 */
     public List<PdProdQnaDto.Item> getList(PdProdQnaDto.Request req) { return pdProdQnaService.getList(req); }
     /* 페이지조회 */
-    public PdProdQnaDto.PageResponse getPageData(PdProdQnaDto.Request req) { return pdProdQnaService.getPageData(req); }
+    public BasePage<PdProdQnaDto.Item> getPageData(PdProdQnaDto.Request req) { return pdProdQnaService.getPageData(req); }
 
     @Transactional public PdProdQna create(PdProdQna body) { return pdProdQnaService.create(body); }
     @Transactional public PdProdQna update(String id, PdProdQna body) { return pdProdQnaService.update(id, body); }

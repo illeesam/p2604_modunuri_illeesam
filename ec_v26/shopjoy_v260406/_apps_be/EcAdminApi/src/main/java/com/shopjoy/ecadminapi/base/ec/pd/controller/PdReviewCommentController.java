@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewCommentDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewComment;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdReviewCommentService;
@@ -33,7 +34,7 @@ public class PdReviewCommentController {
 
     /* 리뷰 댓글 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PdReviewCommentDto.PageResponse>> page(@Valid @ModelAttribute PdReviewCommentDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PdReviewCommentDto.Item>>> page(@Valid @ModelAttribute PdReviewCommentDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

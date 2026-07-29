@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdQnaService;
@@ -33,7 +34,7 @@ public class PdProdQnaController {
 
     /* 상품 문의 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PdProdQnaDto.PageResponse>> page(@Valid @ModelAttribute PdProdQnaDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PdProdQnaDto.Item>>> page(@Valid @ModelAttribute PdProdQnaDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

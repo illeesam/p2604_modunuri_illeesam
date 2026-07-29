@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchHist;
 
@@ -16,7 +17,7 @@ public interface QSyhBatchHistRepository {
     List<SyhBatchHistDto.Item> selectList(SyhBatchHistDto.Request search);
 
     /** 페이지 목록 */
-    SyhBatchHistDto.PageResponse selectPageData(SyhBatchHistDto.Request search);
+    BasePage<SyhBatchHistDto.Item> selectPageData(SyhBatchHistDto.Request search);
 
     int updateSelective(SyhBatchHist entity);
 }

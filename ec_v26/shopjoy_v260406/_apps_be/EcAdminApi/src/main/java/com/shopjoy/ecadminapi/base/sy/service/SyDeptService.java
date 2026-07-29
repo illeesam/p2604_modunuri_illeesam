@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyDept;
 import com.shopjoy.ecadminapi.base.sy.mapper.SyDeptMapper;
@@ -74,7 +75,7 @@ public class SyDeptService {
     }
 
     /** getPageData — 페이징조회 */
-    public SyDeptDto.PageResponse getPageData(SyDeptDto.Request req) {
+    public BasePage<SyDeptDto.Item> getPageData(SyDeptDto.Request req) {
         PageHelper.addPaging(req);
         return syDeptRepository.selectPageData(req);
     }

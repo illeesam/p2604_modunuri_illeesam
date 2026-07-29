@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 
@@ -13,7 +14,7 @@ public interface QPmVoucherRepository {
 
     List<PmVoucherDto.Item> selectList(PmVoucherDto.Request search);
 
-    PmVoucherDto.PageResponse selectPageData(PmVoucherDto.Request search);
+    BasePage<PmVoucherDto.Item> selectPageData(PmVoucherDto.Request search);
 
     int updateSelective(PmVoucher entity);
 }

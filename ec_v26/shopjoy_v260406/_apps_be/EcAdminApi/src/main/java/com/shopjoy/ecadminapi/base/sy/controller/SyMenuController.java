@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.base.sy.service.SyMenuService;
@@ -33,7 +34,7 @@ public class SyMenuController {
 
     /* 메뉴 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyMenuDto.PageResponse>> page(@Valid @ModelAttribute SyMenuDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyMenuDto.Item>>> page(@Valid @ModelAttribute SyMenuDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

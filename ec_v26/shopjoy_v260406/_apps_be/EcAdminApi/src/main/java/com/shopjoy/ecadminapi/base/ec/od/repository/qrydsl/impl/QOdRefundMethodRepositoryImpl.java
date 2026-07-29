@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -123,7 +124,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
 
     /* 환불수단 페이지조회 */
     @Override
-    public OdRefundMethodDto.PageResponse selectPageData(OdRefundMethodDto.Request search) {
+    public BasePage<OdRefundMethodDto.Item> selectPageData(OdRefundMethodDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -155,7 +156,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                 .where(wheres)
                 .fetchOne();
 
-        OdRefundMethodDto.PageResponse res = new OdRefundMethodDto.PageResponse();
+        BasePage<OdRefundMethodDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleAdj;
 
@@ -16,7 +17,7 @@ public interface QStSettleAdjRepository {
     List<StSettleAdjDto.Item> selectList(StSettleAdjDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    StSettleAdjDto.PageResponse selectPageData(StSettleAdjDto.Request search);
+    BasePage<StSettleAdjDto.Item> selectPageData(StSettleAdjDto.Request search);
 
     int updateSelective(StSettleAdj entity);
 }

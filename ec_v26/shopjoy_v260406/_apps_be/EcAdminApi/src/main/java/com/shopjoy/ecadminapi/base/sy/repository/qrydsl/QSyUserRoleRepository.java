@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserRole;
 
@@ -13,7 +14,7 @@ public interface QSyUserRoleRepository {
 
     List<SyUserRoleDto.Item> selectList(SyUserRoleDto.Request search);
 
-    SyUserRoleDto.PageResponse selectPageData(SyUserRoleDto.Request search);
+    BasePage<SyUserRoleDto.Item> selectPageData(SyUserRoleDto.Request search);
 
     int updateSelective(SyUserRole entity);
 }

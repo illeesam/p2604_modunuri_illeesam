@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.base.sy.service.SyAlarmService;
@@ -32,7 +33,7 @@ public class BoSyAlarmService {
     /* 목록조회 */
     public List<SyAlarmDto.Item> getList(SyAlarmDto.Request req) { return syAlarmService.getList(req); }
     /* 페이지조회 */
-    public SyAlarmDto.PageResponse getPageData(SyAlarmDto.Request req) { return syAlarmService.getPageData(req); }
+    public BasePage<SyAlarmDto.Item> getPageData(SyAlarmDto.Request req) { return syAlarmService.getPageData(req); }
 
     @Transactional public SyAlarm create(SyAlarm body) { return syAlarmService.create(body); }
     @Transactional public SyAlarm update(String id, SyAlarm body) { return syAlarmService.update(id, body); }

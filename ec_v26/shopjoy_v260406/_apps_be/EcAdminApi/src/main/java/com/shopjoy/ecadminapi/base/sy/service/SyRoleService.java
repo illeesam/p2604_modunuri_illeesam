@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
@@ -67,7 +68,7 @@ public class SyRoleService {
     }
 
     /* 역할(권한) 페이지조회 */
-    public SyRoleDto.PageResponse getPageData(SyRoleDto.Request req) {
+    public BasePage<SyRoleDto.Item> getPageData(SyRoleDto.Request req) {
         PageHelper.addPaging(req);
         return syRoleRepository.selectPageData(req);
     }

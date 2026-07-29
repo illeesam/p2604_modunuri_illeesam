@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlan;
 
@@ -13,7 +14,7 @@ public interface QPmPlanRepository {
 
     List<PmPlanDto.Item> selectList(PmPlanDto.Request search);
 
-    PmPlanDto.PageResponse selectPageData(PmPlanDto.Request search);
+    BasePage<PmPlanDto.Item> selectPageData(PmPlanDto.Request search);
 
     int updateSelective(PmPlan entity);
 }

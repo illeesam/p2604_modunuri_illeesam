@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.ec.od.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -85,8 +84,6 @@ public class OdOrderDto {
         private List<OdOrderDiscntDto.Item> orderDiscnts; // 주문할인 목록
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 
     /**
      * ProxyOrderRequest — MD 대리주문 저장 요청 (주문 + 주문항목 동시 저장).

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettlePay;
 
@@ -13,7 +14,7 @@ public interface QStSettlePayRepository {
 
     List<StSettlePayDto.Item> selectList(StSettlePayDto.Request search);
 
-    StSettlePayDto.PageResponse selectPageData(StSettlePayDto.Request search);
+    BasePage<StSettlePayDto.Item> selectPageData(StSettlePayDto.Request search);
 
     int updateSelective(StSettlePay entity);
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettlePay;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettlePayRepository;
@@ -35,7 +36,7 @@ public class BoStSettlePayService {
     /* 목록조회 */
     public List<StSettlePayDto.Item> getList(StSettlePayDto.Request req) { return stSettlePayService.getList(req); }
     /* 페이지조회 */
-    public StSettlePayDto.PageResponse getPageData(StSettlePayDto.Request req) { return stSettlePayService.getPageData(req); }
+    public BasePage<StSettlePayDto.Item> getPageData(StSettlePayDto.Request req) { return stSettlePayService.getPageData(req); }
 
     @Transactional public StSettlePay create(StSettlePay body) { return stSettlePayService.create(body); }
     @Transactional public StSettlePay update(String id, StSettlePay body) { return stSettlePayService.update(id, body); }

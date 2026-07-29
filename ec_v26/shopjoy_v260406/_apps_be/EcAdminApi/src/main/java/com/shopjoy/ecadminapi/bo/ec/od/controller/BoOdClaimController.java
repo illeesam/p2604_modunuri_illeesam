@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.od.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
@@ -39,7 +40,7 @@ public class BoOdClaimController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<OdClaimDto.PageResponse>> page(@Valid @ModelAttribute OdClaimDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<OdClaimDto.Item>>> page(@Valid @ModelAttribute OdClaimDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boOdClaimService.getPageData(req)));
     }
 

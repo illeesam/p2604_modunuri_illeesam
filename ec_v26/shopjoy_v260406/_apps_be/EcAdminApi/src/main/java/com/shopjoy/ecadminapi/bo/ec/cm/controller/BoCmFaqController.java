@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmFaq;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmFaqService;
@@ -42,7 +43,7 @@ public class BoCmFaqController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<CmFaqDto.PageResponse>> page(@Valid @ModelAttribute CmFaqDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmFaqDto.Item>>> page(@Valid @ModelAttribute CmFaqDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boCmFaqService.getPageData(req)));
     }
 

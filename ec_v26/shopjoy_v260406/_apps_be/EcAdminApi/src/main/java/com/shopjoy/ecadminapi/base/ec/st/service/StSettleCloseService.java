@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleCloseDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleCloseRepository;
@@ -67,7 +68,7 @@ public class StSettleCloseService {
     }
 
     /* 정산 마감 페이지조회 */
-    public StSettleCloseDto.PageResponse getPageData(StSettleCloseDto.Request req) {
+    public BasePage<StSettleCloseDto.Item> getPageData(StSettleCloseDto.Request req) {
         PageHelper.addPaging(req);
         return stSettleCloseRepository.selectPageData(req);
     }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmhPushLog;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmhPushLogService;
@@ -33,7 +34,7 @@ public class CmhPushLogController {
 
     /* 푸시 발송 이력 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<CmhPushLogDto.PageResponse>> page(@Valid @ModelAttribute CmhPushLogDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmhPushLogDto.Item>>> page(@Valid @ModelAttribute CmhPushLogDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
@@ -67,7 +68,7 @@ public class SyAttachService {
     }
 
     /* 첨부파일 페이지조회 */
-    public SyAttachDto.PageResponse getPageData(SyAttachDto.Request req) {
+    public BasePage<SyAttachDto.Item> getPageData(SyAttachDto.Request req) {
         PageHelper.addPaging(req);
         return syAttachRepository.selectPageData(req);
     }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
 
 import java.util.Optional;
@@ -11,5 +12,5 @@ public interface QSyhAccessLogRepository {
     Optional<SyhAccessLogDto.Item> selectById(String id);
 
     /** 페이지 목록 */
-    SyhAccessLogDto.PageResponse selectPageData(SyhAccessLogDto.Request search);
+    BasePage<SyhAccessLogDto.Item> selectPageData(SyhAccessLogDto.Request search);
 }

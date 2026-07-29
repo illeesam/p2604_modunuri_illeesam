@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattRoom;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmChattRoomService;
@@ -33,7 +34,7 @@ public class CmChattRoomController {
 
     /* 채팅방 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<CmChattRoomDto.PageResponse>> page(@Valid @ModelAttribute CmChattRoomDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmChattRoomDto.Item>>> page(@Valid @ModelAttribute CmChattRoomDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

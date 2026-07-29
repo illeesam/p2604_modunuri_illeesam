@@ -50,6 +50,12 @@ public class CmDashboardDataSourceRegistry {
      *
      * <p>SELECT 별칭은 반드시 {@code col1_nm} / {@code col1_num} 형식이어야 한다(아래 매핑 규약).
      * 사이트 격리가 필요한 쿼리는 {@code :siteId} 를 쓴다 — 안 쓰는 쿼리에도 바인딩은 안전하게 건너뛴다.</p>
+     *
+     * <p><b>주의 — PostgreSQL 캐스트 {@code ::} 금지.</b> Hibernate 는 네이티브 SQL 에서
+     * {@code :} 를 명명 파라미터 시작으로 읽는다. {@code join_date::date} 는 {@code :date}
+     * 파라미터로 오인돼 "syntax error at or near :" 로 깨지고, 그 트랜잭션이 오염되어
+     * 뒤이은 폴백 조회까지 500 으로 실패한다. {@code CAST(x AS date)} 로 쓴다.</p>
+     *
      */
     private static final Map<String, String> SQL = new LinkedHashMap<>();
     static {
@@ -256,6 +262,240 @@ public class CmDashboardDataSourceRegistry {
           + "FROM shopjoy_2604.st_settle t "
           + "WHERE t.site_id = :siteId "
           + "GROUP BY t.settle_ym ORDER BY t.settle_ym");
+
+        /* ── 회원 (추가) ─────────────────────────────────────── */
+        SQL.put("MB_DORMANT",
+            "SELECT '휴면 회원' AS col1_nm, COUNT(m.*) AS col1_num "
+          + "FROM shopjoy_2604.mb_member m "
+          + "WHERE m.site_id = :siteId AND m.member_status_cd = 'DORMANT'");
+
+        SQL.put("MB_WITHDRAWN",
+            "SELECT '탈퇴/정지 회원' AS col1_nm, COUNT(m.*) AS col1_num "
+          + "FROM shopjoy_2604.mb_member m "
+          + "WHERE m.site_id = :siteId AND m.member_status_cd IN ('WITHDRAWN', 'SUSPENDED')");
+
+        SQL.put("MB_JOIN_TREND_7D",
+            "SELECT TO_CHAR(d.day, 'MM-DD') AS col1_nm, COUNT(m.member_id) AS col1_num "
+          + "FROM generate_series(CURRENT_DATE - 6, CURRENT_DATE, INTERVAL '1 day') d(day) "
+          + "LEFT JOIN shopjoy_2604.mb_member m "
+          + "       ON m.site_id = :siteId AND CAST(m.join_date AS date) = d.day "
+          + "GROUP BY d.day ORDER BY d.day");
+
+        SQL.put("MB_DORMANT_LIST",
+            "SELECT m.member_nm AS col1_nm, COALESCE(m.member_status_cd, '-') AS col2_nm, "
+          + "       TO_CHAR(m.last_login, 'YYYY-MM-DD') AS col3_nm, "
+          + "       COALESCE(m.order_count, 0) AS col1_num, "
+          + "       COALESCE(m.cache_balance_amt, 0) AS col2_num "
+          + "FROM shopjoy_2604.mb_member m "
+          + "WHERE m.site_id = :siteId AND m.member_status_cd <> 'ACTIVE' "
+          + "ORDER BY m.last_login ASC NULLS FIRST LIMIT " + LIST_LIMIT);
+
+        /* ── 상품 (추가) ─────────────────────────────────────── */
+        SQL.put("PD_NEW_WEEK",
+            "SELECT '이번주 신규' AS col1_nm, COUNT(p.*) AS col1_num "
+          + "FROM shopjoy_2604.pd_prod p "
+          + "WHERE p.site_id = :siteId AND p.reg_date >= CURRENT_DATE - 6");
+
+        SQL.put("PD_QNA_WAIT",
+            "SELECT '미답변 문의' AS col1_nm, COUNT(q.*) AS col1_num "
+          + "FROM shopjoy_2604.pd_prod_qna q "
+          + "WHERE q.site_id = :siteId AND COALESCE(q.answ_yn, 'N') <> 'Y'");
+
+        SQL.put("PD_CATE_DIST",
+            "SELECT c.category_nm AS col1_nm, COUNT(cp.prod_id) AS col1_num "
+          + "FROM shopjoy_2604.pd_category c "
+          + "LEFT JOIN shopjoy_2604.pd_category_prod cp ON cp.category_id = c.category_id "
+          + "WHERE c.site_id = :siteId AND c.category_depth = 1 "
+          + "GROUP BY c.category_id, c.category_nm, c.sort_ord ORDER BY c.sort_ord LIMIT 12");
+
+        SQL.put("PD_LOWSTOCK",
+            "SELECT p.prod_nm AS col1_nm, COALESCE(k.stock_code, '-') AS col2_nm, "
+          + "       COALESCE(k.stock_qty, 0) AS col1_num, COALESCE(p.sale_price, 0) AS col2_num "
+          + "FROM shopjoy_2604.pd_prod_stock k "
+          + "JOIN shopjoy_2604.pd_prod p ON p.prod_id = k.prod_id "
+          + "WHERE k.site_id = :siteId AND COALESCE(k.stock_qty, 0) < 10 "
+          + "ORDER BY COALESCE(k.stock_qty, 0) ASC LIMIT " + LIST_LIMIT);
+
+        /* ── 주문 (추가) ─────────────────────────────────────── */
+        SQL.put("OD_WAIT_CNT",
+            "SELECT '미처리 주문' AS col1_nm, COUNT(o.*) AS col1_num "
+          + "FROM shopjoy_2604.od_order o "
+          + "WHERE o.site_id = :siteId "
+          + "  AND o.order_status_cd IN ('PENDING', 'WAIT_PAY', 'PAID', 'PREPARING')");
+
+        SQL.put("OD_CLAIM_OPEN",
+            "SELECT '진행중 클레임' AS col1_nm, COUNT(cl.*) AS col1_num "
+          + "FROM shopjoy_2604.od_claim cl "
+          + "WHERE cl.site_id = :siteId "
+          + "  AND cl.claim_status_cd NOT IN ('COMPLT', 'COMPLETE', 'DONE', 'CANCEL')");
+
+        SQL.put("OD_UNPROC_LIST",
+            "SELECT o.order_id AS col1_nm, COALESCE(o.order_status_cd, '-') AS col2_nm, "
+          + "       TO_CHAR(o.order_date, 'MM-DD HH24:MI') AS col3_nm, "
+          + "       COALESCE(o.pay_amt, 0) AS col1_num, "
+          + "       ROUND(EXTRACT(EPOCH FROM (now() - o.order_date)) / 3600) AS col2_num "
+          + "FROM shopjoy_2604.od_order o "
+          + "WHERE o.site_id = :siteId "
+          + "  AND o.order_status_cd IN ('PENDING', 'WAIT_PAY', 'PAID', 'PREPARING') "
+          + "ORDER BY o.order_date ASC LIMIT " + LIST_LIMIT);
+
+        /* ── 프로모션 (추가) ─────────────────────────────────── */
+        SQL.put("PM_ISSUE_MONTH",
+            "SELECT '이번달 쿠폰발급' AS col1_nm, COUNT(i.*) AS col1_num "
+          + "FROM shopjoy_2604.pm_coupon_issue i "
+          + "WHERE i.site_id = :siteId "
+          + "  AND i.issue_date >= date_trunc('month', CURRENT_DATE)");
+
+        SQL.put("PM_USE_MONTH",
+            "SELECT '이번달 쿠폰사용' AS col1_nm, COUNT(i.*) AS col1_num "
+          + "FROM shopjoy_2604.pm_coupon_issue i "
+          + "WHERE i.site_id = :siteId AND i.use_yn = 'Y' "
+          + "  AND i.use_date >= date_trunc('month', CURRENT_DATE)");
+
+        SQL.put("PM_CACHE_MONTH",
+            "SELECT '이번달 캐시지급' AS col1_nm, COALESCE(SUM(h.cache_amt), 0) AS col1_num "
+          + "FROM shopjoy_2604.pm_cache h "
+          + "WHERE h.site_id = :siteId AND COALESCE(h.cache_amt, 0) > 0 "
+          + "  AND h.cache_date >= date_trunc('month', CURRENT_DATE)");
+
+        SQL.put("PM_ISSUE_TREND",
+            "SELECT TO_CHAR(d.day, 'MM-DD') AS col1_nm, "
+          + "       COUNT(i.issue_id) AS col1_num, COUNT(u.issue_id) AS col2_num "
+          + "FROM generate_series(CURRENT_DATE - 6, CURRENT_DATE, INTERVAL '1 day') d(day) "
+          + "LEFT JOIN shopjoy_2604.pm_coupon_issue i "
+          + "       ON i.site_id = :siteId AND CAST(i.issue_date AS date) = d.day "
+          + "LEFT JOIN shopjoy_2604.pm_coupon_issue u "
+          + "       ON u.site_id = :siteId AND u.use_yn = 'Y' AND CAST(u.use_date AS date) = d.day "
+          + "GROUP BY d.day ORDER BY d.day");
+
+        /* ── 전시 (추가) ─────────────────────────────────────── */
+        SQL.put("DP_PANEL_WIDGET",
+            "SELECT p.panel_nm AS col1_nm, COALESCE(a.area_nm, '-') AS col2_nm, "
+          + "       COALESCE(p.disp_panel_status_cd, '-') AS col3_nm, "
+          + "       COUNT(pi.panel_item_id) AS col1_num "
+          + "FROM shopjoy_2604.dp_panel p "
+          + "LEFT JOIN shopjoy_2604.dp_area a ON a.area_id = p.area_id "
+          + "LEFT JOIN shopjoy_2604.dp_panel_item pi ON pi.panel_id = p.panel_id "
+          + "WHERE p.site_id = :siteId "
+          + "GROUP BY p.panel_id, p.panel_nm, a.area_nm, p.disp_panel_status_cd "
+          + "ORDER BY COUNT(pi.panel_item_id) DESC LIMIT " + LIST_LIMIT);
+
+        SQL.put("DP_RECENT_CHG",
+            "SELECT w.widget_nm AS col1_nm, COALESCE(w.widget_type_cd, '-') AS col2_nm, "
+          + "       COALESCE(w.upd_by, w.reg_by, '-') AS col3_nm, "
+          + "       TO_CHAR(COALESCE(w.upd_date, w.reg_date), 'MM-DD HH24:MI') AS col4_nm "
+          + "FROM shopjoy_2604.dp_widget w "
+          + "WHERE w.site_id = :siteId "
+          + "ORDER BY COALESCE(w.upd_date, w.reg_date) DESC NULLS LAST LIMIT " + LIST_LIMIT);
+
+        /* ── 고객센터 (추가) ─────────────────────────────────── */
+        SQL.put("CS_WAIT_CNT",
+            "SELECT '미답변 문의' AS col1_nm, COUNT(q.*) AS col1_num "
+          + "FROM shopjoy_2604.sy_contact q "
+          + "WHERE q.site_id = :siteId AND q.answer_date IS NULL");
+
+        SQL.put("CS_TODAY_CNT",
+            "SELECT '오늘 접수' AS col1_nm, COUNT(q.*) AS col1_num "
+          + "FROM shopjoy_2604.sy_contact q "
+          + "WHERE q.site_id = :siteId AND q.contact_date >= CURRENT_DATE");
+
+        SQL.put("CS_CHAT_OPEN",
+            "SELECT '진행중 상담' AS col1_nm, COUNT(t.*) AS col1_num "
+          + "FROM shopjoy_2604.cm_chatt t "
+          + "WHERE t.site_id = :siteId AND t.chatt_status_cd NOT IN ('CLOSED', 'DONE')");
+
+        SQL.put("CS_AVG_HOUR",
+            "SELECT '평균 응답(시간)' AS col1_nm, "
+          + "       COALESCE(ROUND(AVG(EXTRACT(EPOCH FROM (q.answer_date - q.contact_date)) / 3600)), 0) AS col1_num "
+          + "FROM shopjoy_2604.sy_contact q "
+          + "WHERE q.site_id = :siteId AND q.answer_date IS NOT NULL AND q.contact_date IS NOT NULL");
+
+        SQL.put("CS_CATEGORY_DIST",
+            "SELECT COALESCE(q.category_cd, '미분류') AS col1_nm, COUNT(q.*) AS col1_num "
+          + "FROM shopjoy_2604.sy_contact q "
+          + "WHERE q.site_id = :siteId "
+          + "GROUP BY COALESCE(q.category_cd, '미분류') ORDER BY COUNT(q.*) DESC");
+
+        SQL.put("CS_RECENT_LIST",
+            "SELECT q.contact_id AS col1_nm, COALESCE(q.category_cd, '-') AS col2_nm, "
+          + "       q.contact_title AS col3_nm, COALESCE(q.contact_status_cd, '-') AS col4_nm, "
+          + "       TO_CHAR(q.contact_date, 'MM-DD') AS col5_nm "
+          + "FROM shopjoy_2604.sy_contact q "
+          + "WHERE q.site_id = :siteId "
+          + "ORDER BY q.contact_date DESC NULLS LAST LIMIT " + LIST_LIMIT);
+
+        SQL.put("CS_UNANSWERED_LIST",
+            "SELECT q.contact_id AS col1_nm, COALESCE(q.category_cd, '-') AS col2_nm, "
+          + "       q.contact_title AS col3_nm, "
+          + "       ROUND(EXTRACT(EPOCH FROM (now() - q.contact_date)) / 3600) AS col1_num "
+          + "FROM shopjoy_2604.sy_contact q "
+          + "WHERE q.site_id = :siteId AND q.answer_date IS NULL "
+          + "ORDER BY q.contact_date ASC NULLS LAST LIMIT " + LIST_LIMIT);
+
+        /* ── 정산 (추가) ─────────────────────────────────────── */
+        SQL.put("ST_UNPAID_AMT",
+            "SELECT '미지급 금액' AS col1_nm, COALESCE(SUM(t.final_settle_amt), 0) AS col1_num "
+          + "FROM shopjoy_2604.st_settle t "
+          + "WHERE t.site_id = :siteId AND t.settle_status_cd <> 'PAID'");
+
+        SQL.put("ST_FEE_TOTAL",
+            "SELECT '수수료 수익' AS col1_nm, COALESCE(SUM(t.commission_amt), 0) AS col1_num "
+          + "FROM shopjoy_2604.st_settle t WHERE t.site_id = :siteId");
+
+        SQL.put("ST_ADJ_CNT",
+            "SELECT '정산 조정' AS col1_nm, COUNT(j.*) AS col1_num "
+          + "FROM shopjoy_2604.st_settle_adj j WHERE j.site_id = :siteId");
+
+        SQL.put("ST_UNPAID_LIST",
+            "SELECT COALESCE(v.vendor_nm, t.vendor_id) AS col1_nm, t.settle_ym AS col2_nm, "
+          + "       COALESCE(t.settle_status_cd, '-') AS col3_nm, "
+          + "       COALESCE(t.final_settle_amt, 0) AS col1_num "
+          + "FROM shopjoy_2604.st_settle t "
+          + "LEFT JOIN shopjoy_2604.sy_vendor v ON v.vendor_id = t.vendor_id "
+          + "WHERE t.site_id = :siteId AND t.settle_status_cd <> 'PAID' "
+          + "ORDER BY t.settle_ym DESC LIMIT " + LIST_LIMIT);
+
+        SQL.put("ST_ADJ_LIST",
+            "SELECT COALESCE(v.vendor_nm, t.vendor_id) AS col1_nm, "
+          + "       COALESCE(j.adj_type_cd, '-') AS col2_nm, "
+          + "       COALESCE(j.adj_reason, '-') AS col3_nm, t.settle_ym AS col4_nm, "
+          + "       COALESCE(j.adj_amt, 0) AS col1_num "
+          + "FROM shopjoy_2604.st_settle_adj j "
+          + "JOIN shopjoy_2604.st_settle t ON t.settle_id = j.settle_id "
+          + "LEFT JOIN shopjoy_2604.sy_vendor v ON v.vendor_id = t.vendor_id "
+          + "WHERE j.site_id = :siteId "
+          + "ORDER BY j.reg_date DESC NULLS LAST LIMIT " + LIST_LIMIT);
+
+        /* ── 시스템 (추가) ───────────────────────────────────── */
+        SQL.put("SY_ROLE_CNT",
+            "SELECT '역할' AS col1_nm, COUNT(r.*) AS col1_num "
+          + "FROM shopjoy_2604.sy_role r WHERE r.site_id = :siteId");
+
+        SQL.put("SY_BATCH_FAIL",
+            "SELECT '배치 실패' AS col1_nm, COUNT(b.*) AS col1_num "
+          + "FROM shopjoy_2604.sy_batch b "
+          + "WHERE b.site_id = :siteId AND b.batch_run_status IN ('FAIL', 'ERROR', '실패')");
+
+        /* 에러/접속 로그는 site_id 가 NULL 인 행이 정상적으로 존재한다(미인증 요청).
+           사이트로 좁히면 대부분 빠지므로 전체를 센다. */
+        SQL.put("SY_ERR_TODAY",
+            "SELECT '오늘 오류' AS col1_nm, COUNT(e.*) AS col1_num "
+          + "FROM shopjoy_2604.syh_access_error_log e "
+          + "WHERE e.log_dt >= CURRENT_DATE");
+
+        SQL.put("SY_API_TREND",
+            "SELECT TO_CHAR(d.day, 'MM-DD') AS col1_nm, COUNT(l.log_id) AS col1_num "
+          + "FROM generate_series(CURRENT_DATE - 6, CURRENT_DATE, INTERVAL '1 day') d(day) "
+          + "LEFT JOIN shopjoy_2604.syh_access_log l ON CAST(l.req_dt AS date) = d.day "
+          + "GROUP BY d.day ORDER BY d.day");
+
+        SQL.put("SY_ERR_RECENT",
+            "SELECT TO_CHAR(e.log_dt, 'MM-DD HH24:MI') AS col1_nm, "
+          + "       COALESCE(e.req_path, '-') AS col2_nm, "
+          + "       COALESCE(e.error_type, '-') AS col3_nm, "
+          + "       COALESCE(e.user_id, '-') AS col4_nm "
+          + "FROM shopjoy_2604.syh_access_error_log e "
+          + "ORDER BY e.log_dt DESC NULLS LAST LIMIT " + LIST_LIMIT);
 
         /* ── 시스템 ──────────────────────────────────────────── */
         SQL.put("SY_USER_TOTAL",

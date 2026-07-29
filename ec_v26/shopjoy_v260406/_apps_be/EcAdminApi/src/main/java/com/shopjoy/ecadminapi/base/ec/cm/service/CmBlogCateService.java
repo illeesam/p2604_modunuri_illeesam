@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogCate;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogCateRepository;
@@ -67,7 +68,7 @@ public class CmBlogCateService {
     }
 
     /* 게시판 카테고리 페이지조회 */
-    public CmBlogCateDto.PageResponse getPageData(CmBlogCateDto.Request req) {
+    public BasePage<CmBlogCateDto.Item> getPageData(CmBlogCateDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogCateRepository.selectPageData(req);
     }

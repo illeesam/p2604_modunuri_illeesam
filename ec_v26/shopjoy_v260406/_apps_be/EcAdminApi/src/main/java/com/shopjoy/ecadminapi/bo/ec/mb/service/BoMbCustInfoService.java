@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberService;
@@ -25,7 +26,7 @@ public class BoMbCustInfoService {
     /* 목록조회 */
     public List<MbMemberDto.Item> getList(MbMemberDto.Request req) { return mbMemberService.getList(req); }
     /* 페이지조회 */
-    public MbMemberDto.PageResponse getPageData(MbMemberDto.Request req) { return mbMemberService.getPageData(req); }
+    public BasePage<MbMemberDto.Item> getPageData(MbMemberDto.Request req) { return mbMemberService.getPageData(req); }
 
     @Transactional public MbMember create(MbMember body) { return mbMemberService.create(body); }
     @Transactional public MbMember update(String id, MbMember body) { return mbMemberService.update(id, body); }

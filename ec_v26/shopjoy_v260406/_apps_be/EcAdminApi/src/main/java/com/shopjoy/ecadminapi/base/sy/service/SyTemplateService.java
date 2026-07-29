@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyTemplate;
 import com.shopjoy.ecadminapi.base.sy.repository.SyTemplateRepository;
@@ -67,7 +68,7 @@ public class SyTemplateService {
     }
 
     /* 템플릿 페이지조회 */
-    public SyTemplateDto.PageResponse getPageData(SyTemplateDto.Request req) {
+    public BasePage<SyTemplateDto.Item> getPageData(SyTemplateDto.Request req) {
         PageHelper.addPaging(req);
         return syTemplateRepository.selectPageData(req);
     }

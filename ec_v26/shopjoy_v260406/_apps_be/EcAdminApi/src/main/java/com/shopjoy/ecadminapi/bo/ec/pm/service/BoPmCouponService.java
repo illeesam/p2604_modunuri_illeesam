@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponRepository;
@@ -35,7 +36,7 @@ public class BoPmCouponService {
     /* 목록조회 */
     public List<PmCouponDto.Item> getList(PmCouponDto.Request req) { return pmCouponService.getList(req); }
     /* 페이지조회 */
-    public PmCouponDto.PageResponse getPageData(PmCouponDto.Request req) { return pmCouponService.getPageData(req); }
+    public BasePage<PmCouponDto.Item> getPageData(PmCouponDto.Request req) { return pmCouponService.getPageData(req); }
 
     @Transactional public PmCoupon create(PmCoupon body) { return pmCouponService.create(body); }
     @Transactional public PmCoupon update(String id, PmCoupon body) { return pmCouponService.update(id, body); }

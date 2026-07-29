@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
 
@@ -13,7 +14,7 @@ public interface QPdTagRepository {
 
     List<PdTagDto.Item> selectList(PdTagDto.Request search);
 
-    PdTagDto.PageResponse selectPageData(PdTagDto.Request search);
+    BasePage<PdTagDto.Item> selectPageData(PdTagDto.Request search);
 
     int updateSelective(PdTag entity);
 }

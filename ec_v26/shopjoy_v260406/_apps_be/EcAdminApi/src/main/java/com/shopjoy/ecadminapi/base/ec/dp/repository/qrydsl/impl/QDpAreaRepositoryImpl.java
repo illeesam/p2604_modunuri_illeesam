@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -107,7 +108,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
 
     /* 전시 영역 페이지조회 */
     @Override
-    public DpAreaDto.PageResponse selectPageData(DpAreaDto.Request search) {
+    public BasePage<DpAreaDto.Item> selectPageData(DpAreaDto.Request search) {
         int pageNo = search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -139,7 +140,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 .select(dpArea.count())
                 .where(wheres)
                 .fetchOne();
-        DpAreaDto.PageResponse res = new DpAreaDto.PageResponse();
+        BasePage<DpAreaDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserLoginLog;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhUserLoginLogRepository;
@@ -28,7 +29,7 @@ public class SyhUserLoginLogService {
     }
 
     /** getPageData — 페이징조회 */
-    public SyhUserLoginLogDto.PageResponse getPageData(SyhUserLoginLogDto.Request req) {
+    public BasePage<SyhUserLoginLogDto.Item> getPageData(SyhUserLoginLogDto.Request req) {
         PageHelper.addPaging(req);
         return syhUserLoginLogRepository.selectPageData(req);
     }

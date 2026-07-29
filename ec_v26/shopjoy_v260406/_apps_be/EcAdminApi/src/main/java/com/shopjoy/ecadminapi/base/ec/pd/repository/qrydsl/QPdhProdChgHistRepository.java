@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdChgHist;
 
@@ -16,7 +17,7 @@ public interface QPdhProdChgHistRepository {
     List<PdhProdChgHistDto.Item> selectList(PdhProdChgHistDto.Request search);
 
     /** 페이지 목록 */
-    PdhProdChgHistDto.PageResponse selectPageData(PdhProdChgHistDto.Request search);
+    BasePage<PdhProdChgHistDto.Item> selectPageData(PdhProdChgHistDto.Request search);
 
     int updateSelective(PdhProdChgHist entity);
 }

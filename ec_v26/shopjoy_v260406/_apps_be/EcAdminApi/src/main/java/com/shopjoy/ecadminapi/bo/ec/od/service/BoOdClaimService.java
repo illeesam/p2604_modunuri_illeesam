@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.od.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto;
@@ -53,8 +54,8 @@ public class BoOdClaimService {
         return list;
     }
     /* 페이지조회 */
-    public OdClaimDto.PageResponse getPageData(OdClaimDto.Request req) {
-        OdClaimDto.PageResponse res = odClaimService.getPageData(req);
+    public BasePage<OdClaimDto.Item> getPageData(OdClaimDto.Request req) {
+        BasePage<OdClaimDto.Item> res = odClaimService.getPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

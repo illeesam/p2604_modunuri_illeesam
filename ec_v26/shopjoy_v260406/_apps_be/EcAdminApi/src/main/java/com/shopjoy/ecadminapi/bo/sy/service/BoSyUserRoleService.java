@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserRole;
 import com.shopjoy.ecadminapi.base.sy.service.SyUserRoleService;
@@ -24,7 +25,7 @@ public class BoSyUserRoleService {
     /* 목록조회 */
     public List<SyUserRoleDto.Item> getList(SyUserRoleDto.Request req) { return syUserRoleService.getList(req); }
     /* 페이지조회 */
-    public SyUserRoleDto.PageResponse getPageData(SyUserRoleDto.Request req) { return syUserRoleService.getPageData(req); }
+    public BasePage<SyUserRoleDto.Item> getPageData(SyUserRoleDto.Request req) { return syUserRoleService.getPageData(req); }
     /* getRolesByUserId */
     public List<SyUserRoleDto.Item> getRolesByUserId(String userId) { return syUserRoleService.getRolesByUserId(userId); }
 

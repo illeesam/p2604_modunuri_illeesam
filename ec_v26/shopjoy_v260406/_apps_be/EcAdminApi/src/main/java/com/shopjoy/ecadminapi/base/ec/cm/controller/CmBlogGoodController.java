@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogGood;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogGoodService;
@@ -33,7 +34,7 @@ public class CmBlogGoodController {
 
     /* 게시물 좋아요 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<CmBlogGoodDto.PageResponse>> page(@Valid @ModelAttribute CmBlogGoodDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmBlogGoodDto.Item>>> page(@Valid @ModelAttribute CmBlogGoodDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

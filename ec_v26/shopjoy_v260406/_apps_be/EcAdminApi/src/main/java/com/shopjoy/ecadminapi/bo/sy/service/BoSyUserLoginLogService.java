@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto;
 import com.shopjoy.ecadminapi.base.sy.service.SyhUserLoginLogService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class BoSyUserLoginLogService {
     }
 
     /** getPageData — 페이징조회 */
-    public SyhUserLoginLogDto.PageResponse getPageData(SyhUserLoginLogDto.Request req) {
+    public BasePage<SyhUserLoginLogDto.Item> getPageData(SyhUserLoginLogDto.Request req) {
         return syhUserLoginLogService.getPageData(req);
     }
 

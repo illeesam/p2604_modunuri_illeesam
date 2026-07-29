@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.mb.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.bo.ec.mb.service.BoMbMemGradeService;
@@ -36,7 +37,7 @@ public class BoMbMemGradeController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<MbMemberGradeDto.PageResponse>> page(@Valid @ModelAttribute MbMemberGradeDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<MbMemberGradeDto.Item>>> page(@Valid @ModelAttribute MbMemberGradeDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemGradeService.getPageData(req)));
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherIssueDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucherIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmVoucherIssueService;
@@ -33,7 +34,7 @@ public class PmVoucherIssueController {
 
     /* 바우처(상품권) 발행 이력 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmVoucherIssueDto.PageResponse>> page(@Valid @ModelAttribute PmVoucherIssueDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmVoucherIssueDto.Item>>> page(@Valid @ModelAttribute PmVoucherIssueDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna;
 
@@ -16,7 +17,7 @@ public interface QPdProdQnaRepository {
     List<PdProdQnaDto.Item> selectList(PdProdQnaDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    PdProdQnaDto.PageResponse selectPageData(PdProdQnaDto.Request search);
+    BasePage<PdProdQnaDto.Item> selectPageData(PdProdQnaDto.Request search);
 
     int updateSelective(PdProdQna entity);
 }

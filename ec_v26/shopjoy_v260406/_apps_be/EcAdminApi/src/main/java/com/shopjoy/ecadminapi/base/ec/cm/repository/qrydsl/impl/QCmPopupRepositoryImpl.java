@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringPath;
@@ -41,7 +42,7 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
     @Override
-    public CmPopupDto.PageResponse selectPageData(CmPopupDto.Request search) {
+    public BasePage<CmPopup> selectPageData(CmPopupDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
@@ -65,7 +66,7 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
                 .where(wheres)
                 .fetchOne();
 
-        CmPopupDto.PageResponse res = new CmPopupDto.PageResponse();
+        BasePage<CmPopup> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

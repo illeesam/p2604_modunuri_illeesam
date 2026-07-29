@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleCloseDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StSettleCloseRepository;
@@ -35,7 +36,7 @@ public class BoStSettleCloseService {
     /* 목록조회 */
     public List<StSettleCloseDto.Item> getList(StSettleCloseDto.Request req) { return stSettleCloseService.getList(req); }
     /* 페이지조회 */
-    public StSettleCloseDto.PageResponse getPageData(StSettleCloseDto.Request req) { return stSettleCloseService.getPageData(req); }
+    public BasePage<StSettleCloseDto.Item> getPageData(StSettleCloseDto.Request req) { return stSettleCloseService.getPageData(req); }
 
     @Transactional public StSettleClose create(StSettleClose body) { return stSettleCloseService.create(body); }
     @Transactional public StSettleClose update(String id, StSettleClose body) { return stSettleCloseService.update(id, body); }

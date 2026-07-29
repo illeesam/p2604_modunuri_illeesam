@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdTagService;
@@ -33,7 +34,7 @@ public class PdTagController {
 
     /* 태그 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PdTagDto.PageResponse>> page(@Valid @ModelAttribute PdTagDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PdTagDto.Item>>> page(@Valid @ModelAttribute PdTagDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

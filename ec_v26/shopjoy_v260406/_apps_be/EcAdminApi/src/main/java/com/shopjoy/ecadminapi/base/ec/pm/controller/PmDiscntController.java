@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntService;
@@ -33,7 +34,7 @@ public class PmDiscntController {
 
     /* 할인 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmDiscntDto.PageResponse>> page(@Valid @ModelAttribute PmDiscntDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmDiscntDto.Item>>> page(@Valid @ModelAttribute PmDiscntDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

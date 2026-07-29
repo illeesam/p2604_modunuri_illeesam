@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntUsageDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntUsageService;
@@ -33,7 +34,7 @@ public class PmDiscntUsageController {
 
     /* 할인 사용 이력 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmDiscntUsageDto.PageResponse>> page(@Valid @ModelAttribute PmDiscntUsageDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmDiscntUsageDto.Item>>> page(@Valid @ModelAttribute PmDiscntUsageDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

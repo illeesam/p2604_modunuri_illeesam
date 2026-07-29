@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.od.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
@@ -49,8 +50,8 @@ public class BoOdDlivService {
         return list;
     }
     /* 페이지조회 */
-    public OdDlivDto.PageResponse getPageData(OdDlivDto.Request req) {
-        OdDlivDto.PageResponse res = odDlivService.getPageData(req);
+    public BasePage<OdDlivDto.Item> getPageData(OdDlivDto.Request req) {
+        BasePage<OdDlivDto.Item> res = odDlivService.getPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

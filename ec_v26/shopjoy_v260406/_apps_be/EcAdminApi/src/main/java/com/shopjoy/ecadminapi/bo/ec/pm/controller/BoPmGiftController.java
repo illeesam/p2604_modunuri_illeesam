@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftCondDto;
@@ -35,7 +36,7 @@ public class BoPmGiftController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmGiftDto.PageResponse>> page(@Valid @ModelAttribute PmGiftDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmGiftDto.Item>>> page(@Valid @ModelAttribute PmGiftDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPmGiftService.getPageData(req)));
     }
 

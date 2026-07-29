@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPathDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPath;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmPathService;
@@ -32,7 +33,7 @@ public class CmPathController {
 
     /* 경로(메뉴/URL) 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<CmPathDto.PageResponse>> page(@Valid @ModelAttribute CmPathDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmPathDto.Item>>> page(@Valid @ModelAttribute CmPathDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

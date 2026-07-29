@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 
@@ -14,7 +15,7 @@ public interface QSyMenuRepository {
 
     List<SyMenuDto.Item> selectList(SyMenuDto.Request search);
 
-    SyMenuDto.PageResponse selectPageData(SyMenuDto.Request search);
+    BasePage<SyMenuDto.Item> selectPageData(SyMenuDto.Request search);
 
     int updateSelective(SyMenu entity);
 

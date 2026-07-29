@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbsDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbs;
 
@@ -10,6 +11,6 @@ import java.util.Optional;
 public interface QSyBbsRepository {
     Optional<SyBbsDto.Item> selectById(String bbsId);
     List<SyBbsDto.Item> selectList(SyBbsDto.Request search);
-    SyBbsDto.PageResponse selectPageData(SyBbsDto.Request search);
+    BasePage<SyBbsDto.Item> selectPageData(SyBbsDto.Request search);
     int updateSelective(SyBbs entity);
 }

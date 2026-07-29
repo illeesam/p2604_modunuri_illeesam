@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAlarmSendHist;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhAlarmSendHistRepository;
@@ -28,7 +29,7 @@ public class SyhAlarmSendHistService {
     }
 
     /** getPageData — 페이징조회 */
-    public SyhAlarmSendHistDto.PageResponse getPageData(SyhAlarmSendHistDto.Request req) {
+    public BasePage<SyhAlarmSendHistDto.Item> getPageData(SyhAlarmSendHistDto.Request req) {
         PageHelper.addPaging(req);
         return syhAlarmSendHistRepository.selectPageData(req);
     }

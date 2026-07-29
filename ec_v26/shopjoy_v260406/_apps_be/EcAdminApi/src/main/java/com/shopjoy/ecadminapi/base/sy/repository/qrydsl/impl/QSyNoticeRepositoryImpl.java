@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -108,7 +109,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
 
     /* 공지사항 페이지조회 */
     @Override
-    public SyNoticeDto.PageResponse selectPageData(SyNoticeDto.Request search) {
+    public BasePage<SyNoticeDto.Item> selectPageData(SyNoticeDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -142,7 +143,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                 .where(wheres)
                 .fetchOne();
 
-        SyNoticeDto.PageResponse res = new SyNoticeDto.PageResponse();
+        BasePage<SyNoticeDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */

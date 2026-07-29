@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -104,7 +105,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
 
     /* 할인 사용 이력 페이지조회 */
     @Override
-    public PmDiscntUsageDto.PageResponse selectPageData(PmDiscntUsageDto.Request search) {
+    public BasePage<PmDiscntUsageDto.Item> selectPageData(PmDiscntUsageDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -136,7 +137,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                 .where(wheres)
                 .fetchOne();
 
-        PmDiscntUsageDto.PageResponse res = new PmDiscntUsageDto.PageResponse();
+        BasePage<PmDiscntUsageDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

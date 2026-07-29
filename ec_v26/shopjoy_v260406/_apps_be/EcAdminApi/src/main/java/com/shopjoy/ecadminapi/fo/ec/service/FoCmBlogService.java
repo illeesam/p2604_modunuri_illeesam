@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto;
@@ -78,10 +79,10 @@ public class FoCmBlogService {
     }
 
     /** getPageData — 조회 */
-    public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
+    public BasePage<CmBlogDto.Item> getPageData(CmBlogDto.Request req) {
         SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         PageHelper.addPaging(req);
-        CmBlogDto.PageResponse res = cmBlogRepository.selectPageData(req);
+        BasePage<CmBlogDto.Item> res = cmBlogRepository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

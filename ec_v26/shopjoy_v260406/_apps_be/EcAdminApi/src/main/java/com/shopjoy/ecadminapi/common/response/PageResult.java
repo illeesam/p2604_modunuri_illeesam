@@ -22,7 +22,7 @@ import java.util.List;
  * pageCond는 이번 조회에 사용된 검색 조건으로, 클라이언트가 페이지 전환 시 조건을 유지하는 데 활용.
  * of() 팩토리 메서드로 생성한다(불변 객체, Lombok @Builder).
  *
- * 표준 페이징 필드명 규칙 (프론트와 약속된 고정 키, {@link com.shopjoy.ecadminapi.common.data.BasePageResponse} 와 동일):
+ * 표준 페이징 필드명 규칙 (프론트와 약속된 고정 키, {@link com.shopjoy.ecadminapi.common.data.BasePage} 와 동일):
  *   pageList / pageNo / pageSize / pageTotalCount / pageTotalPage / pageCond
  * ⚠️ list/totalCount/total/items 등 다른 이름을 쓰면 프론트가 빈 결과로 처리한다.
  */

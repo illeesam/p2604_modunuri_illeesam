@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbhMemberTokenLogDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
 
@@ -13,7 +14,7 @@ public interface QMbhMemberTokenLogRepository {
 
     List<MbhMemberTokenLogDto.Item> selectList(MbhMemberTokenLogDto.Request search);
 
-    MbhMemberTokenLogDto.PageResponse selectPageData(MbhMemberTokenLogDto.Request search);
+    BasePage<MbhMemberTokenLogDto.Item> selectPageData(MbhMemberTokenLogDto.Request search);
 
     int updateSelective(MbhMemberTokenLog entity);
 }

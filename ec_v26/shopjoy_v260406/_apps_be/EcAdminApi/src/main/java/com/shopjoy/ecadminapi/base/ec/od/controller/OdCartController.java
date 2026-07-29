@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdCartService;
@@ -33,7 +34,7 @@ public class OdCartController {
 
     /* 장바구니 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<OdCartDto.PageResponse>> page(@Valid @ModelAttribute OdCartDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<OdCartDto.Item>>> page(@Valid @ModelAttribute OdCartDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

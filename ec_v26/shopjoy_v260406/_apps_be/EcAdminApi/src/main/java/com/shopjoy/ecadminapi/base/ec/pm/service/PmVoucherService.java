@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmVoucherRepository;
@@ -67,7 +68,7 @@ public class PmVoucherService {
     }
 
     /* 바우처(상품권) 페이지조회 */
-    public PmVoucherDto.PageResponse getPageData(PmVoucherDto.Request req) {
+    public BasePage<PmVoucherDto.Item> getPageData(PmVoucherDto.Request req) {
         PageHelper.addPaging(req);
         return pmVoucherRepository.selectPageData(req);
     }

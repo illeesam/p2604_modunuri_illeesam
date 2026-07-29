@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdDlivTmplt;
 
@@ -13,7 +14,7 @@ public interface QPdDlivTmpltRepository {
 
     List<PdDlivTmpltDto.Item> selectList(PdDlivTmpltDto.Request search);
 
-    PdDlivTmpltDto.PageResponse selectPageData(PdDlivTmpltDto.Request search);
+    BasePage<PdDlivTmpltDto.Item> selectPageData(PdDlivTmpltDto.Request search);
 
     int updateSelective(PdDlivTmplt entity);
 }

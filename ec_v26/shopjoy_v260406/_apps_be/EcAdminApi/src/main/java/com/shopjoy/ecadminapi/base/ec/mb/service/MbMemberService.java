@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
@@ -67,7 +68,7 @@ public class MbMemberService {
     }
 
     /* 회원 페이지조회 */
-    public MbMemberDto.PageResponse getPageData(MbMemberDto.Request req) {
+    public BasePage<MbMemberDto.Item> getPageData(MbMemberDto.Request req) {
         PageHelper.addPaging(req);
         return mbMemberRepository.selectPageData(req);
     }

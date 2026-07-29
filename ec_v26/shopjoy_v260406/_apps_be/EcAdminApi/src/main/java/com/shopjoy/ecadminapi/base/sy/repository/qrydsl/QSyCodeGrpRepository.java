@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCodeGrp;
 
@@ -14,7 +15,7 @@ public interface QSyCodeGrpRepository {
 
     List<SyCodeGrpDto.Item> selectList(SyCodeGrpDto.Request search);
 
-    SyCodeGrpDto.PageResponse selectPageData(SyCodeGrpDto.Request search);
+    BasePage<SyCodeGrpDto.Item> selectPageData(SyCodeGrpDto.Request search);
 
     int updateSelective(SyCodeGrp entity);
     /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).

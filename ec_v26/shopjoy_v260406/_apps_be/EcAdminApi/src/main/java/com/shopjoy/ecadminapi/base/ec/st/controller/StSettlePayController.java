@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettlePay;
 import com.shopjoy.ecadminapi.base.ec.st.service.StSettlePayService;
@@ -33,7 +34,7 @@ public class StSettlePayController {
 
     /* 정산 지급 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<StSettlePayDto.PageResponse>> page(@Valid @ModelAttribute StSettlePayDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<StSettlePayDto.Item>>> page(@Valid @ModelAttribute StSettlePayDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

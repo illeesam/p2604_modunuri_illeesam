@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleConfig;
 
@@ -16,7 +17,7 @@ public interface QStSettleConfigRepository {
     List<StSettleConfigDto.Item> selectList(StSettleConfigDto.Request search);
 
     /** 페이지 목록 */
-    StSettleConfigDto.PageResponse selectPageData(StSettleConfigDto.Request search);
+    BasePage<StSettleConfigDto.Item> selectPageData(StSettleConfigDto.Request search);
 
     int updateSelective(StSettleConfig entity);
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAlarmSendHist;
 
@@ -16,7 +17,7 @@ public interface QSyhAlarmSendHistRepository {
     List<SyhAlarmSendHistDto.Item> selectList(SyhAlarmSendHistDto.Request search);
 
     /** 페이지 목록 */
-    SyhAlarmSendHistDto.PageResponse selectPageData(SyhAlarmSendHistDto.Request search);
+    BasePage<SyhAlarmSendHistDto.Item> selectPageData(SyhAlarmSendHistDto.Request search);
 
     int updateSelective(SyhAlarmSendHist entity);
 }

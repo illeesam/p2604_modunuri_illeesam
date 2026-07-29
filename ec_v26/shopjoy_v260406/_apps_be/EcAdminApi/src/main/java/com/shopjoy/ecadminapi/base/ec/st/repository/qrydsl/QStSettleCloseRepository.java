@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleCloseDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
 
@@ -13,7 +14,7 @@ public interface QStSettleCloseRepository {
 
     List<StSettleCloseDto.Item> selectList(StSettleCloseDto.Request search);
 
-    StSettleCloseDto.PageResponse selectPageData(StSettleCloseDto.Request search);
+    BasePage<StSettleCloseDto.Item> selectPageData(StSettleCloseDto.Request search);
 
     int updateSelective(StSettleClose entity);
 }

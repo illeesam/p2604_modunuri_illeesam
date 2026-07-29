@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventBenefitService;
@@ -33,7 +34,7 @@ public class PmEventBenefitController {
 
     /* 이벤트 혜택 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmEventBenefitDto.PageResponse>> page(@Valid @ModelAttribute PmEventBenefitDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmEventBenefitDto.Item>>> page(@Valid @ModelAttribute PmEventBenefitDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

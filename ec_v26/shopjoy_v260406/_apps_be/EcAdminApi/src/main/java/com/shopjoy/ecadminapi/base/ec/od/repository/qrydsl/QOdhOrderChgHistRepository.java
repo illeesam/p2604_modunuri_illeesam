@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhOrderChgHist;
 
@@ -13,7 +14,7 @@ public interface QOdhOrderChgHistRepository {
 
     List<OdhOrderChgHistDto.Item> selectList(OdhOrderChgHistDto.Request search);
 
-    OdhOrderChgHistDto.PageResponse selectPageData(OdhOrderChgHistDto.Request search);
+    BasePage<OdhOrderChgHistDto.Item> selectPageData(OdhOrderChgHistDto.Request search);
 
     int updateSelective(OdhOrderChgHist entity);
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPathDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPath;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmPathRepository;
@@ -67,7 +68,7 @@ public class CmPathService {
     }
 
     /* 경로(메뉴/URL) 페이지조회 */
-    public CmPathDto.PageResponse getPageData(CmPathDto.Request req) {
+    public BasePage<CmPathDto.Item> getPageData(CmPathDto.Request req) {
         PageHelper.addPaging(req);
         return cmPathRepository.selectPageData(req);
     }

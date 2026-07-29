@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
@@ -50,11 +51,11 @@ public class FoOdOrderService {
     }
 
     /** getMyOrderPage — 조회 */
-    public OdOrderDto.PageResponse getMyOrderPage(OdOrderDto.Request req) {
+    public BasePage<OdOrderDto.Item> getMyOrderPage(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         PageHelper.addPaging(req);
-        OdOrderDto.PageResponse res = odOrderRepository.selectPageData(req);
+        BasePage<OdOrderDto.Item> res = odOrderRepository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

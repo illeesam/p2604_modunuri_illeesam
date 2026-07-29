@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherLineDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucherLine;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StErpVoucherLineRepository;
@@ -67,7 +68,7 @@ public class StErpVoucherLineService {
     }
 
     /* ERP 전표 상세 페이지조회 */
-    public StErpVoucherLineDto.PageResponse getPageData(StErpVoucherLineDto.Request req) {
+    public BasePage<StErpVoucherLineDto.Item> getPageData(StErpVoucherLineDto.Request req) {
         PageHelper.addPaging(req);
         return stErpVoucherLineRepository.selectPageData(req);
     }

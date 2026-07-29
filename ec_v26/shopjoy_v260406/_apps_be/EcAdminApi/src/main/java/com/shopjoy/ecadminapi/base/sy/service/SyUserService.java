@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.base.sy.repository.SyUserRepository;
@@ -70,7 +71,7 @@ public class SyUserService {
     }
 
     /** getPageData — 페이징조회 (QueryDSL Request → Repository 호출) */
-    public SyUserDto.PageResponse getPageData(SyUserDto.Request req) {
+    public BasePage<SyUserDto.Item> getPageData(SyUserDto.Request req) {
         PageHelper.addPaging(req);
         return syUserRepository.selectPageData(req);
     }

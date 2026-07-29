@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyTemplate;
 import com.shopjoy.ecadminapi.base.sy.service.SyTemplateService;
@@ -24,7 +25,7 @@ public class BoSyTemplateService {
     /* 목록조회 */
     public List<SyTemplateDto.Item> getList(SyTemplateDto.Request req) { return syTemplateService.getList(req); }
     /* 페이지조회 */
-    public SyTemplateDto.PageResponse getPageData(SyTemplateDto.Request req) { return syTemplateService.getPageData(req); }
+    public BasePage<SyTemplateDto.Item> getPageData(SyTemplateDto.Request req) { return syTemplateService.getPageData(req); }
 
     @Transactional public SyTemplate create(SyTemplate body) { return syTemplateService.create(body); }
     @Transactional public SyTemplate update(String id, SyTemplate body) { return syTemplateService.update(id, body); }

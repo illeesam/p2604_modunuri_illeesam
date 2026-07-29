@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.data.dto;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -58,6 +57,4 @@ public class CmChattMsgDto {
         private String senderTypeCd;
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

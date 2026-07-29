@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -129,7 +130,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
 
     /* 회원 로그인 로그 페이지조회 */
     @Override
-    public MbhMemberLoginLogDto.PageResponse selectPageData(MbhMemberLoginLogDto.Request search) {
+    public BasePage<MbhMemberLoginLogDto.Item> selectPageData(MbhMemberLoginLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -161,7 +162,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                 .where(wheres)
                 .fetchOne();
 
-        MbhMemberLoginLogDto.PageResponse res = new MbhMemberLoginLogDto.PageResponse();
+        BasePage<MbhMemberLoginLogDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "memberId,loginId" (Entity 필드명) */

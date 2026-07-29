@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleCloseDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
 import com.shopjoy.ecadminapi.base.ec.st.service.StSettleCloseService;
@@ -33,7 +34,7 @@ public class StSettleCloseController {
 
     /* 정산 마감 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<StSettleCloseDto.PageResponse>> page(@Valid @ModelAttribute StSettleCloseDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<StSettleCloseDto.Item>>> page(@Valid @ModelAttribute StSettleCloseDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

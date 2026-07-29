@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdViewLogDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdViewLog;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdhProdViewLogRepository;
@@ -67,7 +68,7 @@ public class PdhProdViewLogService {
     }
 
     /* 상품 조회 로그 페이지조회 */
-    public PdhProdViewLogDto.PageResponse getPageData(PdhProdViewLogDto.Request req) {
+    public BasePage<PdhProdViewLogDto.Item> getPageData(PdhProdViewLogDto.Request req) {
         PageHelper.addPaging(req);
         return pdhProdViewLogRepository.selectPageData(req);
     }

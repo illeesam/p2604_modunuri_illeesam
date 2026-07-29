@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.zz.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSample2Dto;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample2;
 
@@ -16,7 +17,7 @@ public interface QZzSample2Repository {
     List<ZzSample2Dto.Item> selectList(ZzSample2Dto.Request search);
 
     /** 페이지 목록 */
-    ZzSample2Dto.PageResponse selectPageData(ZzSample2Dto.Request search);
+    BasePage<ZzSample2Dto.Item> selectPageData(ZzSample2Dto.Request search);
 
     int updateSelective(ZzSample2 entity);
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGift;
 
@@ -16,7 +17,7 @@ public interface QPmGiftRepository {
     List<PmGiftDto.Item> selectList(PmGiftDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    PmGiftDto.PageResponse selectPageData(PmGiftDto.Request search);
+    BasePage<PmGiftDto.Item> selectPageData(PmGiftDto.Request search);
 
     int updateSelective(PmGift entity);
 }

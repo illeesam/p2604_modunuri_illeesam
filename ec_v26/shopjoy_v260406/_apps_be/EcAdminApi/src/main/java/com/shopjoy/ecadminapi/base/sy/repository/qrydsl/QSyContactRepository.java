@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 
@@ -10,6 +11,6 @@ import java.util.Optional;
 public interface QSyContactRepository {
     Optional<SyContactDto.Item> selectById(String contactId);
     List<SyContactDto.Item> selectList(SyContactDto.Request search);
-    SyContactDto.PageResponse selectPageData(SyContactDto.Request search);
+    BasePage<SyContactDto.Item> selectPageData(SyContactDto.Request search);
     int updateSelective(SyContact entity);
 }

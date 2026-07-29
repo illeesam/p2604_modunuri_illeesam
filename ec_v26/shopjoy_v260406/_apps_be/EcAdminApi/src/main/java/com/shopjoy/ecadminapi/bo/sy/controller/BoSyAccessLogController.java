@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyAccessLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -26,7 +27,7 @@ public class BoSyAccessLogController {
 
     /** page — 페이징조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyhAccessLogDto.PageResponse>> page(@Valid @ModelAttribute SyhAccessLogDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyhAccessLogDto.Item>>> page(@Valid @ModelAttribute SyhAccessLogDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyAccessLogService.getPageData(req)));
     }
 

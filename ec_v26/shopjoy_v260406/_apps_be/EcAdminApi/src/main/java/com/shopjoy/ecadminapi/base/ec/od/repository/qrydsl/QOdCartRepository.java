@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
 
@@ -13,7 +14,7 @@ public interface QOdCartRepository {
 
     List<OdCartDto.Item> selectList(OdCartDto.Request search);
 
-    OdCartDto.PageResponse selectPageData(OdCartDto.Request search);
+    BasePage<OdCartDto.Item> selectPageData(OdCartDto.Request search);
 
     int updateSelective(OdCart entity);
 }

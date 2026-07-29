@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.base.sy.service.SyNoticeService;
@@ -24,7 +25,7 @@ public class BoCmNoticeService {
     /* 목록조회 */
     public List<SyNoticeDto.Item> getList(SyNoticeDto.Request req) { return syNoticeService.getList(req); }
     /* 페이지조회 */
-    public SyNoticeDto.PageResponse getPageData(SyNoticeDto.Request req) { return syNoticeService.getPageData(req); }
+    public BasePage<SyNoticeDto.Item> getPageData(SyNoticeDto.Request req) { return syNoticeService.getPageData(req); }
 
     @Transactional public SyNotice create(SyNotice body) { return syNoticeService.create(body); }
     @Transactional public SyNotice update(String id, SyNotice body) { return syNoticeService.update(id, body); }

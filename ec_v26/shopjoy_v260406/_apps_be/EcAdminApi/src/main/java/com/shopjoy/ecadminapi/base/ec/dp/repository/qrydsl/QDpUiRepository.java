@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpUiDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpUi;
 
@@ -14,7 +15,7 @@ public interface QDpUiRepository {
 
     List<DpUiDto.Item> selectList(DpUiDto.Request search);
 
-    DpUiDto.PageResponse selectPageData(DpUiDto.Request search);
+    BasePage<DpUiDto.Item> selectPageData(DpUiDto.Request search);
 
     int updateSelective(DpUi entity);
     /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).

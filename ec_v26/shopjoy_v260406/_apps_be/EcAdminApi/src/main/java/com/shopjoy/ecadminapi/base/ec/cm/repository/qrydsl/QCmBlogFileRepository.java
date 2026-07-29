@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogFile;
 
@@ -13,7 +14,7 @@ public interface QCmBlogFileRepository {
 
     List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search);
 
-    CmBlogFileDto.PageResponse selectPageData(CmBlogFileDto.Request search);
+    BasePage<CmBlogFileDto.Item> selectPageData(CmBlogFileDto.Request search);
 
     int updateSelective(CmBlogFile entity);
 }

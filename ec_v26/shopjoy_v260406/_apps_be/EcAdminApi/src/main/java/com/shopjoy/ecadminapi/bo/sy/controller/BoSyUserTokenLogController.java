@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyUserTokenLogService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -34,7 +35,7 @@ public class BoSyUserTokenLogController {
 
     /** page — 페이징조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyhUserTokenLogDto.PageResponse>> page(@Valid @ModelAttribute SyhUserTokenLogDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyhUserTokenLogDto.Item>>> page(@Valid @ModelAttribute SyhUserTokenLogDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyUserTokenLogService.getPageData(req)));
     }
 

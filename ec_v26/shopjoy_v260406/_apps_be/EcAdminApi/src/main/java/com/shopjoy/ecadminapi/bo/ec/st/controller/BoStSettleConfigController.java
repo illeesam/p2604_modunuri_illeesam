@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleConfig;
 import com.shopjoy.ecadminapi.bo.ec.st.service.BoStSettleConfigService;
@@ -27,7 +28,7 @@ public class BoStSettleConfigController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<StSettleConfigDto.PageResponse>> page(@Valid @ModelAttribute StSettleConfigDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<StSettleConfigDto.Item>>> page(@Valid @ModelAttribute StSettleConfigDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleConfigService.getPageData(req)));
     }
 

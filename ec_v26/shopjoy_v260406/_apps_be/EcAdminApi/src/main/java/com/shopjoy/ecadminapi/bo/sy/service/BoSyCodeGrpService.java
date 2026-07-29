@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCodeGrp;
 import com.shopjoy.ecadminapi.base.sy.service.SyCodeGrpService;
@@ -24,7 +25,7 @@ public class BoSyCodeGrpService {
     /* 목록조회 */
     public List<SyCodeGrpDto.Item> getList(SyCodeGrpDto.Request req) { return syCodeGrpService.getList(req); }
     /* 페이지조회 */
-    public SyCodeGrpDto.PageResponse getPageData(SyCodeGrpDto.Request req) { return syCodeGrpService.getPageData(req); }
+    public BasePage<SyCodeGrpDto.Item> getPageData(SyCodeGrpDto.Request req) { return syCodeGrpService.getPageData(req); }
 
     @Transactional public SyCodeGrp create(SyCodeGrp body) { return syCodeGrpService.create(body); }
     @Transactional public SyCodeGrp update(String id, SyCodeGrp body) { return syCodeGrpService.update(id, body); }

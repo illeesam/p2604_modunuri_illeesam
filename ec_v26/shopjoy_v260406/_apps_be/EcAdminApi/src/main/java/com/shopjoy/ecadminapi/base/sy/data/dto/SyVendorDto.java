@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.sy.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -61,6 +60,4 @@ public class SyVendorDto {
         private String siteNm;
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberGradeRepository;
@@ -67,7 +68,7 @@ public class MbMemberGradeService {
     }
 
     /* 회원 등급 페이지조회 */
-    public MbMemberGradeDto.PageResponse getPageData(MbMemberGradeDto.Request req) {
+    public BasePage<MbMemberGradeDto.Item> getPageData(MbMemberGradeDto.Request req) {
         PageHelper.addPaging(req);
         return mbMemberGradeRepository.selectPageData(req);
     }

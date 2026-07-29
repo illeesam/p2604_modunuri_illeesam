@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.service.SyBatchService;
@@ -24,7 +25,7 @@ public class BoSyBatchService {
     /* 목록조회 */
     public List<SyBatchDto.Item> getList(SyBatchDto.Request req) { return syBatchService.getList(req); }
     /* 페이지조회 */
-    public SyBatchDto.PageResponse getPageData(SyBatchDto.Request req) { return syBatchService.getPageData(req); }
+    public BasePage<SyBatchDto.Item> getPageData(SyBatchDto.Request req) { return syBatchService.getPageData(req); }
 
     @Transactional public SyBatch create(SyBatch body) { return syBatchService.create(body); }
     @Transactional public SyBatch update(String id, SyBatch body) { return syBatchService.update(id, body); }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchLog;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhBatchLogRepository;
@@ -28,7 +29,7 @@ public class SyhBatchLogService {
     }
 
     /** getPageData — 페이징조회 */
-    public SyhBatchLogDto.PageResponse getPageData(SyhBatchLogDto.Request req) {
+    public BasePage<SyhBatchLogDto.Item> getPageData(SyhBatchLogDto.Request req) {
         PageHelper.addPaging(req);
         return syhBatchLogRepository.selectPageData(req);
     }

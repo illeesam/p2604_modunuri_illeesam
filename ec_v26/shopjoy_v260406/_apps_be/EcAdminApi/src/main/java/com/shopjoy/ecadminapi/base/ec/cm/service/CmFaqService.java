@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmFaq;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmFaqRepository;
@@ -68,7 +69,7 @@ public class CmFaqService {
     }
 
     /* FAQ 페이지조회 */
-    public CmFaqDto.PageResponse getPageData(CmFaqDto.Request req) {
+    public BasePage<CmFaqDto.Item> getPageData(CmFaqDto.Request req) {
         PageHelper.addPaging(req);
         return cmFaqRepository.selectPageData(req);
     }

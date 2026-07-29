@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -121,7 +122,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 
     /* 배치 페이지조회 */
     @Override
-    public SyBatchDto.PageResponse selectPageData(SyBatchDto.Request search) {
+    public BasePage<SyBatchDto.Item> selectPageData(SyBatchDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -155,7 +156,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 .where(wheres)
                 .fetchOne();
 
-        SyBatchDto.PageResponse res = new SyBatchDto.PageResponse();
+        BasePage<SyBatchDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

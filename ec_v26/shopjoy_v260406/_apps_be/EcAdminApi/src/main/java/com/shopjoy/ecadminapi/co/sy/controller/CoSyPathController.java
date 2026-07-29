@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPathDto;
 import com.shopjoy.ecadminapi.base.sy.service.SyPathService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -36,7 +37,7 @@ public class CoSyPathController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyPathDto.PageResponse>> page(@Valid @ModelAttribute SyPathDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyPathDto.Item>>> page(@Valid @ModelAttribute SyPathDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(syPathService.getPageData(req)));
     }
 }

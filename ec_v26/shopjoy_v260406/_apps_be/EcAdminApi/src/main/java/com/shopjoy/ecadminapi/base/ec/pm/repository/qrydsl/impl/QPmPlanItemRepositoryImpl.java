@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -101,7 +102,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
     /* 프로모션 플랜 아이템 페이지조회 */
     @Override
-    public PmPlanItemDto.PageResponse selectPageData(PmPlanItemDto.Request search) {
+    public BasePage<PmPlanItemDto.Item> selectPageData(PmPlanItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -133,7 +134,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                 .where(wheres)
                 .fetchOne();
 
-        PmPlanItemDto.PageResponse res = new PmPlanItemDto.PageResponse();
+        BasePage<PmPlanItemDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 
@@ -16,7 +17,7 @@ public interface QMbMemberRepository {
     List<MbMemberDto.Item> selectList(MbMemberDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    MbMemberDto.PageResponse selectPageData(MbMemberDto.Request search);
+    BasePage<MbMemberDto.Item> selectPageData(MbMemberDto.Request search);
 
     int updateSelective(MbMember entity);
 }

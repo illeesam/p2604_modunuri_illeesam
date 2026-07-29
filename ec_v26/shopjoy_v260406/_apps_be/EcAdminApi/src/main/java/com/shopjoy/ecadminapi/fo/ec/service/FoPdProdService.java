@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.*;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
@@ -80,9 +81,9 @@ public class FoPdProdService {
     }
 
     /** getPageData — 조회 */
-    public PdProdDto.PageResponse getPageData(PdProdDto.Request req) {
+    public BasePage<PdProdDto.Item> getPageData(PdProdDto.Request req) {
         SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
-        PdProdDto.PageResponse res = pdProdService.getPageData(req);
+        BasePage<PdProdDto.Item> res = pdProdService.getPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }
@@ -200,7 +201,7 @@ public class FoPdProdService {
         attachReq.setProdId(prodId);
         result.put("attachImages", pdReviewAttachService.getList(attachReq));
 
-        PdReviewDto.PageResponse page = pdReviewService.getPageData(req);
+        BasePage<PdReviewDto.Item> page = pdReviewService.getPageData(req);
         result.put("reviewPage", page);
         return result;
     }
@@ -223,7 +224,7 @@ public class FoPdProdService {
         req.setProdId(prodId);
 
         Map<String, Object> result = new LinkedHashMap<>();
-        PdProdQnaDto.PageResponse page = pdProdQnaService.getPageData(req);
+        BasePage<PdProdQnaDto.Item> page = pdProdQnaService.getPageData(req);
         result.put("qnaPage", page);
         return result;
     }

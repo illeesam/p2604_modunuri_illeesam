@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftCondDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftCond;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmGiftCondService;
@@ -33,7 +34,7 @@ public class PmGiftCondController {
 
     /* 사은품 지급 조건 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmGiftCondDto.PageResponse>> page(@Valid @ModelAttribute PmGiftCondDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmGiftCondDto.Item>>> page(@Valid @ModelAttribute PmGiftCondDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

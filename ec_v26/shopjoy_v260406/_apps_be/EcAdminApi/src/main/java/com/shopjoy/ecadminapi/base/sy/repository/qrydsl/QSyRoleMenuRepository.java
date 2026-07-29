@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
 
@@ -13,7 +14,7 @@ public interface QSyRoleMenuRepository {
 
     List<SyRoleMenuDto.Item> selectList(SyRoleMenuDto.Request search);
 
-    SyRoleMenuDto.PageResponse selectPageData(SyRoleMenuDto.Request search);
+    BasePage<SyRoleMenuDto.Item> selectPageData(SyRoleMenuDto.Request search);
 
     int updateSelective(SyRoleMenu entity);
 }

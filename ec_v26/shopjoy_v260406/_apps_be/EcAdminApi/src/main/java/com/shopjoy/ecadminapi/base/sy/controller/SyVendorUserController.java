@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUser;
 import com.shopjoy.ecadminapi.base.sy.service.SyVendorUserService;
@@ -33,7 +34,7 @@ public class SyVendorUserController {
 
     /* 업체 사용자 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyVendorUserDto.PageResponse>> page(@Valid @ModelAttribute SyVendorUserDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyVendorUserDto.Item>>> page(@Valid @ModelAttribute SyVendorUserDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

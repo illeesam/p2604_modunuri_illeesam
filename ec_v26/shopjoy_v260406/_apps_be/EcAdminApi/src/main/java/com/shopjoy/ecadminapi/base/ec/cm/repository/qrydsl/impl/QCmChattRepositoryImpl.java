@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -97,7 +98,7 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
     }
 
     @Override
-    public CmChattDto.PageResponse selectPageData(CmChattDto.Request search) {
+    public BasePage<CmChattDto.Item> selectPageData(CmChattDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
@@ -125,7 +126,7 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
                 .where(wheres)
                 .fetchOne();
 
-        CmChattDto.PageResponse res = new CmChattDto.PageResponse();
+        BasePage<CmChattDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

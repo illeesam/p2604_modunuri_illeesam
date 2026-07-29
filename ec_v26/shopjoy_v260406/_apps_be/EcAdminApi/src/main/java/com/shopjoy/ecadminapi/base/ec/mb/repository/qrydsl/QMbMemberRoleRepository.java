@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberRoleDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberRole;
 
@@ -13,7 +14,7 @@ public interface QMbMemberRoleRepository {
 
     List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request search);
 
-    MbMemberRoleDto.PageResponse selectPageData(MbMemberRoleDto.Request search);
+    BasePage<MbMemberRoleDto.Item> selectPageData(MbMemberRoleDto.Request search);
 
     int updateSelective(MbMemberRole entity);
 }

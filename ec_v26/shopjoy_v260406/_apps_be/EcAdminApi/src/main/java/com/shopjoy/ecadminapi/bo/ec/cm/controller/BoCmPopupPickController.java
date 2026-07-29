@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPopupDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopupItem;
@@ -76,7 +77,7 @@ public class BoCmPopupPickController {
     }
 
     @GetMapping("/popup/page")
-    public ResponseEntity<ApiResponse<CmPopupDto.PageResponse>> popupPage(
+    public ResponseEntity<ApiResponse<BasePage<CmPopup>>> popupPage(
             @Valid @ModelAttribute CmPopupDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(cmPopupPickService.getPopupPage(req)));
     }

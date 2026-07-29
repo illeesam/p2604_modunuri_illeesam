@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
@@ -24,7 +25,7 @@ public class BoSyAttachService {
     /* 목록조회 */
     public List<SyAttachDto.Item> getList(SyAttachDto.Request req) { return syAttachService.getList(req); }
     /* 페이지조회 */
-    public SyAttachDto.PageResponse getPageData(SyAttachDto.Request req) { return syAttachService.getPageData(req); }
+    public BasePage<SyAttachDto.Item> getPageData(SyAttachDto.Request req) { return syAttachService.getPageData(req); }
 
     @Transactional public SyAttach create(SyAttach body) { return syAttachService.create(body); }
     @Transactional public SyAttach update(String id, SyAttach body) { return syAttachService.update(id, body); }

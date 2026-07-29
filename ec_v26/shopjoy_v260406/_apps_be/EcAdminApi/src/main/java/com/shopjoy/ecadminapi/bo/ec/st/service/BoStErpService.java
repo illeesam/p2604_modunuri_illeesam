@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.st.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher;
@@ -33,9 +34,9 @@ public class BoStErpService {
     /* 목록조회 */
     public List<StErpVoucherDto.Item> getList(StErpVoucherDto.Request req) { return stErpVoucherService.getList(req); }
     /* 페이지조회 */
-    public StErpVoucherDto.PageResponse getPageData(StErpVoucherDto.Request req) { return stErpVoucherService.getPageData(req); }
+    public BasePage<StErpVoucherDto.Item> getPageData(StErpVoucherDto.Request req) { return stErpVoucherService.getPageData(req); }
     /* getReconPageData */
-    public StReconDto.PageResponse getReconPageData(StReconDto.Request req) { return stReconService.getPageData(req); }
+    public BasePage<StReconDto.Item> getReconPageData(StReconDto.Request req) { return stReconService.getPageData(req); }
 
     /** ERP 전표 생성 — PENDING 상태로 신규 발행 */
     @Transactional

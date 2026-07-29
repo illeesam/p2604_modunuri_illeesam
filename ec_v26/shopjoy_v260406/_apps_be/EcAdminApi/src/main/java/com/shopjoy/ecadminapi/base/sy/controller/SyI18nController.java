@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
 import com.shopjoy.ecadminapi.base.sy.service.SyI18nService;
@@ -33,7 +34,7 @@ public class SyI18nController {
 
     /* 다국어 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyI18nDto.PageResponse>> page(@Valid @ModelAttribute SyI18nDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyI18nDto.Item>>> page(@Valid @ModelAttribute SyI18nDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

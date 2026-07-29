@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlan;
@@ -31,7 +32,7 @@ public class BoPmPlanController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmPlanDto.PageResponse>> page(@Valid @ModelAttribute PmPlanDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmPlanDto.Item>>> page(@Valid @ModelAttribute PmPlanDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPmPlanService.getPageData(req)));
     }
 

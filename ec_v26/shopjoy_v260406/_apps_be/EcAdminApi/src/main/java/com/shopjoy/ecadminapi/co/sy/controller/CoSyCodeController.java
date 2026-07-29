@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.service.SyCodeService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -35,7 +36,7 @@ public class CoSyCodeController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyCodeDto.PageResponse>> page(@Valid @ModelAttribute SyCodeDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyCodeDto.Item>>> page(@Valid @ModelAttribute SyCodeDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(syCodeService.getPageData(req)));
     }
 }

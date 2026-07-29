@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyAlarmService;
@@ -36,7 +37,7 @@ public class BoSyAlarmController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyAlarmDto.PageResponse>> page(@Valid @ModelAttribute SyAlarmDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyAlarmDto.Item>>> page(@Valid @ModelAttribute SyAlarmDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyAlarmService.getPageData(req)));
     }
 

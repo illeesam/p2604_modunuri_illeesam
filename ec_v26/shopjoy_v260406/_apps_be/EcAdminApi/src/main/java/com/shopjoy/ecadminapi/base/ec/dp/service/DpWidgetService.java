@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.dp.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidget;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetRepository;
@@ -67,7 +68,7 @@ public class DpWidgetService {
     }
 
     /* 전시 위젯 페이지조회 */
-    public DpWidgetDto.PageResponse getPageData(DpWidgetDto.Request req) {
+    public BasePage<DpWidgetDto.Item> getPageData(DpWidgetDto.Request req) {
         PageHelper.addPaging(req);
         return dpWidgetRepository.selectPageData(req);
     }

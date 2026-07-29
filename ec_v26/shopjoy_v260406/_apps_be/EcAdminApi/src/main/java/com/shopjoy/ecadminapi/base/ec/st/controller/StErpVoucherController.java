@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher;
 import com.shopjoy.ecadminapi.base.ec.st.service.StErpVoucherService;
@@ -33,7 +34,7 @@ public class StErpVoucherController {
 
     /* ERP 전표 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<StErpVoucherDto.PageResponse>> page(@Valid @ModelAttribute StErpVoucherDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<StErpVoucherDto.Item>>> page(@Valid @ModelAttribute StErpVoucherDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

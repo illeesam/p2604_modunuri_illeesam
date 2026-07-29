@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserTokenLog;
 
@@ -16,7 +17,7 @@ public interface QSyhUserTokenLogRepository {
     List<SyhUserTokenLogDto.Item> selectList(SyhUserTokenLogDto.Request search);
 
     /** 페이지 목록 */
-    SyhUserTokenLogDto.PageResponse selectPageData(SyhUserTokenLogDto.Request search);
+    BasePage<SyhUserTokenLogDto.Item> selectPageData(SyhUserTokenLogDto.Request search);
 
     int updateSelective(SyhUserTokenLog entity);
 }

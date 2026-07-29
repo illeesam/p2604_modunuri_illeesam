@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
@@ -67,7 +68,7 @@ public class SyPropService {
     }
 
     /* 시스템 속성 페이지조회 */
-    public SyPropDto.PageResponse getPageData(SyPropDto.Request req) {
+    public BasePage<SyPropDto.Item> getPageData(SyPropDto.Request req) {
         PageHelper.addPaging(req);
         return syPropRepository.selectPageData(req);
     }

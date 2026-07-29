@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChatt;
 
@@ -13,7 +14,7 @@ public interface QCmChattRepository {
 
     List<CmChattDto.Item> selectList(CmChattDto.Request search);
 
-    CmChattDto.PageResponse selectPageData(CmChattDto.Request search);
+    BasePage<CmChattDto.Item> selectPageData(CmChattDto.Request search);
 
     int updateSelective(CmChatt entity);
 }

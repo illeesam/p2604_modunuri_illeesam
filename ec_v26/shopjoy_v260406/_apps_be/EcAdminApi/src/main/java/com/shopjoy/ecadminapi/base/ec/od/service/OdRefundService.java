@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefund;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdRefundRepository;
@@ -67,7 +68,7 @@ public class OdRefundService {
     }
 
     /* 환불 페이지조회 */
-    public OdRefundDto.PageResponse getPageData(OdRefundDto.Request req) {
+    public BasePage<OdRefundDto.Item> getPageData(OdRefundDto.Request req) {
         PageHelper.addPaging(req);
         return odRefundRepository.selectPageData(req);
     }

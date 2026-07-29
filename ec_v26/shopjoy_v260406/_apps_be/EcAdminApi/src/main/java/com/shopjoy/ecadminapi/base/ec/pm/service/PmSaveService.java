@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmSaveRepository;
@@ -67,7 +68,7 @@ public class PmSaveService {
     }
 
     /* 적립금 페이지조회 */
-    public PmSaveDto.PageResponse getPageData(PmSaveDto.Request req) {
+    public BasePage<PmSaveDto.Item> getPageData(PmSaveDto.Request req) {
         PageHelper.addPaging(req);
         return pmSaveRepository.selectPageData(req);
     }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlanItem;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmPlanItemService;
@@ -33,7 +34,7 @@ public class PmPlanItemController {
 
     /* 프로모션 플랜 아이템 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmPlanItemDto.PageResponse>> page(@Valid @ModelAttribute PmPlanItemDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmPlanItemDto.Item>>> page(@Valid @ModelAttribute PmPlanItemDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

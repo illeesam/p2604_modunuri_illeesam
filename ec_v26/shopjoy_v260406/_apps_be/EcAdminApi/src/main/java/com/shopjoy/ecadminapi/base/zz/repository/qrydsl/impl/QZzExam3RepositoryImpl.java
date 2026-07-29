@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.zz.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -97,7 +98,7 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
     /* zz_exam3 페이지조회 */
     @Override
-    public ZzExam3Dto.PageResponse selectPageData(ZzExam3Dto.Request search) {
+    public BasePage<ZzExam3Dto.Item> selectPageData(ZzExam3Dto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -130,7 +131,7 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
                 .where(wheres)
                 .fetchOne();
 
-        ZzExam3Dto.PageResponse res = new ZzExam3Dto.PageResponse();
+        BasePage<ZzExam3Dto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

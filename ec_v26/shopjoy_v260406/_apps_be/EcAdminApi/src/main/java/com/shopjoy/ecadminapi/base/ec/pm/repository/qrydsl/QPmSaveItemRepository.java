@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveItem;
 
@@ -13,7 +14,7 @@ public interface QPmSaveItemRepository {
 
     List<PmSaveItemDto.Item> selectList(PmSaveItemDto.Request search);
 
-    PmSaveItemDto.PageResponse selectPageData(PmSaveItemDto.Request search);
+    BasePage<PmSaveItemDto.Item> selectPageData(PmSaveItemDto.Request search);
 
     int updateSelective(PmSaveItem entity);
 }

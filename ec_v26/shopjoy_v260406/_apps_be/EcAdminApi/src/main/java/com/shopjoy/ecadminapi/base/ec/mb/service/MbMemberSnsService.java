@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberSnsDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberSns;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberSnsRepository;
@@ -67,7 +68,7 @@ public class MbMemberSnsService {
     }
 
     /* SNS 연동 회원 페이지조회 */
-    public MbMemberSnsDto.PageResponse getPageData(MbMemberSnsDto.Request req) {
+    public BasePage<MbMemberSnsDto.Item> getPageData(MbMemberSnsDto.Request req) {
         PageHelper.addPaging(req);
         return mbMemberSnsRepository.selectPageData(req);
     }

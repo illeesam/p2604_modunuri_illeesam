@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -126,7 +127,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
     /* API 로그 페이지조회 */
     @Override
-    public SyhApiLogDto.PageResponse selectPageData(SyhApiLogDto.Request search) {
+    public BasePage<SyhApiLogDto.Item> selectPageData(SyhApiLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -159,7 +160,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                 .where(wheres)
                 .fetchOne();
 
-        SyhApiLogDto.PageResponse res = new SyhApiLogDto.PageResponse();
+        BasePage<SyhApiLogDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

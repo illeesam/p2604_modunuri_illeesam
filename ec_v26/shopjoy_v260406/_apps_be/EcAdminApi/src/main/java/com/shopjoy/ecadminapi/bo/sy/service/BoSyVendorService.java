@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
 import com.shopjoy.ecadminapi.base.sy.service.SyVendorService;
@@ -24,7 +25,7 @@ public class BoSyVendorService {
     /* 목록조회 */
     public List<SyVendorDto.Item> getList(SyVendorDto.Request req) { return syVendorService.getList(req); }
     /* 페이지조회 */
-    public SyVendorDto.PageResponse getPageData(SyVendorDto.Request req) { return syVendorService.getPageData(req); }
+    public BasePage<SyVendorDto.Item> getPageData(SyVendorDto.Request req) { return syVendorService.getPageData(req); }
 
     @Transactional public SyVendor create(SyVendor body) { return syVendorService.create(body); }
     @Transactional public SyVendor update(String id, SyVendor body) { return syVendorService.update(id, body); }

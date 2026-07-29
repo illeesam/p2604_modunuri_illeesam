@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftIssueDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmGiftIssueService;
@@ -33,7 +34,7 @@ public class PmGiftIssueController {
 
     /* 사은품 발행 이력 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmGiftIssueDto.PageResponse>> page(@Valid @ModelAttribute PmGiftIssueDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmGiftIssueDto.Item>>> page(@Valid @ModelAttribute PmGiftIssueDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

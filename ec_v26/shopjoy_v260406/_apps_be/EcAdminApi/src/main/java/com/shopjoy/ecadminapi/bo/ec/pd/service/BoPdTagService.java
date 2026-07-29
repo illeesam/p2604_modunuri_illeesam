@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdTagDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdTagService;
@@ -24,7 +25,7 @@ public class BoPdTagService {
     /* 목록조회 */
     public List<PdTagDto.Item> getList(PdTagDto.Request req) { return pdTagService.getList(req); }
     /* 페이지조회 */
-    public PdTagDto.PageResponse getPageData(PdTagDto.Request req) { return pdTagService.getPageData(req); }
+    public BasePage<PdTagDto.Item> getPageData(PdTagDto.Request req) { return pdTagService.getPageData(req); }
 
     @Transactional public PdTag create(PdTag body) { return pdTagService.create(body); }
     @Transactional public PdTag update(String id, PdTag body) { return pdTagService.update(id, body); }

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 
@@ -17,7 +18,7 @@ public interface QSyAlarmRepository {
     List<SyAlarmDto.Item> selectList(SyAlarmDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    SyAlarmDto.PageResponse selectPageData(SyAlarmDto.Request search);
+    BasePage<SyAlarmDto.Item> selectPageData(SyAlarmDto.Request search);
 
     int updateSelective(SyAlarm entity);
     /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachGrpDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttachGrp;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachGrpRepository;
@@ -67,7 +68,7 @@ public class SyAttachGrpService {
     }
 
     /* 첨부파일 그룹 페이지조회 */
-    public SyAttachGrpDto.PageResponse getPageData(SyAttachGrpDto.Request req) {
+    public BasePage<SyAttachGrpDto.Item> getPageData(SyAttachGrpDto.Request req) {
         PageHelper.addPaging(req);
         return syAttachGrpRepository.selectPageData(req);
     }

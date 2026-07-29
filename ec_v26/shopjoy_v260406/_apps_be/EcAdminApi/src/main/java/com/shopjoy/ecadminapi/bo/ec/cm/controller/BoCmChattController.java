@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMemberDto;
@@ -38,7 +39,7 @@ public class BoCmChattController {
     }
 
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<CmChattDto.PageResponse>> page(@Valid @ModelAttribute CmChattDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmChattDto.Item>>> page(@Valid @ModelAttribute CmChattDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boCmChattService.getPageData(req)));
     }
 

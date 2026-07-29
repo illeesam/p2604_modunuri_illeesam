@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUserRole;
 import com.shopjoy.ecadminapi.base.sy.service.SyVendorUserRoleService;
@@ -24,7 +25,7 @@ public class BoSyVendorUserRoleService {
     /* 목록조회 */
     public List<SyVendorUserRoleDto.Item> getList(SyVendorUserRoleDto.Request req) { return syVendorUserRoleService.getList(req); }
     /* 페이지조회 */
-    public SyVendorUserRoleDto.PageResponse getPageData(SyVendorUserRoleDto.Request req) { return syVendorUserRoleService.getPageData(req); }
+    public BasePage<SyVendorUserRoleDto.Item> getPageData(SyVendorUserRoleDto.Request req) { return syVendorUserRoleService.getPageData(req); }
 
     @Transactional public SyVendorUserRole create(SyVendorUserRole body) { return syVendorUserRoleService.create(body); }
     @Transactional public SyVendorUserRole update(String id, SyVendorUserRole body) { return syVendorUserRoleService.update(id, body); }

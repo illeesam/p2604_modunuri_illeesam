@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmDiscntRepository;
@@ -35,7 +36,7 @@ public class BoPmDiscntService {
     /* 목록조회 */
     public List<PmDiscntDto.Item> getList(PmDiscntDto.Request req) { return pmDiscntService.getList(req); }
     /* 페이지조회 */
-    public PmDiscntDto.PageResponse getPageData(PmDiscntDto.Request req) { return pmDiscntService.getPageData(req); }
+    public BasePage<PmDiscntDto.Item> getPageData(PmDiscntDto.Request req) { return pmDiscntService.getPageData(req); }
 
     @Transactional public PmDiscnt create(PmDiscnt body) { return pmDiscntService.create(body); }
     @Transactional public PmDiscnt update(String id, PmDiscnt body) { return pmDiscntService.update(id, body); }

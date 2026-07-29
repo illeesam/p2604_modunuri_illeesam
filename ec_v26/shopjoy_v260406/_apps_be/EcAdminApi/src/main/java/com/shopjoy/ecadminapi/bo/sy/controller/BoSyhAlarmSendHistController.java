@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyhAlarmSendHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -21,7 +22,7 @@ public class BoSyhAlarmSendHistController {
     }
 
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<SyhAlarmSendHistDto.PageResponse>> page(@Valid @ModelAttribute SyhAlarmSendHistDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<SyhAlarmSendHistDto.Item>>> page(@Valid @ModelAttribute SyhAlarmSendHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyhAlarmSendHistService.getPageData(req)));
     }
 }

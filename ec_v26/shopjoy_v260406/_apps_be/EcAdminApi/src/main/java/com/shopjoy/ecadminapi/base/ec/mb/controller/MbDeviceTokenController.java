@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.mb.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbDeviceToken;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbDeviceTokenService;
@@ -33,7 +34,7 @@ public class MbDeviceTokenController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<MbDeviceTokenDto.PageResponse>> page(@Valid @ModelAttribute MbDeviceTokenDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<MbDeviceTokenDto.Item>>> page(@Valid @ModelAttribute MbDeviceTokenDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

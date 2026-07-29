@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.base.sy.service.SyContactService;
@@ -24,7 +25,7 @@ public class BoSyContactService {
     /* 목록조회 */
     public List<SyContactDto.Item> getList(SyContactDto.Request req) { return syContactService.getList(req); }
     /* 페이지조회 */
-    public SyContactDto.PageResponse getPageData(SyContactDto.Request req) { return syContactService.getPageData(req); }
+    public BasePage<SyContactDto.Item> getPageData(SyContactDto.Request req) { return syContactService.getPageData(req); }
 
     @Transactional public SyContact create(SyContact body) { return syContactService.create(body); }
     @Transactional public SyContact update(String id, SyContact body) { return syContactService.update(id, body); }

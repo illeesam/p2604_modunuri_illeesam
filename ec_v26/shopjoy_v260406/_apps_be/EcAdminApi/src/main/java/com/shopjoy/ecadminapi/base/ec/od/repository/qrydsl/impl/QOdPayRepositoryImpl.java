@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -217,7 +218,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
 
     /* 결제 페이지조회 */
     @Override
-    public OdPayDto.PageResponse selectPageData(OdPayDto.Request search) {
+    public BasePage<OdPayDto.Item> selectPageData(OdPayDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -251,7 +252,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .where(wheres)
                 .fetchOne();
 
-        OdPayDto.PageResponse res = new OdPayDto.PageResponse();
+        BasePage<OdPayDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 

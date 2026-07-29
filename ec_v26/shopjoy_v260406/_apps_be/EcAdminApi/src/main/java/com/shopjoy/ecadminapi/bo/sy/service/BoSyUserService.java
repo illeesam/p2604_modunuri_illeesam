@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.base.sy.service.SyUserService;
@@ -31,7 +32,7 @@ public class BoSyUserService {
     }
 
     /** getPageData — 페이징조회 */
-    public SyUserDto.PageResponse getPageData(SyUserDto.Request req) {
+    public BasePage<SyUserDto.Item> getPageData(SyUserDto.Request req) {
         return syUserService.getPageData(req);
     }
 

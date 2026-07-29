@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimItemStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimItemStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdhClaimItemStatusHistService;
@@ -33,7 +34,7 @@ public class OdhClaimItemStatusHistController {
 
     /* 클레임 아이템 상태 이력 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<OdhClaimItemStatusHistDto.PageResponse>> page(@Valid @ModelAttribute OdhClaimItemStatusHistDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<OdhClaimItemStatusHistDto.Item>>> page(@Valid @ModelAttribute OdhClaimItemStatusHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

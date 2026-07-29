@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
@@ -33,7 +34,7 @@ public class BoPmSaveController {
 
     /** page — 페이지 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmSaveDto.PageResponse>> page(@Valid @ModelAttribute PmSaveDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmSaveDto.Item>>> page(@Valid @ModelAttribute PmSaveDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPmSaveService.getPageData(req)));
     }
 

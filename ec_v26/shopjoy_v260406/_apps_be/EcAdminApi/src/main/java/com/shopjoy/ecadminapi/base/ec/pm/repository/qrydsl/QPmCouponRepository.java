@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
 
@@ -13,7 +14,7 @@ public interface QPmCouponRepository {
 
     List<PmCouponDto.Item> selectList(PmCouponDto.Request search);
 
-    PmCouponDto.PageResponse selectPageData(PmCouponDto.Request search);
+    BasePage<PmCouponDto.Item> selectPageData(PmCouponDto.Request search);
 
     int updateSelective(PmCoupon entity);
 }

@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.zz.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -47,6 +46,4 @@ public class ZzExam3Dto {
         private ZzExam2Dto.Item exam2;   // 상위 exam2 단건
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 }

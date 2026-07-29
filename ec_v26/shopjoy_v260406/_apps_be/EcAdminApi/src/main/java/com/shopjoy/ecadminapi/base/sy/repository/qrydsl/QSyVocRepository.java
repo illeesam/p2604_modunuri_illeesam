@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVoc;
 
@@ -10,6 +11,6 @@ import java.util.Optional;
 public interface QSyVocRepository {
     Optional<SyVocDto.Item> selectById(String vocId);
     List<SyVocDto.Item> selectList(SyVocDto.Request search);
-    SyVocDto.PageResponse selectPageData(SyVocDto.Request search);
+    BasePage<SyVocDto.Item> selectPageData(SyVocDto.Request search);
     int updateSelective(SyVoc entity);
 }

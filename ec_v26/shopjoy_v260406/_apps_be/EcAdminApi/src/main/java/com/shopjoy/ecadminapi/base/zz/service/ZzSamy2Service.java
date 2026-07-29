@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.zz.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy1Dto;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy2Dto;
 import com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy3Dto;
@@ -46,12 +47,12 @@ public class ZzSamy2Service {
     }
 
     /** getPageData — 조회 (각 항목에 하위 samy3s 포함) */
-    public ZzSamy2Dto.PageResponse getPageData(ZzSamy2Dto.Request req) {
+    public BasePage<ZzSamy2Dto.Item> getPageData(ZzSamy2Dto.Request req) {
         PageHelper.addPaging(req);
         List<ZzSamy2Dto.Item> list = zzSamy2Mapper.selectPageData(req);
         _listFillRelations(list);
         long total = zzSamy2Mapper.selectPageCount(req);
-        ZzSamy2Dto.PageResponse res = new ZzSamy2Dto.PageResponse();
+        BasePage<ZzSamy2Dto.Item> res = new BasePage<>();
         return res.setPageInfo(list, total, PageHelper.getPageNo(), PageHelper.getPageSize(), req);
     }
 

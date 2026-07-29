@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StReconDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StRecon;
 import com.shopjoy.ecadminapi.base.ec.st.repository.StReconRepository;
@@ -67,7 +68,7 @@ public class StReconService {
     }
 
     /* 정산 대사(Reconciliation) 페이지조회 */
-    public StReconDto.PageResponse getPageData(StReconDto.Request req) {
+    public BasePage<StReconDto.Item> getPageData(StReconDto.Request req) {
         PageHelper.addPaging(req);
         return stReconRepository.selectPageData(req);
     }

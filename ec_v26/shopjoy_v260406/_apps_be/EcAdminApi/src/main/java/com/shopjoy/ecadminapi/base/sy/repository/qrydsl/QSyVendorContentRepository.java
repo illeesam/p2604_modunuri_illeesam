@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorContentDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorContent;
 
@@ -13,7 +14,7 @@ public interface QSyVendorContentRepository {
 
     List<SyVendorContentDto.Item> selectList(SyVendorContentDto.Request search);
 
-    SyVendorContentDto.PageResponse selectPageData(SyVendorContentDto.Request search);
+    BasePage<SyVendorContentDto.Item> selectPageData(SyVendorContentDto.Request search);
 
     int updateSelective(SyVendorContent entity);
 }

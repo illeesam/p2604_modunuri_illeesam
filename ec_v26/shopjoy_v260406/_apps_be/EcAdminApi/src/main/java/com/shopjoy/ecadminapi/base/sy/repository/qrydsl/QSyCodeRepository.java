@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCode;
 
@@ -13,7 +14,7 @@ public interface QSyCodeRepository {
 
     List<SyCodeDto.Item> selectList(SyCodeDto.Request search);
 
-    SyCodeDto.PageResponse selectPageData(SyCodeDto.Request search);
+    BasePage<SyCodeDto.Item> selectPageData(SyCodeDto.Request search);
 
     int updateSelective(SyCode entity);
 }

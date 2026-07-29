@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayMethodDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdPayMethod;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdPayMethodService;
@@ -33,7 +34,7 @@ public class OdPayMethodController {
 
     /* 결제수단 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<OdPayMethodDto.PageResponse>> page(@Valid @ModelAttribute OdPayMethodDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<OdPayMethodDto.Item>>> page(@Valid @ModelAttribute OdPayMethodDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

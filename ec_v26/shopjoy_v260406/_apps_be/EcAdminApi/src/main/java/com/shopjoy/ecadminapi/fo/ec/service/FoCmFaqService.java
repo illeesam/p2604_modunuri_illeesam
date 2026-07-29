@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmFaqService;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -32,7 +33,7 @@ public class FoCmFaqService {
     }
 
     /** getFaqsPage — 공개 FAQ 페이지 조회 (노출중·사이트별, pathId 자손 포함). 페이징 버튼 클릭마다 호출 */
-    public CmFaqDto.PageResponse getFaqsPage(CmFaqDto.Request req) {
+    public BasePage<CmFaqDto.Item> getFaqsPage(CmFaqDto.Request req) {
         if (req == null) req = new CmFaqDto.Request();
         SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         req.setUseYn("Y");   // 공개(노출중)만

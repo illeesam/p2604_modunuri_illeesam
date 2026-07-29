@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.dp.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
 import com.shopjoy.ecadminapi.bo.ec.dp.service.BoDpAreaService;
@@ -37,7 +38,7 @@ public class BoDpAreaController {
 
     /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<DpAreaDto.PageResponse>> page(@Valid @ModelAttribute DpAreaDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<DpAreaDto.Item>>> page(@Valid @ModelAttribute DpAreaDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boDpAreaService.getPageData(req)));
     }
 

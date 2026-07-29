@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogGoodDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogGood;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogGoodRepository;
@@ -67,7 +68,7 @@ public class CmBlogGoodService {
     }
 
     /* 게시물 좋아요 페이지조회 */
-    public CmBlogGoodDto.PageResponse getPageData(CmBlogGoodDto.Request req) {
+    public BasePage<CmBlogGoodDto.Item> getPageData(CmBlogGoodDto.Request req) {
         PageHelper.addPaging(req);
         return cmBlogGoodRepository.selectPageData(req);
     }

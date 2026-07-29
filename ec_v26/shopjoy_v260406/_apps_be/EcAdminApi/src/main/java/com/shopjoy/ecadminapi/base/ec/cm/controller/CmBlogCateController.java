@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogCate;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogCateService;
@@ -33,7 +34,7 @@ public class CmBlogCateController {
 
     /* 게시판 카테고리 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<CmBlogCateDto.PageResponse>> page(@Valid @ModelAttribute CmBlogCateDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmBlogCateDto.Item>>> page(@Valid @ModelAttribute CmBlogCateDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

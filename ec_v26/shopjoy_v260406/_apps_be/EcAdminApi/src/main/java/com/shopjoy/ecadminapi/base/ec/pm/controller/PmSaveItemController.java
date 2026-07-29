@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.controller;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveItem;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmSaveItemService;
@@ -33,7 +34,7 @@ public class PmSaveItemController {
 
     /* 적립금 대상 상품 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<PmSaveItemDto.PageResponse>> page(@Valid @ModelAttribute PmSaveItemDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<PmSaveItemDto.Item>>> page(@Valid @ModelAttribute PmSaveItemDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(service.getPageData(req)));
     }
 

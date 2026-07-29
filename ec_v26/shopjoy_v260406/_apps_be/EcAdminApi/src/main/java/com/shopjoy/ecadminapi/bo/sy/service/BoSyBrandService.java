@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBrand;
 import com.shopjoy.ecadminapi.base.sy.service.SyBrandService;
@@ -24,7 +25,7 @@ public class BoSyBrandService {
     /* 목록조회 */
     public List<SyBrandDto.Item> getList(SyBrandDto.Request req) { return syBrandService.getList(req); }
     /* 페이지조회 */
-    public SyBrandDto.PageResponse getPageData(SyBrandDto.Request req) { return syBrandService.getPageData(req); }
+    public BasePage<SyBrandDto.Item> getPageData(SyBrandDto.Request req) { return syBrandService.getPageData(req); }
 
     @Transactional public SyBrand create(SyBrand body) { return syBrandService.create(body); }
     @Transactional public SyBrand update(String id, SyBrand body) { return syBrandService.update(id, body); }

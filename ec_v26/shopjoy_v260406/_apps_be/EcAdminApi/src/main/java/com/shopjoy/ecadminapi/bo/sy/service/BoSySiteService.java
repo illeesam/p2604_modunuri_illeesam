@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 import com.shopjoy.ecadminapi.base.sy.service.SySiteService;
@@ -30,7 +31,7 @@ public class BoSySiteService {
     }
 
     /** getPageData — 페이징조회 */
-    public SySiteDto.PageResponse getPageData(SySiteDto.Request req) {
+    public BasePage<SySiteDto.Item> getPageData(SySiteDto.Request req) {
         return sySiteService.getPageData(req);
     }
 

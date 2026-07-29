@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.base.ec.od.data.dto;
 
-import com.shopjoy.ecadminapi.common.data.BasePageResponse;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -80,8 +79,6 @@ public class OdOrderItemDto {
         private String dlivCourierCdNm;
     }
 
-    @Getter @Setter @NoArgsConstructor
-    public static class PageResponse extends BasePageResponse<Item, Request> {}
 
     /** SaveItem — MD 대리주문 저장용 최소 주문항목 (필드 기본값 금지) */
     @Getter @Setter @NoArgsConstructor

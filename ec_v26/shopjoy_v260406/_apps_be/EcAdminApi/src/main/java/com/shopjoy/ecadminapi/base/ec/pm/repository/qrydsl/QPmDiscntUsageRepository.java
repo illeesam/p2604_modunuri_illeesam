@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntUsageDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscntUsage;
 
@@ -13,7 +14,7 @@ public interface QPmDiscntUsageRepository {
 
     List<PmDiscntUsageDto.Item> selectList(PmDiscntUsageDto.Request search);
 
-    PmDiscntUsageDto.PageResponse selectPageData(PmDiscntUsageDto.Request search);
+    BasePage<PmDiscntUsageDto.Item> selectPageData(PmDiscntUsageDto.Request search);
 
     int updateSelective(PmDiscntUsage entity);
 }

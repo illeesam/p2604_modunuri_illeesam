@@ -1391,6 +1391,87 @@ grep -rn "em.createQuery\|EntityManager"   _apps_be/EcAdminApi/src/main/java/com
 
 ---
 
+---
+
+## 19. 페이징 응답은 `BasePage<Item>` (2026-07-29)
+
+`selectPageData` / `getPageData` 의 반환 타입은 **`BasePage<XxxDto.Item>`** 을 쓴다.
+DTO 안에 `PageResponse` 빈 클래스를 만들지 않는다.
+
+### 왜 바꿨나
+
+```java
+// 이전 — DTO 마다 껍데기 클래스가 하나씩 필요했다 (168개)
+public static class PageResponse extends BasePageResponse<Item, Request> {}
+SyUserDto.PageResponse selectPageData(SyUserDto.Request search);
+```
+
+그 클래스들은 **필드도 메서드도 없다.** 존재 이유는 두 번째 타입 파라미터
+`R`(Request) 을 묶어 `pageCond` 의 선언 타입을 좁히는 것뿐인데,
+자바 코드에서 `getPageCond()` / `setPageCond()` 를 호출하는 곳은 **한 군데도 없다**.
+응답 JSON 으로 echo 될 뿐이다(프론트 124곳이 읽는다).
+
+즉 타입 파라미터 하나를 유지하려고 클래스를 168개 두고 있었다.
+
+### ✅ 지금
+
+```java
+BasePage<SyUserDto.Item> selectPageData(SyUserDto.Request search);
+
+BasePage<SyUserDto.Item> res = new BasePage<>();
+return res.setPageInfo(content, total, pageNo, pageSize, search);
+```
+
+**응답 JSON 은 이전과 완전히 같다.** 필드명이 동일하고(`pageList` `pageTotalCount`
+`pageTotalPage` `pageNo` `pageSize` `pageCond`), `pageCond` 는 선언 타입이
+`BaseRequest` 로 넓어졌지만 **Jackson 은 런타임 타입 기준으로 직렬화**하므로
+실제 Request 의 필드가 그대로 나간다.
+
+> SyUser 파일럿 검증(2026-07-29): 응답 키 6개 동일, `pageCond` 에
+> `deptId` `role` `searchType` `dateRangeType` 등 Request 필드 그대로 확인.
+
+### 전환 완료 (2026-07-29)
+
+| | 수 |
+|---|---|
+| 제거한 `PageResponse` 빈 클래스 | **167개** |
+| 치환한 참조 파일 | **809개** |
+| 제거한 미사용 `BasePageResponse` import | **167개** |
+| `BasePageResponse.java` | **삭제** |
+
+`BasePageResponse` 는 더 이상 없다. 페이징 응답은 **`BasePage<Item>` 하나**다.
+
+```java
+// Repository
+BasePage<SyUserDto.Item> selectPageData(SyUserDto.Request search);
+
+// Impl
+BasePage<SyUserDto.Item> res = new BasePage<>();
+return res.setPageInfo(content, total, pageNo, pageSize, search);
+```
+
+- 항목 타입이 DTO 중첩 `Item` 이 아니어도 된다 — `CmPopupDto` 는 엔티티를 그대로 쓴다
+  (`BasePage<CmPopup>`). 전환 스크립트도 선언에서 실제 타입을 읽어 처리했다
+- `BasePage.ofList(list)` — 페이징 메타 없이 목록만 담을 때(구 `res.setPageList(list)` 대응)
+
+### 검증
+
+응답 JSON 이 이전과 같은지 도메인 10곳에서 확인했다(2026-07-29).
+
+```
+✓ 사용자 81 / 메뉴 60 / 역할 52 / 업체 17 / 회원 50
+✓ 상품 632 / 주문 43 / 쿠폰 183 / 전시UI 6 / FAQ 53      → 구조 일치 10/10
+```
+
+키 6개(`pageCond` `pageList` `pageNo` `pageSize` `pageTotalCount` `pageTotalPage`) 동일,
+`pageCond` 안에 Request 필드가 그대로 나온다(**Jackson 은 런타임 타입 기준 직렬화**).
+
+> 이 리팩터링의 유일한 위험 지점이 `pageCond` 였다. 선언 타입을 `R`(구체 Request)에서
+> `BaseRequest` 로 넓혔기 때문인데, Jackson 이 선언 타입으로 직렬화했다면 프론트 124곳이
+> 조용히 빈 객체를 받았을 것이다. 실측으로 확인하고 넘어갔다.
+
+---
+
 ## 관련 정책
 
 - `base.인증-bo.md` — 관리자 인증 흐름 (프론트엔드 관점)

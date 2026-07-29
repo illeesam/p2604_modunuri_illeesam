@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
@@ -92,9 +93,9 @@ public class CmBlogService {
     }
 
     /* 게시물 페이지조회 (첨부 files[] 포함 — 그리드 썸네일용) */
-    public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
+    public BasePage<CmBlogDto.Item> getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
-        CmBlogDto.PageResponse res = cmBlogRepository.selectPageData(req);
+        BasePage<CmBlogDto.Item> res = cmBlogRepository.selectPageData(req);
         if (res != null) attachFiles(res.getPageList());
         return res;
     }
