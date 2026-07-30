@@ -209,7 +209,7 @@ public class StSettleRaw extends BaseEntity {
     @Column(name = "gift_amt")
     private Long giftAmt;
 
-    @Comment("결제수단 (코드: PAY_METHOD_CD)")
+    @Comment("결제수단 (코드: PAY_METHOD)")
     @Column(name = "pay_method_cd", length = 20)
     private String payMethodCd;
 

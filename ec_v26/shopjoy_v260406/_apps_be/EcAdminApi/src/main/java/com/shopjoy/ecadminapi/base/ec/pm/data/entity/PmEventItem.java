@@ -31,7 +31,7 @@ public class PmEventItem extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("대상유형 (코드: EVENT_ITEM_TARGET — PRODUCT/CATEGORY/VENDOR/BRAND)")
+    @Comment("대상유형 (코드: PROMO_TARGET_TYPE — PRODUCT/CATEGORY/VENDOR/BRAND)")
     @Column(name = "target_type_cd", length = 20, nullable = false)
     private String targetTypeCd;
 

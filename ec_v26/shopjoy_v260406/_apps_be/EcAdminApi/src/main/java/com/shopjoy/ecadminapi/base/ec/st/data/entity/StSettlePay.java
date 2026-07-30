@@ -40,7 +40,7 @@ public class StSettlePay extends BaseEntity {
     @Column(name = "pay_amt", nullable = false)
     private Long payAmt;
 
-    @Comment("지급수단 (코드: PAY_METHOD_CD)")
+    @Comment("지급수단 (코드: PAY_METHOD)")
     @Column(name = "pay_method_cd", length = 20)
     private String payMethodCd;
 

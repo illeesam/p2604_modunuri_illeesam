@@ -99,7 +99,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
      * PAY_METHOD    {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
      * DLIV_STATUS   {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
      * ACCESS_CHANNEL {WEB_PC:Web-PC, WEB_MOBILE:모바일 웹, APP_IOS:앱-iOS, APP_ANDROID:앱-Android}
-     * APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+     * APPR_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
      */
     private JPAQuery<OdOrderDto.Item> baseListQuery() {
         return queryFactory
@@ -126,10 +126,10 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         odOrder.refundAccountNo,       // 환불 계좌번호
                         odOrder.refundAccountNm,       // 환불 예금주명
                         odOrder.accessChannelCd,       // 주문유입경로 — ACCESS_CHANNEL {WEB_PC:Web-PC, WEB_MOBILE:모바일 웹, APP_IOS:앱-iOS, APP_ANDROID:앱-Android}
-                        odOrder.apprStatusCd,          // 결재상태 — APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
-                        odOrder.apprStatusCdBefore,    // 변경 전 결재상태 — APPROVAL_STATUS (동일 코드그룹)
+                        odOrder.apprStatusCd,          // 결재상태 — APPR_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+                        odOrder.apprStatusCdBefore,    // 변경 전 결재상태 — APPR_STATUS (동일 코드그룹)
                         odOrder.apprAmt,               // 결재 요청금액
-                        odOrder.apprTargetCd,          // 결재대상 구분 — APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+                        odOrder.apprTargetCd,          // 결재대상 구분 — APPR_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
                         odOrder.apprTargetNm,          // 결재 대상명
                         odOrder.apprReason,            // 사유/메모
                         odOrder.apprReqUserId,         // 결재 요청자 (sy_user.user_id)
@@ -163,14 +163,14 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
                 .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd)))
                 .leftJoin(cdAc).on(cdAc.codeGrp.eq("ACCESS_CHANNEL").and(cdAc.codeValue.eq(odOrder.accessChannelCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)));
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)));
     }
 
     /*
      * selectById — 코드성 필드 예시 코드값 (baseListQuery 와 동일 코드그룹, 상세조회 전용 별도 projection)
      * ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비중, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:취소}
      * BANK_CODE {신한:신한은행, 국민:국민은행, 우리:우리은행, 농협:NH농협 등}
-     * APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료} / APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+     * APPR_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료} / APPR_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
      */
     /* 주문 키조회 */
     @Override
@@ -200,10 +200,10 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         odOrder.refundAccountNo,       // 환불 계좌번호
                         odOrder.refundAccountNm,       // 환불 예금주명
                         odOrder.accessChannelCd,       // 주문유입경로 — ACCESS_CHANNEL {WEB_PC:Web-PC, WEB_MOBILE:모바일 웹, APP_IOS:앱-iOS, APP_ANDROID:앱-Android}
-                        odOrder.apprStatusCd,          // 결재상태 — APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
-                        odOrder.apprStatusCdBefore,    // 변경 전 결재상태 — APPROVAL_STATUS (동일 코드그룹)
+                        odOrder.apprStatusCd,          // 결재상태 — APPR_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+                        odOrder.apprStatusCdBefore,    // 변경 전 결재상태 — APPR_STATUS (동일 코드그룹)
                         odOrder.apprAmt,               // 결재 요청금액
-                        odOrder.apprTargetCd,          // 결재대상 구분 — APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+                        odOrder.apprTargetCd,          // 결재대상 구분 — APPR_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
                         odOrder.apprTargetNm,          // 결재 대상명
                         odOrder.apprReason,            // 사유/메모
                         odOrder.apprReqUserId,         // 결재 요청자 (sy_user.user_id)
@@ -236,8 +236,8 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
                 .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd)))
                 .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odOrder.refundBankCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)))
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPROVAL_TARGET").and(cdAt.codeValue.eq(odOrder.apprTargetCd)))
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)))
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET").and(cdAt.codeValue.eq(odOrder.apprTargetCd)))
                 .where(odOrder.orderId.eq(orderId))
                 .fetchOne();
         return Optional.ofNullable(dto);

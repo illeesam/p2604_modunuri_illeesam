@@ -56,6 +56,22 @@ window.HelpBoModal = {
       { col: 'sy_notice.notice_status_cd',         map: 'PUBLISH → PUBLISHED, END → ENDED, (빈값) → DRAFT', cnt: '9건' },
       { col: 'sy_bbs.bbs_status_cd',               map: 'PUBLISH·게시 → ACTIVE, 임시 → HIDDEN', cnt: '42건' },
       { col: 'st_recon.recon_status_cd',           map: 'MISMATCH → DIFF', cnt: '1건' },
+      { col: 'od_order.pay_method_cd',             map: 'TRANSFER → BANK_TRANSFER', cnt: '23건' },
+      { col: 'sy_bbm.content_type_cd',             map: 'htmleditor → HTMLEDITOR, textarea → TEXTAREA', cnt: '10건' },
+    ];
+
+    /* 코드그룹명이 낡은 쪽을 가리키던 컬럼 — 정본으로 교체 (2026-07-31 2차 정비) */
+    const STATUS_GRP_FIX = [
+      { was: 'WIDGET_TYPE(20종)',   now: 'DISP_WIDGET_TYPE(27종)', note: '전시 위젯. 지침서 명시값' },
+      { was: 'PRODUCT_STATUS',      now: 'PROD_STATUS',            note: '상품 상태' },
+      { was: 'PRODUCT_TYPE',        now: 'PROD_TYPE',              note: '상품 유형' },
+      { was: 'CLAIM_FAULT',         now: 'FAULT_TYPE',             note: '귀책 구분' },
+      { was: 'APPROVAL_STATUS/TARGET', now: 'APPR_STATUS/APPR_TARGET', note: '조인이 안 맞아 결재 라벨이 항상 비어 있었음' },
+      { was: 'USE_YN (카테고리)',   now: 'CATEGORY_STATUS',        note: '상태 컬럼인데 Y/N 그룹을 참조' },
+      { was: 'TOKEN_TYPE',          now: 'APP_TYPE',               note: '값이 BO/FO — 앱 구분' },
+      { was: 'PAY_METHOD_CD',       now: 'PAY_METHOD',             note: '그룹명 오타' },
+      { was: 'COUPON/DISCNT/EVENT_ITEM_TARGET', now: 'PROMO_TARGET_TYPE', note: '프로모션 타깃 정본' },
+      { was: 'VENDOR_MEMBER_STATUS', now: 'VENDOR_USER_STATUS',    note: '' },
     ];
 
     const OPT_SUB_TABS = [
@@ -460,7 +476,7 @@ window.HelpBoModal = {
       handleBtnAction, handleSelectAction,                                  // dispatch
       activeTab, optSubTab, orderSubTab, settleSubTab, showExtHelp,        // 탭 상태
       TABS, OPT_SUB_TABS,                                                   // 탭 정의
-      STATUS_GROUPS, STATUS_LEGACY,                                         // 상태코드 표준 / 정규화 이력
+      STATUS_GROUPS, STATUS_LEGACY, STATUS_GRP_FIX,                         // 상태코드 표준 / 정규화 이력 / 그룹명 정정
       OPT_OVERVIEW_ROWS, OPT_CLOTHING_ROWS, OPT_SHOES_ROWS, OPT_ELEC_ROWS, OPT_SINGLE_ROWS, INPUT_TYPES,  // 옵션 데이터
       OVERVIEW_CARDS, PRODUCT_STEPS, PRODUCT_TABS, MEMBER_TABS_LIST,        // 개요/회원/상품
       ORDER_STEPS, ORDER_STEP_DETAILS, ORDER_PARTIAL_SCENARIO,              // 주문
@@ -1905,7 +1921,32 @@ window.HelpBoModal = {
               </tbody>
             </table>
           </div>
-          <div style="font-size:11.5px;color:#888;margin-top:10px;line-height:1.6;">
+          <h4 style="font-size:13px;font-weight:800;color:#b45309;margin:20px 0 6px;">
+            🔁 코드그룹명 정정 (2026-07-31)
+          </h4>
+          <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:10px;">
+            같은 개념의 코드그룹이 둘씩 있어 컬럼이 <b>낡은 쪽</b>을 가리키고 있었습니다. 정본으로 교체했습니다.
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+              <thead>
+                <tr style="background:#f5f6fa;">
+                  <th style="text-align:left;padding:6px 8px;border:1px solid #e5e7eb;white-space:nowrap;">기존(낡음)</th>
+                  <th style="text-align:left;padding:6px 8px;border:1px solid #e5e7eb;white-space:nowrap;">정본</th>
+                  <th style="text-align:left;padding:6px 8px;border:1px solid #e5e7eb;">비고</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="f in STATUS_GRP_FIX" :key="f.was">
+                  <td style="padding:6px 8px;border:1px solid #e5e7eb;font-family:monospace;font-size:10.5px;">{{ f.was }}</td>
+                  <td style="padding:6px 8px;border:1px solid #e5e7eb;font-family:monospace;font-size:10.5px;color:#1677ff;font-weight:700;">{{ f.now }}</td>
+                  <td style="padding:6px 8px;border:1px solid #e5e7eb;">{{ f.note }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size:11.5px;color:#888;margin-top:14px;line-height:1.6;">
+            이 밖에 데이터가 쓰는데 없던 코드 <b>123건 등록</b>, 어디에도 참조 없는 낡은 코드 <b>9건 삭제</b>.<br>
             상세 정책 · 점검 SQL → 정책서 <code>sy.08 공통코드</code> §상태값은 반드시 sy_code 에 있는 값만 저장
           </div>
         </template>

@@ -80,7 +80,7 @@ public class OdRefund extends BaseEntity {
     @Column(name = "refund_complt_date")
     private LocalDateTime refundCompltDate;
 
-    @Comment("귀책유형코드 (코드: CLAIM_FAULT — CUST/VENDOR/PLATFORM)")
+    @Comment("귀책유형코드 (코드: FAULT_TYPE — CUST/VENDOR/PLATFORM)")
     @Column(name = "fault_type_cd", length = 20)
     private String faultTypeCd;
 

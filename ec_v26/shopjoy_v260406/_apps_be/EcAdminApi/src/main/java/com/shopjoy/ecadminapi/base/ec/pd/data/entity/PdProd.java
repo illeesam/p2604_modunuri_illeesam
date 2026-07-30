@@ -49,7 +49,7 @@ public class PdProd extends BaseEntity {
     @Column(name = "prod_nm", length = 200, nullable = false)
     private String prodNm;
 
-    @Comment("상품유형 (코드: PRODUCT_TYPE — SINGLE/GROUP/SET)")
+    @Comment("상품유형 (코드: PROD_TYPE — SINGLE/GROUP/SET)")
     @Column(name = "prod_type_cd", length = 20)
     private String prodTypeCd;
 
@@ -81,11 +81,11 @@ public class PdProd extends BaseEntity {
     @Column(name = "platform_fee_amount")
     private Long platformFeeAmount;
 
-    @Comment("상태 (코드: PRODUCT_STATUS)")
+    @Comment("상태 (코드: PROD_STATUS)")
     @Column(name = "prod_status_cd", length = 20)
     private String prodStatusCd;
 
-    @Comment("변경 전 상품상태 (코드: PRODUCT_STATUS)")
+    @Comment("변경 전 상품상태 (코드: PROD_STATUS)")
     @Column(name = "prod_status_cd_before", length = 20)
     private String prodStatusCdBefore;
 

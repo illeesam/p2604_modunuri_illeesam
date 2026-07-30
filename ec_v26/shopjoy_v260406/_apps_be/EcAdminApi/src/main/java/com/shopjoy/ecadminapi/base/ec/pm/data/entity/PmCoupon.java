@@ -97,7 +97,7 @@ public class PmCoupon extends BaseEntity {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
-    @Comment("적용대상 (코드: COUPON_TARGET)")
+    @Comment("적용대상 (코드: PROMO_TARGET_TYPE)")
     @Column(name = "target_type_cd", length = 20)
     private String targetTypeCd;
 

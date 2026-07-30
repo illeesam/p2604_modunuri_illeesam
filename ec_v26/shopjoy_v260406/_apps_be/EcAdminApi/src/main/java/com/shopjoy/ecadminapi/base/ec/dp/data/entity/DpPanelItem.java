@@ -36,7 +36,7 @@ public class DpPanelItem extends BaseEntity {
     @Column(name = "widget_lib_id", length = 21)
     private String widgetLibId;
 
-    @Comment("위젯유형 (코드: WIDGET_TYPE)")
+    @Comment("위젯유형 (코드: DISP_WIDGET_TYPE)")
     @Column(name = "widget_type_cd", length = 30)
     private String widgetTypeCd;
 

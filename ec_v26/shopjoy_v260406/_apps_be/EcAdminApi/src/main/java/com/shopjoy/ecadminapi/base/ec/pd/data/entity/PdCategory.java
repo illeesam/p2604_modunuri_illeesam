@@ -43,11 +43,11 @@ public class PdCategory extends BaseEntity {
     @Column(name = "sort_ord")
     private Integer sortOrd;
 
-    @Comment("상태 (코드: USE_YN)")
+    @Comment("상태 (코드: CATEGORY_STATUS)")
     @Column(name = "category_status_cd", length = 20)
     private String categoryStatusCd;
 
-    @Comment("변경 전 카테고리상태 (코드: USE_YN)")
+    @Comment("변경 전 카테고리상태 (코드: CATEGORY_STATUS)")
     @Column(name = "category_status_cd_before", length = 20)
     private String categoryStatusCdBefore;
 

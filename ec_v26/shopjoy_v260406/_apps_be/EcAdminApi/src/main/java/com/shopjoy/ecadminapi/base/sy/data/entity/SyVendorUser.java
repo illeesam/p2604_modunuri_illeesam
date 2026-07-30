@@ -80,7 +80,7 @@ public class SyVendorUser extends BaseEntity {
     @Column(name = "leave_date")
     private LocalDate leaveDate;
 
-    @Comment("상태 (코드: VENDOR_MEMBER_STATUS)")
+    @Comment("상태 (코드: VENDOR_USER_STATUS)")
     @Column(name = "vendor_user_status_cd", length = 20)
     private String vendorUserStatusCd;
 

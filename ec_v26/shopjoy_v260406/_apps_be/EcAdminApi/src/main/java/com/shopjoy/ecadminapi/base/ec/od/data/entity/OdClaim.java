@@ -264,11 +264,11 @@ public class OdClaim extends BaseEntity {
     @Column(name = "shipping_fee_memo", length = 300)
     private String shippingFeeMemo;
 
-    @Comment("결재상태 (코드: APPROVAL_STATUS)")
+    @Comment("결재상태 (코드: APPR_STATUS)")
     @Column(name = "appr_status_cd", length = 20)
     private String apprStatusCd;
 
-    @Comment("변경 전 결재상태 (코드: APPROVAL_STATUS)")
+    @Comment("변경 전 결재상태 (코드: APPR_STATUS)")
     @Column(name = "appr_status_cd_before", length = 20)
     private String apprStatusCdBefore;
 
@@ -276,7 +276,7 @@ public class OdClaim extends BaseEntity {
     @Column(name = "appr_amt")
     private Long apprAmt;
 
-    @Comment("결재대상 구분 (코드: APPROVAL_TARGET)")
+    @Comment("결재대상 구분 (코드: APPR_TARGET)")
     @Column(name = "appr_target_cd", length = 30)
     private String apprTargetCd;
 

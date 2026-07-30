@@ -187,10 +187,10 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         odClaim.shippingFeePaidYn,           // 배송료 정산 완료 여부 Y/N
                         odClaim.shippingFeePaidDate,         // 배송료 정산일시
                         odClaim.shippingFeeMemo,             // 배송료 비고
-                        odClaim.apprStatusCd,                // 결재상태 — APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
-                        odClaim.apprStatusCdBefore,          // 변경 전 결재상태 — APPROVAL_STATUS (동일 코드그룹)
+                        odClaim.apprStatusCd,                // 결재상태 — APPR_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+                        odClaim.apprStatusCdBefore,          // 변경 전 결재상태 — APPR_STATUS (동일 코드그룹)
                         odClaim.apprAmt,                     // 결재 요청금액
-                        odClaim.apprTargetCd,                // 결재대상 구분 — APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+                        odClaim.apprTargetCd,                // 결재대상 구분 — APPR_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
                         odClaim.apprTargetNm,                // 결재 대상명
                         odClaim.apprReason,                  // 사유/메모
                         odClaim.apprReqUserId,               // 결재 요청자 (sy_user.user_id)
@@ -198,14 +198,15 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         odClaim.apprAprvUserId,              // 결재자 (sy_user.user_id)
                         odClaim.apprAprvDate,                // 결재일시
                         odClaim.regBy, odClaim.regDate, odClaim.updBy, odClaim.updDate,
-                        odOrder.orderDate.as("orderDate"),
-                        odOrder.orderStatusCd.as("orderStatusCd"),
-                        mbMember.loginId.as("memberEmail"),
-                        cdCt.codeLabel.as("claimTypeCdNm"),
-                        cdCs.codeLabel.as("claimStatusCdNm"),
-                        cdRm.codeLabel.as("refundMethodCdNm"),
-                        cdRc.codeLabel.as("returnCourierCdNm"),
-                        cdEc.codeLabel.as("exchangeCourierCdNm"),
+                        // joined — 원 주문(od_order) / 회원(mb_member) / 코드라벨(sy_code)
+                        odOrder.orderDate.as("orderDate"),                   // 원 주문 주문일시
+                        odOrder.orderStatusCd.as("orderStatusCd"),           // 원 주문 상태 — ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:주문취소, AUTO_CANCELLED:자동취소}
+                        mbMember.loginId.as("memberEmail"),                  // 회원 로그인ID(이메일)
+                        cdCt.codeLabel.as("claimTypeCdNm"),                  // 클레임유형 라벨 — CLAIM_TYPE
+                        cdCs.codeLabel.as("claimStatusCdNm"),                // 클레임상태 라벨 — CLAIM_STATUS
+                        cdRm.codeLabel.as("refundMethodCdNm"),               // 환불수단 라벨 — REFUND_METHOD
+                        cdRc.codeLabel.as("returnCourierCdNm"),              // 수거 택배사 라벨 — COURIER
+                        cdEc.codeLabel.as("exchangeCourierCdNm"),            // 교환상품 발송 택배사 라벨 — COURIER
                         /* 클레임항목 수 — 목록은 claimItems 를 채우지 않으므로(N+1 방지) 건수만 상관 서브쿼리로 집계.
                            항목이 없으면 null 대신 0 이 내려가도록 COALESCE 로 감싼다. */
                         ExpressionUtils.as(
@@ -226,8 +227,8 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     }
 
     /*
-     * selectById — 코드성 필드는 baseListQuery 와 동일 코드그룹 (CLAIM_TYPE/CLAIM_STATUS/REFUND_METHOD/COURIER/DLIV_STATUS/APPROVAL_STATUS/APPROVAL_TARGET)
-     * 상세조회 전용 추가 조인: refundBankCd→BANK_CODE, returnStatusCd/inboundCourierCd→DLIV_STATUS·COURIER, apprTargetCd→APPROVAL_TARGET
+     * selectById — 코드성 필드는 baseListQuery 와 동일 코드그룹 (CLAIM_TYPE/CLAIM_STATUS/REFUND_METHOD/COURIER/DLIV_STATUS/APPR_STATUS/APPR_TARGET)
+     * 상세조회 전용 추가 조인: refundBankCd→BANK_CODE, returnStatusCd/inboundCourierCd→DLIV_STATUS·COURIER, apprTargetCd→APPR_TARGET
      */
     /* 클레임(취소/반품/교환) 키조회 */
     @Override
@@ -296,10 +297,10 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         odClaim.shippingFeePaidYn,             // 배송료 정산 완료 여부 Y/N
                         odClaim.shippingFeePaidDate,           // 배송료 정산일시
                         odClaim.shippingFeeMemo,               // 배송료 비고
-                        odClaim.apprStatusCd,                  // 결재상태 — APPROVAL_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
-                        odClaim.apprStatusCdBefore,            // 변경 전 결재상태 — APPROVAL_STATUS (동일 코드그룹)
+                        odClaim.apprStatusCd,                  // 결재상태 — APPR_STATUS {REQ:결재요청, APPROVED:승인, REJECTED:반려, DONE:처리완료}
+                        odClaim.apprStatusCdBefore,            // 변경 전 결재상태 — APPR_STATUS (동일 코드그룹)
                         odClaim.apprAmt,                       // 결재 요청금액
-                        odClaim.apprTargetCd,                  // 결재대상 구분 — APPROVAL_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
+                        odClaim.apprTargetCd,                  // 결재대상 구분 — APPR_TARGET {ORDER:주문, PROD:상품, DLIV:배송, EXTRA:추가결제}
                         odClaim.apprTargetNm,                  // 결재 대상명
                         odClaim.apprReason,                    // 사유/메모
                         odClaim.apprReqUserId,                 // 결재 요청자 (sy_user.user_id)
@@ -307,25 +308,25 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         odClaim.apprAprvUserId,                // 결재자 (sy_user.user_id)
                         odClaim.apprAprvDate,                  // 결재일시
                         odClaim.regBy, odClaim.regDate, odClaim.updBy, odClaim.updDate,
-                        // joined
-                        odOrder.orderDate.as("orderDate"),
-                        odOrder.orderStatusCd.as("orderStatusCd"),
-                        odOrder.payMethodCd.as("payMethodCd"),
-                        odOrder.recvNm.as("recvNm"),
-                        odOrder.recvPhone.as("recvPhone"),
-                        odOrder.recvAddr.as("recvAddr"),
-                        mbMember.loginId.as("memberEmail"),
-                        mbMember.memberPhone.as("memberPhoneOrigin"),
-                        cdCt.codeLabel.as("claimTypeCdNm"),
-                        cdCs.codeLabel.as("claimStatusCdNm"),
-                        cdRm.codeLabel.as("refundMethodCdNm"),
-                        cdRb.codeLabel.as("refundBankCdNm"),
-                        cdRc.codeLabel.as("returnCourierCdNm"),
-                        cdRs.codeLabel.as("returnStatusCdNm"),
-                        cdIc.codeLabel.as("inboundCourierCdNm"),
-                        cdEc.codeLabel.as("exchangeCourierCdNm"),
-                        cdAp.codeLabel.as("apprStatusCdNm"),
-                        cdAt.codeLabel.as("apprTargetCdNm")
+                        // joined — 원 주문(od_order) / 회원(mb_member) / 코드라벨(sy_code)
+                        odOrder.orderDate.as("orderDate"),                     // 원 주문 주문일시
+                        odOrder.orderStatusCd.as("orderStatusCd"),             // 원 주문 상태 — ORDER_STATUS {PENDING:입금대기, PAID:결제완료, PREPARING:상품준비, SHIPPED:배송중, DELIVERED:배송완료, COMPLT:구매확정, CANCELLED:주문취소, AUTO_CANCELLED:자동취소}
+                        odOrder.payMethodCd.as("payMethodCd"),                 // 원 주문 결제수단 — PAY_METHOD (환불수단 결정에 참조)
+                        odOrder.recvNm.as("recvNm"),                           // 원 주문 수령자명 (수거지 기본값)
+                        odOrder.recvPhone.as("recvPhone"),                     // 원 주문 수령자 연락처
+                        odOrder.recvAddr.as("recvAddr"),                       // 원 주문 배송지 주소
+                        mbMember.loginId.as("memberEmail"),                    // 회원 로그인ID(이메일) — 알림 발송용
+                        mbMember.memberPhone.as("memberPhoneOrigin"),          // 회원 원본 연락처 (클레임 접수 당시 값과 대조용)
+                        cdCt.codeLabel.as("claimTypeCdNm"),                    // 클레임유형 라벨 — CLAIM_TYPE
+                        cdCs.codeLabel.as("claimStatusCdNm"),                  // 클레임상태 라벨 — CLAIM_STATUS
+                        cdRm.codeLabel.as("refundMethodCdNm"),                 // 환불수단 라벨 — REFUND_METHOD
+                        cdRb.codeLabel.as("refundBankCdNm"),                   // 환불 은행 라벨 — BANK_CODE (계좌이체 환불 시)
+                        cdRc.codeLabel.as("returnCourierCdNm"),                // 수거 택배사 라벨 — COURIER
+                        cdRs.codeLabel.as("returnStatusCdNm"),                 // 수거 상태 라벨 — DLIV_STATUS
+                        cdIc.codeLabel.as("inboundCourierCdNm"),               // 반입 택배사 라벨 — COURIER
+                        cdEc.codeLabel.as("exchangeCourierCdNm"),              // 교환상품 발송 택배사 라벨 — COURIER
+                        cdAp.codeLabel.as("apprStatusCdNm"),                   // 결재상태 라벨 — APPR_STATUS
+                        cdAt.codeLabel.as("apprTargetCdNm")                    // 결재대상 라벨 — APPR_TARGET
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .from(odClaim)
@@ -339,8 +340,8 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("DLIV_STATUS").and(cdRs.codeValue.eq(odClaim.returnStatusCd)))
                 .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(odClaim.inboundCourierCd)))
                 .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(odClaim.apprStatusCd)))
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPROVAL_TARGET").and(cdAt.codeValue.eq(odClaim.apprTargetCd)))
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS").and(cdAp.codeValue.eq(odClaim.apprStatusCd)))
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET").and(cdAt.codeValue.eq(odClaim.apprTargetCd)))
                 .where(odClaim.claimId.eq(claimId))
                 .fetchOne();
         return Optional.ofNullable(dto);

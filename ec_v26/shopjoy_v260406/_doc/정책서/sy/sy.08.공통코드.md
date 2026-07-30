@@ -135,6 +135,46 @@ COMMENT ON COLUMN pm_save.save_issue_type_cd IS '지급유형';
 
 마이그레이션 SQL: `_doc/ddl_pgsql/migration_20260731_status_code_normalize.sql`
 
+### 2차 정비 — `_cd` 전 컬럼 (2026-07-31)
+
+상태값에 이어 **`_cd` 로 끝나는 257개 컬럼 전체**를 `sy_code` 와 대조했다.
+드러난 문제는 대부분 데이터가 아니라 **코드그룹이 둘씩 있고 컬럼 코멘트가 낡은 쪽을 가리키는 것**이었다.
+
+**① 컬럼 코멘트의 코드그룹명 정정 (19건)** — 실제 값을 담고 있는 정본 그룹으로 교체
+
+| 낡은 그룹 | 정본 그룹 | 비고 |
+|---|---|---|
+| `WIDGET_TYPE`(20종) | `DISP_WIDGET_TYPE`(27종) | 지침서에 명시된 값. dp_widget 데이터 100% 등록 |
+| `PRODUCT_STATUS` | `PROD_STATUS` | ON_SALE/SOLD_OUT ↔ ACTIVE/SOLDOUT |
+| `PRODUCT_TYPE` | `PROD_TYPE` | 그룹 자체가 없었음 |
+| `CLAIM_FAULT` | `FAULT_TYPE` | 그룹 자체가 없었음 |
+| `APPROVAL_STATUS` / `APPROVAL_TARGET` | `APPR_STATUS` / `APPR_TARGET` | **조인이 매칭 안 돼 결재 라벨이 항상 null 이던 버그** |
+| `USE_YN`(pd_category) | `CATEGORY_STATUS` | 상태 컬럼인데 Y/N 그룹을 가리킴 |
+| `TOKEN_TYPE`(token_type_cd) | `APP_TYPE` | 값이 BO/FO — 토큰 종류가 아니라 앱 구분 |
+| `PAY_METHOD_CD` | `PAY_METHOD` | 그룹명에 `_CD` 오타 |
+| `COUPON_TARGET` / `COUPON_ITEM_TARGET` / `DISCNT_ITEM_TARGET` / `EVENT_ITEM_TARGET` | `PROMO_TARGET_TYPE` | 프로모션 타깃 정본 그룹 |
+| `VENDOR_MEMBER_STATUS` | `VENDOR_USER_STATUS` | |
+
+**② 데이터 정규화** — `sy_bbm.content_type_cd` 의 `htmleditor`→`HTMLEDITOR`, `textarea`→`TEXTAREA`(표기 드리프트) /
+`od_order.pay_method_cd` 의 `TRANSFER`→`BANK_TRANSFER`(동의어, 하드코딩 없음 확인)
+
+**③ 코드 등록 (123건)** — 데이터가 실제로 쓰는데 코드그룹에 없던 값. 데이터를 왜곡하지 않도록 코드를 채웠다.
+`EVENT_TYPE`(37종 시즌/행사), `PLAN_TYPE`, `GIFT_TYPE`, `BENEFIT_TYPE`, `CACHE_TYPE`, `SAVE_TYPE`,
+`DISCNT_TARGET`, `NOTICE_TYPE`, `BBM_*`, `ALARM_*`, `SETTLE_ETC_ADJ_TYPE` 등 38개 그룹.
+
+**④ 미사용 코드 삭제 (9건)** — 아래 조건을 **모두** 만족하는 낡은 시드 값만 지웠다.
+데이터에 없다는 이유만으로 지우면 아직 도달하지 않은 정상 상태가 사라지므로 소스·문서 참조까지 확인했다.
+
+> 조건: 어떤 테이블 데이터에도 없음 **AND** 프론트·백엔드 소스(js/java/xml/yml/html)와 정책서(md) 어디에도 문자열로 등장하지 않음
+
+`APP_TYPE.ANON` · `BBM_SCOPE_TYPE.COMPANY` · `CACHE_TYPE.EARN_BUY` · `CONTACT_STATUS.ON_HOLD` ·
+`EVENT_TYPE.CURATED` · `MEMBER_STATUS.BLOCKED` · `USER_STATUS.LOCKED` · `VENDOR_STATUS.BLOCKED` · `VENDOR_STATUS.REVIEWING`
+
+> 데이터에는 없지만 **소스·문서가 참조하는 187건은 보존**했다 (예: `BATCH_STATUS.RUNNING`, `AUTH_METHOD.KAKAO`).
+
+**⑤ 남긴 것** — `syh_access_log.app_type_cd` 의 `'-'`(2,520건)는 값이 아니라 미상 표시용 더미라 코드로 등록하지 않았다.
+정리하려면 `NULL` 로 바꾸는 편이 맞다.
+
 ### 점검 방법
 
 새 상태값을 넣기 전에 반드시 해당 코드그룹에 있는지 확인한다.
