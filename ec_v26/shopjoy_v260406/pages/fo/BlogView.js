@@ -185,10 +185,14 @@ window.BlogView = {
 
     // ★ onMounted — 상세 + 카테고리 + 최신글 병렬 로드 (관련글은 상세 후 카테고리로 로드)
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    /* initPage — 화면 로드 시퀀스.
+       ID 없이 진입하면(직접 URL 입력 등) 제목·본문이 빈 껍데기 글이 렌더된다.
+       그럴 바엔 목록으로 돌려보낸다. */
     const initPage = async () => {
-      handleSearchData();
-      loadCategories();
-      loadLatest();
+      if (!props.dtlId) { props.navigate('blog'); return; }
+      await handleSearchData();
+      await loadCategories();
+      await loadLatest();
     };
     onMounted(initPage);
 

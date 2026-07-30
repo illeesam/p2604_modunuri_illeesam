@@ -116,6 +116,9 @@ public class OdClaimDto {
         private String exchangeCourierCdNm;
         private String apprStatusCdNm;
         private String apprTargetCdNm;
+        /* 클레임항목 수 — 목록에서 od_claim_item 을 상관 서브쿼리로 집계.
+           목록은 claimItems 를 채우지 않으므로(N+1 방지) 건수만 따로 내려준다. */
+        private Long claimItemCnt;
         // ── 연관정보 (getById / 목록 시 채움) ──
         private List<OdClaimItemDto.Item> claimItems;   // 클레임상품 목록
     }

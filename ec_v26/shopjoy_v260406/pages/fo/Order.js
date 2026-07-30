@@ -224,7 +224,9 @@ window.Order = {
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       const u = window.foAuth?.state?.user;
-      if (u) {
+      /* user 만 보면 토큰 없이 사용자 정보만 복원된 상태에서도 통과해
+         쿠폰·캐시 조회가 401 로 실패한다 → 로그인 판정 단일 기준 사용 */
+      if (u && (window.foAuth?.isLoggedIn ? window.foAuth.isLoggedIn() : true)) {
         await Promise.all([handleLoadCoupons(), handleLoadCash()]);
         form.name = u.memberNm || ''; form.tel = u.phone || ''; form.email = u.email || '';
       }

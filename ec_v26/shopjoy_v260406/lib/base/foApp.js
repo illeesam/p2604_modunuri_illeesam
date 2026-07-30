@@ -244,6 +244,7 @@
       else if (opts && opts.eventId !== undefined) viewEditId.value = opts.eventId;
       else viewEditId.value = null;
       if (uiState.mobileOpen) uiState.mobileOpen = false;
+      if (!fnCanEnterPage(id)) { return; }   // 마이페이지는 로그인 필요
       page.value = id;
       window.scrollTo(0, 0);
       try { document.querySelector('.layout-main')?.scrollTo(0, 0); } catch (e) {}
@@ -607,6 +608,22 @@
     const onShowLogin = () => { uiState.showLogin = true; };
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
 
+    /* fnCanEnterPage — 마이페이지는 로그인 상태에서만 진입 허용.
+       페이지 진입 경로가 3곳(초기 해시 파싱 / onHashChange / navigate)인데
+       예전에는 초기 파싱에만 가드가 있었다. 그래서 해시를 바꾸거나 navigate 로 가면
+       로그아웃 상태에서도 마이페이지가 마운트돼 my API 3건이 401 로 실패하고
+       빈 화면이 떴다(2026-07-30 수정). 세 경로가 이 함수를 함께 쓴다. */
+    const fnCanEnterPage = (p) => {
+      if (!MY_PAGES.includes(p)) { return true; }
+      /* 판정은 foAuth.isLoggedIn(사용자+토큰) 단일 기준.
+         최초 해시 파싱은 foAuth.init 이전일 수 있어 토큰 폴백을 남긴다. */
+      if (window.foAuth?.isLoggedIn ? window.foAuth.isLoggedIn()
+                                    : !!localStorage.getItem('modu-fo-auth-accessToken')) { return true; }
+      showToast('로그인이 필요합니다.', 'error');
+      uiState.showLogin = true;
+      return false;
+    };
+
     /* onLogout */
     const onLogout = () => {
       window.foAuth.logout();
@@ -636,12 +653,9 @@
       const hasPageParam = rawHash.includes('page=');
       const params = hasPageParam ? new URLSearchParams(rawHash) : null;
 
-      /* isMyPage */
-      const isMyPage = p => ['myOrder','myClaim','myCoupon','myCache','myContact','myChatt'].includes(p);
-      const isLoggedIn = !!(localStorage.getItem('modu-fo-auth-accessToken'));
       if (hasPageParam) {
         const hPage = params.get('page');
-        if (hPage && validPages.includes(hPage) && (!isMyPage(hPage) || isLoggedIn)) page.value = hPage;
+        if (hPage && validPages.includes(hPage) && fnCanEnterPage(hPage)) page.value = hPage;
         else if (hPage && !validPages.includes(hPage)) page.value = 'notFound';
       }
       /* 바로구매 URL 파라미터 복원 */
@@ -671,7 +685,7 @@
         const params = new URLSearchParams(rawHash);
         const hPage = params.get('page');
         // 동일 값 set 으로 인한 reactive 무한 갱신 방지
-        if (hPage && validPages.includes(hPage) && page.value !== hPage) page.value = hPage;
+        if (hPage && validPages.includes(hPage) && page.value !== hPage && fnCanEnterPage(hPage)) page.value = hPage;
         else if (hPage && !validPages.includes(hPage) && page.value !== 'notFound') page.value = 'notFound';
         if (hPage === 'order') {
           instantOrder.value = _instantOrderFromParams(params);

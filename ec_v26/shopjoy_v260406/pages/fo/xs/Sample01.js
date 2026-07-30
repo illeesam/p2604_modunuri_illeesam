@@ -1,4 +1,4 @@
-/* ShopJoy - Sample01: 회원 관리 CRUD Grid  (API: GET|POST|PUT|DELETE /api/base/sy/zz-sample1, cdGrp='S01_MEMBER')
+/* ShopJoy - Sample01: 회원 관리 CRUD Grid  (API: GET|POST|PUT|DELETE /api/fo/xs/sample1, cdGrp='S01_MEMBER')
  * ZzSample1 필드 매핑:
  *   sample1Id → memberId  |  cdNm → memberNm  |  col01 → email  |  col02 → phone
  *   col03 → grade  |  useYn → status(Y=활성/N=비활성)  |  regDt → regDate
@@ -141,7 +141,7 @@ window.XsSample01 = {
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await foApi.get('api/base/sy/zz-sample1', { params: { cdGrp: CD_GRP } });
+        const res = await foApi.get('/fo/xs/sample1', { params: { cdGrp: CD_GRP }, ...coUtil.cofApiHdr('샘플-회원관리', '조회') });
         const list = res?.data?.data ?? res?.data ?? [];
         allDatas.splice(0, allDatas.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
@@ -246,9 +246,9 @@ window.XsSample01 = {
       if (dRows.length) { parts.push(`삭제 ${dRows.length}건`); }
       if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) { return; }
       try {
-        for (const r of dRows) { await foApi.delete(`api/base/sy/zz-sample1/${r.memberId}`); }
-        for (const r of uRows) { await foApi.put(`api/base/sy/zz-sample1/${r.memberId}`, toPayload(r)); }
-        for (const r of iRows) { await foApi.post('api/base/sy/zz-sample1', toPayload(r)); }
+        for (const r of dRows) { await foApi.delete(`/fo/xs/sample1/${r.memberId}`, coUtil.cofApiHdr('샘플-회원관리', '삭제')); }
+        for (const r of uRows) { await foApi.put(`/fo/xs/sample1/${r.memberId}`, toPayload(r), coUtil.cofApiHdr('샘플-회원관리', '저장')); }
+        for (const r of iRows) { await foApi.post('/fo/xs/sample1', toPayload(r), coUtil.cofApiHdr('샘플-회원관리', '저장')); }
         showToast(`${parts.join(', ')} 저장되었습니다.`);
         await handleSearchList();
       } catch (e) {

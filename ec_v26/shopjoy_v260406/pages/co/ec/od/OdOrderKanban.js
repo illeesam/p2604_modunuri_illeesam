@@ -1202,9 +1202,25 @@ window.OdOrderKanban = {
       };
     };
 
-    /* 현재 step 여부 */
+    /* 현재 step 여부.
+       상태값이 ORDER_STEPS 에 없으면(코드 표준에서 벗어난 값) 어느 컬럼에도 걸리지 않아
+       카드가 통째로 사라진다 — 실제로 od_order_item 의 'ORDER_COMPLETE' 16건이 그랬다.
+       데이터는 표준화했지만, 또 어긋나도 조용히 사라지지 않도록 첫 컬럼에 표시한다. */
     const fnIsOrderItemStep = function (item, stepKey) {
-      return (item.orderItemStatusCd || item.order_item_status_cd || '') === stepKey;
+      var st = item.orderItemStatusCd || item.order_item_status_cd || '';
+      if (st === stepKey) { return true; }
+      var known = ORDER_STEPS.some(function (x) { return x.key === st; });
+      return !known && stepKey === ORDER_STEPS[0].key;   // 미정의 상태 → 첫 컬럼에 노출
+    };
+
+    /* cfNoOrderItems — 조회가 끝났는데 주문항목이 0건인지 (빈 보드 대신 안내 표시용).
+       속성값에 && 를 쓰지 않기 위해 computed 로 뺀다(런타임 Vue 컴파일러 크래시 방지 규칙). */
+    const cfNoOrderItems = computed(function () { return !uiState.loading && orderItems.length === 0; });
+
+    /* fnIsUnknownOrderItemStatus — 표준 코드에 없는 상태인지 (카드에 경고 표시용) */
+    const fnIsUnknownOrderItemStatus = function (item) {
+      var st = item.orderItemStatusCd || item.order_item_status_cd || '';
+      return !!st && !ORDER_STEPS.some(function (x) { return x.key === st; });
     };
     const fnIsClaimStep = function (claim, stepKey) {
       var claimStatus = claim.claimStatusCd || claim.claim_status_cd || '';
@@ -1464,7 +1480,7 @@ window.OdOrderKanban = {
       hlOrderItemId: _oi, hlClaimId: _ci,
       ORDER_STEPS, DLIV_SHOW_STEPS,
       fnStepLabel, fnClaimTypeKey, fnClaimTypeLabel, fnClaimFlow, fnClaimFlowRows, fnDlivInfo,
-      fnIsOrderItemStep, fnIsClaimStep,
+      fnIsOrderItemStep, fnIsClaimStep, fnIsUnknownOrderItemStatus, cfNoOrderItems,
       fnIsHlOrderItem, fnIsHlClaim,
       fnIsDragOverOrderItemCol, fnIsDragOverClaimCol,
       fnSettleLockState, fnSettleRawsForItem,
@@ -1560,6 +1576,12 @@ window.OdOrderKanban = {
     <div class="od-kanban-section kanban-theme-order">
       <div class="od-kanban-section-title-bar" style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:14px;font-weight:800;color:#15803d;">🟢 주문</span>
+        <span v-if="orderItems.length" style="font-size:11px;color:#64748b;">주문항목 {{ orderItems.length }}건</span>
+      </div>
+      <!-- 항목이 0건이면 빈 보드만 뜨는 대신 이유를 알린다 (od_order_item 자체가 없는 주문이 실제로 있다) -->
+      <div v-if="cfNoOrderItems"
+        style="padding:14px;margin:6px 0;border:1px dashed #cbd5e1;border-radius:8px;background:#f8fafc;color:#64748b;font-size:12px;">
+        이 주문에는 주문항목이 없습니다. (주문ID {{ currentOrderId }})
       </div>
 
       <div v-if="!orderItems.length" class="od-kanban-empty">주문항목이 없습니다.</div>
@@ -1606,6 +1628,12 @@ window.OdOrderKanban = {
                   <div class="od-kanban-card-nm">
                     {{ item.prodNm || item.prod_nm || '—' }}
                     <span v-if="item.orderQty || item.order_qty" class="od-kanban-card-qty">{{ item.orderQty || item.order_qty }}</span>
+                  </div>
+                  <!-- 표준 코드에 없는 상태 — 첫 컬럼에 임시 노출 중임을 알린다(조용히 사라지지 않게) -->
+                  <div v-if="fnIsUnknownOrderItemStatus(item)" class="od-kanban-card-meta"
+                    :title="'ORDER_ITEM_STATUS 코드에 없는 상태입니다: ' + (item.orderItemStatusCd || item.order_item_status_cd)"
+                    style="color:#dc2626;font-weight:700;">
+                    ⚠ 미정의 상태: {{ item.orderItemStatusCd || item.order_item_status_cd }}
                   </div>
                   <div v-if="item.optItemNm1 || item.opt_item_nm1" class="od-kanban-card-meta">
                     {{ [item.optItemNm1 || item.opt_item_nm1, item.optItemNm2 || item.opt_item_nm2].filter(Boolean).join(' / ') }}

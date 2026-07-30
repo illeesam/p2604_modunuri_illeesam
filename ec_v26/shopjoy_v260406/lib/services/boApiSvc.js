@@ -270,11 +270,11 @@
     requestExtraPay(body, uiNm, cmdNm)  { return global.boApi.post('/bo/ec/od/order/extra-pay', body, hdr(uiNm, cmdNm)); },
   };
 
-  /* ── od: 주문항목 상태 (칸반용) ──────────────────────────────── */
-  boApiSvc.odOrderItem = {
-    /* 단건 상태 변경 — entity: { orderItemId, orderItemStatusCd, rowStatus:'U' } */
-    saveBase(entity, uiNm, cmdNm)  { return global.boApi.post('/base/ec/od/order-item/save/base', entity, hdr(uiNm, cmdNm)); },
-  };
+  /* od: 주문항목 상태(칸반용) `odOrderItem.saveBase` 는 제거했다 (2026-07-30).
+     호출처가 한 곳도 없는 죽은 코드였고, 경로가 `/base/ec/od/order-item/...` 로
+     클라이언트 직접 호출이 금지된 base 레이어를 가리키고 있었다
+     (인증·권한·감사·헤더검증이 bo/fo 레이어에 있다 — base.기술-api.md §3.5).
+     칸반에서 실제로 필요해지면 `/bo/ec/od/...` 컨트롤러를 만들어 붙일 것. */
 
   /* ── pd: 묶음상품 ───────────────────────────────────────────── */
   boApiSvc.pdBundle = {

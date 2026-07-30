@@ -146,6 +146,32 @@
     },
   };
 
+  /**
+   * bofOpenKanbanPopup — 주문/클레임 칸반 보드를 별도 창으로 연다.
+   *
+   * 목록 화면의 [칸반] 은 탭으로 열어 목록을 가리므로, 목록을 보면서 상태를 옮기고 싶을 때
+   * 쓰는 별도 진입점이다(주문관리·클레임관리의 [⧉] 버튼). 탭 진입은 그대로 남아 있다.
+   * 같은 출처라 팝업이 localStorage 의 토큰을 그대로 쓴다 — 재로그인 불필요.
+   * 창 이름을 주문ID 로 구분해 다른 주문은 새 창, 같은 주문은 기존 창을 재사용한다.
+   *
+   * @param {string} orderId   주문 ID (필수)
+   * @param {string} [claimId] 강조할 클레임 ID
+   * @param {Function} [showToast] 팝업 차단 시 안내용
+   */
+  boUtil.bofOpenKanbanPopup = function (orderId, claimId, showToast) {
+    if (!orderId) { return null; }
+    let url = 'bo-od-order-kanban-pop.html?orderId=' + encodeURIComponent(orderId);
+    if (claimId) { url += '&claimId=' + encodeURIComponent(claimId); }
+    const win = window.open(window.pageUrl(url), 'odKanban_' + orderId,
+      'width=1480,height=900,resizable=yes,scrollbars=yes');
+    if (!win) {
+      if (showToast) { showToast('팝업이 차단되었습니다. 브라우저의 팝업 차단을 해제해주세요.', 'error', 0); }
+      return null;
+    }
+    win.focus();
+    return win;
+  };
+
   boUtil.bofGetSiteNm = function() {
     if (!boCommonFilter.siteId) return 'ShopJoy';
     const sites = window._boCmSites || [];

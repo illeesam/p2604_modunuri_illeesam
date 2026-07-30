@@ -27,6 +27,35 @@ window.HelpBoModal = {
       { id: 'display',   label: '🖼 전시관리' },
       { id: 'settle',    label: '💰 정산관리' },
       { id: 'system',    label: '🔧 시스템' },
+      { id: 'statusCd',  label: '🏷 상태코드' },
+    ];
+
+    /* 상태코드 표준 — sy_code 기준. 여기 없는 값을 저장하면 라벨이 안 붙고
+       상태 기반 화면(주문 칸반 등)에서 항목이 아예 안 보인다. */
+    const STATUS_GROUPS = [
+      { grp: 'ORDER_STATUS',      col: 'od_order.order_status_cd',            codes: 'PENDING(입금대기) · PAID(결제완료) · PREPARING(상품준비) · SHIPPED(배송중) · DELIVERED(배송완료) · COMPLT(구매확정) · CANCELLED(주문취소) · AUTO_CANCELLED(자동취소)' },
+      { grp: 'ORDER_ITEM_STATUS', col: 'od_order_item.order_item_status_cd',  codes: 'ORDERED(주문완료) · PAID(결제완료) · PREPARING(준비중) · SHIPPING(배송중) · DELIVERED(배송완료) · CONFIRMED(구매확정) · CANCELLED(취소)' },
+      { grp: 'CLAIM_STATUS',      col: 'od_claim.claim_status_cd',            codes: 'REQUESTED(요청) · ACCEPTED/APPROVED(승인) · REJECTED(반려) · IN_PICKUP(수거중) · PROCESSING(처리중) · REFUND_WAIT(환불대기) · COMPLT(처리완료) · CANCELLED(철회)' },
+      { grp: 'DLIV_STATUS',       col: 'od_dliv.dliv_status_cd',              codes: 'READY(준비중) · SHIPPED(출고완료) · IN_TRANSIT(배송중) · DELIVERED(배송완료) · FAILED(배송실패)' },
+      { grp: 'PROD_STATUS',       col: 'pd_prod.prod_status_cd',              codes: 'ACTIVE(판매중) · INACTIVE(중지) · SOLDOUT(품절) · DRAFT(임시저장)' },
+      { grp: 'EVENT_STATUS',      col: 'pm_event.event_status_cd',            codes: 'PENDING(대기) · ACTIVE(진행중) · INACTIVE(비활성) · ENDED(종료)' },
+      { grp: 'SETTLE_STATUS',     col: 'st_settle.settle_status_cd',          codes: 'OPEN(진행중) · CONFIRMED(정산확정) · CLOSED(마감완료) · PAID(지급완료) · CANCELLED(마감취소)' },
+      { grp: 'CONTACT_STATUS',    col: 'sy_contact.contact_status_cd',        codes: 'RECEIVED(접수) · IN_PROGRESS(처리중) · DONE(완료) · ON_HOLD(보류)' },
+      { grp: 'CHATT_STATUS',      col: 'cm_chatt.chatt_status_cd',            codes: 'WAITING(대기) · ACTIVE(진행중) · DONE(완료)' },
+    ];
+
+    /* 2026-07-31 정규화 이력 — 예전 데이터·엑셀에서 아래 값을 보면 좌측이 옛 값이다 */
+    const STATUS_LEGACY = [
+      { col: 'od_order_item.order_item_status_cd', map: 'ORDER_COMPLETE → ORDERED', cnt: '16건' },
+      { col: 'od_claim.claim_status_cd',           map: 'REQUEST → REQUESTED, COMPLETE → COMPLT, WAIT_REFUND → REFUND_WAIT, COLLECTING → IN_PICKUP', cnt: '19건' },
+      { col: 'od_order.order_status_cd',           map: 'COMPLETE → COMPLT, CANCEL → CANCELLED, WAIT_PAY → PENDING, SHIPPING → SHIPPED', cnt: '10건' },
+      { col: 'od_dliv.dliv_status_cd',             map: 'PREPARING → READY, SHIPPING → IN_TRANSIT', cnt: '3건' },
+      { col: 'pd_prod.prod_status_cd',             map: 'SELLING → ACTIVE', cnt: '38건' },
+      { col: 'cm_chatt.chatt_status_cd',           map: 'OPEN → ACTIVE, CLOSED → DONE, PENDING → WAITING', cnt: '16건' },
+      { col: 'sy_contact.contact_status_cd',       map: '요청·REQUEST → RECEIVED, PROCESSING → IN_PROGRESS, ANSWERED → DONE', cnt: '29건' },
+      { col: 'sy_notice.notice_status_cd',         map: 'PUBLISH → PUBLISHED, END → ENDED, (빈값) → DRAFT', cnt: '9건' },
+      { col: 'sy_bbs.bbs_status_cd',               map: 'PUBLISH·게시 → ACTIVE, 임시 → HIDDEN', cnt: '42건' },
+      { col: 'st_recon.recon_status_cd',           map: 'MISMATCH → DIFF', cnt: '1건' },
     ];
 
     const OPT_SUB_TABS = [
@@ -431,6 +460,7 @@ window.HelpBoModal = {
       handleBtnAction, handleSelectAction,                                  // dispatch
       activeTab, optSubTab, orderSubTab, settleSubTab, showExtHelp,        // 탭 상태
       TABS, OPT_SUB_TABS,                                                   // 탭 정의
+      STATUS_GROUPS, STATUS_LEGACY,                                         // 상태코드 표준 / 정규화 이력
       OPT_OVERVIEW_ROWS, OPT_CLOTHING_ROWS, OPT_SHOES_ROWS, OPT_ELEC_ROWS, OPT_SINGLE_ROWS, INPUT_TYPES,  // 옵션 데이터
       OVERVIEW_CARDS, PRODUCT_STEPS, PRODUCT_TABS, MEMBER_TABS_LIST,        // 개요/회원/상품
       ORDER_STEPS, ORDER_STEP_DETAILS, ORDER_PARTIAL_SCENARIO,              // 주문
@@ -1824,6 +1854,59 @@ window.HelpBoModal = {
                 {{ item.desc }}
               </span>
             </div>
+          </div>
+        </template>
+
+        <!-- ===== ■.■.■.■. 상태코드 표준 ======================================= -->
+        <template v-else-if="activeTab==='statusCd'">
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 6px;">
+            🏷 상태코드 표준
+          </h3>
+          <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:14px;">
+            모든 <code style="background:#eef2ff;padding:1px 4px;border-radius:3px;">*_status_cd</code> 컬럼에는
+            아래 <b>공통코드(sy_code)에 등록된 값만</b> 저장합니다.
+            표준에 없는 값이 들어가면 목록에 라벨 대신 코드가 그대로 보이고,
+            <b>주문 칸반에서는 해당 항목 카드가 아예 표시되지 않습니다</b>
+            (상태를 컬럼과 정확히 일치시켜 그리기 때문).
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div v-for="g in STATUS_GROUPS" :key="g.grp"
+              style="border:1px solid #e0e0e0;border-radius:8px;padding:10px 12px;background:#fafafa;">
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+                <span style="font-size:12px;font-weight:800;color:#1677ff;">{{ g.grp }}</span>
+                <code style="font-size:10.5px;color:#888;background:#fff;padding:1px 5px;border-radius:3px;">{{ g.col }}</code>
+              </div>
+              <div style="font-size:11.5px;color:#444;line-height:1.6;">{{ g.codes }}</div>
+            </div>
+          </div>
+
+          <h4 style="font-size:13px;font-weight:800;color:#b45309;margin:20px 0 6px;">
+            ⚠ 2026-07-31 정규화 이력
+          </h4>
+          <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:10px;">
+            비표준 값 198건을 표준으로 정리했습니다. 예전 엑셀·로그에서 아래 <b>좌측 값</b>을 보면 옛 코드입니다.
+          </div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+              <thead>
+                <tr style="background:#f5f6fa;">
+                  <th style="text-align:left;padding:6px 8px;border:1px solid #e5e7eb;white-space:nowrap;">컬럼</th>
+                  <th style="text-align:left;padding:6px 8px;border:1px solid #e5e7eb;">비표준 → 표준</th>
+                  <th style="text-align:right;padding:6px 8px;border:1px solid #e5e7eb;white-space:nowrap;">건수</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="r in STATUS_LEGACY" :key="r.col">
+                  <td style="padding:6px 8px;border:1px solid #e5e7eb;font-family:monospace;font-size:10.5px;white-space:nowrap;">{{ r.col }}</td>
+                  <td style="padding:6px 8px;border:1px solid #e5e7eb;">{{ r.map }}</td>
+                  <td style="padding:6px 8px;border:1px solid #e5e7eb;text-align:right;white-space:nowrap;">{{ r.cnt }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size:11.5px;color:#888;margin-top:10px;line-height:1.6;">
+            상세 정책 · 점검 SQL → 정책서 <code>sy.08 공통코드</code> §상태값은 반드시 sy_code 에 있는 값만 저장
           </div>
         </template>
       </div>

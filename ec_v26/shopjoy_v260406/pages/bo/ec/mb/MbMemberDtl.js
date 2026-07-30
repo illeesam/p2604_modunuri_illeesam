@@ -116,7 +116,8 @@ window.MbMemberDtl = {
   </template>
   <!-- ===== □.■. 상세 툴바 ================================================ -->
   <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->
-  <bo-form-area :columns="columns.baseForm" :form="detailModal.form" :errors="{}"
+  <!-- detailModal 기본값이 {} 라 form 이 없을 수 있다 (부모 Mng 없이 단독 진입 등) → 빈 폼으로 렌더 -->
+  <bo-form-area :columns="columns.baseForm" :form="detailModal.form || {}" :errors="{}"
     :readonly="!active" :cols="3" compact :show-actions="false" />
   <!-- ===== □.■. 폼 영역 ================================================== -->
 </bo-container>

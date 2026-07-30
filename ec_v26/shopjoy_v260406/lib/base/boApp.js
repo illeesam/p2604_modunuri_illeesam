@@ -2848,6 +2848,7 @@
             <pm-save-mng  v-else-if="page==='pmSaveMng'"  :navigate="navigate" />
             <pm-gift-mng  v-else-if="page==='pmGiftMng'"  :navigate="navigate" />
             <pm-voucher-mng v-else-if="page==='pmVoucherMng'" :navigate="navigate" />
+            <pm-voucher-dtl  v-else-if="page==='pmVoucherDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <pm-cache-dtl  v-else-if="page==='pmCacheDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <dp-disp-panel-mng  v-else-if="page==='dpDispPanelMng'"  :navigate="navigate" />
             <dp-disp-area-preview  v-else-if="page==='dpDispAreaPreview'"  :navigate="navigate" />
@@ -2855,8 +2856,11 @@
             <dp-disp-panel-preview v-else-if="page==='dpDispPanelPreview'" :navigate="navigate" />
             <dp-disp-widget-preview v-else-if="page==='dpDispWidgetPreview'" :navigate="navigate" />
             <dp-disp-area-mng  v-else-if="page==='dpDispAreaMng'"  :navigate="navigate" />
+            <dp-disp-area-dtl  v-else-if="page==='dpDispAreaDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <dp-disp-ui-mng  v-else-if="page==='dpDispUiMng'"  :navigate="navigate" />
+            <dp-disp-ui-dtl  v-else-if="page==='dpDispUiDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <dp-disp-widget-mng  v-else-if="page==='dpDispWidgetMng'"  :navigate="navigate" />
+            <dp-disp-widget-dtl  v-else-if="page==='dpDispWidgetDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <dp-disp-panel-dtl  v-else-if="page==='dpDispPanelDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <dp-disp-widget-lib-mng  v-else-if="page==='dpDispWidgetLibMng'"  :navigate="navigate" />
             <dp-disp-widget-lib-dtl  v-else-if="page==='dpDispWidgetLibDtl'"  :navigate="navigate" :dtl-id="dtlId" />

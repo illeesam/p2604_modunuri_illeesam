@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -14,6 +16,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
@@ -37,6 +40,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdOrderRepositoryImpl";
     private static final QOdOrder  odOrder   = QOdOrder.odOrder;
     private static final QMbMember mbMember   = QMbMember.mbMember;
+    private static final QOdOrderItem odOrderItemCnt = new QOdOrderItem("ooi_cnt");   // 주문항목 수 집계 전용
     private static final QSySite   sySite   = QSySite.sySite;
     private static final QPmCoupon pmCoupon = QPmCoupon.pmCoupon;
     private static final QSyCode   cdOs = new QSyCode("cd_os");
@@ -142,7 +146,14 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         cdPm.codeLabel.as("payMethodCdNm"),
                         cdDs.codeLabel.as("dlivStatusCdNm"),
                         cdAc.codeLabel.as("accessChannelCdNm"),
-                        cdAp.codeLabel.as("apprStatusCdNm")
+                        cdAp.codeLabel.as("apprStatusCdNm"),
+                        /* 주문항목 수 — 목록은 orderItems 를 채우지 않으므로 건수만 상관 서브쿼리로 집계 */
+                        ExpressionUtils.as(
+                            Expressions.numberTemplate(Long.class, "COALESCE({0}, 0)",
+                                JPAExpressions.select(odOrderItemCnt.count())
+                                    .from(odOrderItemCnt)
+                                    .where(odOrderItemCnt.orderId.eq(odOrder.orderId))),
+                            "orderItemCnt")
                 ))
                 .from(odOrder)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))

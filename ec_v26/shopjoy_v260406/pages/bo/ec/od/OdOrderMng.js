@@ -146,6 +146,8 @@ window.OdOrderMng = {
           props.navigate('odOrderKanban', { orderId: row.orderId });
           return;
         }
+        // [⧉] 같은 칸반을 탭 대신 별도 창으로 — 목록을 보면서 상태를 옮길 때 사용
+        if (colKey === 'btn_row_kanban_pop') { return fnOpenKanbanPopup(row.orderId); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -358,8 +360,12 @@ window.OdOrderMng = {
       return `font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;background:${c.bg};color:${c.fg};`;
     };
 
-    /* getItemCount — 조회 */
+    /* getItemCount — 주문항목 수.
+       백엔드가 od_order_item 을 집계한 orderItemCnt 를 쓴다.
+       예전에는 상품명의 "외 N" 을 파싱해 추정했는데, 항목이 0건인 주문(시뮬 생성분 등)도
+       1개로 표시돼 실제 항목 기준인 칸반과 어긋났다. 값이 없으면 옛 방식으로 폴백. */
     const getItemCount = (o) => {
+      if (o.orderItemCnt != null) { return Number(o.orderItemCnt); }
       const m = (o.prodNm || '').match(/외\s*(\d+)/);
       return m ? parseInt(m[1]) + 1 : 1;
     };
@@ -476,6 +482,9 @@ window.OdOrderMng = {
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
+    /* fnOpenKanbanPopup — [⧉] 클릭 시 칸반 보드를 별도 창으로 (클레임관리와 공통 로직) */
+    const fnOpenKanbanPopup = (orderId) => boUtil.bofOpenKanbanPopup(orderId, null, props.showToast);
 
     // 기본 검색
     const columns = {};
@@ -626,6 +635,7 @@ window.OdOrderMng = {
             <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
             <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
             <button class="btn btn_row_kanban" style="background:#8b5cf6;color:#fff;border:none;border-radius:5px;padding:3px 7px;font-size:11px;font-weight:600;cursor:pointer;" @click.stop="handleGridCellAction(gridId, 'btn_row_kanban', row)">📋 칸반</button>
+            <button class="btn btn_row_kanban_pop" title="칸반 보드를 새 창으로 열기" style="background:#6d28d9;color:#fff;border:none;border-radius:5px;padding:3px 6px;font-size:11px;font-weight:600;cursor:pointer;" @click.stop="handleGridCellAction(gridId, 'btn_row_kanban_pop', row)">⧉</button>
           </div>
         </template>
       </bo-grid>

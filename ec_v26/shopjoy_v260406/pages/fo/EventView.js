@@ -92,8 +92,12 @@ window.EventView = {
 
 
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    /* initPage — 화면 로드 시퀀스.
+       ID 없이 진입하면(직접 URL 입력 등) 조회가 실패해 본문이 통째로 빈 화면이 된다.
+       빈 껍데기를 보여주는 대신 목록으로 돌려보낸다. */
     const initPage = async () => {
-      handleSearchData();
+      if (!props.dtlId) { props.navigate('event'); return; }
+      await handleSearchData();
     };
     onMounted(initPage);
 

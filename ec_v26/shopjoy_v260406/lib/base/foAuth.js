@@ -171,5 +171,12 @@
   };
 
   /* sfIsFoLogin 은 foAuthStore.js 가 window 에 정의 — 본 파일은 재정의하지 않음 */
-  window.foAuth = { state, init, login, signup, logout };
+  /* isLoggedIn — 로그인 판정의 단일 기준.
+     화면마다 제각각으로 판정하고 있었다 — 어떤 곳은 state.user 만, 어떤 곳은
+     localStorage 토큰만 봤다. 그래서 토큰 없이 user 정보만 복원된 상태에서
+     인증 API 를 호출해 401 이 나는 경우가 있었다(Order 화면 캐시조회).
+     스토어의 sgIsLoggedIn(사용자 + 토큰을 함께 확인)을 유일한 기준으로 쓴다. */
+  const isLoggedIn = () => !!(_store && _store.sgIsLoggedIn);
+
+  window.foAuth = { state, init, login, signup, logout, isLoggedIn };
 })();

@@ -116,6 +116,9 @@ window.OdClaimMng = {
       } else if (cmd === 'claims-rowKanban') {
         window._odKanbanParams = { orderId: param.orderId, claimId: param.claimId };
         return props.navigate('odOrderKanban', { orderId: param.orderId, claimId: param.claimId });
+      // [⧉] 같은 칸반을 탭 대신 별도 창으로 — 목록을 보면서 상태를 옮길 때 사용
+      } else if (cmd === 'claims-rowKanbanPop') {
+        return boUtil.bofOpenKanbanPopup(param.orderId, param.claimId, showToast);
       // 그리드 행 삭제
       } else if (cmd === 'claims-rowDelete') {
         return handleDelete(param);
@@ -552,6 +555,11 @@ window.OdClaimMng = {
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'orderId',       label: '주문ID', refLink: 'order' },
       { key: 'prodNm',        label: '상품' },
+      /* 클레임항목 수 — 백엔드가 od_claim_item 을 상관 서브쿼리로 집계해 내려준다.
+         주문관리처럼 상품명의 "외 N" 을 파싱하지 않는다 — 클레임은 상품명이 빈 행이 많아
+         파싱하면 전부 1개로 잘못 표시된다. */
+      { key: 'claimItemCnt',  label: '항목수', align: 'right', style: 'width:64px;white-space:nowrap;',
+        fmt: (v) => (v == null ? '-' : Number(v).toLocaleString() + '개') },
       { key: 'reasonDetail',  label: '사유' },
       { key: '_claimStatus',  label: '클레임상태',
         fmt: (v, row) => `${row.claimTypeCdNm || row.claimTypeCd} · ${row.claimStatusCdNm || row.claimStatusCd}`,
@@ -746,6 +754,9 @@ window.OdClaimMng = {
               @click="handleSelectAction('claims-rowKanban', { orderId: row.orderId, claimId: row.claimId })">
               칸반
             </button>
+            <button v-if="row.orderId" class="btn btn-xs" title="칸반 보드를 새 창으로 열기"
+              style="background:#1d4ed8;color:#fff;border:none;"
+              @click="handleSelectAction('claims-rowKanbanPop', { orderId: row.orderId, claimId: row.claimId })">⧉</button>
           </div>
         </template>
       </bo-grid>

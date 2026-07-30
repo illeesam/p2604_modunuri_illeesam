@@ -8,6 +8,22 @@ th, td { word-break: keep-all; overflow-wrap: break-word; white-space: normal; v
 주문 도메인 전체 상태 코드를 한 곳에서 조회하고 테이블 간 상관관계를 매트릭스로 정리한 참조용 문서.
 상세 정책은 각 도메인 정책서(od.02~od.07)를 참조하세요.
 
+> **⚠️ 이 표의 코드값만 저장할 것 (2026-07-31)**
+> 아래 코드는 `sy_code` 의 `ORDER_STATUS` / `ORDER_ITEM_STATUS` / `CLAIM_STATUS` / `DLIV_STATUS` 와 일치한다.
+> 여기 없는 값을 저장하면 **주문 칸반에서 카드가 통째로 사라진다** — 칸반은 항목 상태를 컬럼 키와
+> 정확히 일치시켜 렌더하므로 매칭되는 컬럼이 없으면 그리지 않는다. 목록에서도 라벨 대신 코드가 그대로 노출된다.
+>
+> 실제로 다음 비표준 값이 데이터에 섞여 있어 2026-07-31 정규화했다.
+>
+> | 컬럼 | 비표준 → 표준 |
+> |---|---|
+> | `od_order_item.order_item_status_cd` | `ORDER_COMPLETE` → `ORDERED` (16건) |
+> | `od_claim.claim_status_cd` | `REQUEST`→`REQUESTED`, `COMPLETE`→`COMPLT`, `WAIT_REFUND`→`REFUND_WAIT`, `COLLECTING`→`IN_PICKUP` |
+> | `od_order.order_status_cd` | `COMPLETE`→`COMPLT`, `CANCEL`→`CANCELLED`, `WAIT_PAY`→`PENDING`, `SHIPPING`→`SHIPPED` |
+> | `od_dliv.dliv_status_cd` | `PREPARING`→`READY`, `SHIPPING`→`IN_TRANSIT` |
+>
+> 상세·점검 SQL → [sy.08 공통코드](../../sy/sy.08.공통코드.md) §상태값은 반드시 sy_code 에 있는 값만 저장
+
 ---
 
 ## 1. 상태 코드 표

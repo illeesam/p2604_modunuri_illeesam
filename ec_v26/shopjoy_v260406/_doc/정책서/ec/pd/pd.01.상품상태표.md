@@ -12,16 +12,23 @@ th, td { word-break: keep-all; overflow-wrap: break-word; white-space: normal; v
 
 ## 1. 상태 코드 표
 
-### 1-A. 상품 상태 — `ec_prod.prod_status_cd`
+### 1-A. 상품 상태 — `pd_prod.prod_status_cd` (코드그룹 `PROD_STATUS`)
 상품의 판매 가능 여부를 나타내는 라이프사이클 상태.
-DRAFT → ACTIVE → STOPPED ↔ ACTIVE 순으로 전이. DISCONTINUED 이후 재활성화 불가.
+DRAFT → ACTIVE ↔ INACTIVE 로 전이하며, 재고 소진 시 SOLDOUT 으로 표시된다.
 
 | 코드값 | 코드라벨 | 비고 |
 |--------|---------|------|
-| DRAFT        | 준비중   | 작성 중인 상품. 사용자에게 미노출 |
-| ACTIVE       | 활성     | 판매 중인 상품. 정상 노출·주문 가능 |
-| STOPPED      | 중단     | 일시 판매 중단. 관리자 재활성화 가능 |
-| DISCONTINUED | 단종     | 판매 종료. 재활성화 불가. 주문 이력은 보존 |
+| DRAFT    | 임시저장 | 작성 중인 상품. 사용자에게 미노출 |
+| ACTIVE   | 판매중   | 정상 노출·주문 가능 |
+| INACTIVE | 중지     | 판매 중단. 관리자 재활성화 가능 |
+| SOLDOUT  | 품절     | 재고 소진. 노출은 되나 주문 불가 |
+
+> **2026-07-31 정정** — 표는 실제 `sy_code.PROD_STATUS` 기준으로 맞췄다.
+> 이전 문서의 `STOPPED`(중단) / `DISCONTINUED`(단종) 는 코드그룹에 등록된 적이 없는
+> 설계 시안이었고, 실제 데이터에도 쓰인 적이 없다. 현재 운영값은 ACTIVE·INACTIVE·SOLDOUT 이다.
+> 또 테이블명이 `ec_prod` 로 적혀 있었으나 실제는 `pd_prod` 다.
+> 데이터에 섞여 있던 비표준 `SELLING` 38건은 `ACTIVE` 로 정규화했다
+> (→ [sy.08 공통코드](../../sy/sy.08.공통코드.md) §상태값은 반드시 sy_code 에 있는 값만 저장).
 
 ---
 

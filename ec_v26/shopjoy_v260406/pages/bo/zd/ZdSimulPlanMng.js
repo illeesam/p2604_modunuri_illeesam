@@ -215,6 +215,7 @@
       };
 
       return {
+        coUtil,                        // template 에서 coUtil.cofAnd 직접 호출 → return 필수
         fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
@@ -248,7 +249,7 @@
   </div>
 
   <!-- 기획전 유형 가중치 (1/3 폭, 아래 줄) -->
-  <div v-if="cfg.mode==='create' && domCfg.usePlanType" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+  <div v-if="coUtil.cofAnd(cfg.mode==='create', domCfg.usePlanType)" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
     <div class="card" style="padding:14px 16px;">
       <div class="list-title">📊 기획전 유형 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">

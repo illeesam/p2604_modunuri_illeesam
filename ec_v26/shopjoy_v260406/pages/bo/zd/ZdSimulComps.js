@@ -789,6 +789,13 @@
       },
     },
     methods: {
+      /* 아래 3개는 템플릿 속성값에서 `&&` 를 쓰지 않으려고 뺀 판별 헬퍼다.
+         속성값 안의 `&&` 는 런타임 Vue 컴파일러를 크래시시킬 수 있어 금지돼 있고,
+         여기서는 첫 인자를 뒤에서 역참조하므로 coUtil.cofAnd 도 쓸 수 없다
+         (cofAnd 는 함수라 인자를 모두 즉시 평가 → null 가드가 사라진다). */
+      fnIsObj(v) { return v !== null && typeof v === 'object'; },
+      fnIsPlainObj(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); },
+      fnIsProdOpts(k, v) { return k === 'prodOpts' && Array.isArray(v) && v.length > 0; },
       colLabel(k) { return _FIELD_LABELS[k] || ''; },
       cellCodeLabel(k, v) { return _getCodeLabel(k, v); },
       cellDisplay(k, v) {
@@ -844,11 +851,11 @@
               </thead>
               <tbody>
                 <tr v-for="(row,ri) in e.val" :key="ri" :style="ri%2===1?'background:#f5f3ff;':''">
-                  <template v-if="row !== null && typeof row === 'object' && !Array.isArray(row)">
+                  <template v-if="fnIsPlainObj(row)">
                     <td v-for="k in Object.keys(row)" :key="k"
-                      :style="(row[k] !== null && typeof row[k] === 'object') ? 'padding:2px 4px;border:1px solid #ddd6fe;vertical-align:top;' : 'padding:2px 6px;border:1px solid #ddd6fe;font-family:monospace;color:#1e1b4b;line-height:1.4;white-space:nowrap;'">
+                      :style="fnIsObj(row[k]) ? 'padding:2px 4px;border:1px solid #ddd6fe;vertical-align:top;' : 'padding:2px 6px;border:1px solid #ddd6fe;font-family:monospace;color:#1e1b4b;line-height:1.4;white-space:nowrap;'">
                       <!-- prodOpts 배열: 인라인 그리드로 펼침 (pd_prod_opt, 구 pd_prod_opt_item) -->
-                      <template v-if="k === 'prodOpts' && Array.isArray(row[k]) && row[k].length">
+                      <template v-if="fnIsProdOpts(k, row[k])">
                         <table style="border-collapse:collapse;font-size:10px;min-width:320px;">
                           <thead>
                             <tr style="background:#d1fae5;">
@@ -868,7 +875,7 @@
                           </tbody>
                         </table>
                       </template>
-                      <template v-else-if="row[k] !== null && typeof row[k] === 'object'">
+                      <template v-else-if="fnIsObj(row[k])">
                         <zd-preview-table :data="row[k]" />
                       </template>
                       <template v-else>{{ row[k] === null ? 'null' : String(row[k]) }}<span v-if="cellCodeLabel(k, row[k])" style="color:#7c3aed;font-size:9px;font-weight:600;margin-left:4px;font-family:sans-serif;">({{ cellCodeLabel(k, row[k]) }})</span></template>

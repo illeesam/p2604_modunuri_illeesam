@@ -12,20 +12,38 @@ th, td { word-break: keep-all; overflow-wrap: break-word; white-space: normal; v
 
 ## 1. 상태 코드 표
 
-### 1-A. 정산 마감 상태 — `st_settle_close.settle_status_cd`
-월별 정산 마감의 진행 단계를 나타내는 상태. DRAFT → CONFIRMED → CLOSED → PAID 순으로 전이.
+### 1-A. 정산 상태 — `st_settle.settle_status_cd` (코드그룹 `SETTLE_STATUS`)
+월별 정산의 진행 단계. OPEN → CONFIRMED → CLOSED → PAID 순으로 전이.
 CONFIRMED 이후에는 수정 불가. PAID 이후 ERP 전표 생성 및 지급 처리가 진행된다.
 
 | 코드값 | 코드라벨 | 비고 |
 |--------|---------|------|
-| DRAFT     | 작성중   | 집계 작성 중. 수정 가능 |
-| CONFIRMED | 확정     | 정산액 확정 완료. 이의신청 대기 |
-| CLOSED    | 마감     | 정산 마감 처리 완료. 변경 불가 |
+| OPEN      | 진행중   | 집계 작성 중. 수정 가능 |
+| CONFIRMED | 정산확정 | 정산액 확정 완료. 이의신청 대기 |
+| CLOSED    | 마감완료 | 정산 마감 처리 완료. 변경 불가 |
 | PAID      | 지급완료 | 업체 계좌 송금 완료 |
+| CANCELLED | 마감취소 | 마감 철회 |
+
+> **2026-07-31 정정** — 실제 `sy_code.SETTLE_STATUS` 및 테이블 기준으로 맞췄다.
+> ① 컬럼 위치가 `st_settle_close.settle_status_cd` 로 적혀 있었으나 실제는 **`st_settle.settle_status_cd`** 다
+>    (`st_settle_close` 는 마감 이력 테이블이고 상태 컬럼은 `close_status_cd` 로 따로 있다).
+> ② 시작 상태가 문서상 `DRAFT` 였으나 코드그룹에 등록된 값은 **`OPEN`(진행중)** 이다.
+> ③ 데이터에 쓰이고 있던 `CONFIRMED`·`PAID` 가 코드그룹에 없어 라벨이 붙지 않았다 → `sy_code` 에 추가했다.
 
 ---
 
-### 1-B. 정산 지급 상태 — `st_settle_pay.settle_pay_status_cd`
+### 1-A-2. 정산 마감 이력 상태 — `st_settle_close.close_status_cd`
+마감 처리 이력 건의 상태.
+
+| 코드값 | 코드라벨 | 비고 |
+|--------|---------|------|
+| CLOSED | 마감완료 | 해당 정산 회차 마감 처리됨 |
+
+---
+
+### 1-B. 정산 지급 상태 — `st_settle_pay.pay_status_cd`
+> 컬럼명이 `settle_pay_status_cd` 로 적혀 있었으나 실제는 `pay_status_cd` 다 (2026-07-31 정정).
+
 CLOSED 이후 생성되는 지급 처리 건의 상태. FAILED 시 계좌 확인 후 재처리 필요.
 
 | 코드값 | 코드라벨 | 비고 |

@@ -81,6 +81,11 @@ public class OdOrderDto {
         private List<OdOrderItemDto.Item>   orderItems;   // 주문상품 목록
         private List<OdPayDto.Item>         orderPays;    // 결제 목록
         private List<OdDlivDto.Item>        orderDlivs;   // 배송 목록
+        /* 주문항목 수 — od_order_item 상관 서브쿼리 집계.
+           목록은 orderItems 를 채우지 않으므로(N+1 방지) 건수만 따로 내려준다.
+           이전에는 화면이 상품명의 "외 N" 을 파싱해 추정했는데, 항목이 0건인 주문도
+           1개로 표시돼 칸반(실제 항목 기준)과 어긋났다. */
+        private Long orderItemCnt;
         private List<OdOrderDiscntDto.Item> orderDiscnts; // 주문할인 목록
     }
 

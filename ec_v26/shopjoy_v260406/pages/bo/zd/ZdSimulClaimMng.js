@@ -313,6 +313,7 @@
       };
 
       return {
+        coUtil,                        // template 에서 coUtil.cofAnd 직접 호출 → return 필수
         fnCmPopupCallback,
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfTypeTotal, cfAutoFlow,
@@ -377,7 +378,7 @@
         <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 조건에 맞는 시뮬 주문 랜덤</div>
       </div>
       <!-- 주문 아이템 선택 (1/3) -->
-      <div v-if="cfg.mode==='create' && domCfg.fixedOrderId">
+      <div v-if="coUtil.cofAnd(cfg.mode==='create', domCfg.fixedOrderId)">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
           <div style="font-size:11px;font-weight:600;color:#475569;">📦 주문 아이템 선택</div>
           <div style="margin-left:auto;display:flex;gap:4px;">

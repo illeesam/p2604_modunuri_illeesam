@@ -89,6 +89,67 @@ COMMENT ON COLUMN pm_save.save_issue_type_cd IS '지급유형';
 
 ---
 
+## 상태값은 반드시 `sy_code` 에 있는 값만 저장 ⭐⭐ (2026-07-31)
+
+`*_status_cd` 컬럼에는 **해당 코드그룹에 등록된 `code_value` 만** 저장한다.
+표준에 없는 값이 들어가면 조용히 다음이 깨진다.
+
+- **라벨이 안 붙는다** — 목록에 코드가 그대로 노출된다 (예: 클레임 "취소 · REQUEST")
+- **필터·집계에서 누락된다** — select 옵션이 코드그룹 기준이라 그 값은 검색되지 않는다
+- **상태 기반 화면이 항목을 통째로 숨긴다** — 주문 칸반은 항목 상태를 컬럼 키와 정확히
+  일치시켜 카드를 그리므로, 매칭되는 컬럼이 없으면 카드가 사라진다
+
+### 실제 사고 (2026-07-31 정비)
+
+`*_status_cd` 60개 컬럼을 전수 대조한 결과 **14개 컬럼에서 비표준 값 198건**이 발견됐다.
+대표 증상이 위 세 번째 항목 — `od_order_item.order_item_status_cd = 'ORDER_COMPLETE'` 16건이
+`ORDER_ITEM_STATUS` 에 없어서, 해당 주문의 칸반 카드가 하나도 보이지 않았다.
+
+**① 표준값의 동의어·오타 → 데이터를 표준으로 정규화 (183건)**
+
+| 테이블.컬럼 | 코드그룹 | 비표준 → 표준 |
+|---|---|---|
+| `od_order_item.order_item_status_cd` | ORDER_ITEM_STATUS | `ORDER_COMPLETE` → `ORDERED` |
+| `od_claim.claim_status_cd` | CLAIM_STATUS | `REQUEST`→`REQUESTED`, `COMPLETE`→`COMPLT`, `WAIT_REFUND`→`REFUND_WAIT`, `COLLECTING`→`IN_PICKUP` |
+| `od_order.order_status_cd` | ORDER_STATUS | `COMPLETE`→`COMPLT`, `CANCEL`→`CANCELLED`, `WAIT_PAY`→`PENDING`, `SHIPPING`→`SHIPPED` |
+| `od_dliv.dliv_status_cd` | DLIV_STATUS | `PREPARING`→`READY`, `SHIPPING`→`IN_TRANSIT` |
+| `pd_prod.prod_status_cd` | PROD_STATUS | `SELLING` → `ACTIVE` |
+| `cm_chatt.chatt_status_cd` | CHATT_STATUS | `OPEN`→`ACTIVE`, `CLOSED`→`DONE`, `PENDING`→`WAITING` |
+| `st_recon.recon_status_cd` | RECON_STATUS | `MISMATCH` → `DIFF` |
+| `sy_contact.contact_status_cd` | CONTACT_STATUS | `요청`·`REQUEST`→`RECEIVED`, `PROCESSING`→`IN_PROGRESS`, `ANSWERED`→`DONE` |
+| `sy_notice.notice_status_cd` | NOTICE_STATUS | `PUBLISH`→`PUBLISHED`, `END`→`ENDED`, 빈문자열→`DRAFT` |
+| `sy_bbs.bbs_status_cd` | BBS_STATUS | `PUBLISH`·`게시`→`ACTIVE`, `임시`→`HIDDEN` |
+
+> `*_status_cd_before` 컬럼도 같은 매핑을 적용했다.
+
+**② 코드그룹에 없던 별개 상태 → 데이터 대신 코드를 추가**
+
+의미가 다른 상태를 기존 코드로 바꾸면 데이터가 왜곡되므로, `sy_code` 쪽에 추가했다.
+
+| 코드그룹 | 추가한 코드 |
+|---|---|
+| `EVENT_STATUS` | `INACTIVE`(비활성) |
+| `GIFT_ISSUE_STATUS` | `SHIPPED`(발송), `RECEIVED`(수령) |
+| `ERP_VOUCHER_STATUS` | `MATCHED`(대사일치), `MISMATCH`(대사불일치), `ERROR`(오류) — 컬럼 코멘트가 이미 명시하던 값 |
+| `SETTLE_STATUS` | `CONFIRMED`(정산확정), `PAID`(지급완료) |
+
+마이그레이션 SQL: `_doc/ddl_pgsql/migration_20260731_status_code_normalize.sql`
+
+### 점검 방법
+
+새 상태값을 넣기 전에 반드시 해당 코드그룹에 있는지 확인한다.
+
+```sql
+-- 비표준 값 탐지 (컬럼별로 코드그룹을 지정해 실행)
+SELECT x.order_item_status_cd, count(*)
+  FROM od_order_item x
+ WHERE x.order_item_status_cd IS NOT NULL
+   AND x.order_item_status_cd NOT IN (SELECT code_value FROM sy_code WHERE code_grp = 'ORDER_ITEM_STATUS')
+ GROUP BY 1;
+```
+
+---
+
 ## 공통코드 목록
 
 ### 회원 (MB)
@@ -714,9 +775,12 @@ OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참
 | code_value | label | 설명 |
 |---|---|---|
 | ISSUED | 발급됨 | 사은품 발급, 배송 전 |
+| SHIPPED | 발송 | 사은품 발송 처리 |
+| RECEIVED | 수령 | 고객 수령 확인 |
 | DELIVERED | 배송완료 | 함께 배송 완료 |
 | CANCELLED | 취소 | 주문 취소로 발급 취소 |
 > 적용: `pm_gift_issue.gift_issue_status_cd`
+> SHIPPED·RECEIVED 는 데이터에 쓰이고 있었으나 코드그룹에 없어 2026-07-31 추가.
 
 #### SAVE_TYPE — 적립금 유형
 | code_value | label |
@@ -758,12 +822,13 @@ OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참
 #### EVENT_STATUS — 이벤트상태
 | code_value | label |
 |---|---|
-| DRAFT | 임시저장 |
-| WAITING | 대기중 |
+| PENDING | 대기 |
 | ACTIVE | 진행중 |
-| PAUSED | 중지 |
+| INACTIVE | 비활성 |
 | ENDED | 종료 |
 > 적용: `pm_event.event_status_cd`
+> 2026-07-31 실제 코드그룹 기준으로 정정. 이전 문서의 `DRAFT`/`WAITING`/`PAUSED` 는 등록된 적이 없고
+> 데이터에도 쓰이지 않았다(실사용: ENDED·PENDING·ACTIVE·INACTIVE). `INACTIVE` 는 이때 추가했다.
 
 #### EVENT_TYPE — 이벤트유형
 | code_value | label |
@@ -945,9 +1010,12 @@ OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참
 | code_value | label |
 |---|---|
 | OPEN | 진행중 |
+| CONFIRMED | 정산확정 |
 | CLOSED | 마감완료 |
+| PAID | 지급완료 |
 | CANCELLED | 마감취소 |
 > 적용: `st_settle.settle_status_cd`
+> CONFIRMED·PAID 는 데이터에 쓰이고 있었으나 코드그룹에 없어 2026-07-31 추가.
 
 #### SETTLE_CLOSE_STATUS — 정산마감상태
 | code_value | label |
@@ -1049,7 +1117,11 @@ OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참
 | SENT | 전송완료 |
 | FAILED | 전송실패 |
 | CONFIRMED | ERP확인 |
+| MATCHED | 대사일치 |
+| MISMATCH | 대사불일치 |
+| ERROR | 오류 |
 > 적용: `st_erp_voucher.erp_voucher_status_cd`
+> MATCHED·MISMATCH·ERROR 는 컬럼 코멘트가 이미 명시하던 값인데 코드그룹에 없어 2026-07-31 추가.
 
 ---
 

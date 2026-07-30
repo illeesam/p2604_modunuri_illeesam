@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -15,6 +17,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaim;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdClaimRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
@@ -37,6 +40,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private static final QOdClaim  odClaim   = QOdClaim.odClaim;
     private static final QOdOrder  odOrder   = QOdOrder.odOrder;
     private static final QMbMember mbMember   = QMbMember.mbMember;
+    private static final QOdClaimItem odClaimItemCnt = new QOdClaimItem("oci_cnt");   // 클레임항목 수 집계 전용
     private static final QSyCode   cdCt = new QSyCode("cd_ct");
     private static final QSyCode   cdCs = new QSyCode("cd_cs");
     private static final QSyCode   cdRm = new QSyCode("cd_rm");
@@ -201,7 +205,15 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         cdCs.codeLabel.as("claimStatusCdNm"),
                         cdRm.codeLabel.as("refundMethodCdNm"),
                         cdRc.codeLabel.as("returnCourierCdNm"),
-                        cdEc.codeLabel.as("exchangeCourierCdNm")
+                        cdEc.codeLabel.as("exchangeCourierCdNm"),
+                        /* 클레임항목 수 — 목록은 claimItems 를 채우지 않으므로(N+1 방지) 건수만 상관 서브쿼리로 집계.
+                           항목이 없으면 null 대신 0 이 내려가도록 COALESCE 로 감싼다. */
+                        ExpressionUtils.as(
+                            Expressions.numberTemplate(Long.class, "COALESCE({0}, 0)",
+                                JPAExpressions.select(odClaimItemCnt.count())
+                                    .from(odClaimItemCnt)
+                                    .where(odClaimItemCnt.claimId.eq(odClaim.claimId))),
+                            "claimItemCnt")
                 ))
                 .from(odClaim)
                 .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId))

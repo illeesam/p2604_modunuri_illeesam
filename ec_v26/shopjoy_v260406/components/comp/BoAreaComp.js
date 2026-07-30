@@ -2032,7 +2032,10 @@ window.BoFormArea = {
   name: 'BoFormArea',
   props: {
     columns:     { type: Array,   required: true },  // 필드 정의
-    form:        { type: Object,  required: true },  // form reactive
+    /* 기본값 필수 — undefined 가 들어오면 템플릿의 form[col.key] 에서
+       'Cannot read properties of undefined' 로 화면 전체가 렌더 실패한다.
+       (MbMemberDtl 이 detailModal.form 을 가드 없이 넘겨 실제로 발생, 2026-07-30) */
+    form:        { type: Object,  default: () => ({}) },  // form reactive
     errors:      { type: Object,  default: () => ({}) },
     readonly:    { type: Boolean, default: false },  // cfDtlMode (조회 모드)
     cols:        { type: Number,  default: 3 },      // 한 줄 필드 수
