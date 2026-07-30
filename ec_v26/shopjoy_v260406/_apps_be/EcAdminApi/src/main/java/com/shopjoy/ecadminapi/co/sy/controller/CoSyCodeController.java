@@ -34,6 +34,24 @@ public class CoSyCodeController {
         return ResponseEntity.ok(ApiResponse.ok(syCodeService.getList(req)));
     }
 
+    /**
+     * 코드그룹 배치 조회 — 화면이 필요한 그룹만 한 번에 받는다.
+     *
+     * <p>{@code GET /api/co/sy/code/groups?codeGrps=PROD_TYPE,PRODUCT_STATUS}</p>
+     *
+     * <p>부팅 시 전체 코드(133종)를 싣지 않고 화면 단위로 지연 로딩하기 위한 엔드포인트다.
+     * 프론트는 codeStore.saEnsureGrps([...]) 에서 캐시에 없는 그룹만 모아 한 번 호출한다.</p>
+     */
+    @GetMapping("/groups")
+    public ResponseEntity<ApiResponse<List<SyCodeDto.Item>>> groups(
+            @RequestParam("codeGrps") List<String> codeGrps,
+            @RequestParam(value = "siteId", required = false) String siteId) {
+        SyCodeDto.Request req = new SyCodeDto.Request();
+        req.setCodeGrps(codeGrps);
+        req.setSiteId(siteId);
+        return ResponseEntity.ok(ApiResponse.ok(syCodeService.getList(req)));
+    }
+
     /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<BasePage<SyCodeDto.Item>>> page(@Valid @ModelAttribute SyCodeDto.Request req) {

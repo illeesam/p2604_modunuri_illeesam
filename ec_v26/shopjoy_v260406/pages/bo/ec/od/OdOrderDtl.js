@@ -23,7 +23,7 @@ window.OdOrderDtl = {
     const claims = reactive([]);                                                // 클레임 목록
     const orderItems = reactive([]);                                            // 주문 항목 목록
     const payments = reactive([]);                                              // 결제 내역 목록
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: window._odOrderDtlState?.activeTab || 'info', tabMode2: window._odOrderDtlState.tabMode || 'tab' });
+    const uiState = reactive({ loading: false, error: null, activeTab: window._odOrderDtlState?.activeTab || 'info', tabMode2: window._odOrderDtlState.tabMode || 'tab' });
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ claim_statuses: [], order_statuses: [], payment_methods: [], pay_statuses: [] });
@@ -339,15 +339,15 @@ window.OdOrderDtl = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['CLAIM_STATUS', 'ORDER_STATUS', 'PAYMENT_METHOD', 'PAY_STATUS']);
       codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
       codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
       codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
       codes.pay_statuses = codeStore.sgGetGrpCodes('PAY_STATUS');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* fnPayStatusBadge — 공통코드 PAY_STATUS 우선, 미매칭 시 boConsts fallback */
     const fnPayStatusBadge = s => coUtil.cofCodeBadge('PAY_STATUS', s, boConsts.PAY_STATUS_FALLBACK_BADGE[s] || 'badge-gray');
@@ -410,12 +410,16 @@ window.OdOrderDtl = {
     watch(() => uiState.activeTab, (newVal) => { window._odOrderDtlState.activeTab = newVal; });
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       await handleSearchDetail();
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
       fnLoadProducts();
-    });
+    };
+    onMounted(initPage);
 
     /* fnLoadProducts — 상품 선택 모달용 상품 목록 로드 (MD 대리주문) */
     const fnLoadProducts = async () => {

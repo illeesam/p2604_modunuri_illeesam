@@ -16,7 +16,7 @@ window.OdClaimMng = {
 
     const claims = reactive([]);                                                // 클레임 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [], claim_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -243,8 +243,10 @@ window.OdClaimMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['ORDER_STATUS', 'CLAIM_TYPE', 'CLAIM_STATUS', 'DLIV_STATUS', 'PAYMENT_METHOD', 'CLAIM_DATE_TYPE', 'APPROVAL_ACTION', 'REQ_TARGET', 'DATE_RANGE_OPT']);
       codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
       codes.claim_types = codeStore.sgGetGrpCodes('CLAIM_TYPE');
       codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
@@ -254,19 +256,21 @@ window.OdClaimMng = {
       codes.approval_actions = codeStore.sgGetGrpCodes('APPROVAL_ACTION');
       codes.req_targets = codeStore.sgGetGrpCodes('REQ_TARGET');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
         searchParam.dateRangeStart = ''; searchParam.dateRangeEnd = '';
       }
-      handleSearchData('DEFAULT');
-    });
+      await handleSearchData('DEFAULT');
+    };
+    onMounted(initPage);
 
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */

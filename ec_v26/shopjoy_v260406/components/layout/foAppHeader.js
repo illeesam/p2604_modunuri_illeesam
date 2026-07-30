@@ -10,7 +10,7 @@ window.foAppHeader = {
     const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
 
     /* ── UI 상태 ── */
-    const uiState = reactive({ userMenuOpen: false, profileOpen: false, pwOpen: false, loading: false, error: '', isPageCodeLoad: false });
+    const uiState = reactive({ userMenuOpen: false, profileOpen: false, pwOpen: false, loading: false, error: '' });
     const codes = reactive({});
     const userMenuRoot = ref(null);
     const addrSearchModal = reactive({ show: false }); // 주소검색 모달 (카카오 우편번호, 인라인 레이어)

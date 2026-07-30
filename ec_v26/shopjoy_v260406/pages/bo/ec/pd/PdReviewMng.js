@@ -13,7 +13,7 @@ window.PdReviewMng = {
     const products = reactive([]);
     const members = reactive([]);
     const reviews = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, error: null, selectedId: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       review_statuses: [],
       review_rating_opts: [{value:'5',label:'5점'},{value:'4',label:'4점대'},{value:'3',label:'3점대'},{value:'2',label:'2점대'},{value:'1',label:'1점대'}],
@@ -97,16 +97,16 @@ window.PdReviewMng = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['REVIEW_STATUS']);
       try {
         codes.review_statuses = codeStore.sgGetGrpCodes('REVIEW_STATUS');
-        uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // onMounted에서 API 로드
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -155,10 +155,14 @@ window.PdReviewMng = {
     };
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
     const listGridPager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
 

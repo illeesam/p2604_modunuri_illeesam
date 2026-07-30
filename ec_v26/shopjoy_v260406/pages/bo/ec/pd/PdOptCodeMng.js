@@ -306,6 +306,9 @@ window.PdOptCodeMng = {
       uiState.loading = true;
       try {
         await boApiSvc.syCode.saveList('base', rows, '상품옵션코드관리', '저장');
+        /* 상품옵션코드도 sy_code 행 → 지연 로딩 캐시 무효화 (다른 화면의 옛 값 방지) */
+        coUtil.cofInvalidateCodeGrps(
+          [...new Set(rows.map(r => r.codeGrp).filter(Boolean))]);
         _toast('저장되었습니다.');
         await handleLoad();
       } catch (e) {
@@ -328,6 +331,8 @@ window.PdOptCodeMng = {
       if (sortChanged.length) {
         try {
           await boApiSvc.syCode.saveList('order', sortChanged, '상품옵션코드관리', '순서변경');
+          coUtil.cofInvalidateCodeGrps(
+            [...new Set(sortChanged.map(r => r.codeGrp).filter(Boolean))]);
           _toast('순서가 저장되었습니다.');
           await handleLoad();
         } catch (e) {

@@ -12,8 +12,7 @@ window.XsSample02 = {
     const { ref, reactive, computed, onMounted, onUnmounted, watch } = Vue;
 
     const uiState = reactive({                     // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      dragSrc: null, focusedIdx: null, visibleCount: 10, dragMoved: false, checkAll: false,
+      loading: false, error: null, dragSrc: null, focusedIdx: null, visibleCount: 10, dragMoved: false, checkAll: false,
     });
     const codes = reactive({                       // 정적 옵션
       prod_status_opts: [{ value: '판매중', label: '판매중' }, { value: '품절', label: '품절' }, { value: '판매중지', label: '판매중지' }],
@@ -137,13 +136,13 @@ window.XsSample02 = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchList();
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => {
       if (_observer) { _observer.disconnect(); }

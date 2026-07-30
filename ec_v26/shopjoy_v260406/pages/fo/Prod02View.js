@@ -166,7 +166,7 @@ window.Prod02View = {
     /* isLiked — 여부 확인 */
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, quickBuyOpen: false, prodApiLoaded: false });
+    const uiState = reactive({ loading: false, error: null, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, quickBuyOpen: false, prodApiLoaded: false });
     const codes = reactive({});
     const svProduct = reactive({});
 
@@ -254,7 +254,6 @@ window.Prod02View = {
       } catch (e) { console.error('[handleSearchList:getPromotions]', e); }
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* -- 탭 -- */
     const TABS = [
@@ -580,8 +579,8 @@ window.Prod02View = {
     });
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       const main = getScrollEl();
       main.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('keydown', onKeydown);
@@ -590,7 +589,8 @@ window.Prod02View = {
       const firstAvail = (svProduct.opt1s || []).find(c => colorStatus(c) === 'ok');
       if (firstAvail) { uiState.selectedColor = firstAvail; }
       handleSearchList();
-    });
+    };
+    onMounted(initPage);
     onBeforeUnmount(() => {
       const main = getScrollEl();
       main.removeEventListener('scroll', onScroll);

@@ -11,7 +11,7 @@ window.BlogView = {
 
     const { ref, reactive, computed, onMounted, watch } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
 
     const posts = reactive([]);                   // 현재 상세글(1건)
     const categories = reactive([]);              // 우측 카테고리 (실 cm_blog_cate + count)
@@ -133,7 +133,6 @@ window.BlogView = {
       }
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* 백엔드 CmBlogDto.Item → 화면 표준 형태로 정규화 (replies/tags/files 연관정보 포함) */
     const cfPost   = computed(() => {
@@ -185,12 +184,13 @@ window.BlogView = {
     const cfRecentComments = computed(() => (cfPost.value.comments || []).slice(-3).reverse());
 
     // ★ onMounted — 상세 + 카테고리 + 최신글 병렬 로드 (관련글은 상세 후 카테고리로 로드)
-    onMounted(() => {
-      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchData();
       loadCategories();
       loadLatest();
-    });
+    };
+    onMounted(initPage);
 
     /* dtlId 변경(다른 글 클릭) 시 재로드 — :dtl-id 로 재마운트 안 되는 경우 대비 */
     watch(() => props.dtlId, () => {

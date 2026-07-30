@@ -23,8 +23,7 @@ window.CmChattKanban = {
     const rooms   = reactive([]);          // 전체 채팅룸 목록
     const flashSet = reactive(new Set());  // 반짝 중인 채팅룸 ID 집합
     const uiState = reactive({
-      loading: false, isPageCodeLoad: false,
-      activeChatId: null,                 // 현재 활성 탭 채팅룸 ID
+      loading: false, activeChatId: null,                 // 현재 활성 탭 채팅룸 ID
     });
 
     /* 검색 조건 */
@@ -225,19 +224,23 @@ window.CmChattKanban = {
     };
 
     /* fnLoadCodes */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await s.saLoadCodes(['CHATT_STATUS', 'DATE_RANGE_OPT']);
       codes.chatt_statuses   = s.sgGetGrpCodes('CHATT_STATUS');
       codes.date_range_opts  = s.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchRooms();
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchRooms();
       fnStartKanbanPoll();
-    });
+    };
+    onMounted(initPage);
     onUnmounted(() => {
       openTabs.forEach(t => { if (t.pollTimer) { clearInterval(t.pollTimer); } });
       fnStopKanbanPoll();

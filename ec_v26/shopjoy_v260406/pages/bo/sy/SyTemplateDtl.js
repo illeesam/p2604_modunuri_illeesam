@@ -16,7 +16,7 @@ window.SyTemplateDtl = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
-    const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false }); // UI 상태 (미리보기/발송 모달 포함)
+    const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, loading: false }); // UI 상태 (미리보기/발송 모달 포함)
     const codes   = reactive({ use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'] }); // 공통코드
 
     const form = reactive({                                   // 템플릿 폼 데이터
@@ -155,23 +155,27 @@ window.SyTemplateDtl = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
+        /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+        await codeStore.saLoadCodes(['USE_YN']);
         codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-        uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
-        uiState.isPageCodeLoad = true;
       }
     };
 
-    // ★ onMounted — 진입 시 상세 조회
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 상세 조회를 시작한다.
+       (fnLoadCodes 가 어디서도 호출되지 않아 '사용여부' select 가 빈 상태였다 — 2026-07-30 수정) */
+    const initPage = async () => {
+      await fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
       // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
-    });
+    };
+    onMounted(initPage);
 
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
     watch(() => props.reloadTrigger, async (n, o) => {

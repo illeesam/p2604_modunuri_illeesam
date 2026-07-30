@@ -44,7 +44,7 @@ window.CmDashboardMyMng = {
     const userList  = reactive([]);  /* 사용자 목록 (USER 범위 선택용) */
     const uiState = reactive({
       loading: false,
-      settingOpen: true,             /* 이름·공유설정 패널 (기본 열림) */ saving: false, isPageCodeLoad: false, dirty: false,
+      settingOpen: true,             /* 이름·공유설정 패널 (기본 열림) */ saving: false, dirty: false,
       catalogOpen: true, tab: 'mine', /* 'mine' | 'shared' */
     });
     const codes = reactive({});
@@ -104,17 +104,16 @@ window.CmDashboardMyMng = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       await handleLoadDashes();
       await handleLoadCatalog();
       fnLoadDeptUser();
       fnFitSoon();
       window.addEventListener('resize', fnFitCanvas);
-    });
+    };
+    onMounted(initPage);
     Vue.onUnmounted(() => window.removeEventListener('resize', fnFitCanvas));
 
     /* 좌측메뉴에서 다른 대시보드 클릭 시 전환.

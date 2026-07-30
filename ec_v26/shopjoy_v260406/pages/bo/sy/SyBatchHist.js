@@ -17,7 +17,7 @@ window.SyBatchHist = {
     const batches = reactive([]);                  // 배치 마스터 목록 (select 옵션용)
     const batchLogs = reactive([]);                // 배치 실행이력 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
-      loading: false, isPageCodeLoad: false, error: null,
+      loading: false, error: null,
       searchBatchId: '', searchStatus: '', expandedSet: new Set(),
     });
     const codes = reactive({ batch_run_statuses: [] });
@@ -155,22 +155,27 @@ window.SyBatchHist = {
 
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
+        /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+        await codeStore.saLoadCodes(['BATCH_RUN_STATUS']);
         codes.batch_run_statuses = codeStore.sgGetGrpCodes('BATCH_RUN_STATUS');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchData().then(() => { onExpandAll(); });
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchData();
+      onExpandAll();
+    };
+    onMounted(initPage);
 
     /* 상위(SyBatchMng)에서 reloadTrigger ++ → filterBatchId 적용 후 초기화 재조회.
      *   - 표시경로 트리 선택/초기화: filterBatchId=null → 배치 전체 이력

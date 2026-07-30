@@ -15,8 +15,7 @@ window.SyMenuMng = {
     const menus = reactive([]);                    // 메뉴 목록 데이터
     const menuCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({                     // UI 상태
-      checkAll: false, loading: false, error: null, isPageCodeLoad: false,
-      selectedTreeId: null, focusedIdx: null,
+      checkAll: false, loading: false, error: null, selectedTreeId: null, focusedIdx: null,
     });
     const codes = reactive({ menu_type: [], menu_status: [], use_yn: [], menu_types: ['페이지','폴더','외부링크','구분선'] });
 
@@ -188,20 +187,24 @@ window.SyMenuMng = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['MENU_TYPE', 'MENU_STATUS', 'USE_YN']);
       codes.menu_type = codeStore.sgGetGrpCodes('MENU_TYPE');
       codes.menu_status = codeStore.sgGetGrpCodes('MENU_STATUS');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     /* buildTreeRows — 그리드용 트리 행 빌드 (서버에서 필터된 list 받아 평탄화만) */
     const buildTreeRows = (items) => {

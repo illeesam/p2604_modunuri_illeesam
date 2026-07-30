@@ -1,6 +1,119 @@
 # codes Reactive 패턴 (uiState와 함께 통합 상태관리)
 
+## 코드 지연 로딩 아키텍처 ⭐⭐ (2026-07-30 전환)
+
+**요약: 코드는 앱 부팅 때 전량 적재하지 않는다. 화면이 로드될 때 그 화면이 쓰는 코드그룹만 받아 스토어에 누적한다.**
+
+### 왜 바꿨나
+
+이전에는 로그인 직후 `getInitData(names=ALL)` 응답에 `syCodes` 로 133종 전량(1,000행 이상)이 실려 왔고,
+각 화면은 "스토어에 이미 코드가 있다" 는 전제로 `sgGetGrpCodes()` 만 읽었다. 문제:
+
+- 첫 화면 진입 전에 쓰지도 않을 코드까지 전부 받는다 (부팅 페이로드 비대)
+- `window.open` 독립 팝업 화면은 부팅 시퀀스를 타지 않아 스토어가 빈 상태로 시작한다
+- 코드를 부팅에만 실으면, 세션 중 공통코드를 수정해도 반영 경로가 없다
+
+### 구성 요소
+
+| 계층 | 구현 | 역할 |
+|---|---|---|
+| 배치 API | `GET /api/co/sy/code/groups?codeGrps=A,B,C` (`CoSyCodeController`) | 요청한 코드그룹만 한 번에 반환 |
+| 서비스 | `coApiSvc.syCode.getGrpsCodes(codeGrps, uiNm, cmdNm)` | 배열/단건 모두 허용, `,` 조립 |
+| 스토어 | `codeStore.saLoadCodes(grps)` | **그룹 단위 캐시 + 동시요청 dedupe + 실패 캐싱** |
+| 스토어 | `codeStore.saInvalidateGrps(grps)` | 특정 창의 코드그룹 캐시 폐기 (저수준) |
+| 유틸 | `coUtil.cofInvalidateCodeGrps(grps)` | **창 경계를 넘는 무효화** — 화면에서는 이것만 쓴다 |
+| 화면 | `fnLoadCodes()` → `await saLoadCodes([...])` | 화면이 쓰는 그룹만 명시 |
+| 화면 | `initPage()` | **코드 응답 도착 후 초기 조회 시작** |
+
+`saLoadCodes` 는 세 가지를 함께 처리한다 — 이미 캐시에 있는 그룹은 요청에서 빠지고(캐시 히트),
+같은 그룹을 동시에 요구하는 화면들은 한 번의 요청을 공유하고(`_svInflight` dedupe),
+실패한 그룹도 재요청 폭주를 막기 위해 기록된다.
+
+### 화면 표준 형태
+
+```javascript
+/* fnLoadCodes — 이 화면이 쓰는 코드그룹만 지연 로딩 */
+const fnLoadCodes = async () => {
+  const codeStore = window.sfGetBoCodeStore();
+  /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+  await codeStore.saLoadCodes(['PRODUCT_STATUS', 'USE_YN', 'DATE_RANGE_OPT']);
+  codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+  codes.use_yn           = codeStore.sgGetGrpCodes('USE_YN');
+  codes.date_range_opts  = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+};
+
+/* initPage — 화면 로드 시퀀스.
+   코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+   빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+const initPage = async () => {
+  await fnLoadCodes();
+  await handleSearchList('DEFAULT');
+};
+onMounted(initPage);
+```
+
+**진입점은 `onMounted(initPage)` 한 형태로 통일한다.** `onMounted(async () => { ... })` 인라인 본문은
+쓰지 않는다 — 로드 순서를 한 함수 안에서 읽을 수 있게 하고, 진입점이 파일마다 다른 모양이 되는 것을 막는다.
+(예외: `components/**` 의 공용 위젯·모달은 마운트 훅이 렌더러·옵저버 등록이라 '화면 로드 시퀀스' 가 아니므로 그대로 둔다.)
+
+### 폐기된 장치 (2026-07-30)
+
+| 폐기 | 이유 |
+|---|---|
+| `coUtil.cofUseAppCodeReady(uiState, fnLoadCodes)` | `initPage` 가 마운트 시 무조건 `await fnLoadCodes()` 를 실행하므로 게이트가 중복. 오히려 `if (isAppReady.value)` 조건 때문에 앱 초기화가 늦으면 코드를 건너뛰고 조회가 먼저 나갔다 |
+| `uiState.isPageCodeLoad` | 위 게이트의 재진입 방지 플래그였다. 게이트가 사라져 소비처가 없다 (템플릿 사용 0건 확인 후 제거) |
+
+`coUtil` 에서 함수 자체를 삭제했다. 되살리지 말 것 — 코드 적재 책임은 `fnLoadCodes` 안의
+`saLoadCodes` 가, 호출 시점은 `initPage` 가 진다.
+
+### 스토어 적재 시점 필드명 정규화 (필수)
+
+스토어 getter·헬퍼(28곳)는 `codeVal` / `codeNm` / `codeSortOrd` 를 읽는다. 반면 배치 API
+`/co/sy/code/groups` 는 표준 DTO 형태인 `codeValue` / `codeLabel` / `sortOrd` 로 응답한다.
+그래서 스토어는 **적재 시점에** `_fnNormCodeRows()` 로 두 이름을 모두 갖도록 정규화한다
+(`_saFetchGrps` 와 `saSetCodes` 양쪽. 원본 키는 보존한다).
+
+정규화를 빼면 `sgGetGrpCodes` 가 `[{}, {}, {}]` 를 반환해 **모든 코드 select 의 라벨이 빈칸**이
+된다. 옵션 *개수*는 정상이라 눈에 잘 띄지 않는다 — 실측에서 렌더된 옵션 50개 중 40개가 공백이었다.
+
+> ⚠️ **검증 방법 주의**: `select.options.length > 1` 로 "채워졌다" 고 판정하면 **빈 라벨
+> 옵션도 통과한다.** 반드시 `[...s.options].filter(o => !o.text.trim()).length === 0` 으로 검증할 것.
+
+### 금지 사항
+
+- ❌ `fnLoadCodes()` 를 `await` 없이 호출 — 코드 없는 상태로 첫 조회가 나간다
+- ❌ `cofUseAppCodeReady` / `isPageCodeLoad` 부활 — 2026-07-30 폐기. `initPage` 가 그 역할을 대신한다
+- ❌ 화면 자체의 `watch(() => codeStore.svCodes.length, ...)` 로 로드 시점 감시 — 지연 로딩에서는
+      시작값이 0 이라 조건이 참이 되지 않아 코드를 영원히 못 받는다
+- ❌ `onMounted(async () => { ... })` 인라인 본문 — `initPage` 로 빼고 `onMounted(initPage)` 로 바인딩
+- ❌ 코드를 localStorage 에 적재 — 같은 브라우저의 탭·창이 공유하므로 서로 간섭한다 (메모리 전용 유지)
+- ❌ `getInitData` 의 `ALL` 에 `syCodes` 재추가 — `names=syCodes` 로 명시 요청하는 경로만 남긴다
+
+### 코드 변경 후 무효화
+
+공통코드를 바꾸는 화면은 저장 직후 해당 그룹 캐시를 비운다. 비우지 않으면 같은 세션의 다른 화면이 옛 값을 계속 쓴다.
+
+```javascript
+await boApi.post('/bo/sy/code/save-list', saveRows, coUtil.cofApiHdr('공통코드관리', '저장'));
+coUtil.cofInvalidateCodeGrps([...new Set(saveRows.map(r => r.codeGrp).filter(Boolean))]);
+```
+
+적용 지점: `SyCodeMng`(코드 저장 / 순서변경 / 그룹 저장), `PdOptCodeMng`(저장 / 순서변경 — 같은 `sy_code` 테이블).
+
+**⚠️ `store.saInvalidateGrps()` 를 화면에서 직접 부르지 말 것.** 그것은 *호출한 창의* 스토어만 비운다.
+상품옵션코드관리는 `bo.html` 안의 **iframe** 으로 열리고 그 문서에도 `boCodeStore.js` 가 로드돼
+있어 자기만의 스토어 인스턴스를 갖는다 — 직접 호출하면 정작 목록·상세를 그리는 부모 창의
+캐시는 그대로 남아 옛 값이 계속 보인다. `coUtil.cofInvalidateCodeGrps` 는
+현재 창 + `parent` + `top` + `opener` 를 모두 시도한다(동일 출처만, 교차 출처는 조용히 건너뜀).
+
+---
+
 ## 개요
+
+> ⚠️ **아래 §개요 ~ §예제 는 이력용 스냅샷이다 (2026-07-30 이전).**
+> 여기 나오는 `isAppReady` / `cofUseAppCodeReady` / `uiState.isPageCodeLoad` 는 **모두 폐기·삭제됐다.**
+> 그대로 복사하면 동작하지 않는다. 현재 표준은 위 §코드 지연 로딩 아키텍처 (`fnLoadCodes` + `initPage`) 를 따른다.
+> 명명 규칙·getter·Store 안전성 항목은 그대로 유효하다.
 
 **모든 화면**의 코드 마스터 데이터를 다음 패턴으로 통합 관리:
 
@@ -348,12 +461,11 @@ const layout_types = window.getBoCodeStore()
 
 | 항목 | 값 |
 |---|---|
-| **uiState 필수 항목** | `loading`, `error`, `isPageCodeLoad` |
+| **uiState 필수 항목** | `loading`, `error` (`isPageCodeLoad` 는 2026-07-30 폐기) |
 | **codes 항목** | 필요한 code_grp별로 카멜케이스 속성 |
-| **isAppReady computed** | `!initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad` |
-| **fnLoadCodes 함수** | codes 항목들을 snGetGrpCodes()로 주입 + `uiState.isPageCodeLoad = true` |
-| **watch 위치** | setup 루트 레벨 (onMounted 외부) |
-| **onMounted 역할** | isAppReady 즉시 체크 + 데이터 로드 |
+| **게이트** | 없음 — `cofUseAppCodeReady` 폐기(2026-07-30). `initPage` 가 순서를 정한다 |
+| **fnLoadCodes 함수** | `async` + `await codeStore.saLoadCodes([...])` → `sgGetGrpCodes()` 로 `codes` 주입 |
+| **onMounted 역할** | `onMounted(initPage)` — `initPage` 안에서 `await fnLoadCodes()` 후 초기 조회 |
 
 ## Store 안전성
 
@@ -380,14 +492,12 @@ codes.disp_ui_types = codeStore.svCodes;  // ❌ Store 오염 가능
 
 새 화면에 codes 패턴을 적용할 때:
 
-- [ ] `uiState.isPageCodeLoad: false` 추가
 - [ ] `codes` reactive 정의 (필요한 항목들)
-- [ ] `isAppReady` computed 작성
-- [ ] `fnLoadCodes()` 함수 구현
-- [ ] `watch(isAppReady, ...)` 추가
-- [ ] `onMounted`에서 `if (isAppReady.value) fnLoadCodes()` 추가
+- [ ] `fnLoadCodes()` 를 **async** 로 구현 + 첫 줄에 `await codeStore.saLoadCodes([...쓰는 그룹...])`
+- [ ] `initPage()` 작성 — `await fnLoadCodes()` → 초기 조회, `onMounted(initPage)` (게이트 만들지 않기)
 - [ ] Template에서 `codes.속성` 사용
 - [ ] return에 `codes`, `uiState` 포함
+- [ ] (코드를 수정하는 화면이면) 저장 직후 `saInvalidateGrps([...])` 연결
 
 ## 전체 적용 현황 (2026-04-26 완료)
 

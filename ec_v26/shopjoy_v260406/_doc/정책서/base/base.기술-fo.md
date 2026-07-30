@@ -335,27 +335,17 @@ fo-disp-ui.html
 
 모든 FO 페이지 컴포넌트는 동일한 3단계 체인으로 데이터를 로딩한다.
 
-### 15.1 표준 체인 구조
+### 15.1 표준 체인 구조 (2026-07-30 개편)
 
 ```js
-// ① isAppReady: 스토어 초기화 완료 여부
-const isAppReady = computed(() => {
-  const initStore = window.useFoAppInitStore?.();
-  const codeStore = window.useFoCodeStore?.();
-  return !initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad;
-});
-
-// ② fnLoadCodes: 코드/마스터 로드 진입점 (재진입 방지 플래그 포함)
+// ① fnLoadCodes: 이 화면이 쓰는 코드그룹만 지연 로딩
 const fnLoadCodes = async () => {
-  try {
-    uiState.isPageCodeLoad = true;   // 재진입 방지 → isAppReady false 처리
-    handleSearchList();               // 실제 데이터 조회 호출
-  } catch (err) {
-    console.error('[fnLoadCodes]', err);
-  }
+  const codeStore = window.useFoCodeStore();
+  await codeStore.saLoadCodes(['ORDER_STATUS', 'DATE_RANGE_OPT']);   // 캐시에 있으면 API 안 나감
+  codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
 };
 
-// ③ handleSearchList: foApi 호출 → 실패 시 목업 fallback
+// ② handleSearchList: foApi 호출 → 실패 시 목업 fallback
 const handleSearchList = async () => {
   try {
     const res = await window.foApi.get('/fo/xxx/list', { params: { ... } });
@@ -365,20 +355,26 @@ const handleSearchList = async () => {
   }
 };
 
-// ④ watch: 스토어가 나중에 준비될 때 트리거
-watch(isAppReady, (newVal) => { if (newVal) fnLoadCodes(); });
-
-// ⑤ onMounted: 스토어가 이미 준비된 경우 즉시 실행
-onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+// ③ initPage: 화면 로드 시퀀스 — 코드 응답 후 조회. 진입점은 이 한 형태로 통일
+const initPage = async () => {
+  await fnLoadCodes();
+  await handleSearchList();
+};
+onMounted(initPage);
 ```
+
+> **폐기 (2026-07-30)**: `isAppReady` computed + `watch(isAppReady, ...)` + `uiState.isPageCodeLoad`
+> + `coUtil.cofUseAppCodeReady` 는 전부 삭제했다. 부팅 때 코드를 일괄 적재하던 시절의 대기 장치인데,
+> 코드가 화면 단위 지연 로딩으로 바뀐 뒤에는 `svCodes.length > 0` 조건이 참이 되지 않아 오히려
+> 코드를 영원히 못 받는다. 지금은 `initPage` 가 마운트 시 무조건 `await fnLoadCodes()` 를 실행한다.
 
 ### 15.2 핵심 규칙
 
 | 규칙 | 내용 |
 |---|---|
-| `isPageCodeLoad` 플래그 | `fnLoadCodes` 진입 시 `true` 설정 → `isAppReady` computed가 `false`로 전환되어 중복 실행 방지 |
-| `onMounted` 가드 필수 | `if (isAppReady.value) fnLoadCodes()` — 스토어가 이미 ready인 경우 처리 |
-| `watch` 병행 필수 | 스토어 초기화가 mount보다 늦게 완료되는 경우 처리 |
+| `initPage` 로 진입점 통일 | `onMounted(initPage)` 만 사용. 인라인 `onMounted(async () => {...})` 금지 |
+| 코드 먼저, 조회 나중 | `await fnLoadCodes()` → `await handleSearchList()`. 코드 기반 select·라벨이 빈 상태로 첫 조회가 나가는 것을 막는다 |
+| 준비 게이트 만들지 않기 | `isAppReady` 류 computed·watch 재도입 금지. 코드 적재는 `saLoadCodes` 가 스스로 책임진다 |
 | foApi fallback | `try` → `window.foApi.get(...)` 성공 시 서버 데이터 사용, `catch` → 목업 데이터 주입 |
 | 데이터 주입 방식 | `reactive([])` + `splice(0, length, ...data)` — 반드시 splice로 교체 (직접 대입 금지) |
 

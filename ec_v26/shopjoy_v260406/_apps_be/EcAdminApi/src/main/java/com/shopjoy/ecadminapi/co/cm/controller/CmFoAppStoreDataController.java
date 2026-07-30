@@ -48,11 +48,15 @@ public class CmFoAppStoreDataController {
         }
 
         if (names.toUpperCase().contains("ALL")) {
+            /* SY_CODES 는 ALL 에서 제외한다 (2026-07-30).
+               공통코드는 부팅 시 133종 전량을 싣던 것을 화면 단위 지연 로딩으로 옮겼다
+               (codeStore.saEnsureGrps → GET /co/sy/code/groups). 부팅 페이로드에서 빼도
+               화면이 필요한 그룹만 그때 받아 캐시에 누적한다.
+               names=syCodes 로 명시하면 여전히 받을 수 있다 — 서버 기능은 남긴다. */
             names = String.join("^",
                 CmStoreConst.SY_AUTH,
                 CmStoreConst.SY_ROLES,
                 CmStoreConst.SY_MENUS,
-                CmStoreConst.SY_CODES,
                 CmStoreConst.SY_PROPS,
                 CmStoreConst.SY_APP
             );

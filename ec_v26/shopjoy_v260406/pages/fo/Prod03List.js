@@ -16,7 +16,7 @@ window.Prod03List = {
 
     /* pager — FO 무한스크롤 페이저 (PC 페이지네이션 + 모바일 무한스크롤) */
     const pager = reactive({ pageType: 'INFINITE_SCROLL', pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [12, 24, 48], pageNums: [], pageList: [], pageCond: {} });
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768, filterOpen: false });
+    const uiState = reactive({ loading: false, error: null, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768, filterOpen: false });
 
 
     /* -- 상품 데이터 -- */
@@ -98,7 +98,6 @@ window.Prod03List = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* -- 상품 이미지 자동 할당 -- coUtil.cofAssignProdImage 위임 (thumbnailUrl→image + 폴백 + priceNum) */
     const assignImage = (p) => coUtil.cofAssignProdImage(p);
@@ -248,16 +247,16 @@ window.Prod03List = {
       setupObserver();
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
     onBeforeUnmount(() => {
       if (observer) { observer.disconnect(); }
       window.removeEventListener('resize', onResize);
     });
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchList();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

@@ -59,7 +59,8 @@ window.ZdTestMapNaver = {
 
     /* ##### [02] 초기 로드 #################################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.map.naver-map-client-id' }, '네이버 지도 API 테스트', '키 조회');
         const list = res?.data?.data || [];
@@ -74,7 +75,8 @@ window.ZdTestMapNaver = {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
       checkSdk();
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => {
       if (naverMap) { naverMap.destroy?.(); naverMap = null; }

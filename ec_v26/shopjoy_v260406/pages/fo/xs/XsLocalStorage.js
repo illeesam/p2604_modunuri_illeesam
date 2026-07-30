@@ -12,7 +12,7 @@ window.XsLocalStorage = {
     /* ##### [01] 초기 변수 정의 ################################################## */
 
     const { reactive, computed, onMounted, onUnmounted, watch } = Vue;
-    const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
+    const uiStateGlobal = reactive({ loading: false, error: null, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -62,7 +62,6 @@ window.XsLocalStorage = {
     const storageData = reactive([]);
     const uiState = reactive({ isResizing: false });
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiStateGlobal, () => { uiStateGlobal.isPageCodeLoad = true; });
 
     /* loadStorageData — 로드 */
     const loadStorageData = () => {
@@ -176,10 +175,11 @@ window.XsLocalStorage = {
       uiState.isResizing = false;
     };
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { uiStateGlobal.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       window.addEventListener('mouseup', stopResize);
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => {
       window.removeEventListener('mousemove', handleMouseMove);

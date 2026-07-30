@@ -11,7 +11,7 @@ window.StErpGenMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const uiState = reactive({ error: null, isPageCodeLoad: false });
+    const uiState = reactive({ error: null });
     const codes = reactive({
       erp_statuses: [],
       erp_voucher_types: [],
@@ -36,17 +36,17 @@ window.StErpGenMng = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['ERP_STATUS', 'ERP_VOUCHER_TYPE_KR']);
       try {
         codes.erp_statuses = codeStore.sgGetGrpCodes('ERP_STATUS');
         codes.erp_voucher_types = codeStore.sgGetGrpCodes('ERP_VOUCHER_TYPE_KR');
-        uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');
 
@@ -70,9 +70,14 @@ window.StErpGenMng = {
       } catch (_) { console.error('[catch-info]', _); }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchData('DEFAULT');
+    };
+    onMounted(initPage);
 
     const cfPreviewRows = computed(() => {
       return cfVendors.value.map(v => {

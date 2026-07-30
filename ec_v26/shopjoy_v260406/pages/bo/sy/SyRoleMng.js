@@ -24,7 +24,7 @@ window.SyRoleMng = {
       checkAll: false,
       error: null,
       userSelectOpen: false,
-      isPageCodeLoad: false, loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchValue: ''});
+      loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchValue: ''});
     const codes = reactive({ role_status: [], use_yn: [], perm_levels: ['없음','읽기','쓰기','관리','차단'], role_cats: [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']] });
 
     /* permLevel 매핑 — DB(Integer) ↔ UI(문자열) 변환 (0:없음 / 1:읽기 / 2:쓰기 / 3:관리 / 4:차단) */
@@ -341,13 +341,13 @@ window.SyRoleMng = {
 
     /* fnLoadCodes — 공통코드 로드 */
 
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['ROLE_STATUS', 'USE_YN']);
       codes.role_status = codeStore.sgGetGrpCodes('ROLE_STATUS');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* fnLoadTreeRoles — 좌측 트리용 전체 역할 데이터 로드 (treeRoles reactive 갱신).
      *   그리드는 selectedPath 자손 필터된 조회를 쓰지만, 트리는 항상 전체 계층을 보여야 하므로 별도 API 호출.
@@ -361,14 +361,18 @@ window.SyRoleMng = {
     };
 
     // ★ onMounted
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       fnLoadMenusAndUsers();
       await fnLoadTreeRoles();
       const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
-      handleSearchList('DEFAULT');
-    });
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     const cfSiteNm  = computed(() => boUtil.bofGetSiteNm());
     const ROLE_CAT_COLOR = { ADMIN:'#7c3aed', SITE:'#2563eb', SALES:'#16a34a', DLIV:'#f59e0b' };
@@ -809,7 +813,10 @@ window.SyRoleMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'cat', type: 'select', label: '역할구분', options: () => codes.role_cats, nullLabel: '역할구분 전체' },
+      /* role_cats 는 [['ADMIN','관리자역할'], ...] 튜플 배열이라 그대로 넘기면 BoSearchArea 가
+         라벨을 못 읽어 옵션 4개가 빈칸으로 렌더된다 → 아래 그리드(841행)와 같은 형태로 매핑 */
+      { key: 'cat', type: 'select', label: '역할구분',
+        options: () => codes.role_cats.map(c => ({ value: c[0], label: c[1] })), nullLabel: '역할구분 전체' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 

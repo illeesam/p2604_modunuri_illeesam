@@ -17,7 +17,7 @@ window.DpDispWidgetDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
-    const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', libPickOpen: false, showComponentTooltip: false, jsonCopied: false });
+    const uiState = reactive({ loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', libPickOpen: false, showComponentTooltip: false, jsonCopied: false });
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -122,14 +122,14 @@ window.DpDispWidgetDtl = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE']);
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
       /* 상태(form.status '활성'/'비활성') ↔ use_yn 변환 — 구 ACTIVE_STATUS 코드그룹 미사용 */
       codes.active_statuses = [{ codeValue: '활성', codeLabel: '활성' }, { codeValue: '비활성', codeLabel: '비활성' }];
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // 코드 주입
 
@@ -302,12 +302,16 @@ window.DpDispWidgetDtl = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       fnLoadPickLibs();
       await handleLoadDetail();
       handleInitNewForm();
-    });
+    };
+    onMounted(initPage);
 
     /* 정책: 수정 클릭 시 항상 상세 API 호출.
      * 부모 Mng 가 reloadTrigger 를 ++ 하면 (같은 id 재클릭 / 다른 id 클릭 모두 포함) form 초기화 후 새 데이터 로드 */

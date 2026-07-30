@@ -12,8 +12,7 @@ window.XsSample06 = {
     const { reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({                     // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false,
+      loading: false, error: null, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false,
     });
     const codes = reactive({                       // 정적 옵션
       discnt_type_opts: [{ value: '정액', label: '정액' }, { value: '정률', label: '정률' }],
@@ -130,13 +129,13 @@ window.XsSample06 = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchList();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 

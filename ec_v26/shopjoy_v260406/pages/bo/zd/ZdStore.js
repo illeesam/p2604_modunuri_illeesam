@@ -13,7 +13,7 @@ window.ZdStore = {
 
     const { ref, computed, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
-    const uiState = reactive({ storeInfo: '', isPageCodeLoad: false, selectedStore: null, tabMode: '5col' });
+    const uiState = reactive({ storeInfo: '', selectedStore: null, tabMode: '5col' });
 
     const openStores = reactive([]);
     const editedStoreInfo = reactive({});
@@ -222,14 +222,16 @@ window.ZdStore = {
 
 
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       // storeList 는 computed 이므로 .value 필요. 잘못된 .length 검사가 무한 호출 유발 가능 → 안전 가드.
       const list = storeList.value || [];
       if (list.length > 0 && !uiState.selectedStore) {
         selectStore(list[0].name);
       }
       loadAllStoreData();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 

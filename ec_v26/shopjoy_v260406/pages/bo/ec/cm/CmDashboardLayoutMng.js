@@ -22,7 +22,7 @@ window.CmDashboardLayoutMng = {
 
     const dashboards = reactive([]);  /* 대시보드 select 옵션 */
     const cards      = reactive([]);  /* 캔버스 카드(항목 편집 사본) — 배열 순서 = 배치 순서 */
-    const uiState = reactive({ loading: false, saving: false, isPageCodeLoad: false, dirty: false });
+    const uiState = reactive({ loading: false, saving: false, dirty: false });
     const codes = reactive({});
 
     /* 조회/조건 상태 */
@@ -57,17 +57,16 @@ window.CmDashboardLayoutMng = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드) #################################### */
 
-    const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       await handleLoadDashboards();
       const first = props.dtlId && dashboards.some(d => d.dashboardId === props.dtlId)
         ? props.dtlId
         : (dashboards[0] ? dashboards[0].dashboardId : '');
       if (first) await handleSelectDash(first);
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러) #################################### */
 

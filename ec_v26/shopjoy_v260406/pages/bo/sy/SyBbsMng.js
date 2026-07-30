@@ -15,8 +15,7 @@ window.SyBbsMng = {
     const bbsList = reactive([]);                  // 게시글 목록 (메인 그리드 데이터)
     const bbms = reactive([]);                     // 게시판 마스터 (select 옵션용)
     const uiState = reactive({                     // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      sortKey: '', sortDir: 'asc',
+      loading: false, error: null, sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ bbs_status: [], bbs_post_statuses: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'authorNm asc', desc: 'authorNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -260,21 +259,25 @@ window.SyBbsMng = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['BBS_STATUS', 'BBS_POST_STATUS', 'DATE_RANGE_OPT']);
       codes.bbs_status = codeStore.sgGetGrpCodes('BBS_STATUS');
       codes.bbs_post_statuses = codeStore.sgGetGrpCodes('BBS_POST_STATUS');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       await handleLoadBbmList();
       await handleSearchBbs('DEFAULT');
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

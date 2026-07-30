@@ -9,7 +9,7 @@ window.StReconOrderMng = {
     /* ##### [01] 초기 변수 정의 ################################################## */
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
-const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: ''});
+const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: ''});
     const codes = reactive({
       order_statuses: [],
       recon_results: [],
@@ -52,18 +52,18 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['ORDER_STATUS', 'RECON_RESULT_ORDER', 'DATE_RANGE_OPT']);
       try {
         codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
         codes.recon_results = codeStore.sgGetGrpCodes('RECON_RESULT_ORDER');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* handleDateRangeChange — 기간 변경 (searchParam.dateRange → dateRangeStart/dateRangeEnd) */
     const handleDateRangeChange = () => {
@@ -111,10 +111,14 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     };
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     /* fnDiffBadge — 유틸 */
     const fnDiffBadge = s => ({ '일치':'badge-green', '정산과다':'badge-red', '정산부족':'badge-orange' }[s] || 'badge-gray');

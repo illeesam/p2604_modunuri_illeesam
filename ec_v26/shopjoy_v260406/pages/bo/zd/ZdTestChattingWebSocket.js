@@ -37,10 +37,12 @@ window.ZdTestChattingWebSocket = {
 
     /* ##### [02] 초기 로드 #################################################### */
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       // 현재 BO 백엔드 주소 자동 세팅
       cfg.wsUrl = (window.location.protocol === 'https:' ? 'wss' : 'ws') + '://' + window.location.hostname + ':8080/ws/chat';
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => { disconnect(); });
 

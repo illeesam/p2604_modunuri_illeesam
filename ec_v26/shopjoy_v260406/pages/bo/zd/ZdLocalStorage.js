@@ -172,10 +172,12 @@ window.ZdLocalStorage = {
       uiState.isResizing = false;
     };
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', stopResize);
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => {
       window.removeEventListener('mousemove', handleMouseMove);

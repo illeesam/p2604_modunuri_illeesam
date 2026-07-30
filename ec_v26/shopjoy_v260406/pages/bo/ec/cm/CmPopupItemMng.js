@@ -22,7 +22,7 @@ window.CmPopupItemMng = {
     const items  = reactive([]);   /* 선택 팝업의 항목 */
     const codeGrps = reactive([]); /* CODE 유형 항목의 코드그룹 선택지 */
     const codes = reactive({});
-    const uiState = reactive({ loading: false, itemLoading: false, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, itemLoading: false });
 
     const searchParam = reactive({ searchValue: '', popupPattern: '' });
     const popupGridPager = reactive({
@@ -96,11 +96,9 @@ window.CmPopupItemMng = {
 
     /* ##### [03] 초기 함수 ######################################################### */
 
-    const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       await handleSearchList();
       await handleSearchCodeGrps();
       /* 팝업관리에서 [항목관리]로 넘어온 경우 해당 팝업을 바로 연다 */
@@ -108,7 +106,8 @@ window.CmPopupItemMng = {
         const hit = popups.find(p => String(p.popupId) === String(props.dtlId));
         if (hit) selectPopup(hit);
       }
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [04] 내장 사용 함수 #################################################### */
 

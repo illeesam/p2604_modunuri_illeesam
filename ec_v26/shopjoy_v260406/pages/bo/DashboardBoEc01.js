@@ -617,11 +617,13 @@ window.DashboardBoEc01 = {
 
     /* ##### [06] 라이프사이클 #################################################### */
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       document.addEventListener('click', _onDocClick);
       loadDailyStats();
       loadDashboard();
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => {
       document.removeEventListener('click', _onDocClick);

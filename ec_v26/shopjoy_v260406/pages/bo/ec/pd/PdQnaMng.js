@@ -12,7 +12,7 @@ window.PdQnaMng = {
     const products = reactive([]);                // 상품 목록 (이름 변환용)
     const members = reactive([]);                 // 회원 목록 (이름 변환용)
     const qnas = reactive([]);                    // Q&A 목록 (메인 그리드 데이터)
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc',
+    const uiState = reactive({ loading: false, error: null, sortKey: '', sortDir: 'asc',
                                selectedId: null, isNew: false });
     const codes = reactive({ qna_statuses: [] });
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -182,22 +182,29 @@ window.PdQnaMng = {
     const fnAnswLabel = answYn => answYn === 'Y' ? '답변완료' : '미답변';
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다.
+         `QNA_STATUS` 를 읽고 있었는데 그 그룹은 DB 에 존재하지 않아 '상태' select 가
+         항상 비어 있었다(2026-07-30). 이 select 의 key 는 answYn(답변여부 Y/N) 이므로
+         관례({동사}_YN: SEND_YN/CLOSE_YN/CONFIRM_YN)에 맞춘 ANSW_YN 을 신설해 연결했다. */
+      await codeStore.saLoadCodes(['ANSW_YN']);
       try {
-        codes.qna_statuses = codeStore.sgGetGrpCodes('QNA_STATUS');
-        uiState.isPageCodeLoad = true;
+        codes.qna_statuses = codeStore.sgGetGrpCodes('ANSW_YN');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 

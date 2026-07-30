@@ -13,7 +13,7 @@ window.MyContact = {
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
     const cart                 = window.foApp.cart;  // 장바구니
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
 
 
     const myStore = window.useFoMyStore();
@@ -47,10 +47,6 @@ window.MyContact = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => {
-      uiState.isPageCodeLoad = true;
-      handleSearchData();
-    });
 
     const { inquiries, expandedInquiry } = Pinia.storeToRefs(myStore);
 
@@ -92,8 +88,11 @@ window.MyContact = {
 
     /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
     const onSizeChange = async () => { await handleLoadPage(); };
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; handleSearchData(); } });
+    /* initPage — 화면 로드 시퀀스. 마운트 시 초기 조회를 실행한다. */
+    const initPage = async () => {
+      await handleSearchData();
+    };
+    onMounted(initPage);
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 

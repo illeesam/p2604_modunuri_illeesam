@@ -13,7 +13,7 @@ window.MyOrder = {
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
     const cart                 = window.foApp.cart;  // 장바구니 목록
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });
+    const uiState = reactive({ loading: false, error: null, helpTab: 'order', flowHelpOpen: false });
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -137,7 +137,6 @@ window.MyOrder = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     const myStore = window.useFoMyStore();
     const { orders, cfClaimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
@@ -349,12 +348,12 @@ window.MyOrder = {
 
     /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
     const onSizeChange = async () => { await handleLoadPage(); };
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleLoadPage();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 판정 / 렌더) — 템플릿 속성값 && 회피용 ######## */
 

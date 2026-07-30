@@ -713,7 +713,10 @@ window.SyPostman = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
 
-    onMounted(() => { handleSearchList('DEFAULT'); });
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => { handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     const autoPopupTabId = Vue.toRef(uiState, 'autoPopupTabId');
 

@@ -97,7 +97,7 @@ window.PmDiscntMng = {
 
     // ===== 상태(reactive) 선언 =============================================
     const discounts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, error: null, tabMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       discount_types: [],
       discount_statuses: [],
@@ -112,20 +112,20 @@ window.PmDiscntMng = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['DISCOUNT_TYPE', 'DISCOUNT_STATUS', 'DISCNT_TYPE', 'PROMO_STATUS', 'DATE_RANGE_OPT']);
       try {
         codes.discount_types = codeStore.sgGetGrpCodes('DISCOUNT_TYPE');
         codes.discount_statuses = codeStore.sgGetGrpCodes('DISCOUNT_STATUS');
         codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE');
         codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
     // ===== 정렬 처리 =======================================================
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'discntNm asc', desc: 'discntNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -187,9 +187,14 @@ window.PmDiscntMng = {
       const today = new Date(); const thisYear = today.getFullYear();
       return { searchType: '', searchValue: '', dateRange: '', dateRangeType: 'reg_date', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, discntTypeCd: '', discntStatusCd: '' };
     };
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     // ===== 날짜 범위 변경 / 사이트명 / 페이저 / 하단 상세 상태 ===============
     /* handleDateRangeChange — 기간 변경 */

@@ -14,7 +14,7 @@ window.PdCategoryProdMng = {
     const categories = reactive([]);
     const products = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: window._ecCategoryProdState?.tabMode || 'tab', activeTypeCd: 'NORMAL'});
+    const uiState = reactive({ loading: false, error: null, tabMode: window._ecCategoryProdState?.tabMode || 'tab', activeTypeCd: 'NORMAL'});
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive({
       product_statuses: [],
@@ -90,16 +90,16 @@ window.PdCategoryProdMng = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['PRODUCT_STATUS']);
       try {
         codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
-        uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* 선택된 카테고리 (watch 이전에 선언 필수) */
     const cfSelectedCatId = ref(null);
@@ -134,10 +134,9 @@ window.PdCategoryProdMng = {
     watch(() => cfSelectedCatId.value, handleReloadByCategory);
     watch(() => uiState.activeTypeCd, handleReloadByCategory);
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-    });
+    /* 여기에 있던 첫 번째 onMounted(코드 적재만) 는 제거했다 (2026-07-30).
+       같은 setup 안에서 onMounted 가 두 번 등록돼 fnLoadCodes 를 중복 호출하고 있었다.
+       화면 로드 시퀀스는 아래쪽 initPage 한 곳에서만 관리한다. */
 
     /* -- 뷰모드 영속화 -- */
     if (!window._ecCategoryProdState) { window._ecCategoryProdState = { tabMode: 'tab' }; }
@@ -260,16 +259,19 @@ window.PdCategoryProdMng = {
       }
     };
 
-    /* ★ onMounted — 진입 시 카테고리·상품 목록 조회 */
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       await Promise.all([handleSearchCategoriesList(), handleSearchProductsList(), handleSearchAllCategoryProds()]);
       try {
         await handleReloadByCategory();
       } catch (err) {
-        console.warn('[onMounted] handleReloadByCategory failed:', err.message);
+        console.warn('[initPage] handleReloadByCategory failed:', err.message);
       }
-    });
+    };
+    onMounted(initPage);
 
     /* selectNode — 노드 선택 */
     const selectNode = id => {

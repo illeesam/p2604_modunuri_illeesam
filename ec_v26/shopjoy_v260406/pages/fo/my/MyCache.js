@@ -12,7 +12,7 @@ window.MyCache = {
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const cart                 = window.foApp.cart;  // 장바구니
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -55,7 +55,6 @@ window.MyCache = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     const myStore = window.useFoMyStore();
     const { cashBalance, cashHistory, chargeAmount } = Pinia.storeToRefs(myStore);
@@ -107,13 +106,13 @@ window.MyCache = {
 
     /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
     const onSizeChange = async () => { await handleLoadPage(); };
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       await handleLoadPage();
       myStore.handleLoadOrders();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 

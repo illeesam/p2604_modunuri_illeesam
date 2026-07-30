@@ -14,7 +14,7 @@ window.SyI18nMng = {
 
     const i18ns     = reactive([]);             // 다국어 키 그리드 데이터
     const i18nMsgs = reactive([]);             // 다국어 메시지 (i18nId 별 langCd 매핑)
-    const uiState  = reactive({ isPageCodeLoad: false, selectedId: null }); // UI 상태
+    const uiState  = reactive({ selectedId: null }); // UI 상태
     const codes    = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
     /* _initSearchParam — 초기화 */
@@ -117,13 +117,13 @@ window.SyI18nMng = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['LANG_CODE', 'USE_YN']);
       codes.lang_code = codeStore.sgGetGrpCodes('LANG_CODE');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* openDetail — 번역 편집 패널 열기 (토글) */
     const openDetail = (key) => {
@@ -157,10 +157,14 @@ window.SyI18nMng = {
     };
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchData();
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchData();
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

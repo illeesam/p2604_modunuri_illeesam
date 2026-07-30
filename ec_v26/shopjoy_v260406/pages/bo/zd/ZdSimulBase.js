@@ -351,7 +351,10 @@
     const onSetLogPage  = (n) => { logPager.pageNo = n; _fetchLogs(n); };
     const onSearchLog   = () => { logPager.pageNo = 1; _fetchLogs(1); };
 
-    onMounted(() => { _fetchLogs(1); });
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => { _fetchLogs(1);
+    };
+    onMounted(initPage);
     onBeforeUnmount(() => { state.running = false; _clearTimers(); });
 
     return { cfg, state, logs, logPager, logSearch, cfIsRunning, cfIntervalMs, cfDurationMs, cfSuccessRate,

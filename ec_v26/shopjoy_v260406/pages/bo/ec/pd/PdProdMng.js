@@ -18,8 +18,7 @@ window.PdProdMng = {
     const vendors  = reactive([]);                 // 판매업체 목록 (검색조건 select)
     const mdUsers  = reactive([]);                 // 담당MD(관리자) 목록 (검색조건 select)
     const uiState = reactive({                     // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      sortKey: '', sortDir: 'asc',
+      loading: false, error: null, sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], prod_date_types: [], date_range_opts: [], prod_types: [] });
     const SORT_MAP = { nm: { asc: 'prodNm asc', desc: 'prodNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -302,17 +301,17 @@ window.PdProdMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('PRODUCT_STATUS', s, _PROD_STATUS_FB[s] || 'badge-gray');
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'OPTION_TYPE', 'CATEGORY_DEPTH', 'PROD_DATE_TYPE', 'DATE_RANGE_OPT', 'PROD_TYPE']);
       codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
       codes.option_types = codeStore.sgGetGrpCodes('OPTION_TYPE');
       codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
       codes.prod_date_types = codeStore.sgGetGrpCodes('PROD_DATE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       codes.prod_types = codeStore.sgGetGrpCodes('PROD_TYPE');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* fnLoadVendorsAndMdUsers — 검색조건 판매업체/담당MD select 목록 로드 */
     const fnLoadVendorsAndMdUsers = async () => {
@@ -343,15 +342,19 @@ window.PdProdMng = {
     };
 
     // ★ onMounted
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
         searchParam.dateRangeStart = ''; searchParam.dateRangeEnd = '';
       }
       await Promise.all([fnLoadVendorsAndMdUsers(), fnApplyLoginDefaults()]);
-      handleSearchList('DEFAULT');
-    });
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

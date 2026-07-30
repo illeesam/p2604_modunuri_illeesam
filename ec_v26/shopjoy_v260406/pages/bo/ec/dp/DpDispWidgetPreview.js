@@ -14,20 +14,20 @@ const _WP_DispWidgetPreview = {
 
     const { reactive, computed } = Vue;
     const codes = reactive({ disp_widget_types: [] });
-    const uiState = reactive({ isPageCodeLoad: false });
+    const uiState = reactive({});
     const chartColors = coUtil.cofChartColors();  // 전시 차트 공용 팔레트
 
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    /* fnLoadCodes — 이 화면이 쓰는 코드그룹만 지연 로딩 */
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore?.();
       if (codeStore) {
+        /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+        await codeStore.saLoadCodes(['DISP_WIDGET_TYPE']);
         codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE') || [];
-        uiState.isPageCodeLoad = true;
       }
     };
-    coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* -- 위젯 유형 (DTO / UI 호환 별칭 모두 지원) -- */
     const cfType = computed(() => {
@@ -408,7 +408,7 @@ window.DpDispWidgetPreview = {
       { value: 'STAFF',     label: '직원' },
       { value: 'EXECUTIVE', label: '임직원' },
     ] });
-    const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null });
+    const uiState = reactive({ selectedLibId: null });
     const widgetLibs = reactive([]);
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -477,12 +477,13 @@ window.DpDispWidgetPreview = {
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    /* fnLoadCodes — 이 화면이 쓰는 코드그룹만 지연 로딩 */
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE', 'DISP_ENV']);
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
       codes.disp_envs = codeStore.sgGetGrpCodes('DISP_ENV');
-      uiState.isPageCodeLoad = true;
     };
 
     /* handleSearchList — 실 dp_widget(위젯 인스턴스) 조회 + 어댑터 (config 펼침, 유형별 트리 그룹) */
@@ -498,13 +499,15 @@ window.DpDispWidgetPreview = {
       } catch (err) { console.error('[handleSearchList]', err); }
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     const today   = new Date().toISOString().slice(0, 10);
@@ -949,6 +952,7 @@ window.DpDispWidgetPreview = {
       onDragOver, onDragLeave, onDrop,                                                // 그리드 드래그 (직접 바인딩)
       onDashDragOver, onDashDragLeave, onDashDrop,                                    // 대시보드 드래그 (직접 바인딩)
       startItemMove, startItemResize,                                                 // 대시보드 마우스 이동/리사이즈 (직접 바인딩)
+      coUtil,                                                                         // template 에서 coUtil.cofAnd 직접 호출 → return 필수
     };
   },
   template: /* html */`
@@ -1185,8 +1189,8 @@ window.DpDispWidgetPreview = {
                     : slot
                       ? (gridState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;')
                       : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;',
-                  coUtil.cofAnd(slot, (slot.colSpan||1) > 1) ? { gridColumn: 'span ' + slot.colSpan } : {},
-                  coUtil.cofAnd(slot, (slot.rowSpan||1) > 1) ? { gridRow:    'span ' + slot.rowSpan } : {},
+                  (slot?.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {},
+                  (slot?.rowSpan||1) > 1 ? { gridRow:    'span ' + slot.rowSpan } : {},
                 ]">
 
                 <!-- ===== ■.■.■.■.■.■.■.■. 비어있음 ====================================== -->

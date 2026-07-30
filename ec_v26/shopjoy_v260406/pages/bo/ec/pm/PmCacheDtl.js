@@ -131,7 +131,7 @@ window.PmCacheDtl = {
 
     // ===== 상태(reactive) 선언 =============================================
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, isPageCodeLoad: false, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
+    const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ cache_trans_types: [], pm_prod_targets: [], pm_issue_grades: [] });
@@ -184,14 +184,14 @@ window.PmCacheDtl = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['CACHE_TRANS_TYPE', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE']);
       codes.cache_trans_types = codeStore.sgGetGrpCodes('CACHE_TRANS_TYPE');
       codes.pm_prod_targets   = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
       codes.pm_issue_grades   = codeStore.sgGetGrpCodes('PM_ISSUE_GRADE');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ===== 폼 / 에러 / Yup 스키마 ==========================================
     /* 폼 초기값 = 빈 폼 (미선택/초기화 상태에서는 모든 필드 비움).
@@ -215,13 +215,17 @@ window.PmCacheDtl = {
     });
     // ===== 라이프사이클 / 부모 reloadTrigger 동기화 =========================
     // ★ onMounted
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
       // 마운트 시 상세 조회 — 행 클릭으로 key 변경 시 재마운트되므로 watch(reloadTrigger)만으론 최초 로드 누락됨
       await handleSearchDetail();
-    });
+    };
+    onMounted(initPage);
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }

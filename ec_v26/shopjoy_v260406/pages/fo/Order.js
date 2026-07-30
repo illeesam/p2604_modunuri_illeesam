@@ -12,7 +12,7 @@ window.Order = {
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const clearCart            = window.foApp.clearCart;  // 장바구니 비우기
     const cart                 = window.foApp.cart;  // 장바구니 목록
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0 });
+    const uiState = reactive({ loading: false, error: null, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0 });
     const codes = reactive({
       dliv_req_opts: [
         { value: '문 앞에 놔주세요',    label: '문 앞에 놔주세요' },
@@ -109,7 +109,6 @@ window.Order = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* parsePrice — 파싱 가격 */
     const parsePrice = s => parseInt(String(s || '').replace(/[^0-9]/g, ''), 10) || 0;
@@ -231,8 +230,6 @@ window.Order = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     const errors   = reactive({});
 
@@ -284,9 +281,11 @@ window.Order = {
       } finally { uiState.submitting = false; }
     };
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchData();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

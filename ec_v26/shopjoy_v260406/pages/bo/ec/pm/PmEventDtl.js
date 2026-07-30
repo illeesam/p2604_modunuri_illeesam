@@ -20,7 +20,7 @@ window.PmEventDtl = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const products = reactive([]);
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecEventDtlState.tab || 'info', tabMode2: window._ecEventDtlState.tabMode || 'tab', activeContentTab: 1, prodSearch: ''});
+    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, tab: window._ecEventDtlState.tab || 'info', tabMode2: window._ecEventDtlState.tabMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ event_statuses: [] });
@@ -212,12 +212,12 @@ window.PmEventDtl = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['EVENT_STATUS_KR']);
       codes.event_statuses = codeStore.sgGetGrpCodes('EVENT_STATUS_KR');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* 이벤트 onTabChange */
 
@@ -229,12 +229,16 @@ window.PmEventDtl = {
     };
 
     // ★ onMounted
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
       // 마운트 시 상세 조회 — 행 클릭으로 key 변경 시 재마운트되므로 watch(reloadTrigger)만으론 최초 로드 누락됨
       await handleSearchDetail();
-    });
+    };
+    onMounted(initPage);
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }

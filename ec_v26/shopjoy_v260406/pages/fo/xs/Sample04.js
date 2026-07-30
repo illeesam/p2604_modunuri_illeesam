@@ -7,7 +7,7 @@ window.XsSample04 = {
 
     const { reactive, onMounted, watch } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, modalType: null, modalVariant: 'info', modalData: null, nested2: false });
+    const uiState = reactive({ loading: false, error: null, modalType: null, modalVariant: 'info', modalData: null, nested2: false });
     const codes = reactive({
       grade_opts: [
         { value: '일반', label: '일반' }, { value: '우수', label: '우수' },
@@ -167,10 +167,7 @@ window.XsSample04 = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 

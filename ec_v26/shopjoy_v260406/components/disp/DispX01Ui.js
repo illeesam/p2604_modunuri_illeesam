@@ -17,7 +17,7 @@ window.DispX01Ui = {
   setup(props) {
     // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, watch } = Vue;
-    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: '' });
     const codes = reactive({});
 
     /* ── 유효 탭 목록 (viewOpts 기준) ── */

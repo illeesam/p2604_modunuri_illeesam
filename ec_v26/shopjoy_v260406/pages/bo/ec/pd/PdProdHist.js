@@ -14,7 +14,6 @@ window.PdProdHist = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const uiState = reactive({
       loading: false,
-      isPageCodeLoad: false,
       botTab: window._ecProdHistState.tab || 'orders',
       tabMode2: window._ecProdHistState.tabMode || 'tab',
       loadedTabs: new Set()
@@ -69,9 +68,6 @@ window.PdProdHist = {
 
     watch(() => uiState.tabMode2, v => { window._ecProdHistState.tabMode = v; });
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
     /* 상품 showTab */
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
@@ -330,13 +326,14 @@ window.PdProdHist = {
       { key: '_changeAfter',  label: '변경 후',  type: 'readonly', colSpan: 3, fmt: (v, row) => (row.changeAfter != null ? row.changeAfter : '-') },
     ];
 
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleLoadTab(uiState.botTab);
       if (uiState.tabMode2 !== 'tab') {
         ALL_TABS.forEach(t => t !== uiState.botTab && handleLoadTab(t));
       }
-    });
+    };
+    onMounted(initPage);
 
     watch(() => props.prodId, () => {
       uiState.loadedTabs = new Set();

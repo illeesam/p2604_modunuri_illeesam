@@ -12,7 +12,7 @@ window.Contact = {
 
     const { reactive, computed, watch, onMounted } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
     /* config: props 우선, 없으면 window.SITE_CONFIG fallback (템플릿 config.tel/email/faqs 안전 접근) */
     const config = computed(() => (props.config && Object.keys(props.config).length ? props.config : (window.SITE_CONFIG || {})));
 
@@ -80,10 +80,7 @@ window.Contact = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
     const cfInquiryCodes = computed(() =>
       coUtil.cofCodesByGroup(window.SITE_CONFIG || {}, 'shopjoy_contact_inquiry')
     );
@@ -102,7 +99,11 @@ window.Contact = {
         if (!form.tel)   form.tel   = u.memberHpNo || u.phone || u.memberPhone || '';
       } catch (e) { console.error('[fnPrefillUser]', e); }
     };
-    onMounted(() => fnPrefillUser());
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
+      await fnPrefillUser();
+    };
+    onMounted(initPage);
 
     /* validate — 검증 */
     const validate = () => {

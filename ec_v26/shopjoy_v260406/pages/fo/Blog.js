@@ -10,7 +10,7 @@ window.Blog = {
     /* ##### [01] 초기 변수 정의 ################################################## */
 
     const { reactive, computed, onMounted } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
 
     /* 검색조건: blogCateId='' = 전체, searchValue = 검색어 */
     const _initSearchParam = () => ({ searchValue: '', blogCateId: '' });
@@ -145,7 +145,6 @@ window.Blog = {
       }
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* onSearch — [조회] 클릭 / Enter (1페이지부터 서버 재조회) */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
@@ -165,13 +164,14 @@ window.Blog = {
     const cfLatestPosts = computed(() => latestPosts);
 
     // ★ onMounted — 카테고리/최신글/목록 초기 조회 (진입 시 dtlId 있으면 해당 카테고리로 필터)
-    onMounted(() => {
-      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       if (props.dtlId) { searchParam.blogCateId = props.dtlId; }
       loadCategories();
       loadLatestPosts();
       handleSearchList();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

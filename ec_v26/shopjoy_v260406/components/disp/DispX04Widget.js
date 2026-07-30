@@ -11,7 +11,7 @@ window.DispX04Widget = {
   setup(props, { emit }) {
     // ===== [01] 초기 변수 정의 ==================================================
     const { computed, reactive } = Vue;
-    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: '' });
     const codes = reactive({});
 
     // ===== [02] 액션 모음 (dispatch) ==============================================

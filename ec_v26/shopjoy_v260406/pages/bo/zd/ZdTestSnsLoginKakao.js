@@ -39,7 +39,8 @@ window.ZdTestSnsLoginKakao = {
 
     /* ##### [02] 초기 로드 #################################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       // sy_prop 에서 키 조회
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.auth.social.kakao-js-key,app.auth.social.naver-client-id,app.auth.social.naver-callback-url' }, '카카오 소셜 로그인 테스트', '키 조회');
@@ -57,7 +58,8 @@ window.ZdTestSnsLoginKakao = {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
       checkSdkStatus();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [03] 헬퍼 함수 #################################################### */
 

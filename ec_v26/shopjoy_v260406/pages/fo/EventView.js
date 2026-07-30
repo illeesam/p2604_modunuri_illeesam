@@ -11,7 +11,7 @@ window.EventView = {
 
     const { reactive, computed, onMounted } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
 
     /* -- 이벤트 데이터 -- */
     const events = reactive([]);
@@ -57,10 +57,7 @@ window.EventView = {
       }
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* 백엔드 PmEventDto.Item → 화면 표준 형태로 정규화 (benefits/eventItems 연관정보 포함) */
     const cfEvent    = computed(() => {
@@ -94,9 +91,11 @@ window.EventView = {
     });
 
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchData();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 

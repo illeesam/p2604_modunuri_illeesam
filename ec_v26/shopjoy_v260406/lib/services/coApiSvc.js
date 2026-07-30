@@ -176,6 +176,14 @@
     getGrpCodes(codeGrp, uiNm, cmdNm) {
       return client().get('/co/sy/code', { params: { codeGrp }, ...hdr(uiNm, cmdNm) });
     },
+    /* 코드그룹 다중 조회 — 화면이 필요한 그룹을 한 번에 받는다(지연 로딩 배치).
+       codeStore.saLoadCodes 가 캐시에 없는 그룹만 모아 호출한다. */
+    getGrpsCodes(codeGrps, uiNm, cmdNm) {
+      const grps = (Array.isArray(codeGrps) ? codeGrps : [codeGrps]).filter(Boolean);
+      return client().get('/co/sy/code/groups', {
+        params: { codeGrps: grps.join(',') }, ...hdr(uiNm, cmdNm),
+      });
+    },
   };
 
   /* ── sy: 표시경로 (PathTree, PathPickModal, FO 카테고리 등) ── */

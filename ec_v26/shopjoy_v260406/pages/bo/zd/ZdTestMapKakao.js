@@ -59,7 +59,8 @@ window.ZdTestMapKakao = {
 
     /* ##### [02] 초기 로드 #################################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       try {
         // /all 엔드포인트: 현재 active profile 기준으로 resolved 값 반환 (profile-aware)
         const r1 = await boApi.get('/bo/sy/app-config/all', coUtil.cofApiHdr('카카오 지도 테스트', '키 조회'));
@@ -87,7 +88,8 @@ window.ZdTestMapKakao = {
       } else {
         checkSdk();
       }
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => {
       kakaoMap = null;

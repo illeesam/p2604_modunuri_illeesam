@@ -14,7 +14,6 @@ window.SySendMsgLogMng = {
     // 탭: email(메일) / msg(메시지 SMS·카카오) / alarm(시스템알림)
     const uiState = reactive({
       activeTab: 'email',
-      isPageCodeLoad: false,
       dateRange: '1week',
       dateRangeStart: '',
       dateRangeEnd: '',
@@ -92,14 +91,14 @@ window.SySendMsgLogMng = {
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['DATE_RANGE_OPT', 'SEND_RESULT', 'MSG_CHANNEL']);
       codes.date_range_opts = codeStore?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
       codes.send_results    = codeStore?.sgGetGrpCodes('SEND_RESULT')    || [];
       codes.msg_channels    = codeStore?.sgGetGrpCodes('MSG_CHANNEL')    || [];
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
@@ -195,10 +194,14 @@ window.SySendMsgLogMng = {
     };
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList();
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList();
+    };
+    onMounted(initPage);
 
     /* onTabChange — 탭 변경 */
     const onTabChange = (tab) => { uiState.activeTab = tab; baseGridPager.pageNo = 1; allExpanded.value = false; handleSearchList(); };

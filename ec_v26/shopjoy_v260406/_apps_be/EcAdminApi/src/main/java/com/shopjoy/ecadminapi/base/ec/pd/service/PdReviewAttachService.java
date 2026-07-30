@@ -183,15 +183,15 @@ public class PdReviewAttachService {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, PdReviewAttach::getReviewAttachId, "U", "reviewAttachId", this);
-        CmUtil.requireRowIds(rows, PdReviewAttach::getReviewAttachId, "D", "reviewAttachId", this);
+        CmUtil.requireRowIds(rows, row -> row.getReviewAttachId(), "U", "reviewAttachId", this);
+        CmUtil.requireRowIds(rows, row -> row.getReviewAttachId(), "D", "reviewAttachId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(PdReviewAttach::getReviewAttachId)
+            .map(r -> r.getReviewAttachId())
             .toList();
         if (!deleteIds.isEmpty()) {
             pdReviewAttachRepository.deleteAllById(deleteIds);

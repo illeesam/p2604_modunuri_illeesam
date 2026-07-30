@@ -16,7 +16,7 @@ window.OdDlivHist = {
     const deliveries = reactive([]);                                            // 배송 목록
     const claims = reactive([]);                                                // 클레임 목록 (보조 데이터)
     const orders = reactive([]);                                                // 주문 목록 (보조 데이터)
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecDlivHistState.tab || 'order', tabMode2: 'tab' });
+    const uiState = reactive({ loading: false, botTab: window._ecDlivHistState.tab || 'order', tabMode2: 'tab' });
     const botTab = Vue.toRef(uiState, 'botTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
@@ -73,11 +73,6 @@ window.OdDlivHist = {
 
     watch(botTab, v => { window._ecDlivHistState.tab = v; });
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
@@ -92,10 +87,11 @@ window.OdDlivHist = {
     ]);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchList();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

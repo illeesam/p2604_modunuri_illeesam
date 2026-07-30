@@ -18,7 +18,7 @@ window.PmPlanDtl = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const products = reactive([]);
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._ecPlanDtlState.tab || 'info', tabMode2: window._ecPlanDtlState.tabMode || 'tab', activeContentTab: 1, prodSearch: ''});
+    const uiState = reactive({ loading: false, showProdPopup: false, showVendorModal: false, error: null, tab: window._ecPlanDtlState.tab || 'info', tabMode2: window._ecPlanDtlState.tabMode || 'tab', activeContentTab: 1, prodSearch: ''});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({
@@ -212,11 +212,6 @@ window.PmPlanDtl = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* 프로모션 플랜 onTabChange */
 
@@ -228,11 +223,12 @@ window.PmPlanDtl = {
     };
 
     // ★ onMounted
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       // 마운트 시 상세 조회 — 행 클릭으로 key 변경 시 재마운트되므로 watch(reloadTrigger)만으론 최초 로드 누락됨
       await handleSearchDetail();
-    });
+    };
+    onMounted(initPage);
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }

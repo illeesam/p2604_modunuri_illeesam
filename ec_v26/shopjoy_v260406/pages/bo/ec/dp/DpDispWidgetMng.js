@@ -14,7 +14,7 @@ window.DpDispWidgetMng = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
     const widgetCounts = reactive({});
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedType: null, sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, selectedType: null, sortKey: '', sortDir: 'asc' });
     const widgets = reactive([]);
 
     /* 위젯유형 → 카테고리 매핑 (좌측 트리용 — 서브카테고리당 유형 1:1 유지해야 필터 정확) */
@@ -180,14 +180,14 @@ window.DpDispWidgetMng = {
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE']);
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
       /* 상태 = use_yn(Y/N) — 검색 시 useYn 파라미터로 전달 (구 ACTIVE_STATUS '활성' 값은 백엔드 Y/N 비교와 불일치) */
       codes.active_statuses = [{ codeValue: 'Y', codeLabel: '활성' }, { codeValue: 'N', codeLabel: '비활성' }];
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* getSortParam — 조회 */
     const getSortParam = () => {
@@ -267,11 +267,15 @@ window.DpDispWidgetMng = {
     };
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       fnLoadAllTypeCounts();   // 트리 카운트: 필터 무관 전체 1회 로드
-      handleSearchData('DEFAULT');
-    });
+      await handleSearchData('DEFAULT');
+    };
+    onMounted(initPage);
 
 
 

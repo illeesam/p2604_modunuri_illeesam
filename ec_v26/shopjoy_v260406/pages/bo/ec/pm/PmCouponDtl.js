@@ -18,7 +18,7 @@ window.PmCouponDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
+    const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({
@@ -244,14 +244,14 @@ window.PmCouponDtl = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['COUPON_STATUS_DTL', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE']);
       codes.coupon_statuses_dtl = codeStore.sgGetGrpCodes('COUPON_STATUS_DTL');
       codes.pm_prod_targets     = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
       codes.pm_issue_grades     = codeStore.sgGetGrpCodes('PM_ISSUE_GRADE');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* handleInitForm — 처리 */
     const handleInitForm = () => {
@@ -262,13 +262,17 @@ window.PmCouponDtl = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       await handleSearchDetail();
       // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
       handleInitForm();
-    });
+    };
+    onMounted(initPage);
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }

@@ -309,45 +309,34 @@
   }
 
   /**
-   * 공통 코드 로드 헬퍼 (FO/BO 공통)
-   * - setup() 안에서 호출. watch(isAppReady) 등록 + isAppReady computed 반환.
-   * - 무한 refresh 방지:
-   *   - fnLoadCodes 가 throw 해도 uiState.isPageCodeLoad 를 반드시 true 로 설정
-   *   - 1회 성공 후 watch 자동 stop (재마운트 시까지 재호출 차단)
-   *   - 컴포넌트 unmount 시 watch 명시 정리
-   * - 사이트 자동 판별 (FO/BO):
-   *   - useFoAppInitStore / useFoCodeStore  존재 → FO
-   *   - useBoAppInitStore / sfGetBoCodeStore 존재 → BO
+   * cofInvalidateCodeGrps — 코드그룹 캐시를 창 경계를 넘어 무효화.
    *
-   * 사용법:
-   *   const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-   *   onMounted(() => { if (isAppReady.value) fnLoadCodes(); ... });
+   * 코드는 화면 단위 지연 로딩(saLoadCodes)으로 스토어에 누적되므로, 공통코드를
+   * 수정한 뒤 해당 그룹을 비워두지 않으면 다른 화면이 옛 값을 계속 쓴다.
+   *
+   * 창이 갈리는 경우를 함께 처리한다 — 예: 상품옵션코드관리는 bo.html 안의 iframe
+   * 으로 열린다. 그 문서에도 boCodeStore.js 가 로드돼 있어 자기 window 의 스토어만
+   * 비우면 정작 목록·상세를 보여주는 부모 창의 캐시는 그대로 남는다.
+   * 현재 창 + parent + top + opener 를 모두 시도한다(동일 출처만, 교차 출처는 무시).
+   *
+   * @param {string[]|string} grps 무효화할 코드그룹
    */
-  function cofUseAppCodeReady(uiState, fnLoadCodes) {
-    const { computed, watch, onUnmounted } = Vue;
-    const isAppReady = computed(() => {
-      // FO/BO 자동 판별 — 정의된 store 만 호출
-      const i = (typeof window.useFoAppInitStore === 'function' ? window.useFoAppInitStore() : null)
-             || (typeof window.useBoAppInitStore === 'function' ? window.useBoAppInitStore() : null);
-      const c = (typeof window.useFoCodeStore   === 'function' ? window.useFoCodeStore()   : null)
-             || (typeof window.sfGetBoCodeStore === 'function' ? window.sfGetBoCodeStore() : null);
-      return !i?.svIsLoading && (c?.svCodes?.length > 0) && !uiState.isPageCodeLoad;
+  function cofInvalidateCodeGrps(grps) {
+    const list = (Array.isArray(grps) ? grps : [grps]).filter(Boolean);
+    if (!list.length) { return; }
+    const wins = [];
+    const push = (w) => { if (w && wins.indexOf(w) < 0) { wins.push(w); } };
+    try { push(window); } catch (_) {}
+    try { push(window.parent); } catch (_) {}   // 교차 출처면 접근 시 throw → 무시
+    try { push(window.top); } catch (_) {}
+    try { push(window.opener); } catch (_) {}
+    wins.forEach((w) => {
+      try {
+        const store = (typeof w.sfGetBoCodeStore === 'function' ? w.sfGetBoCodeStore() : null)
+                   || (typeof w.sfGetFoCodeStore === 'function' ? w.sfGetFoCodeStore() : null);
+        if (store && typeof store.saInvalidateGrps === 'function') { store.saInvalidateGrps(list); }
+      } catch (_) { /* 교차 출처·스토어 미로드 창은 건너뜀 */ }
     });
-    let _called = false;
-    const stop = watch(isAppReady, v => {
-      if (!v || _called) return;
-      _called = true;
-      try { fnLoadCodes(); }
-      catch (err) { console.error('[cofUseAppCodeReady] fnLoadCodes failed:', err); }
-      finally {
-        // throw 여부와 무관하게 플래그를 세워 재트리거 차단
-        try { uiState.isPageCodeLoad = true; } catch (_) {}
-        try { stop && stop(); } catch (_) {}
-      }
-    });
-    // unmount 시 watch 정리 — 단위화면 swap 반복 시 watch 잔존/누적 방지
-    try { onUnmounted && onUnmounted(() => { try { stop && stop(); } catch(_){} }); } catch(_){}
-    return isAppReady;
   }
 
   /* ─────────────────────────────────────────────────────────────────────
@@ -1105,7 +1094,7 @@
   global.coUtil.cofChkId = global.coUtil.cofChkId || cofChkId;
   global.coUtil.cofChkRowIds = global.coUtil.cofChkRowIds || cofChkRowIds;
   global.coUtil.cofSha256 = global.coUtil.cofSha256 || cofSha256;
-  global.coUtil.cofUseAppCodeReady = global.coUtil.cofUseAppCodeReady || cofUseAppCodeReady;
+  global.coUtil.cofInvalidateCodeGrps = global.coUtil.cofInvalidateCodeGrps || cofInvalidateCodeGrps;
   // 코드 그룹 헬퍼 (FO/BO 공통)
   global.coUtil.cofCodesByGroup = global.coUtil.cofCodesByGroup || cofCodesByGroup;
   // 공통코드 배지/라벨 헬퍼

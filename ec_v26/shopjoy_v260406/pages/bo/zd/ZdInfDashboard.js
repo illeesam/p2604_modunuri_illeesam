@@ -732,14 +732,16 @@ window.ZdInfDashboard = {
 
     /* ##### [07] 라이프사이클 ####################################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       loading.value = true;
       await _fetchBeSettings();
       _buildRows();
       loading.value = false;
       _fetchLatestResults();
       _loadHist();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [08] 리턴 ############################################################## */
 

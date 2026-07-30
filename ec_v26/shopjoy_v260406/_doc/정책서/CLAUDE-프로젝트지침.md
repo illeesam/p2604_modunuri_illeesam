@@ -220,7 +220,7 @@ bo-disp-ui.html (관리자 컨텍스트)  |  fo-disp-ui.html (사용자 컨텍�
 | `window.boApi` | `lib/utils/boApiAxios.js` | BO axios 래퍼. get/post/put/patch/delete. **변경성(post/put/delete/patch) 호출 시 `coUtil.apiHdr(uiNm, cmdNm)` 필수** |
 | `window.boUtil` | `lib/utils/boUtil.js` | BO 공통 유틸 (`bofGetSiteNm`, `bofGetDateRange`, `bofGetPathLabel` 등). `window.visibilityUtil`도 여기서 정의 |
 | `window.foUtil` | `lib/utils/foUtil.js` | FO 공통 유틸 |
-| `window.coUtil` | `lib/utils/coUtil.js` | BO·FO 공통 (`cofAnd`, `cofExportCsv`, `cofUseAppCodeReady`, `apiHdr` 등) |
+| `window.coUtil` | `lib/utils/coUtil.js` | BO·FO 공통 (`cofAnd`, `cofExportCsv`, `cofInvalidateCodeGrps`, `apiHdr` 등) |
 | `window.coExtSdk` | `lib/utils/coExtSdk.js` | 외부 SDK 통합(소셜 로그인 Google/Kakao/Naver·토스 결제·지도). 창 안 뜨면 "원인—해결방법" 에러 throw(팝업차단 감지)→호출자 toast. 개발용 `setDebugHook(fn)`(창 띄울 때 URL·파라미터 노출). 키는 `lib/env/{fo,bo}EnvConsts.js` |
 | `window.coAuth` | `lib/utils/coAuth.js` | 인증·결제 흐름 통합(첫 인자 ctx `'fo'\|'bo'` 구분자). `socialLogin(ctx,provider)` / `pay(ctx,opts)` / `cancelPay(ctx,opts)`(결제취소·부분환불) / `socialWithdraw(ctx)`. SDK 창은 coExtSdk 위임, 세션 발급은 fo/boAuthStore. coExtSdk 의존 |
 | `window.yup` | `assets/cdn/pkg/yup/1.0.0.shim/yup.js` | Yup shim |
@@ -228,7 +228,7 @@ bo-disp-ui.html (관리자 컨텍스트)  |  fo-disp-ui.html (사용자 컨텍�
 | `window.visibilityUtil` | `lib/utils/boUtil.js` | 공개/회원등급/권한 등 노출 대상 인코딩 (`^PUBLIC^MEMBER^VIP^`) |
 | `window._ec{X}DtlState` | 각 Dtl/Hist 파일 상단 | `{ tab, tabMode }` - 행 전환에도 탭/뷰모드 유지 |
 | `window._ecCustInfoState` | `pages/bo/ec/mb/MbCustInfoMng.js` | 고객종합정보 탭/뷰모드 영속화 |
-| `window.coApiSvc` | `lib/services/coApiSvc.js` | FO·BO 공통 API. boAuth(login/socialLogin/tokenRefresh/logout/join) / foAuth(login/socialLogin/withdraw/...) / cmToss(getClientKey/confirm/cancel) / cmMap(getKeys) / cmBoAppStore / cmFoAppStore / syCode / syPath / sySite. 백엔드 `/api/co/{bo,fo}-auth/*` + `/api/co/cm/{toss,map}/*` |
+| `window.coApiSvc` | `lib/services/coApiSvc.js` | FO·BO 공통 API. boAuth(login/socialLogin/tokenRefresh/logout/join) / foAuth(login/socialLogin/withdraw/...) / cmToss(getClientKey/confirm/cancel) / cmMap(getKeys) / cmBoAppStore / cmFoAppStore / syCode(`getGrpCodes`/`getGrpsCodes` — 코드 지연 로딩 배치, 스토어 `saLoadCodes` 가 사용) / syPath / sySite. 백엔드 `/api/co/{bo,fo}-auth/*` + `/api/co/cm/{toss,map}/*` |
 | `window.foApiSvc` | `lib/services/foApiSvc.js` | FO 전용 공통 API (cmBltn / myCash / myChat / myClaim / myCoupon / myInquiry / myOrder / pdProd / pmEvent) |
 | `window.boApiSvc` | `lib/services/boApiSvc.js` | BO 전용 공통 API (cmBlog / cmChatt / cmNotice / dpArea / dpPanel / dpUi / dpWidgetLib / mbCustInfo / mbMemGrade / mbMemGroup / mbMember / odClaim / odDliv / odOrder / pdBundle / pdCategory / pdDlivTmplt / pdProd / pdQna / pdRestockNoti / pdReview / pdTag / pmCache / pmCoupon / pmDiscnt / pmEvent / pmGift / pmPlan / pmSave / pmVoucher / syAlarm / syAttach / syAttachGrp / syBatch / syBbs / syBbm / syBrand / syCode / syContact / syMenu / syRole / sySite / syTemplate / syUser / syVendor) |
 
@@ -1327,6 +1327,12 @@ Vue 3 Composition API 코드에서 역할을 이름만으로 즉시 파악할 �
 8. **Mng 목록 테이블 컬럼 표준** — 첫 번째 컬럼 반드시 `번호`, `<th>ID</th>` 단순 표시 컬럼 금지. ID는 Dtl 제목 우측에만 `#{{ form.xxxId }}` 표시
 9. **CRUD 그리드 페이징 없음** — SyRole/SyBrand/SyBatch/SyDept/SyMenu/SyProp 등 전체 로드 방식은 하단 페이지네이션 UI 제거, `max-height:480px;overflow-y:auto` 스크롤 컨테이너 사용
 10. **소스 코드 포매팅 표준** ⭐ — `pages/**/*.js`·`components/**/*.js` 의 `template:` HTML 내부는 깊이별 2칸 들여쓰기 + 단순 인라인 텍스트 보존(140자 이내) + 멀티라인 속성 재들여쓰기. JS 영역은 2줄 이상 연속 빈줄 → 1줄로 압축, trailing 공백 제거. `<style>/<script>/<pre>/<textarea>` 내부와 `&` 포함 속성은 원본 그대로 보존. `lib/base/boApp.js`·`lib/base/foApp.js` 는 포매팅 예외 (Vue 컴파일러 크래시 방지). 일반 IDE 포매터(Prettier 등) 금지 — 전용 도구만 사용. 상세 → `_doc/정책서/base/base.코드스타일-admin-vue.md` §12
+
+11. **공통코드는 화면 단위 지연 로딩** ⭐⭐ (2026-07-30) — 부팅 `getInitData(ALL)` 에서 `syCodes` 를 제거했다. 각 화면의 `fnLoadCodes` 는 **async** 로 `await codeStore.saLoadCodes([...쓰는 그룹...])` 을 먼저 호출하고, `initPage()` 안에서 `await fnLoadCodes()` → 초기 조회 순으로 실행한다(`onMounted(initPage)`).
+    - 진입점은 **`onMounted(initPage)` 한 형태로 통일**한다 (인라인 `onMounted(async () => {...})` 금지). 별도 준비 게이트를 만들지 않는다 — `cofUseAppCodeReady` / `uiState.isPageCodeLoad` 는 2026-07-30 폐기·삭제
+    - 코드를 수정하는 화면은 저장 직후 `coUtil.cofInvalidateCodeGrps([...그룹...])` (창 경계를 넘는다. `store.saInvalidateGrps` 직접 호출 금지)
+    - 코드를 localStorage 에 적재 금지 — 같은 브라우저의 탭·창이 공유해 서로 간섭한다
+    - 상세 → `_doc/정책서/base/base.55.codes_reactive_pattern.md` §코드 지연 로딩 아키텍처
 
 ### Spring Boot (백엔드)
 

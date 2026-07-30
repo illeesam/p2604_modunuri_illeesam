@@ -14,7 +14,7 @@ window.SyPropMng = {
 
     const propCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
 
-    const uiState = reactive({ isPageCodeLoad: false, _newId: -1, selectedPath: '' }); // UI 상태
+    const uiState = reactive({ _newId: -1, selectedPath: '' }); // UI 상태
     const codes   = reactive({ use_yn: [], prop_types: ['STRING','NUMBER','BOOLEAN','JSON'] }); // 공통코드
 
     const cfSiteId = computed(() => boCommonFilter?.siteId || null);
@@ -99,12 +99,12 @@ window.SyPropMng = {
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['USE_YN']);
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* makeRow — 행 생성 */
     const makeRow = (p) => ({
@@ -174,10 +174,14 @@ window.SyPropMng = {
     };
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       fetchData();
-    });
+    };
+    onMounted(initPage);
 
     /* onCellChange — 셀 변경 감지 */
     const onCellChange = (row) => {

@@ -2110,12 +2110,16 @@ window.BoExcelUploadModal = {
     /* fnLoadCodes — codeGrp 가 지정된 컬럼들의 코드 목록 로드.
      *   빈 배열은 캐시하지 않음 (codeStore 가 아직 준비 안 된 경우 다음 호출 시 재시도).
      *   파일 인식 컬럼(cfCols) + 도메인 메타 컬럼(domainMeta.columns) 양쪽 모두 대상. */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const store = window.sfGetBoCodeStore?.();
       if (!store) return;
       const sources = [];
       cfCols.value.forEach(c => sources.push({ codeGrp: c.codeGrp }));
       (domainMeta.value?.columns || []).forEach(c => sources.push({ codeGrp: c.codeGrp }));
+      /* 코드는 화면 단위 지연 로딩이라 '읽기' 전에 '요청' 이 필요하다.
+         여기서 쓰는 코드그룹은 업로드 파일·도메인 메타에서 런타임에 결정되므로
+         정적 목록을 못 쓴다 → 발견한 그룹을 그때 모아 배치로 받는다. */
+      await store.saLoadCodes(sources.map(c => c.codeGrp).filter(Boolean));
       const seen = new Set();
       sources.forEach(c => {
         if (!c.codeGrp || seen.has(c.codeGrp)) return;
@@ -2128,9 +2132,11 @@ window.BoExcelUploadModal = {
     };
 
     /* fnLoadSearchCodes — 검색조건 select 용 코드 로드 (USE_YN) */
-    const fnLoadSearchCodes = () => {
+    const fnLoadSearchCodes = async () => {
       const store = window.sfGetBoCodeStore?.();
       if (!store || useYnOptions.value.length) return;
+      /* 읽기 전에 요청 — 지연 로딩에서는 캐시에 없으면 빈 배열이 된다 */
+      await store.saLoadCodes(['USE_YN']);
       const list = store.sgGetGrpCodes?.('USE_YN') || [];
       useYnOptions.value = list.map(x => ({ value: x.codeValue ?? x.codeVal, label: x.codeLabel ?? x.codeNm }));
     };
@@ -2146,7 +2152,7 @@ window.BoExcelUploadModal = {
         tab.value = param;
         if (param === 'desc') {
           if (!domainMeta.value) await fnLoadDomainMeta();
-          fnLoadCodes();
+          await fnLoadCodes();
         }
         return;
       // 샘플 csv 다운로드
@@ -2207,7 +2213,7 @@ window.BoExcelUploadModal = {
         /* 도메인이 바뀌면 해당 도메인의 메타/코드를 다시 로드 — 설명 탭이 즉시 갱신됨 */
         domainMeta.value = null;
         await fnLoadDomainMeta();
-        fnLoadCodes();
+        await fnLoadCodes();
         return;
       } else {
         console.warn('[BoExcelUploadModal:handleSelectAction] unknown cmd:', cmd);

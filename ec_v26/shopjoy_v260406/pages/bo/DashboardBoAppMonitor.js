@@ -230,7 +230,7 @@ window.DashboardBoAppMonitor = {
       { method:'POST', url:'/bo/ec/mb/member/save/base',    uiNm:'회원관리',     cmdNm:'저장',     fileNm:'MbMemberDtl.js',     funcNm:'handleSave' },
       { method:'GET',  url:'/bo/ec/dp/ui/list',             uiNm:'전시관리',     cmdNm:'목록조회', fileNm:'DpDispUiMng.js',     funcNm:'handleSearchList' },
       { method:'GET',  url:'/bo/ec/pm/event/page',          uiNm:'이벤트관리',   cmdNm:'목록조회', fileNm:'PmEventMng.js',      funcNm:'handleSearchList' },
-      { method:'GET',  url:'/co/sy/code/grp-codes',         uiNm:'공통',         cmdNm:'코드조회', fileNm:'coUtil.js',         funcNm:'cofUseAppCodeReady' },
+      { method:'GET',  url:'/co/sy/code/groups',            uiNm:'공통',         cmdNm:'코드조회', fileNm:'boCodeStore.js',     funcNm:'saLoadCodes' },
       { method:'GET',  url:'/bo/sy/menu/list',              uiNm:'메뉴관리',     cmdNm:'목록조회', fileNm:'SyMenuMng.js',       funcNm:'handleSearchList' },
     ];
     /* url → { method, uiNm, cmdNm } 조회맵 — Top10 차트 Y축/tooltip에 "uiNm > cmdNm" 표시용 */
@@ -647,14 +647,16 @@ window.DashboardBoAppMonitor = {
 
     /* ##### [04] 라이프사이클 #################################################### */
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       document.addEventListener('click', _onDocClick);
       window.addEventListener('message', _onXviewPopupMsg);
       xviewTimer = setInterval(() => {
         const now = Date.now();
         xviewData.value = [...xviewData.value.filter(p => p.t > now - MAX_RANGE_MS), _buildPoint(now)];
       }, 2000);
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => {
       if (xviewTimer) clearInterval(xviewTimer);

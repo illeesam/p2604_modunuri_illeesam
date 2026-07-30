@@ -277,12 +277,14 @@
 
       /* ── [03] Defaults from ZdSimulController ──────── */
       const memberDefaults = ref({ siteId: '', memberGradeId: '', gradeNm: '' });
-      onMounted(async () => {
+      /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+      const initPage = async () => {
         try {
           const r = await boApi.post('/bo/zd/simul/member/defaults', {}, coUtil.cofApiHdr('회원시뮬', 'defaults'));
           if (r?.data?.data) Object.assign(memberDefaults.value, r.data.data);
         } catch (e) { /* defaults 실패 시 무시 */ }
-      });
+      };
+      onMounted(initPage);
 
       /* ── [04] Computed ──────────────────────────────── */
       const cfGradeTotal    = computed(() => Object.values(domCfg.gradeWeights).reduce((a, b) => a + Number(b), 0) || 1);

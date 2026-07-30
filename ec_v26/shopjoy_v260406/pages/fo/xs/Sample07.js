@@ -7,7 +7,7 @@ window.XsSample07 = {
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0, histResSending: false, settingsOpen: false, treeLoaded: false });
+    const uiState = reactive({ loading: false, error: null, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0, histResSending: false, settingsOpen: false, treeLoaded: false });
     const codes = reactive({ http_method_opts: ['GET','POST','PUT','PATCH','DELETE'] });
 
     /* ===== Tree (JSON 로딩) ===== */
@@ -162,7 +162,6 @@ window.XsSample07 = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* makeNode — 생성 */
     const makeNode = n => {
@@ -628,13 +627,14 @@ window.XsSample07 = {
     /* ===== Mount ===== */
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       /* 샘플 데이터: 빈 상태로 시작 */
       uiState.treeLoaded = true;
       treeRoot.push(buildAutoCrudNodes());
       treeRoot.push(buildAutoCrudRestNodes());
-    });
+    };
+    onMounted(initPage);
     return {
       columns,
       uiState, codes, // 상태 / 데이터

@@ -14,7 +14,7 @@ window.DispX02Area = {
   setup(props) {
     // ===== [01] 초기 변수 정의 ==================================================
     const { reactive } = Vue;
-    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: '' });
     const codes = reactive({});
     const mode = props.dispOpt?.mode || 'card';
     const showDesc = props.dispOpt?.showDesc !== false;

@@ -20,7 +20,7 @@ window.CmDashboardItemMng = {
     const dashboards = reactive([]);   /* cm_dashboard 전체 (사이트 기준) */
     const panels     = reactive([]);   /* 선택 대시보드의 cm_dashboard_item */
     const panelCnt   = reactive({});   /* dashboardId → 항목 수 */
-    const uiState = reactive({ loading: false, panelLoading: false, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, panelLoading: false });
     const codes = reactive({});
 
     const searchParam = reactive({ searchValue: '', useYn: '' });
@@ -70,13 +70,12 @@ window.CmDashboardItemMng = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드) #################################### */
 
-    const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       await handleSearchList();
-    });
+    };
+    onMounted(initPage);
 
     /* handleSearchList — 대시보드 목록 (전체 로드) + 항목 수 집계 */
     const handleSearchList = async () => {

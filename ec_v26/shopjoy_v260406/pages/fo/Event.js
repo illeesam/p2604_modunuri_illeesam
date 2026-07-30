@@ -10,7 +10,7 @@ window.EventPage = {
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest', broadened: false });
+    const uiState = reactive({ loading: false, error: null, activeTab: 'ongoing', sortBy: 'latest', broadened: false });
 
     const searchValue = ref('');
 
@@ -146,13 +146,10 @@ window.EventPage = {
       coUtil.cofBuildPagerNums(pager);
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     watch(() => uiState.activeTab, () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
     watch(() => uiState.sortBy,    () => { pager.pageNo = 1; handleSearchList('DEFAULT'); });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* cfOngoingCount — 진행중 탭이면 서버 총건수(단, 전체 폴백 시 진행중은 0건),
      *   그 외 탭이면 현재 페이지 내 진행중 수 */
@@ -162,7 +159,8 @@ window.EventPage = {
     });
 
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       /* URL 해시에 eventId 파라미터가 있으면 검색창에 채우고 조회 */
       try {
         const hash = window.location.hash || '';
@@ -170,7 +168,8 @@ window.EventPage = {
         if (m) { searchValue.value = decodeURIComponent(m[1]); }
       } catch (_) {}
       handleSearchList();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 

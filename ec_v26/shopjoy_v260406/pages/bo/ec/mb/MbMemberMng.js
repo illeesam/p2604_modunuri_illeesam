@@ -14,8 +14,7 @@ window.MbMemberMng = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const members = reactive([]);                  // 회원 목록 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      sortKey: '', sortDir: 'asc',
+      loading: false, error: null, sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ member_statuses: [], member_grades: [] }); // 공통코드
     const SORT_MAP = { nm: { asc: 'memberNm asc', desc: 'memberNm desc' }, reg: { asc: 'joinDate asc', desc: 'joinDate desc' } };
@@ -289,12 +288,14 @@ window.MbMemberMng = {
 
 
     // ★ onMounted — 진입 시 목록 초기 조회
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
       }
       handleSearchList('DEFAULT');
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

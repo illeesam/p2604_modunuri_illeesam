@@ -13,7 +13,7 @@ window.SyVendorUserMng = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
 
     const vendorUsers = reactive([]);
-    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false, selectedPath: null, searchVendorId: null, bizSearchType: '', bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null, userSearchType: '', userSearchValue: '', userStatusFlt: ''});
+    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, selectedPath: null, searchVendorId: null, bizSearchType: '', bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null, userSearchType: '', userSearchValue: '', userStatusFlt: ''});
     const codes = reactive({
       user_status: [],
       bool_opts: [{codeValue:'Y',codeLabel:'예'},{codeValue:'N',codeLabel:'아니오'}],
@@ -204,22 +204,26 @@ window.SyVendorUserMng = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['USER_STATUS']);
       codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
-      uiState.isPageCodeLoad = true;
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회 + 상세영역 빈 신규 폼(비활성)
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleLoadData();
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleLoadData();
       expandAll();
-      handleLoadDetail();
+      await handleLoadDetail();
       Object.assign(formData, blank());   // 상세영역 항상 표시: 진입 시 빈 폼 (formMode='' → 버튼 숨김)
-    });
+    };
+    onMounted(initPage);
 
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
 

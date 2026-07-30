@@ -14,8 +14,7 @@ window.SyDeptMng = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const depts = reactive([]);                    // 부서 트리 데이터
     const uiState = reactive({                     // UI 상태
-      checkAll: false, loading: false, error: null, isPageCodeLoad: false,
-      selectedTreeId: null, focusedIdx: null,
+      checkAll: false, loading: false, error: null, selectedTreeId: null, focusedIdx: null,
     });
     const codes = reactive({ dept_status: [], use_yn: [], dept_types: ['경영','운영','기술','마케팅','CS','물류','재무','인사','법무','기타'] });
 
@@ -252,11 +251,13 @@ window.SyDeptMng = {
 
 
     // ★ onMounted — 진입 시 트리 + 그리드 조회
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       await handleSearchTree();
       expanded.add(null);
       await handleGridSearch();
-    });
+    };
+    onMounted(initPage);
 
     /* buildTreeRows — 그리드용 트리 행 빌드 (서버에서 필터된 list 받아 평탄화만)
      *   순환참조/자기참조 안전망 — 누락 부서는 자동 root 처리 */

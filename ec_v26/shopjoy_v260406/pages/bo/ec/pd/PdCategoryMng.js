@@ -13,7 +13,7 @@ window.PdCategoryMng = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const categories = reactive([]);
     const sites = computed(() => window._boCmSites || []);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null });
+    const uiState = reactive({ loading: false, error: null, selectedCatId: null, focusedIdx: null });
     const codes = reactive({
       category_depths: [],
       product_statuses: [],
@@ -115,18 +115,18 @@ window.PdCategoryMng = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['CATEGORY_DEPTH', 'PRODUCT_STATUS', 'CATEGORY_STATUS']);
       try {
         codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
         codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
         codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS');
-        uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({
@@ -188,11 +188,15 @@ window.PdCategoryMng = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       await handleSearchList();
       await handleGridSearch();
-    });
+    };
+    onMounted(initPage);
 
     /* selectNode — 노드 선택 */
     const selectNode = id => {

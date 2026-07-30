@@ -16,7 +16,7 @@ window.DpDispPanelDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const uiState = reactive({ libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy' });
+    const uiState = reactive({ libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy' });
     const tab = Vue.toRef(uiState, 'tab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
     const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
@@ -189,14 +189,14 @@ window.DpDispPanelDtl = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['LAYOUT_TYPE', 'DISP_WIDGET_TYPE', 'DISP_STATUS']);
       codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
       codes.active_statuses = codeStore.sgGetGrpCodes('DISP_STATUS');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // 코드 주입
 
@@ -624,13 +624,17 @@ window.DpDispPanelDtl = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회 (픽Lib 은 참조 미리보기용 선로드)
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       fnLoadPickLibs();
       await handleLoadDetail();
-      handleLoadData();
+      await handleLoadData();
       handleInitForm();
-    });
+    };
+    onMounted(initPage);
 
     /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
     watch(() => props.reloadTrigger, async (n, o) => {

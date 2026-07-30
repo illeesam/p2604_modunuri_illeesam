@@ -26,7 +26,7 @@ window.CmNoticeDtl = {
 
     const { reactive, computed, onMounted, watch } = Vue;
     const { showToast, showConfirm } = window.boApp;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
     const _today = (offset = 0) => { const d = new Date(); d.setDate(d.getDate() + offset); return d.toISOString().slice(0, 10); };
@@ -65,20 +65,24 @@ window.CmNoticeDtl = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await s.saLoadCodes(['NOTICE_TYPE', 'NOTICE_STATUS']);
       codes.noticeTypes    = s.sgGetGrpCodes('NOTICE_TYPE');
       codes.noticeStatuses = s.sgGetGrpCodes('NOTICE_STATUS');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
       if (props.active && cfIsNew.value) _applyNewDefaults();
       await handleSearchDetail();
-    });
+    };
+    onMounted(initPage);
 
     /* 상위 Mng 이 reloadTrigger 증가시키면 상세 재조회 */
     watch(() => props.reloadTrigger, (n, o) => {

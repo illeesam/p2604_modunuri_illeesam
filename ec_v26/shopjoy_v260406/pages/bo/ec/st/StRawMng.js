@@ -11,7 +11,7 @@ window.StRawMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, loading: false });
+    const uiState = reactive({ descOpen: false, error: null, loading: false });
     const codes = reactive({ raw_types: [], raw_collect_statuses: [], raw_vendor_divs: [], pay_methods: [], order_statuses_kr: [],
       confirm_yn_opts: [], close_yn_opts: [], send_yn_opts: [],
       date_range_opts: [],
@@ -78,8 +78,10 @@ window.StRawMng = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['RAW_TYPE_KR', 'RAW_COLLECT_STATUS', 'RAW_VENDOR_DIV', 'PAY_METHOD_KR', 'ORDER_STATUS_KR', 'CONFIRM_YN', 'CLOSE_YN', 'SEND_YN', 'DATE_RANGE_OPT']);
       try {
         codes.raw_types = codeStore.sgGetGrpCodes('RAW_TYPE_KR');
         codes.raw_collect_statuses = codeStore.sgGetGrpCodes('RAW_COLLECT_STATUS');
@@ -90,12 +92,10 @@ window.StRawMng = {
         codes.close_yn_opts = codeStore.sgGetGrpCodes('CLOSE_YN');
         codes.send_yn_opts = codeStore.sgGetGrpCodes('SEND_YN');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
@@ -140,13 +140,16 @@ const raws = reactive([]);
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) {
-        fnLoadCodes();
-        handleSearchList('DEFAULT');
-      }
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다).
+       이전에는 조회까지 앱 초기화 게이트 안에 있어, 초기화가 늦으면
+       코드도 목록도 아예 로드되지 않았다. */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
 
     const cfSummary = computed(() => ({

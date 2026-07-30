@@ -12,8 +12,7 @@ window.MbMemGroupMng = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const uiState = reactive({                     // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      checkAll: false, focusedIdx: null,
+      loading: false, error: null, checkAll: false, focusedIdx: null,
     });
     const codes = reactive({ use_yn: [] }); // 공통코드
 
@@ -205,9 +204,11 @@ window.MbMemGroupMng = {
 
 
     // ★ onMounted — 진입 시 목록 초기 조회
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchList();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

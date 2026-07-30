@@ -11,7 +11,7 @@ window.Like = {
     const { reactive, computed, onMounted } = Vue;
     const prods             = window.foApp.prods;  // 상품 목록
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -46,10 +46,7 @@ window.Like = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
     const cfLikedProds = computed(() => {
       return (prods || []).filter(p => window.foApp.isLiked(p.prodId));
     });

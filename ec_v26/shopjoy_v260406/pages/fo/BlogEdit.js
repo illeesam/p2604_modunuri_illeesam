@@ -12,7 +12,7 @@ window.BlogEdit = {
     const { computed, reactive, onMounted } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
 
 
     const cfIsEdit = computed(() => !!props.dtlId);
@@ -100,10 +100,7 @@ window.BlogEdit = {
       }
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* handleSave — 저장 */
     const handleSave = () => {
@@ -127,9 +124,11 @@ window.BlogEdit = {
     /* removeImage — 제거 */
     const handleRemoveImage = (id) => { const idx = images.findIndex(img => img.id === id); if (idx !== -1) images.splice(idx, 1); };
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchDetail();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 

@@ -100,6 +100,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 QdslUtil.strEq(syCode.siteId, search.getSiteId()),
                 QdslUtil.strEq(syCode.codeId, search.getCodeId()),
                 QdslUtil.strEq(syCode.codeGrp, search.getCodeGrp()),
+                andCodeGrpIn(search),
                 QdslUtil.strEq(syCode.codeValue, search.getCodeValue()),
                 QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()),
                 QdslUtil.strEq(syCode.useYn, search.getUseYn()),
@@ -130,6 +131,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 QdslUtil.strEq(syCode.siteId, search.getSiteId()),
                 QdslUtil.strEq(syCode.codeId, search.getCodeId()),
                 QdslUtil.strEq(syCode.codeGrp, search.getCodeGrp()),
+                andCodeGrpIn(search),
                 QdslUtil.strEq(syCode.codeValue, search.getCodeValue()),
                 QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()),
                 QdslUtil.strEq(syCode.useYn, search.getUseYn()),
@@ -227,5 +229,10 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
 
         long affected = update.where(syCode.codeId.eq(entity.getCodeId())).execute();
         return (int) affected;
+    }
+
+    /** 코드그룹 다중 조회 — 화면 단위 지연 로딩에서 필요한 그룹을 한 번에 가져온다 */
+    private BooleanExpression andCodeGrpIn(SyCodeDto.Request search) {
+        return QdslUtil.strIn(syCode.codeGrp, search.getCodeGrps());
     }
 }

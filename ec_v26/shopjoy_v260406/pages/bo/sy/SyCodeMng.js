@@ -17,7 +17,7 @@ window.SyCodeMng = {
     const codeGrpCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState   = reactive({
       checkAll: false, dragMoved: false, loading: false,
-      isPageCodeLoad: false, selectedGrp: '', grpSelectedPath: '',
+      selectedGrp: '', grpSelectedPath: '',
       focusedIdx: null, selectedCodeId: '__new__', codeReloadTrigger: 0, dragSrc: null, activeCodeTab: '일반',
       detailActive: false,   // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
       detailResetSeq: 0,     // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
@@ -175,31 +175,29 @@ window.SyCodeMng = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    /* fnLoadCodes — 이 화면이 쓰는 코드그룹만 지연 로딩 */
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['USE_YN', 'DATE_RANGE_OPT']);
       pageCodes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       pageCodes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
     };
 
-    /* checkAndLoadCodes — 코드 로드 가능 여부 확인 */
-    const checkAndLoadCodes = () => {
-      const initStore = window.useBoAppInitStore?.();
-      const codeStore = window.sfGetBoCodeStore();
-      if (!initStore?.svIsLoading && codeStore?.svCodes?.length > 0 && !uiState.isPageCodeLoad) {
-        fnLoadCodes();
-      }
-    };
-    watch(() => window.sfGetBoCodeStore()?.svCodes?.length, checkAndLoadCodes);
+    /* checkAndLoadCodes / watch(svCodes.length) 는 제거했다 (2026-07-30).
+       코드가 부팅 시 일괄 적재되던 시절 "svCodes 가 채워지는 순간" 을 기다리는 장치였는데,
+       지연 로딩으로 바뀐 뒤에는 그 조건이 참이 되지 않아 코드를 영원히 못 받는다.
+       코드 적재 책임은 fnLoadCodes 안의 saLoadCodes 가 지고, 호출 시점은 initPage 가 정한다. */
 
-    coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    onMounted(() => {
-      checkAndLoadCodes();
-      handleLoadAllGroups();
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleLoadAllGroups();
       Object.assign(searchParamOrg, searchParam);
-    });
+    };
+    onMounted(initPage);
 
     /* onCellChange — 코드 셀 변경 */
     const onCellChange = (row) => {
@@ -234,6 +232,9 @@ window.SyCodeMng = {
         try {
           /* 행 드래그앤드롭 정렬 — saveList cmd='order' (URL: /save-list/order, sortOrd 만 update) */
           await boApiSvc.syCode.saveList('order', sortChangedRows, '공통코드관리', '순서변경');
+          /* 정렬순서도 코드 값의 일부(select 표시 순서) → 해당 그룹 캐시 무효화 */
+          coUtil.cofInvalidateCodeGrps(
+            [...new Set(sortChangedRows.map(r => r.codeGrp).filter(Boolean))]);
           showToast?.('순서가 저장되었습니다.', 'success');
           await handleSearchList();
         } catch (err) {
@@ -418,6 +419,10 @@ window.SyCodeMng = {
         uiState.loading = true;
         const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
         await boApi.post('/bo/sy/code/save-list', saveRows, coUtil.cofApiHdr('공통코드관리', '저장'));
+        /* 캐시 무효화 — 코드는 화면 단위 지연 로딩이라, 방금 바꾼 그룹을 비워두지 않으면
+           같은 세션의 다른 화면이 옛 값을 계속 쓴다. 그 그룹만 다음 접근 때 재조회된다. */
+        coUtil.cofInvalidateCodeGrps(
+          [...new Set(saveRows.map(r => r.codeGrp).filter(Boolean))]);
         const toastParts = [];
         if (iRows.length) { toastParts.push(`등록 ${iRows.length}건`); }
         if (uRows.length) { toastParts.push(`수정 ${uRows.length}건`); }
@@ -475,6 +480,9 @@ window.SyCodeMng = {
         }));
       try {
         await boApiSvc.syCodeGrp.saveList('base', saveRows, '공통코드그룹관리', '저장');
+        /* 그룹 삭제·사용여부 변경은 하위 코드의 노출에도 영향 → 그룹 캐시 무효화 */
+        coUtil.cofInvalidateCodeGrps(
+          [...new Set(saveRows.map(r => r.codeGrp).filter(Boolean))]);
         showToast('저장되었습니다.', 'success');
         await handleLoadAllGroups();
       } catch (err) {

@@ -14,7 +14,7 @@ window.SyBrandMng = {
 
     const brands  = reactive([]);                  // 브랜드 목록 (원본)
     const brandCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
-    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null, dragSrc: null });
+    const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, selectedPath: null, focusedIdx: null, dragSrc: null });
     const codes   = reactive({ brand_status: [], use_yn: [], date_range_opts: [] });
 
     // 현재 환경이 local인지 확인
@@ -151,14 +151,14 @@ window.SyBrandMng = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['BRAND_STATUS', 'USE_YN', 'DATE_RANGE_OPT']);
       codes.brand_status = codeStore.sgGetGrpCodes('BRAND_STATUS');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* makeRow — 행 생성 */
     const makeRow = (b) => ({
@@ -281,10 +281,14 @@ window.SyBrandMng = {
     );
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

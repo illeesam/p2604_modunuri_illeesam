@@ -61,10 +61,14 @@ window.StConfigMng = {
     };
 
     // ★ onMounted — 진입 시 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleLoadList();
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleLoadList();
+    };
+    onMounted(initPage);
 
         const form = reactive({});
     const errors = reactive({});
@@ -174,9 +178,11 @@ window.StConfigMng = {
     const codes = reactive({ settle_cycles: [], use_yn: [] });
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
+        /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+        await codeStore.saLoadCodes(['SETTLE_CYCLE', 'USE_YN']);
         codes.settle_cycles = codeStore.sgGetGrpCodes('SETTLE_CYCLE');
         codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       } catch (err) {
@@ -184,9 +190,10 @@ window.StConfigMng = {
       }
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    /* 여기에 있던 두 번째 onMounted(코드 적재만) 는 제거했다 (2026-07-30).
+       같은 setup 안에서 onMounted 가 두 번 등록돼 fnLoadCodes 를 중복 호출하고 있었다.
+       화면 로드 시퀀스는 위쪽 initPage 한 곳에서만 관리한다. */
     // --- [컬럼 정의] ---
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */

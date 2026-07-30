@@ -283,7 +283,7 @@ const doSave = async () => {
 | `window.coApiSvc` | BO·FO 공통 services (`syCode/syPath/sySite/cmBoAppStore` 등) |
 | `window.coUtil.cofAnd(...args)` | `&&` 대체 함수 (속성값 내 `&&` 금지 우회) |
 | `window.coUtil.cofExportCsv(rows, cols, filename)` | CSV 다운로드 |
-| `window.coUtil.cofUseAppCodeReady(uiState, fnLoadCodes)` | 앱 코드 준비 대기 |
+| `codeStore.saLoadCodes([...코드그룹])` | 화면이 쓰는 코드그룹만 지연 로딩 (`cofUseAppCodeReady` 는 2026-07-30 폐기) |
 | `window.coUtil.apiHdr(uiNm, cmdNm)` | API 요청에 X-UI-Nm/X-Cmd-Nm 헤더 자동 부여 |
 | `window.boUtil.bofGetSiteNm(siteId?)` | 사이트명 반환 |
 | `window.boUtil.bofGetDateRange(opt)` | 옵션 → `{from, to}` 날짜 계산 |

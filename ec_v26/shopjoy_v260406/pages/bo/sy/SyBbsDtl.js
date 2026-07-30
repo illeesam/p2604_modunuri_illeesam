@@ -17,8 +17,7 @@ window.SyBbsDtl = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
     const uiState = reactive({                     // UI 상태
-      loading: false, showBbmDetail: false, error: null, isPageCodeLoad: false,
-      selectedBbm: null, showBbmModal: false,
+      loading: false, showBbmDetail: false, error: null, selectedBbm: null, showBbmModal: false,
     });
     const codes = reactive({ bbs_post_statuses: [] });
 
@@ -184,23 +183,27 @@ window.SyBbsDtl = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
+        /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+        await codeStore.saLoadCodes(['BBS_POST_STATUS']);
         codes.bbs_post_statuses = codeStore.sgGetGrpCodes('BBS_POST_STATUS');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 상세 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       if (!cfIsNew.value) { await handleLoadDetail(); }
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
-    });
+    };
+    onMounted(initPage);
 
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
     watch(() => props.reloadTrigger, async (n, o) => {

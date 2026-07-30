@@ -207,7 +207,8 @@
     return labels.join(' > ');
   };
 
-  /* useAppCodeReady → coUtil.cofUseAppCodeReady 로 통합. 호출처에서 coUtil 직접 호출 사용. */
+  /* useAppCodeReady 는 폐기(2026-07-30). 코드 적재는 화면의 fnLoadCodes 안에서
+     codeStore.saLoadCodes([...]) 로 하고, 호출 시점은 initPage 가 정한다. */
 
   global.boUtil = boUtil;
   global.boCommonFilter = boCommonFilter;

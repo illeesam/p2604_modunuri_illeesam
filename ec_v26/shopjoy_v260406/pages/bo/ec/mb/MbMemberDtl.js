@@ -50,12 +50,17 @@ window.MbMemberDtl = {
       if (newId) { currentId.value = newId; }
     }, { immediate: true });
 
-    // ★ onMounted — 진입 시 공통코드 로드
-    onMounted(() => {
+    /* initPage — 진입 시 이 화면이 쓰는 코드그룹만 지연 로딩.
+       (이전에는 스토어에서 읽기만 했다 — 부팅 일괄적재를 전제한 코드였고,
+        지연 로딩 전환 후에는 요청하지 않은 그룹이 스토어에 없어 select 가 비었다) */
+    const initPage = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['MEMBER_GRADE', 'MEMBER_STATUS']);
       codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
       codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
-    });
+    };
+    onMounted(initPage);
 
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 detailModal.form 재조회 */
     watch(() => props.reloadTrigger, async (n, o) => {

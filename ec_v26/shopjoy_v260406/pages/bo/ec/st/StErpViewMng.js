@@ -10,7 +10,7 @@ window.StErpViewMng = {
 
     const { reactive, onMounted } = Vue;
     const { showToast, showConfirm } = window.boApp;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateRangeType: 'voucher_date', dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '' });
+    const uiState = reactive({ loading: false, error: null, dateRangeType: 'voucher_date', dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '' });
     const codes = reactive({ erp_statuses: [], erp_voucher_types: [], erp_voucher_statuses: [], date_range_opts: [] });
     const slips = reactive([]);
 
@@ -56,20 +56,24 @@ window.StErpViewMng = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await s.saLoadCodes(['ERP_STATUS', 'ERP_VOUCHER_TYPE_KR', 'ERP_VOUCHER_STATUS_KR', 'DATE_RANGE_OPT']);
       codes.erp_statuses         = s.sgGetGrpCodes('ERP_STATUS');
       codes.erp_voucher_types    = s.sgGetGrpCodes('ERP_VOUCHER_TYPE_KR');
       codes.erp_voucher_statuses = s.sgGetGrpCodes('ERP_VOUCHER_STATUS_KR');
       codes.date_range_opts      = s.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      handleSearchList();
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList();
+    };
+    onMounted(initPage);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 

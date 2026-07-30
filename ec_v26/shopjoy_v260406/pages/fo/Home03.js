@@ -15,7 +15,7 @@ window.Home03 = {
     const toggleLike        = (id) => window.foApp.toggleLike(id);
     const isLiked           = (id) => window.foApp.isLiked?.(id) ?? false;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, quickViewProduct: null, bannerIdx: 0, cartModalMode: false});
+    const uiState = reactive({ loading: false, error: null, quickViewProduct: null, bannerIdx: 0, cartModalMode: false});
 
 
     /* -- 배너 슬라이더 -- */
@@ -97,14 +97,13 @@ window.Home03 = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* setBanner — 인디케이터 클릭 시 해당 배너로 + 타이머 리셋 */
     const handleSetBanner = (i) => bannerCtl.set(i);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       if (!document.getElementById('home-grid-styles')) {
         const s = document.createElement('style');
         s.id = 'home-grid-styles';
@@ -117,7 +116,8 @@ window.Home03 = {
         document.head.appendChild(s);
       }
       bannerCtl.start();
-    });
+    };
+    onMounted(initPage);
     onBeforeUnmount(() => bannerCtl.stop());
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */

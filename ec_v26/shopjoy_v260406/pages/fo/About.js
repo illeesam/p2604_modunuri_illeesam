@@ -9,7 +9,7 @@ window.About = {
     /* ##### [01] 초기 변수 정의 ################################################## */
 
     const { reactive, watch, onMounted } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -27,10 +27,7 @@ window.About = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 정적 데이터) ################################# */
 

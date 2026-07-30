@@ -11,7 +11,7 @@ window.StSettleEtcAdjMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '', selectedId: null, isNew: false});
+const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_etc_adj_types: [],
       settle_adj_statuses: [],
@@ -68,18 +68,18 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['SETTLE_ETC_ADJ_TYPE', 'SETTLE_ADJ_STATUS', 'DATE_RANGE_OPT']);
       try {
         codes.settle_etc_adj_types = codeStore.sgGetGrpCodes('SETTLE_ETC_ADJ_TYPE');
         codes.settle_adj_statuses = codeStore.sgGetGrpCodes('SETTLE_ADJ_STATUS');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* handleDateRangeChange — 기간 변경 (searchParam.dateRange → dateRangeStart/dateRangeEnd) */
     const handleDateRangeChange = () => {
@@ -119,10 +119,14 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     };
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchData('DEFAULT');
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchData('DEFAULT');
+    };
+    onMounted(initPage);
 
     const etcAdjs = reactive([]);
 

@@ -15,6 +15,9 @@ public class SyCodeDto {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String codeId;
         @Size(max = 50) private String codeGrp;
+        /* 코드그룹 다중 조회 — 화면이 필요한 그룹을 한 번에 받는다(지연 로딩 배치).
+           codeGrp(단일)과 함께 오면 둘 다 AND 로 걸리므로 보통 하나만 쓴다. */
+        private java.util.List<String> codeGrps;
         @Size(max = 50) private String codeValue;
         @Size(max = 50) private String parentCodeValue;
         @Size(max = 1)  private String useYn;

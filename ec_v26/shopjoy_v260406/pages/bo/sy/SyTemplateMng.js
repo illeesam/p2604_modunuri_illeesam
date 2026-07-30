@@ -14,7 +14,7 @@ window.SyTemplateMng = {
 
     const templates = reactive([]);                // 템플릿 목록 (그리드 데이터)
     const templateCounts = reactive({});            // 좌 트리 노드별 카운트 (검색조건 동기)
-    const uiState   = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
+    const uiState   = reactive({ loading: false, error: null, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes     = reactive({ template_type: [], use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'templateNm asc', desc: 'templateNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -259,20 +259,24 @@ window.SyTemplateMng = {
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['TEMPLATE_TYPE', 'USE_YN', 'DATE_RANGE_OPT']);
       codes.template_type = codeStore.sgGetGrpCodes('TEMPLATE_TYPE');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {

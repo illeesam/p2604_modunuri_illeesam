@@ -42,7 +42,7 @@ window.OrderDetailModal = {
   emits: ['close'],
   setup(props, { emit }) {
     const { reactive, computed } = Vue;
-    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: '' });
     const codes = reactive({});
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
@@ -231,7 +231,7 @@ window.ProductModal = {
   emits: ['close'],
   setup(props, { emit }) {
     const { ref, watch, computed, reactive } = Vue;
-    const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: '' });
     const codes = reactive({});
     const selColor  = ref(null);
     const selSize   = ref(null);

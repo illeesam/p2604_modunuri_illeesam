@@ -134,7 +134,8 @@ window.ZdTestPayTossWidget = {
 
     /* ##### [02] 초기 로드 #################################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       // 1) 토스 리다이렉트 복귀 파라미터 선처리
       fnCheckCallbackParams();
 
@@ -154,7 +155,8 @@ window.ZdTestPayTossWidget = {
         // sy_prop 조회 실패는 무시 (기본 문서용 키 사용)
       }
       checkSdk();
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => { widgetsInstance = null; });
 

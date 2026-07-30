@@ -12,8 +12,7 @@ window.XsSample09 = {
     const { reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({                     // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false,
+      loading: false, error: null, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false,
     });
     const codes = reactive({                       // 정적 옵션
       contact_cat_opts: [{ value: '배송', label: '배송' }, { value: '결제', label: '결제' }, { value: '반품', label: '반품' }, { value: '회원', label: '회원' }, { value: '상품', label: '상품' }],
@@ -129,13 +128,13 @@ window.XsSample09 = {
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       handleSearchList();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 

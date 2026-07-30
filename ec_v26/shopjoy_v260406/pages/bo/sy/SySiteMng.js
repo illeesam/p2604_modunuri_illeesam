@@ -14,8 +14,7 @@ window.SySiteMng = {
     const sites = reactive([]);                    // 사이트 목록 (메인 그리드 데이터)
     const siteCounts = reactive({});               // { pathId: 사이트수 } — 좌 트리 우측 뱃지 표시용
     const uiState = reactive({                     // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      selectedPath: null, sortKey: '', sortDir: 'asc',
+      loading: false, error: null, selectedPath: null, sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ site_oper_statuses: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'siteNm asc', desc: 'siteNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -353,19 +352,23 @@ window.SySiteMng = {
     const fnRowStyle = (s) => '';
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['SITE_OPER_STATUS', 'DATE_RANGE_OPT']);
       codes.site_oper_statuses = codeStore.sgGetGrpCodes('SITE_OPER_STATUS');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — handleSearchList 가 내부에서 handleLoadSiteTreeNodeCounts 도 함께 호출
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchList('DEFAULT');
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

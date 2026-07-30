@@ -716,7 +716,8 @@ window.DashboardBoEc03 = {
 
     /* ##### [06] 라이프사이클 #################################################### */
 
-    onMounted(() => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       document.addEventListener('click', _onDocClick);
       loadDashboard();
       xviewTimer = setInterval(() => {
@@ -726,7 +727,8 @@ window.DashboardBoEc03 = {
         const src = XVIEW_URLS[Math.floor(Math.random() * XVIEW_URLS.length)];
         xviewData.value = [...xviewData.value.filter(p => p.t > now - 10*60*1000), { t:now, rt:Math.round(rt), err, url:src.url, uiNm:src.uiNm, cmdNm:src.cmdNm }];
       }, 2000);
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => {
       if (xviewTimer) clearInterval(xviewTimer);

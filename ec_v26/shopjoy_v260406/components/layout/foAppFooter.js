@@ -7,7 +7,7 @@ window.foAppFooter = {
 
     // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, onUnmounted } = Vue;
-    const uiState = reactive({ menuOpen: false, loading: false, error: '', isPageCodeLoad: false });
+    const uiState = reactive({ menuOpen: false, loading: false, error: '' });
     const codes = reactive({});
 
     /* ===== 채팅 상담 ===== */

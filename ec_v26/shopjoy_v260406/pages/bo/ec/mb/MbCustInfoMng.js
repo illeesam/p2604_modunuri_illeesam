@@ -70,8 +70,7 @@
 
       const custInfos    = reactive([]);             // 고객종합정보 목록
       const uiState = reactive({                     // UI 상태 (탭/뷰모드 영속화 별도)
-        loading: false, error: null, isPageCodeLoad: false,
-        customer: null, searchMode: 'member', searchInput: '',
+        loading: false, error: null, customer: null, searchMode: 'member', searchInput: '',
         tab: window._mbCustInfoState.tab || 'orders',
         tabMode2: window._mbCustInfoState.tabMode || '3col',
       });
@@ -276,23 +275,27 @@
       };
 
       /* fnLoadCodes — 공통코드 로드 */
-      const fnLoadCodes = () => {
+      const fnLoadCodes = async () => {
         const codeStore = window.sfGetBoCodeStore();
+        /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+        await codeStore.saLoadCodes(['MEMBER_STATUS', 'MEMBER_GRADE']);
         try {
           codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
           codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
-          uiState.isPageCodeLoad = true;
         } catch (err) {
           console.error('[fnLoadCodes]', err);
         }
       };
-      const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
       // ★ onMounted — 진입 시 코드 로드
-      onMounted(() => {
-        if (isAppReady.value) { fnLoadCodes(); }
+      /* initPage — 화면 로드 시퀀스.
+         코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+         빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+      const initPage = async () => {
+        await fnLoadCodes();
         Object.assign(searchParamOrg, searchParam);
-      });
+      };
+      onMounted(initPage);
 
       /* watch — 고객 선택 시 9개 영역 서버 조회 */
       watch(() => uiState.customer?.userId, async (uid) => {

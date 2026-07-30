@@ -13,7 +13,7 @@ window.SyAttachMng = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const attaches = reactive([]);
     const attachGrps = reactive([]);
-    const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null });
+    const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, selectedGrpId: null, grpEditId: null, fileEditId: null });
     const codes = reactive({ attach_type: [], active_statuses: [], use_yns: [], storage_types: [], date_range_opts: [] });
     const grpSearchParam = reactive({ searchType: '', searchValue: '' });
 
@@ -202,23 +202,27 @@ window.SyAttachMng = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['ATTACH_TYPE', 'ACTIVE_STATUS', 'USE_YN', 'STORAGE_TYPE', 'DATE_RANGE_OPT']);
       codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
       codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       codes.use_yns = codeStore.sgGetGrpCodes('USE_YN');
       codes.storage_types = codeStore.sgGetGrpCodes('STORAGE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       await handleLoadGrps();
-      handleSearchData();
-    });
+      await handleSearchData();
+    };
+    onMounted(initPage);
 
     /* onSearch — 조회 */
     const onSearch = async () => { fileGridPager.pageNo = 1; await handleSearchData(); };

@@ -30,7 +30,8 @@ window.ZdTestSnsLoginGoogle = {
 
     /* ##### [02] 초기 로드 #################################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.auth.social.google-client-id' }, '구글 소셜 로그인 테스트', '키 조회');
         const list = res?.data?.data || [];
@@ -45,7 +46,8 @@ window.ZdTestSnsLoginGoogle = {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
       checkSdk();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [03] 헬퍼 함수 #################################################### */
 

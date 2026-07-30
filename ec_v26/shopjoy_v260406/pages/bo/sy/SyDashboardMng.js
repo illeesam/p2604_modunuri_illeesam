@@ -10,7 +10,7 @@ window.SyDashboardMng = {
 
     const { computed, reactive, ref, watch, onMounted } = Vue;
 
-    const uiState = reactive({ isPageCodeLoad: false });
+    const uiState = reactive({});
     const codes = reactive({});
 
     // 통계 카드 건수 (서버 pageTotalCount 기반)
@@ -59,7 +59,6 @@ window.SyDashboardMng = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
     /* fnLoadStats — 8개 도메인 건수 조회 (pageTotalCount 기반, 1건만 요청해 카운트만 사용) */
     const fnLoadStats = async () => {
@@ -82,10 +81,11 @@ window.SyDashboardMng = {
     };
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { uiState.isPageCodeLoad = true; }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       fnLoadStats();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

@@ -29,7 +29,7 @@ window.CmDashboardMenuMng = {
     const showToast = window.boApp ? window.boApp.showToast : props.showToast;
 
     /* seeded — 저장된 트리가 없어 현재 좌측메뉴 상태로 채워 넣은 상태 (저장 전) */
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, seeded: false });
+    const uiState = reactive({ loading: false, error: null, seeded: false });
     const codes   = reactive({});
 
     const myDashes     = reactive([]);   /* 내가 만든 대시보드 */
@@ -78,10 +78,12 @@ window.CmDashboardMenuMng = {
 
     /* ##### [03] 초기 함수 (마운트 / 조회) ######################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       await handleLoadDashes();
       await fnLoadMenuTree();
-    });
+    };
+    onMounted(initPage);
 
     /* handleLoadDashes — 트리에 담을 후보 목록
        SYS  : 공용 대시보드(주인 없음) / USER : 개인 대시보드(내 것 + 공유받은 것) */

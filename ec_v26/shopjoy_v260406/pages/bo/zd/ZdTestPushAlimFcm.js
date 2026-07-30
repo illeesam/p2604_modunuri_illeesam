@@ -83,7 +83,8 @@ window.ZdTestPushAlimFcm = {
 
     /* ##### [02] 초기 로드 #################################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({
           propKeys: 'app.push.fcm.project-id,app.push.fcm.key-file,app.push.apns.enabled',
@@ -96,7 +97,8 @@ window.ZdTestPushAlimFcm = {
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [03] 헬퍼 함수 #################################################### */
 

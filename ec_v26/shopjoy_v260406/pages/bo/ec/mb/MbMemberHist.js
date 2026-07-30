@@ -13,8 +13,7 @@ window.MbMemberHist = {
     const { computed, reactive, watch, onMounted } = Vue;
     const showRefModal = window.boApp.showRefModal; // 참조 모달
     const uiState = reactive({                     // UI 상태 (탭/뷰모드 영속화)
-      loading: false, isPageCodeLoad: false,
-      tab: window._ecMemberHistState.tab || 'orders',
+      loading: false, tab: window._ecMemberHistState.tab || 'orders',
       tabMode2: window._ecMemberHistState.tabMode || 'tab',
     });
 
@@ -63,14 +62,7 @@ window.MbMemberHist = {
     watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
     watch(() => uiState.tabMode2, v => { window._ecMemberHistState.tabMode = v; });
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ★ onMounted — 진입 시 코드 로드
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 

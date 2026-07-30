@@ -17,8 +17,7 @@ window.Cart = {
     const cart           = window.foApp.cart;            // 장바구니 목록 (전역)
 
     const uiState = reactive({                           // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      checkedIdxs: new Set(), sortKey: '', sortDir: 'asc',
+      loading: false, error: null, checkedIdxs: new Set(), sortKey: '', sortDir: 'asc',
     });
 
 
@@ -69,10 +68,7 @@ window.Cart = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, () => { uiState.isPageCodeLoad = true; });
 
-    // ★ onMounted
-    onMounted(() => { if (isAppReady.value) { uiState.isPageCodeLoad = true; } });
 
     /* onCartSort — 정렬 토글 */
     const onCartSort = (key) => {

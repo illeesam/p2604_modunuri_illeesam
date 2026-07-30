@@ -36,12 +36,25 @@ SyntaxError: Unexpected token ')'
 |------|--------------------|---------|
 | 논리 AND | `:class="a && b ? 'x' : 'y'"` | `:class="coUtil.cofAnd(a, b) ? 'x' : 'y'"` |
 | 다중 AND | `v-if="a && b && c"` | `v-if="coUtil.cofAnd(a, b, c)"` |
-| `:key` | `:key="(g && g.id)"` | `:key="coUtil.cofAnd(g, g.id)"` |
+| `:key` | `:key="(g && g.id)"` | `:key="g?.id"` — **`cofAnd(g, g.id)` 금지**, 아래 ⚠️ 참조 |
 | URL 내 `&` | `:href="'u?a=1&b=2'"` | `:href="'u?a=1&b=2'"` (문자열 내 `&`→`&`) |
 | 텍스트 노드 | `{{ a && b }}` | **그대로 허용** (mustache 는 안전) |
 
-`coUtil.cofAnd(...args)` — `&&` 단축평가와 의미 100% 동일(첫 falsy 반환, 모두 truthy 면
-마지막 인자). `lib/utils/coUtil.js` 정의, FO·BO 전 진입점에서 컴포넌트보다 먼저 로드됨.
+`coUtil.cofAnd(...args)` — 반환값은 `&&` 와 같다(첫 falsy 반환, 모두 truthy 면 마지막 인자).
+`lib/utils/coUtil.js` 정의, FO·BO 전 진입점에서 컴포넌트보다 먼저 로드됨.
+
+> ⚠️⚠️ **`cofAnd` 는 short-circuit 이 아니다** (2026-07-30 실제 크래시). 함수 호출이므로
+> **모든 인자가 호출 전에 평가된다.** 따라서 첫 인자를 **null 가드로 쓰는 `a && a.x` 패턴은
+> `cofAnd` 로 치환할 수 없다** — `a` 가 null 이면 둘째 인자를 계산하다 먼저 터진다.
+> ```js
+> // ❌ slot 이 null 일 때 TypeError: Cannot read properties of null (reading 'colSpan')
+> coUtil.cofAnd(slot, (slot.colSpan||1) > 1) ? { gridColumn: 'span ' + slot.colSpan } : {}
+> // ✅ 옵셔널 체이닝 — 속성값에 & 가 없어 §0-A 규칙도 만족
+> (slot?.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {}
+> ```
+> **판별법**: 둘째(이후) 인자가 첫 인자를 역참조하면 `cofAnd` 를 쓰지 말고 `?.` 를 쓴다.
+> 점검: `grep -rnoE "cofAnd\(\s*(\w+)\s*,[^)]*\1\." pages/ components/ lib/ --include=*.js`
+> (2026-07-30 기준 cofAnd 72건 중 위험 2건 → DpDispWidgetPreview / DpDispWidgetLibPreview 수정 완료)
 
 > ⚠️ **연산자 우선순위 주의**: `&&` 는 삼항 `?:` 보다 우선순위가 높다.
 > `a && b ? c : d` ≡ `(a && b) ? c : d` 이므로 `coUtil.cofAnd(a, b) ? c : d` 로 치환한다.

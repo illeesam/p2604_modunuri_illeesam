@@ -233,7 +233,7 @@ window.DpDispPanelPreview = {
       { value: 'EXECUTIVE', label: '임직원' },
     ] });
     const displays = reactive([]);    // 실 dp_panel → 렌더러(panelItem) 형태 어댑터 목록
-    const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
+    const uiState = reactive({ selectedLibId: null});
     const tab = Vue.toRef(uiState, 'tab');
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
@@ -302,12 +302,12 @@ window.DpDispPanelPreview = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE']);
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* handleSearchData — dp_ui / dp_area / dp_panel 병렬 조회 + 렌더러(panelItem) 어댑터 구성 */
     const handleSearchData = async () => {
@@ -343,10 +343,14 @@ window.DpDispPanelPreview = {
     };
 
     // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchData();
-    });
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
+      await handleSearchData();
+    };
+    onMounted(initPage);
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);

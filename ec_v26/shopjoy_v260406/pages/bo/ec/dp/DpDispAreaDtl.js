@@ -16,7 +16,7 @@ window.DpDispAreaDtl = {
 
     const { reactive, computed, onMounted, watch } = Vue;
     const { showToast, showConfirm } = window.boApp;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ area_types: [], use_yn: [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] });
     const uis = reactive([]);                         // 상위 UI 목록 (select)
     const panels = reactive([]);                      // 소속 패널 목록 (dp_panel.area_id = dtlId)
@@ -62,18 +62,22 @@ window.DpDispAreaDtl = {
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await s.saLoadCodes(['DISP_AREA_TYPE']);
       codes.area_types = s.sgGetGrpCodes('DISP_AREA_TYPE');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       await handleLoadUis();
       await handleSearchDetail();
-    });
+    };
+    onMounted(initPage);
 
     watch(() => props.reloadTrigger, (n, o) => {
       if (n === o || n === 0) return;

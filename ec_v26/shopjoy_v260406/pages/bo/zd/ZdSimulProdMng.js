@@ -399,7 +399,8 @@
 
       /* ── [03] Defaults + 카테고리 로드 ──────────────── */
       const defaults = ref({ siteId: '', dlivTmpltId: '', dlivTmpltNm: '' });
-      onMounted(async () => {
+      /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+      const initPage = async () => {
         try {
           const r = await boApi.post('/bo/zd/simul/prod/defaults', {}, coUtil.cofApiHdr('상품시뮬', 'defaults'));
           if (r?.data?.data) Object.assign(defaults.value, r.data.data);
@@ -428,7 +429,8 @@
           walk('__root__', []);
           categories.value = sorted;
         } catch (e) { /* 카테고리 로드 실패 무시 */ }
-      });
+      };
+      onMounted(initPage);
 
       /* ── [04] Computed ──────────────────────────────── */
       const cfTypeTotal = computed(() => Object.values(domCfg.saleTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);

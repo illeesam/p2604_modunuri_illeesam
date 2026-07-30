@@ -17,7 +17,7 @@ window.OdOrderHist = {
     const claims = reactive([]);                                                // 클레임 목록
     const deliveries = reactive([]);                                            // 배송 목록
     const orderItems = reactive([]);                                            // 주문 항목 목록
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecOrderHistState.tab || 'products', tabMode2: 'tab' });
+    const uiState = reactive({ loading: false, botTab: window._ecOrderHistState.tab || 'products', tabMode2: 'tab' });
     const botTab = Vue.toRef(uiState, 'botTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
@@ -80,18 +80,13 @@ window.OdOrderHist = {
 
     watch(botTab, v => { window._ecOrderHistState.tab = v; });
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       if (o) {
         orderItems.splice(0, orderItems.length,
@@ -99,7 +94,8 @@ window.OdOrderHist = {
         );
       }
       handleSearchData();
-    });
+    };
+    onMounted(initPage);
 
     const cfRelatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries || [], d => d.orderId === props.orderId) || null);
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === props.orderId));

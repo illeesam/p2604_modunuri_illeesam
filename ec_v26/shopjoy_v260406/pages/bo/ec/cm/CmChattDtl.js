@@ -18,8 +18,7 @@ window.CmChattDtl = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
     const uiState = reactive({                     // UI 상태 (탭/뷰모드 영속화)
-      loading: false, error: null, isPageCodeLoad: false,
-      tab: window._cmChattDtlState.tab || 'chat',
+      loading: false, error: null, tab: window._cmChattDtlState.tab || 'chat',
       tabMode2: window._cmChattDtlState.tabMode || 'tab',
       replyText: '', searchUserId: '', chat: null,
     });
@@ -302,23 +301,27 @@ window.CmChattDtl = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
+    const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
+      /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
+      await codeStore.saLoadCodes(['CHATT_STATUS']);
       codes.chatt_statuses = codeStore.sgGetGrpCodes('CHATT_STATUS');
-      uiState.isPageCodeLoad = true;
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted — 진입 시 코드 로드 + 상세 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
+    /* initPage — 화면 로드 시퀀스.
+       코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
+       빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
+    const initPage = async () => {
+      await fnLoadCodes();
       if (!cfIsNew.value) {
-        handleSearchDetail();
+        await handleSearchDetail();
         uiState.tab = 'chat';
       } else {
         uiState.tab = 'new';
       }
-    });
+    };
+    onMounted(initPage);
 
     onUnmounted(() => { fnStopPoll(); });
 

@@ -56,7 +56,8 @@ window.ZdTestMailSmtp = {
 
     /* ##### [02] 초기 로드 #################################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({
           propKeys: 'site.email.smtp.host,site.email.smtp.port,app.mail.from,app.mail.from-nm',
@@ -81,7 +82,8 @@ window.ZdTestMailSmtp = {
         const d = appRes?.data?.data || {};
         if (d.username) cfg.username = d.username;
       } catch (e) { /* 엔드포인트 없으면 무시 */ }
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [03] 헬퍼 함수 #################################################### */
 

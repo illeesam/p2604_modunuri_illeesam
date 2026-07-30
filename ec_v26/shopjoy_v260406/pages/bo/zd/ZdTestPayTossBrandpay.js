@@ -45,7 +45,8 @@ window.ZdTestPayTossBrandpay = {
 
     /* ##### [02] 초기 로드 #################################################### */
 
-    onMounted(async () => {
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    const initPage = async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.pay.toss.client-key,app.pay.toss.secret-key' }, '브랜드페이 테스트', '키 조회');
         const list = res?.data?.data || [];
@@ -60,7 +61,8 @@ window.ZdTestPayTossBrandpay = {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
       checkSdk();
-    });
+    };
+    onMounted(initPage);
 
     /* ##### [03] 헬퍼 함수 #################################################### */
 
