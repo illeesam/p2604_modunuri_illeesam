@@ -857,6 +857,9 @@
           window.location.hash = newHash;
         }
         window.scrollTo(0, 0);
+        /* 이미 활성인 화면을 좌측메뉴에서 다시 클릭하면 cfActiveTabId 가 안 바뀌어
+           watch 가 안 돈다. 그 경우에도 탭이 보이도록 여기서 한 번 더 호출. */
+        Vue.nextTick(scrollActiveTabIntoView);
       };
 
       /* readHashWithNotification */
@@ -1405,6 +1408,34 @@
         if (tabBarRef.value) tabBarRef.value.scrollBy({ left: dir * 180, behavior: 'smooth' });
       };
 
+      /* scrollActiveTabIntoView — 활성 탭이 탭바 밖으로 밀려 있으면 보이는 위치까지 스크롤.
+         탭이 꽉 차면 좌측메뉴로 이동하거나 새 화면을 열어도 활성 탭이 화면 밖에 있어
+         "지금 어느 화면인지" 가 안 보이던 문제를 막는다.
+         offsetLeft 대신 getBoundingClientRect 차이를 쓰는 이유:
+         .bo-tab-bar 에 position 이 없으면 offsetParent 가 상위로 올라가 계산이 어긋난다. */
+      const scrollActiveTabIntoView = () => {
+        const wrap = tabBarRef.value;
+        if (!wrap) { return; }
+        const el = Array.from(wrap.children)
+          .find((c) => c.dataset && c.dataset.tabId === cfActiveTabId.value);
+        if (!el) { return; }
+        const PAD = 12;                                   // 좌우 여백 (스크롤 버튼에 가려지지 않게)
+        const wr = wrap.getBoundingClientRect();
+        const er = el.getBoundingClientRect();
+        if (er.left < wr.left + PAD) {
+          wrap.scrollBy({ left: er.left - wr.left - PAD, behavior: 'smooth' });
+        } else if (er.right > wr.right - PAD) {
+          wrap.scrollBy({ left: er.right - wr.right + PAD, behavior: 'smooth' });
+        }
+      };
+
+      /* 활성 탭이 바뀌거나(화면 이동) 탭 개수가 바뀌면(열기/닫기) 위치 재확인.
+         DOM 반영 후여야 하므로 nextTick 을 거친다. */
+      watch(
+        () => [cfActiveTabId.value, openTabs.length],
+        () => Vue.nextTick(scrollActiveTabIntoView)
+      );
+
       /* ── 로그인 상태 (localStorage 영속화) ── */
       /* _restoreBoUser */
       const _restoreBoUser = () => {
@@ -1563,6 +1594,9 @@
       };
 
       onMounted(() => {
+        /* 최초 진입(F5 포함) 시에도 활성 탭이 보이게. watch 는 setup 이후 등록되므로
+           초기 렌더에는 안 걸린다. */
+        Vue.nextTick(scrollActiveTabIntoView);
         setTimeout(() => {
           window.useBoAppInitStore?.()?.saRestoreFromStorage?.();
         }, 0);
@@ -2590,7 +2624,7 @@
   <div class="bo-tab-bar-wrap" v-if="!cfEmbed">
     <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
     <div class="bo-tab-bar" ref="tabBarRef">
-      <div v-for="tab in openTabs" :key="tab.id"
+      <div v-for="tab in openTabs" :key="tab.id" :data-tab-id="tab.id"
         class="bo-tab" :class="{active: cfActiveTabId===tab.id}"
         @click="navigate(tab.id)"
         @contextmenu.prevent="showCtxMenu($event, tab.id)">
