@@ -717,27 +717,6 @@
   /* cofEndOfMonth — 해당 월의 마지막 날 Date */
   function cofEndOfMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
 
-  /* ── SVG 차트 헬퍼 ── */
-
-  /* cofMaxOf — 배열 최대값 (최소 1) */
-  function cofMaxOf(arr) { return Math.max(1, ...arr); }
-
-  /* cofLinePoints — 값 배열을 SVG polyline points 문자열로 변환 */
-  function cofLinePoints(vals, w, h, pad = 10) {
-    const max = cofMaxOf(vals);
-    const step = (w - pad * 2) / Math.max(vals.length - 1, 1);
-    return vals.map((v, i) => `${pad + i * step},${h - pad - (v / max) * (h - pad * 2)}`).join(' ');
-  }
-
-  /* cofAreaPath — 값 배열을 SVG path (영역 채우기용) 문자열로 변환 */
-  function cofAreaPath(vals, w, h, pad = 10) {
-    const pts = cofLinePoints(vals, w, h, pad);
-    if (!pts) { return ''; }
-    const first = pts.split(' ')[0].split(',');
-    const last = pts.split(' ').slice(-1)[0].split(',');
-    return `M${first[0]},${h - pad} L${pts.replace(/ /g, ' L')} L${last[0]},${h - pad} Z`;
-  }
-
   /* ─────────────────────────────────────────────────────────────────────
    * cofDetail — Mng 인라인 Dtl 패널 표준 캡슐 (FO/BO 공통)
    *  - selectedId / openMode('view'|'edit') / reloadTrigger 관리
@@ -1146,7 +1125,6 @@
   // 숫자/날짜 포맷 헬퍼
   global.coUtil.cofFmt = global.coUtil.cofFmt || cofFmt;
   global.coUtil.cofWon = global.coUtil.cofWon || cofWon;
-  global.coUtil.cofPad = global.coUtil.cofPad || cofPad;
   global.coUtil.cofYmdHms = global.coUtil.cofYmdHms || cofYmdHms;
   global.coUtil.cofYmd = global.coUtil.cofYmd || cofYmd;
   global.coUtil.cofYm = global.coUtil.cofYm || cofYm;
@@ -1165,16 +1143,13 @@
   global.coUtil.cofAddMonths = global.coUtil.cofAddMonths || cofAddMonths;
   global.coUtil.cofEndOfMonth = global.coUtil.cofEndOfMonth || cofEndOfMonth;
   // SVG 차트 헬퍼
-  global.coUtil.cofMaxOf = global.coUtil.cofMaxOf || cofMaxOf;
   global.coUtil.cofBuildPagerNums = global.coUtil.cofBuildPagerNums || cofBuildPagerNums;
   global.coUtil.cofTotalPage = global.coUtil.cofTotalPage || cofTotalPage;
   global.coUtil.cofExtKeyState = global.coUtil.cofExtKeyState || cofExtKeyState;
-  global.coUtil.cofIsDemoKey = global.coUtil.cofIsDemoKey || cofIsDemoKey;
   global.coUtil.cofOmitEmpty = global.coUtil.cofOmitEmpty || cofOmitEmpty;
   global.coUtil.cofImgSrc = global.coUtil.cofImgSrc || cofImgSrc;
   global.coUtil.cofHtmlCdnToAsset = global.coUtil.cofHtmlCdnToAsset || cofHtmlCdnToAsset;
   global.coUtil.cofHtmlAssetToCdn = global.coUtil.cofHtmlAssetToCdn || cofHtmlAssetToCdn;
-  global.coUtil.cofHexColor = global.coUtil.cofHexColor || cofHexColor;
   // FO 상품 공용 헬퍼
   global.coUtil.cofGenId = global.coUtil.cofGenId || cofGenId;
   global.coUtil.cofAssignProdImage = global.coUtil.cofAssignProdImage || cofAssignProdImage;
@@ -1191,8 +1166,6 @@
   global.coUtil.cofParsePanelRows = global.coUtil.cofParsePanelRows || cofParsePanelRows;
   global.coUtil.cofPanelRowCount = global.coUtil.cofPanelRowCount || cofPanelRowCount;
   global.coUtil.cofPanelStatusLabel = global.coUtil.cofPanelStatusLabel || cofPanelStatusLabel;
-  global.coUtil.cofLinePoints = global.coUtil.cofLinePoints || cofLinePoints;
-  global.coUtil.cofAreaPath = global.coUtil.cofAreaPath || cofAreaPath;
   // Mng 표준 캡슐 (상세패널)
   global.coUtil.cofDetail = global.coUtil.cofDetail || cofDetail;
 })(typeof window !== 'undefined' ? window : this);

@@ -176,7 +176,10 @@ window.FoCmPopupModal = {
     });
     const treeState = reactive({ selectedId: null });
 
-    const cfSiteId = computed(() => window.FO_SITE_ID || window.foCommonFilter?.siteId || '');
+    /* cfSiteId — coUtil 이 사이트 ID 해석의 단일 기준 (localStorage 'modu-fo-sy-siteId' → FO_SITE_NO 매핑).
+       예전엔 window.FO_SITE_ID || window.foCommonFilter?.siteId 를 봤는데 둘 다 어디에도
+       정의되지 않은 이름이라 항상 '' 였다. 그 빈 값이 팝업 설정·목록·트리 3개 API 로 나갔다. */
+    const cfSiteId = computed(() => coUtil.cofApiInfo.getCurrentSiteId() || '');
     /* 다중 여부는 호출부(:multi)가 최우선, 미지정 시 메타의 기본값 */
     /* 다중 여부는 호출부(:multi)가 최우선, 미지정 시 메타의 기본값 */
     const cfIsMulti = computed(() => props.multi !== null ? props.multi : cfg.multiYn === 'Y');
