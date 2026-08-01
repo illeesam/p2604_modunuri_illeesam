@@ -17,7 +17,7 @@ window.SyBatchHist = {
     const batches = reactive([]);                  // 배치 마스터 목록 (select 옵션용)
     const batchLogs = reactive([]);                // 배치 실행이력 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
-      loading: false, error: null,
+      loading: false, error: null, hasMore: true,   // hasMore: 무한 스크롤로 더 받을 게 있는지
       searchBatchId: '', searchStatus: '', expandedSet: new Set(),
     });
     const codes = reactive({ batch_run_statuses: [] });
@@ -28,7 +28,7 @@ window.SyBatchHist = {
     const detailLoading = reactive(new Set());     // 조회 중인 batchLogId 집합
 
     /* ===== 페이지네이션 ===== */
-    const histGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const histGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 100, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -78,7 +78,10 @@ window.SyBatchHist = {
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
     /* handleSearchData — 목록 조회 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    const handleSearchData = async (searchType = 'DEFAULT', append = false) => {
+      if (uiState.loading) { return; }
+      if (append && !uiState.hasMore) { return; }
+      if (!append) { histGridPager.pageNo = 1; uiState.hasMore = true; }
       uiState.loading = true;
       try {
         const logParams = {
@@ -89,15 +92,21 @@ window.SyBatchHist = {
         };
         const [resBatch, resLogs] = await Promise.all([
           boApiSvc.syBatch.getPage({ pageNo: 1, pageSize: 10000 }, '배치이력', '목록조회'),
-          boApiSvc.syBatchLog.getPage(logParams, '배치이력', '목록조회'),
+          boApiSvc.syBatchLog.getPage(logParams, '배치이력', '목록조회', append ? { isProgress: false } : undefined),
         ]);
         batches.splice(0, batches.length, ...(resBatch.data?.data?.list || []));
         const d = resLogs.data?.data;
-        batchLogs.splice(0, batchLogs.length, ...(d?.pageList || d?.list || []));
-        Object.keys(detailCache).forEach(k => delete detailCache[k]);   // 목록 갱신 → 상세 캐시 클리어(자동 재펼침 시 새 데이터로 다시 조회)
+        const list = d?.pageList || d?.list || [];
         histGridPager.pageTotalCount = d?.pageTotalCount || 0;
-        histGridPager.pageTotalPage  = d?.pageTotalPage  || 1;
-        coUtil.cofBuildPagerNums(histGridPager);
+        if (append) {
+          batchLogs.push(...list);
+        } else {
+          batchLogs.splice(0, batchLogs.length, ...list);
+          Object.keys(detailCache).forEach(k => delete detailCache[k]);   // 목록 갱신 → 상세 캐시 클리어
+        }
+        /* 더 받을 게 있는지 — 한 페이지를 다 채웠고 총건수에 못 미치면 계속 */
+        uiState.hasMore = list.length >= histGridPager.pageSize && batchLogs.length < histGridPager.pageTotalCount;
+        if (uiState.hasMore) { histGridPager.pageNo += 1; }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -106,6 +115,9 @@ window.SyBatchHist = {
         uiState.loading = false;
       }
     };
+
+    /* onScrollEnd — 스크롤 하단 근접 시 다음 100건 */
+    const onScrollEnd = () => { handleSearchData('DEFAULT', true); };
 
     /* setPage — 페이지 번호 변경 */
     const setPage = n => { if (n >= 1 && n <= histGridPager.pageTotalPage) { histGridPager.pageNo = n; handleSearchData().then(() => { onExpandAll(); }); } };
@@ -244,6 +256,8 @@ window.SyBatchHist = {
     return {
       columns,
       batchLogs, uiState, codes, histGridPager,         // 상태 / 데이터
+      onScrollEnd,                                      // 무한 스크롤 (하단 도달 시 다음 100건)
+      cofCountText: coUtil.cofCountText,                // 하단 건수 문구
       handleBtnAction, handleSelectAction, handleGridCellAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfBatchOptions, // computed
       fnRowExpanded, fnHistRowStyle,                           // 헬퍼
@@ -252,7 +266,8 @@ window.SyBatchHist = {
   },
   template: /* html */`
 <!-- ===== ■. 목록 영역 =================================================== -->
-<bo-container title="배치 실행이력" :count-text="histGridPager.pageTotalCount + '건'">
+<bo-container title="배치 실행이력"
+    :count-text="cofCountText(histGridPager.pageTotalCount, batchLogs.length)">
   <template #toolbar-actions>
     <button class="btn btn_expand_all" @click="handleBtnAction('batchLogs-expandAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
       ▼ 전체펼치기
@@ -279,7 +294,7 @@ window.SyBatchHist = {
       조회
     </button>
   </template>
-  <bo-grid bare
+  <bo-grid bare fit-bottom @scroll-end="onScrollEnd"
     :columns="columns.histGrid" :rows="batchLogs" row-key="batchLogId"
     :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded"
     empty-text="실행이력이 없습니다.">
@@ -316,7 +331,6 @@ window.SyBatchHist = {
     </td>
     </template>
   </bo-grid>
-  <bo-pager :pager="histGridPager" :on-set-page="n => handleBtnAction('batchLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('batchLogs-pager-sizeChange')" />
 </bo-container>
 <!-- ===== □. 목록 영역 =================================================== -->
 `,

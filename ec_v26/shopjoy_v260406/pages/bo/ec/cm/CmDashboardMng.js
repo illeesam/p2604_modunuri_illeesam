@@ -253,7 +253,7 @@ window.CmDashboardMng = {
   </bo-container>
   <!-- ===== ■. 대시보드 상세 폼 (항상 표시 — 미선택 시 안내) ================= -->
   <bo-container :title="baseDetail.isNew ? '대시보드 신규 등록' : '대시보드 상세'"
-    :count-text="baseDetail.selectedId ? '#' + baseDetail.selectedId : ''">
+    :title-id="baseDetail.selectedId ? baseDetail.selectedId : ''">
     <template #toolbar-actions>
       <button v-if="baseDetail.selectedId" class="btn btn_preview"
         @click="handleBtnAction('dashboards-layout')">🧩 항목배치 열기</button>

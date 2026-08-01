@@ -37,7 +37,17 @@
 
   /* ── Request: 토큰 주입 + 기본 헤더 설정 + 로그 ── */
   inst.interceptors.request.use(function (cfg) {
-    try { if (typeof global._showProgress === 'function') global._showProgress(true); } catch (_) {}
+    /* 진행 오버레이 — cfg.isProgress === false 면 띄우지 않는다.
+       (무한 스크롤의 추가 조회처럼 사용자가 스크롤 중인데 화면을 덮으면 방해가 된다)
+       문구는 메서드로 고른다: GET=조회중, 그 외(POST/PUT/DELETE)=처리중.
+       응답에서 짝을 맞춰 내려야 하므로 띄웠는지 여부를 cfg 에 기록해 둔다. */
+    try {
+      cfg._progressShown = (cfg.isProgress !== false);
+      if (cfg._progressShown && typeof global._showProgress === 'function') {
+        var _pLabel = String(cfg.method || 'get').toLowerCase() === 'get' ? '조회중입니다...' : '처리중입니다...';
+        global._showProgress(true, _pLabel);
+      }
+    } catch (_) {}
     try { cfg._startAt = Date.now(); } catch (_) {}  /* 소요시간(duration) 계산용 시작시각 */
     try {
       cfg.headers = cfg.headers || {};
@@ -102,7 +112,7 @@
   function flush(tok) { pending.forEach(function (cb) { cb(tok); }); pending = []; }
 
   inst.interceptors.response.use(function (res) {
-    try { if (typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
+    try { if ((res.config || {})._progressShown && typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
     var resCfg = res.config || {};
     var resUiTag = coUtil.cofUiTag(
       (resCfg.headers && (resCfg.headers['X-UI-Nm']  || resCfg.headers['x-ui-nm']))  || '',
@@ -168,7 +178,7 @@
     } catch (_) {}
     return res;
   }, function (err) {
-    try { if (typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
+    try { if ((err.config || (err.response || {}).config || {})._progressShown && typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
     var res = err.response;
     var cfg = err.config || {};
     var status = res && res.status;

@@ -875,14 +875,18 @@
       Vue.watch(apiToastEnabled, (v) => { try { localStorage.setItem('modu-bo-sy-apiToastOpen', v ? 'true' : 'false'); } catch (e) {} });
       const onToggleApiToast = () => { apiToastEnabled.value = !apiToastEnabled.value; };
       const onToggleBoSetting = () => { boSettingShow.value = !boSettingShow.value; };
-      /* ── API Progress Overlay ── */
+      /* ── API Progress Overlay ──
+         apiProgressLabel: 호출 성격에 맞는 문구. 조회(GET)는 '조회중입니다...',
+         저장·삭제 등 변경은 '처리중입니다...'. axios 래퍼가 _showProgress 2번째 인자로 준다. */
       const isApiLoading = Vue.ref(false);
+      const apiProgressLabel = Vue.ref('처리중입니다...');
       let _apiLoadingCount = 0;
       let _hideTimer = null;
       let _progressShowAt = 0;
       const MIN_SHOW_MS = 300;
       const HIDE_DELAY_MS = 50;
-      window._showProgress = (on) => {
+      window._showProgress = (on, label) => {
+        if (on && label) { apiProgressLabel.value = label; }
         _apiLoadingCount = Math.max(0, _apiLoadingCount + (on ? 1 : -1));
         if (_apiLoadingCount > 0) {
           if (_hideTimer) {
@@ -2369,6 +2373,7 @@
 
       return {
         isApiLoading,
+        apiProgressLabel,
         page,
         dtlId,
         initSearchValue,
@@ -3228,7 +3233,7 @@
         <div class="bo-dot"></div>
         <div class="bo-dot"></div>
       </div>
-      <div class="api-progress-label">처리중입니다...</div>
+      <div class="api-progress-label">{{ apiProgressLabel }}</div>
     </div>
   </div>
 

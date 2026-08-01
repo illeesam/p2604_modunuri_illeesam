@@ -28,7 +28,9 @@ window.SyUserLoginHist = {
     const codes = reactive({ login_results: [], token_actions: [], date_range_opts: [] });
 
     /* ===== 페이지네이션 ===== */
-    const logGridPager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond:{} });
+    const logGridPager = reactive({ pageType:'PAGE', pageNo:1, pageSize:100, pageTotalCount:0, pageTotalPage:1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond:{} });
+    /* 무한 스크롤 상태 — loading: 중복요청 가드 / hasMore: 더 받을 게 있는지 */
+    const uiState = reactive({ loading: false, hasMore: true });
 
     /* ===== 목록 데이터 ===== */
     const logs   = reactive([]);                  // 로그인 로그
@@ -198,38 +200,68 @@ window.SyUserLoginHist = {
     };
 
     /* handleSearchLog — 로그인 로그 조회 */
-    const handleSearchLog = async () => {
+    const handleSearchLog = async (append = false) => {
+      if (uiState.loading) { return; }
+      if (append && !uiState.hasMore) { return; }
+      uiState.loading = true;
       try {
-        const res = await boApiSvc.syUserLoginLog.getPage(buildParams(), '사용자로그인이력', '로그인로그조회');
+        const res = await boApiSvc.syUserLoginLog.getPage(buildParams(), '사용자로그인이력', '로그인로그조회', append ? { isProgress: false } : undefined);
         const d = res.data?.data;
-        logs.splice(0, logs.length, ...(d?.pageList || []));
+        const list = d?.pageList || [];
         logGridPager.pageTotalCount = d?.pageTotalCount || 0;
         tabCounts.log = logGridPager.pageTotalCount;
-        fnBuildPagerNums(); expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        if (append) {
+          logs.push(...list);
+        } else {
+          logs.splice(0, logs.length, ...list);
+          expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        }
+        /* 더 받을 게 있는지 — 이번 응답이 한 페이지를 다 채웠고 총건수에 못 미치면 계속 */
+        uiState.hasMore = list.length >= logGridPager.pageSize && logs.length < logGridPager.pageTotalCount;
+        if (uiState.hasMore) { logGridPager.pageNo += 1; }
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+      } finally {
+        uiState.loading = false;
       }
     };
 
     /* handleSearchToken — 토큰 이력 조회 */
-    const handleSearchToken = async () => {
+    const handleSearchToken = async (append = false) => {
+      if (uiState.loading) { return; }
+      if (append && !uiState.hasMore) { return; }
+      uiState.loading = true;
       try {
-        const res = await boApiSvc.syUserTokenLog.getPage(buildParams(), '사용자로그인이력', '토큰이력조회');
+        const res = await boApiSvc.syUserTokenLog.getPage(buildParams(), '사용자로그인이력', '토큰이력조회', append ? { isProgress: false } : undefined);
         const d = res.data?.data;
-        tokens.splice(0, tokens.length, ...(d?.pageList || []));
+        const list = d?.pageList || [];
         logGridPager.pageTotalCount = d?.pageTotalCount || 0;
         tabCounts.token = logGridPager.pageTotalCount;
-        fnBuildPagerNums(); expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        if (append) {
+          tokens.push(...list);
+        } else {
+          tokens.splice(0, tokens.length, ...list);
+          expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        }
+        /* 더 받을 게 있는지 — 이번 응답이 한 페이지를 다 채웠고 총건수에 못 미치면 계속 */
+        uiState.hasMore = list.length >= logGridPager.pageSize && tokens.length < logGridPager.pageTotalCount;
+        if (uiState.hasMore) { logGridPager.pageNo += 1; }
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+      } finally {
+        uiState.loading = false;
       }
     };
 
     /* handleSearchList — 목록 조회 (탭별 디스패치) */
-    const handleSearchList = async () => {
-      if (searchParam.activeTab === 'log') { await handleSearchLog(); }
-      else { await handleSearchToken(); }
+    const handleSearchList = async (append = false) => {
+      if (!append) { logGridPager.pageNo = 1; uiState.hasMore = true; }
+      if (searchParam.activeTab === 'log') { await handleSearchLog(append); }
+      else { await handleSearchToken(append); }
     };
+
+    /* onScrollEnd — 그리드 스크롤이 바닥 근처에 오면 다음 100건 */
+    const onScrollEnd = () => { handleSearchList(true); };
 
     /* initPage — 화면 로드 시퀀스.
        코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
@@ -398,7 +430,9 @@ window.SyUserLoginHist = {
 
     return {
       columns,
-      searchParam, logGridPager, histTabs, cfCurrentList, allExpanded,                  // 상태 / 데이터
+      searchParam, logGridPager, uiState, histTabs, cfCurrentList, allExpanded,        // 상태 / 데이터
+      onScrollEnd,                                      // 무한 스크롤 (하단 도달 시 다음 100건)
+      cofCountText: coUtil.cofCountText,                // 하단 건수 문구 (템플릿에서 coUtil 직접 호출 금지)
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
       fnRowExpanded, fnRowClickStyle, fnRowDetail, fnRowDetailLoading, // 행 표시 / 펼침 상세
     };
@@ -427,7 +461,8 @@ window.SyUserLoginHist = {
   </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 탭 + 목록 (한 카드) ========================================= -->
-  <bo-container title="로그인/토큰 이력" :count-text="logGridPager.pageTotalCount + '건'">
+  <bo-container title="로그인/토큰 이력"
+    :count-text="cofCountText(logGridPager.pageTotalCount, cfCurrentList.length)">
     <template #toolbar-actions>
       <span style="font-size:11px;color:#aaa;">
         행 클릭 시 상세정보 펼침
@@ -444,6 +479,7 @@ window.SyUserLoginHist = {
   <!-- ===== ■. 로그인 로그 탭 ================================================ -->
   <bo-grid v-if="searchParam.activeTab==='log'" bare
     :columns="columns.logGrid" :rows="cfCurrentList" row-key="logId"
+    fit-bottom @scroll-end="onScrollEnd"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
@@ -456,6 +492,7 @@ window.SyUserLoginHist = {
   <!-- ===== ■. 토큰 이력 탭 ================================================= -->
   <bo-grid v-if="searchParam.activeTab==='token'" bare
     :columns="columns.tokenGrid" :rows="cfCurrentList" row-key="logId"
+    fit-bottom @scroll-end="onScrollEnd"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
@@ -467,7 +504,6 @@ window.SyUserLoginHist = {
       </td>
     </template>
   </bo-grid>
-  <bo-pager :pager="logGridPager" :on-set-page="n => handleBtnAction('histList-pager-setPage', n)" :on-size-change="() => handleSelectAction('histList-pager-sizeChange')" />
   <!-- ===== □. 토큰 이력 탭 ================================================= -->
   </bo-container>
 </bo-page>

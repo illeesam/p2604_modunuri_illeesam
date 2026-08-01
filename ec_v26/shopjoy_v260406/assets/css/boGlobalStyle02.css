@@ -590,3 +590,13 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 /* ── 채팅 칸반 flash animation ── */
 @keyframes chkFlash { 0%,100%{box-shadow:0 0 0 0 rgba(232,88,122,0);} 40%{box-shadow:0 0 0 7px rgba(232,88,122,.45);} 80%{box-shadow:0 0 0 0 rgba(232,88,122,0);} }
 .chk-flash { animation:chkFlash 0.9s ease 5; border-color:#e8587a !important; }
+
+/* ── 목록 하단 좌측 건수 (2026-08-01: 제목 우측 .list-count 에서 이동) ──
+   페이저(.pagination)는 자체 1fr auto 1fr 로 중앙정렬하므로,
+   건수를 왼쪽에 두고 나머지 폭을 페이저가 쓰게 한다. */
+/* 건수 아래 여백은 5px 로 고정.
+   .card 의 padding-bottom(12px)이 이미 깔려 있어 margin-bottom:-7px 로 상쇄한다
+   (전역 .card 패딩을 건드리면 다른 화면 레이아웃이 함께 틀어지므로 여기서만 조정). */
+.grid-foot { display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-bottom: -7px; }
+.grid-foot-count { flex: 0 0 auto; font-size: 12px; color: #999; white-space: nowrap; padding: 2px; line-height: 1.4; }
+.grid-foot-slot { flex: 1 1 auto; min-width: 0; }

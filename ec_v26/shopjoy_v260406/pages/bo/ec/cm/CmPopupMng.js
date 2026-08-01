@@ -393,7 +393,7 @@ window.CmPopupMng = {
 
   <!-- ===== ■. 팝업 상세 ====================================================== -->
   <bo-container :title="baseDetail.isNew ? '팝업 신규 등록' : '팝업 상세'"
-    :count-text="baseDetail.selectedId ? '#' + baseDetail.selectedId : ''">
+    :title-id="baseDetail.selectedId ? baseDetail.selectedId : ''">
     <template #toolbar-actions>
       <button v-if="baseDetail.selectedId" class="btn btn_detail"
         @click="handleBtnAction('popup-goItems')">항목관리</button>
@@ -413,7 +413,7 @@ window.CmPopupMng = {
   <!-- ===== ■. 미리보기 (실제 공통 선택 팝업) ================================= -->
   <!-- ===== ■. 미리보기 결과 (호출 정보 / 응답정보) ============================ -->
   <bo-container v-if="previewModal.popupCode" title="미리보기 결과"
-    :count-text="previewModal.popupCode + (previewModal.multi ? ' · 다중선택' : ' · 단일선택')">
+    :title-hint="previewModal.popupCode + (previewModal.multi ? ' · 다중선택' : ' · 단일선택')">
     <template #toolbar-actions>
       <button class="btn btn_preview btn-sm" @click="handleBtnAction('popups-preview')">👁 다시 열기</button>
       <button class="btn btn_preview btn-sm" @click="handleBtnAction('popups-previewMulti')">👁 멀티로 열기</button>

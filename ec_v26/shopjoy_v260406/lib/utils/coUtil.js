@@ -599,6 +599,18 @@
     return v.toLocaleString() + '원';
   }
 
+  /* cofCountText — 목록 하단 좌측에 표시할 건수 문구.
+   *   cofCountText(141)       -> '총 141건'
+   *   cofCountText(141, 100)  -> '총 141건 · 조회 100건'
+   *   cofCountText(141, 141)  -> '총 141건 · 조회 141건'   (다 받아도 조회 건수를 계속 보여 준다)
+   * loaded 를 넘긴 화면은 "얼마나 받았는지" 가 정보이므로 total 과 같아져도 감추지 않는다. */
+  function cofCountText(total, loaded) {
+    const t = Number(total) || 0;
+    const base = '총 ' + t.toLocaleString('ko-KR') + '건';
+    if (loaded == null) { return base; }
+    return base + ' · 조회 ' + (Number(loaded) || 0).toLocaleString('ko-KR') + '건';
+  }
+
   /* cofYmdHms — 날짜/일시 문자열을 'YYYY-MM-DD HH:MM:SS'(앞 19자)로 자르기.
    *   String(v||'').slice(0,19) 복붙 대체. null/undefined/숫자 안전. 빈값이면 ''.
    *   끝에 '-' fallback 이 필요하면 호출부에서 `coUtil.cofYmdHms(v) || '-'` */
@@ -1125,6 +1137,7 @@
   // 숫자/날짜 포맷 헬퍼
   global.coUtil.cofFmt = global.coUtil.cofFmt || cofFmt;
   global.coUtil.cofWon = global.coUtil.cofWon || cofWon;
+  global.coUtil.cofCountText = global.coUtil.cofCountText || cofCountText;
   global.coUtil.cofYmdHms = global.coUtil.cofYmdHms || cofYmdHms;
   global.coUtil.cofYmd = global.coUtil.cofYmd || cofYmd;
   global.coUtil.cofYm = global.coUtil.cofYm || cofYm;

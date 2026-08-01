@@ -166,7 +166,6 @@ window.BoContainer = {
       <slot name="title">{{ title }}</slot>
       <span v-if="titleId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">#{{ titleId }}</span>
       <span v-if="titleHint" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">{{ titleHint }}</span>
-      <span v-if="countText" class="list-count">{{ countText }}</span>
     </span>
     <div v-if="$slots['toolbar-actions']" style="display:flex;gap:6px;align-items:center;">
       <slot name="toolbar-actions"></slot>
@@ -174,6 +173,10 @@ window.BoContainer = {
   </div>
   <div :style="bodyStyle">
     <slot></slot>
+  </div>
+  <!-- 건수는 하단 좌측 (2026-08-01 제목 우측에서 이동) -->
+  <div v-if="countText" class="grid-foot">
+    <span class="grid-foot-count">{{ countText }}</span>
   </div>
 </div>`,
 };
@@ -517,6 +520,9 @@ window.BoGrid = {
     rowStyle:   { type: Function, default: null },               // (row,idx)=>style (행 강조 등 고유 UX 보존)
     rowClass:   { type: Function, default: null },               // (row,idx)=>class (행 상태 강조)
     countText:  { type: String,  default: null },                // 건수 커스텀 ('총 N건' 대신). null=기본
+    loadedCount:{ type: Number,  default: null },                // 적재 건수(무한스크롤). 주면 '총 N건 · 조회 M건'
+    scrollEndOffset: { type: Number, default: 500 },             // 바닥에서 N px 앞에서 scroll-end 발화 (≈15행)
+    fitBottom:  { type: [Boolean, Number], default: false },      // 그리드를 화면 하단까지 채움. 숫자=하단 예약 px
     isExpanded: { type: Function, default: null },               // (row,idx)=>bool. 행펼침 여부
     draggable:  { type: Boolean, default: false },               // 행 드래그 정렬
     showSave:   { type: Boolean, default: false },               // 툴바 [저장] 버튼
@@ -536,7 +542,7 @@ window.BoGrid = {
     gridId:       { type: String,  default: '' },                // 그리드 식별자(=셀 클릭 라우터 cmd, 예: 'members-cellClick'). @cell-click emit 의 e.cmd + #row-actions 슬롯 gridId 로 전달 → cmd 한 곳 정의
     selectedKey: { type: [String, Number], default: null },      // 선택된 행의 rowKey 값. 일치하는 행에 .bo-row-selected (파란 테두리) 자동 부여
   },
-  emits: ['sort', 'row-click', 'row-dblclick', 'cell-click', 'save', 'row-remove', 'reorder', 'cell-change',
+  emits: ['scroll-end', 'sort', 'row-click', 'row-dblclick', 'cell-click', 'save', 'row-remove', 'reorder', 'cell-change',
           'toggle-check', 'toggle-check-all', 'ref-click'],
   setup(props, { emit, slots }) {
     const U = window._boAreaCompUtil;
@@ -655,7 +661,81 @@ window.BoGrid = {
       return base;
     };
 
-    return { U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
+    /* ── fitBottom — 그리드를 화면 하단까지 채운다 ──
+       고정 오프셋(calc(100vh - 390px))은 화면 폭·검색영역 줄수에 따라 헤더 높이가 달라져
+       어느 해상도에서는 반드시 어긋난다(실제로 모든 뷰포트에서 56px 넘쳤다).
+       그래서 자기 위치(getBoundingClientRect().top)에서 실측해 높이를 정한다.
+       reserve: 하단 건수행 + 카드 패딩 + 여백. fitBottom 에 숫자를 주면 그 값을 쓴다. */
+    const bodyRef = Vue.ref(null);
+    const fitHeight = () => {
+      if (!props.fitBottom || !bodyRef.value) { return; }
+      const reserve = typeof props.fitBottom === 'number' ? props.fitBottom : 64;
+      const top = bodyRef.value.getBoundingClientRect().top;
+      const h = Math.max(160, window.innerHeight - top - reserve);
+      /* min/max 를 함께 줘야 행이 적을 때도 영역이 하단까지 내려온다
+         (maxHeight 만 주면 2행짜리 목록에서 카드가 위쪽에만 붙어 아래가 텅 빈다) */
+      bodyRef.value.style.maxHeight = h + 'px';
+      bodyRef.value.style.minHeight = h + 'px';
+      bodyRef.value.style.overflow = 'auto';
+    };
+    let _fitRO = null;
+    Vue.onMounted(() => {
+      if (!props.fitBottom) { return; }
+      Vue.nextTick(fitHeight);
+      window.addEventListener('resize', fitHeight);
+      /* 검색영역 접기/펼치기로 위쪽 높이가 바뀌면 다시 계산.
+         document.body 를 관찰하면 .bo-main 이 자체 스크롤이라 크기가 안 변해 발화하지 않는다.
+         그리드 카드의 부모(카드들을 담은 래퍼)를 봐야 위 카드가 커질 때 감지된다. */
+      if (window.ResizeObserver) {
+        _fitRO = new ResizeObserver(() => fitHeight());
+        const wrap = bodyRef.value && bodyRef.value.closest('.card')
+          ? bodyRef.value.closest('.card').parentElement : document.body;
+        try { _fitRO.observe(wrap || document.body); } catch (_) {}
+      }
+    });
+    Vue.onBeforeUnmount(() => {
+      window.removeEventListener('resize', fitHeight);
+      if (_fitRO) { try { _fitRO.disconnect(); } catch (_) {} }
+    });
+
+    /* onScroll — 바닥에서 scrollEndOffset(px) 이내면 scroll-end 발화 (무한 스크롤).
+       tableMaxHeight 를 준 그리드만 자체 스크롤 컨테이너를 갖는다. 안 주면 이벤트가 안 온다.
+       같은 scrollHeight 에서 재발화 금지 — 응답 도착 전 중복 요청을 막는다. */
+    let _lastScrollEmitAt = -1;
+    const onScroll = (e) => {
+      const el = e.target;
+      const rest = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (rest > props.scrollEndOffset) { _lastScrollEmitAt = -1; return; }
+      if (_lastScrollEmitAt === el.scrollHeight) { return; }
+      _lastScrollEmitAt = el.scrollHeight;
+      emit('scroll-end');
+    };
+
+    /* cfScrollMaxHeight — 하단 건수행(.grid-foot) 높이만큼 스크롤 영역을 줄인다.
+       그러지 않으면 건수행이 카드 아래로 밀려 화면 밖에서 잘린다. */
+    const GRID_FOOT_H = 30;
+    const cfScrollMaxHeight = Vue.computed(() => {
+      if (!props.tableMaxHeight) { return props.tableMaxHeight; }
+      /* bare 는 하단 건수행이 없으므로 높이를 빼지 않는다 */
+      return props.bare ? props.tableMaxHeight
+        : 'calc(' + props.tableMaxHeight + ' - ' + GRID_FOOT_H + 'px)';
+    });
+
+    /* cfBodyStyle — 본문 컨테이너 style.
+       tableMaxHeight 를 주면(bare 포함) 자체 스크롤 컨테이너가 되어 무한 스크롤이 동작한다. */
+    const cfBodyStyle = Vue.computed(() => (
+      props.tableMaxHeight
+        ? 'max-height:' + cfScrollMaxHeight.value + ';overflow:auto;position:relative;'
+        : 'overflow-x:auto;position:relative;'
+    ));
+
+    /* cfCountText — 하단 좌측 건수 문구. countText 를 주면 그대로 쓴다. */
+    const cfCountText = Vue.computed(() => (
+      props.countText != null ? props.countText
+        : coUtil.cofCountText(cfTotal.value, props.loadedCount)
+    ));
+
+    return { U, cfTotal, cfCountText, cfScrollMaxHeight, cfBodyStyle, bodyRef, onScroll, cfShowTfoot, rowNo, sortIcon, sortActive,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
              handleBtnAction, handleSelectAction,
              colWidths, onResizeStart, thResizeStyle };
@@ -665,9 +745,6 @@ window.BoGrid = {
   <div v-if="!bare" class="toolbar">
     <span class="list-title">
       {{ listTitle }}
-      <span class="list-count">
-        {{ countText != null ? countText : ('총 ' + cfTotal + '건') }}
-      </span>
       <span v-if="loading" style="margin-left:8px;font-size:12px;color:#e8587a;font-weight:400;">⏳ 조회 중…</span>
     </span>
     <div style="margin-left:auto;display:flex;gap:6px;">
@@ -682,7 +759,7 @@ window.BoGrid = {
        tableMaxHeight 명시 시: 해당 높이로 내부 스크롤 (thead sticky = 이 div 기준).
        tableMaxHeight 미지정: overflow 없음 — bo-main 스크롤 컨테이너 기준으로 thead sticky top:0 동작.
        bare: 가로 스크롤만. -->
-  <div :style="bare ? 'overflow-x:auto;position:relative;' : tableMaxHeight ? 'max-height:' + tableMaxHeight + ';overflow:auto;position:relative;' : 'overflow-x:auto;position:relative;'">
+  <div ref="bodyRef" :style="cfBodyStyle" @scroll="onScroll">
     <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
     <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
       <span style="font-size:13px;color:#e8587a;background:#fff;border:1px solid #f3c6d4;border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>
@@ -699,8 +776,11 @@ window.BoGrid = {
             번호
           </th>
           <slot name="head">
+            <!-- ⚠ 아래 :style 에 position:relative 를 넣지 말 것 — CSS 의 thead th{position:sticky} 를
+                 덮어 그리드 내부 스크롤 시 헤더가 사라진다.
+                 sticky 자체가 절대배치 컨테이닝블록이라 리사이즈 핸들 위치는 그대로 잡힌다. -->
             <th v-for="col in columns" :key="col.key" :class="col.cls"
-            :style="thResizeStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'position:relative;overflow:visible;'"
+            :style="thResizeStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;'"
             @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
@@ -876,8 +956,15 @@ window.BoGrid = {
     </table>
   </div>
   <!-- /그리드 본문 스크롤 컨테이너 -->
-  <!-- ▼ #footer 슬롯 — <bo-pager> 등을 카드 내부 하단에 배치 (페이저는 외부 컴포넌트지만 카드 안에 렌더). bare 모드는 미노출 -->
-  <slot v-if="!bare" name="footer"></slot>
+  <!-- ▼ 하단 바 — 좌측 건수 + #footer 슬롯(<bo-pager> 등). bare 모드는 미노출.
+       건수는 예전에 제목 우측(.list-count)에 있었으나 하단 좌측으로 이동(2026-08-01).
+       페이저가 .pagination 의 1fr auto 1fr 로 자체 중앙정렬하므로 건수는 그 왼쪽 칸을 쓴다. -->
+  <div v-if="!bare" class="grid-foot">
+    <span class="grid-foot-count">{{ cfCountText }}</span>
+    <div class="grid-foot-slot">
+      <slot name="footer"></slot>
+    </div>
+  </div>
 </div>
 `,
 };
@@ -893,6 +980,8 @@ window.BoGridCrud = {
     gridId:     { type: String, default: '' },                // 그리드 식별자(=셀 라우터 cmd). #row-actions 슬롯 gridId 로 전달
     listTitle:  { type: String, default: '목록' },
     maxHeight:  { type: String, default: '480px' },            // 스크롤 컨테이너 높이
+    totalCount: { type: Number, default: null },               // 서버 총건수(무한스크롤). 주면 '총 N건 · 조회 M건'
+    scrollEndOffset: { type: Number, default: 500 },           // 바닥에서 N px 앞에서 scroll-end 발화 (≈15행)
     draggable:  { type: Boolean, default: true },              // 행 드래그 정렬 컬럼(⠿) 표시 + 드래그 동작
     checkAll:   { type: Boolean, default: false },             // 헤더 체크올 v-model 미러
     focusedIdx: { type: Number,  default: null },              // 행 포커스 인덱스 (v-model:focusedIdx, addRow 삽입 기준)
@@ -918,7 +1007,7 @@ window.BoGridCrud = {
     rowAccessor: { type: Function, default: null },
     treeRowKey:  { type: Function, default: null },
   },
-  emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
+  emits: ['scroll-end', 'add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
           'update:checkAll', 'update:focusedIdx', 'export', 'excel-upload', 'sort', 'row-dblclick', 'cell-click', 'row-click'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
@@ -1050,7 +1139,42 @@ window.BoGridCrud = {
     };
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
 
-    return { U, cfVisibleCount, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
+    /* cfCountText — 하단 좌측 건수 문구.
+       ⚠ 템플릿에서 coUtil 을 직접 부르면 setup return 누락 시 컴포넌트가 통째로 사라진다.
+          반드시 setup 에서 계산해 내보낸다. */
+    const cfCountText = Vue.computed(() => (
+      props.totalCount != null
+        ? coUtil.cofCountText(props.totalCount, cfVisibleCount.value)
+        : coUtil.cofCountText(cfVisibleCount.value)
+    ));
+
+    /* onScroll — 스크롤이 바닥에서 SCROLL_END_PX 이내로 오면 scroll-end 를 올린다.
+       연속 발화 방지: 같은 스크롤 높이에서 두 번 쏘지 않도록 마지막 발화 지점을 기억한다. */
+    /* cfScrollMaxHeight — 하단 건수행(.grid-foot)이 카드 밖으로 밀려 잘리지 않도록
+       스크롤 영역 높이에서 건수행 높이를 미리 뺀다.
+       화면들이 max-height="calc(100vh - 320px)" 처럼 뷰포트 기준 값을 주기 때문에,
+       건수행을 추가한 만큼 여기서 되돌려주지 않으면 딱 그 높이만큼 화면 아래로 넘친다. */
+    const GRID_FOOT_H = 30;
+    const cfScrollMaxHeight = Vue.computed(() => (
+      props.maxHeight ? 'calc(' + props.maxHeight + ' - ' + GRID_FOOT_H + 'px)' : props.maxHeight
+    ));
+
+    /* onScroll — 바닥에서 scrollEndOffset(px) 이내로 오면 scroll-end 를 올린다.
+       거리 기준을 쓰는 이유: '남은 20%' 같은 비율은 목록이 커질수록 리드 거리가 같이 늘어
+       (1000건이면 190행 앞) 사실상 전부 미리 당겨오게 된다. 거리로 잡으면 항상 일정하다.
+       기본 500px ≈ 15행 — 다음 100건이 도착할 시간을 벌어 끊김 없이 이어진다.
+       연속 발화 방지: 같은 scrollHeight 에서 두 번 쏘지 않는다(응답 도착 전 중복 요청 차단). */
+    let _lastEmitAt = -1;
+    const onScroll = (e) => {
+      const el = e.target;
+      const rest = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (rest > props.scrollEndOffset) { _lastEmitAt = -1; return; }
+      if (_lastEmitAt === el.scrollHeight) { return; }
+      _lastEmitAt = el.scrollHeight;
+      emit('scroll-end');
+    };
+
+    return { U, cfVisibleCount, cfCountText, cfScrollMaxHeight, onScroll, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
              sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey, fnRowCls,
              cfShowDrag, cfShowNo, cfShowId, handleBtnAction, handleSelectAction };
   },
@@ -1059,9 +1183,6 @@ window.BoGridCrud = {
   <div class="toolbar">
     <span class="list-title">
       {{ listTitle }}
-      <span class="list-count">
-        {{ cfVisibleCount }}건
-      </span>
     </span>
     <div style="display:flex;gap:6px;margin-left:auto;">
       <slot name="toolbar-actions">
@@ -1086,7 +1207,8 @@ window.BoGridCrud = {
       </button>
     </div>
   </div>
-  <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
+  <!-- 하단 근접 시 scroll-end emit — 무한 스크롤(추가 조회)용. 화면이 안 받으면 아무 일도 없다 -->
+  <div :style="'max-height:' + cfScrollMaxHeight + ';overflow:auto;'" @scroll="onScroll">
     <table class="bo-table crud-grid">
       <thead>
         <tr>
@@ -1234,6 +1356,10 @@ window.BoGridCrud = {
     </tr>
   </tbody>
 </table>
+</div>
+<!-- 하단 좌측 건수 (2026-08-01 제목 우측에서 이동). CRUD 그리드는 페이저가 없어 단독 행 -->
+<div class="grid-foot">
+  <span class="grid-foot-count">{{ cfCountText }}</span>
 </div>
 </div>
 `,

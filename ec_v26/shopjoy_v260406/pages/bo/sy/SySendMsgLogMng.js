@@ -13,6 +13,7 @@ window.SySendMsgLogMng = {
 
     // 탭: email(메일) / msg(메시지 SMS·카카오) / alarm(시스템알림)
     const uiState = reactive({
+      loading: false, hasMore: true,   // 무한 스크롤: 중복요청 가드 / 더 받을 게 있는지
       activeTab: 'email',
       dateRange: '1week',
       dateRangeStart: '',
@@ -25,7 +26,7 @@ window.SySendMsgLogMng = {
     const codes = reactive({ date_range_opts: [], send_results: [], msg_channels: [] });
 
     const baseGridPager = reactive({
-      pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
+      pageType: 'PAGE', pageNo: 1, pageSize: 100, pageTotalCount: 0, pageTotalPage: 1,
       pageSizes: [10, 20, 30, 50, 100], pageCond: {},
     });
 
@@ -175,23 +176,38 @@ window.SySendMsgLogMng = {
     };
 
     /* handleSearchList — 현재 탭 목록 조회 */
-    const handleSearchList = async () => {
+    const handleSearchList = async (append = false) => {
+      if (uiState.loading) { return; }
+      if (append && !uiState.hasMore) { return; }
+      if (!append) { baseGridPager.pageNo = 1; uiState.hasMore = true; }
+      uiState.loading = true;
       try {
-        const res = await fnCurSvc().getPage(buildSearchParams(), '메시지발송이력', '조회');
+        const res = await fnCurSvc().getPage(buildSearchParams(), '메시지발송이력', '조회',
+          append ? { isProgress: false } : undefined);
         const data = res.data?.data;
         const list = data?.pageList || [];
         const target = uiState.activeTab === 'email' ? emailLogs : (uiState.activeTab === 'msg' ? msgLogs : alarmLogs);
-        target.splice(0, target.length, ...list);
         baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGridPager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(baseGridPager);
         tabCounts[uiState.activeTab] = baseGridPager.pageTotalCount;
-        coUtil.cofBuildPagerNums(baseGridPager);
-        expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]); allExpanded.value = false;
+        if (append) {
+          target.push(...list);
+        } else {
+          target.splice(0, target.length, ...list);
+          expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]); allExpanded.value = false;
+        }
+        /* 더 받을 게 있는지 */
+        uiState.hasMore = list.length >= baseGridPager.pageSize && target.length < baseGridPager.pageTotalCount;
+        if (uiState.hasMore) { baseGridPager.pageNo += 1; }
       } catch (err) {
         console.error('[handleSearchList]', err);
         if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
+      } finally {
+        uiState.loading = false;
       }
     };
+
+    /* onScrollEnd — 스크롤 하단 근접 시 다음 100건 */
+    const onScrollEnd = () => { handleSearchList(true); };
 
     // ★ onMounted
     /* initPage — 화면 로드 시퀀스.
@@ -359,6 +375,8 @@ window.SySendMsgLogMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      onScrollEnd,                       // 무한 스크롤 (하단 도달 시 다음 100건)
+      cofCountText: coUtil.cofCountText, // 하단 건수 문구
       uiState, baseGridPager, tabCounts, allExpanded, codes,                 // 상태 / 데이터
       columns,                                                                // 컬럼 정의 모음
       handleBtnAction, handleSelectAction, handleGridCellAction,              // dispatch
@@ -389,7 +407,8 @@ window.SySendMsgLogMng = {
   </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 영역 (탭 + 그리드 + 페이저) ============================ -->
-  <bo-container :title="cfTabTitle" :count-text="baseGridPager.pageTotalCount + '건'">
+  <bo-container :title="cfTabTitle"
+    :count-text="cofCountText(baseGridPager.pageTotalCount, cfCurrentList.length)">
     <template #top>
       <div class="tab-nav" style="margin-bottom:12px">
         <button class="tab-btn" :class="{active:uiState.activeTab==='email'}" @click="handleSelectAction('tabs-select', 'email')">
@@ -414,6 +433,7 @@ window.SySendMsgLogMng = {
     </template>
     <bo-grid bare
       :columns="cfCurGridCols" :rows="cfCurrentList" :row-key="cfCurRowKey"
+      fit-bottom @scroll-end="onScrollEnd"
       :row-style="(r, idx) => handleGridCellAction('sendLogs-cellClick', 'rowStyle', r, idx)"
       :is-expanded="(r, idx) => handleGridCellAction('sendLogs-cellClick', 'isExpanded', r, idx)">
       <template #row-expand="{ row, colspan }">
@@ -429,7 +449,6 @@ window.SySendMsgLogMng = {
         </td>
       </template>
     </bo-grid>
-    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('sendLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('sendLogs-pager-sizeChange')" />
   </bo-container>
 </bo-page>
 `,

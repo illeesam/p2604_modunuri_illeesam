@@ -333,7 +333,7 @@ window.CmDashboardItemMng = {
 
   <!-- ===== ■. 항목 상세 폼 (전체 폭 · 항상 표시 — 미선택 시 안내) ============ -->
   <bo-container :title="panelDetail.isNew ? '항목 신규 등록' : '항목 상세 / 수정'"
-    :count-text="panelDetail.selectedId ? '#' + panelForm.dashboardItemId : ''">
+    :title-id="panelDetail.selectedId ? panelForm.dashboardItemId : ''">
     <div v-if="panelDetail.show" style="padding:12px;">
       <bo-form-area :columns="columns.panelForm" :form="panelForm" :errors="panelErrors"
         :cols="3" :show-actions="false" />

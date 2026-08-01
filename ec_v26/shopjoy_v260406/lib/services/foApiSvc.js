@@ -45,7 +45,7 @@
   /* ── cm: FAQ (공개 목록) ────────────────────────────────────── */
   foApiSvc.cmFaq = {
     getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/faq/list', { params, ...hdr(uiNm, cmdNm) }); },
-    getPage(params, uiNm, cmdNm) { return global.foApi.get('/fo/faq/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm, opt) { return global.foApi.get('/fo/faq/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
     incrView(faqId, uiNm, cmdNm) { return global.foApi.post('/fo/faq/' + faqId + '/view', {}, hdr(uiNm, cmdNm)); },
   };
 
@@ -106,14 +106,14 @@
   /* ── my: 문의 ───────────────────────────────────────────────── */
   foApiSvc.myInquiry = {
     getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/inquiry/list', { params, ...hdr(uiNm, cmdNm) }); },
-    getPage(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/inquiry/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm, opt) { return global.foApi.get('/fo/my/inquiry/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
     create(body, uiNm, cmdNm)    { return global.foApi.post('/fo/inquiry/create', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── my: 주문 ───────────────────────────────────────────────── */
   foApiSvc.myOrder = {
     getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/order/list', { params, ...hdr(uiNm, cmdNm) }); },
-    getPage(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/order/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm, opt) { return global.foApi.get('/fo/my/order/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
     create(body, uiNm, cmdNm)    { return global.foApi.post('/fo/order/create', body, hdr(uiNm, cmdNm)); },
   };
 

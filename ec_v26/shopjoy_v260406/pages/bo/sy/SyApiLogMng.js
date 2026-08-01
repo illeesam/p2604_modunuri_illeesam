@@ -15,6 +15,7 @@ window.SyApiLogMng = {
 
     // --- 화면 상태 / 코드 / 페이저 / 행 펼침 ---
     const uiState = reactive({
+      loading: false, hasMore: true,   // 무한 스크롤: 중복요청 가드 / 더 받을 게 있는지
       activeTab: 'access',
       srchOpen: false,
       dateRange: '1week',
@@ -33,7 +34,7 @@ window.SyApiLogMng = {
     const codes = reactive({ date_range_opts: [], http_methods: [], app_types: [] });
 
     const accessGridPager = reactive({
-      pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
+      pageType: 'PAGE', pageNo: 1, pageSize: 100, pageTotalCount: 0, pageTotalPage: 1,
       pageSizes: [10, 20, 30, 50, 100], pageCond: {},
     });
 
@@ -201,44 +202,72 @@ window.SyApiLogMng = {
     };
 
     /* handleSearchAccessLog — 접근 이력 조회 */
-    const handleSearchAccessLog = async () => {
+    const handleSearchAccessLog = async (append = false) => {
+      if (uiState.loading) { return; }
+      if (append && !uiState.hasMore) { return; }
+      uiState.loading = true;
       try {
-        const res = await boApiSvc.syAccessLog.getPage(buildSearchParams(), 'API로그조회', '요청로그조회');
+        const res = await boApiSvc.syAccessLog.getPage(buildSearchParams(), 'API로그조회', '요청로그조회',
+          append ? { isProgress: false } : undefined);
         const data = res.data?.data;
-        accessLogs.splice(0, accessLogs.length, ...(data?.pageList || []));
+        const list = data?.pageList || [];
         accessGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        accessGridPager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(accessGridPager);
         tabCounts.access = accessGridPager.pageTotalCount;
-        coUtil.cofBuildPagerNums(accessGridPager);
-        expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        if (append) {
+          accessLogs.push(...list);
+        } else {
+          accessLogs.splice(0, accessLogs.length, ...list);
+          expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        }
+        /* 더 받을 게 있는지 */
+        uiState.hasMore = list.length >= accessGridPager.pageSize && accessLogs.length < accessGridPager.pageTotalCount;
+        if (uiState.hasMore) { accessGridPager.pageNo += 1; }
       } catch (err) {
         console.error('[handleSearchAccessLog]', err);
         if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
+      } finally {
+        uiState.loading = false;
       }
     };
 
     /* handleSearchErrorLog — 에러 로그 조회 */
-    const handleSearchErrorLog = async () => {
+    const handleSearchErrorLog = async (append = false) => {
+      if (uiState.loading) { return; }
+      if (append && !uiState.hasMore) { return; }
+      uiState.loading = true;
       try {
-        const res = await boApiSvc.syAccessErrorLog.getPage(buildSearchParams(), 'API로그조회', '오류로그조회');
+        const res = await boApiSvc.syAccessErrorLog.getPage(buildSearchParams(), 'API로그조회', '오류로그조회',
+          append ? { isProgress: false } : undefined);
         const data = res.data?.data;
-        errorLogs.splice(0, errorLogs.length, ...(data?.pageList || []));
+        const list = data?.pageList || [];
         accessGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        accessGridPager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(accessGridPager);
         tabCounts.error = accessGridPager.pageTotalCount;
-        coUtil.cofBuildPagerNums(accessGridPager);
-        expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        if (append) {
+          errorLogs.push(...list);
+        } else {
+          errorLogs.splice(0, errorLogs.length, ...list);
+          expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
+        }
+        /* 더 받을 게 있는지 */
+        uiState.hasMore = list.length >= accessGridPager.pageSize && errorLogs.length < accessGridPager.pageTotalCount;
+        if (uiState.hasMore) { accessGridPager.pageNo += 1; }
       } catch (err) {
         console.error('[handleSearchErrorLog]', err);
         if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
+      } finally {
+        uiState.loading = false;
       }
     };
 
     /* handleSearchList — 목록 조회 */
-    const handleSearchList = async () => {
-      if (uiState.activeTab === 'access') { await handleSearchAccessLog(); }
-      else { await handleSearchErrorLog(); }
+    const handleSearchList = async (append = false) => {
+      if (!append) { accessGridPager.pageNo = 1; uiState.hasMore = true; }
+      if (uiState.activeTab === 'access') { await handleSearchAccessLog(append); }
+      else { await handleSearchErrorLog(append); }
     };
+
+    /* onScrollEnd — 스크롤 하단 근접 시 다음 100건 */
+    const onScrollEnd = () => { handleSearchList(true); };
 
     // ★ onMounted
     /* initPage — 화면 로드 시퀀스.
@@ -454,6 +483,8 @@ window.SyApiLogMng = {
       columns,                                                                              // 컬럼 정의 모음 (baseSearch/moreSearch/accessGrid/errorGrid/accessGridRowDetail/errorGridRowDetail)
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCurrentList, // computed
+      onScrollEnd,                       // 무한 스크롤 (하단 도달 시 다음 100건)
+      cofCountText: coUtil.cofCountText, // 하단 건수 문구
       fnRowDetail, fnRowDetailLoading,                                                                            // 행 펼침 상세 (캐시)
     };
   },
@@ -482,7 +513,8 @@ window.SyApiLogMng = {
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 영역 (bo-container 1개: 탭 + 제목 + 두 그리드 + accessGridPager) ============ -->
-  <bo-container :title="uiState.activeTab==='access' ? 'API요청로그' : 'API오류로그'" :count-text="accessGridPager.pageTotalCount + '건'">
+  <bo-container :title="uiState.activeTab==='access' ? 'API요청로그' : 'API오류로그'"
+    :count-text="cofCountText(accessGridPager.pageTotalCount, cfCurrentList.length)">
     <!-- 탭 버튼 (영역 안 상단) -->
     <template #top>
       <div class="tab-nav" style="margin-bottom:12px">
@@ -512,7 +544,7 @@ window.SyApiLogMng = {
       </button>
     </template>
     <!-- ===== ■.■. API요청로그 탭 =========================================== -->
-    <bo-grid v-if="uiState.activeTab==='access'" bare
+    <bo-grid v-if="uiState.activeTab==='access'" bare fit-bottom @scroll-end="onScrollEnd"
       :columns="columns.accessGrid" :rows="cfCurrentList" row-key="logId"
       :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
       <template #row-expand="{ row, colspan }">
@@ -523,7 +555,7 @@ window.SyApiLogMng = {
       </template>
     </bo-grid>
     <!-- ===== ■.■. API오류로그 탭 =========================================== -->
-    <bo-grid v-if="uiState.activeTab==='error'" bare
+    <bo-grid v-if="uiState.activeTab==='error'" bare fit-bottom @scroll-end="onScrollEnd"
       :columns="columns.errorGrid" :rows="cfCurrentList" row-key="logId"
       :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
       <template #row-expand="{ row, colspan }">
@@ -545,7 +577,6 @@ window.SyApiLogMng = {
       </template>
     </bo-grid>
     <!-- ===== ■.■. 페이저 (두 탭 공통 1개, 그리드 바깥) ========================== -->
-    <bo-pager :pager="accessGridPager" :on-set-page="n => handleBtnAction('apiLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('apiLogs-pager-sizeChange')" />
   </bo-container>
 </bo-page>
 `,

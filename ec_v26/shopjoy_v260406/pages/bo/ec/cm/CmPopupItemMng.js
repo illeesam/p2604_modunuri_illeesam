@@ -472,7 +472,7 @@ window.CmPopupItemMng = {
   <!-- ===== ■. 미리보기 (실제 공통 선택 팝업) ================================= -->
   <!-- ===== ■. 미리보기 결과 (호출 정보 / 응답정보) ============================ -->
   <bo-container v-if="previewModal.popupCode" title="미리보기 결과"
-    :count-text="previewModal.popupCode + (previewModal.multi ? ' · 다중선택' : ' · 단일선택')">
+    :title-hint="previewModal.popupCode + (previewModal.multi ? ' · 다중선택' : ' · 단일선택')">
     <template #toolbar-actions>
       <button class="btn btn_preview btn-sm" @click="handleBtnAction('popup-preview')">👁 다시 열기</button>
       <button class="btn btn_preview btn-sm" @click="handleBtnAction('popup-previewMulti')">👁 멀티로 열기</button>

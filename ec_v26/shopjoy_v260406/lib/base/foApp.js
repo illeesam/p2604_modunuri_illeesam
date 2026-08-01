@@ -423,12 +423,15 @@
 
     /* ── API Progress Bar ── */
     const isApiLoading = ref(false);
+    /* 호출 성격별 문구 — GET=조회중, 변경(POST/PUT/DELETE)=처리중. axios 래퍼가 넘겨준다 */
+    const apiProgressLabel = ref('조회중입니다...');
     let _apiLoadingCount = 0;
     let _progressHideTimer = null;
     let _progressShowAt = 0;
     const MIN_SHOW_MS = 300;
     const HIDE_DELAY_MS = 50;
-    window._showProgress = (show) => {
+    window._showProgress = (show, label) => {
+      if (show && label) { apiProgressLabel.value = label; }
       _apiLoadingCount = Math.max(0, _apiLoadingCount + (show ? 1 : -1));
       if (_apiLoadingCount > 0) {
         if (_progressHideTimer) { clearTimeout(_progressHideTimer); _progressHideTimer = null; }
@@ -809,6 +812,7 @@
       page, sidebarOpen, navigate, closeMobileMenu, toggleMobileMenu,
       toasts, showToast, removeToast, removeAllToasts, toggleToastDetail, toggleAllToastDetail, toastShowDetail, toast, onToastAction,
       isApiLoading,
+      apiProgressLabel,
       alertState, showAlert, closeAlert,
       confirmState, showConfirm, closeConfirm,
       prods, selectedProd, selectProd,
@@ -849,7 +853,7 @@
           <div class="fo-dot" style="animation-delay:0.4s;"></div>
           <div class="fo-dot" style="animation-delay:0.6s;"></div>
         </div>
-        <div style="font-size:0.85rem;font-weight:700;color:var(--text-secondary,#666);letter-spacing:0.03em;">조회중입니다...</div>
+        <div style="font-size:0.85rem;font-weight:700;color:var(--text-secondary,#666);letter-spacing:0.03em;">{{ apiProgressLabel }}</div>
       </div>
     </div>
   </transition>

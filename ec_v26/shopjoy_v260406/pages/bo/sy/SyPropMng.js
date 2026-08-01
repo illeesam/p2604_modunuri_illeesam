@@ -14,7 +14,10 @@ window.SyPropMng = {
 
     const propCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
 
-    const uiState = reactive({ _newId: -1, selectedPath: '' }); // UI 상태
+    /* 무한 스크롤 — 141건을 한 번에 받지 않고 PAGE_SIZE 씩 이어 붙인다.
+       loading: 중복 요청 가드 / hasMore: 더 받을 게 있는지 / total: 서버 총건수 */
+    const PAGE_SIZE = 100;
+    const uiState = reactive({ _newId: -1, selectedPath: '', loading: false, hasMore: true, total: 0, pageNo: 1 }); // UI 상태
     const codes   = reactive({ use_yn: [], prop_types: ['STRING','NUMBER','BOOLEAN','JSON'] }); // 공통코드
 
     const cfSiteId = computed(() => boCommonFilter?.siteId || null);
@@ -145,12 +148,20 @@ window.SyPropMng = {
       } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 
-    /* fetchData — 목록 조회 */
-    const fetchData = async () => {
+    /* fetchData — 목록 조회.
+       append=false(기본): 1페이지부터 새로 조회 (검색/경로변경/저장 후)
+       append=true      : 다음 페이지를 이어 붙임 (스크롤 하단 도달)
+       ⚠ 이어붙일 때 propRows 를 통째로 갈아끼우면 편집중(I/U/D) 상태가 날아가므로
+         _rawProps 에 push 한 뒤 새로 들어온 만큼만 makeRow 해서 append 한다. */
+    const fetchData = async (append = false) => {
+      if (uiState.loading) { return; }
+      if (append && !uiState.hasMore) { return; }
+      uiState.loading = true;
       try {
+        if (!append) { uiState.pageNo = 1; uiState.hasMore = true; }
         const { searchType, searchValue, useFlt, typeFlt, profileFlt } = searchParam;
         const params = {
-          pageNo: 1, pageSize: 10000,
+          pageNo: uiState.pageNo, pageSize: PAGE_SIZE,
           ...(cfSiteId.value          ? { siteId: cfSiteId.value }       : {}),
           ...(uiState.selectedPath    ? { pathId: uiState.selectedPath } : {}),
           ...(searchValue ? { searchValue }        : {}),
@@ -162,16 +173,37 @@ window.SyPropMng = {
         if (params.searchValue && !params.searchType) {
           params.searchType = 'pathId,propKey,propValue,propLabel';
         }
-        const res = await boApiSvc.syProp.getPage(params, '속성관리', '목록조회');
-        const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        _rawProps.splice(0, _rawProps.length, ...list);
-        reload();
-        /* 좌 트리 카운트 동기 갱신 */
-        handleLoadPathTreeNodeCounts();
+        /* 이어붙이기(스크롤 추가 조회)는 진행 오버레이를 띄우지 않는다 —
+           사용자가 스크롤 중인데 화면을 덮으면 오히려 끊겨 보인다. */
+        const res = await boApiSvc.syProp.getPage(params, '속성관리', '목록조회',
+          append ? { isProgress: false } : undefined);
+        const d = res.data?.data || {};
+        const list = d.pageList || d.list || [];
+        uiState.total = d.pageTotalCount || 0;
+
+        if (append) {
+          _rawProps.push(...list);
+          propRows.push(...list.map(makeRow));   // 기존 행의 편집 상태 보존
+        } else {
+          _rawProps.splice(0, _rawProps.length, ...list);
+          reload();
+        }
+
+        /* 더 받을 게 있는지 — 이번에 받은 수가 PAGE_SIZE 미만이거나 총건수에 도달하면 끝 */
+        uiState.hasMore = list.length >= PAGE_SIZE && _rawProps.length < uiState.total;
+        if (uiState.hasMore) { uiState.pageNo += 1; }
+
+        /* 좌 트리 카운트 동기 갱신 (첫 조회 때만 — 이어붙이기는 조건이 같아 값이 안 변한다) */
+        if (!append) { handleLoadPathTreeNodeCounts(); }
       } catch (err) {
         console.error('[fetchData]', err);
+      } finally {
+        uiState.loading = false;
       }
     };
+
+    /* onScrollEnd — 그리드 스크롤이 바닥 근처에 오면 다음 페이지 */
+    const onScrollEnd = () => { fetchData(true); };
 
     // ★ onMounted
     /* initPage — 화면 로드 시퀀스.
@@ -367,6 +399,7 @@ window.SyPropMng = {
       columns,
       uiState, propCounts, searchParam, propRows,       // 상태 / 데이터
       sortState, onSort,                                // 정렬
+      onScrollEnd,                                      // 무한 스크롤 (하단 도달 시 다음 100건)
       fnFmtProfile, profileFltDisplay, onProfileSelectChange, onProfileInputChange, // 프로파일
       handleBtnAction, handleSelectAction, handleGridCellAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
     };
@@ -419,6 +452,7 @@ window.SyPropMng = {
         :columns="columns.baseGrid" :rows="propRows" row-key="propId"
         list-title="프로퍼티목록" :draggable="false"
         max-height="calc(100vh - 320px)"
+        :total-count="uiState.total" @scroll-end="onScrollEnd"
         :sort-state="sortState" @sort="onSort"
         @add="handleBtnAction('props-add')" @save="handleBtnAction('props-save')"
         @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"
