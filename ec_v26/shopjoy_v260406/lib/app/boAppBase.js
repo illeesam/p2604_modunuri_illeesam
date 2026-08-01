@@ -1944,7 +1944,7 @@
 <div @click="onRootClick">
   <!-- ① TOP NAV -->
   <nav class="bo-top-nav" v-if="!cfEmbed">
-    <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" title="사이드바">☰</button>
+    <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" :title="leftMenuOpen ? '사이드바 접기' : '사이드바 펼치기'">{{ leftMenuOpen ? '‹' : '›' }}</button>
     <span class="brand" @click="onLogoClick" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
       ShopJoy
       <span class="fo-site-badge"
@@ -2035,6 +2035,11 @@
         <button class="login-btn" @click="openLogin('login')">🔐 로그인</button>
       </template>
     </div>
+    <!-- 공통필터 토글 — nav 최우측 끝, 패딩 없이 밀착 -->
+    <button class="right-panel-nav-btn" @click="rightPanelOpen=!rightPanelOpen"
+      :title="rightPanelOpen ? '공통필터 접기' : '공통필터 펼치기'">
+      {{ rightPanelOpen ? '›' : '‹' }}
+    </button>
   </nav>
 
   <!-- ③ BODY -->
@@ -2446,11 +2451,8 @@
 
     <!-- Right Panel: 공통 필터 -->
     <div class="bo-right-panel" :class="{collapsed: !rightPanelOpen}">
-      <div class="right-panel-header" @click="rightPanelOpen=!rightPanelOpen">
-        <span class="right-panel-title">공통 필터</span>
-        <span style="font-size:11px;color:#bbb;">{{ rightPanelOpen ? '▶' : '◀' }}</span>
-      </div>
       <div v-show="rightPanelOpen" class="right-panel-body">
+        <div class="right-panel-title">공통 필터</div>
         <div class="popup-sel">
           <div class="popup-sel-label">사이트 <span style="color:#e8587a;font-size:10px;">필수</span>
             <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#e5e7eb;color:#555;font-size:10px;text-align:center;line-height:14px;margin-left:4px;cursor:help;font-weight:700;"
