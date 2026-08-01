@@ -2037,25 +2037,6 @@
     </div>
   </nav>
 
-  <!-- ② TAB BAR -->
-  <div class="bo-tab-bar-wrap" v-if="!cfEmbed">
-    <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
-    <div class="bo-tab-bar" ref="tabBarRef">
-      <div v-for="tab in openTabs" :key="tab.id" :data-tab-id="tab.id"
-        class="bo-tab" :class="{active: cfActiveTabId===tab.id}"
-        @click="navigate(tab.id)"
-        @contextmenu.prevent="showCtxMenu($event, tab.id)">
-        <span @click.stop="toggleKeep(tab.id)"
-          :title="keptTabIds.has(tab.id) ? '고정 해제' : '고정 (탭 전환 시 상태 유지)'"
-          style="font-size:9px;cursor:pointer;margin-right:3px;transition:all .15s;flex-shrink:0;line-height:1;"
-          :style="keptTabIds.has(tab.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.2;color:#999;'">📌</span>
-        <span class="tab-label">{{ tab.label }}</span>
-        <span class="tab-close-btn" @click.stop="closeTab(tab.id, $event)">✕</span>
-      </div>
-    </div>
-    <button class="tab-scroll-btn" @click="scrollTabs(1)" title="오른쪽">&#8250;</button>
-  </div>
-
   <!-- ③ BODY -->
   <div class="bo-body" :style="cfEmbed ? 'min-height:100vh;' : ''">
 
@@ -2258,6 +2239,24 @@
 
     <!-- Main Content -->
     <div class="bo-main">
+      <!-- ② TAB BAR -->
+      <div class="bo-tab-bar-wrap" v-if="!cfEmbed">
+        <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
+        <div class="bo-tab-bar" ref="tabBarRef">
+          <div v-for="tab in openTabs" :key="tab.id" :data-tab-id="tab.id"
+            class="bo-tab" :class="{active: cfActiveTabId===tab.id}"
+            @click="navigate(tab.id)"
+            @contextmenu.prevent="showCtxMenu($event, tab.id)">
+            <span @click.stop="toggleKeep(tab.id)"
+              :title="keptTabIds.has(tab.id) ? '고정 해제' : '고정 (탭 전환 시 상태 유지)'"
+              style="font-size:9px;cursor:pointer;margin-right:3px;transition:all .15s;flex-shrink:0;line-height:1;"
+              :style="keptTabIds.has(tab.id) ? 'opacity:1;color:#1565c0;' : 'opacity:.2;color:#999;'">📌</span>
+            <span class="tab-label">{{ tab.label }}</span>
+            <span class="tab-close-btn" @click.stop="closeTab(tab.id, $event)">✕</span>
+          </div>
+        </div>
+        <button class="tab-scroll-btn" @click="scrollTabs(1)" title="오른쪽">&#8250;</button>
+      </div>
       <div class="bo-wrap">
         <!-- 초기화 중 로딩 표시 -->
         <div v-if="!boInitReady" style="display:flex;align-items:center;justify-content:center;height:200px;color:#aaa;font-size:14px;">
