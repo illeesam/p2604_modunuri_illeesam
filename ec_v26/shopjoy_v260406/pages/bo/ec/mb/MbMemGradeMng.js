@@ -255,7 +255,7 @@ window.MbMemGradeMng = {
         edit: 'text', placeholder: '등급명' },
       { key: 'gradeRank',      label: '순위',         style: 'width:80px;text-align:right;',
         edit: 'number' },
-      { key: 'minPurchaseAmt', label: '최소구매금액', style: 'width:150px;text-align:right;',
+      { key: 'minPurchaseAmt', label: '최소구매금액', style: 'width:200px;text-align:right;',
         edit: 'number' },
       { key: 'saveRate',       label: '적립률(%)',    style: 'width:110px;text-align:right;',
         edit: 'number' },

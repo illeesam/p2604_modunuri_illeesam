@@ -824,7 +824,7 @@ window.BoGrid = {
                   :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;"
                   @click.stop @input="handleSelectAction('grid-row-cell-change', { row, col })" />
                   <input v-else-if="col.edit==='number'" type="number" class="form-control" v-model.number="row[col.key]"
-                  style="padding:2px 6px;font-size:12px;width:80px;text-align:right;"
+                  style="padding:2px 6px;font-size:12px;width:100%;text-align:right;"
                   @click.stop @input="handleSelectAction('grid-row-cell-change', { row, col })" />
                   <input v-else-if="col.edit==='date'" type="date" class="form-control" v-model="row[col.key]"
                   style="padding:2px 4px;font-size:11px;width:130px;text-align:center;"

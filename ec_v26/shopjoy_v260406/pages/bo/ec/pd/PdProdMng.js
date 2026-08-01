@@ -14,10 +14,9 @@ window.PdProdMng = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const modals = reactive({ isCatModal: false, isOptCodeModal: false });   // 카테고리 선택 모달 상태
+    const modals = reactive({ isCatModal: false, isOptCodeModal: false, isMdPick: false });   // 모달 표시 상태
     const products = reactive([]);                 // 상품 목록 (메인 그리드 데이터)
     const vendors  = reactive([]);                 // 판매업체 목록 (검색조건 select)
-    const mdUsers  = reactive([]);                 // 담당MD(관리자) 목록 (검색조건 select)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, sortKey: '', sortDir: 'asc',
     });
@@ -81,6 +80,15 @@ window.PdProdMng = {
       // 상품옵션코드 관리 팝업 열기
       } else if (cmd === 'optCodeMng-open') {
         return fnOpenOptCodeMng();
+      // 담당MD 선택 모달 열기
+      } else if (cmd === 'mdModal-open') {
+        modals.isMdPick = true;
+        return;
+      // 담당MD 선택 초기화
+      } else if (cmd === 'searchParam-mdClear') {
+        searchParam.mdUserId = '';
+        searchParam.mdUserNm = '';
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -125,11 +133,14 @@ window.PdProdMng = {
     const fnCallbackModal = (popCmd, param, result) => {
       console.log(' ■■ PdProdMng : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-category-pick') {
-        if (result == null) {
-            modals.isCatModal = false;
-            return;
-        }
+        if (result == null) { modals.isCatModal = false; return; }
         return onCatSelect(result);
+      } else if (popCmd === 'cmPopup-userMd-pick') {
+        if (result == null) { modals.isMdPick = false; return; }
+        searchParam.mdUserId = result.userId || '';
+        searchParam.mdUserNm = result.userNm || '';
+        modals.isMdPick = false;
+        return;
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
@@ -138,7 +149,8 @@ window.PdProdMng = {
       searchType: '', searchValue: '', dateRangeType: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '', cate: '', status: '',
       prodTypeCd: '',
       vendorId: '',   // initPage 에서 로그인 사용자의 소속 업체로 기본값 설정
-      mdUserId: '',   // initPage 에서 로그인 사용자로 기본값 설정
+      mdUserId: '',   // 담당MD 사용자ID (type:pick 검색 파라미터)
+      mdUserNm: '',   // 담당MD 표시명 (type:pick 표시용 — API 전송 X, cofOmitEmpty 로 제외됨)
     });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
@@ -311,15 +323,11 @@ window.PdProdMng = {
       codes.prod_types = codeStore.sgGetGrpCodes('PROD_TYPE');
     };
 
-    /* fnLoadVendorsAndMdUsers — 검색조건 판매업체/담당MD select 목록 로드 */
+    /* fnLoadVendorsAndMdUsers — 검색조건 판매업체 select 목록 로드 */
     const fnLoadVendorsAndMdUsers = async () => {
       try {
-        const [vendorRes, userRes] = await Promise.all([
-          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 500 }, '상품관리', '업체목록조회'),
-          boApiSvc.syUser.getList({}, '상품관리', 'MD목록조회'),
-        ]);
-        vendors.splice(0, vendors.length, ...(vendorRes.data?.data?.pageList || []));
-        mdUsers.splice(0, mdUsers.length, ...(userRes.data?.data || []));
+        const res = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 500 }, '상품관리', '업체목록조회');
+        vendors.splice(0, vendors.length, ...(res.data?.data?.pageList || []));
       } catch (err) {
         console.error('[catch-info]', err);
       }
@@ -329,7 +337,8 @@ window.PdProdMng = {
     const fnApplyLoginDefaults = async () => {
       const authUser = window.useBoAuthStore?.().sgCurrentUser;
       if (!authUser?.authId) return;
-      searchParam.mdUserId = authUser.authId;
+      // mdUserId 는 초기 자동 설정하지 않음 — 전체 상품 조회가 기본값
+      // (담당 MD 검색은 사용자가 직접 선택하여 필터)
       try {
         const res = await boApiSvc.syVendorUser.getList({ userId: authUser.authId }, '상품관리', '소속업체조회');
         const rows = res.data?.data || [];
@@ -395,8 +404,9 @@ window.PdProdMng = {
       ]),
       { key: 'vendorId', label: '판매업체', type: 'select',
         options: () => vendors.map(v => ({ value: v.vendorId, label: v.vendorNm })), nullLabel: '업체 전체' },
-      { key: 'mdUserId', label: '담당MD', type: 'select',
-        options: () => mdUsers.map(u => ({ value: u.userId, label: u.userNm })), nullLabel: 'MD 전체' },
+      { key: 'mdUserId', label: '담당MD', type: 'pick',
+        display: (p) => p.mdUserNm, placeholder: 'MD 선택', width: '120px',
+        openLabel: '선택', onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('searchParam-mdClear') },
       { key: 'status', label: '상태', type: 'select', options: () => codes.product_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', label: '등록일', type: 'dateRange',
         typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
@@ -431,7 +441,7 @@ window.PdProdMng = {
       products, uiState, searchParam, baseGridPager, detailPanel, // 상태 / 데이터
       cfOptCodeMngUrl,                                    // 외부URL 모달 경로 표시
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
-      cfDetailEditId, cfDetailKey,                        // computed
+      cfDetailEditId, cfDetailKey,                          // computed
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
       handleSearchList,                                      // Dtl 임베드 전달용
       fnOpenOptCodeMng,
@@ -496,6 +506,11 @@ window.PdProdMng = {
     popup-cmd="cmPopup-category-pick" popup-code="category" clearable
     :on-callback="fnCallbackModal" @close="modals.isCatModal = false" />
   <!-- ===== □. 카테고리 선택 모달 ============================================== -->
+  <!-- ===== ■. 담당MD 선택 모달 (공통팝업 userMd — PROD_ADMIN 역할 고정 필터) ======== -->
+  <bo-cm-popup-modal v-if="modals.isMdPick"
+    popup-cmd="cmPopup-userMd-pick" popup-code="userMd"
+    :on-callback="fnCallbackModal" @close="modals.isMdPick = false" />
+  <!-- ===== □. 담당MD 선택 모달 =============================================== -->
   <!-- ===== ■. 하단 상세: ProdDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============== -->
   <pd-prod-dtl
     :key="cfDetailKey"
