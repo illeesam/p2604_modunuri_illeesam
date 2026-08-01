@@ -216,7 +216,7 @@ window.OdDlivMng = {
         dlivs.splice(0, dlivs.length, ...(delivRes.data?.data?.pageList || delivRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         listGridPager.pageTotalCount = delivRes.data?.data?.pageTotalCount || 0;
-        listGridPager.pageTotalPage = delivRes.data?.data?.pageTotalPage || Math.ceil(listGridPager.pageTotalCount / listGridPager.pageSize) || 1;
+        listGridPager.pageTotalPage = delivRes.data?.data?.pageTotalPage || coUtil.cofTotalPage(listGridPager);
         coUtil.cofBuildPagerNums(listGridPager);
         Object.assign(listGridPager.pageCond, delivRes.data?.data?.pageCond || listGridPager.pageCond);
         uiState.error = null;

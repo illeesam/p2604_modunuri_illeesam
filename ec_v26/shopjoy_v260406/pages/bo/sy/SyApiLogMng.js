@@ -207,7 +207,7 @@ window.SyApiLogMng = {
         const data = res.data?.data;
         accessLogs.splice(0, accessLogs.length, ...(data?.pageList || []));
         accessGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        accessGridPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(accessGridPager.pageTotalCount / accessGridPager.pageSize) || 1;
+        accessGridPager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(accessGridPager);
         tabCounts.access = accessGridPager.pageTotalCount;
         coUtil.cofBuildPagerNums(accessGridPager);
         expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
@@ -224,7 +224,7 @@ window.SyApiLogMng = {
         const data = res.data?.data;
         errorLogs.splice(0, errorLogs.length, ...(data?.pageList || []));
         accessGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        accessGridPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(accessGridPager.pageTotalCount / accessGridPager.pageSize) || 1;
+        accessGridPager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(accessGridPager);
         tabCounts.error = accessGridPager.pageTotalCount;
         coUtil.cofBuildPagerNums(accessGridPager);
         expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);

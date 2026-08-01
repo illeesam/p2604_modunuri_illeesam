@@ -18,8 +18,8 @@
     },
     setup(props) {
       /* ── [01] 상태 ──────────────────────────────────── */
-      const _today   = () => new Date().toISOString().slice(0, 10);
-      const _yearAgo = () => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().slice(0, 10); };
+      const _today   = () => coUtil.cofToYmd(new Date());
+      const _yearAgo = () => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return coUtil.cofToYmd(d); };
       const searchParam = reactive({
         domain: '전체',
         mode: '전체',

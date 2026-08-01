@@ -182,7 +182,7 @@ public class CacheRedisReloadService {
             .filter(dto -> dto.getPropKey() != null)
             .collect(Collectors.toMap(
                 dto -> dto.getPropKey(),
-                dto -> CmUtil.nvl(dto.getPropValue()),
+                dto -> CmUtil.nvlStr(dto.getPropValue()),
                 (a, b) -> b,
                 LinkedHashMap::new
             ));
@@ -203,7 +203,7 @@ public class CacheRedisReloadService {
                 LinkedHashMap::new,
                 Collectors.toMap(
                     dto -> dto.getI18nId(),
-                    dto -> CmUtil.nvl(dto.getI18nMsg()),
+                    dto -> CmUtil.nvlStr(dto.getI18nMsg()),
                     (a, b) -> b,
                     LinkedHashMap::new
                 )

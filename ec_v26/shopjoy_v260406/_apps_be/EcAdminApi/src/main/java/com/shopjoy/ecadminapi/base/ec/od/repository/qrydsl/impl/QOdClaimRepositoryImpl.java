@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
@@ -378,8 +379,8 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     /* 클레임(취소/반품/교환) 페이지조회 */
     @Override
     public BasePage<OdClaimDto.Item> selectPageData(OdClaimDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
+        int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
@@ -414,7 +415,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .fetchOne();
 
         BasePage<OdClaimDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
@@ -426,7 +427,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(OdClaimDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = s == null ? null : s.getSort();
+        String sort = QdslUtil.sortOf(s);
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, odClaim.requestDate));
             orders.add(new OrderSpecifier<>(Order.ASC, odClaim.claimId));

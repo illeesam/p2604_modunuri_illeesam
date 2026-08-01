@@ -48,6 +48,27 @@ public abstract class BaseEntity {
     private String rowStatus;   // I/U/D — DB 저장 안 함, saveList 용도
 
     /**
+     * rowStatus 확정 — 미지정이면 키 유무로 I(신규)/U(수정) 를 판정한다.
+     *
+     * <p>클라이언트가 {@code "M"}(merge) 을 보내거나 아예 비워 보내는 경우가 있어,
+     * 저장 분기 전에 반드시 한 번 정규화해야 한다. 정규화하지 않으면 이후의
+     * {@code "I"}/{@code "U"}/{@code "D"} 분기를 모두 빗나가 해당 행이 조용히 무시된다.</p>
+     *
+     * <pre>
+     * String rowStatus = entity.resolveRowStatus(entity.getBlogCateId());
+     * </pre>
+     *
+     * @param id 대상 키 — 비어 있으면 신규(I)로 본다
+     * @return I / U / D 중 하나
+     */
+    public String resolveRowStatus(String id) {
+        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+            return (id == null || id.isBlank()) ? "I" : "U";
+        }
+        return rowStatus;
+    }
+
+    /**
      * 등록자 — 행을 최초 생성한 사용자 식별자(authId: BO=user_id, FO=member_id).
      * INSERT 시 {@link EntitySaveListener}가 인증 컨텍스트로 채우며 이후 변경하지 않는다.
      */

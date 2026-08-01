@@ -161,7 +161,7 @@ window.PmVoucherMng = {
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         vouchers.splice(0, vouchers.length, ...list);
         baseGridPager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        baseGridPager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = res.data?.data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, res.data?.data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
@@ -278,9 +278,9 @@ window.PmVoucherMng = {
       { key: 'voucherNm',       label: '상품권명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'voucherValue',    label: '액면가', align: 'right',
-        fmt: (v) => (v || 0).toLocaleString() + '원' },
+        fmt: (v) => coUtil.cofWon(v) },
       { key: 'salePrice',       label: '판매가', align: 'right',
-        fmt: (v) => (v || 0).toLocaleString() + '원' },
+        fmt: (v) => coUtil.cofWon(v) },
       { key: 'issueQty',        label: '발행매수', align: 'center',
         fmt: (v) => (v || 0).toLocaleString() + '개' },
       { key: 'soldQty',         label: '판매매수', align: 'center',

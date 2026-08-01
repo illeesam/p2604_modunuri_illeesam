@@ -138,9 +138,7 @@ public class PmEventService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getEventId() == null || entity.getEventId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getEventId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getEventId() == null)

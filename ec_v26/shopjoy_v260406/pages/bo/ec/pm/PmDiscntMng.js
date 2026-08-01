@@ -168,7 +168,7 @@ window.PmDiscntMng = {
         const data = res.data?.data;
         discounts.splice(0, discounts.length, ...(data?.pageList || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
@@ -329,7 +329,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       { key: 'discntValue',    label: '할인값',
         fmt: (v, row) => row.discntTypeCd === 'SHIP_FREE' ? '무료배송'
           : row.discntValTypeCd === 'RATE' ? (row.discntValue + '%')
-          : (row.discntValue || 0).toLocaleString() + '원' },
+          : coUtil.cofWon(row.discntValue) },
       { key: 'discntTargetCd', label: '적용대상', cellStyle: 'color:#555',
         fmt: (v) => v || '전체상품' },
       { key: 'startDate',      label: '시작일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
@@ -426,7 +426,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
             <div>
-              🎯 {{ d.discntTypeCd === 'SHIP_FREE' ? '무료배송' : d.discntValTypeCd === 'RATE' ? (d.discntValue + '%') : (d.discntValue||0).toLocaleString() + '원' }}
+              🎯 {{ d.discntTypeCd === 'SHIP_FREE' ? '무료배송' : d.discntValTypeCd === 'RATE' ? (d.discntValue + '%') : coUtil.cofWon(d.discntValue) }}
             </div>
             <div>
               📅 {{ d.startDate }} ~ {{ d.endDate }}

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -116,8 +117,8 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     /* FAQ 페이지조회 */
     @Override
     public BasePage<CmFaqDto.Item> selectPageData(CmFaqDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
+        int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
@@ -145,7 +146,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
                 .fetchOne();
 
         BasePage<CmFaqDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     /* pathId — 선택 노드 + 모든 자손 path 포함 (트리 클릭 시 하위까지 조회) */
@@ -161,7 +162,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(CmFaqDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = s == null ? null : s.getSort();
+        String sort = QdslUtil.sortOf(s);
         if (StringUtils.hasText(sort)) {
             String[] sortParts = sort.split(",");
             for (String part : sortParts) {

@@ -356,7 +356,7 @@ window.SyVendorUserMng = {
       if (!vid) { showToast('업체를 먼저 선택해주세요.', 'warning'); return; }
       Object.assign(formData, blank());
       formData.vendorId = vid;
-      formData.joinDate = new Date().toISOString().slice(0,10);
+      formData.joinDate = coUtil.cofToYmd(new Date());
       userRoles.splice(0);
       uiState.formMode = 'new';  // 신규 입력 가능 → 저장/취소 노출
     };

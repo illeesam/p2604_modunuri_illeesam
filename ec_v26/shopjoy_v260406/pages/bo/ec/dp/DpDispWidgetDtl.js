@@ -159,7 +159,7 @@ window.DpDispWidgetDtl = {
       dispEnv: '^DEV^',
       titleYn: 'N', title: '',
       pathId: null,
-      regDate: new Date().toISOString().slice(0, 10),
+      regDate: coUtil.cofToYmd(new Date()),
       /* 위젯 공통 */
       clickAction: 'none', clickTarget: '',
       /* 이미지 배너 / 팝업 */

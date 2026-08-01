@@ -77,12 +77,12 @@
             const typeLabel = VOUCHER_TYPES.find(t => t.value === type)?.label || type;
             const desc      = pick(DESCS);
             const amt       = Math.round(randInt(domCfg.amtMin, domCfg.amtMax) / 100) * 100;
-            const settleYm  = new Date().toISOString().slice(0, 7).replace('-', '');
+            const settleYm  = coUtil.cofToYm(new Date()).replace('-', '');
             const body      = {
               erpVoucherTypeCd: type,
               erpVoucherStatusCd: domCfg.statusOnCreate,
               erpVoucherDesc: desc,
-              voucherDate: new Date().toISOString().slice(0, 10),
+              voucherDate: coUtil.cofToYmd(new Date()),
               totalDebitAmt: amt,
               totalCreditAmt: amt,
               settleYm,

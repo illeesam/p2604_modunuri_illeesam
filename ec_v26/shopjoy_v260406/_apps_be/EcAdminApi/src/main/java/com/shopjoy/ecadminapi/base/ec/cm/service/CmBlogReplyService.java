@@ -138,9 +138,7 @@ public class CmBlogReplyService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getCommentId() == null || entity.getCommentId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getCommentId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getCommentId() == null)

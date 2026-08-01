@@ -127,7 +127,7 @@ public class CmUploadService {
             }
 
             SyAttach syAttach = SyAttach.builder()
-                    .attachGrpId(attachGrpId != null ? attachGrpId : "")
+                    .attachGrpId(CmUtil.nvlStr(attachGrpId))
                     .siteId(resolveSiteId())   // sy_attach.site_id 는 NOT NULL — 비회원 업로드도 대표 사이트로 채움
                     .fileNm(originalName)
                     .fileSize(file.getSize())

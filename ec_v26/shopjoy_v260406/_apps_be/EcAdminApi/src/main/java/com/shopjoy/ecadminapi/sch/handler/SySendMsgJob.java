@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.sch.handler;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
@@ -114,7 +115,7 @@ public class SySendMsgJob implements SchBatchJobHandler {
                     String couponNm = coupon != null ? coupon.getCouponNm() : "보유 쿠폰";
 
                     Map<String, Object> params = new HashMap<>();
-                    params.put("name",       member.getMemberNm() != null ? member.getMemberNm() : "");
+                    params.put("name",       CmUtil.nvlStr(member.getMemberNm()));
                     params.put("couponNm",   couponNm);
                     params.put("expireDays", COUPON_EXPIRE_WARN_DAYS);
                     params.put("expireDate", expireTarget.toString());

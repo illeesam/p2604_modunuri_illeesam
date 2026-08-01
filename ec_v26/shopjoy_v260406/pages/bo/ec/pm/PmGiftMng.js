@@ -167,7 +167,7 @@ window.PmGiftMng = {
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gifts.splice(0, gifts.length, ...list);
         baseGridPager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        baseGridPager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = res.data?.data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, res.data?.data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;

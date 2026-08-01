@@ -1159,7 +1159,7 @@ window.BoDateTimePicker = {
         return;
       }
       if (!date && !time) { emit('update:modelValue', ''); return; }
-      const d = date || new Date().toISOString().slice(0, 10);
+      const d = date || coUtil.cofToYmd(new Date());
       const t = time || props.defaultTime || '00:00';
       emit('update:modelValue', d + 'T' + t);
     };
@@ -1176,7 +1176,7 @@ window.BoDateTimePicker = {
     /* onNow — 현재 일시로 채움 */
     const onNow = () => {
       const now = new Date();
-      emitParts(now.toISOString().slice(0, 10), now.toTimeString().slice(0, 5));
+      emitParts(coUtil.cofToYmd(now), now.toTimeString().slice(0, 5));
     };
 
     /* onClear */

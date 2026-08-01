@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -103,8 +104,8 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 페이지 목록 */
     @Override
     public BasePage<PdReviewAttachDto.Item> selectPageData(PdReviewAttachDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
+        int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
@@ -138,7 +139,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                 .fetchOne();
 
         BasePage<PdReviewAttachDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     /** 목록/페이지 용 base query — pd_review LEFT JOIN 포함 (prodId 조건 지원) */
@@ -167,7 +168,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdReviewAttachDto.Request s, boolean withSortOrd) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = s == null ? null : s.getSort();
+        String sort = QdslUtil.sortOf(s);
         if (!StringUtils.hasText(sort)) {
             if (withSortOrd) {
                 orders.add(new OrderSpecifier(Order.ASC, pdReviewAttach.sortOrd));

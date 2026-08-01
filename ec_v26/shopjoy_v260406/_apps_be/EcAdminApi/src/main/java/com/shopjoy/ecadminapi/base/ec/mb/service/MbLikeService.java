@@ -138,9 +138,7 @@ public class MbLikeService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getLikeId() == null || entity.getLikeId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getLikeId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getLikeId() == null)

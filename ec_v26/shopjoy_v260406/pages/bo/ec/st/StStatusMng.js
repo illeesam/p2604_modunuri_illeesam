@@ -157,7 +157,7 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
 
     /* inRange — 에서 범위 */
     const inRange = (dateStr) => {
-      const d = String(dateStr || '').slice(0, 10);
+      const d = coUtil.cofYmd(dateStr);
       if (uiState.dateRangeStart && d < uiState.dateRangeStart) { return false; }
       if (uiState.dateRangeEnd   && d > uiState.dateRangeEnd) { return false; }
       return true;
@@ -301,13 +301,13 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
     const cfSettleRows = computed(() => {
       const monthMap = {};
       window.safeArrayUtils.safeForEach(orders, o => {
-        const m = String(o.orderDate || '').slice(0, 7);
+        const m = coUtil.cofYm(o.orderDate || '');
         if (!m) { return; }
         if (!monthMap[m]) { monthMap[m] = { month: m, orderCnt: 0, sales: 0, refund: 0, commAmt: 0, promoAmt: 0 }; }
         if (o.status !== '취소됨') { monthMap[m].orderCnt++; monthMap[m].sales += o.totalPrice || 0; }
       });
       window.safeArrayUtils.safeForEach(claims, c => {
-        const m = String(c.requestDate || '').slice(0, 7);
+        const m = coUtil.cofYm(c.requestDate || '');
         if (m && monthMap[m] && ['환불완료','취소완료'].includes(c.status)) { monthMap[m].refund += c.refundAmount || 0; }
       });
       return Object.values(monthMap).sort((a, b) => b.month.localeCompare(a.month)).map(r => {

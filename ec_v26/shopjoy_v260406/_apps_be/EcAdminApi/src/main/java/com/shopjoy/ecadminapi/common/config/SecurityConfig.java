@@ -162,7 +162,7 @@ public class SecurityConfig {
                         .cmdNm(mdc.getOrDefault("cmdNm", null))                          // 커맨드명 (X-Cmd-Nm 헤더)
                         .traceId(mdc.getOrDefault("traceId", null))                      // 요청 추적 ID
                         .errorType("AuthenticationException")                             // 에러 유형: 미인증
-                        .errorMsg(CmUtil.nvl(e.getMessage(), msg))
+                        .errorMsg(CmUtil.nvlStr(e.getMessage(), msg))
                         .logDt(LocalDateTime.now())
                         .regDate(LocalDateTime.now())
                         .build());

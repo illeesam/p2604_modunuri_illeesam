@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.ext.controller;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
@@ -27,9 +28,9 @@ public class CoExtAiChatController {
     /** POST /api/co/ext/ai-chat/chat */
     @PostMapping("/chat")
     public ResponseEntity<ApiResponse<Map<String, Object>>> chat(@RequestBody Map<String, Object> body) {
-        String provider     = str(body, "provider");
-        String model        = str(body, "model");
-        String systemPrompt = str(body, "systemPrompt");
+        String provider     = CmUtil.mapStr(body, "provider");
+        String model        = CmUtil.mapStr(body, "model");
+        String systemPrompt = CmUtil.mapStr(body, "systemPrompt");
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> messages = (List<Map<String, Object>>) body.getOrDefault("messages", List.of());
         int maxTokens       = toInt(body.get("maxTokens"), 512);
@@ -169,9 +170,6 @@ public class CoExtAiChatController {
     }
 
     // ── 유틸 ─────────────────────────────────────────────────────────────────
-    private static String str(Map<String, Object> m, String key) {
-        Object v = m.get(key); return v == null ? null : v.toString().strip();
-    }
 
     private static int toInt(Object v, int def) {
         if (v == null) return def;

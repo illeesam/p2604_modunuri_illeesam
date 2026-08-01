@@ -64,9 +64,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             MDC.put("reqMethod",  method);
             MDC.put("reqHost",    host);
             MDC.put("reqPath",    path);
-            MDC.put("reqQuery",   query != null ? query : "");
+            MDC.put("reqQuery",   CmUtil.nvlStr(query));
             MDC.put("reqIp",      ip);
-            MDC.put("reqUa",      ua != null && ua.length() > 200 ? ua.substring(0, 200) : (ua != null ? ua : ""));
+            MDC.put("reqUa",      ua != null && ua.length() > 200 ? ua.substring(0, 200) : (CmUtil.nvlStr(ua)));
             MDC.put("req",        method + " " + host + path);  // logback 패턴 표시용
             MDC.put("reqStartMs", String.valueOf(System.currentTimeMillis()));  // 경과 시간 계산용
 
@@ -77,12 +77,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String funcNm = request.getHeader("X-Func-Nm");
             String lineNo = request.getHeader("X-Line-No");
             String traceId = request.getHeader("X-Trace-Id");
-            MDC.put("uiNm",   uiNm   != null ? uiNm   : "");
-            MDC.put("cmdNm",  cmdNm  != null ? cmdNm  : "");
-            MDC.put("fileNm", fileNm != null ? fileNm : "");
-            MDC.put("funcNm", funcNm != null ? funcNm : "");
-            MDC.put("lineNo", lineNo != null ? lineNo : "");
-            MDC.put("traceId", traceId != null ? traceId : "");
+            MDC.put("uiNm",   CmUtil.nvlStr(uiNm));
+            MDC.put("cmdNm",  CmUtil.nvlStr(cmdNm));
+            MDC.put("fileNm", CmUtil.nvlStr(fileNm));
+            MDC.put("funcNm", CmUtil.nvlStr(funcNm));
+            MDC.put("lineNo", CmUtil.nvlStr(lineNo));
+            MDC.put("traceId", CmUtil.nvlStr(traceId));
 
             String token = extractToken(request);
 
@@ -121,19 +121,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 authId,                                 // authId
                                 appTypeCd,                             // appTypeCd
                                 LocalDateTime.now(),                    // loginTime
-                                CmUtil.nvl(roleId),                     // roleId
-                                CmUtil.nvl(userNm),                     // userNm
-                                CmUtil.nvl(accessToken),                // accessToken
-                                CmUtil.nvl(refreshToken),               // refreshToken
-                                CmUtil.nvl(siteId),                     // siteId
-                                CmUtil.nvl(deptId),                     // deptId
+                                CmUtil.nvlStr(roleId),                     // roleId
+                                CmUtil.nvlStr(userNm),                     // userNm
+                                CmUtil.nvlStr(accessToken),                // accessToken
+                                CmUtil.nvlStr(refreshToken),               // refreshToken
+                                CmUtil.nvlStr(siteId),                     // siteId
+                                CmUtil.nvlStr(deptId),                     // deptId
                                 CmUtil.nvlList(roles),                  // roles
-                                CmUtil.nvl(userId),                     // userId  (BO 전용)
-                                CmUtil.nvl(memberId),                   // memberId (FO 전용)
-                                CmUtil.nvl(vendorId),                   // vendorId
-                                CmUtil.nvl(memberGrade),                // memberGrade
-                                CmUtil.nvl(isAdminYn, "N"),             // isAdminYn
-                                CmUtil.nvl(isStaffYn, "N")              // isStaffYn
+                                CmUtil.nvlStr(userId),                     // userId  (BO 전용)
+                                CmUtil.nvlStr(memberId),                   // memberId (FO 전용)
+                                CmUtil.nvlStr(vendorId),                   // vendorId
+                                CmUtil.nvlStr(memberGrade),                // memberGrade
+                                CmUtil.nvlStr(isAdminYn, "N"),             // isAdminYn
+                                CmUtil.nvlStr(isStaffYn, "N")              // isStaffYn
                         );
 
                         // 만료 토큰 파싱(로그아웃 경로)은 AccessLog 기록 용도만 — SecurityContext 등록 안 함
@@ -150,14 +150,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         // siteId 는 "-" 같은 가짜 디폴트로 채우지 않는다 (값 있을 때만)
                         if (siteId != null && !siteId.isBlank()) MDC.put("siteId", siteId);
                         MDC.put("authId",   authId);
-                        MDC.put("appTypeCd", CmUtil.nvl(appTypeCd, "-"));
-                        MDC.put("roleId",   CmUtil.nvl(roleId, "-"));
-                        MDC.put("deptId",   CmUtil.nvl(deptId, "-"));
-                        MDC.put("vendorId", CmUtil.nvl(vendorId, "-"));
+                        MDC.put("appTypeCd", CmUtil.nvlStr(appTypeCd, "-"));
+                        MDC.put("roleId",   CmUtil.nvlStr(roleId, "-"));
+                        MDC.put("deptId",   CmUtil.nvlStr(deptId, "-"));
+                        MDC.put("vendorId", CmUtil.nvlStr(vendorId, "-"));
                         // request attribute — AccessLogFilter 가 체인 종료 후 읽음 (MDC는 finally 에서 clear)
                         request.setAttribute(AccessLogFilter.ATTR_USER_ID,   authId);
-                        request.setAttribute(AccessLogFilter.ATTR_APP_TYPE_CD, CmUtil.nvl(appTypeCd, "-"));
-                        request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   CmUtil.nvl(roleId, "-"));
+                        request.setAttribute(AccessLogFilter.ATTR_APP_TYPE_CD, CmUtil.nvlStr(appTypeCd, "-"));
+                        request.setAttribute(AccessLogFilter.ATTR_ROLE_ID,   CmUtil.nvlStr(roleId, "-"));
                         request.setAttribute(AccessLogFilter.ATTR_DEPT_ID,   deptId);
                         request.setAttribute(AccessLogFilter.ATTR_VENDOR_ID, vendorId);
 

@@ -85,10 +85,10 @@ public class CmMsgSendService {
                                                   String email, String tel, String inquiryType) {
         String sid = nzSite(siteId);
         Map<String, Object> params = Map.of(
-            "name",        nz(name),
-            "inquiryType", nz(inquiryType),
-            "email",       nz(email),
-            "tel",         nz(tel)
+            "name",        CmUtil.nvlStr(name),
+            "inquiryType", CmUtil.nvlStr(inquiryType),
+            "email",       CmUtil.nvlStr(email),
+            "tel",         CmUtil.nvlStr(tel)
         );
         List<SendResultVo> results = new ArrayList<>();
 
@@ -96,14 +96,14 @@ public class CmMsgSendService {
         Tpl mail = resolve(sid, "CONTACT_RECEIVED_MAIL", params);
         String mailSubject = mail.subject != null ? mail.subject : "[ShopJoy] 문의가 정상 접수되었습니다.";
         String mailContent = mail.content != null ? mail.content
-            : ("안녕하세요 " + nz(name) + "님,\n\n문의가 정상적으로 접수되었습니다. 빠르게 답변드리겠습니다.\n\n- ShopJoy 고객센터");
+            : ("안녕하세요 " + CmUtil.nvlStr(name) + "님,\n\n문의가 정상적으로 접수되었습니다. 빠르게 답변드리겠습니다.\n\n- ShopJoy 고객센터");
         results.add(cmMailSendService.sendMail(sid, email, mailSubject, mailContent,
             mail.templateId, "CONTACT_RECEIVED_MAIL", "CONTACT", blogId, params));
 
         // 2) 카카오 알림톡
         Tpl kakao = resolve(sid, "CONTACT_RECEIVED_KAKAO", params);
         String kakaoContent = kakao.content != null ? kakao.content
-            : ("[ShopJoy] " + nz(name) + "님, 문의가 정상 접수되었습니다.");
+            : ("[ShopJoy] " + CmUtil.nvlStr(name) + "님, 문의가 정상 접수되었습니다.");
         results.add(cmKakaoSendService.sendKakao(sid, tel, kakaoContent,
             kakao.templateCode != null ? kakao.templateCode : "CONTACT_RECEIVED_KAKAO",
             kakao.templateId, "CONTACT_RECEIVED_KAKAO", "CONTACT", blogId, params));
@@ -112,7 +112,7 @@ public class CmMsgSendService {
         Tpl alarm = resolve(sid, "CONTACT_RECEIVED_ALARM", params);
         String alarmTitle = alarm.subject != null ? alarm.subject : "신규 문의 접수";
         String alarmMsg   = alarm.content != null ? alarm.content
-            : (nz(name) + "님이 문의를 접수했습니다. (" + nz(inquiryType) + ")");
+            : (CmUtil.nvlStr(name) + "님이 문의를 접수했습니다. (" + CmUtil.nvlStr(inquiryType) + ")");
         results.add(cmAlarmSendService.sendSystemAlarm(sid, alarmTitle, alarmMsg, "CONTACT",
             null, email, alarm.templateId, blogId, params));
 
@@ -197,7 +197,6 @@ public class CmMsgSendService {
         return t;
     }
 
-    private static String nz(String s) { return s == null ? "" : s; }
 
     private static String nzSite(String siteId) {
         return (siteId == null || siteId.isBlank()) ? DEFAULT_SITE_ID : siteId;

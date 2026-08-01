@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.ext.controller;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbDeviceTokenRepository;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -27,19 +28,19 @@ public class CoExtPushFcmSendController {
     /** POST /api/co/ext/push-fcm-send/send */
     @PostMapping("/send")
     public ResponseEntity<ApiResponse<Map<String, Object>>> send(@RequestBody Map<String, Object> body) {
-        String targetType  = str(body, "targetType");
-        String targetValue = str(body, "targetValue");
-        String title       = str(body, "title");
-        String msgBody     = str(body, "body");
+        String targetType  = CmUtil.mapStr(body, "targetType");
+        String targetValue = CmUtil.mapStr(body, "targetValue");
+        String title       = CmUtil.mapStr(body, "title");
+        String msgBody     = CmUtil.mapStr(body, "body");
 
         log.info("[CoExtPushFcmSend] targetType={} title={}", targetType, title);
 
         Map<String, Object> result = Map.of(
                 "messageId",   "projects/shopjoy/messages/TEST-" + System.currentTimeMillis(),
-                "targetType",  nz(targetType),
-                "targetValue", nz(targetValue),
-                "title",       nz(title),
-                "body",        nz(msgBody),
+                "targetType",  CmUtil.nvlStr(targetType),
+                "targetValue", CmUtil.nvlStr(targetValue),
+                "title",       CmUtil.nvlStr(title),
+                "body",        CmUtil.nvlStr(msgBody),
                 "note",        "FCM 실발송 서비스 미구현 — 시뮬레이션 응답"
         );
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -68,8 +69,4 @@ public class CoExtPushFcmSendController {
         return ResponseEntity.ok(ApiResponse.ok(items));
     }
 
-    private static String str(Map<String, Object> m, String key) {
-        Object v = m.get(key); return v == null ? null : v.toString().strip();
-    }
-    private static String nz(String s) { return s == null ? "" : s; }
 }

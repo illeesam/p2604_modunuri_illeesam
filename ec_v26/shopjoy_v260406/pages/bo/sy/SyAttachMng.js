@@ -154,7 +154,7 @@ window.SyAttachMng = {
         const list = data?.pageList || data?.list || [];
         attachGrps.splice(0, attachGrps.length, ...list);
         grpPager.pageTotalCount = data?.pageTotalCount ?? data?.totalCount ?? data?.total ?? list.length ?? 0;
-        grpPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(grpPager.pageTotalCount / grpPager.pageSize) || 1;
+        grpPager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(grpPager);
         fnBuildGrpPageNums();
       } catch (err) {
         console.error('[catch-info]', err);
@@ -190,7 +190,7 @@ window.SyAttachMng = {
         const list = data?.pageList || data?.list || [];
         attaches.splice(0, attaches.length, ...list);
         fileGridPager.pageTotalCount = data?.pageTotalCount ?? data?.totalCount ?? data?.total ?? list.length ?? 0;
-        fileGridPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(fileGridPager.pageTotalCount / fileGridPager.pageSize) || 1;
+        fileGridPager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(fileGridPager);
         fnBuildPageNums();
         uiState.error = null;
       } catch (err) {

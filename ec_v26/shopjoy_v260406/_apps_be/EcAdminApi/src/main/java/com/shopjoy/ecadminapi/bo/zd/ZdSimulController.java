@@ -428,8 +428,8 @@ public class ZdSimulController {
         Collections.shuffle(all);
 
         List<Map<String, Object>> prods = all.stream().limit(count).map(p -> Map.<String, Object>of(
-            "prodId",    p.getProdId() != null ? p.getProdId() : "",
-            "prodNm",    p.getProdNm()    != null ? p.getProdNm()    : "",
+            "prodId",    CmUtil.nvlStr(p.getProdId()),
+            "prodNm",    CmUtil.nvlStr(p.getProdNm()),
             "salePrice", p.getSalePrice() != null ? p.getSalePrice() : 0L,
             "prodStock", 0
         )).toList();

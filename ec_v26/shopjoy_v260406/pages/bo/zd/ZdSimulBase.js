@@ -105,8 +105,8 @@
 
     const logs = ref([]);
     const logPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 50] });
-    const _today     = () => new Date().toISOString().slice(0, 10);
-    const _yearAgo   = () => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().slice(0, 10); };
+    const _today     = () => coUtil.cofToYmd(new Date());
+    const _yearAgo   = () => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return coUtil.cofToYmd(d); };
     const logSearch = reactive({ uiNm: uiNm || label || '', userNm: '', desc: '', status: '', dateFrom: _yearAgo(), dateTo: _today() });
 
     /* 로컬 params 캐시 — desc → params (DB 재조회 후 desc 매칭 복원용, 최대 200건)

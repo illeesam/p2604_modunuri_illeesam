@@ -63,7 +63,7 @@ window.BlogView = {
         id:     b.blogId,
         title:  b.blogTitle || '',
         author: b.blogAuthor || '',
-        date:   (b.regDate || '').toString().slice(0, 10).replace(/-/g, '.'),
+        date:   (b.regDate || '').tocoUtil.cofYmdDot(),
         imgSm:  thumb ? coUtil.cofImgSrc(thumb) : '',
         img:    thumb ? coUtil.cofImgSrc(thumb) : '',
       };
@@ -144,7 +144,7 @@ window.BlogView = {
         title:     raw.blogTitle || '',
         category:  raw.blogCateId || '',
         author:    raw.blogAuthor || '',
-        date:      (raw.regDate || '').toString().slice(0, 10).replace(/-/g, '.'),
+        date:      (raw.regDate || '').tocoUtil.cofYmdDot(),
         readTime:  '',
         viewCount: raw.viewCount || 0,
         body:      String(raw.blogContent || raw.blogSummary || '').replace(/(src|href)=(['"])\/cdn\//g, '$1=$2assets/cdn/'),
@@ -155,7 +155,7 @@ window.BlogView = {
         comments:  (raw.replies || []).map(r => ({
                      id:     r.commentId,
                      author: r.writerNm || r.writerId || '익명',
-                     date:   (r.regDate || '').toString().slice(0, 10).replace(/-/g, '.'),
+                     date:   (r.regDate || '').tocoUtil.cofYmdDot(),
                      text:   r.blogCommentContent || '',
                    })),
       };
@@ -173,7 +173,7 @@ window.BlogView = {
     const handleAddComment = () => {
       const t = commentText.value.trim();
       if (!t) { return; }
-      localComments.push({ id: Date.now(), author: '홍길동', date: new Date().toISOString().slice(0,10).replace(/-/g,'.'), text: t });
+      localComments.push({ id: Date.now(), author: '홍길동', date: new Date().toISOcoUtil.cofYmdDot(), text: t });
       commentText.value = '';
     };
 

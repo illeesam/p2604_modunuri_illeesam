@@ -163,7 +163,7 @@
 //        MDC.put("reqMethod", method);
 //        MDC.put("reqHost",   host);
 //        MDC.put("reqPath",   path);
-//        MDC.put("reqQuery",  query != null ? query : "");
+//        MDC.put("reqQuery",  CmUtil.nvlStr(query));
 //        MDC.put("reqIp",     ip);
 //        MDC.put("reqStartMs", String.valueOf(System.currentTimeMillis()));
 //

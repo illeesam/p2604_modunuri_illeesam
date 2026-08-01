@@ -238,7 +238,7 @@ window.OdOrderMng = {
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         claims.splice(0, claims.length);
         listGridPager.pageTotalCount = ordersRes.data?.data?.pageTotalCount || 0;
-        listGridPager.pageTotalPage = ordersRes.data?.data?.pageTotalPage || Math.ceil(listGridPager.pageTotalCount / listGridPager.pageSize) || 1;
+        listGridPager.pageTotalPage = ordersRes.data?.data?.pageTotalPage || coUtil.cofTotalPage(listGridPager);
         coUtil.cofBuildPagerNums(listGridPager);
         Object.assign(listGridPager.pageCond, ordersRes.data?.data?.pageCond || listGridPager.pageCond);
         uiState.error = null;
@@ -522,7 +522,7 @@ window.OdOrderMng = {
       { key: 'orderDate',     label: '주문일시', sortKey: 'reg', style: 'white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'prodNm',        label: '상품',
         fmt: (v, row) => `${row.prodNm || ''} (${getItemCount(row)}개)` },
-      { key: 'payAmt',        label: '결제금액', fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'payAmt',        label: '결제금액', fmt: (v) => coUtil.cofWon(v) },
       { key: 'payMethodCd',   label: '결제수단',
         fmt: (v, row) => row.payMethodCdNm || row.payMethodCd || '-',
         cellInnerStyle: (v) => fnPayMethodStyle(v) },

@@ -77,9 +77,9 @@ public class SyPathService {
     @Transactional
     public SyPath create(SyPath body) {
         body.setPathId(CmUtil.generateId("sy_path"));
-        body.setRegBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
+        body.setRegBy(CmUtil.nvlStr(SecurityUtil.getAuthUser().authId(), "system"));
         body.setRegDate(LocalDateTime.now());
-        body.setUpdBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
+        body.setUpdBy(CmUtil.nvlStr(SecurityUtil.getAuthUser().authId(), "system"));
         body.setUpdDate(LocalDateTime.now());
         SyPath saved = syPathRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -95,7 +95,7 @@ public class SyPathService {
         CmUtil.requireId(id, "id", this);
         SyPath entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "pathId^regBy^regDate");
-        entity.setUpdBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
+        entity.setUpdBy(CmUtil.nvlStr(SecurityUtil.getAuthUser().authId(), "system"));
         entity.setUpdDate(LocalDateTime.now());
         SyPath saved = syPathRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -109,7 +109,7 @@ public class SyPathService {
         if (entity.getPathId() == null) throw new CmBizException("pathId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         if (!existsById(entity.getPathId()))
             throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getPathId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
+        entity.setUpdBy(CmUtil.nvlStr(SecurityUtil.getAuthUser().authId(), "system"));
         entity.setUpdDate(LocalDateTime.now());
         int affected = syPathRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -138,9 +138,7 @@ public class SyPathService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getPathId() == null || entity.getPathId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getPathId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getPathId() == null)

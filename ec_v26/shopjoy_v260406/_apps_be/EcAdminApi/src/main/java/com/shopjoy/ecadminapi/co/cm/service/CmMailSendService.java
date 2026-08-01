@@ -105,10 +105,10 @@ public class CmMailSendService {
             throw new IllegalStateException("SMTP 설정 누락 (sy_prop: spring.mail.host)");
 
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
-        sender.setHost(nz(cfg.host));
+        sender.setHost(CmUtil.nvlStr(cfg.host));
         sender.setPort(cfg.port);
-        sender.setUsername(nz(cfg.username));
-        sender.setPassword(nz(cfg.password));
+        sender.setUsername(CmUtil.nvlStr(cfg.username));
+        sender.setPassword(CmUtil.nvlStr(cfg.password));
         sender.setDefaultEncoding("UTF-8");
 
         Properties props = sender.getJavaMailProperties();
@@ -119,14 +119,14 @@ public class CmMailSendService {
 
         MimeMessage mime = sender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mime, false, "UTF-8");
-        helper.setTo(nz(toAddr));
-        helper.setSubject(nz(subject));
+        helper.setTo(CmUtil.nvlStr(toAddr));
+        helper.setSubject(CmUtil.nvlStr(subject));
         boolean looksHtml = content != null && content.contains("<") && content.contains(">");
-        helper.setText(looksHtml ? nz(content) : nz(content).replace("\n", "<br>"), true);
+        helper.setText(looksHtml ? CmUtil.nvlStr(content) : CmUtil.nvlStr(content).replace("\n", "<br>"), true);
         try {
-            helper.setFrom(nz(cfg.from), nz(cfg.fromNm));
+            helper.setFrom(CmUtil.nvlStr(cfg.from), CmUtil.nvlStr(cfg.fromNm));
         } catch (Exception ignore) {
-            helper.setFrom(nz(cfg.from));
+            helper.setFrom(CmUtil.nvlStr(cfg.from));
         }
         sender.send(mime);
     }
@@ -137,7 +137,7 @@ public class CmMailSendService {
         SmtpConfig cfg = new SmtpConfig();
         for (SyProp p : all) {
             if (p.getPropValue() == null || p.getPropValue().isBlank()) continue;
-            switch (nz(p.getPropKey())) {
+            switch (CmUtil.nvlStr(p.getPropKey())) {
                 case "spring.mail.host"     -> cfg.host     = p.getPropValue();
                 case "spring.mail.port"     -> { try { cfg.port = Integer.parseInt(p.getPropValue().trim()); } catch (Exception ignore) {} }
                 case "spring.mail.username" -> cfg.username = p.getPropValue();
@@ -168,5 +168,4 @@ public class CmMailSendService {
         e.setUpdDate(now);
     }
 
-    private static String nz(String s) { return s == null ? "" : s; }
 }

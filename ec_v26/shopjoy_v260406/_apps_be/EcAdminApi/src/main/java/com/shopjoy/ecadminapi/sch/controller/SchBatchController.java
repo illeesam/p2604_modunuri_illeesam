@@ -73,10 +73,10 @@ public class SchBatchController {
                 Map<String, Object> m = new java.util.LinkedHashMap<>();
                 m.put("batchId",        b.getBatchId());
                 m.put("batchCode",      b.getBatchCode());
-                m.put("batchNm",        CmUtil.nvl(b.getBatchNm()));
-                m.put("cronExpr",       CmUtil.nvl(b.getCronExpr()));
-                m.put("batchStatusCd",  CmUtil.nvl(b.getBatchStatusCd()));
-                m.put("batchRunStatus", CmUtil.nvl(b.getBatchRunStatus()));
+                m.put("batchNm",        CmUtil.nvlStr(b.getBatchNm()));
+                m.put("cronExpr",       CmUtil.nvlStr(b.getCronExpr()));
+                m.put("batchStatusCd",  CmUtil.nvlStr(b.getBatchStatusCd()));
+                m.put("batchRunStatus", CmUtil.nvlStr(b.getBatchRunStatus()));
                 m.put("batchLastRun",   b.getBatchLastRun() != null ? b.getBatchLastRun().toString() : "");
                 m.put("batchNextRun",   b.getBatchNextRun() != null ? b.getBatchNextRun().toString() : "");
                 m.put("batchRunCount",  CmUtil.nvlInt(b.getBatchRunCount()));

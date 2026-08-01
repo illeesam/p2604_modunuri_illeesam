@@ -441,7 +441,7 @@ window.OdOrderDtl = {
     });
 
     /* fmt — 포맷 */
-    const fmt = (n) => Number(n||0).toLocaleString() + '원';
+    const fmt = (n) => NumbercoUtil.cofWon(n);
 
     /* 판매업체 */
     const cfRelatedVendor = computed(() => {
@@ -497,7 +497,7 @@ window.OdOrderDtl = {
     }] : []));
     const cfStatusHistList = computed(() => {
       if (!form.orderId) { return []; }
-      const d = String(form.orderDate || '').slice(0,10) || '-';
+      const d = coUtil.cofYmd(form.orderDate) || '-';
       const rows = [
         { date: d+' 09:00', user:'시스템', from:'-', to:'입금대기', memo:'주문 접수' },
         { date: d+' 10:15', user:'bo', from:'입금대기', to:'결제완료', memo:'결제 승인' },
@@ -537,8 +537,8 @@ window.OdOrderDtl = {
       };
     };
     const cfEditHistList = computed(() => form.orderId ? [
-      { date: String(form.orderDate||'').slice(0,10)+' 11:02', user:'bo', field:'수령인 연락처', before:'010-0000-0000', after: form.phone || '010-1234-5678' },
-      { date: String(form.orderDate||'').slice(0,10)+' 13:45', user:'bo', field:'메모',          before:'-',              after:'(수정됨)' },
+      { date: coUtil.cofYmd(form.orderDate)+' 11:02', user:'bo', field:'수령인 연락처', before:'010-0000-0000', after: form.phone || '010-1234-5678' },
+      { date: coUtil.cofYmd(form.orderDate)+' 13:45', user:'bo', field:'메모',          before:'-',              after:'(수정됨)' },
     ] : []);
     /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
     const tabs = reactive([

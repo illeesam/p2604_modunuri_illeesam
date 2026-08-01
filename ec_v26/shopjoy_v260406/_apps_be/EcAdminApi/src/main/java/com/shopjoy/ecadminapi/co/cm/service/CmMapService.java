@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.cm.service;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.co.cm.data.vo.MapKeysRes;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,8 +55,8 @@ public class CmMapService {
         }
 
         return MapKeysRes.builder()
-                .kakaoMapJsKey(kakaoMapJsKey != null ? kakaoMapJsKey : "")
-                .naverMapClientId(naverMapClientId != null ? naverMapClientId : "")
+                .kakaoMapJsKey(CmUtil.nvlStr(kakaoMapJsKey))
+                .naverMapClientId(CmUtil.nvlStr(naverMapClientId))
                 .build();
     }
 }

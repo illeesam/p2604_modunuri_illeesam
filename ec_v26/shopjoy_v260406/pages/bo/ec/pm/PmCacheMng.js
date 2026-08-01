@@ -171,7 +171,7 @@ window.PmCacheMng = {
         const data = res.data?.data;
         caches.splice(0, caches.length, ...(data?.pageList || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
@@ -283,9 +283,9 @@ window.PmCacheMng = {
       { key: 'cacheDate',   label: '일시', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'cacheTypeCd', label: '유형', badge: (row) => fnTypeBadge(row.cacheTypeCd) },
       { key: 'cacheAmt',    label: '금액',
-        fmt: (v) => ((v || 0) > 0 ? '+' : '') + (v || 0).toLocaleString() + '원',
+        fmt: (v) => ((v || 0) > 0 ? '+' : '') + coUtil.cofWon(v),
         cellStyle: (v) => (v || 0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600' },
-      { key: 'balanceAmt',  label: '잔액', fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'balanceAmt',  label: '잔액', fmt: (v) => coUtil.cofWon(v) },
       { key: 'cacheDesc',   label: '내용', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'siteNm',      label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },

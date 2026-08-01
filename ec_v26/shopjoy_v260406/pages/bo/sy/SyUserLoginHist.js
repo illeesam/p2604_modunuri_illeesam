@@ -131,7 +131,7 @@ window.SyUserLoginHist = {
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => {
-      logGridPager.pageTotalPage = Math.max(1, Math.ceil(logGridPager.pageTotalCount / logGridPager.pageSize));
+      logGridPager.pageTotalPage = coUtil.cofTotalPage(logGridPager);
       const c = logGridPager.pageNo, l = logGridPager.pageTotalPage, s = Math.max(1,c-2), e = Math.min(l,s+4);
       logGridPager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
     };

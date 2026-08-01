@@ -223,7 +223,7 @@ window.OdClaimMng = {
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         listGridPager.pageTotalCount = claimsRes.data?.data?.pageTotalCount || 0;
-        listGridPager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || Math.ceil(listGridPager.pageTotalCount / listGridPager.pageSize) || 1;
+        listGridPager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || coUtil.cofTotalPage(listGridPager);
         coUtil.cofBuildPagerNums(listGridPager);
         Object.assign(listGridPager.pageCond, claimsRes.data?.data?.pageCond || listGridPager.pageCond);
         uiState.error = null;

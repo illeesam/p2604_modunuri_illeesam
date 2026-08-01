@@ -167,7 +167,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccess(AccessDeniedException ex, HttpServletRequest req) {
-        String uri = CmUtil.nvl(req.getRequestURI(), "");
+        String uri = CmUtil.nvlStr(req.getRequestURI(), "");
         String required;
         if (uri.contains("/api/bo/"))  required = "BO";   // BO 전용 API에 접근 시도
         else if (uri.contains("/api/fo/")) required = "FO"; // FO 전용 API에 접근 시도
@@ -237,10 +237,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MyBatisSystemException.class)
     public ResponseEntity<ApiResponse<Void>> handleMyBatis(MyBatisSystemException ex, HttpServletRequest req) {
-        String mapperInfo = CmUtil.nvl(MyBatisQueryInterceptor.getCurrentMapperInfo(), "(unknown)");
+        String mapperInfo = CmUtil.nvlStr(MyBatisQueryInterceptor.getCurrentMapperInfo(), "(unknown)");
         Throwable root = ex;
         while (root.getCause() != null && root.getCause() != root) root = root.getCause();
-        String rootMsg = CmUtil.nvl(root.getMessage(), root.getClass().getSimpleName());
+        String rootMsg = CmUtil.nvlStr(root.getMessage(), root.getClass().getSimpleName());
 
         // ReflectionException: "There is no getter for property named 'xxx' in 'class com.shopjoy....Yyy$Request'"
         String property = null, dtoClass = null;
@@ -330,19 +330,19 @@ public class GlobalExceptionHandler {
         String siteId      = "01";
         AuthPrincipal authUser = SecurityUtil.getAuthUser();
         String userId      = authUser.userId();
-        String appTypeCd  = CmUtil.nvl(authUser.appTypeCd(), "-");
-        String roleId      = CmUtil.nvl(authUser.roleId(), "-");
-        String vendorId    = CmUtil.nvl(authUser.vendorId(), "-");
-        String host        = CmUtil.nvl(req.getRemoteAddr(), "-");
-        String url         = CmUtil.nvl(req.getRequestURI(), "-");
-        String method      = CmUtil.nvl(req.getMethod(), "-");
+        String appTypeCd  = CmUtil.nvlStr(authUser.appTypeCd(), "-");
+        String roleId      = CmUtil.nvlStr(authUser.roleId(), "-");
+        String vendorId    = CmUtil.nvlStr(authUser.vendorId(), "-");
+        String host        = CmUtil.nvlStr(req.getRemoteAddr(), "-");
+        String url         = CmUtil.nvlStr(req.getRequestURI(), "-");
+        String method      = CmUtil.nvlStr(req.getMethod(), "-");
 
         String qs = req.getQueryString();
-        String params = qs != null ? qs : "";
+        String params = CmUtil.nvlStr(qs);
         if (params.length() > 200) params = params.substring(0, 200) + "…";
 
-        String uiNm  = CmUtil.nvl(req.getHeader("X-UI-Nm"),  "-");
-        String cmdNm = CmUtil.nvl(req.getHeader("X-Cmd-Nm"), "-");
+        String uiNm  = CmUtil.nvlStr(req.getHeader("X-UI-Nm"),  "-");
+        String cmdNm = CmUtil.nvlStr(req.getHeader("X-Cmd-Nm"), "-");
 
         String auth      = req.getHeader("Authorization");
         String tokenTail = "-";

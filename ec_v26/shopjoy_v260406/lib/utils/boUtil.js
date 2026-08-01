@@ -29,7 +29,13 @@
     { value: 'all',        label: '전체' },
   ];
 
-  /* ── 날짜 헬퍼 ── */
+  /* ── 날짜 헬퍼 ──
+     _addDays/_addMonths 의 toISOString 은 그대로 둔다.
+     base 가 'YYYY-MM-DD' 문자열이면 new Date(base) 가 UTC 자정으로 파싱되므로
+     toISOString 으로 되돌릴 때 짝이 맞아 왕복이 정확하다.
+     여기만 coUtil.cofToYmd(로컬 기준)로 바꾸면 오히려 하루 어긋난다.
+     반면 아래 bofGetDateRange 의 today 는 new Date()(현재시각) 기반이라
+     toISOString 을 쓰면 KST 00~08시에 전날이 나와 cofToYmd 를 쓴다. */
   function _addDays(base, days) {
     const d = new Date(base); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10);
   }
@@ -38,7 +44,7 @@
   }
 
   function bofGetDateRange(range) {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = coUtil.cofToYmd(new Date());
     const year  = new Date(today).getFullYear();
     if (range === 'all') return null;
     switch (range) {

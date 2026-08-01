@@ -1174,7 +1174,7 @@ window.BaseTossPayWidget = {
     let _rendered = false;
 
     const cfAmount = computed(() => Number(props.amount) || 0);
-    const fmtWon = (n) => Number(n || 0).toLocaleString() + '원';
+    const fmtWon = (n) => NumbercoUtil.cofWon(n);
 
     /* 결제위젯 토글 + 최초 1회 렌더 */
     const toggle = async () => {

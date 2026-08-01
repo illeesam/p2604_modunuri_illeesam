@@ -138,9 +138,7 @@ public class DpWidgetService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getWidgetId() == null || entity.getWidgetId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getWidgetId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getWidgetId() == null)

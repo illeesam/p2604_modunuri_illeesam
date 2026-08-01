@@ -115,7 +115,6 @@ public class CmKakaoSendService {
         e.setUpdDate(now);
     }
 
-    private static String nz(String s) { return s == null ? "" : s; }
 
     private static String trim(String s, int max) {
         if (s == null) return null;

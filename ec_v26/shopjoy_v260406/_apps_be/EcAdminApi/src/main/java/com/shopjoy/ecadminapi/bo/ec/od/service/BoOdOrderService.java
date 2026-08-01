@@ -177,8 +177,8 @@ public class BoOdOrderService {
             throw new CmBizException("회원ID는 필수입니다.::" + CmUtil.svcCallerInfo(this));
 
         boolean isNew = (req.getOrderId() == null || req.getOrderId().isBlank());
-        long dlivFee = req.getDlivFee() == null ? 0L : req.getDlivFee();
-        long totalAmt = req.getTotalAmt() == null ? 0L : req.getTotalAmt();
+        long dlivFee = CmUtil.nvlLong(req.getDlivFee());
+        long totalAmt = CmUtil.nvlLong(req.getTotalAmt());
         long payAmt = req.getPayAmt() == null ? (totalAmt + dlivFee) : req.getPayAmt();
 
         OdOrder order;

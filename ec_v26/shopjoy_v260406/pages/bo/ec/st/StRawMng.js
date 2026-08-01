@@ -129,7 +129,7 @@ const raws = reactive([]);
         raws.splice(0, raws.length, ...(data?.pageList || data?.list || []));
         expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
         rawGridPager.pageTotalCount = data?.pageTotalCount || raws.length;
-        rawGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(rawGridPager.pageTotalCount / rawGridPager.pageSize) || 1;
+        rawGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(rawGridPager);
         coUtil.cofBuildPagerNums(rawGridPager);
         Object.assign(rawGridPager.pageCond, data?.pageCond || rawGridPager.pageCond);
       } catch (err) {

@@ -138,9 +138,7 @@ public class SyVocService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getVocId() == null || entity.getVocId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getVocId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getVocId() == null)

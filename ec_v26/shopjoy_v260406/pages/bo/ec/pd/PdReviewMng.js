@@ -142,7 +142,7 @@ window.PdReviewMng = {
         const data = res.data?.data;
         reviews.splice(0, reviews.length, ...(data?.pageList || []));
         listGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        listGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(listGridPager.pageTotalCount / listGridPager.pageSize) || 1;
+        listGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(listGridPager);
         coUtil.cofBuildPagerNums(listGridPager);
         Object.assign(listGridPager.pageCond, data?.pageCond || listGridPager.pageCond);
         uiState.error = null;

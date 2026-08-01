@@ -143,7 +143,7 @@ window.SyBbsMng = {
         const data = res.data?.data;
         bbsList.splice(0, bbsList.length, ...(data?.pageList || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || bbsList.length;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
@@ -327,7 +327,7 @@ window.SyBbsMng = {
       { key: 'attachGrpId',  label: '첨부그룹', cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'bbsStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.bbsStatusCd) },
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
-      { key: 'regDate',      label: '등록일', sortKey: 'reg', fmt: (v) => String(v || '').slice(0, 10) },
+      { key: 'regDate',      label: '등록일', sortKey: 'reg', fmt: (v) => coUtil.cofYmd(v) },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.ext.controller;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.co.cm.data.vo.SendResultVo;
 import com.shopjoy.ecadminapi.co.cm.service.CmSmsSendService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -24,8 +25,8 @@ public class CoExtSmsSendController {
     @PostMapping("/send")
     public ResponseEntity<ApiResponse<SendResultVo>> send(@RequestBody Map<String, Object> body) {
         String siteId  = SecurityUtil.getSiteId();
-        String toPhone = str(body, "toPhone");
-        String message = str(body, "message");
+        String toPhone = CmUtil.mapStr(body, "toPhone");
+        String message = CmUtil.mapStr(body, "message");
 
         SendResultVo result = cmSmsSendService.sendSms(
                 siteId, toPhone, null,
@@ -37,7 +38,4 @@ public class CoExtSmsSendController {
                 : ResponseEntity.ok(ApiResponse.error(400, result.getFailReason(), result));
     }
 
-    private static String str(Map<String, Object> m, String key) {
-        Object v = m.get(key); return v == null ? null : v.toString().strip();
-    }
 }

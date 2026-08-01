@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.ext.controller;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbDeviceTokenRepository;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -27,9 +28,9 @@ public class CoExtPushApnsSendController {
     /** POST /api/co/ext/push-apns-send/send */
     @PostMapping("/send")
     public ResponseEntity<ApiResponse<Map<String, Object>>> send(@RequestBody Map<String, Object> body) {
-        String deviceToken = str(body, "deviceToken");
-        String title       = str(body, "title");
-        String msgBody     = str(body, "body");
+        String deviceToken = CmUtil.mapStr(body, "deviceToken");
+        String title       = CmUtil.mapStr(body, "title");
+        String msgBody     = CmUtil.mapStr(body, "body");
 
         log.info("[CoExtPushApnsSend] deviceToken={}... title={}",
                 deviceToken != null && deviceToken.length() > 16 ? deviceToken.substring(0, 16) : deviceToken, title);
@@ -37,9 +38,9 @@ public class CoExtPushApnsSendController {
         Map<String, Object> result = Map.of(
                 "apnsId",      "TEST-APNS-" + System.currentTimeMillis(),
                 "deviceToken", deviceToken != null && deviceToken.length() > 20
-                        ? deviceToken.substring(0, 20) + "…" : nz(deviceToken),
-                "title",       nz(title),
-                "body",        nz(msgBody),
+                        ? deviceToken.substring(0, 20) + "…" : CmUtil.nvlStr(deviceToken),
+                "title",       CmUtil.nvlStr(title),
+                "body",        CmUtil.nvlStr(msgBody),
                 "note",        "APNs 실발송 서비스 미구현 — 시뮬레이션 응답"
         );
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -67,8 +68,4 @@ public class CoExtPushApnsSendController {
         return ResponseEntity.ok(ApiResponse.ok(items));
     }
 
-    private static String str(Map<String, Object> m, String key) {
-        Object v = m.get(key); return v == null ? null : v.toString().strip();
-    }
-    private static String nz(String s) { return s == null ? "" : s; }
 }

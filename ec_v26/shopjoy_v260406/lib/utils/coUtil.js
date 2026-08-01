@@ -612,6 +612,13 @@
   /* cofYmd — 날짜 문자열을 'YYYY-MM-DD'(앞 10자)로 자르기. String(v||'').slice(0,10) 대체. */
   function cofYmd(v) { return String(v || '').slice(0, 10); }
 
+  /* cofYm — 날짜 문자열을 'YYYY-MM'(앞 7자)로 자르기. 월 단위 집계 키 용도. */
+  function cofYm(v) { return String(v || '').slice(0, 7); }
+
+  /* cofYmdDot — 날짜 문자열을 'YYYY.MM.DD' 로 (FO 표시용). cofYmd 뒤 '-'→'.' 치환.
+   *   ⚠ 이건 자르기가 아니라 표시 포맷이다. 값 비교/전송에는 cofYmd 를 쓸 것. */
+  function cofYmdDot(v) { return cofYmd(v).replace(/-/g, '.'); }
+
   /* cofDatetimeNorm — LocalDateTime 정규화: space→T + 앞 16자('YYYY-MM-DDTHH:mm').
    *   <input type="datetime-local"> 비교/바인딩용. DispX01Ui/DispX04Widget/Sample* 의 _norm 통합. */
   function cofDatetimeNorm(v) { return String(v || '').replace(' ', 'T').slice(0, 16); }
@@ -777,6 +784,19 @@
     const c = pager.pageNo, l = pager.pageTotalPage;
     const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
     pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+  }
+
+  /* cofTotalPage — pager 의 총건수/페이지크기로 총 페이지 수를 계산해 반환 (최소 1)
+   *   서버가 pageTotalPage 를 안 준 경우의 대체 계산용. 값만 돌려주고 pager 는 건드리지 않는다.
+   *   사용: pager.pageTotalPage = d.pageTotalPage || coUtil.cofTotalPage(pager);
+   *
+   *   pageSize 가 0/undefined 면 Math.ceil(n/0) 이 Infinity 라 `|| 1` 로 안 걸러진다.
+   *   (Infinity 는 truthy) 그래서 나누기 전에 막는다. */
+  function cofTotalPage(pager) {
+    const cnt = Number(pager?.pageTotalCount) || 0;
+    const size = Number(pager?.pageSize) || 0;
+    if (cnt <= 0 || size <= 0) { return 1; }
+    return Math.ceil(cnt / size);
   }
 
   /* cofOmitEmpty — 객체에서 '' / null / undefined 값 키를 제거한 새 객체 반환
@@ -1116,6 +1136,8 @@
   global.coUtil.cofPad = global.coUtil.cofPad || cofPad;
   global.coUtil.cofYmdHms = global.coUtil.cofYmdHms || cofYmdHms;
   global.coUtil.cofYmd = global.coUtil.cofYmd || cofYmd;
+  global.coUtil.cofYm = global.coUtil.cofYm || cofYm;
+  global.coUtil.cofYmdDot = global.coUtil.cofYmdDot || cofYmdDot;
   global.coUtil.cofDatetimeNorm = global.coUtil.cofDatetimeNorm || cofDatetimeNorm;
   global.coUtil.cofDecodeUri = global.coUtil.cofDecodeUri || cofDecodeUri;
   global.coUtil.cofShortApiUrl = global.coUtil.cofShortApiUrl || cofShortApiUrl;
@@ -1132,6 +1154,7 @@
   // SVG 차트 헬퍼
   global.coUtil.cofMaxOf = global.coUtil.cofMaxOf || cofMaxOf;
   global.coUtil.cofBuildPagerNums = global.coUtil.cofBuildPagerNums || cofBuildPagerNums;
+  global.coUtil.cofTotalPage = global.coUtil.cofTotalPage || cofTotalPage;
   global.coUtil.cofOmitEmpty = global.coUtil.cofOmitEmpty || cofOmitEmpty;
   global.coUtil.cofImgSrc = global.coUtil.cofImgSrc || cofImgSrc;
   global.coUtil.cofHtmlCdnToAsset = global.coUtil.cofHtmlCdnToAsset || cofHtmlCdnToAsset;

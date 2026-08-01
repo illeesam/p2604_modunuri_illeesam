@@ -207,7 +207,7 @@ window.SyPathMng = {
         const list = data.pageList || data.list || [];
         gridRows.splice(0, gridRows.length, ...list.map(r => ({ ...r, _status: null, _row_org: { ...r } })));
         baseGridPager.pageTotalCount = data.pageTotalCount ?? data.totalCount ?? list.length;
-        baseGridPager.pageTotalPage  = data.pageTotalPage  ?? Math.max(1, Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize));
+        baseGridPager.pageTotalPage  = data.pageTotalPage  ?? coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
       } catch (e) { console.error('[handleGridSearch]', e); }
     };

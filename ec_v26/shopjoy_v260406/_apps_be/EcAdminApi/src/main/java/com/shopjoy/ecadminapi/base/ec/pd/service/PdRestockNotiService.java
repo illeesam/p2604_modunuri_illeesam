@@ -138,9 +138,7 @@ public class PdRestockNotiService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getRestockNotiId() == null || entity.getRestockNotiId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getRestockNotiId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getRestockNotiId() == null)

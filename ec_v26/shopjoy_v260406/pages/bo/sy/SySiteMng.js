@@ -201,7 +201,7 @@ window.SySiteMng = {
         const data = res.data?.data;
         sites.splice(0, sites.length, ...(data?.pageList || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || sites.length;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;

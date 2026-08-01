@@ -206,7 +206,7 @@ window.PdProdHist = {
       { key: 'memberNm',       label: '회원', refLink: 'member', refKey: 'memberId',
         fmt: (v, row) => (row.memberNm || row.memberId) },
       { key: 'orderDate',      label: '주문일', fmt: (v) => fnFmtDate(v) },
-      { key: 'totalAmt',       label: '금액',   fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'totalAmt',       label: '금액',   fmt: (v) => coUtil.cofWon(v) },
       { key: 'orderQty',       label: '수량' },
       { key: 'orderStatusCd',  label: '상태', badge: () => 'badge-blue',
         fmt: (v, row) => (row.orderStatusCdNm || row.orderStatusCd) },
@@ -288,7 +288,7 @@ window.PdProdHist = {
       { key: '_orderId',     label: '주문ID', type: 'readonly', fmt: (v, row) => (row.orderId || '-') },
       { key: '_member',      label: '회원',   type: 'readonly', fmt: (v, row) => (row.memberNm || row.memberId || '-') },
       { key: '_orderDate',   label: '주문일', type: 'readonly', fmt: (v, row) => fnFmtDate(row.orderDate) },
-      { key: '_totalAmt',    label: '금액',   type: 'readonly', fmt: (v, row) => ((row.totalAmt || 0).toLocaleString() + '원') },
+      { key: '_totalAmt',    label: '금액',   type: 'readonly', fmt: (v, row) => (coUtil.cofWon(row.totalAmt)) },
       { key: '_orderQty',    label: '수량',   type: 'readonly', fmt: (v, row) => (row.orderQty != null ? row.orderQty : '-') },
       { key: '_orderStatus', label: '상태',   type: 'readonly', fmt: (v, row) => (row.orderStatusCdNm || row.orderStatusCd || '-') },
     ];

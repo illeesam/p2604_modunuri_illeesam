@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -84,8 +85,8 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 
     @Override
     public BasePage<CmChattMemberDto.Item> selectPageData(CmChattMemberDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
+        int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
@@ -111,7 +112,7 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
                 .fetchOne();
 
         BasePage<CmChattMemberDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

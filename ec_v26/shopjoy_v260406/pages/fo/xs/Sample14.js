@@ -7,7 +7,7 @@ window.XsSample14 = {
     /* ##### [01] 초기 변수 정의 ################################################## */
 
     const { reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ loading: false, error: null, previewDate: new Date().toISOString().slice(0, 10), activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
+    const uiState = reactive({ loading: false, error: null, previewDate: coUtil.cofToYmd(new Date()), activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
     const codes = reactive({
       active_status_opts: [{value:'활성',label:'활성'},{value:'비활성',label:'비활성'}],
       need_yn_opts:       [{value:'Y',label:'필요'},{value:'N',label:'불필요'}],
@@ -15,7 +15,7 @@ window.XsSample14 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = coUtil.cofToYmd(new Date());
     const selectedAreas  = reactive(new Set());
     const expandedAreas  = reactive(new Set());
     const checkedPanels  = reactive(new Set());

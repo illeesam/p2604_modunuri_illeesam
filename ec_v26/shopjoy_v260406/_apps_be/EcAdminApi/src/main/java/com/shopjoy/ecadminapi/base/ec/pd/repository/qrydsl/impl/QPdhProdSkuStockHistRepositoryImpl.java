@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -109,8 +110,8 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
     /* 상품 SKU 재고 이력 페이지조회 */
     @Override
     public BasePage<PdhProdSkuStockHistDto.Item> selectPageData(PdhProdSkuStockHistDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
+        int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
@@ -140,7 +141,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
                 .fetchOne();
 
         BasePage<PdhProdSkuStockHistDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     /**
@@ -150,7 +151,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdhProdSkuStockHistDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = s == null ? null : s.getSort();
+        String sort = QdslUtil.sortOf(s);
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, pdhProdSkuStockHist.regDate));
             orders.add(new OrderSpecifier<>(Order.ASC, pdhProdSkuStockHist.histId));

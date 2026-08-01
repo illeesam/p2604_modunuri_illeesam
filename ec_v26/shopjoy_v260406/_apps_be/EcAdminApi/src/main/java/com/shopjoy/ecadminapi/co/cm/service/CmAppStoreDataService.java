@@ -187,8 +187,8 @@ public class CmAppStoreDataService {
         tempAuthInfo.put("authUser-refreshToken-tail", "..." + rt.substring(Math.max(0, rt.length() - 10)) + " (" + rt.length() + ")");
 
         return StoreAuth.builder()
-                .accessToken(CmUtil.nvl(authUser.accessToken())) // 액세스 토큰
-                .refreshToken(CmUtil.nvl(authUser.refreshToken())) // 리프레시 토큰
+                .accessToken(CmUtil.nvlStr(authUser.accessToken())) // 액세스 토큰
+                .refreshToken(CmUtil.nvlStr(authUser.refreshToken())) // 리프레시 토큰
                 .accessExpiresIn(3600L) // 액세스 토큰 만료시간(초)
                 .refreshExpiresIn(604800L) // 리프레시 토큰 만료시간(초, 7일)
                 .authUser(authUserInfo) // 사용자 정보
@@ -212,7 +212,7 @@ public class CmAppStoreDataService {
         Map<String, String> vendorNmMap = syVendorRepository.findAll().stream()
                 .collect(Collectors.toMap(
                         v -> v.getVendorId(),
-                        v -> v.getVendorNm() != null ? v.getVendorNm() : "",
+                        v -> CmUtil.nvlStr(v.getVendorNm()),
                         (a, b) -> a));
 
         List<Map<String, Object>> result = new java.util.ArrayList<>();
@@ -285,28 +285,28 @@ public class CmAppStoreDataService {
             // sy_vendor :: select one :: vendorId
             SyVendor vendor = syVendorRepository.findById(authUser.vendorId()).orElse(null);
             if (vendor != null) {
-                vendorNm = CmUtil.nvl(vendor.getVendorNm());
+                vendorNm = CmUtil.nvlStr(vendor.getVendorNm());
             }
         }
 
         return StoreUser.builder()
                 .authId(user.getUserId()) // 인증 식별자 (BO = sy_user.user_id)
-                .authNm(CmUtil.nvl(user.getUserNm())) // 인증 사용자명
+                .authNm(CmUtil.nvlStr(user.getUserNm())) // 인증 사용자명
                 .userId(user.getUserId()) // 사용자ID
-                .loginId(CmUtil.nvl(user.getLoginId())) // 로그인ID
-                .userNm(CmUtil.nvl(user.getUserNm())) // 사용자명
-                .userEmail(CmUtil.nvl(user.getUserEmail())) // 이메일
-                .userHpNo(CmUtil.nvl(user.getUserPhone())) // 휴대폰
-                .siteId(CmUtil.nvl(user.getSiteId())) // 사이트ID
-                .deptId(CmUtil.nvl(user.getDeptId())) // 부서ID
+                .loginId(CmUtil.nvlStr(user.getLoginId())) // 로그인ID
+                .userNm(CmUtil.nvlStr(user.getUserNm())) // 사용자명
+                .userEmail(CmUtil.nvlStr(user.getUserEmail())) // 이메일
+                .userHpNo(CmUtil.nvlStr(user.getUserPhone())) // 휴대폰
+                .siteId(CmUtil.nvlStr(user.getSiteId())) // 사이트ID
+                .deptId(CmUtil.nvlStr(user.getDeptId())) // 부서ID
                 .deptNm(deptNm) // 부서명
-                .roleId(CmUtil.nvl(user.getRoleId())) // 역할ID
+                .roleId(CmUtil.nvlStr(user.getRoleId())) // 역할ID
                 .roleNm(roleNm) // 역할명
                 .memberGradeCd("") // 회원등급 (관리자는 해당없음)
-                .userStatusCd(CmUtil.nvl(user.getUserStatusCd(), "ACTIVE")) // 상태
-                .appTypeCd(CmUtil.nvl(authUser.appTypeCd())) // 사용자타입
+                .userStatusCd(CmUtil.nvlStr(user.getUserStatusCd(), "ACTIVE")) // 상태
+                .appTypeCd(CmUtil.nvlStr(authUser.appTypeCd())) // 사용자타입
                 .isAdminYn("N") // 관리자여부
-                .vendorId(CmUtil.nvl(authUser.vendorId())) // 업체ID
+                .vendorId(CmUtil.nvlStr(authUser.vendorId())) // 업체ID
                 .vendorNm(vendorNm) // 업체명
                 .loginSnsChannelCd("") // SNS로그인채널 (관리자는 해당없음)
                 .boBookmarks("") // 즐겨찾기
@@ -329,18 +329,18 @@ public class CmAppStoreDataService {
 
         return StoreMember.builder()
                 .authId(member.getMemberId()) // 인증 식별자 (FO = ec_member.member_id)
-                .authNm(CmUtil.nvl(member.getMemberNm())) // 인증 사용자명
+                .authNm(CmUtil.nvlStr(member.getMemberNm())) // 인증 사용자명
                 .memberId(member.getMemberId()) // 회원ID
                 .memberEmail(member.getLoginId()) // 이메일(로그인ID)
                 .memberNm(member.getMemberNm()) // 회원명
-                .siteId(CmUtil.nvl(member.getSiteId())) // 사이트ID
-                .appTypeCd(CmUtil.nvl(authUser.appTypeCd())) // 사용자타입
+                .siteId(CmUtil.nvlStr(member.getSiteId())) // 사이트ID
+                .appTypeCd(CmUtil.nvlStr(authUser.appTypeCd())) // 사용자타입
                 .memberTypeCd("") // 회원유형
-                .memberHpNo(CmUtil.nvl(member.getMemberPhone())) // 휴대폰
-                .memberGrade(CmUtil.nvl(member.getGradeCd())) // 회원등급
+                .memberHpNo(CmUtil.nvlStr(member.getMemberPhone())) // 휴대폰
+                .memberGrade(CmUtil.nvlStr(member.getGradeCd())) // 회원등급
                 .memberStaffYn("N") // 직원여부
-                .memberBirthDt(CmUtil.nvl(member.getBirthDate() != null ? member.getBirthDate().toString() : null)) // 생년월일
-                .memberStatusCd(CmUtil.nvl(member.getMemberStatusCd())) // 상태
+                .memberBirthDt(CmUtil.nvlStr(member.getBirthDate() != null ? member.getBirthDate().toString() : null)) // 생년월일
+                .memberStatusCd(CmUtil.nvlStr(member.getMemberStatusCd())) // 상태
                 .cartCount(0L) // 장바구니수
                 .likeCount(0L) // 찜한상품수
                 .build();
@@ -390,7 +390,7 @@ public class CmAppStoreDataService {
                             .roleNm(role.getRoleNm())
                             .roleCd(role.getRoleCode())
                             .roleSortOrd(String.valueOf(role.getSortOrd() != null ? role.getSortOrd() : 0))
-                            .roleRemark(CmUtil.nvl(role.getRoleRemark()))
+                            .roleRemark(CmUtil.nvlStr(role.getRoleRemark()))
                             .vendorId(entry.getValue())
                             .vendorNm(vendorNm)
                             .regDate(role.getRegDate() != null ? role.getRegDate().toString() : null)
@@ -429,13 +429,13 @@ public class CmAppStoreDataService {
                     return StoreMenu.builder()
                             .menuId(menu.getMenuId()) // 메뉴ID
                             .menuNm(menu.getMenuNm()) // 메뉴명
-                            .menuPath(CmUtil.nvl(menu.getMenuUrl())) // 메뉴경로
-                            .parentMenuId(CmUtil.nvl(menu.getParentMenuId())) // 상위메뉴ID
+                            .menuPath(CmUtil.nvlStr(menu.getMenuUrl())) // 메뉴경로
+                            .parentMenuId(CmUtil.nvlStr(menu.getParentMenuId())) // 상위메뉴ID
                             .menuLevel(menuLevel) // 메뉴레벨(1,2,3...)
                             .menuSortOrd(String.valueOf(menu.getSortOrd() != null ? menu.getSortOrd() : 0)) // 정렬순서
-                            .menuIconCd(CmUtil.nvl(menu.getIconClass())) // 아이콘코드
-                            .menuStatusCd(CmUtil.nvl(menu.getUseYn(), "Y")) // 상태
-                            .menuRemark(CmUtil.nvl(menu.getMenuRemark())) // 비고
+                            .menuIconCd(CmUtil.nvlStr(menu.getIconClass())) // 아이콘코드
+                            .menuStatusCd(CmUtil.nvlStr(menu.getUseYn(), "Y")) // 상태
+                            .menuRemark(CmUtil.nvlStr(menu.getMenuRemark())) // 비고
                             .regDate(menu.getRegDate() != null ? menu.getRegDate().toString() : null) // 등록일시
                             .modDate(menu.getUpdDate() != null ? menu.getUpdDate().toString() : null) // 수정일시
                             .build();
@@ -480,13 +480,13 @@ public class CmAppStoreDataService {
                     .codeGrp(code.getCodeGrp())
                     .codeId(code.getCodeId())
                     .codeNm(code.getCodeLabel())
-                    .codeVal(CmUtil.nvl(code.getCodeValue()))
+                    .codeVal(CmUtil.nvlStr(code.getCodeValue()))
                     .codeSortOrd(String.valueOf(code.getSortOrd() != null ? code.getSortOrd() : 0))
-                    .codeRemark(CmUtil.nvl(code.getCodeRemark()))
-                    .useYn(CmUtil.nvl(code.getUseYn()))
-                    .parentCodeValue(CmUtil.nvl(code.getParentCodeValue()))
+                    .codeRemark(CmUtil.nvlStr(code.getCodeRemark()))
+                    .useYn(CmUtil.nvlStr(code.getUseYn()))
+                    .parentCodeValue(CmUtil.nvlStr(code.getParentCodeValue()))
                     .codeLevel(code.getCodeLevel() != null ? code.getCodeLevel() : 1)
-                    .codeOpt1(CmUtil.nvl(code.getCodeOpt1()))
+                    .codeOpt1(CmUtil.nvlStr(code.getCodeOpt1()))
                     .build();
 
             codes.add(codeInfo);
@@ -511,9 +511,9 @@ public class CmAppStoreDataService {
                         SyProp::getPropKey,
                         prop -> StoreProp.PropInfo.builder()
                                 .propKey(prop.getPropKey())
-                                .propVal(CmUtil.nvl(prop.getPropValue()))
-                                .propNm(CmUtil.nvl(prop.getPropLabel()))
-                                .propRemark(CmUtil.nvl(prop.getPropRemark()))
+                                .propVal(CmUtil.nvlStr(prop.getPropValue()))
+                                .propNm(CmUtil.nvlStr(prop.getPropLabel()))
+                                .propRemark(CmUtil.nvlStr(prop.getPropRemark()))
                                 .build(),
                         (old, neu) -> neu
                 ));
@@ -690,8 +690,8 @@ public class CmAppStoreDataService {
                                             List<StoreDispStruct.WidgetInfo> widgets = items.stream()
                                                     .map(item -> StoreDispStruct.WidgetInfo.builder()
                                                             .widgetId(item.getPanelItemId())
-                                                            .widgetNm(CmUtil.nvl(item.getWidgetTitle()))
-                                                            .widgetTypeCd(CmUtil.nvl(item.getWidgetTypeCd()))
+                                                            .widgetNm(CmUtil.nvlStr(item.getWidgetTitle()))
+                                                            .widgetTypeCd(CmUtil.nvlStr(item.getWidgetTypeCd()))
                                                             .widgetStatusCd("ACTIVE")
                                                             .widgetSortOrd(String.valueOf(item.getSortOrd() != null ? item.getSortOrd() : 0))
                                                             .build())
@@ -700,7 +700,7 @@ public class CmAppStoreDataService {
                                             return StoreDispStruct.UiInfo.AreaInfo.PanelInfo.builder()
                                                     .panelId(panel.getPanelId())
                                                     .panelNm(panel.getPanelNm())
-                                                    .panelStatusCd(CmUtil.nvl(panel.getDispPanelStatusCd(), "ACTIVE"))
+                                                    .panelStatusCd(CmUtil.nvlStr(panel.getDispPanelStatusCd(), "ACTIVE"))
                                                     .panelSortOrd(String.valueOf(0))
                                                     .widgets(widgets)
                                                     .build();
@@ -765,15 +765,15 @@ public class CmAppStoreDataService {
                     for (DpPanelItem item : items) {
                         Map<String, Object> widgetData = new java.util.HashMap<>();
                         widgetData.put("widgetId", item.getPanelItemId()); // 위젯ID
-                        widgetData.put("widgetTypeCd", CmUtil.nvl(item.getWidgetTypeCd())); // 위젯타입
-                        widgetData.put("widgetTitle", CmUtil.nvl(item.getWidgetTitle())); // 위젯제목
+                        widgetData.put("widgetTypeCd", CmUtil.nvlStr(item.getWidgetTypeCd())); // 위젯타입
+                        widgetData.put("widgetTitle", CmUtil.nvlStr(item.getWidgetTitle())); // 위젯제목
 
-                        String content = CmUtil.nvl(item.getWidgetContent()); // 위젯컨텐츠
+                        String content = CmUtil.nvlStr(item.getWidgetContent()); // 위젯컨텐츠
                         if ("Y".equals(item.getWidgetLibRefYn()) && item.getWidgetLibId() != null) {
                             // dp_widget_lib :: select one :: widgetLibId
                             DpWidgetLib widgetLib = dpWidgetLibRepository.findById(item.getWidgetLibId()).orElse(null);
                             if (widgetLib != null) {
-                                content = CmUtil.nvl(widgetLib.getWidgetLibDesc()); // 라이브러리참조시 라이브러리컨텐츠
+                                content = CmUtil.nvlStr(widgetLib.getWidgetLibDesc()); // 라이브러리참조시 라이브러리컨텐츠
                             }
                         }
                         widgetData.put("content", content); // 최종컨텐츠
@@ -829,22 +829,22 @@ public class CmAppStoreDataService {
 
         List<StoreDispWidgets.WidgetInfo> widgetInfos = widgets.stream()
                 .map(widget -> {
-                    String content = CmUtil.nvl(widget.getWidgetContent()); // 위젯 자체 content
+                    String content = CmUtil.nvlStr(widget.getWidgetContent()); // 위젯 자체 content
                     // 참조형식(widgetLibRefYn='Y')이면 dp_widget_lib에서 content 조회
                     if ("Y".equals(widget.getWidgetLibRefYn()) && widget.getWidgetLibId() != null) {
                         // dp_widget_lib :: select one :: widgetLibId
                         DpWidgetLib widgetLib = dpWidgetLibRepository.findById(widget.getWidgetLibId()).orElse(null);
                         if (widgetLib != null) {
-                            content = CmUtil.nvl(widgetLib.getWidgetLibDesc()); // 라이브러리 content로 대체
+                            content = CmUtil.nvlStr(widgetLib.getWidgetLibDesc()); // 라이브러리 content로 대체
                         }
                     }
 
                     return StoreDispWidgets.WidgetInfo.builder()
                             .widgetLibId(widget.getWidgetLibId()) // 위젯라이브러리ID (참조시에만)
                             .widgetLibNm(widget.getWidgetNm()) // 위젯명
-                            .widgetTypeCd(CmUtil.nvl(widget.getWidgetTypeCd())) // 위젯타입코드
+                            .widgetTypeCd(CmUtil.nvlStr(widget.getWidgetTypeCd())) // 위젯타입코드
                             .widgetLibDesc(content) // 위젯 content (참조형식이면 라이브러리 content)
-                            .widgetLibStatusCd(CmUtil.nvl(widget.getUseYn(), "Y")) // 위젯상태코드
+                            .widgetLibStatusCd(CmUtil.nvlStr(widget.getUseYn(), "Y")) // 위젯상태코드
                             .widgetLibSortOrd(String.valueOf(widget.getSortOrd() != null ? widget.getSortOrd() : 0)) // 정렬순서
                             .usageCount("") // 사용횟수
                             .regDate(widget.getRegDate() != null ? widget.getRegDate().toString() : null) // 등록일시

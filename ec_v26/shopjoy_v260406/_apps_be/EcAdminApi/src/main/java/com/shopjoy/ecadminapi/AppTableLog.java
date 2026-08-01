@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -611,13 +612,13 @@ public class AppTableLog {
         String[][] aug = new String[rows.length][];
         for (int i = 0; i < rows.length; i++) {
             String[] r    = rows[i];
-            String val    = r.length > 1 ? nvl(r[1]) : "";
-            String src    = r.length > 2 ? nvl(r[2]) : "";
-            String note   = r.length > 3 ? nvl(r[3]) : "";
+            String val    = r.length > 1 ? CmUtil.nvlStr(r[1]) : "";
+            String src    = r.length > 2 ? CmUtil.nvlStr(r[2]) : "";
+            String note   = r.length > 3 ? CmUtil.nvlStr(r[3]) : "";
             if (note.isBlank() && val.equals("(not configured)") && src.contains("sy_prop")) {
                 note = "sy_prop 미등록 — BO > 시스템 > 프로퍼티 관리에서 등록";
             }
-            aug[i] = new String[]{ r.length > 0 ? nvl(r[0]) : "", val, src, note };
+            aug[i] = new String[]{ r.length > 0 ? CmUtil.nvlStr(r[0]) : "", val, src, note };
             if (!note.isBlank()) hasNote = true;
         }
 
@@ -702,7 +703,6 @@ public class AppTableLog {
 
     private static String r(int w) { return "─".repeat(w + 2); }
 
-    private static String nvl(String s) { return s != null ? s : ""; }
 
     private static String pad(String s, int width) {
         if (s == null) s = "";

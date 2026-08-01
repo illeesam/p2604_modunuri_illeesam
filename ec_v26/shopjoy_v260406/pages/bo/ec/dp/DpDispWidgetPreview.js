@@ -510,7 +510,7 @@ window.DpDispWidgetPreview = {
     onMounted(initPage);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    const today   = new Date().toISOString().slice(0, 10);
+    const today   = coUtil.cofToYmd(new Date());
     const nowTime = new Date().toTimeString().slice(0, 5);
 
     const WIDGET_ICONS = {

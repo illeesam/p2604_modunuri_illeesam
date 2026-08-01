@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -197,7 +198,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 .fetchOne();
 
         BasePage<SyUserDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     /** 검색조건 기준 전체 카운트 (스트리밍 export 시 안전 상한 검증용) */
@@ -216,7 +217,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
                 .fetchOne();
-        return total == null ? 0L : total;
+        return CmUtil.nvlLong(total);
     }
 
     /* 부서 트리 — 선택 노드 + 모든 자손 부서 사용자까지 포함 */
@@ -237,7 +238,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyUserDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = s == null ? null : s.getSort();
+        String sort = QdslUtil.sortOf(s);
         if (StringUtils.hasText(sort)) {
             String[] sortParts = sort.split(",");
             for (String part : sortParts) {

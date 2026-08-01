@@ -215,7 +215,7 @@ window.DpDispWidgetLibDtl = {
     const _applyNewDefaults = () => {
       Object.assign(form, {
         widgetType: 'image_banner', status: '활성', titleYn: 'N',
-        regDate: new Date().toISOString().slice(0, 10),
+        regDate: coUtil.cofToYmd(new Date()),
         clickAction: 'none',
         bgColor: '#ffffff', textColor: '#222222',
         popupWidth: 600, popupHeight: 400,

@@ -39,7 +39,7 @@
 
 
   /* today — 오늘 YYYY-MM-DD */
-  const today = () => new Date().toISOString().slice(0, 10);
+  const today = () => coUtil.cofToYmd(new Date());
 
   /* calcFrom — 기간 옵션 → from 날짜 문자열 */
   const calcFrom = (period, customFrom) => {
@@ -50,7 +50,7 @@
     else if (period === '3m') { d.setMonth(d.getMonth() - 3); }
     else if (period === '6m') { d.setMonth(d.getMonth() - 6); }
     else if (period === '1y') { d.setFullYear(d.getFullYear() - 1); }
-    return d.toISOString().slice(0, 10);
+    return coUtil.cofToYmd(d);
   };
 
 
@@ -224,7 +224,7 @@
           const list = d.pageList || d.list || [];
           meta.rows.splice(0, meta.rows.length, ...list);
           meta.pager.pageTotalCount = d.pageTotalCount || list.length;
-          meta.pager.pageTotalPage  = d.pageTotalPage  || Math.max(1, Math.ceil(meta.pager.pageTotalCount / meta.pager.pageSize));
+          meta.pager.pageTotalPage  = d.pageTotalPage  || coUtil.cofTotalPage(meta.pager);
           const c = meta.pager.pageNo, l = meta.pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
           meta.pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
         } catch (err) {
@@ -312,7 +312,7 @@
       watch(() => searchParam.period, v => {
         if (v === 'custom') {
           const d = new Date(); d.setFullYear(d.getFullYear() - 1);
-          searchParam.customFrom = d.toISOString().slice(0, 10);
+          searchParam.customFrom = coUtil.cofToYmd(d);
           searchParam.customTo   = today();
         }
       });
@@ -451,7 +451,7 @@
         { key: 'couponNm', label: '쿠폰명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'couponCode', label: '코드', cellStyle: 'font-family:monospace;color:#666;' },
         { key: 'orderId', label: '주문번호', refLink: 'order' },
-        { key: 'discountAmt', label: '할인금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;color:#e91e63;', fmt: (v, row) => '-' + (row.discountAmt || 0).toLocaleString() + '원' },
+        { key: 'discountAmt', label: '할인금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;color:#e91e63;', fmt: (v, row) => '-' + coUtil.cofWon(row.discountAmt) },
       ];
       // 발송 그리드
       columns.sendGrid = [

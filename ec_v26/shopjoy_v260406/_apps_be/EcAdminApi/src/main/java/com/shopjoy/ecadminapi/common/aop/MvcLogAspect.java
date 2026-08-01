@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.common.aop;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -286,8 +287,8 @@ public class MvcLogAspect {
         }
         if (req == null) return "";
 
-        String uiNm  = decode(nvl(req.getHeader("X-UI-Nm")));
-        String cmdNm = decode(nvl(req.getHeader("X-Cmd-Nm")));
+        String uiNm  = decode(CmUtil.nvlStr(req.getHeader("X-UI-Nm")));
+        String cmdNm = decode(CmUtil.nvlStr(req.getHeader("X-Cmd-Nm")));
         String qs    = req.getQueryString();
 
         StringBuilder sb = new StringBuilder();
@@ -307,7 +308,6 @@ public class MvcLogAspect {
      * @param s 원본(널 허용)
      * @return s 가 null 이면 "", 아니면 s 그대로
      */
-    private static String nvl(String s) { return s != null ? s : ""; }
 
     /**
      * UTF-8 URL 디코딩한다(헤더의 한글 인코딩 복원용).

@@ -138,9 +138,7 @@ public class PmCouponService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getCouponId() == null || entity.getCouponId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getCouponId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getCouponId() == null)

@@ -138,9 +138,7 @@ public class PdCategoryProdService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getCategoryProdId() == null || entity.getCategoryProdId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getCategoryProdId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getCategoryProdId() == null)

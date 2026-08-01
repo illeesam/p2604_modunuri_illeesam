@@ -127,7 +127,7 @@ window.PdDlivTmpltMng = {
         const data = res.data?.data;
         dlivTmplts.splice(0, dlivTmplts.length, ...(data?.pageList || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
       } catch (_) {
@@ -232,11 +232,11 @@ window.PdDlivTmpltMng = {
       { key: 'dlivMethodCd',  label: '배송방법',   style: 'width:90px;', badge: (row) => fnMethodBadge(row.dlivMethodCd) },
       { key: 'dlivPayTypeCd', label: '결제유형',   style: 'width:80px;', badge: () => 'badge-gray' },
       { key: 'dlivCost',      label: '기본배송비', style: 'width:100px;text-align:right;', align: 'right',
-        fmt: (v) => ((v || 0).toLocaleString() + '원') },
+        fmt: (v) => (coUtil.cofWon(v)) },
       { key: 'freeDlivMinAmt',label: '무료배송조건',style: 'width:120px;text-align:right;', align: 'right',
         fmt: (v) => (v ? v.toLocaleString() + '원 이상' : '무조건 유료') },
       { key: 'returnCost',    label: '반품배송비', style: 'width:100px;text-align:right;', align: 'right',
-        fmt: (v) => ((v || 0).toLocaleString() + '원') },
+        fmt: (v) => (coUtil.cofWon(v)) },
       { key: 'baseDlivYn',    label: '기본',       style: 'width:70px;text-align:center;', align: 'center',
         badge: (row) => (row.baseDlivYn === 'Y' ? 'badge-orange' : 'badge-gray') },
       { key: 'useYn',         label: '사용',       style: 'width:60px;text-align:center;', align: 'center',

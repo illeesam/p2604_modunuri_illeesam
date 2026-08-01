@@ -448,10 +448,10 @@ window.PmCouponDtl = {
       { key: 'code',        label: '쿠폰코드', fmt: v => v || '-' },
       { key: 'userId',      label: '사용자', fmt: v => v || '-' },
       { key: 'orderId',     label: '주문ID', fmt: v => v || '-' },
-      { key: 'orderAmt',    label: '주문금액', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'orderAmt',    label: '주문금액', fmt: v => coUtil.cofWon(v) },
       { key: 'discountAmt', label: '할인액',
         cellStyle: 'color:#e8587a;font-weight:600',
-        fmt: v => '-' + (v||0).toLocaleString() + '원' },
+        fmt: v => '-' + coUtil.cofWon(v) },
       { key: 'usedDate',    label: '사용일시', fmt: v => v || '-' },
     ];
     const cfIssuedTop = computed(() => cfIssuedList.value.slice(0, 10));
@@ -575,7 +575,7 @@ window.PmCouponDtl = {
               <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.couponNm }}</div>
               <div style="font-size:9px;">🏷️ {{ form.couponCd || 'SAMPLE' }}</div>
               <div style="font-weight:600;color:#e8587a;margin:4px 0;">
-                {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}
+                {{ form.discountType==='amount' ? coUtil.cofWon(form.discountVal) : (form.discountVal||0)+'%' }}
               </div>
               <div style="font-size:9px;color:#999;">📅 {{ form.validFrom }} ~ {{ form.validTo }}</div>
               <div style="font-size:9px;color:#999;">💳 최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
@@ -601,7 +601,7 @@ window.PmCouponDtl = {
               <div style="font-weight:600;margin-bottom:6px;">🎁 {{ form.couponNm }}</div>
               <div style="color:#666;margin:3px 0;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
               <div style="color:#666;margin:3px 0;">
-                할인: {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}
+                할인: {{ form.discountType==='amount' ? coUtil.cofWon(form.discountVal) : (form.discountVal||0)+'%' }}
               </div>
               <div style="color:#666;margin:3px 0;">유효기간: {{ form.validFrom }} ~ {{ form.validTo }}</div>
               <div style="color:#666;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
@@ -633,7 +633,7 @@ window.PmCouponDtl = {
                   <div style="font-weight:600;color:#e8587a;margin-bottom:4px;">🎁 {{ form.couponNm }}</div>
                   <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
                   <div style="color:#666;font-size:8px;margin:3px 0;">
-                    할인: {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}
+                    할인: {{ form.discountType==='amount' ? coUtil.cofWon(form.discountVal) : (form.discountVal||0)+'%' }}
                   </div>
                   <div style="color:#666;font-size:8px;margin:3px 0;">유효기간: {{ form.validFrom }} ~ {{ form.validTo }}</div>
                   <div style="color:#666;font-size:8px;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
@@ -687,7 +687,7 @@ window.PmCouponDtl = {
               </div>
               <div style="text-align:center;background:rgba(255,255,255,0.5);padding:4px;border-radius:4px;">
                 <div style="font-size:13px;color:#333;font-weight:700;">
-                  {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}
+                  {{ form.discountType==='amount' ? coUtil.cofWon(form.discountVal) : (form.discountVal||0)+'%' }}
                 </div>
                 <div style="font-size:8px;color:#666;">{{ form.validFrom }} ~ {{ form.validTo }}</div>
                 <div style="font-size:7px;color:#999;margin-top:2px;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.ext.controller;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.co.cm.data.vo.SendResultVo;
 import com.shopjoy.ecadminapi.co.cm.service.CmKakaoSendService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -24,9 +25,9 @@ public class CoExtKakaoSendController {
     @PostMapping("/send")
     public ResponseEntity<ApiResponse<SendResultVo>> send(@RequestBody Map<String, Object> body) {
         String siteId       = SecurityUtil.getSiteId();
-        String toPhone      = str(body, "toPhone");
-        String templateCode = str(body, "templateCode");
-        String content      = str(body, "content");
+        String toPhone      = CmUtil.mapStr(body, "toPhone");
+        String templateCode = CmUtil.mapStr(body, "templateCode");
+        String content      = CmUtil.mapStr(body, "content");
 
         @SuppressWarnings("unchecked")
         Map<String, Object> variables = body.get("variables") instanceof Map
@@ -43,7 +44,4 @@ public class CoExtKakaoSendController {
                 : ResponseEntity.ok(ApiResponse.error(400, result.getFailReason(), result));
     }
 
-    private static String str(Map<String, Object> m, String key) {
-        Object v = m.get(key); return v == null ? null : v.toString().strip();
-    }
 }

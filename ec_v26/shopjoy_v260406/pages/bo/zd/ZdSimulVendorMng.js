@@ -75,8 +75,8 @@
               vendorNm: nm, ceoNm: ceo, vendorType: type,
               vendorPhone: phone, vendorEmail: email, corpNo: corpNo,
               vendorStatusCd: domCfg.statusOnCreate,
-              openDate: new Date().toISOString().slice(0, 10),
-              contractDate: new Date().toISOString().slice(0, 10),
+              openDate: coUtil.cofToYmd(new Date()),
+              contractDate: coUtil.cofToYmd(new Date()),
             };
             const res = await boApi.post('/bo/zd/simul/vendor/create', body, coUtil.cofApiHdr('업체시뮬', '생성'));
             const id  = res?.data?.data?.vendorId || seq;

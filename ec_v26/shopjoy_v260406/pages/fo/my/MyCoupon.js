@@ -65,7 +65,7 @@ window.MyCoupon = {
         couponId: Date.now(), code, name: '추가 쿠폰 (' + code + ')',
         discountType: 'amount', discountValue: 3000, minOrder: 30000,
         expiry: '2026-12-31', used: false,
-        regDate: new Date().toISOString().slice(0,10), regSource: '쿠폰 코드 입력', regMethod: '수동',
+        regDate: coUtil.cofToYmd(new Date()), regSource: '쿠폰 코드 입력', regMethod: '수동',
       });
       couponCode.value = ''; pager.pageNo = 1;
       showToast('쿠폰이 등록되었습니다!', 'success');

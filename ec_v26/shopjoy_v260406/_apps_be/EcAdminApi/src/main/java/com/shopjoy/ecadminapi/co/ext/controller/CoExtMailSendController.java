@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.ext.controller;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.co.cm.data.vo.SendResultVo;
 import com.shopjoy.ecadminapi.co.cm.service.CmMailSendService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -24,26 +25,22 @@ public class CoExtMailSendController {
     @PostMapping("/send")
     public ResponseEntity<ApiResponse<SendResultVo>> send(@RequestBody Map<String, Object> body) {
         String siteId  = SecurityUtil.getSiteId();
-        String toEmail = str(body, "toEmail");
-        String toName  = str(body, "toName");
-        String subject = str(body, "subject");
-        String text    = str(body, "body");
+        String toEmail = CmUtil.mapStr(body, "toEmail");
+        String toName  = CmUtil.mapStr(body, "toName");
+        String subject = CmUtil.mapStr(body, "subject");
+        String text    = CmUtil.mapStr(body, "body");
 
         String content = (toName != null && !toName.isBlank())
-                ? toName + " 님,<br><br>" + nz(text).replace("\n", "<br>")
-                : nz(text).replace("\n", "<br>");
+                ? toName + " 님,<br><br>" + CmUtil.nvlStr(text).replace("\n", "<br>")
+                : CmUtil.nvlStr(text).replace("\n", "<br>");
 
         SendResultVo result = cmMailSendService.sendMail(
                 siteId, toEmail, subject, content,
-                null, null, "TEST", null, Map.of("toName", nz(toName)));
+                null, null, "TEST", null, Map.of("toName", CmUtil.nvlStr(toName)));
 
         return result.getSuccess()
                 ? ResponseEntity.ok(ApiResponse.ok(result))
                 : ResponseEntity.ok(ApiResponse.error(400, result.getFailReason(), result));
     }
 
-    private static String str(Map<String, Object> m, String key) {
-        Object v = m.get(key); return v == null ? null : v.toString().strip();
-    }
-    private static String nz(String s) { return s == null ? "" : s; }
 }

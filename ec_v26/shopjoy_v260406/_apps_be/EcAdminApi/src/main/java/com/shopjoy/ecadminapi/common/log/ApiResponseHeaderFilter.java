@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.common.log;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -114,7 +115,7 @@ public class ApiResponseHeaderFilter extends OncePerRequestFilter {
      */
     private String getHeader(HttpServletRequest request, String name) {
         String value = request.getHeader(name);
-        return value != null ? value : "";
+        return CmUtil.nvlStr(value);
     }
 
     /**

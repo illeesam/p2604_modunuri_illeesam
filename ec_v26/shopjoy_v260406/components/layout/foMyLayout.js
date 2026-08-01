@@ -6,7 +6,7 @@ window.myDateFilterHelper = () => {
   const today = new Date();
 
   /* fmt */
-  const fmt = d => d.toISOString().slice(0, 10);
+  const fmt = d => coUtil.cofToYmd(d);
 
   /* calcStart */
   const calcStart = months => { const d = new Date(today); d.setMonth(d.getMonth() - months); return fmt(d); };
@@ -14,7 +14,7 @@ window.myDateFilterHelper = () => {
 
   /* inRange */
   const inRange = dateStr => {
-    const d = String(dateStr || '').slice(0, 10).replace(/\./g, '-').replace(/ .*/g, '');
+    const d = coUtil.cofYmd(dateStr).replace(/\./g, '-').replace(/ .*/g, '');
     return (!dateRange.start || d >= dateRange.start) && (!dateRange.end || d <= dateRange.end);
   };
 
@@ -56,7 +56,7 @@ window.MyDateFilter = {
     const today = new Date();
 
     /* fmt — 포맷 */
-    const fmt = d => d.toISOString().slice(0, 10);
+    const fmt = d => coUtil.cofToYmd(d);
 
     /* calcStart — 계산 시작 */
     const calcStart = months => { const d = new Date(today); d.setMonth(d.getMonth() - months); return fmt(d); };

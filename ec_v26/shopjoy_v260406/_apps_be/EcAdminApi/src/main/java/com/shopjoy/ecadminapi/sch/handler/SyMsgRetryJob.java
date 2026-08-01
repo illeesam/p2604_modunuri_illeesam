@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.sch.handler;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendEmailLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendMsgLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
@@ -118,7 +119,7 @@ public class SyMsgRetryJob implements SchBatchJobHandler {
         int success = 0, fail = 0;
         for (SyhSendMsgLog msg : targets) {
             try {
-                SendResultVo result = switch (nz(msg.getChannelCd())) {
+                SendResultVo result = switch (CmUtil.nvlStr(msg.getChannelCd())) {
                     case "KAKAO" -> cmKakaoSendService.sendKakao(
                         msg.getSiteId(), msg.getRecvPhone(), msg.getContent(),
                         msg.getKakaoTplCode(), msg.getTemplateId(), msg.getTemplateCode(),
@@ -154,5 +155,4 @@ public class SyMsgRetryJob implements SchBatchJobHandler {
         return targets.size();
     }
 
-    private static String nz(String s) { return s == null ? "" : s; }
 }

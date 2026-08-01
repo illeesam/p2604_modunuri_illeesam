@@ -29,7 +29,7 @@ window.CmNoticeDtl = {
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
-    const _today = (offset = 0) => { const d = new Date(); d.setDate(d.getDate() + offset); return d.toISOString().slice(0, 10); };
+    const _today = (offset = 0) => { const d = new Date(); d.setDate(d.getDate() + offset); return coUtil.cofToYmd(d); };
 
     /* 폼 초기값 = 빈 폼 (미선택/초기화 상태에서는 모든 필드 비움).
      *   신규 등록 기본값(상단고정 N / 시작·종료일)은 [+신규] 진입 시에만 _applyNewDefaults() 로 채움. */

@@ -210,7 +210,7 @@ window.StConfigMng = {
         badge: (row) => fnCycleBadge(row.settleCycleCd), fmt: (v) => fnCycleCdToLabel(v) },
       { key: 'settleDay',          label: '정산일', fmt: (v) => '매월 ' + v + '일' },
       { key: 'minSettleAmt',       label: '최소정산금',
-        fmt: (v) => Number(v || 0).toLocaleString() + '원' },
+        fmt: (v) => NumbercoUtil.cofWon(v) },
       { key: 'useYn',              label: '사용여부',
         badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: (v) => v === 'Y' ? '사용' : '미사용' },

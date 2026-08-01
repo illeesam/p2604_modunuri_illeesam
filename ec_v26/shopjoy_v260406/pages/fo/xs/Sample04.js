@@ -249,7 +249,7 @@ window.XsSample04 = {
       { key: 'orders',   label: '주문', width: '56px', align: 'right' },
       { key: 'totalAmt', label: '총구매액', width: '110px', align: 'right',
         cellStyle: 'color:var(--text-primary);font-weight:700',
-        fmt: (v) => (v || 0).toLocaleString() + '원' },
+        fmt: (v) => coUtil.cofWon(v) },
       { key: 'joinDate', label: '가입일', width: '86px', align: 'center' },
     ];
     const sample04Top3 = Vue.computed(() => members.slice(0, 3));

@@ -140,7 +140,7 @@ window.StSettleCloseMng = {
     const closes = reactive([]);
 
     // 이번달 집계
-    const thisMonth = new Date().toISOString().slice(0, 7);
+    const thisMonth = coUtil.cofToYm(new Date());
     const cfThisMonthOrders = computed(() => window.safeArrayUtils.safeFilter(orders, o => o.orderDate.startsWith(thisMonth) && o.status !== '취소됨'));
     const cfThisMonthSales  = computed(() => cfThisMonthOrders.value.reduce((s, o) => s + o.totalPrice, 0));
     const cfThisMonthRefund = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.requestDate.startsWith(thisMonth) && ['환불완료','취소완료'].includes(c.status)).reduce((s, c) => s + c.refundAmount, 0));
@@ -160,7 +160,7 @@ window.StSettleCloseMng = {
         closeId: 'CLS-' + thisMonth, closeMon: thisMonth,
         sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value,
         comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value,
-        status: '마감완료', closeDate: new Date().toISOString().slice(0,10), regUserNm: '관리자',
+        status: '마감완료', closeDate: coUtil.cofToYmd(new Date()), regUserNm: '관리자',
       });
       try {
         const res = await boApiSvc.stSettleClose.create({ closeMon: thisMonth, sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value, comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value }, '정산마감관리', '저장');

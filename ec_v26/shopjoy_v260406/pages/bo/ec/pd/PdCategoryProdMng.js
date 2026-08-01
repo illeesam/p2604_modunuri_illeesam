@@ -178,7 +178,7 @@ window.PdCategoryProdMng = {
     const defaultDispEndDate   = () => { const y = new Date().getFullYear() + 3; return `${y}-12-31`; };
 
     /* defaultDispStartDate — 기본 Disp 시작 날짜 */
-    const defaultDispStartDate = () => new Date().toISOString().slice(0, 10);
+    const defaultDispStartDate = () => coUtil.cofToYmd(new Date());
 
     /* -- 검색 -- */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -204,7 +204,7 @@ window.PdCategoryProdMng = {
         const data = res.data?.data;
         categoryProds.splice(0, categoryProds.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        pager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(pager);
       } catch (err) {
         console.error('[handleSearchList]', err);
         categoryProds.splice(0, categoryProds.length);
@@ -490,7 +490,7 @@ window.PdCategoryProdMng = {
       { key: 'cateNm',    label: '카테고리', style: 'width:80px;text-align:center', align: 'center',
         cellStyle: 'color:#888;', fmt: (v) => (v || '-') },
       { key: '_price',    label: '판매가',   style: 'width:90px;text-align:right', align: 'right',
-        fmt: (v, row) => ((row.salePrice || 0).toLocaleString() + '원') },
+        fmt: (v, row) => (coUtil.cofWon(row.salePrice)) },
       { key: 'prodStock', label: '재고',     style: 'width:60px;text-align:center', align: 'center', fmt: v => v != null ? v : '-' },
     ];
 

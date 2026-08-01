@@ -138,9 +138,7 @@ public class SyI18nService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getI18nId() == null || entity.getI18nId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getI18nId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getI18nId() == null)

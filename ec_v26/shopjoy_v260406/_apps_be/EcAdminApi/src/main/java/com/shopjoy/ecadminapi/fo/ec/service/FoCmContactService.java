@@ -102,12 +102,12 @@ public class FoCmContactService {
     private String buildContent(CmContactSubmitDto.Request req) {
         return String.format(
             "이름: %s\n이메일: %s\n연락처: %s\n주문번호: %s\n문의유형: %s\n\n%s",
-            req.getName()        != null ? req.getName()        : "",
-            req.getEmail()       != null ? req.getEmail()       : "",
-            req.getTel()         != null ? req.getTel()         : "",
-            req.getOrderNo()     != null ? req.getOrderNo()     : "",
-            req.getInquiryType() != null ? req.getInquiryType() : "",
-            req.getMessage()     != null ? req.getMessage()     : ""
+            CmUtil.nvlStr(req.getName()),
+            CmUtil.nvlStr(req.getEmail()),
+            CmUtil.nvlStr(req.getTel()),
+            CmUtil.nvlStr(req.getOrderNo()),
+            CmUtil.nvlStr(req.getInquiryType()),
+            CmUtil.nvlStr(req.getMessage())
         );
     }
 

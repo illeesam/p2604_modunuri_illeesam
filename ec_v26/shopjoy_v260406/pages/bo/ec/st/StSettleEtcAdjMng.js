@@ -110,7 +110,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
         const data = resA.data?.data;
         etcAdjs.splice(0, etcAdjs.length, ...(data?.pageList || data?.list || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || etcAdjs.length;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
       } catch (_) {
@@ -142,7 +142,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
 
     /* openNew — 신규 열기 */
     const openNew = () => {
-      Object.assign(form, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '기타', adjAmt: 0, reason: '', aprvStatusCd: '대기', regUserNm: '관리자' });
+      Object.assign(form, { adjId: null, adjDate: coUtil.cofToYmd(new Date()), vendorId: '', vendorNm: '', adjType: '기타', adjAmt: 0, reason: '', aprvStatusCd: '대기', regUserNm: '관리자' });
       uiState.selectedId = '__new__'; uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };

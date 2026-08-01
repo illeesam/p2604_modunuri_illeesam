@@ -69,7 +69,7 @@ window.MyCache = {
       if (!amount || amount < 1000) { showToast('최소 1,000원 이상 충전 가능합니다.', 'error'); return; }
       cashBalance.value += amount;
       cashHistory.value.unshift({
-        cashId: Date.now(), date: new Date().toISOString().slice(0, 10),
+        cashId: Date.now(), date: coUtil.cofToYmd(new Date()),
         type: '충전', amount, desc: '직접 충전', balance: cashBalance.value
       });
       chargeAmount.value = ''; pager.pageNo = 1;

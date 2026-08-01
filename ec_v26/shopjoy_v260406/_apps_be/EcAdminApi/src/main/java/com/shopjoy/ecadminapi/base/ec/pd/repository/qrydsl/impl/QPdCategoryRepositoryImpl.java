@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -117,8 +118,8 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     /* 상품 카테고리 페이지조회 */
     @Override
     public BasePage<PdCategoryDto.Item> selectPageData(PdCategoryDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
+        int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
@@ -150,7 +151,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 .fetchOne();
 
         BasePage<PdCategoryDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     /** 단건/목록/페이지 공용 base query */
@@ -170,7 +171,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdCategoryDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = s == null ? null : s.getSort();
+        String sort = QdslUtil.sortOf(s);
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.ASC, pdCategory.categoryDepth));
             /* sortOrd ASC + regDate ASC (전역 정책) */

@@ -96,7 +96,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
         const data = res.data?.data;
         rows.splice(0, rows.length, ...(data?.pageList || data?.list || rows));
         baseGridPager.pageTotalCount = data?.pageTotalCount || rows.length;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
       } catch (_) {

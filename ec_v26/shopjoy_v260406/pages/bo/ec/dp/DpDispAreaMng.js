@@ -43,7 +43,7 @@ window.DpDispAreaMng = {
       applyPage: (d) => {
         d = d || {};
         baseGrid.pager.pageTotalCount = d.pageTotalCount || 0;
-        baseGrid.pager.pageTotalPage  = d.pageTotalPage  || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        baseGrid.pager.pageTotalPage  = d.pageTotalPage  || coUtil.cofTotalPage(baseGrid.pager);
         coUtil.cofBuildPagerNums(baseGrid.pager);
         return d.pageList || [];
       },

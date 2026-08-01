@@ -311,7 +311,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
         if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
             ip = request.getRemoteAddr();
         if (ip != null && ip.contains(",")) ip = ip.split(",")[0].trim();
-        return CmUtil.nvl(ip, "-");
+        return CmUtil.nvlStr(ip, "-");
     }
 
     /**

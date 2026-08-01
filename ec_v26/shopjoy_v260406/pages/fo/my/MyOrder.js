@@ -296,7 +296,7 @@ window.MyOrder = {
     const submitReview = () => {
       if (!reviewModal.text.trim()) { showToast('리뷰 내용을 입력해주세요.', 'error'); return; }
       const key = `${reviewModal.orderId}_${reviewModal.itemIdx}`;
-      reviews[key] = { rating: reviewModal.rating, text: reviewModal.text, date: new Date().toISOString().slice(0, 10), files: reviewModal.files.map(f => f.name) };
+      reviews[key] = { rating: reviewModal.rating, text: reviewModal.text, date: coUtil.cofToYmd(new Date()), files: reviewModal.files.map(f => f.name) };
       const order = orders.value.find(o => o.orderId === reviewModal.orderId);
       if (order && order.status === '배송완료') {
         const allReviewed = order.orderItems.every((_, idx) => reviews[`${reviewModal.orderId}_${idx}`]);

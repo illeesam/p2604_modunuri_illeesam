@@ -140,9 +140,7 @@ public class SyVendorUserRoleService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getVendorUserRoleId() == null || entity.getVendorUserRoleId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getVendorUserRoleId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getVendorUserRoleId() == null)

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -114,8 +115,8 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
     /* 상품 옵션값 페이지조회 */
     @Override
     public BasePage<PdProdOptDto.Item> selectPageData(PdProdOptDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
+        int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
@@ -144,13 +145,13 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                 .fetchOne();
 
         BasePage<PdProdOptDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PdProdOptDto.Request req) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = req == null ? null : req.getSort();
+        String sort = QdslUtil.sortOf(req);
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier<>(Order.ASC, pdProdOpt.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, pdProdOpt.regDate));

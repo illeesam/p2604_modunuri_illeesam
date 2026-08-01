@@ -34,6 +34,24 @@ public class QdslUtil {
     private QdslUtil() {}
 
     /** Long 값 정확 일치. l 이 null 이면 조건 미적용(null 반환). */
+    /**
+     * 검색조건의 정렬값을 null 안전하게 꺼낸다.
+     *
+     * <p>모든 {@code *Dto.Request} 가 {@link com.shopjoy.ecadminapi.common.data.BaseRequest}
+     * 를 상속하므로 sort 는 공통이다. Repository 의 {@code buildOrder(...)} 168곳이
+     * {@code QdslUtil.sortOf(search)} 를 그대로 복붙하고 있어 하나로 묶었다.
+     *
+     * <pre>
+     * String sort = QdslUtil.sortOf(search);
+     * </pre>
+     *
+     * @param search 검색조건 (null 허용)
+     * @return sort 문자열, search 가 null 이면 null
+     */
+    public static String sortOf(com.shopjoy.ecadminapi.common.data.BaseRequest search) {
+        return (search == null) ? null : search.getSort();
+    }
+
     public static BooleanExpression numPathEq(NumberPath<Long> np, Long l) {
         return l == null ? null : np.eq(l);
     }

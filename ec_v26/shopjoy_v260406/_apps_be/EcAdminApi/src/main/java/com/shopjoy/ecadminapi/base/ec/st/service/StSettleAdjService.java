@@ -138,9 +138,7 @@ public class StSettleAdjService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getSettleAdjId() == null || entity.getSettleAdjId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getSettleAdjId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getSettleAdjId() == null)

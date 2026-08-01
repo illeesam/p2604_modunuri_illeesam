@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.*;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdContent;
@@ -308,8 +309,8 @@ public class BoPdProdTabController {
                 opt.setProdId(prodId);
                 opt.setSiteId(siteId);
                 opt.setProdOptTypeLevel(level);
-                opt.setProdOptNm(it.getNm() != null ? it.getNm() : "");
-                opt.setProdOptVal(it.getVal() != null ? it.getVal() : "");
+                opt.setProdOptNm(CmUtil.nvlStr(it.getNm()));
+                opt.setProdOptVal(CmUtil.nvlStr(it.getVal()));
                 opt.setProdOptStdCd(nullIfEmpty(it.getStdCd()));
                 opt.setProdOptStyle(nullIfEmpty(it.getProdOptStyle()));
                 opt.setSortOrd(it.getSortOrd() != null ? it.getSortOrd() : (iIdx + 1));
@@ -381,7 +382,7 @@ public class BoPdProdTabController {
         int order = 1;
         for (PdProdContentUpdateDto.Block blk : blocks) {
             String type = blk.getType() != null ? blk.getType() : "html";
-            String content = blk.getContent() != null ? blk.getContent() : "";
+            String content = CmUtil.nvlStr(blk.getContent());
 
             PdProdContent entity = new PdProdContent();
             entity.setProdContentId("PC" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));

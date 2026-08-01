@@ -79,7 +79,7 @@ public class SocialAuthService {
         // 1) provider accessToken 검증 → SNS 사용자정보
         SocialUserInfo info = socialTokenVerifier.verify(request.getProvider(), request.getAccessToken());
 
-        String siteId = CmUtil.nvl(request.getSiteId(), defaultSiteId);
+        String siteId = CmUtil.nvlStr(request.getSiteId(), defaultSiteId);
 
         // 2) (siteId, snsChannelCd, snsUserId) 매칭 → 기존 연동 회원 조회
         MbMember member;
@@ -98,7 +98,7 @@ public class SocialAuthService {
 
         // 상태 검증
         if (!"ACTIVE".equals(member.getMemberStatusCd())) {
-            saveLoginLog(member.getMemberId(), CmUtil.nvl(member.getSiteId()),
+            saveLoginLog(member.getMemberId(), CmUtil.nvlStr(member.getSiteId()),
                 member.getLoginId(), "FAIL", null, 0, null, null);
             throw new CmBizException("비활성화된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -112,10 +112,10 @@ public class SocialAuthService {
         String refreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
 
         // 멀티디바이스: 행 추가 (기존 삭제 없음)
-        saveTokenLog(authId, CmUtil.nvl(member.getSiteId()), accessToken, refreshToken, "LOGIN", appTypeCd, null, null, null);
+        saveTokenLog(authId, CmUtil.nvlStr(member.getSiteId()), accessToken, refreshToken, "LOGIN", appTypeCd, null, null, null);
 
         // 로그인 성공 이력 기록
-        saveLoginLog(authId, CmUtil.nvl(member.getSiteId()), member.getLoginId(), "SUCCESS", accessToken, 0, null, null);
+        saveLoginLog(authId, CmUtil.nvlStr(member.getSiteId()), member.getLoginId(), "SUCCESS", accessToken, 0, null, null);
 
         return LoginRes.builder()
             .accessToken(accessToken)
@@ -126,7 +126,7 @@ public class SocialAuthService {
             .userNm(member.getMemberNm())
             .userEmail(member.getLoginId())
             .userPhone(member.getMemberPhone())
-            .siteId(CmUtil.nvl(member.getSiteId()))
+            .siteId(CmUtil.nvlStr(member.getSiteId()))
             .appTypeCd(appTypeCd)
             .roleId("")
             .deptId("")
@@ -169,7 +169,7 @@ public class SocialAuthService {
             throw new CmBizException("이미 탈퇴된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
-        String siteId = CmUtil.nvl(member.getSiteId());
+        String siteId = CmUtil.nvlStr(member.getSiteId());
 
         // 1) SNS 연동행 전체 삭제 (소셜 연동 정보 제거)
         memberSnsRepository.deleteByMemberId(memberId);
@@ -182,7 +182,7 @@ public class SocialAuthService {
 
         // 3) 보유 토큰 전체 무효화 (모든 디바이스 세션 종료) + REVOKE 이력 (logout 흐름 모방)
         String reason = (request != null)
-            ? CmUtil.nvl(request.getWithdrawReason(), "WITHDRAW") : "WITHDRAW";
+            ? CmUtil.nvlStr(request.getWithdrawReason(), "WITHDRAW") : "WITHDRAW";
         em.createQuery("DELETE FROM MbhMemberTokenLog t WHERE t.authId = :authId")
             .setParameter("authId", memberId)
             .executeUpdate();
@@ -207,7 +207,7 @@ public class SocialAuthService {
         String memberSnsId = "MS" + now + String.format("%04d", (int)(Math.random() * 10000));
 
         // loginId(이메일) 결정: 검증값 → 클라이언트 보조값 → 합성값
-        String email = CmUtil.nvl(info.getEmail(), CmUtil.nvl(request.getEmail()));
+        String email = CmUtil.nvlStr(info.getEmail(), CmUtil.nvlStr(request.getEmail()));
         String loginId = (email == null || email.isBlank())
             ? (info.getSnsChannelCd().toLowerCase() + "_" + info.getSnsUserId() + "@social.local")
             : email;
@@ -221,7 +221,7 @@ public class SocialAuthService {
             return exist;
         }
 
-        String memberNm = CmUtil.nvl(info.getName(), CmUtil.nvl(request.getName(), "소셜회원"));
+        String memberNm = CmUtil.nvlStr(info.getName(), CmUtil.nvlStr(request.getName(), "소셜회원"));
 
         MbMember member = new MbMember();
         member.setMemberId(memberId);
@@ -230,7 +230,7 @@ public class SocialAuthService {
         // 소셜 회원: 비밀번호 직접 로그인 불가 → 추측 불가능한 랜덤값 bcrypt 저장
         member.setLoginPwdHash(passwordEncoder.encode("SOCIAL$" + UUID.randomUUID()));
         member.setMemberNm(memberNm);
-        member.setMemberPhone(CmUtil.nvl(info.getPhone(), CmUtil.nvl(request.getPhone())));
+        member.setMemberPhone(CmUtil.nvlStr(info.getPhone(), CmUtil.nvlStr(request.getPhone())));
         member.setMemberStatusCd("ACTIVE");
         member.setJoinDate(LocalDateTime.now());
         member.setRegBy(memberId);
@@ -272,10 +272,10 @@ public class SocialAuthService {
                 .appTypeCd(appTypeCd)
                 .roleId(null)
                 .vendorId(null)
-                .siteId(CmUtil.nvl(member.getSiteId()))
+                .siteId(CmUtil.nvlStr(member.getSiteId()))
                 .userId(null)
                 .memberId(member.getMemberId())
-                .memberGrade(CmUtil.nvl(member.getGradeCd()))
+                .memberGrade(CmUtil.nvlStr(member.getGradeCd()))
                 .isStaffYn("N")
                 .isAdminYn("N")
                 .build()

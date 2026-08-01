@@ -75,7 +75,7 @@ public class OdOrderAutoCompleteJob implements SchBatchJobHandler {
             }
 
             // 이미 완료(COMPLT) 또는 취소(CANCEL) 상태면 스킵
-            String currentStatus = order.getOrderStatusCd() != null ? order.getOrderStatusCd() : "";
+            String currentStatus = CmUtil.nvlStr(order.getOrderStatusCd());
             if ("COMPLT".equals(currentStatus) || "CANCEL".equals(currentStatus)) {
                 skipped++;
                 continue;

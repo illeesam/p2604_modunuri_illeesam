@@ -195,7 +195,7 @@ window.PdProdMng = {
         const data = res.data?.data;
         products.splice(0, products.length, ...(data?.pageList || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
@@ -403,7 +403,7 @@ window.PdProdMng = {
       { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'cateNm',       label: '카테고리' },
-      { key: 'listPrice',    label: '가격', fmt: (v) => ((v || 0).toLocaleString() + '원') },
+      { key: 'listPrice',    label: '가격', fmt: (v) => (coUtil.cofWon(v)) },
       { key: 'prodStock',    label: '재고', fmt: (v) => (v + '개') },
       { key: 'brandNm',      label: '브랜드' },
       { key: 'prodStatusCd', label: '상태', badge: (p) => fnStatusBadge(p.prodStatusCd), fmt: (v, p) => (p.prodStatusCdNm || p.prodStatusCd) },

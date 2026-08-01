@@ -138,9 +138,7 @@ public class PdReviewCommentService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getReviewCommentId() == null || entity.getReviewCommentId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getReviewCommentId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getReviewCommentId() == null)

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -134,8 +135,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     /* 정산 지급 페이지조회 */
     @Override
     public BasePage<StSettlePayDto.Item> selectPageData(StSettlePayDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
+        int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
@@ -167,7 +168,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 .fetchOne();
 
         BasePage<StSettlePayDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
@@ -179,7 +180,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(StSettlePayDto.Request c) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = c == null ? null : c.getSort();
+        String sort = QdslUtil.sortOf(c);
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, stSettlePay.regDate));
             orders.add(new OrderSpecifier<>(Order.ASC, stSettlePay.settlePayId));

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.ext.controller;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class CoExtSnsNaverController {
     @PostMapping("/profile")
     @SuppressWarnings("unchecked")
     public ResponseEntity<ApiResponse<Map<String, Object>>> profile(@RequestBody Map<String, Object> body) {
-        String accessToken = str(body, "accessToken");
+        String accessToken = CmUtil.mapStr(body, "accessToken");
         if (accessToken == null || accessToken.isBlank()) {
             return ResponseEntity.ok(ApiResponse.error(400, "accessToken 이 없습니다.", null));
         }
@@ -51,7 +52,4 @@ public class CoExtSnsNaverController {
         }
     }
 
-    private static String str(Map<String, Object> m, String key) {
-        Object v = m.get(key); return v == null ? null : v.toString().strip();
-    }
 }

@@ -192,7 +192,7 @@ window.SyAlarmMng = {
         const data = res.data?.data;
         alarms.splice(0, alarms.length, ...(data?.pageList || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || alarms.length;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;

@@ -375,7 +375,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'issueNo',     label: '발급번호' },
       { key: 'memberNm',    label: '회원명' },
       { key: 'issueDate',   label: '발급일', fmt: (v) => coUtil.cofYmd(v) || '-' },
-      { key: 'issuePrice',  label: '발급가격', style: 'text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'issuePrice',  label: '발급가격', style: 'text-align:right;', fmt: v => coUtil.cofWon(v) },
       { key: 'expiryDate',  label: '만료일', fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'status',      label: '상태',
         badge: row => row.status === '정상' ? 'badge-green' : row.status === '사용완료' ? 'badge-blue' : row.status === '만료됨' ? 'badge-gray' : 'badge-gray' },
@@ -386,7 +386,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'issueNo',    label: '발급번호' },
       { key: 'memberNm',   label: '회원명' },
       { key: 'orderId',    label: '주문ID' },
-      { key: 'useAmount',  label: '사용금액', style: 'text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'useAmount',  label: '사용금액', style: 'text-align:right;', fmt: v => coUtil.cofWon(v) },
       { key: 'useDate',    label: '사용일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
     ];
 

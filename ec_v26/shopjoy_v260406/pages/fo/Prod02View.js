@@ -398,7 +398,7 @@ window.Prod02View = {
     const fnNormalizeReview = (r) => {
       const rating = Number(r.rating) || 0;
       const dt = r.reviewDate || r.regDate || '';
-      const dateStr = dt ? String(dt).slice(0, 10).replace(/-/g, '.') : '';
+      const dateStr = dt ? coUtil.cofYmdDot(dt) : '';
       const mid = r.memberId || '';
       const masked = mid.length >= 3
         ? mid[0] + '*'.repeat(mid.length - 2) + mid.slice(-1)
@@ -1484,7 +1484,7 @@ window.Prod02View = {
                 {{ q.memberId ? q.memberId[0]+'**' : '비회원' }}
               </span>
               <span style="font-size:0.76rem;color:var(--text-muted);">
-                {{ String(q.regDate||'').slice(0,10).replace(/-/g,'.') }}
+                {{ coUtil.cofYmdDot(q.regDate) }}
               </span>
             </div>
             <div style="font-size:0.88rem;color:var(--text-primary);line-height:1.6;white-space:pre-wrap;">

@@ -124,9 +124,9 @@ window.OdOrderHist = {
       { key: 'prodNm',     label: '상품명' },
       { key: 'optionNm',   label: '옵션' },
       { key: 'qty',        label: '수량',   style: 'width:56px;text-align:center;' },
-      { key: 'unitPrice',  label: '단가',   style: 'width:90px;text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'unitPrice',  label: '단가',   style: 'width:90px;text-align:right;', fmt: v => coUtil.cofWon(v) },
       { key: 'totalPrice', label: '금액',   style: 'width:100px;text-align:right;',
-        align: 'right', cellStyle: 'font-weight:600', fmt: (v) => (v || 0).toLocaleString() + '원' },
+        align: 'right', cellStyle: 'font-weight:600', fmt: (v) => coUtil.cofWon(v) },
       { key: 'statusCd',   label: '상태',   style: 'width:90px;' },
     ];
     // 배송 이력 그리드

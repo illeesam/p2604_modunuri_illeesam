@@ -535,7 +535,7 @@ window.PmDiscntDtl = {
           <div v-if="form.discntTypeCd !== 'SHIP_FREE'" style="font-size:13px;color:#666;margin-bottom:4px;">
             할인값:
             <span style="font-weight:700;color:#e8587a;">
-              {{ form.discntValTypeCd === 'RATE' ? (form.discntValue + '%') : (form.discntValue||0).toLocaleString() + '원' }}
+              {{ form.discntValTypeCd === 'RATE' ? (form.discntValue + '%') : coUtil.cofWon(form.discntValue) }}
             </span>
           </div>
           <div style="font-size:13px;color:#666;">

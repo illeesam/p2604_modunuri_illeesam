@@ -258,7 +258,7 @@ window.Order = {
         const orderId = 'ORD-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-5);
         const payload = {
           orderId,
-          orderDate: new Date().toISOString().slice(0, 10),
+          orderDate: coUtil.cofToYmd(new Date()),
           form: { ...form },
           items: cfOrderItems.value.map((i, idx) => ({
             prodId:   i.prod.prodId,

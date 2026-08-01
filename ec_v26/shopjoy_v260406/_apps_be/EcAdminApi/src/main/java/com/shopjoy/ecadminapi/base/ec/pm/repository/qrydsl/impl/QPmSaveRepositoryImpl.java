@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -114,8 +115,8 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     /* 적립금 페이지조회 */
     @Override
     public BasePage<PmSaveDto.Item> selectPageData(PmSaveDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
+        int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
@@ -148,7 +149,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 .fetchOne();
 
         BasePage<PmSaveDto.Item> res = new BasePage<>();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+        return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
     /**
@@ -158,7 +159,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(PmSaveDto.Request search) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = search == null ? null : search.getSort();
+        String sort = QdslUtil.sortOf(search);
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, pmSave.regDate));
             orders.add(new OrderSpecifier<>(Order.ASC, pmSave.saveId));

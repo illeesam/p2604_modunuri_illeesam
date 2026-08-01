@@ -87,7 +87,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
         const data = res.data?.data;
         pays.splice(0, pays.length, ...(data?.pageList || data?.list || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || pays.length;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
       } catch (_) {
@@ -129,7 +129,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const doPay = async (r) => {
       const ok = await showConfirm('지급처리', `[${r.vendorNm}]에게 ${Number(r.settleAmt).toLocaleString()}원을 지급하시겠습니까?`);
       if (!ok) { return; }
-      r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = new Date().toISOString().slice(0,10);
+      r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = coUtil.cofToYmd(new Date());
       try {
         const res = await boApiSvc.stSettlePay.pay(r.settlePayId || r.payId, { payAmt: r.payAmt ?? r.settleAmt }, '정산지급관리', '저장');
         if (showToast) { showToast('지급처리가 완료되었습니다.', 'success'); }

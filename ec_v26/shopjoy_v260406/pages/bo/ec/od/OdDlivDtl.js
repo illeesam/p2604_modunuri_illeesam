@@ -201,7 +201,7 @@ window.OdDlivDtl = {
     });
 
     /* fmt — 포맷 */
-    const fmt = (n) => Number(n||0).toLocaleString() + '원';
+    const fmt = (n) => NumbercoUtil.cofWon(n);
 
     /* trackingUrl — 추적 URL */
     const trackingUrl = (courier, no) => {
@@ -228,7 +228,7 @@ window.OdDlivDtl = {
     }] : []);
     const cfStatusHistList = computed(() => {
       if (!form.dlivId) { return []; }
-      const d = String(form.regDate || '').slice(0,10) || '-';
+      const d = coUtil.cofYmd(form.regDate) || '-';
       const rows = [
         { date: d+' 09:00', user:'시스템', from:'-',     to:'준비중',   memo:'배송 등록' },
       ];
@@ -238,8 +238,8 @@ window.OdDlivDtl = {
       return rows;
     });
     const cfEditHistList = computed(() => form.dlivId ? [
-      { date: String(form.regDate||'').slice(0,10)+' 10:05', user:'bo', field:'운송장번호', before:'-', after: form.outboundTrackingNo || '-' },
-      { date: String(form.regDate||'').slice(0,10)+' 10:08', user:'bo', field:'택배사',     before:'-', after: form.outboundCourierCd || '-' },
+      { date: coUtil.cofYmd(form.regDate)+' 10:05', user:'bo', field:'운송장번호', before:'-', after: form.outboundTrackingNo || '-' },
+      { date: coUtil.cofYmd(form.regDate)+' 10:08', user:'bo', field:'택배사',     before:'-', after: form.outboundCourierCd || '-' },
     ] : []);
     /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
     const tabs = reactive([

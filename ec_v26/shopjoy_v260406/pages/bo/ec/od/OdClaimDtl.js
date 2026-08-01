@@ -267,7 +267,7 @@ window.OdClaimDtl = {
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.activeTab === id;
 
     /* fmt — 포맷 */
-    const fmt = (n) => Number(n||0).toLocaleString() + '원';
+    const fmt = (n) => NumbercoUtil.cofWon(n);
 
     const CLAIM_TYPE_COLOR = coConsts.CLAIM_TYPE_COLOR;
 
@@ -320,7 +320,7 @@ window.OdClaimDtl = {
     }] : []);
     const cfStatusHistList = computed(() => {
       if (!form.claimId) { return []; }
-      const d = String(form.requestDate || '').slice(0,10) || '-';
+      const d = coUtil.cofYmd(form.requestDate) || '-';
       return [
         { date: d+' 09:10', user:'회원',   from:'-',           to: form.claimTypeCd+'요청', memo: form.claimTypeCd+' 접수' },
         { date: d+' 11:30', user:'bo',  from: form.claimTypeCd+'요청', to:'처리중',        memo:'검토 후 처리 시작' },
@@ -328,8 +328,8 @@ window.OdClaimDtl = {
       ];
     });
     const cfEditHistList = computed(() => form.claimId ? [
-      { date: String(form.requestDate||'').slice(0,10)+' 10:00', user:'bo', field:'사유',      before:'-', after: form.reasonCd || '-' },
-      { date: String(form.requestDate||'').slice(0,10)+' 12:20', user:'bo', field:'환불금액',  before:'0', after: (form.refundAmt||0).toLocaleString() },
+      { date: coUtil.cofYmd(form.requestDate)+' 10:00', user:'bo', field:'사유',      before:'-', after: form.reasonCd || '-' },
+      { date: coUtil.cofYmd(form.requestDate)+' 12:20', user:'bo', field:'환불금액',  before:'0', after: (form.refundAmt||0).toLocaleString() },
     ] : []);
     /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
     const tabs = reactive([

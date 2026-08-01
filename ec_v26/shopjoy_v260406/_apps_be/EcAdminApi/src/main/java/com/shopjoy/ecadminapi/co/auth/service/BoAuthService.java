@@ -156,7 +156,7 @@ public class BoAuthService {
             .siteId(user.getSiteId())
             .roleId(user.getRoleId())
             .appTypeCd(appTypeCd)
-            .deptId(user.getDeptId() != null ? user.getDeptId() : "")
+            .deptId(CmUtil.nvlStr(user.getDeptId()))
             .profileAttachId(user.getProfileAttachId())
             .build();
     }

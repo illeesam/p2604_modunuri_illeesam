@@ -57,7 +57,7 @@ public class CmAlarmSendService {
     public SendResultVo sendSystemAlarm(String siteId, String alarmTitle, String alarmMsg,
                                         String alarmTypeCd, String memberId, String sendTo,
                                         String templateId, String refId, Map<String, Object> params) {
-        String title = nz(alarmTitle).isBlank() ? "신규 알림" : alarmTitle;
+        String title = CmUtil.nvlStr(alarmTitle).isBlank() ? "신규 알림" : alarmTitle;
         String typeCd = (alarmTypeCd == null || alarmTypeCd.isBlank()) ? DEFAULT_TYPE_CD : alarmTypeCd;
 
         // 1) sy_alarm 1건 생성 (실패 시 이력 생략 + 실패 VO 반환)
@@ -133,5 +133,4 @@ public class CmAlarmSendService {
         e.setUpdDate(now);
     }
 
-    private static String nz(String s) { return s == null ? "" : s; }
 }

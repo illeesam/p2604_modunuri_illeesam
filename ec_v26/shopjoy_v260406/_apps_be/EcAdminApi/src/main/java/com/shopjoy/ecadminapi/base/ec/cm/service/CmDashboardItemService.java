@@ -99,9 +99,7 @@ public class CmDashboardItemService {
         String authId    = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (body.getDashboardItemId() == null || body.getDashboardItemId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = body.resolveRowStatus(body.getDashboardItemId());
 
         if ("D".equals(rowStatus)) {
             CmUtil.requireId(body.getDashboardItemId(), "dashboardItemId", this);

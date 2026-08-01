@@ -183,7 +183,7 @@ window.SySendMsgLogMng = {
         const target = uiState.activeTab === 'email' ? emailLogs : (uiState.activeTab === 'msg' ? msgLogs : alarmLogs);
         target.splice(0, target.length, ...list);
         baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGridPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(baseGridPager);
         tabCounts[uiState.activeTab] = baseGridPager.pageTotalCount;
         coUtil.cofBuildPagerNums(baseGridPager);
         expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]); allExpanded.value = false;

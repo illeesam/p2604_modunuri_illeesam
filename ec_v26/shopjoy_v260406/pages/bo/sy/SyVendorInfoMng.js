@@ -111,7 +111,7 @@ window.SyVendorInfoMng = {
         const data = res.data?.data;
         vendors.splice(0, vendors.length, ...(data?.pageList || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || vendors.length;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         fnBuildPagerNums(baseGridPager);
         uiState.error = null;
       } catch (err) {
@@ -180,7 +180,7 @@ window.SyVendorInfoMng = {
         const data = res.data?.data;
         m.rows.splice(0, m.rows.length, ...(data?.pageList || []));
         m.pager.pageTotalCount = data?.pageTotalCount || m.rows.length;
-        m.pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(m.pager.pageTotalCount / m.pager.pageSize) || 1;
+        m.pager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(m.pager);
         fnBuildPagerNums(m.pager);
       } catch (err) {
         console.error('[loadTabData]', tabId, err);

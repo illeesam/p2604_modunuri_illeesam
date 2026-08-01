@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.sch.handler;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
@@ -80,7 +81,7 @@ public class SySendEmailJob implements SchBatchJobHandler {
                 if (email == null || email.isBlank()) continue;
 
                 Map<String, Object> params = new HashMap<>();
-                params.put("name",        member.getMemberNm() != null ? member.getMemberNm() : "");
+                params.put("name",        CmUtil.nvlStr(member.getMemberNm()));
                 params.put("email",       email);
                 params.put("dormantDays", DORMANT_DAYS);
                 params.put("warnDays",    DORMANT_DAYS - DORMANT_WARN_DAYS);

@@ -317,8 +317,8 @@ window.PmCacheDtl = {
       { key: 'cacheTypeCd', label: '유형', badge: row => fnTypeBadge(row.cacheTypeCd) },
       { key: 'cacheAmt',   label: '금액',
         cellStyle: (v, row) => row.cacheAmt > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600',
-        fmt: (v, row) => (row.cacheAmt > 0 ? '+' : '') + (row.cacheAmt||0).toLocaleString() + '원' },
-      { key: 'balanceAmt', label: '잔액', fmt: v => (v||0).toLocaleString() + '원' },
+        fmt: (v, row) => (row.cacheAmt > 0 ? '+' : '') + coUtil.cofWon(row.cacheAmt) },
+      { key: 'balanceAmt', label: '잔액', fmt: v => coUtil.cofWon(v) },
       { key: 'cacheDesc',  label: '내용' },
     ];
 

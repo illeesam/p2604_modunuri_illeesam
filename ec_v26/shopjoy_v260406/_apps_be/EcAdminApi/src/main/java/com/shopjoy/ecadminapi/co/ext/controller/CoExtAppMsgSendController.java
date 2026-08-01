@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.ext.controller;
 
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmhPushLogRepository;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbDeviceTokenDto;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbDeviceTokenRepository;
@@ -28,9 +29,9 @@ public class CoExtAppMsgSendController {
     /** POST /api/co/ext/app-msg-send/send */
     @PostMapping("/send")
     public ResponseEntity<ApiResponse<Map<String, Object>>> send(@RequestBody Map<String, Object> body) {
-        String targetMode  = str(body, "targetMode");
-        String targetValue = str(body, "targetValue");
-        String title       = str(body, "title");
+        String targetMode  = CmUtil.mapStr(body, "targetMode");
+        String targetValue = CmUtil.mapStr(body, "targetValue");
+        String title       = CmUtil.mapStr(body, "title");
         @SuppressWarnings("unchecked")
         List<String> channels = (List<String>) body.getOrDefault("channels", List.of());
 
@@ -87,8 +88,8 @@ public class CoExtAppMsgSendController {
     /** GET /api/co/ext/app-msg-send/tokens */
     @GetMapping("/tokens")
     public ResponseEntity<ApiResponse<Map<String, Object>>> tokens(@RequestParam Map<String, Object> p) {
-        String platform = str(p, "platform");
-        String memberId = str(p, "memberId");
+        String platform = CmUtil.mapStr(p, "platform");
+        String memberId = CmUtil.mapStr(p, "memberId");
         int pageSize    = toInt(p.get("pageSize"), 20);
 
         List<MbDeviceTokenDto.Item> items = mbDeviceTokenRepository.findAll().stream()
@@ -126,9 +127,6 @@ public class CoExtAppMsgSendController {
     }
 
     // ── 유틸 ─────────────────────────────────────────────────────────────────
-    private static String str(Map<String, Object> m, String key) {
-        Object v = m.get(key); return v == null ? null : v.toString().strip();
-    }
 
     private static int toInt(Object v, int def) {
         if (v == null) return def;

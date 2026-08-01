@@ -221,7 +221,7 @@ public class CmUtil {
      * @param defaultValue value 가 null/empty 일 때 반환할 기본값
      * @return value 가 null/empty 면 defaultValue, 아니면 value
      */
-    public static String nvl(String value, String defaultValue) {
+    public static String nvlStr(String value, String defaultValue) {
         return (value == null || value.isEmpty()) ? defaultValue : value;
     }
 
@@ -231,8 +231,27 @@ public class CmUtil {
      * @param value 검사할 문자열
      * @return value 가 null/empty 면 "", 아니면 value
      */
-    public static String nvl(String value) {
-        return nvl(value, "");
+    public static String nvlStr(String value) {
+        return nvlStr(value, "");
+    }
+
+    /**
+     * Map 에서 문자열 값을 꺼낸다 — 값이 없으면 null, 있으면 {@code toString().strip()}.
+     *
+     * <p>{@code @RequestBody Map<String, Object>} 로 받은 외부 연동 요청(메일·SMS·카카오·푸시·AI 등)에서
+     * 항목을 꺼낼 때 쓴다. 값이 Integer/Boolean 으로 와도 문자열로 정규화된다.</p>
+     *
+     * <p><b>없는 키는 ""(빈 문자열) 가 아니라 null 로 돌려준다.</b> 호출부가 "값 미지정" 과
+     * "빈 값 지정" 을 구분해 필수값 검증({@code if (to == null) ...})에 쓰기 때문이다.
+     * "" 로 받고 싶으면 {@code nvlStr(mapStr(m, key))} 로 감쌀 것.</p>
+     *
+     * @param m   대상 Map (null 이면 null 반환)
+     * @param key 꺼낼 키
+     * @return 값의 문자열 표현(앞뒤 공백 제거). 키가 없거나 값이 null 이면 null
+     */
+    public static String mapStr(Map<String, Object> m, String key) {
+        Object v = (m == null) ? null : m.get(key);
+        return (v == null) ? null : v.toString().strip();
     }
 
     /**
@@ -257,23 +276,38 @@ public class CmUtil {
     }
 
     /**
-     * Integer null 치환.
+     * Integer 치환 — null 이거나 <b>0 이하면</b> 기본값.
+     *
+     * <p><b>주의: null 만 보는 게 아니라 0·음수도 기본값으로 바뀐다.</b>
+     * 페이징처럼 "값이 있고 1 이상일 때만 쓴다" 는 자리를 위한 것이다
+     * (pageNo 가 0 이면 {@code offset = (0-1)*pageSize} 로 음수가 되어 조회가 깨진다).</p>
+     *
+     * <p>따라서 <b>0 이 정상값인 자리에는 쓰지 말 것.</b> 예를 들어 할인액·조정액처럼
+     * 0 이 의미를 갖는 값에 {@code nvlInt(amt, 100)} 을 쓰면 0 이 조용히 100 이 된다.
+     * 그런 곳은 삼항으로 명시하거나 별도 헬퍼를 둔다.</p>
+     *
+     * <pre>
+     * // before
+     * int pageNo = search.getPageNo() != null &amp;&amp; search.getPageNo() &gt; 0 ? search.getPageNo() : 1;
+     * // after
+     * int pageNo = CmUtil.nvlInt(search.getPageNo(), 1);
+     * </pre>
      *
      * @param value        검사할 값
-     * @param defaultValue null 일 때 반환할 기본값
-     * @return value 가 null 이면 defaultValue, 아니면 value
+     * @param defaultValue null 또는 0 이하일 때 쓸 값
+     * @return value 가 1 이상이면 value, 아니면 defaultValue
      */
-    public static Integer nvlInt(Integer value, Integer defaultValue) {
-        return (value == null) ? defaultValue : value;
+    public static int nvlInt(Integer value, int defaultValue) {
+        return (value != null && value > 0) ? value : defaultValue;
     }
 
     /**
-     * Integer null 치환 (기본값 0).
+     * Integer 치환 (기본값 0) — null·0·음수 모두 0.
      *
      * @param value 검사할 값
-     * @return value 가 null 이면 0, 아니면 value
+     * @return value 가 1 이상이면 value, 아니면 0
      */
-    public static Integer nvlInt(Integer value) {
+    public static int nvlInt(Integer value) {
         return nvlInt(value, 0);
     }
 
@@ -339,6 +373,18 @@ public class CmUtil {
     public static <K, V> Map<K, V> nvlMap(Map<K, V> value) {
         return nvlMap(value, new HashMap<>());
     }
+
+    /**
+     * 문자열이 null 이거나 공백뿐인지.
+     *
+     * @param value 검사할 문자열
+     * @return null 또는 blank 면 true
+     */
+    public static boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+
 
     /** ID 타임스탬프 포맷 — yyMMddHHmmss(12자리). */
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");

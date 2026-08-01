@@ -47,7 +47,7 @@ window.StErpGenMng = {
         console.error('[fnLoadCodes]', err);
       }
     };
-    const targetMon = ref(new Date().toISOString().slice(0, 7));
+    const targetMon = ref(coUtil.cofToYm(new Date()));
     const slipType  = ref('정산');
 
     const orders = reactive([]);
@@ -101,7 +101,7 @@ window.StErpGenMng = {
         genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
         slipCnt: cfPreviewRows.value.length,
         totalAmt: cfPreviewRows.value.reduce((s, r) => s + r.debitAmt, 0),
-        genDate: new Date().toISOString().slice(0,10), status: '생성완료', regUserNm: '관리자',
+        genDate: coUtil.cofToYmd(new Date()), status: '생성완료', regUserNm: '관리자',
       });
       try {
         await boApiSvc.stErp.gen({ targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, '정산ERP생성', '저장');

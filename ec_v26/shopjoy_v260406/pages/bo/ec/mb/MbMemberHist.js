@@ -97,7 +97,7 @@ window.MbMemberHist = {
       { key: 'orderId', label: '주문ID', refLink: 'order' },
       { key: 'orderDate', label: '주문일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'prodNm', label: '상품' },
-      { key: 'totalPrice', label: '금액', fmt: (v) => (v || 0).toLocaleString() + '원' },
+      { key: 'totalPrice', label: '금액', fmt: (v) => coUtil.cofWon(v) },
       { key: 'statusCd', label: '상태' },
     ];
     // 클레임 그리드

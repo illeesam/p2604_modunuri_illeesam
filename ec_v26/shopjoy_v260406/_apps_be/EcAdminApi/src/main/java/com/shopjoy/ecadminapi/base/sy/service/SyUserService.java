@@ -197,9 +197,7 @@ public class SyUserService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank — userId 유무로 I/U 분기 후 그 분기 흐름 재사용 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getUserId() == null || entity.getUserId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getUserId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getUserId() == null)

@@ -233,7 +233,7 @@ window.DpDispUiPreview = {
     const uiState = reactive({ selectedLibId: null, previewGrid: 'grid1', viewportMode: 'desktop', dragOverIdx: -1, spanPopupIdx: -1});
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    const today   = new Date().toISOString().slice(0, 10);
+    const today   = coUtil.cofToYmd(new Date());
     const nowTime = new Date().toTimeString().slice(0, 5);
 
     /* ===== 검색조건 ===== */
@@ -349,8 +349,8 @@ window.DpDispUiPreview = {
             dispId: p.panelId, name: p.panelNm, area: areaCdById[p.areaId] || '',
             status: coUtil.cofPanelStatusLabel(p.dispPanelStatusCd),
             rows, sortOrder: i + 1, dispYn: 'Y', useYn: p.useYn,
-            useStartDate: String(p.useStartDate || '').slice(0, 10),
-            useEndDate: String(p.useEndDate || '').slice(0, 10),
+            useStartDate: coUtil.cofYmd(p.useStartDate),
+            useEndDate: coUtil.cofYmd(p.useEndDate),
             dispStartDt: '', dispEndDt: '', dispEnv: '',
             visibilityTargets: p.visibilityTargets || '',
             layoutType: 'grid', gridCols: 1, titleYn: 'N', title: '',

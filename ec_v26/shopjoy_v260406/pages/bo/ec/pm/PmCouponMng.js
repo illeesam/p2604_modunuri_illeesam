@@ -169,7 +169,7 @@ window.PmCouponMng = {
         const data = res.data?.data;
         coupons.splice(0, coupons.length, ...(data?.pageList || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
@@ -229,7 +229,7 @@ window.PmCouponMng = {
 
 
     /* discountLabel — 할인 라벨 */
-    const discountLabel = c => c.discountRate ? (c.discountRate||0) + '%' : (c.discountAmt||0).toLocaleString() + '원';
+    const discountLabel = c => c.discountRate ? (c.discountRate||0) + '%' : coUtil.cofWon(c.discountAmt);
 
     /* 쿠폰 fnStatusBadge */
     const _COUPON_STATUS_FB = { '활성': 'badge-green', '만료': 'badge-red', '비활성': 'badge-gray' };

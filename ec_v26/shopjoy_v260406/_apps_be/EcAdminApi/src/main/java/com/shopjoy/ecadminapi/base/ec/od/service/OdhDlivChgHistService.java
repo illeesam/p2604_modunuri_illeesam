@@ -138,9 +138,7 @@ public class OdhDlivChgHistService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-            rowStatus = (entity.getDlivChgHistId() == null || entity.getDlivChgHistId().isBlank()) ? "I" : "U";
-        }
+        rowStatus = entity.resolveRowStatus(entity.getDlivChgHistId());
 
         if ("D".equals(rowStatus)) {
             if (entity.getDlivChgHistId() == null)

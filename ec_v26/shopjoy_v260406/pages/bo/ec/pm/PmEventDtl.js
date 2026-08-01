@@ -372,7 +372,7 @@ window.PmEventDtl = {
       { key: 'productId', label: 'ID' },
       { key: 'prodNm',    label: '상품명', refLink: 'product', refKey: 'productId' },
       { key: 'category',  label: '카테고리' },
-      { key: 'price',     label: '가격', fmt: v => (v||0).toLocaleString() + '원' },
+      { key: 'price',     label: '가격', fmt: v => coUtil.cofWon(v) },
       { key: 'stock',     label: '재고', fmt: v => v + '개' },
       { key: 'status',    label: '상태' },
     ];

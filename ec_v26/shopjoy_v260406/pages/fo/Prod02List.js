@@ -136,7 +136,7 @@ window.Prod02List = {
         const rows = (res.data?.data?.pageList || []).map(p => assignImage({
           ...p,
           priceNum: p.price,
-          price: (p.price || 0).toLocaleString() + '원',
+          price: coUtil.cofWon(p.price),
         }));
         allProds.splice(0, allProds.length, ...rows);                 // 필터옵션 계산용: 현재 페이지 행
         /* 모바일 무한스크롤은 2페이지+ 누적, PC/첫페이지는 교체 (서버사이드 페이징) */
