@@ -28,6 +28,8 @@ window.SyAttachMng = {
     });
 
     const searchParam = reactive({ searchType: '', searchValue: '', attachGrpId: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
+    /* searchParamInit — [초기화] 기준값 (initPage 끝에서 스냅샷) */
+    const searchParamInit = {};
 
     /* -- 첨부그룹 -- */
     const grpForm = reactive({ attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
@@ -221,6 +223,7 @@ window.SyAttachMng = {
       await fnLoadCodes();
       await handleLoadGrps();
       await handleSearchData();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -229,7 +232,7 @@ window.SyAttachMng = {
 
     /* onReset — 초기화 */
     const onReset = () => {
-      Object.assign(searchParam, { attachGrpId: '', dateRangeStart: '', dateRangeEnd: '', dateRange: '' });
+      Object.assign(searchParam, searchParamInit);   // 검색어/검색대상까지 함께 초기화
       uiState.selectedGrpId = null;
       fileGridPager.pageNo = 1;
       handleSearchData();

@@ -22,7 +22,14 @@ window.SyPropMng = {
 
     const cfSiteId = computed(() => boCommonFilter?.siteId || null);
 
-    const searchParam = reactive({ searchType: '', searchValue: '', useFlt: '', typeFlt: '', profileFlt: '' }); // 검색조건
+    /* 검색조건 — 키 이름은 백엔드 파라미터명과 동일하게 둔다(그대로 펼쳐 보내기 위함) */
+    const searchParam = reactive({ searchType: '', searchValue: '', useYn: '', propTypeCd: '', propProfile: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 그대로 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 같은 값도 초기화 시 함께 복원된다.
+       ※ 순수 백업 저장소라 reactive 가 아니어도 된다. 재대입(=) 대신 Object.assign 을 쓴다 —
+          const 재대입은 TypeError 이고, searchParam 을 재대입하면 반응성이 끊긴다. */
+    const searchParamInit = {};
 
     const propRows  = reactive([]);                // 프로퍼티 그리드 행 (BoGridCrud 규약: _row_status N/I/U/D, _row_check, _row_org)
     const _rawProps = reactive([]);                // 원본 (reload 복원용)
@@ -40,14 +47,10 @@ window.SyPropMng = {
         return fetchData();
       // 검색조건 초기화 + 트리 선택 해제
       } else if (cmd === 'searchParam-reset') {
-        searchParam.searchValue = '';
-        searchParam.searchType = '';
-        searchParam.useFlt = '';
-        searchParam.typeFlt = '';
-        searchParam.profileFlt = '';
+        Object.assign(searchParam, searchParamInit);
         profileFltDisplay.value = '';
         uiState.selectedPath = '';
-        return reload();
+        return fetchData();   // reload() 는 이전 검색 결과를 다시 그릴 뿐이라 재조회한다
       // 프로퍼티 그리드 행 추가
       } else if (cmd === 'props-add') {
         return addRow();
@@ -125,17 +128,9 @@ window.SyPropMng = {
     /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (목록과 동일 검색조건 동기) */
     const handleLoadPathTreeNodeCounts = async () => {
       try {
-        const { searchType, searchValue, useFlt, typeFlt, profileFlt } = searchParam;
         // ⚠️ 목록(getPage)과 동일한 필터를 적용해야 트리 숫자 ↔ 우측 목록 건수가 일치한다.
         //    pathId 만 제외(트리는 경로별 분해 표시이므로 특정 경로로 고정하지 않음).
-        const params = {
-          ...(cfSiteId.value ? { siteId: cfSiteId.value }     : {}),
-          ...(searchValue    ? { searchValue }                : {}),
-          ...(searchType     ? { searchType }                 : {}),
-          ...(useFlt         ? { useYn: useFlt }               : {}),
-          ...(typeFlt        ? { propTypeCd: typeFlt }         : {}),
-          ...(profileFlt     ? { propProfile: profileFlt }     : {}),
-        };
+        const params = coUtil.cofOmitEmpty({ ...searchParam, siteId: cfSiteId.value });
         if (params.searchValue && !params.searchType) {
           params.searchType = 'pathId,propKey,propValue,propLabel';
         }
@@ -159,16 +154,9 @@ window.SyPropMng = {
       uiState.loading = true;
       try {
         if (!append) { uiState.pageNo = 1; uiState.hasMore = true; }
-        const { searchType, searchValue, useFlt, typeFlt, profileFlt } = searchParam;
         const params = {
           pageNo: uiState.pageNo, pageSize: PAGE_SIZE,
-          ...(cfSiteId.value          ? { siteId: cfSiteId.value }       : {}),
-          ...(uiState.selectedPath    ? { pathId: uiState.selectedPath } : {}),
-          ...(searchValue ? { searchValue }        : {}),
-          ...(searchType ? { searchType }        : {}),
-          ...(useFlt  ? { useYn: useFlt }         : {}),
-          ...(typeFlt ? { propTypeCd: typeFlt }   : {}),
-          ...(profileFlt ? { propProfile: profileFlt } : {}),
+          ...coUtil.cofOmitEmpty({ ...searchParam, siteId: cfSiteId.value, pathId: uiState.selectedPath }),
         };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'pathId,propKey,propValue,propLabel';
@@ -211,6 +199,7 @@ window.SyPropMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
       fetchData();
     };
     onMounted(initPage);
@@ -323,7 +312,7 @@ window.SyPropMng = {
 
     const onProfileSelectChange = (e) => {
       const val = e.target.value;
-      searchParam.profileFlt = val;
+      searchParam.propProfile = val;
       const opt = PROFILE_OPTIONS.find(o => o.value === val);
       profileFltDisplay.value = opt ? opt.label : val;
     };
@@ -333,7 +322,7 @@ window.SyPropMng = {
       profileFltDisplay.value = display;
       // 표시값이 'all; xxx' 형태면 실제 값 'xxx' 추출, 아니면 그대로
       const m = display.match(/^all;\s*(\S+)$/);
-      searchParam.profileFlt = m ? m[1] : display;
+      searchParam.propProfile = m ? m[1] : display;
     };
 
     /* fnFmtProfile — propProfile 컬럼 표시 변환
@@ -361,9 +350,9 @@ window.SyPropMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '420px' },
-      { key: 'typeFlt',    type: 'select', label: '타입',     options: () => codes.prop_types, nullLabel: '전체 타입' },
-      { key: 'profileFlt', type: 'slot', name: 'profileFlt', label: '프로파일' },
-      { key: 'useFlt',     type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+      { key: 'propTypeCd',    type: 'select', label: '타입',     options: () => codes.prop_types, nullLabel: '전체 타입' },
+      { key: 'propProfile', type: 'slot', name: 'propProfile', label: '프로파일' },
+      { key: 'useYn',     type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
     columns.baseGrid = [
@@ -417,11 +406,11 @@ window.SyPropMng = {
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam">
-      <template #profileFlt>
+      <template #propProfile>
         <label class="search-label">프로파일</label>
         <div style="display:flex;gap:4px;align-items:center;">
           <select class="form-control" style="width:130px;"
-            :value="searchParam.profileFlt"
+            :value="searchParam.propProfile"
             @change="onProfileSelectChange"
             @keyup.enter="handleBtnAction('searchParam-list')">
             <option value="">전체 환경</option>

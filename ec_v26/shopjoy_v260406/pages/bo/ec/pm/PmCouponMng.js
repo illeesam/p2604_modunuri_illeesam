@@ -34,7 +34,7 @@ window.PmCouponMng = {
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         baseGridPager.pageNo = 1;
         resetDetailToNew();
@@ -118,12 +118,11 @@ window.PmCouponMng = {
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 진입 시 빈 신규 폼(비활성). 행 선택/신규 시 active=true
 
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateRangeType: 'reg_date', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, couponStatusCd: '' };
-    };
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchType: '', searchValue: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '', couponStatusCd: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
     /* 쿠폰 handleDateRangeChange */
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
@@ -186,12 +185,16 @@ window.PmCouponMng = {
        코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
+      /* 검색조건 초기값 (계산이 필요한 항목) */
+      const today = new Date(); const thisYear = today.getFullYear();
+      Object.assign(searchParam, { dateRangeType: 'reg_date', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31` });
       await fnLoadCodes();
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
         searchParam.dateRangeStart = ''; searchParam.dateRangeEnd = '';
       }
       await handleSearchList('DEFAULT');
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

@@ -16,6 +16,7 @@ window.SyAlarmDtl = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
+    const modals = reactive({ isPathPickModal: false });   // 표시경로 선택 모달
     const uiState = reactive({ loading: false, error: null }); // UI 상태
     const codes = reactive({                       // 공통코드
       alarm_types: [], alarm_statuses: [], alarm_target_types: [],
@@ -30,7 +31,6 @@ window.SyAlarmDtl = {
       Object.assign(form, { alarmTypeCd: '푸시', targetTypeCd: '전체', alarmStatusCd: '임시' });
     };
     const errors = reactive({});                   // 폼 검증 에러
-    const pathPickModal = reactive({ show: false }); // 표시경로 선택 모달
 
     const schema = yup.object({                    // 폼 검증 스키마
       alarmTitle: yup.string().required('제목을 입력해주세요.'),
@@ -60,11 +60,11 @@ window.SyAlarmDtl = {
         return props.navigate('__cancelEdit__');
       // 표시경로 선택 모달 열기
       } else if (cmd === 'pathModal-open') {
-        pathPickModal.show = true;
+        modals.isPathPickModal = true;
         return;
       // 표시경로 선택 모달 닫기
       } else if (cmd === 'pathModal-close') {
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -77,7 +77,7 @@ window.SyAlarmDtl = {
       // 표시경로 선택 → form.pathId 갱신
       if (cmd === 'pathModal-pick') {
         form.pathId = param;
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -90,11 +90,11 @@ window.SyAlarmDtl = {
       console.log(' ■■ SyAlarmDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-path-pick') {
         if (result == null) {
-          pathPickModal.show = false;
+          modals.isPathPickModal = false;
           return;
         }
         form.pathId = result;
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
@@ -202,8 +202,10 @@ window.SyAlarmDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      form, errors, pathPickModal,                // 상태 / 데이터
+      form, errors, // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode,          // computed
     };
@@ -228,6 +230,6 @@ window.SyAlarmDtl = {
 </bo-container>
 <!-- ===== □. 폼 영역 ==================================================== -->
 <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
-<bo-cm-popup-modal v-if="pathPickModal.show" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_alarm' }" title="알림 표시경로 선택" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="modals.isPathPickModal" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_alarm' }" title="알림 표시경로 선택" :on-callback="fnCallbackModal" />
 `,
 };

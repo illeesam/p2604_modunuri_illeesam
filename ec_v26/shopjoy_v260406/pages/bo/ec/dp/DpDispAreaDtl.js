@@ -16,6 +16,7 @@ window.DpDispAreaDtl = {
 
     const { reactive, computed, onMounted, watch } = Vue;
     const { showToast, showConfirm } = window.boApp;
+    const modals = reactive({ isPathPickModal: false });
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ area_types: [], use_yn: [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] });
     const uis = reactive([]);                         // 상위 UI 목록 (select)
@@ -31,7 +32,6 @@ window.DpDispAreaDtl = {
       areaCd: yup.string().required('영역코드를 입력해주세요.'),
       areaNm: yup.string().required('영역명을 입력해주세요.'),
     });
-    const pathPickModal = reactive({ show: false });
 
     const cfIsNew    = computed(() => props.dtlId == null);
     const cfReadonly = computed(() => props.dtlMode === 'view');
@@ -44,7 +44,7 @@ window.DpDispAreaDtl = {
       if (cmd === 'baseForm-cancel')   return props.navigate('__cancelEdit__');
       if (cmd === 'baseForm-edit')     return props.navigate('__switchToEdit__');
       if (cmd === 'baseForm-close')    return props.navigate('__cancelEdit__');
-      if (cmd === 'pathModal-open')    { pathPickModal.show = true; return; }
+      if (cmd === 'pathModal-open')    { modals.isPathPickModal = true; return; }
       if (cmd === 'panels-goPanelMng') return props.navigate('dpDispPanelMng');
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
@@ -53,7 +53,7 @@ window.DpDispAreaDtl = {
     const fnCallbackModal = (popCmd, param, result) => {
       if (popCmd === 'cmPopup-path-pick') {
         if (result != null) baseForm.pathId = result;
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       }
       console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
@@ -173,9 +173,10 @@ window.DpDispAreaDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      uiState, codes, baseForm, errors, uis, panels, pathPickModal,
-      handleBtnAction, fnCallbackModal,
+      uiState, codes, baseForm, errors, uis, panels, handleBtnAction, fnCallbackModal,
       cfIsNew, cfReadonly,
     };
   },
@@ -208,7 +209,7 @@ window.DpDispAreaDtl = {
     </template>
   </div>
   <!-- ===== ■. 표시경로 선택 모달 ============================================ -->
-  <bo-cm-popup-modal v-if="pathPickModal.show" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_area' }" title="전시영역 표시경로 선택" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="modals.isPathPickModal" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_area' }" title="전시영역 표시경로 선택" :on-callback="fnCallbackModal" />
 </bo-container>
 `,
 };

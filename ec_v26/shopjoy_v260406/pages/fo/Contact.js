@@ -12,6 +12,7 @@ window.Contact = {
 
     const { reactive, computed, watch, onMounted } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
+    const modals = reactive({ isOrderModal: false });
     const uiState = reactive({ loading: false, error: null });
     /* config: props 우선, 없으면 window.SITE_CONFIG fallback (템플릿 config.tel/email/faqs 안전 접근) */
     const config = computed(() => (props.config && Object.keys(props.config).length ? props.config : (window.SITE_CONFIG || {})));
@@ -53,7 +54,7 @@ window.Contact = {
       console.log(' ■■ Contact.js : fnCallbackModal -> ', popCmd, param, result);
       // 주문 선택 공통팝업 (result==null: 닫기, result=주문행: 선택)
       if (popCmd === 'cmPopup-myMemberOrder-pick') {
-        orderModal.show = false;
+        modals.isOrderModal = false;
         if (result) form.orderNo = result.orderId;
         return;
       } else {
@@ -69,13 +70,12 @@ window.Contact = {
     ];
 
     /* ── 주문 선택 모달 (공통팝업 myMemberOrder — 항목 session_cond_field 로 본인 주문만) ── */
-    const orderModal = reactive({ show: false });
 
     /* openOrderModal — 모달 열기 (로그인 회원 전용) */
     const openOrderModal = () => {
       const u = window.foAuth?.state?.user;
       if (!u || !u.authId) { showToast('로그인 후 이용해주세요.', 'error'); return; }
-      orderModal.show = true;
+      modals.isOrderModal = true;
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
@@ -169,7 +169,9 @@ window.Contact = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      columns, config, contactSteps, orderModal, // 컬럼정의 / 사이트설정 / 처리절차 / 주문모달
+
+      modals,   // 모달 표시 상태 모음
+      columns, config, contactSteps, // 컬럼정의 / 사이트설정 / 처리절차 / 주문모달
       uiState, showToast,       // 상태
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       form, errors, // 폼
@@ -321,7 +323,7 @@ window.Contact = {
   </div>
   <!-- ===== ■. 주문 선택 모달 (공통팝업 — myMemberOrder 는 세션조건 로 본인 주문만) ==== -->
   <fo-cm-popup-modal popup-cmd="cmPopup-myMemberOrder-pick" popup-code="myMemberOrder"
-    :show="orderModal.show" :on-callback="fnCallbackModal" />
+    :show="modals.isOrderModal" :on-callback="fnCallbackModal" />
   <!-- ===== □. 주문 선택 모달 ============================================== -->
 </fo-page>
 <!-- ===== □.□. 연락처 + 처리절차 안내 ========================================== -->

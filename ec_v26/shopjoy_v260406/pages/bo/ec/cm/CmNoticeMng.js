@@ -23,12 +23,11 @@ window.CmNoticeMng = {
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [], date_range_opts: [] });
 
-    const _initSearchParam = () => {
-      const y = new Date().getFullYear();
-      return {
-        searchValue: '', type: '', status: '', dateRange: '', dateRangeStart: `${y - 3}-01-01`, dateRangeEnd: `${y}-12-31` };
-    };
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchValue: '', type: '', status: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* baseGrid — pager + 정렬 + 페이지 액션 캡슐 (수동) */
     const _sortMap = { nm: { asc: 'noticeTitle asc', desc: 'noticeTitle desc' },
@@ -101,7 +100,7 @@ window.CmNoticeMng = {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param) => {
       if (cmd === 'searchParam-list')  { baseGrid.pager.pageNo = 1; return handleSearchList(); }
-      if (cmd === 'searchParam-reset') { Object.assign(searchParam, _initSearchParam()); baseGrid.reset(); resetDetailToNew();
+      if (cmd === 'searchParam-reset') { Object.assign(searchParam, searchParamInit); baseGrid.reset(); resetDetailToNew();
       return handleSearchList(); }
       if (cmd === 'searchParam-dateRange') {
         boUtil.bofApplyDateRange(searchParam);
@@ -158,8 +157,12 @@ window.CmNoticeMng = {
        코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
+      /* 검색조건 초기값 (계산이 필요한 항목) */
+      const y = new Date().getFullYear();
+      Object.assign(searchParam, { dateRangeStart: `${y - 3}-01-01`, dateRangeEnd: `${y}-12-31` });
       await fnLoadCodes();
       await handleSearchList();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

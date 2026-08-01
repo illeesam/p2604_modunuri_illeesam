@@ -22,7 +22,6 @@ window.PdRestockNotiMng = {
     });
 
     /* ===== 검색조건 ===== */
-    /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -35,7 +34,7 @@ window.PdRestockNotiMng = {
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         baseGridPager.pageNo = 1;
         return handleSearchList();
       // 선택된 항목 알림 발송
@@ -71,8 +70,11 @@ window.PdRestockNotiMng = {
       }
     };
 
-    const _initSearchParam = () => ({ prodId: '', notiYn: '' });
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ prodId: '', notiYn: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* ===== 페이지네이션 ===== */
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -151,6 +153,7 @@ window.PdRestockNotiMng = {
     const initPage = async () => {
       await fnLoadCodes();
       await handleSearchList('DEFAULT');
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

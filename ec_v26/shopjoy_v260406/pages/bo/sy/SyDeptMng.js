@@ -19,7 +19,6 @@ window.SyDeptMng = {
     const codes = reactive({ dept_status: [], use_yn: [], dept_types: ['경영','운영','기술','마케팅','CS','물류','재무','인사','법무','기타'] });
 
     /* ===== 검색조건 ===== */
-    /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -31,7 +30,7 @@ window.SyDeptMng = {
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         return handleSearchList();
       // 부서 그리드 행 추가
       } else if (cmd === 'depts-add') {
@@ -128,10 +127,11 @@ window.SyDeptMng = {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
-    const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
-    };
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchType: '', searchValue: '', type: '', useYn: 'Y' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* ===== 좌측 부서 트리 ===== */
     const expanded = reactive(new Set([null]));
@@ -256,6 +256,7 @@ window.SyDeptMng = {
       await handleSearchTree();
       expanded.add(null);
       await handleGridSearch();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

@@ -28,7 +28,6 @@ window.SyCodeMng = {
       gridRows: [],
     });
 
-    /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -40,7 +39,7 @@ window.SyCodeMng = {
         return handleLoadAllGroups();
       // 검색조건 초기화 + 그룹/코드 상태 전체 리셋
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         uiState.grpSortKey = '';
         uiState.grpSortDir = 'asc';
         uiState.grpSelectedPath = '';
@@ -141,20 +140,11 @@ window.SyCodeMng = {
       }
     };
 
-    const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return {
-        searchType: '', searchValue: '',
-        grp: '', useYn: 'Y', dateRange: '',
-        dateRangeType: 'reg_date',
-        dateRangeStart: `${thisYear - 3}-01-01`,
-        dateRangeEnd:   `${thisYear}-12-31`,
-      };
-    };
 
-    const searchParam    = reactive(_initSearchParam()); // 검색조건
-    const searchParamOrg = reactive(_initSearchParam()); // 검색조건 초기값 보관
+    const searchParam    = reactive({ searchType: '', searchValue: '', grp: '', useYn: '',
+                                     dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '' }); // 검색조건
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다. */
+    const searchParamInit = {};
 
     const treeExpanded = reactive(new Set()); // 트리 펼친 노드 Set
     const parentOpts   = reactive([]);        // 상위코드 옵션
@@ -193,9 +183,17 @@ window.SyCodeMng = {
        코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
+      /* 검색조건 초기값 (계산이 필요한 항목) */
+      const today = new Date(); const thisYear = today.getFullYear();
+      Object.assign(searchParam, {
+        useYn: 'Y',
+        dateRangeType: 'reg_date',
+        dateRangeStart: `${thisYear - 3}-01-01`,
+        dateRangeEnd: `${thisYear}-12-31`,
+      });
       await fnLoadCodes();
       await handleLoadAllGroups();
-      Object.assign(searchParamOrg, searchParam);
+      Object.assign(searchParamInit, searchParam);
     };
     onMounted(initPage);
 

@@ -16,6 +16,7 @@ window.DpDispPanelDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const modals = reactive({ isCardPreview: false });
     const uiState = reactive({ libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy' });
     const tab = Vue.toRef(uiState, 'tab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
@@ -722,13 +723,12 @@ window.DpDispPanelDtl = {
     }));
 
     /* -- 패널미리보기 (카드) -- */
-    const cardPreview = reactive({ show: false });
 
     /* openCardPreview — 열기 */
-    const openCardPreview = () => { cardPreview.show = true; };
+    const openCardPreview = () => { modals.isCardPreview = true; };
 
     /* closeCardPreview — 닫기 */
-    const closeCardPreview = () => { cardPreview.show = false; };
+    const closeCardPreview = () => { modals.isCardPreview = false; };
     const cfCurrentAreaLabel = computed(() => {
       const found = areas.find(a => a.areaId === form.areaId);
       return found ? found.areaNm : (form.areaId || '');
@@ -1022,8 +1022,10 @@ window.DpDispPanelDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      pathPickModal, form, rows, codes, preview, cardPreview, pickData,         // 상태 / 데이터
+      pathPickModal, form, rows, codes, preview, pickData,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfIsNew, cfTabLabels, cfTabRowMap, cfActiveRowIdx, cfActiveRow, cfActiveTabLabel,         // computed
       cfDisplayRows, cfRelatedEvent, cfFileListItems, cfPreviewWidget, // computed
@@ -1943,7 +1945,7 @@ window.DpDispPanelDtl = {
     :widget="cfPreviewWidget" modal-name="disp-preview" :on-callback="fnCallbackModal" />
   <!-- ===== □. 위젯미리보기 모달 =============================================== -->
   <!-- ===== ■. 패널미리보기 오버레이 ============================================= -->
-  <bo-modal :show="cardPreview ? cardPreview.show : false" title="🖼 패널미리보기" width="520px" box-pad="0" @close="closeCardPreview">
+  <bo-modal :show="cardPreview ? modals.isCardPreview : false" title="🖼 패널미리보기" width="520px" box-pad="0" @close="closeCardPreview">
     <div>
       <!-- ===== ■.■.■. 카드 본문 =============================================== -->
       <div style="padding:24px;">

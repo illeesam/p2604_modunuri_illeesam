@@ -250,7 +250,9 @@ window.DpDispWidgetLibPreview = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
-    const initPage = async () => { handleSearchList();
+    const initPage = async () => {
+      handleSearchList();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -275,9 +277,9 @@ window.DpDispWidgetLibPreview = {
     /* wTypeLabel — w 유형 라벨 */
     const wTypeLabel = (v) => cfDispWidgetTypes.value.find(t => t.codeValue === v)?.codeLabel || v;
 
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: '', searchType: '', searchValue: ''});
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterCondition: '', filterAuthReq: '', filterAuthGrade: '', searchType: '', searchValue: ''});
+    /* searchParamInit — [초기화] 기준값 (initPage 끝에서 스냅샷) */
+    const searchParamInit = {};
 
     /* 적용된 조회 조건 스냅샷 — 검색조건 입력 즉시 filter 금지, [조회] 시점에만 반영 (UI/UX 검색 방식 정책) */
     const applied = reactive({ type: '', status: '활성', searchType: '', searchValue: '' });
@@ -294,7 +296,7 @@ window.DpDispWidgetLibPreview = {
 
     /* onReset — 초기화 */
     const onReset = () => {
-      Object.assign(searchParam, _initSearchParam());
+      Object.assign(searchParam, searchParamInit);
       Object.assign(applied, { type: '', status: '활성', searchType: '', searchValue: '' });
     resetCurrent();   // 검색 초기화 시 우측 미리보기도 비움
     };

@@ -16,6 +16,7 @@ window.SyUserDtl = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
+    const modals = reactive({ isAddrSearchModal: false, isDeptModal: false });   // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
     const uiState = reactive({ loading: false, error: null }); // UI 상태
     const codes = reactive({ active_statuses: [], user_roles: [] });                  // 공통코드
 
@@ -28,7 +29,6 @@ window.SyUserDtl = {
     });
     const errors = reactive({});                   // 폼 검증 에러
     const addrDetailRef = ref(null);               // 상세주소 input ref
-    const addrSearchModal = reactive({ show: false }); // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
 
     const schema = yup.object({                    // 폼 검증 스키마
       loginId:  yup.string().required('로그인ID를 입력해주세요.'),
@@ -41,7 +41,6 @@ window.SyUserDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용, 'new'/'edit' 이면 편집
 
     /* 부서 선택 팝업 */
-    const deptModal = reactive({ show: false });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -62,7 +61,7 @@ window.SyUserDtl = {
         return props.navigate('__cancelEdit__');
       // 주소 검색 모달 열기 (카카오 우편번호, 인라인 레이어)
       } else if (cmd === 'addr-search') {
-        addrSearchModal.show = true;
+        modals.isAddrSearchModal = true;
         return;
       // 주소 초기화
       } else if (cmd === 'addr-clear') {
@@ -71,7 +70,7 @@ window.SyUserDtl = {
         return;
       // 부서 선택 모달 열기
       } else if (cmd === 'deptModal-open') {
-        deptModal.show = true;
+        modals.isDeptModal = true;
         return;
       // 부서 선택 비우기
       } else if (cmd === 'deptModal-clear') {
@@ -93,14 +92,14 @@ window.SyUserDtl = {
     const fnCallbackModal = (popCmd, param, result) => {
       console.log(' ■■ SyUserDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-dept-pick') {
-        if (result == null) { deptModal.show = false; return; }
+        if (result == null) { modals.isDeptModal = false; return; }
         form.deptId = result.deptId;
         form.deptNm = result.deptNm;
-        deptModal.show = false;
+        modals.isDeptModal = false;
         return;
       // 주소검색 모달 콜백 → 우편번호/주소 반영
       } else if (popCmd === 'addr-search') {
-        addrSearchModal.show = false;
+        modals.isAddrSearchModal = false;
         if (result == null) { return; }
         form.zipcode = result.zonecode;
         form.address = result.address;
@@ -244,8 +243,10 @@ window.SyUserDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      form, errors, addrDetailRef, deptModal, addrSearchModal,                // 상태 / 데이터
+      form, errors, addrDetailRef, // 상태 / 데이터
       cfUserRoles,                                   // 역할 목록 (하단)
       handleBtnAction, handleSelectAction, fnCallbackModal,                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, // computed
@@ -328,9 +329,9 @@ window.SyUserDtl = {
 </bo-container>
 <!-- ===== □. 적용 역할 목록 ================================================ -->
 <!-- ===== ■. 부서 선택 팝업 ================================================ -->
-<bo-cm-popup-modal v-if="deptModal ? (deptModal.show) : false" popup-cmd="cmPopup-dept-pick" popup-code="dept" clearable :exclude-id="null" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="modals.isDeptModal" popup-cmd="cmPopup-dept-pick" popup-code="dept" clearable :exclude-id="null" :on-callback="fnCallbackModal" />
 <!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
-<bo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
+<bo-addr-search-modal v-if="modals.isAddrSearchModal" modal-name="addr-search" :on-callback="fnCallbackModal" />
 <!-- ===== □. 부서 선택 팝업 ================================================ -->
 `,
 };

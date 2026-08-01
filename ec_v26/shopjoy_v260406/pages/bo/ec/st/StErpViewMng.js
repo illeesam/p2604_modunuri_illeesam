@@ -14,8 +14,11 @@ window.StErpViewMng = {
     const codes = reactive({ erp_statuses: [], erp_voucher_types: [], erp_voucher_statuses: [], date_range_opts: [] });
     const slips = reactive([]);
 
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', erpVoucherTypeCd: '', erpVoucherStatusCd: '' });
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchType: '', searchValue: '', erpVoucherTypeCd: '', erpVoucherStatusCd: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
     boUtil.bofApplyDateRange(uiState, '이번달'); // 진입 시 기본 기간 적용
 
     /* baseGrid — pager + 페이지 액션 캡슐 (수동) */
@@ -40,7 +43,7 @@ window.StErpViewMng = {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param) => {
       if (cmd === 'searchParam-list')      { baseGrid.pager.pageNo = 1; return handleSearchList(); }
-      if (cmd === 'searchParam-reset')     { Object.assign(searchParam, _initSearchParam()); baseGrid.reset(); return handleSearchList(); }
+      if (cmd === 'searchParam-reset')     { Object.assign(searchParam, searchParamInit); baseGrid.reset(); return handleSearchList(); }
       if (cmd === 'searchParam-dateRange') { boUtil.bofApplyDateRange(uiState); baseGrid.pager.pageNo = 1; return; }
       if (cmd === 'slips-pager-setPage')   return baseGrid.setPage(param);
       console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -72,6 +75,7 @@ window.StErpViewMng = {
     const initPage = async () => {
       await fnLoadCodes();
       await handleSearchList();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

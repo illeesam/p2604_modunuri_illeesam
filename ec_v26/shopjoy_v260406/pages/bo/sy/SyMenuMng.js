@@ -20,7 +20,6 @@ window.SyMenuMng = {
     const codes = reactive({ menu_type: [], menu_status: [], use_yn: [], menu_types: ['페이지','폴더','외부링크','구분선'] });
 
     /* ===== 검색조건 ===== */
-    /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -32,7 +31,7 @@ window.SyMenuMng = {
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         return handleSearchList();
       // 메뉴 그리드 행 추가
       } else if (cmd === 'menus-add') {
@@ -119,10 +118,11 @@ window.SyMenuMng = {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
-    const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', menuTypeCd: '', useYn: 'Y' };
-    };
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchType: '', searchValue: '', menuTypeCd: '', useYn: 'Y' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* ===== CRUD 그리드 ===== */
     const gridRows   = reactive([]);
@@ -203,6 +203,7 @@ window.SyMenuMng = {
     const initPage = async () => {
       await fnLoadCodes();
       await handleSearchList('DEFAULT');
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

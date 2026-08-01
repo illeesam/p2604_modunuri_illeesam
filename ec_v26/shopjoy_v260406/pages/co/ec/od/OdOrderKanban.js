@@ -369,9 +369,9 @@ window.OdOrderKanban = {
 
     /* 검색 초기화 */
     const handleSearchReset = () => {
-      searchParam.orderId  = '';
-      searchParam.claimId  = '';
-      searchParam.memberNm = '';
+      /* 초기값이 currentOrderId 를 참조하므로 스냅샷 복원을 쓰면 안 된다
+         (아래에서 그 ref 를 null 로 만들기 전에 되살아난다). 빈 값으로 명시 초기화. */
+      Object.assign(searchParam, { orderId: '', claimId: '', memberNm: '' });
       currentOrderId.value = null;
       _ci.value = null;
       _oi.value = null;

@@ -123,12 +123,16 @@ window.Prod01List = {
       try {
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...(uiState.searchText   ? { searchValue: uiState.searchText }                : {}),
-          ...(uiState.priceMin     ? { priceMin: uiState.priceMin }            : {}),
-          ...(uiState.priceMax     ? { priceMax: uiState.priceMax }            : {}),
-          ...(selCats.size   > 0   ? { categoryIds: [...selCats].join(',') }   : {}),
-          ...(selColors.size > 0   ? { colors: [...selColors].join(',') }      : {}),
-          ...(selSizes.size  > 0   ? { sizes: [...selSizes].join(',') }        : {}),
+          /* 빈 값(''/null/undefined)은 cofOmitEmpty 가 걸러낸다.
+             숫자·Set 은 0/빈집합이 falsy 로 빠지도록 '' 로 맞춰 준다. */
+          ...coUtil.cofOmitEmpty({
+            searchValue: uiState.searchText,
+            priceMin:    uiState.priceMin || '',
+            priceMax:    uiState.priceMax || '',
+            categoryIds: selCats.size   ? [...selCats].join(',')   : '',
+            colors:      selColors.size ? [...selColors].join(',') : '',
+            sizes:       selSizes.size  ? [...selSizes].join(',')  : '',
+          }),
         };
         const res = await foApiSvc.pdProd.getPage(params, '상품목록', '목록조회');
         const d = res.data?.data || {};

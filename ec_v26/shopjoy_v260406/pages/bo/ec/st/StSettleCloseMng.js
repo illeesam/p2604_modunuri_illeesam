@@ -83,6 +83,10 @@ window.StSettleCloseMng = {
     };
 
     const searchParam = reactive({ searchType: '', searchValue: '', searchStatus: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* 적용된 검색조건 스냅샷 — 입력 즉시 filter 금지, [조회] 시점에만 반영 (UI/UX 검색 방식 정책) */
     const applied = reactive({ searchType: '', searchValue: '', searchStatus: '' });
@@ -97,6 +101,7 @@ window.StSettleCloseMng = {
         searchParam.searchValue = props.initSearchValue;
       }
       await handleSearchData('DEFAULT');
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -114,9 +119,7 @@ window.StSettleCloseMng = {
 
     /* onReset — 초기화 */
     const onReset = () => {
-      searchParam.searchType = '';
-      searchParam.searchValue = '';
-      searchParam.searchStatus = '';
+      Object.assign(searchParam, searchParamInit);
       onSearch();
     };
 

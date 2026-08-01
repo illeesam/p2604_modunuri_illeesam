@@ -17,7 +17,6 @@ window.SyI18nMng = {
     const uiState  = reactive({ selectedId: null }); // UI 상태
     const codes    = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
-    /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -30,7 +29,7 @@ window.SyI18nMng = {
         return handleSearchData();
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         baseGridPager.pageNo = 1;
         return handleSearchData();
       // 번역 메시지 저장
@@ -75,10 +74,11 @@ window.SyI18nMng = {
       }
     };
 
-    const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', scope: '', use: '' };
-    };
-    const searchParam = reactive(_initSearchParam()); // 검색조건
+    const searchParam = reactive({ searchType: '', searchValue: '', i18nScopeCd: '', useYn: '' }); // 검색조건
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
     const baseGridPager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const LANGS       = ['ko','en','ja','in']; // 지원 언어
@@ -93,13 +93,11 @@ window.SyI18nMng = {
     /* handleSearchData — 목록 조회 */
     const handleSearchData = async () => {
       try {
-        const { searchType, searchValue, scope, use } = searchParam;
+        /* searchParam 키를 백엔드 SyI18nDto.Request 필드명과 동일하게 두어 그대로 펼친다.
+           빈 값은 cofOmitEmpty 가 걸러낸다. */
         const params = {
           pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
-          ...(searchValue ? { searchValue: searchValue.trim() } : {}),
-          ...(searchType ? { searchType }      : {}),
-          ...(scope ? { i18nScopeCd: scope }     : {}),
-          ...(use   ? { useYn: use }             : {}),
+          ...coUtil.cofOmitEmpty({ ...searchParam, searchValue: (searchParam.searchValue || '').trim() }),
         };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'i18nKey,i18nDesc';
@@ -163,6 +161,7 @@ window.SyI18nMng = {
     const initPage = async () => {
       await fnLoadCodes();
       await handleSearchData();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -193,8 +192,8 @@ window.SyI18nMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'scope', type: 'select', label: '범위', options: () => codes.i18n_scopes, nullLabel: '전체' },
-      { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'i18nScopeCd', type: 'select', label: '범위', options: () => codes.i18n_scopes, nullLabel: '전체' },
+      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     // 기본 그리드

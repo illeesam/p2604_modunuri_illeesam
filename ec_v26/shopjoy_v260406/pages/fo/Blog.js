@@ -12,9 +12,11 @@ window.Blog = {
     const { reactive, computed, onMounted } = Vue;
     const uiState = reactive({ loading: false, error: null });
 
-    /* 검색조건: blogCateId='' = 전체, searchValue = 검색어 */
-    const _initSearchParam = () => ({ searchValue: '', blogCateId: '' });
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchValue: '', blogCateId: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* 카테고리 — 실 cm_blog_cate API 로 로드 ('전체' 가상 항목 prepend). blogCateId='' = 전체. blogCnt=글 수 */
     const categories = reactive([{ blogCateId: '', blogCateNm: '전체', blogCnt: 0 }]);
@@ -151,7 +153,7 @@ window.Blog = {
 
     /* onReset — 초기화 (검색어·카테고리 비우고 1페이지 재조회) */
     const onReset = async () => {
-      Object.assign(searchParam, _initSearchParam());
+      Object.assign(searchParam, searchParamInit);
       pager.pageNo = 1;
       await handleSearchList();
     };
@@ -170,6 +172,7 @@ window.Blog = {
       loadCategories();
       loadLatestPosts();
       handleSearchList();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

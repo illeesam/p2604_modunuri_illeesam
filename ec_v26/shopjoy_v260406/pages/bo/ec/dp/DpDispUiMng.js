@@ -17,8 +17,11 @@ window.DpDispUiMng = {
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ device_types: [], use_yn: [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] });
 
-    const _initSearchParam = () => ({ searchValue: '', deviceTypeCd: '', useYn: '' });
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchValue: '', deviceTypeCd: '', useYn: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* baseGrid — pager + 정렬 캡슐 (수동) */
     const _sortMap = { nm: { asc: 'uiNm asc', desc: 'uiNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -66,7 +69,7 @@ window.DpDispUiMng = {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param) => {
       if (cmd === 'searchParam-list')  { baseGrid.pager.pageNo = 1; return handleSearchList(); }
-      if (cmd === 'searchParam-reset') { Object.assign(searchParam, _initSearchParam()); baseGrid.reset(); resetDetailToNew(); return handleSearchList(); }
+      if (cmd === 'searchParam-reset') { Object.assign(searchParam, searchParamInit); baseGrid.reset(); resetDetailToNew(); return handleSearchList(); }
       if (cmd === 'uis-add')            return openDetailNew();
       if (cmd === 'baseDetail-close')   return resetDetailToNew();
       if (cmd === 'uis-sort')           return baseGrid.onSort(param);
@@ -109,6 +112,7 @@ window.DpDispUiMng = {
     const initPage = async () => {
       await fnLoadCodes();
       await handleSearchList();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

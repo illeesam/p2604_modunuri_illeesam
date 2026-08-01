@@ -14,6 +14,7 @@ window.PdProdMng = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const modals = reactive({ isCatModal: false, isOptCodeModal: false });   // 카테고리 선택 모달 상태
     const products = reactive([]);                 // 상품 목록 (메인 그리드 데이터)
     const vendors  = reactive([]);                 // 판매업체 목록 (검색조건 select)
     const mdUsers  = reactive([]);                 // 담당MD(관리자) 목록 (검색조건 select)
@@ -24,7 +25,6 @@ window.PdProdMng = {
     const SORT_MAP = { nm: { asc: 'prodNm asc', desc: 'prodNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
     /* ===== 검색조건 ===== */
-    /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -41,7 +41,7 @@ window.PdProdMng = {
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         baseGridPager.pageNo = 1;
         resetDetailToNew();
@@ -54,7 +54,7 @@ window.PdProdMng = {
         return openCatModal();
       // 카테고리 모달 닫기
       } else if (cmd === 'catModal-close') {
-        catModal.show = false;
+        modals.isCatModal = false;
         return;
       // 카테고리 선택 비우기
       } else if (cmd === 'searchParam-cateClear') {
@@ -126,7 +126,7 @@ window.PdProdMng = {
       console.log(' ■■ PdProdMng : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-category-pick') {
         if (result == null) {
-            catModal.show = false;
+            modals.isCatModal = false;
             return;
         }
         return onCatSelect(result);
@@ -134,23 +134,21 @@ window.PdProdMng = {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
-    const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return {
-        searchType: '', searchValue: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: `${thisYear - 3}-01-01`, dateRangeEnd: `${thisYear}-12-31`, cate: '', status: '',
-        prodTypeCd: props.fixedProdTypeCd || '',
-        vendorId: '',   // onMounted 에서 로그인 사용자의 소속 업체로 기본값 설정
-        mdUserId: '',   // onMounted 에서 로그인 사용자로 기본값 설정
-      };
-    };
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({
+      searchType: '', searchValue: '', dateRangeType: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '', cate: '', status: '',
+      prodTypeCd: '',
+      vendorId: '',   // initPage 에서 로그인 사용자의 소속 업체로 기본값 설정
+      mdUserId: '',   // initPage 에서 로그인 사용자로 기본값 설정
+    });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* ===== 페이지네이션 ===== */
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 카테고리 선택 모달 ===== */
-    const catModal = reactive({ show: false });    // 카테고리 선택 모달 상태
 
     /* ===== 상세 인라인 패널 ===== */
     const detailPanel = reactive({                 // 인라인 Dtl 패널 상태 (항상 표시, 진입 시 빈 신규 폼)
@@ -277,13 +275,13 @@ window.PdProdMng = {
     };
 
     /* openCatModal — 카테고리 모달 열기 */
-    const openCatModal = async () => { await handleSearchList('DEFAULT'); catModal.show = true; };
+    const openCatModal = async () => { await handleSearchList('DEFAULT'); modals.isCatModal = true; };
 
     /* onCatSelect — 카테고리 선택 */
     const onCatSelect = (cat) => {
       /* 트리에서 '선택 안함' 을 고르면 categoryNm 이 빈 값으로 와 검색조건이 비워진다 */
       searchParam.cate = (cat ? cat.categoryNm : '') || '';
-      catModal.show = false;
+      modals.isCatModal = false;
     };
 
     /* exportExcel — 엑셀 내보내기 */
@@ -346,6 +344,14 @@ window.PdProdMng = {
        코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
+      /* 검색조건 초기값 (계산이 필요한 항목) */
+      const today = new Date(); const thisYear = today.getFullYear();
+      Object.assign(searchParam, {
+        dateRangeType: 'reg_date',
+        dateRangeStart: `${thisYear - 3}-01-01`,
+        dateRangeEnd: `${thisYear}-12-31`,
+        prodTypeCd: props.fixedProdTypeCd || '',
+      });
       await fnLoadCodes();
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
@@ -353,6 +359,7 @@ window.PdProdMng = {
       }
       await Promise.all([fnLoadVendorsAndMdUsers(), fnApplyLoginDefaults()]);
       await handleSearchList('DEFAULT');
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -414,13 +421,14 @@ window.PdProdMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     /* 상품옵션코드관리 모달 (별도 창 대신 iframe 인라인 — bo-pd-opt-code-mng.html 재사용) */
-    const optCodeModal = reactive({ show: false });
-    const fnOpenOptCodeMng = () => { optCodeModal.show = true; };
+    const fnOpenOptCodeMng = () => { modals.isOptCodeModal = true; };
     const cfOptCodeMngUrl = computed(() => window.pageUrl('bo-pd-opt-code-mng.html'));
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      products, uiState, searchParam, baseGridPager, detailPanel, catModal, optCodeModal,       // 상태 / 데이터
+      products, uiState, searchParam, baseGridPager, detailPanel, // 상태 / 데이터
       cfOptCodeMngUrl,                                    // 외부URL 모달 경로 표시
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                        // computed
@@ -484,9 +492,9 @@ window.PdProdMng = {
   </bo-container>
   <!-- ===== □. 목록 ======================================================= -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
-  <bo-cm-popup-modal v-if="catModal ? (catModal.show) : false"
+  <bo-cm-popup-modal v-if="modals.isCatModal"
     popup-cmd="cmPopup-category-pick" popup-code="category" clearable
-    :on-callback="fnCallbackModal" @close="catModal.show = false" />
+    :on-callback="fnCallbackModal" @close="modals.isCatModal = false" />
   <!-- ===== □. 카테고리 선택 모달 ============================================== -->
   <!-- ===== ■. 하단 상세: ProdDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============== -->
   <pd-prod-dtl
@@ -501,8 +509,8 @@ window.PdProdMng = {
     />
   <!-- ===== □. 하단 상세: ProdDtl 임베드 ====================================== -->
   <!-- ===== ■. 상품옵션코드관리 모달 (bo-pd-opt-code-mng.html iframe 인라인) ============== -->
-  <bo-modal v-if="optCodeModal.show" title="⚙ 상품옵션코드관리" width="1100px" height="720px" body-pad="0"
-    @close="optCodeModal.show = false">
+  <bo-modal v-if="modals.isOptCodeModal" title="⚙ 상품옵션코드관리" width="1100px" height="720px" body-pad="0"
+    @close="modals.isOptCodeModal = false">
     <template #header-extra>
       <span style="font-size:11px;color:#bbb;">{{ cfOptCodeMngUrl }}</span>
     </template>

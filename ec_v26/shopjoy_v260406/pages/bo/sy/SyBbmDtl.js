@@ -16,6 +16,7 @@ window.SyBbmDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
 
+    const modals = reactive({ isPathPickModal: false });
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ bbm_types: [], bbm_comment_types: [], bbm_attach_types: [], bbm_content_types: [], bbm_scope_types: [], use_yn: [],
       allow_yn_opts: [{codeValue:'Y',codeLabel:'허용'},{codeValue:'N',codeLabel:'불가'}],
@@ -43,7 +44,6 @@ window.SyBbmDtl = {
     const errors = reactive({});
 
     /* ── 표시경로 모달 ── */
-    const pathPickModal = reactive({ show: false });
 
     const schema = yup.object({
       bbmCode: yup.string().required('게시판코드를 입력해주세요.'),
@@ -69,11 +69,11 @@ window.SyBbmDtl = {
         return props.navigate('__cancelEdit__');
       // 표시경로 picker 열기
       } else if (cmd === 'pathModal-open') {
-        pathPickModal.show = true;
+        modals.isPathPickModal = true;
         return;
       // 표시경로 picker 닫기
       } else if (cmd === 'pathModal-close') {
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -86,7 +86,7 @@ window.SyBbmDtl = {
       // 표시경로 모달에서 경로 선택 → form.pathId 갱신
       if (cmd === 'pathModal-pick') {
         form.pathId = param;
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -99,11 +99,11 @@ window.SyBbmDtl = {
       console.log(' ■■ SyBbmDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-path-pick') {
         if (result == null) {
-          pathPickModal.show = false;
+          modals.isPathPickModal = false;
           return;
         }
         form.pathId = result;
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
@@ -216,8 +216,10 @@ window.SyBbmDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      form, errors, pathPickModal,                // 상태 / 데이터
+      form, errors, // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode,          // computed
     };
@@ -236,7 +238,7 @@ window.SyBbmDtl = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <bo-cm-popup-modal v-if="pathPickModal.show" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_bbm' }" title="게시판 표시경로 선택" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="modals.isPathPickModal" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_bbm' }" title="게시판 표시경로 선택" :on-callback="fnCallbackModal" />
 </bo-container>
 <!-- ===== □. 조건부 영역 ================================================== -->
 `

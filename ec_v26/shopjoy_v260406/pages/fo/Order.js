@@ -12,6 +12,7 @@ window.Order = {
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const clearCart            = window.foApp.clearCart;  // 장바구니 비우기
     const cart                 = window.foApp.cart;  // 장바구니 목록
+    const modals = reactive({ isAddrSearchModal: false });   // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
     const uiState = reactive({ loading: false, error: null, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0 });
     const codes = reactive({
       dliv_req_opts: [
@@ -41,7 +42,7 @@ window.Order = {
         return props.navigate('contact');
       // 주소 검색 모달 열기 (카카오 우편번호, 인라인 레이어)
       } else if (cmd === 'form-openAddr') {
-        addrSearchModal.show = true;
+        modals.isAddrSearchModal = true;
         return;
       // 주문 제출
       } else if (cmd === 'form-submit') {
@@ -97,7 +98,7 @@ window.Order = {
         return applyShipCoupon(result);
       // 주소검색 모달 콜백 → 우편번호/주소 반영
       } else if (popCmd === 'addr-search') {
-        addrSearchModal.show = false;
+        modals.isAddrSearchModal = false;
         if (result == null) { return; }
         form.postcode = result.zonecode;
         form.address  = result.address;
@@ -219,7 +220,6 @@ window.Order = {
       name: '', tel: '', email: '',
       postcode: '', address: '', addressDetail: '', deliveryReq: ''
     });
-    const addrSearchModal = reactive({ show: false }); // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
 
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -310,8 +310,10 @@ window.Order = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      uiState, addrSearchModal,       // 상태
+      uiState, // 상태
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       form, errors, clearErr, // 폼
       cfOrderItems, cfCartTotal, cfTotalCouponDiscount, // computed - 주문
@@ -914,7 +916,7 @@ window.Order = {
   </div>
 </fo-modal>
 <!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
-<fo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
+<fo-addr-search-modal v-if="modals.isAddrSearchModal" modal-name="addr-search" :on-callback="fnCallbackModal" />
 </fo-page>
 <!-- ===== □. ══ 배송비 쿠폰 팝업 ══ ========================================= -->
 `

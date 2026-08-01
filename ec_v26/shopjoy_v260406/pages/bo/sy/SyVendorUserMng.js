@@ -183,9 +183,11 @@ window.SyVendorUserMng = {
       try {
         const params = {
           pageNo: vendorGridPager.pageNo, pageSize: vendorGridPager.pageSize,
-          ...(uiState.bizSearchValue ? { searchValue: uiState.bizSearchValue.trim() } : {}),
-          ...(uiState.bizSearchType  ? { searchType: uiState.bizSearchType }           : {}),
-          ...(uiState.bizVendorFlt   ? { vendorType: uiState.bizVendorFlt }            : {}),
+          ...coUtil.cofOmitEmpty({
+            searchValue: (uiState.bizSearchValue || '').trim(),
+            searchType:  uiState.bizSearchType,
+            vendorType:  uiState.bizVendorFlt,
+          }),
         };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'vendorNm,corpNo,vendorId';
@@ -306,9 +308,11 @@ window.SyVendorUserMng = {
       try {
         const params = {
           vendorId, pageNo: userGridPager.pageNo, pageSize: userGridPager.pageSize,
-          ...(uiState.userSearchValue ? { searchValue: uiState.userSearchValue.trim() } : {}),
-          ...(uiState.userSearchType  ? { searchType: uiState.userSearchType }         : {}),
-          ...(uiState.userStatusFlt   ? { status: uiState.userStatusFlt }              : {}),
+          ...coUtil.cofOmitEmpty({
+            searchValue: (uiState.userSearchValue || '').trim(),
+            searchType:  uiState.userSearchType,
+            status:      uiState.userStatusFlt,
+          }),
         };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'memberNm,vendorUserEmail,vendorUserMobile';

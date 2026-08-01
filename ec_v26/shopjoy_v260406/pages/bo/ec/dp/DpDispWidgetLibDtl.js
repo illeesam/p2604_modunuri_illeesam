@@ -16,6 +16,7 @@ window.DpDispWidgetLibDtl = {
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const modals = reactive({ isPathPickModal: false });
     const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
     const uiState = reactive({ loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickOpen: false, showComponentTooltip: false, jsonCopied: false });
     const previewMode = Vue.toRef(uiState, 'previewMode');
@@ -128,13 +129,12 @@ window.DpDispWidgetLibDtl = {
     // 코드 주입
 
     /* -- 표시경로 선택 모달 (sy_path, 다중) -- */
-    const pathPickModal = reactive({ show: false });
 
     /* openPathPick — 경로 선택 열기 (target: form 또는 usedPathIds idx) */
-    const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
+    const openPathPick = (target) => { pathPickModal.target = target; modals.isPathPickModal = true; };
 
     /* closePathPick — 경로 선택 닫기 */
-    const closePathPick = () => { pathPickModal.show = false; };
+    const closePathPick = () => { modals.isPathPickModal = false; };
 
     /* onPathPicked — 이벤트. target 이 숫자면 usedPathIds[idx], 아니면 form.pathId 변경 */
     const onPathPicked = (pathId) => {
@@ -702,8 +702,10 @@ window.DpDispWidgetLibDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      pathPickModal, codes, form, errors,         // 상태 / 데이터
+      codes, form, errors,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfDtlMode, cfIsNew, cfDisplayRows, cfFileListItems, // computed
       cfPreviewWidget, cfSampleJson, cfPreviewFrameWidth, // computed
@@ -918,7 +920,7 @@ window.DpDispWidgetLibDtl = {
   <!-- ===== □.□. 오른쪽: 위젯Lib미리보기 ======================================== -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <bo-cm-popup-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_widget_lib' }" title="위젯 표시경로 선택" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="modals.isPathPickModal" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'ec_disp_widget_lib' }" title="위젯 표시경로 선택" :on-callback="fnCallbackModal" />
   <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
 `

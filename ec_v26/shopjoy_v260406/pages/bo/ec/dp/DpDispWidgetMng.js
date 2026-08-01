@@ -78,7 +78,6 @@ window.DpDispWidgetMng = {
     });
     const openTopNodes = reactive(new Set(['Image', 'Product', 'Text', 'Promo', 'Etc']));
 
-    /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -91,7 +90,7 @@ window.DpDispWidgetMng = {
         return handleSearchData('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedType = null;
         listGridPager.pageNo = 1;
@@ -106,7 +105,7 @@ window.DpDispWidgetMng = {
       // 좌측 위젯유형 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
         uiState.selectedType = null;
-        searchParam.type = '';
+        searchParam.widgetTypeCd = '';
         listGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 정렬 헤더 클릭
@@ -154,14 +153,17 @@ window.DpDispWidgetMng = {
       }
     };
 
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchType: '', searchValue: '', widgetTypeCd: '', useYn: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
     /* applied: 결과에 실제 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
-    const applied = reactive({ type: '', status: '' });
+    const applied = reactive({ widgetTypeCd: '', useYn: '' });
     const cfFilterDirty = computed(() =>
       searchParam.searchValue !== applied.searchValue ||
-      searchParam.type !== applied.type ||
-      searchParam.status !== applied.status
+      searchParam.widgetTypeCd !== applied.widgetTypeCd ||
+      searchParam.useYn !== applied.useYn
     );
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -227,15 +229,17 @@ window.DpDispWidgetMng = {
     const handleSearchData = async () => {
       uiState.loading = true;
       try {
-        const { type, status, searchType, searchValue } = searchParam;
-        /* dp_widget (실제 배치된 위젯 인스턴스) — 메인 데이터 */
+        /* dp_widget (실제 배치된 위젯 인스턴스) — 메인 데이터
+           searchParam 키는 백엔드 DpWidgetDto.Request 필드명과 같게 맞춰 두어 그대로 펼친다. */
+        /* 화면 키(type/status) → 백엔드 필드(widgetTypeCd/useYn) 매핑은 여기 한 곳에만 둔다. */
+        /* searchParam 키를 백엔드 DpWidgetDto.Request 필드명과 동일하게 두어 그대로 펼친다. */
         const widgetParams = {
           pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize,
           ...getSortParam(),
-          ...(searchValue ? { searchValue: searchValue.trim() } : {}),
-          ...(searchType ? { searchType }                     : {}),
-          ...(type   ? { widgetTypeCd: type } : {}),  /* 백엔드 DpWidgetDto.Request.widgetTypeCd */
-          ...(status ? { useYn: status }       : {}),
+          ...coUtil.cofOmitEmpty({
+            ...searchParam,
+            searchValue: (searchParam.searchValue || '').trim(),
+          }),
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (widgetParams.searchValue && !widgetParams.searchType) {
@@ -246,7 +250,7 @@ window.DpDispWidgetMng = {
         let rows = dW?.pageList || dW?.list || [];
         /* 복수 유형 선택(chart류) — 서버가 단일 type만 지원하므로 클라이언트 후필터 */
         const selTypes = uiState.selectedType;
-        if (Array.isArray(selTypes) && selTypes.length > 1 && !searchParam.type) {
+        if (Array.isArray(selTypes) && selTypes.length > 1 && !searchParam.widgetTypeCd) {
           rows = rows.filter(w => selTypes.includes(w.widgetTypeCd));
         }
         widgets.splice(0, widgets.length, ...rows);
@@ -255,8 +259,8 @@ window.DpDispWidgetMng = {
         coUtil.cofBuildPagerNums(listGridPager);
         /* 결과에 반영된 조건 기록 */
         applied.searchValue = searchParam.searchValue;
-        applied.type        = searchParam.type;
-        applied.status      = searchParam.status;
+        applied.widgetTypeCd        = searchParam.widgetTypeCd;
+        applied.useYn      = searchParam.useYn;
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -274,6 +278,7 @@ window.DpDispWidgetMng = {
       await fnLoadCodes();
       fnLoadAllTypeCounts();   // 트리 카운트: 필터 무관 전체 1회 로드
       await handleSearchData('DEFAULT');
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -376,7 +381,7 @@ window.DpDispWidgetMng = {
 
 
     /* 적용 필터 없음 여부 (template 속성값 && 금지 회피용) */
-    const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
+    const cfNoFilter = computed(() => !applied.searchValue && !applied.widgetTypeCd && !applied.useYn);
 
     /* fnRowStyle — 행 스타일 */
     const fnRowStyle = (row) => (detailPanel.selectedId === row.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;';
@@ -398,9 +403,9 @@ window.DpDispWidgetMng = {
       uiState.selectedType = types;
       /* 서버는 단일 widgetTypeCd만 지원 — 단일이면 서버 필터, 복수(chart류)면 서버 전체조회 후 클라이언트 후필터 */
       if (Array.isArray(types) && types.length === 1) {
-        searchParam.type = types[0];
+        searchParam.widgetTypeCd = types[0];
       } else {
-        searchParam.type = '';          // 서버는 전체 조회 — handleSearchData에서 후필터
+        searchParam.widgetTypeCd = '';          // 서버는 전체 조회 — handleSearchData에서 후필터
       }
       listGridPager.pageNo = 1;
       resetDetailToNew();
@@ -434,8 +439,8 @@ window.DpDispWidgetMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '130px' },
       { key: 'searchValue', type: 'text',   label: '검색어',    placeholder: '검색어 입력', width: '200px' },
-      { key: 'type',        type: 'select', label: '위젯 유형', options: () => codes.disp_widget_types, nullLabel: '전체' },
-      { key: 'status',      type: 'select', label: '상태',      options: () => codes.active_statuses,   nullLabel: '전체' },
+      { key: 'widgetTypeCd',        type: 'select', label: '위젯 유형', options: () => codes.disp_widget_types, nullLabel: '전체' },
+      { key: 'useYn',      type: 'select', label: '상태',      options: () => codes.active_statuses,   nullLabel: '전체' },
     ];
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
@@ -551,11 +556,11 @@ window.DpDispWidgetMng = {
         <span v-if="applied.searchValue" style="font-size:11px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
           검색: {{ applied.searchValue }}
         </span>
-        <span v-if="applied.type" style="font-size:11px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
-          유형: {{ wTypeLabel(applied.type) }}
+        <span v-if="applied.widgetTypeCd" style="font-size:11px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
+          유형: {{ wTypeLabel(applied.widgetTypeCd) }}
         </span>
-        <span v-if="applied.status" style="font-size:11px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
-          상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
+        <span v-if="applied.useYn" style="font-size:11px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
+          상태: {{ applied.useYn === 'Y' ? '활성' : '비활성' }}
         </span>
         <button @click="handleBtnAction('widgets-add')" class="btn btn_new" style="margin-left:auto;height:30px;padding:0 14px;">
           + 신규등록

@@ -16,6 +16,7 @@ window.SySiteDtl = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
+    const modals = reactive({ isPathPickModal: false, isAddrSearchModal: false });   // 표시경로 picker 모달  주소검색 모달 (카카오 우편번호, 인라인 레이어)
     const uiState = reactive({ loading: false, error: null }); // UI 상태
     const codes = reactive({                       // 공통코드 / 정적 옵션
       site_oper_statuses: [],
@@ -32,8 +33,6 @@ window.SySiteDtl = {
     });
     const errors = reactive({});                   // 폼 검증 에러
     const addrDetailRef = ref(null);               // 상세주소 input ref
-    const pathPickModal = reactive({ show: false });  // 표시경로 picker 모달
-    const addrSearchModal = reactive({ show: false }); // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
 
     const schema = yup.object({                    // 폼 검증 스키마
       siteCode: yup.string().required('사이트코드를 입력해주세요.'),
@@ -63,7 +62,7 @@ window.SySiteDtl = {
         return props.navigate('__cancelEdit__');
       // 주소 검색 모달 열기 (카카오 우편번호, 인라인 레이어)
       } else if (cmd === 'addr-search') {
-        addrSearchModal.show = true;
+        modals.isAddrSearchModal = true;
         return;
       // 주소 초기화
       } else if (cmd === 'addr-clear') {
@@ -72,7 +71,7 @@ window.SySiteDtl = {
         return;
       // 표시경로 picker 열기
       } else if (cmd === 'pathModal-open') {
-        pathPickModal.show = true;
+        modals.isPathPickModal = true;
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -83,13 +82,13 @@ window.SySiteDtl = {
     const fnCallbackModal = (popCmd, param, result) => {
       console.log(' ■■ SySiteDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-path-pick') {
-        if (result == null) { pathPickModal.show = false; return; }
+        if (result == null) { modals.isPathPickModal = false; return; }
         form.pathId = result;
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       // 주소검색 모달 콜백 → 우편번호/주소 반영
       } else if (popCmd === 'addr-search') {
-        addrSearchModal.show = false;
+        modals.isAddrSearchModal = false;
         if (result == null) { return; }
         form.siteZipCode = result.zonecode;
         form.siteAddress = result.address;
@@ -213,8 +212,10 @@ window.SySiteDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      form, errors, pathPickModal, addrSearchModal,               // 상태 / 데이터
+      form, errors, // 상태 / 데이터
       handleBtnAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode, // computed
     };
@@ -251,8 +252,8 @@ window.SySiteDtl = {
   </bo-form-area>
 </bo-container>
 <!-- ===== ■. 표시경로 선택 모달 (형제 루트 — Vue3 fragment) ============================ -->
-<bo-cm-popup-modal v-if="pathPickModal.show" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_site' }" title="사이트 표시경로 선택" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="modals.isPathPickModal" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_site' }" title="사이트 표시경로 선택" :on-callback="fnCallbackModal" />
 <!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
-<bo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
+<bo-addr-search-modal v-if="modals.isAddrSearchModal" modal-name="addr-search" :on-callback="fnCallbackModal" />
 `,
 };

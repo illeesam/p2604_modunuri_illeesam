@@ -29,7 +29,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
         baseGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         baseGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
@@ -125,6 +125,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const initPage = async () => {
       await fnLoadCodes();
       await handleSearchData('DEFAULT');
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -136,9 +137,11 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const form = reactive({});
     const errors = reactive({});
 
-    /* 정산 기타 조정 _initSearchParam */
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', etcAdjTypeCd: '', status: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchType: '', searchValue: '', etcAdjTypeCd: '', status: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* openNew — 신규 열기 */
     const openNew = () => {

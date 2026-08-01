@@ -30,7 +30,7 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
@@ -85,9 +85,11 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
 
     const recons = reactive([]);
 
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ reconStatusCd: '', reconTypeCd: '' });
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ reconStatusCd: '', reconTypeCd: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfSummary = computed(() => ({
@@ -123,6 +125,7 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
     const initPage = async () => {
       await fnLoadCodes();
       await handleSearchList('DEFAULT');
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

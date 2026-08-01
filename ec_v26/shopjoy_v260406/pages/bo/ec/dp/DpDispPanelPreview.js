@@ -349,6 +349,7 @@ window.DpDispPanelPreview = {
     const initPage = async () => {
       await fnLoadCodes();
       await handleSearchData();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -373,9 +374,11 @@ window.DpDispPanelPreview = {
     /* wTypeLabel — w 유형 라벨 */
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', searchType: '', searchValue: ''});
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ previewDate: today, previewTime: nowTime, filterType: '', filterStatus: '활성', filterVisibility: '', filterDispEnv: 'PROD', searchType: '', searchValue: ''});
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchType: '', searchValue: '' });
 
@@ -393,7 +396,7 @@ window.DpDispPanelPreview = {
 
     /* onReset — 초기화 */
     const onReset = () => {
-      Object.assign(searchParam, _initSearchParam());
+      Object.assign(searchParam, searchParamInit);
       Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', visibility: '', searchType: '', searchValue: '' });
     onResetCurrent();   // 검색 초기화 시 우측 미리보기도 비움
     };

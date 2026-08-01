@@ -236,16 +236,11 @@ window.DpDispUiPreview = {
     const today   = coUtil.cofToYmd(new Date());
     const nowTime = new Date().toTimeString().slice(0, 5);
 
-    /* ===== 검색조건 ===== */
-    const searchParam = reactive({
-      previewDate: today,
-      previewTime: nowTime,
-      filterType: '',
-      filterStatus: '활성',
-      filterVisibility: '',
-      filterDispEnv: 'PROD',
-      searchType: '',
-      searchValue: ''});
+    const searchParam = reactive({ previewDate: '', previewTime: '', filterType: '', filterStatus: '', filterVisibility: '', filterDispEnv: '', searchType: '', searchValue: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', searchType: '', searchValue: '', visibility: '' });
 
@@ -364,8 +359,10 @@ window.DpDispUiPreview = {
        코드 응답을 받은 뒤 초기 조회를 시작한다 — 코드 기반 select·라벨·기본값이
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
+      Object.assign(searchParam, { previewDate: today, previewTime: nowTime, filterStatus: '활성', filterDispEnv: 'PROD' });
       await fnLoadCodes();
       await handleSearchList();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -401,14 +398,7 @@ window.DpDispUiPreview = {
 
     /* onReset — 초기화 */
     const onReset = () => {
-      searchParam.previewDate = today;
-      searchParam.previewTime = nowTime;
-      searchParam.filterType = '';
-      searchParam.filterStatus = '활성';
-      searchParam.filterDispEnv = 'PROD';
-      searchParam.filterVisibility = '';
-      searchParam.searchType = '';
-      searchParam.searchValue = '';
+      Object.assign(searchParam, searchParamInit);
       Object.assign(applied, { type: '', status: '활성', dispEnv: 'PROD', searchType: '', searchValue: '', visibility: '' });
     resetCurrent();   // 검색 초기화 시 우측 미리보기도 비움
     };

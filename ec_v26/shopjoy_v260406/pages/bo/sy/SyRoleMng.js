@@ -35,7 +35,6 @@ window.SyRoleMng = {
     const menuChecked = reactive(new Set());
 
     /* ===== 검색조건 ===== */
-    /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -47,7 +46,7 @@ window.SyRoleMng = {
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         return handleSearchList();
       // 역할 그리드 저장
@@ -223,10 +222,11 @@ window.SyRoleMng = {
       }
     };
 
-    const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y', cat: '', treeCatFilter: '' };
-    };
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchType: '', searchValue: '', type: '', useYn: 'Y', cat: '', treeCatFilter: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* ===== CRUD 그리드 ===== */
     const gridRows   = reactive([]);  // 트리 평면화 + 편집 상태 포함 행
@@ -371,6 +371,7 @@ window.SyRoleMng = {
       const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       await handleSearchList('DEFAULT');
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

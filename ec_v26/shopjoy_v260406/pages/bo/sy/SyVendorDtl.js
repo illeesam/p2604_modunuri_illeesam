@@ -16,6 +16,7 @@ window.SyVendorDtl = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
+    const modals = reactive({ isAddrSearchModal: false });   // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
     const uiState = reactive({ loading: false, error: null }); // UI 상태
     const codes = reactive({ active_statuses: [], vendor_type_kr: [] });              // 공통코드
 
@@ -26,7 +27,6 @@ window.SyVendorDtl = {
     });
     const errors = reactive({});                   // 폼 검증 에러
     const addrDetailRef = ref(null);               // 상세주소 input ref
-    const addrSearchModal = reactive({ show: false }); // 주소검색 모달 (카카오 우편번호, 인라인 레이어)
 
     const schema = yup.object({                    // 폼 검증 스키마
       vendorNm: yup.string().required('업체명을 입력해주세요.'),
@@ -56,7 +56,7 @@ window.SyVendorDtl = {
         return props.navigate('__cancelEdit__');
       // 주소 검색 모달 열기 (카카오 우편번호, 인라인 레이어)
       } else if (cmd === 'addr-search') {
-        addrSearchModal.show = true;
+        modals.isAddrSearchModal = true;
         return;
       // 주소 초기화
       } else if (cmd === 'addr-clear') {
@@ -72,7 +72,7 @@ window.SyVendorDtl = {
     const fnCallbackModal = (popCmd, param, result) => {
       console.log(' ■■ SyVendorDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'addr-search') {
-        addrSearchModal.show = false;
+        modals.isAddrSearchModal = false;
         if (result == null) { return; }
         form.vendorZipCode = result.zonecode;
         form.vendorAddr = result.address;
@@ -183,8 +183,10 @@ window.SyVendorDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      form, errors, addrDetailRef, addrSearchModal,                // 상태 / 데이터
+      form, errors, addrDetailRef, // 상태 / 데이터
       handleBtnAction, fnCallbackModal,                                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, // computed
     };
@@ -230,7 +232,7 @@ window.SyVendorDtl = {
   <!-- ===== □.□. 폼 영역 ================================================== -->
 </bo-container>
 <!-- ===== ■. 주소 검색 모달 (카카오 우편번호, 인라인 레이어) ============================ -->
-<bo-addr-search-modal v-if="addrSearchModal.show" modal-name="addr-search" :on-callback="fnCallbackModal" />
+<bo-addr-search-modal v-if="modals.isAddrSearchModal" modal-name="addr-search" :on-callback="fnCallbackModal" />
 <!-- ===== □. 컨테이너 영역 =================================================== -->
 `,
 };

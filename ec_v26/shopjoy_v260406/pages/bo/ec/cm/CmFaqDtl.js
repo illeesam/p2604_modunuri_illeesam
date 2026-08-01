@@ -16,6 +16,7 @@ window.CmFaqDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
 
+    const modals = reactive({ isPathPickModal: false });
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ use_yn: [] });
 
@@ -37,7 +38,6 @@ window.CmFaqDtl = {
     const errors = reactive({});
 
     /* ── 표시경로 모달 ── */
-    const pathPickModal = reactive({ show: false });
 
     const schema = yup.object({
       faqQuestion: yup.string().required('질문을 입력해주세요.'),
@@ -57,10 +57,10 @@ window.CmFaqDtl = {
       } else if (cmd === 'form-close') {
         return props.navigate('__cancelEdit__');
       } else if (cmd === 'pathModal-open') {
-        pathPickModal.show = true;
+        modals.isPathPickModal = true;
         return;
       } else if (cmd === 'pathModal-close') {
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -72,7 +72,7 @@ window.CmFaqDtl = {
       console.log(' ■■ CmFaqDtl.js : handleSelectAction -> ', cmd, param);
       if (cmd === 'pathModal-pick') {
         form.pathId = param;
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -83,9 +83,9 @@ window.CmFaqDtl = {
     const fnCallbackModal = (popCmd, param, result) => {
       console.log(' ■■ CmFaqDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-path-pick') {
-        if (result == null) { pathPickModal.show = false; return; }
+        if (result == null) { modals.isPathPickModal = false; return; }
         form.pathId = result;
-        pathPickModal.show = false;
+        modals.isPathPickModal = false;
         return;
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
@@ -187,9 +187,10 @@ window.CmFaqDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+
+      modals,   // 모달 표시 상태 모음
       columns,
-      form, errors, pathPickModal,
-      handleBtnAction, handleSelectAction, fnCallbackModal,
+      form, errors, handleBtnAction, handleSelectAction, fnCallbackModal,
       cfIsNew, cfDtlMode, cfAttachRefId,
       showToast,
     };
@@ -227,7 +228,7 @@ window.CmFaqDtl = {
     </template>
   </div>
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
-  <bo-cm-popup-modal v-if="pathPickModal.show" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'cm_faq' }" title="FAQ 분류(표시경로) 선택" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal v-if="modals.isPathPickModal" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'cm_faq' }" title="FAQ 분류(표시경로) 선택" :on-callback="fnCallbackModal" />
 </bo-container>
 `
 };

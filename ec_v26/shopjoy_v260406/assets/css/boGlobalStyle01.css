@@ -399,8 +399,10 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .tab-ctx-sep { height: 1px; background: #f0f0f0; margin: 3px 0; }
 
 /* ── 좌측 열린 화면 목록 (하단 고정) ── */
-.left-nav-open-section { border-top: 1px solid #f0f0f0; background: #fafafa; flex-shrink: 0; max-height: calc(100vh - 240px); display: flex; flex-direction: column; }
-.left-nav-open-list { flex: 1; overflow-y: auto; min-height: 0; }
+/* 열린화면·즐겨찾기 목록 — 항목이 늘어도 최대 10개(28px x 10)만 보이고 나머지는 스크롤.
+   예전엔 max-height: calc(100vh - 240px) 라 화면을 많이 열면 좌측 메뉴 대부분을 덮었다. */
+.left-nav-open-section { border-top: 1px solid #f0f0f0; background: #fafafa; flex-shrink: 0; display: flex; flex-direction: column; }
+.left-nav-open-list { flex: 1; overflow-y: auto; min-height: 0; max-height: 280px; }
 .left-nav-open-item { display: flex; align-items: center; padding: 5px 10px 5px 14px; font-size: 11px; color: #999; cursor: pointer; white-space: nowrap; overflow: hidden; gap: 1px; transition: background .1s, color .1s; border-left: 2px solid transparent; }
 .left-nav-open-item:hover { background: #fff0f4; color: #e8587a; border-left-color: #f9c0cf; }
 .left-nav-open-item.active { color: #e8587a; font-weight: 700; background: #fff5f7; border-left-color: #e8587a; }

@@ -17,7 +17,6 @@ window.MbMemGroupMng = {
     const codes = reactive({ use_yn: [] }); // 공통코드
 
     /* ===== 검색조건 ===== */
-    /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -29,7 +28,7 @@ window.MbMemGroupMng = {
         return handleSearchList();
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
+        Object.assign(searchParam, searchParamInit);
         return handleSearchList();
       // 회원그룹 그리드 저장
       } else if (cmd === 'groups-save') {
@@ -71,8 +70,11 @@ window.MbMemGroupMng = {
       }
     };
 
-    const _initSearchParam = () => ({ searchValue: '', useYn: '' });
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ searchValue: '', useYn: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* ===== CRUD 그리드 ===== */
     const groups = reactive([]);                   // 회원그룹 목록 (CRUD 그리드 데이터)
@@ -207,6 +209,7 @@ window.MbMemGroupMng = {
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
       handleSearchList();
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 

@@ -128,14 +128,11 @@ window.PdCategoryMng = {
       }
     };
 
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({
-      siteId: (window.boCommonFilter && window.boCommonFilter.siteId)
-              || window.sfGetBoAppStore?.()?.svBoSiteId
-              || (window._boCmSites?.[0]?.siteId)
-              || '2604010000000001', categoryDepth: '', categoryStatusCd: ''
-    });
-    const searchParam = reactive(_initSearchParam());
+    const searchParam = reactive({ siteId: '', categoryDepth: '', categoryStatusCd: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
+       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
+       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParamInit = {};
 
     /* 좌측 트리용 전체 카테고리 조회 (그리드/트리 캐시 갱신) */
 
@@ -195,6 +192,11 @@ window.PdCategoryMng = {
       await fnLoadCodes();
       await handleSearchList();
       await handleGridSearch();
+      Object.assign(searchParam, { siteId: (window.boCommonFilter && window.boCommonFilter.siteId)
+              || window.sfGetBoAppStore?.()?.svBoSiteId
+              || (window._boCmSites?.[0]?.siteId)
+              || '2604010000000001' });
+      Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
 
@@ -257,7 +259,7 @@ window.PdCategoryMng = {
 
     /* onReset — 초기화 */
     const onReset = async () => {
-      Object.assign(searchParam, _initSearchParam());
+      Object.assign(searchParam, searchParamInit);
       uiState.selectedCatId = null;
       await handleSearchList();
       await handleGridSearch();
