@@ -35,8 +35,21 @@
     /* home 은 그룹 헤더도 항목도 전부 동적이다 (템플릿 §대시보드 좌측메뉴 참조).
          대시보드        ← cm_dashboard_menu(SYS) 트리. 없으면 HOME_FALLBACK_DASH 로 폴백
          사용자 대시보드   ← cm_dashboard_menu(USER) 트리. 없으면 볼 수 있는 개인 대시보드 전체
-         대시보드 관리     ← LEFT_MENUS_TAIL.home (동적 항목 아래) */
-    home: [],
+         대시보드 관리     ← LEFT_MENUS_TAIL.home (동적 항목 아래)
+         메가드롭다운용 정적 항목은 아래에 명시 */
+    home: [
+      { group: '대시보드' },
+      { id: 'dashboard', label: 'EC대시보드' },
+      { id: 'appMonitorDashboard', label: 'App모니터대시보드' },
+      { group: '대시보드 관리' },
+      { id: 'cmDashboardMng', label: '대시보드 기준관리' },
+      { id: 'cmDashboardItemMng', label: '대시보드 항목관리' },
+      { id: 'cmDashboardLayoutMng', label: '대시보드 항목배치' },
+      { id: 'cmDashboardSysMenuMng', label: '대시보드 메뉴관리' },
+      { group: '사용자 대시보드' },
+      { id: 'cmDashboardMyMng', label: '사용자 대시보드 관리' },
+      { id: 'cmDashboardMenuMng', label: '사용자 대시보드 메뉴관리' },
+    ],
     member: [
       { group: '회원' },
       { id: 'mbMemberMng', label: '회원관리' },

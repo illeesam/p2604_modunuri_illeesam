@@ -302,7 +302,7 @@
       };
       const onTopMenuEnter = (id) => {
         clearTimeout(_hoverTimer);
-        if (LEFT_MENUS[id] && LEFT_MENUS[id].length) hoveredTop.value = id;
+        if (id === 'home' || (LEFT_MENUS[id] && LEFT_MENUS[id].length)) hoveredTop.value = id;
         else hoveredTop.value = null;
       };
       const onTopMenuLeave = () => {
@@ -2160,7 +2160,7 @@
     @mouseenter="onDropdownEnter"
     @mouseleave="onTopMenuLeave"
     @click.stop>
-    <div v-for="tm in TOP_MENUS.filter(t => t.id !== 'home')" :key="tm.id"
+    <div v-for="tm in TOP_MENUS" :key="tm.id"
       class="mega-dd-col" :class="{highlighted: hoveredTop===tm.id}">
       <div class="mega-dd-top-lbl" @click="setTopMenu(tm.id)">{{ tm.label }}</div>
       <template v-for="item in (LEFT_MENUS[tm.id] || [])" :key="item.group || item.id">
@@ -2178,7 +2178,7 @@
       <button class="nav-panel-close" @click="uiState.sitemapShow=false">✕</button>
     </div>
     <div class="sitemap-body">
-      <div v-for="tm in TOP_MENUS.filter(t => t.id !== 'home')" :key="tm.id" class="sitemap-col">
+      <div v-for="tm in TOP_MENUS" :key="tm.id" class="sitemap-col">
         <div class="sitemap-top-lbl" @click="setTopMenu(tm.id); uiState.sitemapShow=false">{{ tm.label }}</div>
         <template v-for="item in (LEFT_MENUS[tm.id] || [])" :key="item.group || item.id">
           <div v-if="item.group" class="sitemap-grp">{{ item.group }}</div>

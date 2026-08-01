@@ -294,13 +294,15 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .top-nav-item.active { background: #9c27b0; color: #fff; font-weight: 600; }
 /* ── 대메뉴 hover 드롭다운 ── */
 .top-nav-mega-dd { position: fixed; top: 50px; left: 0; right: 0; background: #1c1a2e; border-bottom: 1px solid rgba(255,255,255,.1); box-shadow: 0 14px 36px rgba(0,0,0,.55); z-index: 199; padding: 10px 24px 16px; display: flex; flex-wrap: nowrap; gap: 0; overflow-y: auto; max-height: calc(100vh - 55px); }
-.mega-dd-col { display: flex; flex-direction: column; flex: 1 1 0; min-width: 80px; padding: 8px 12px 8px 0; }
+.mega-dd-col { display: flex; flex-direction: column; flex: 1 1 0; min-width: 80px; padding: 8px 10px 8px 6px; border-radius: 7px; outline: 1px solid transparent; outline-offset: 0px; transition: outline-color .15s, background .15s; }
+.mega-dd-col:hover { outline-color: rgba(199,125,219,.38); background: rgba(255,255,255,.04); }
+.mega-dd-col.highlighted { outline-color: rgba(199,125,219,.55); background: rgba(199,125,219,.05); }
 .mega-dd-top-lbl { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.9); padding: 0 0 5px; border-bottom: 1px solid rgba(255,255,255,.12); margin-bottom: 4px; cursor: pointer; white-space: nowrap; transition: color .12s; }
 .mega-dd-top-lbl:hover { color: #c77ddb; }
 .mega-dd-col.highlighted .mega-dd-top-lbl { color: #c77ddb; }
 .mega-dd-group { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.35); letter-spacing: .6px; text-transform: uppercase; padding: 8px 0 3px; white-space: nowrap; }
-.mega-dd-item { font-size: 13px; color: rgba(255,255,255,.8); padding: 3px 6px 3px 2px; border-radius: 3px; cursor: pointer; transition: background .1s, color .1s; white-space: nowrap; }
-.mega-dd-item:hover { background: rgba(255,255,255,.1); color: #fff; }
+.mega-dd-item { font-size: 13px; color: rgba(255,255,255,.8); padding: 3px 8px 3px 6px; border-radius: 4px; cursor: pointer; transition: background .12s, color .12s, padding-left .1s; white-space: nowrap; }
+.mega-dd-item:hover { background: rgba(199,125,219,.22); color: #fff; padding-left: 10px; }
 .sidebar-toggle-btn { background: none; border: none; color: #aaa; font-size: 15px; cursor: pointer; padding: 3px 5px; border-radius: 4px; flex-shrink: 0; line-height: 1; }
 .sidebar-toggle-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
 .tab-bar-toggle-btn { font-size: 11px; padding: 2px 7px; opacity: .7; }
@@ -428,13 +430,14 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .nav-panel-close:hover { background: #f5f5f5; color: #555; }
 /* ── 사이트맵 패널 ── */
 .nav-sitemap-panel { position: fixed; top: 50px; left: 0; right: 0; background: #fff; border-top: 3px solid #9c27b0; box-shadow: 0 8px 32px rgba(0,0,0,.18); z-index: 198; max-height: calc(100vh - 55px); overflow-y: auto; }
-.sitemap-body { display: flex; flex-wrap: wrap; padding: 12px 24px 24px; gap: 0; }
-.sitemap-col { min-width: 160px; padding: 10px 20px 6px 0; }
-.sitemap-top-lbl { font-size: 14px; font-weight: 700; color: #9c27b0; cursor: pointer; padding-bottom: 7px; border-bottom: 2px solid #e1bee7; margin-bottom: 6px; white-space: nowrap; }
+.sitemap-body { display: flex; flex-wrap: wrap; padding: 12px 24px 24px; gap: 4px; }
+.sitemap-col { min-width: 160px; padding: 10px 14px 8px 8px; border-radius: 8px; outline: 1px solid transparent; transition: outline-color .15s, background .15s; }
+.sitemap-col:hover { outline-color: rgba(156,39,176,.35); background: rgba(156,39,176,.05); }
+.sitemap-top-lbl { font-size: 14px; font-weight: 700; color: #9c27b0; cursor: pointer; padding-bottom: 7px; border-bottom: 2px solid #e1bee7; margin-bottom: 6px; white-space: nowrap; transition: color .12s; }
 .sitemap-top-lbl:hover { color: #6a0080; }
 .sitemap-grp { font-size: 10px; font-weight: 700; color: #bbb; padding: 8px 0 3px; letter-spacing: .5px; text-transform: uppercase; white-space: nowrap; }
-.sitemap-lnk { font-size: 13px; color: #374151; padding: 3px 0 3px 2px; cursor: pointer; border-radius: 3px; white-space: nowrap; }
-.sitemap-lnk:hover { color: #9c27b0; padding-left: 6px; }
+.sitemap-lnk { font-size: 13px; color: #374151; padding: 3px 8px 3px 6px; cursor: pointer; border-radius: 4px; white-space: nowrap; transition: background .12s, color .12s, padding-left .1s; }
+.sitemap-lnk:hover { background: rgba(156,39,176,.1); color: #6a0080; padding-left: 10px; }
 /* ── 즐겨찾기 패널 ── */
 .nav-fav-panel { position: fixed; top: 50px; right: 0; width: 320px; background: #fff; border-top: 3px solid #9c27b0; box-shadow: -4px 8px 28px rgba(0,0,0,.16); z-index: 198; max-height: calc(100vh - 55px); overflow-y: auto; border-radius: 0 0 0 12px; }
 .nav-fav-body { padding: 6px 0 12px; }
