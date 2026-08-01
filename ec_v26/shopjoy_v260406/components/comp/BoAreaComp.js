@@ -174,10 +174,6 @@ window.BoContainer = {
   <div :style="bodyStyle">
     <slot></slot>
   </div>
-  <!-- 건수는 하단 좌측 (2026-08-01 제목 우측에서 이동) -->
-  <div v-if="countText" class="grid-foot">
-    <span class="grid-foot-count">{{ countText }}</span>
-  </div>
 </div>`,
 };
 

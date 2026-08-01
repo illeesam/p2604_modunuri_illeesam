@@ -54,7 +54,7 @@
 | `base.55.codes_reactive_pattern.md` | codes reactive 패턴 설명 및 적용 가이드 |
 
 ## 관련 구현
-- `lib/base/foConfig.js` — SITE_CONFIG, FO_SITE_NO 전역 설정
-- `lib/base/foAuth.js` — 사용자 인증 init/logout/state
+- `lib/app/foAppConfig.js` — SITE_CONFIG, FO_SITE_NO 전역 설정
+- `lib/app/foAppAuth.js` — 사용자 인증 init/logout/state
 - `lib/utils/boApiAxios.js` (window.boApi) / `lib/utils/foApiAxios.js` (window.foApi) — API 래퍼
 - `lib/utils/boUtil.js` — 공통 필터, 유틸, visibilityUtil

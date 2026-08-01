@@ -58,7 +58,7 @@ VS Code Live Server로 index.html 열기 → `http://127.0.0.1:5501/`
 
 | 진입점 | 용도 | 주 CSS | 주 데이터 소스 |
 |---|---|---|---|
-| `index.html` | **사용자 페이스** (front office) | `assets/css/foGlobalStyle0N.css` | `lib/base/foConfig.js` + 실 API(`foApiSvc`) |
+| `index.html` | **사용자 페이스** (front office) | `assets/css/foGlobalStyle0N.css` | `lib/app/foAppConfig.js` + 실 API(`foApiSvc`) |
 | `bo.html` | **관리자 페이스** (back office) | `assets/css/boGlobalStyle0N.css` | 실 API(`boApiSvc`) |
 | `fo-disp-ui-pop.html` / `bo-disp-ui-pop.html` | **전시 UI 미리보기** (독립 렌더) | `assets/css/boGlobalStyle0N.css` | 실 API(`boApiSvc`) + `api/xs/*` |
 
@@ -124,10 +124,10 @@ index.html
 ├─ lib/license/licenseFo.js
 ├─ lib/utils/foApiAxios.js + coUtil.js + foUtil.js + lib/env/foEnvConsts.js + coExtSdk.js + coAuth.js
 ├─ lib/services/coApiSvc.js + foApiSvc.js
-├─ lib/base/foConfig.js        (window.SITE_CONFIG, window.FO_SITE_NO 소비)
+├─ lib/app/foAppConfig.js        (window.SITE_CONFIG, window.FO_SITE_NO 소비)
 ├─ lib/stores/fo/foAppInitStore.js + foAppStore.js + foAuthStore.js + foCodeStore.js
 │                              + foDispStore.js + foMenuStore.js + foMyStore.js (Pinia)
-├─ lib/base/foAuth.js          (Auth 오케스트레이터, foAuthStore 의존)
+├─ lib/app/foAppAuth.js          (Auth 오케스트레이터, foAuthStore 의존)
 ├─ lib/stores/fo/foPropStore.js + foRoleStore.js
 ├─ components/layout/foAppHeader.js + foAppSidebar.js + foAppFooter.js + foMyLayout.js
 ├─ components/comp/BaseComp.js + FoComp.js + FoAreaComp.js + CoWidgetComp.js
@@ -138,12 +138,12 @@ index.html
 ├─ pages/fo/{About,Blog,BlogEdit,BlogView,Cart,Contact,Event,EventView,Faq,Like,Location,Login,Order}.js
 ├─ pages/fo/my/My*.js       (Pinia 의존)
 ├─ pages/fo/xd/* + xs/*     (전시/샘플 페이지)
-└─ lib/base/foApp.js        (마지막. Vue 앱 생성/마운트)
+└─ lib/app/foAppBase.js        (마지막. Vue 앱 생성/마운트)
 ```
 
-**라우팅**: 해시 기반 (`#page=xxx&pid=N`). `lib/base/foApp.js`의 `navigate(pageId)`.
+**라우팅**: 해시 기반 (`#page=xxx&pid=N`). `lib/app/foAppBase.js`의 `navigate(pageId)`.
 
-**유효 페이지 ID** (`validPages` in `lib/base/foApp.js`): `home, prodList, prodView, cart, order, contact, faq, event, eventView, blog, blogView, blogEdit, like, location, about, myOrder, myClaim, myCoupon, myCache, myContact, myChatt, dispUi01~06, sample01~23, error401/404/500`.
+**유효 페이지 ID** (`validPages` in `lib/app/foAppBase.js`): `home, prodList, prodView, cart, order, contact, faq, event, eventView, blog, blogView, blogEdit, like, location, about, myOrder, myClaim, myCoupon, myCache, myContact, myChatt, dispUi01~06, sample01~23, error401/404/500`.
 
 **URL → 컴포넌트 매핑** (FO_SITE_NO 기준 동적):
 - `#page=home` → `<component :is="foHomeComp">` = `window['Home' + FO_SITE_NO]`
@@ -169,26 +169,26 @@ bo.html
 ├─ pages/bo/ec/{mb,pd,od,pm,dp,cm}/*.js   (EC 도메인: Member/Prod/Order/Claim/Dliv/Coupon/Cache/Category/Event/Notice/Chatt/CustInfo/Disp*)
 ├─ pages/bo/sy/*.js                       (시스템: User/Dept/Menu/Role/Site/Code/Brand/Template/Vendor/Attach/Batch/Alarm/Bbm/Bbs/Contact)
 ├─ pages/bo/DashboardBoEc0{1,2,3}.js
-└─ lib/base/boApp.js    (마지막. 멀티탭 시스템 생성/마운트)
+└─ lib/app/boAppBase.js    (마지막. 멀티탭 시스템 생성/마운트)
 ```
 
 > 참고: 과거의 `window.adminData` 목업 일괄 로드는 폐기되고 실 API(`boApiSvc`) 기반으로 전환됨.
 
-**라우팅**: `lib/base/boApp.js`의 탭 시스템. `openTabs` reactive 배열 + `PAGE_COMP_MAP`. `navigate(pageId, { dtlId })` 패턴.
+**라우팅**: `lib/app/boAppBase.js`의 탭 시스템. `openTabs` reactive 배열 + `PAGE_COMP_MAP`. `navigate(pageId, { dtlId })` 패턴.
 
-**좌측 메뉴 그룹** (`lib/base/boApp.js`):
+**좌측 메뉴 그룹** (`lib/app/boAppBase.js`):
 - 회원관리, 상품관리, 주문관리, 프로모션, 전시관리, 고객센터, **시스템** (기준정보/공통업무/시스템/조직/메뉴/이력조회)
 
 **Dtl 탭 뷰모드** (Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt + 상응하는 Hist): 📑 탭 / 1열 / 2열 / 3열 / 4열. 각 상태는 `window._ec{X}DtlState`에 영속화. 3/4열 모드는 `.admin-wrap { max-width:none }` 자동 적용.
 
 **새 컴포넌트 추가 시 필수 4단계**:
 1. `bo.html`에 `<script>` 태그 추가
-2. `lib/base/boApp.js`의 `PAGE_COMP_MAP`에 `pageId → kebab-case` 추가
+2. `lib/app/boAppBase.js`의 `PAGE_COMP_MAP`에 `pageId → kebab-case` 추가
 3. `app.component('ClassName', window.ClassName)` 등록
-4. `lib/base/boApp.js` 템플릿 `v-else-if` 체인에 렌더 항목 추가 (`PAGE_COMP_MAP`만으로는 렌더 안 됨)
+4. `lib/app/boAppBase.js` 템플릿 `v-else-if` 체인에 렌더 항목 추가 (`PAGE_COMP_MAP`만으로는 렌더 안 됨)
 
 **관리자 페이지 템플릿 루트 구조 표준**:
-- `lib/base/boApp.js`가 이미 `<div class="admin-wrap">` 로 콘텐츠를 감싸므로, 각 Mng 컴포넌트의 **template 루트는 반드시 `<div>` (class 없음)**으로 작성
+- `lib/app/boAppBase.js`가 이미 `<div class="admin-wrap">` 로 콘텐츠를 감싸므로, 각 Mng 컴포넌트의 **template 루트는 반드시 `<div>` (class 없음)**으로 작성
 - `<div class="admin-wrap">` 를 컴포넌트 루트로 사용하면 이중 래핑되어 **화면 폭이 좁아지고 padding이 중첩**됨
 - `<div class="page-title">화면명</div>` 은 루트 `<div>` 바로 아래 첫 자식으로 배치
 
@@ -227,7 +227,7 @@ bo-disp-ui-pop.html (관리자 컨텍스트)  |  fo-disp-ui-pop.html (사용자 
 
 | 객체 | 정의 파일 | 역할 |
 |---|---|---|
-| `window.SITE_CONFIG` | `lib/base/foConfig.js` | 상품·메뉴·FAQ 등 사용자 페이스 전체 설정 |
+| `window.SITE_CONFIG` | `lib/app/foAppConfig.js` | 상품·메뉴·FAQ 등 사용자 페이스 전체 설정 |
 | `window.FO_SITE_NO` | `index.html` head 인라인 스크립트 | `'01' \| '02' \| ...` 사이트 번호. `?FO_SITE_NO=02` 쿼리로 오버라이드 후 localStorage(`modu-fo-sy-siteNo`) 저장. (BO 측은 `window.BO_SITE_NO`, bo.html 관리) |
 | `window.foApi` | `lib/utils/foApiAxios.js` | FO axios 래퍼. get/post/put/patch/delete. URL 직접 (예: `foApi.get('api/base/...')`) |
 | `window.boApi` | `lib/utils/boApiAxios.js` | BO axios 래퍼. get/post/put/patch/delete. **변경성(post/put/delete/patch) 호출 시 `coUtil.apiHdr(uiNm, cmdNm)` 필수** |
@@ -237,7 +237,7 @@ bo-disp-ui-pop.html (관리자 컨텍스트)  |  fo-disp-ui-pop.html (사용자 
 | `window.coExtSdk` | `lib/utils/coExtSdk.js` | 외부 SDK 통합(소셜 로그인 Google/Kakao/Naver·토스 결제·지도). 창 안 뜨면 "원인—해결방법" 에러 throw(팝업차단 감지)→호출자 toast. 개발용 `setDebugHook(fn)`(창 띄울 때 URL·파라미터 노출). 키는 `lib/env/{fo,bo}EnvConsts.js` |
 | `window.coAuth` | `lib/utils/coAuth.js` | 인증·결제 흐름 통합(첫 인자 ctx `'fo'\|'bo'` 구분자). `socialLogin(ctx,provider)` / `pay(ctx,opts)` / `cancelPay(ctx,opts)`(결제취소·부분환불) / `socialWithdraw(ctx)`. SDK 창은 coExtSdk 위임, 세션 발급은 fo/boAuthStore. coExtSdk 의존 |
 | `window.yup` | `assets/cdn/pkg/yup/1.0.0.shim/yup.js` | Yup shim |
-| `window.foAuth` | `lib/base/foAuth.js` | 인증 init/logout/state |
+| `window.foAuth` | `lib/app/foAppAuth.js` | 인증 init/logout/state |
 | `window.visibilityUtil` | `lib/utils/boUtil.js` | 공개/회원등급/권한 등 노출 대상 인코딩 (`^PUBLIC^MEMBER^VIP^`) |
 | `window._ec{X}DtlState` | 각 Dtl/Hist 파일 상단 | `{ tab, tabMode }` - 행 전환에도 탭/뷰모드 유지 |
 | `window._ecCustInfoState` | `pages/bo/ec/mb/MbCustInfoMng.js` | 고객종합정보 탭/뷰모드 영속화 |
@@ -1321,7 +1321,7 @@ Vue 3 Composition API 코드에서 역할을 이름만으로 즉시 파악할 �
 0. **표준 참조 모델** ⭐ (2026-05-28) — 신규 BO Mng/Dtl 작성 시 다음 두 파일 구조를 모델로 따른다.
    - [`pages/bo/ec/cm/CmNoticeMng.js`](pages/bo/ec/cm/CmNoticeMng.js) — BO Mng 표준 (cofDetail + 6섹션 [01]~[06] + cmd 라우팅)
    - [`pages/bo/ec/cm/CmNoticeDtl.js`](pages/bo/ec/cm/CmNoticeDtl.js) — BO Dtl 표준 (baseForm + cfReadonly/cfIsNew + bo-form-area + reloadTrigger watch)
-1. **새 관리자 페이지 추가 3단계 누락 금지**: `bo.html` script 태그 + `lib/base/boApp.js` PAGE_COMP_MAP + `app.component()`
+1. **새 관리자 페이지 추가 3단계 누락 금지**: `bo.html` script 태그 + `lib/app/boAppBase.js` PAGE_COMP_MAP + `app.component()`
 2. **컴포넌트 태그는 `ec-*` / `sy-*` 프리픽스 필수** — 프리픽스 빼먹으면 렌더 안 됨
 3. **⛔ 템플릿 속성값에 `&` 금지** — `:class`/`v-if`/`:key` 등 속성값 안의 `&&`·URL `&` 는 런타임 Vue 컴파일러를 크래시시켜 컴포넌트 전체가 안 뜸. `&&` → `coUtil.cofAnd(a, b)`, 문자열 내 `&` → `&`. `{{ }}` 텍스트 노드의 `&&` 는 안전(허용). 상세 → `_doc/정책서/base/base.코드스타일-admin-vue.md` §0-A
 3-1. **⛔ 신규/수정 컴포넌트 크래시 체크 의무** ⭐ (2026-06-24) — 새 파일을 작성하거나 기존 파일을 대규모 수정한 뒤에는 다음 7개 항목을 반드시 점검하고 결과를 보고한다. 체크 없이 완료 선언 금지.
@@ -1339,7 +1339,7 @@ Vue 3 Composition API 코드에서 역할을 이름만으로 즉시 파악할 �
 7. **Vue 3 Composition API 초기화 순서** — `ref()` → `computed()` → `watch()` → `onMounted()` 순서 엄격 준수
 8. **Mng 목록 테이블 컬럼 표준** — 첫 번째 컬럼 반드시 `번호`, `<th>ID</th>` 단순 표시 컬럼 금지. ID는 Dtl 제목 우측에만 `#{{ form.xxxId }}` 표시
 9. **CRUD 그리드 페이징 없음** — SyRole/SyBrand/SyBatch/SyDept/SyMenu/SyProp 등 전체 로드 방식은 하단 페이지네이션 UI 제거, `max-height:480px;overflow-y:auto` 스크롤 컨테이너 사용
-10. **소스 코드 포매팅 표준** ⭐ — `pages/**/*.js`·`components/**/*.js` 의 `template:` HTML 내부는 깊이별 2칸 들여쓰기 + 단순 인라인 텍스트 보존(140자 이내) + 멀티라인 속성 재들여쓰기. JS 영역은 2줄 이상 연속 빈줄 → 1줄로 압축, trailing 공백 제거. `<style>/<script>/<pre>/<textarea>` 내부와 `&` 포함 속성은 원본 그대로 보존. `lib/base/boApp.js`·`lib/base/foApp.js` 는 포매팅 예외 (Vue 컴파일러 크래시 방지). 일반 IDE 포매터(Prettier 등) 금지 — 전용 도구만 사용. 상세 → `_doc/정책서/base/base.코드스타일-admin-vue.md` §12
+10. **소스 코드 포매팅 표준** ⭐ — `pages/**/*.js`·`components/**/*.js` 의 `template:` HTML 내부는 깊이별 2칸 들여쓰기 + 단순 인라인 텍스트 보존(140자 이내) + 멀티라인 속성 재들여쓰기. JS 영역은 2줄 이상 연속 빈줄 → 1줄로 압축, trailing 공백 제거. `<style>/<script>/<pre>/<textarea>` 내부와 `&` 포함 속성은 원본 그대로 보존. `lib/app/boAppBase.js`·`lib/app/foAppBase.js` 는 포매팅 예외 (Vue 컴파일러 크래시 방지). 일반 IDE 포매터(Prettier 등) 금지 — 전용 도구만 사용. 상세 → `_doc/정책서/base/base.코드스타일-admin-vue.md` §12
 
 11. **공통코드는 화면 단위 지연 로딩** ⭐⭐ (2026-07-30) — 부팅 `getInitData(ALL)` 에서 `syCodes` 를 제거했다. 각 화면의 `fnLoadCodes` 는 **async** 로 `await codeStore.saLoadCodes([...쓰는 그룹...])` 을 먼저 호출하고, `initPage()` 안에서 `await fnLoadCodes()` → 초기 조회 순으로 실행한다(`onMounted(initPage)`).
     - 진입점은 **`onMounted(initPage)` 한 형태로 통일**한다 (인라인 `onMounted(async () => {...})` 금지). 별도 준비 게이트를 만들지 않는다 — `cofUseAppCodeReady` / `uiState.isPageCodeLoad` 는 2026-07-30 폐기·삭제
@@ -1476,7 +1476,7 @@ const baseSearchColumns = [
 **BoFormArea `:columns` 폼 자동 렌더** ⭐ (2026-05-21):
 - Dtl(상세/등록) 화면의 `form-row`+`form-group` 보일러플레이트를 컬럼 정의로 대체. BoSearchArea/BoGrid 컬럼 속성화의 폼 버전.
 - `<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :readonly="cfDtlMode" :cols="3" @save @cancel @edit @close />`
-- 컴포넌트: `components/comp/BoAreaComp.js` `window.BoFormArea` (`lib/base/boApp.js` 등록)
+- 컴포넌트: `components/comp/BoAreaComp.js` `window.BoFormArea` (`lib/app/boAppBase.js` 등록)
 - 변수명: `baseFormColumns` (기본) / `infoFormColumns` (탭별 부분) / `xxxFormColumns` 접미사
 - 지원 type: `text` / `password` / `number` / `date` / `textarea` / `select` / `checkbox` / `readonly` / `pathPick` / `slot` / `rowBreak`
 - 공통 속성: `required` / `placeholder` / `colSpan` / `width` / `readonly`(컬럼별) / `mono` / `hint` / `visible(form)=>bool` / `onChange(v,form)` / `fmt` / `hideLabel`

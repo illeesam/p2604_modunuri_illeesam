@@ -610,4 +610,5 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
    (전역 .card 패딩을 건드리면 다른 화면 레이아웃이 함께 틀어지므로 여기서만 조정). */
 .grid-foot { display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-bottom: -7px; }
 .grid-foot-count { flex: 0 0 auto; font-size: 12px; color: #999; white-space: nowrap; padding: 2px; line-height: 1.4; }
+.pager-left .list-count { font-size: 12px; color: #999; white-space: nowrap; }
 .grid-foot-slot { flex: 1 1 auto; min-width: 0; }

@@ -58,7 +58,7 @@ DB 컬럼(`panel_width` `panel_height`)은 유지한다. 한글 표기만 통일
 평소 쓰는 것(대시보드 자체)이 위, 설정하는 것(관리)이 아래다.
 
 `홈` 상위메뉴는 **그룹 헤더도 항목도 전부 동적**이라 `LEFT_MENUS.home` 은 빈 배열이다
-([lib/base/boApp.js](../../../../lib/base/boApp.js)). 동적 항목 *아래에* 와야 하는
+([lib/app/boAppBase.js](../../../../lib/app/boAppBase.js)). 동적 항목 *아래에* 와야 하는
 `대시보드 관리` 그룹은 **`LEFT_MENUS_TAIL`** 이라는 별도 배열에 둔다 — 정적 배열은 항상
 동적 항목보다 먼저 렌더되므로 같은 배열에 두면 순서를 맞출 수 없다.
 

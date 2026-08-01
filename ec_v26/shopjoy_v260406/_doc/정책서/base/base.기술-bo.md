@@ -36,7 +36,7 @@ bo.html
 ├─ components/comp/BaseComp.js
 ├─ pages/bo/ec/*.js                (EC 도메인 컴포넌트)
 ├─ pages/bo/sy/*.js                (SY 도메인 컴포넌트)
-└─ lib/base/boApp.js               (마지막. Vue 앱 생성·마운트)
+└─ lib/app/boAppBase.js               (마지막. Vue 앱 생성·마운트)
 ```
 
 ---
@@ -44,7 +44,7 @@ bo.html
 ## 3. 새 관리자 페이지 추가 — 필수 4단계
 
 > **3단계만 해도 에러 없이 보이지만 페이지가 렌더링되지 않음 (404 페이지 표시)**  
-> lib/base/boApp.js 의 v-else-if 체인이 누락되기 때문.
+> lib/app/boAppBase.js 의 v-else-if 체인이 누락되기 때문.
 
 ### Step 1. bo.html — script 태그 추가
 
@@ -53,7 +53,7 @@ bo.html
 <script src="pages/bo/ec/mb/MbMemGradeMng.js"></script>
 ```
 
-### Step 2. lib/base/boApp.js — PAGE_COMP_MAP 등록
+### Step 2. lib/app/boAppBase.js — PAGE_COMP_MAP 등록
 
 ```js
 const PAGE_COMP_MAP = {
@@ -62,13 +62,13 @@ const PAGE_COMP_MAP = {
 };
 ```
 
-### Step 3. lib/base/boApp.js — app.component() 등록
+### Step 3. lib/app/boAppBase.js — app.component() 등록
 
 ```js
 app.component('MbMemGradeMng', window.MbMemGradeMng);
 ```
 
-### Step 4. lib/base/boApp.js — template v-else-if 체인에 추가 (핵심!)
+### Step 4. lib/app/boAppBase.js — template v-else-if 체인에 추가 (핵심!)
 
 ```html
 <mb-mem-grade-mng
@@ -299,7 +299,7 @@ const doSave = async () => {
 
 | 클래스 | 용도 |
 |---|---|
-| `admin-wrap` | lib/base/boApp.js 가 이미 적용 — **컴포넌트 루트에 재사용 금지** |
+| `admin-wrap` | lib/app/boAppBase.js 가 이미 적용 — **컴포넌트 루트에 재사용 금지** |
 | `card` | 카드 컨테이너 |
 | `search-bar` | 검색 영역 flex row |
 | `search-label` | 검색 필드 레이블 |

@@ -135,7 +135,7 @@ if (SecurityUtil.isFo()) { /* 회원 로직 */ }
 ### Frontend
 - `lib/stores/bo/boAuthStore.js`
 - `lib/stores/fo/foAuthStore.js`
-- `lib/base/foAuth.js`
+- `lib/app/foAppAuth.js`
 - `lib/stores/bo/boAppInitStore.js`
 - `lib/stores/fo/foAppInitStore.js`
 

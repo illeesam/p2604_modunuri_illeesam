@@ -59,7 +59,7 @@
 미로그인 상태에서 접근 시 `error401` 페이지로 리다이렉트.
 
 ```js
-// lib/base/foApp.js
+// lib/app/foAppBase.js
 const AUTH_REQUIRED_PAGES = [
   'myOrder', 'myClaim', 'myCoupon', 'myCache',
   'myContact', 'myChatt',

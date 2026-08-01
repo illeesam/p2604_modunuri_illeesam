@@ -82,7 +82,7 @@
 
 ```js
 // localStorage 토큰 자동 복원
-// lib/base/foAuth.js
+// lib/app/foAppAuth.js
 window.foAuth = {
   state: Vue.reactive({ isLoggedIn: false, user: null }),
   async init() { /* localStorage 토큰 확인 → 자동 복원 */ },
@@ -216,7 +216,7 @@ URL 단축: `/index.html` → `/` (history.replaceState, 해시/쿼리 유지)
 ### 6.3 navigate 함수
 
 ```js
-// lib/base/foApp.js
+// lib/app/foAppBase.js
 navigate('prodView', { pid: 123 });
 // → #page=prodView&pid=123
 ```
@@ -234,7 +234,7 @@ navigate('prodView', { pid: 123 });
 ### 7.2 라우터 처리
 
 ```js
-// lib/base/foApp.js
+// lib/app/foAppBase.js
 if (AUTH_REQUIRED_PAGES.includes(page.value) && !window.foAuth.state.isLoggedIn) {
   navigate('error401');
   return;

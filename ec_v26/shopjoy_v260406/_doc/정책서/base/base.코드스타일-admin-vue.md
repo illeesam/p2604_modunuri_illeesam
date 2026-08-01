@@ -243,7 +243,7 @@ if (prevAuthId && prevAuthId !== nextAuthId) location.reload();   // 실제 계�
 
 ```bash
 # storage 핸들러 + reload 가 가드 없이 묶여 있는지 확인 — 각 핸들러에 'nv !== 현재값' 가드 필수
-grep -rnE "addEventListener\(['\"]storage|location\.reload\(\)" index.html bo.html lib/base/*.js
+grep -rnE "addEventListener\(['\"]storage|location\.reload\(\)" index.html bo.html lib/app/*.js
 ```
 
 ### 재발 사례 (2026-06-14)
@@ -697,7 +697,7 @@ return {
 
 #### 의도 제외 (template 포매팅 위험)
 
-- `lib/base/boApp.js`, `lib/base/foApp.js` — Vue 컴파일 깨짐 위험으로 일반 포매팅도 금지된 파일 ([[boapp_template_no_format]])
+- `lib/app/boAppBase.js`, `lib/app/foAppBase.js` — Vue 컴파일 깨짐 위험으로 일반 포매팅도 금지된 파일 ([[boapp_template_no_format]])
 
 #### 추가 작업 (장기)
 
@@ -1234,7 +1234,7 @@ window.XxxMng = {
 
 ### 12.2 제외 파일
 
-- `lib/base/boApp.js`, `lib/base/foApp.js` — 앱 부트스트랩. template 백틱이 Vue 컴파일러에 의해 특수하게
+- `lib/app/boAppBase.js`, `lib/app/foAppBase.js` — 앱 부트스트랩. template 백틱이 Vue 컴파일러에 의해 특수하게
   파싱되므로 **자동 포매팅 금지**. 직접 수정 시에도 줄바꿈/들여쓰기를 임의로 바꾸지 말 것.
 - `assets/cdn/**` — 외부 라이브러리(Vue, Pinia, axios, Yup 등). 절대 수정하지 않는다.
 
@@ -1722,8 +1722,8 @@ setup(props) {
 
 #### 의도적 제외 파일 (dispatch 미적용) ⭐
 
-- **lib/base/boApp.js** (2943 lines, 10 handler) — BO 앱 부트스트랩
-- **lib/base/foApp.js** (1197 lines, 4 handler) — FO 앱 부트스트랩
+- **lib/app/boAppBase.js** (2943 lines, 10 handler) — BO 앱 부트스트랩
+- **lib/app/foAppBase.js** (1197 lines, 4 handler) — FO 앱 부트스트랩
 
 > 이유: §12 (포매팅 정책) 와 동일 — Vue 런타임 컴파일러가 이 두 파일의 template 백틱 문자열을 특수하게 파싱하므로, 자동/수동 변경 시 컴파일러 크래시 위험 존재. dispatch 도입 시 setup() 영역 대규모 재배치가 필요한데 이는 같은 위험을 안고 있음. 메모리 [[boapp_template_no_format]] 참조.
 > 새 화면은 BO 의 경우 `pages/bo/**` 안에서 작업 — boApp.js 자체는 라우팅/공통 setup 이라 도메인 로직이 아님.
@@ -1856,7 +1856,7 @@ if (cmd === 'roleMenus-set') {
 
 ### 등록
 
-- BoComp.js / FoComp.js 의 컴포넌트는 `lib/base/boApp.js` 또는 `lib/base/foApp.js` 에서 `app.component('Name', window.Name)` 로 등록한다.
+- BoComp.js / FoComp.js 의 컴포넌트는 `lib/app/boAppBase.js` 또는 `lib/app/foAppBase.js` 에서 `app.component('Name', window.Name)` 로 등록한다.
 - 보조 컴포넌트 이동 후에도 등록 코드는 그대로 유지 (등록은 boApp.js 가 담당).
 
 ### 명명 규칙 — `Bo` 프리픽스 통일 ⭐

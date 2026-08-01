@@ -811,7 +811,8 @@ window.BoPager = {
   },
   template: /* html */`
 <div v-if="pager" class="pagination">
-  <div>
+  <div class="pager-left">
+    <span v-if="pager.pageTotalCount != null" class="list-count">총 {{ pager.pageTotalCount }}건</span>
   </div>
   <div class="pager">
     <button :disabled="pager.pageNo===1" @click="onSetPage(1)" title="처음">

@@ -156,7 +156,7 @@ state: () => {
 ## 8. 실시간 동기화 + 교차탭 계정변경
 
 ```js
-// lib/base/foAuth.js init() 내부
+// lib/app/foAppAuth.js init() 내부
 setInterval(() => { store.saSyncFromStorage(); }, 3000);  // 3초 폴링: 토큰 삭제 감지
 
 window.addEventListener('storage', e => {

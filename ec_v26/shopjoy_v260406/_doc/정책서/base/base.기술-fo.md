@@ -27,14 +27,14 @@
 ```
 index.html
 ├─ head: FO_SITE_NO 결정 → CSS/JS 동적 로드
-├─ lib/base/foConfig.js          (window.SITE_CONFIG, window.FO_SITE_NO)
+├─ lib/app/foAppConfig.js          (window.SITE_CONFIG, window.FO_SITE_NO)
 ├─ lib/stores/fo/foAuthStore.js + foMyStore.js    (Pinia)
 ├─ components/layout/foAppHeader.js + foAppSidebar.js + foAppFooter.js + foMyLayout.js
 ├─ pages/Home{NO}.js  Prod{NO}List.js  Prod{NO}View.js   (FO_SITE_NO별 동적 로드)
 ├─ pages/{Cart,Order,Contact,Faq,Login,Event,Blog,Like,Location,About,...}.js
 ├─ pages/my/My*.js
 ├─ components/modals/BaseModals.js + components/comp/BaseComp.js
-└─ lib/base/foApp.js             (마지막. Vue 앱 생성·마운트)
+└─ lib/app/foAppBase.js             (마지막. Vue 앱 생성·마운트)
 ```
 
 ---
@@ -72,7 +72,7 @@ index.html
 ## 4. 해시 기반 라우팅
 
 ```js
-// lib/base/foApp.js
+// lib/app/foAppBase.js
 const navigate = (pageId, params = {}) => {
   const query = new URLSearchParams({ page: pageId, ...params });
   location.hash = query.toString();
@@ -187,7 +187,7 @@ window.Home02 = { name: 'Home02', ... };
 ## 8. 인증 (foAuth)
 
 ```js
-// lib/base/foAuth.js — window.foAuth
+// lib/app/foAppAuth.js — window.foAuth
 window.foAuth = {
   state: Vue.reactive({ isLoggedIn: false, user: null }),
   async init() { /* localStorage 토큰 확인 → 자동 로그인 */ },
@@ -198,7 +198,7 @@ window.foAuth = {
 로그인 필요 페이지 접근 시 처리:
 
 ```js
-// lib/base/foApp.js 라우터
+// lib/app/foAppBase.js 라우터
 if (AUTH_REQUIRED_PAGES.includes(page.value) && !window.foAuth.state.isLoggedIn) {
   navigate('error401');
   return;
@@ -231,7 +231,7 @@ api/
 
 ## 10. window.SITE_CONFIG
 
-`lib/base/foConfig.js` 에서 정의. `foApi.get('api/base/site-config.json')` 으로 불러와 병합.
+`lib/app/foAppConfig.js` 에서 정의. `foApi.get('api/base/site-config.json')` 으로 불러와 병합.
 
 주요 항목:
 

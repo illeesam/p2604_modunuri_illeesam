@@ -1,62 +1,4 @@
-﻿/* ============================================
-   ShopJoy - FO Vue 3 SPA (의류 쇼핑몰)
-   ============================================ */
-(function () {
-  /* ── 전역 이미지 로드 실패 폴백 (noimage 표시) ──────────────────────
-     모든 <img> 에 일괄 적용. error 이벤트는 버블링하지 않으므로
-     document 캡처 단계로 위임. 무한루프 방지 플래그(_noimg) 사용. */
-  (function () {
-    const NO_IMAGE =
-      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">' +
-        '<rect width="200" height="200" fill="#f2f3f5"/>' +
-        '<g fill="none" stroke="#c4c8cf" stroke-width="4">' +
-        '<rect x="48" y="56" width="104" height="78" rx="6"/>' +
-        '<circle cx="76" cy="84" r="11"/>' +
-        '<path d="M58 128 L92 96 L114 116 L132 102 L142 128 Z" fill="#c4c8cf" stroke="none"/>' +
-        '</g>' +
-        '<text x="100" y="162" font-family="sans-serif" font-size="15" fill="#9aa0a8" text-anchor="middle">No Image</text>' +
-        '</svg>'
-      );
-    window.NO_IMAGE = NO_IMAGE;
-    document.addEventListener('error', function (e) {
-      const t = e.target;
-      if (!t || t.tagName !== 'IMG' || t.dataset._noimg === '1') return;
-      t.dataset._noimg = '1';
-      t.src = NO_IMAGE;
-    }, true);
-  })();
-
-  const _s = document.createElement('style');
-  _s.id = 'fo-app-styles';
-  _s.textContent = `
-  @keyframes fo-toast-progress {
-    from { transform: scaleX(1); transform-origin: left; }
-    to   { transform: scaleX(0); transform-origin: left; }
-  }
-  .fo-dim-enter-active { transition: opacity 0.15s ease; }
-  .fo-dim-leave-active { transition: opacity 0.3s ease; }
-  .fo-dim-enter-from, .fo-dim-leave-to { opacity: 0; }
-  .fo-dot {
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--accent, #c9a96e);
-    display: inline-block;
-    animation: fo-dot-wave 1.0s ease-in-out infinite;
-  }
-  @keyframes fo-dot-wave {
-    0%, 100% { transform: translateY(0) scale(0.7); opacity: 0.2; }
-    40%      { transform: translateY(-13px) scale(1.25); opacity: 1; }
-    65%      { transform: translateY(-5px) scale(0.95); opacity: 0.55; }
-  }
-  @keyframes fo-progress-slide {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-  `;
-  document.head.appendChild(_s);
-})();
-
-(async function () {
+﻿(async function () {
   await window.__SITE_CONFIG_READY__;
   const { createApp, ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
 
@@ -107,34 +49,8 @@
     const page = ref('home');
     const errorMessage = ref('');
 
-    /* X- 헤더 배열을 압축 포맷으로 변환 */
-    const _fmtXHeaders = (headers) => {
-      if (!headers || headers.length === 0) return '';
-      const map = {};
-      headers.forEach(h => {
-        const idx = h.indexOf(': ');
-        if (idx > -1) map[h.slice(0, idx).toLowerCase()] = h.slice(idx + 2);
-      });
-
-      /* truncate */
-      const truncate = (v) => v && v.length > 10 ? v.slice(0, 5) + '...' + v.slice(-5) : (v || '');
-      const NO_TRUNCATE = ['x-trace-id', 'x-line-no', 'x-site-type', 'x-site-id', 'x-site-no', 'x-func-nm', 'x-file-nm', 'authorization'];
-
-      /* fmtVal */
-      const fmtVal = (k, v) => k === 'x-func-nm' ? v + '()' : NO_TRUNCATE.includes(k) ? v : truncate(v);
-
-      /* row */
-      const row = (keys) => keys.filter(k => map[k]).map(k => `${k}: ${fmtVal(k, map[k])}`).join(' | ');
-      const lines = [
-        row(['x-site-type', 'x-ui-nm', 'x-cmd-nm']),
-        row(['x-file-nm', 'x-func-nm', 'x-line-no']),
-        row(['x-trace-id', 'x-site-id', 'x-buyer-id', 'x-license-code', 'x-user-agent', 'authorization']),
-      ].filter(Boolean);
-      const known = ['x-site-type','x-ui-nm','x-cmd-nm','x-file-nm','x-func-nm','x-line-no','x-trace-id','x-site-id','x-buyer-id','x-license-code','x-user-agent','authorization'];
-      const rest = Object.entries(map).filter(([k]) => !known.includes(k)).map(([k,v]) => `${k}: ${truncate(v)}`).join(' | ');
-      if (rest) lines.push(rest);
-      return lines.join('\n');
-    };
+    /* X- 헤더 배열을 압축 포맷으로 변환 (→ lib/app/foAppFunc.js) */
+    const _fmtXHeaders = window.foAppFunc.fmtXHeaders;
 
     /* API 성공 → toast info 출력 (설정에서 API toast 출력 ON 일 때만) */
     window.addEventListener('api-response-success', (ev) => {
@@ -206,16 +122,8 @@
     /* ── 서브페이지 dtlId (이벤트상세, 블로그상세/수정 등) ── */
     const viewEditId = ref(null);
 
-    /* instantOrder → URL 해시 파라미터 변환 */
-    const _instantOrderToParams = (io) => {
-      if (!io) return {};
-      return {
-        prodId: io.prod?.prodId ?? '',
-        opt1Nm: io.color?.name        ?? '',   // 색상명 (colorId 없으므로 name 사용)
-        opt2Id: io.size               ?? '',
-        qty:    io.qty                ?? 1,
-      };
-    };
+    /* instantOrder → URL 해시 파라미터 변환 (→ lib/app/foAppFunc.js) */
+    const _instantOrderToParams = window.foAppFunc.instantOrderToParams;
 
     /* URL 해시 파라미터 → instantOrder 재구성 */
     const _instantOrderFromParams = (params) => {
@@ -288,39 +196,11 @@
       try { localStorage.removeItem('modu-fo-sy-apiLog'); } catch(e) {}
     };
 
-    /* foApiLogStatusClass */
-    const foApiLogStatusClass = (status) => {
-      if (!status) return 'color:#999;';
-      if (status >= 500) return 'color:#e74c3c;font-weight:700;';
-      if (status >= 400) return 'color:#e67e22;font-weight:700;';
-      return 'color:#27ae60;font-weight:700;';
-    };
-
-    /* fnFoApiLogRecent — ts(YYYY-MM-DD HH:MM:SS)가 현재 기준 1분 이내면 true (최근 로그 bold 강조용) */
-    const fnFoApiLogRecent = (ts) => {
-      try {
-        const t = new Date(String(ts).replace(' ', 'T')).getTime();
-        return !isNaN(t) && (Date.now() - t) <= 60000;
-      } catch (_) { return false; }
-    };
-
-    /* fnFmtSec — API 로그 duration(ms) → 초(소수1자리). 1581ms → '1.5' */
-    const fnFmtSec = (ms) => {
-      const n = Number(ms);
-      if (!n || isNaN(n)) return '';
-      return (n / 1000).toFixed(1);
-    };
-
-    /* foApiLogMethodStyle */
-    const foApiLogMethodStyle = (method) => {
-      const m = (method || '').toUpperCase();
-      if (m === 'GET')    return 'background:#e8f5e9;color:#388e3c;';
-      if (m === 'POST')   return 'background:#e3f2fd;color:#1565c0;';
-      if (m === 'PUT')    return 'background:#fff3e0;color:#e65100;';
-      if (m === 'PATCH')  return 'background:#f3e5f5;color:#6a1b9a;';
-      if (m === 'DELETE') return 'background:#fce4ec;color:#c62828;';
-      return 'background:#f5f5f5;color:#555;';
-    };
+    /* foApiLogStatusClass, fnFoApiLogRecent, fnFmtSec, foApiLogMethodStyle (→ lib/app/foAppFunc.js) */
+    const foApiLogStatusClass = window.foAppFunc.logStatusClass;
+    const fnFoApiLogRecent    = window.foAppFunc.logIsRecent;
+    const fnFmtSec            = window.foAppFunc.fmtSec;
+    const foApiLogMethodStyle = window.foAppFunc.logMethodStyle;
 
     /* ── API 로그 hover 상세창 (행→상세창 사이 빈 공간 통과 허용: 지연 닫기) ── */
     let _foApiLogCloseTimer = null;
@@ -345,27 +225,15 @@
     const onFoApiLogToggleDock = () => { apiLogDock.value = !apiLogDock.value; };
     /* cfApiLogDockPad — 패널이 열려있고(showApiLog) 영역차지(apiLogDock) 상태면 본문 우측 여백(패널 폭) */
     const cfApiLogDockPad = computed(() => (showApiLog.value && apiLogDock.value) ? '280px' : '0px');
-    /* formatJsonData — 요청/응답 데이터를 보기 좋은 JSON 문자열로 (BO 동일) */
-    const formatJsonData = (data) => {
-      try {
-        if (data == null) return 'N/A';
-        if (typeof data === 'string') { return JSON.stringify(JSON.parse(data), null, 2); }
-        if (typeof data === 'object') { return JSON.stringify(data, null, 2); }
-        return String(data);
-      } catch (e) { return String(data); }
-    };
+    /* formatJsonData (→ lib/app/foAppFunc.js) */
+    const formatJsonData = window.foAppFunc.fmtJson;
     /* fnFoApiLogIndex — 상세창 #번호 (목록 맨 위가 최신 = 큰 번호) */
     const fnFoApiLogIndex = (log) => {
       const i = foApiLogs.findIndex(l => l === log);
       return i >= 0 ? (foApiLogs.length - i) : '-';
     };
-    /* fnFoApiLogBadgeStyle — 상태코드 배지 스타일(2xx 초록 / 그외 빨강). 속성값 && 회피용으로 setup 내 분리 */
-    const fnFoApiLogBadgeStyle = (status) => {
-      const ok = status >= 200 && status < 300;
-      const c = ok ? '#10b981' : '#ef4444';
-      const bg = ok ? '#ecfdf5' : '#fef2f2';
-      return `display:inline-block;padding:4px 8px;border-radius:2px;font-weight:700;font-size:11px;margin-left:4px;border:1px solid ${c};background:${bg};color:${c};`;
-    };
+    /* fnFoApiLogBadgeStyle (→ lib/app/foAppFunc.js) */
+    const fnFoApiLogBadgeStyle = window.foAppFunc.logBadgeStyle;
 
     window.addEventListener('api-response-success', (ev) => { addFoApiLog(ev.detail || {}); });
     window.addEventListener('api-response-error', (ev) => { addFoApiLog({ ...(ev.detail || {}), _isErr: true }); });
@@ -1190,88 +1058,8 @@
 
 </div>
 `,
-  })
-  /* ── layout/ ── */
-  .component('FoAppHeader',   window.foAppHeader)
-  .component('FoAppSidebar',  window.foAppSidebar)
-  .component('FoAppFooter',   window.foAppFooter)
-  /* ── pages/base/ ── */
-  .component('FoError404',    window.foError404)
-  .component('FoError401',    window.foError401)
-  .component('FoError500',    window.foError500)
-  /* ── pages/ (사용자 페이스 - FO_SITE_NO 기준 동적) ── */
-  .component('Home'+window.FO_SITE_NO,        window['Home'+window.FO_SITE_NO])
-  .component('Prod'+window.FO_SITE_NO+'List', window['Prod'+window.FO_SITE_NO+'List'])
-  .component('Prod'+window.FO_SITE_NO+'View', window['Prod'+window.FO_SITE_NO+'View'])
-  .component('Cart',         window.Cart)
-  .component('Order',        window.Order)
-  .component('Contact',      window.Contact)
-  .component('Faq',          window.Faq)
-  .component('Login',        window.Login)
-  .component('EventPage',    window.EventPage)
-  .component('EventView',    window.EventView)
-  .component('BlogPage',     window.Blog)
-  .component('BlogView',     window.BlogView)
-  .component('BlogEdit',     window.BlogEdit)
-  .component('LikePage',     window.Like)
-  .component('LocationPage', window.Location)
-  .component('AboutPage',    window.About)
-  /* ── pages/fo/my/ (마이페이지) ── */
-  .component('MyDateFilter', window.MyDateFilter)
-  .component('MyOrder',      window.MyOrder)
-  .component('MyClaim',      window.MyClaim)
-  .component('MyCoupon',     window.MyCoupon)
-  .component('MyCache',      window.MyCache)
-  .component('MyContact',    window.MyContact)
-  .component('MyChatt',      window.MyChatt)
-  /* ── pages/co/ec/ (FO/BO 공용) ── */
-  .component('OdOrderKanban', window.OdOrderKanban)
-  /* ── components/disp/ (전시 컴포넌트) ── */
-  .component('DispX04Widget', window.DispX04Widget)
-  /* ── pages/fo/xd/ (전시 UI 데모) — 스크립트 미로드 시 건너뜀 ── */
-  /* ── pages/fo/xs/ (샘플) — 스크립트 미로드 시 건너뜀 ── */
-  /* ── components/comp/ (공통 컴포넌트) ── */
-  .component('CoBarcodeWidget',  window.CoBarcodeWidget  || { template: '<div/>' })
-  .component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' })
-  .component('BaseAttachGrp', window.BaseAttachGrp)
-  .component('BaseHtmlEditor', window.BaseHtmlEditor)
-  .component('BaseTossPayWidget', window.BaseTossPayWidget)
-  /* ── components/comp/FoAreaComp.js — 공통 영역(페이지/컨테이너/검색/그리드/폼/모달) ── */
-  .component('FoPage',       window.FoPage)
-  .component('FoContainer',  window.FoContainer)
-  .component('FoSearchArea', window.FoSearchArea)
-  .component('FoFormArea',   window.FoFormArea)
-  .component('FoGrid',       window.FoGrid)
-  .component('FoGridCrud',   window.FoGridCrud)
-  .component('FoModal',      window.FoModal)
-  .component('FoCmPopupModal', window.FoCmPopupModal)
-  .component('FoRowCancelDelete', window.FoRowCancelDelete)
-  /* ── components/comp/FoComp.js — FO 공통 단위 컴포넌트 ── */
-  .component('FoPager',      window.FoPager)
-  .component('FoTabBar',     window.FoTabBar)
-  /* ── components/modals/FoModals.js — FO 전용 모달 ── */
-  .component('CustomerModal',        window.CustomerModal)
-  .component('OrderDetailModal',     window.OrderDetailModal)
-  .component('ProductModal',         window.ProductModal)
-  .component('FoAddrSearchModal',    window.FoAddrSearchModal)
-  /* ── components/modals/CoExtHelpModal.js — 외부 연동 설정 도움말 (FO/BO 공용) ── */
-  .component('CoExtHelpModal',       window.CoExtHelpModal || { template: '<div/>' });
-
-  /* ■■■ disp 공통 컴포넌트 등록 ■■■ */
-  ['DispX01Ui','DispX02Area','DispX03Panel','DispX04Widget'].forEach(name => {
-    if (window[name]) app.component(name, window[name]);
   });
-  /* ■■■ xd/DispUi* — 스크립트 태그 주석처리해도 에러 없이 동작 ■■■ */
-  ['DispUi01','DispUi02','DispUi03','DispUi04','DispUi05','DispUi06',
-  ].forEach(name => { if (window[name]) app.component('Xd'+name, window[name]); });
-  /* ■■■ xs/Sample* — 스크립트 태그 주석처리해도 에러 없이 동작 ■■■ */
-  ['XsSample01','XsSample02','XsSample03','XsSample04','XsSample05','XsSample06','XsSample07',
-   'XsSample08','XsSample09','XsSample10','XsSample11','XsSample12','XsSample13','XsSample14',
-   'XsSample21','XsSample22','XsSample23',
-  ].forEach(name => { if (window[name]) app.component(name, window[name]); });
-  /* ■■■ xs/ 개발도구 ■■■ */
-  if (window.XsStore) app.component('XsStore', window.XsStore);
-  if (window.XsLocalStorage) app.component('XsLocalStorage', window.XsLocalStorage);
+  window.foRegisterComponents(app);
 
   /* 페이지 ID 헬퍼 — 모든 템플릿에서 'home' 등으로 접근 가능 */
   window.perfUtil?.start('FO 앱 시작');

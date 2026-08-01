@@ -184,7 +184,7 @@ POST /api/co/bo-auth/logout
 
 ## 10. 다른 탭 / DevTools 로그아웃·계정변경 감지
 
-`lib/base/boApp.js`:
+`lib/app/boAppBase.js`:
 
 ```js
 // storage 이벤트: 다른 탭 로그인/로그아웃/계정변경 감지

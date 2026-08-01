@@ -37,7 +37,7 @@
     set(v) { _localState.loading = v; },
   });
 
-  /* ── Pinia 초기화 (foApp.js 에서 호출) ── */
+  /* ── Pinia 초기화 (foAppBase.js 에서 호출) ── */
   const init = pinia => {
     _store = window.useFoAuthStore(pinia);
 
