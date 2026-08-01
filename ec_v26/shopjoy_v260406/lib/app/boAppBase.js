@@ -246,9 +246,38 @@
           .sort((a, b) => a.label.localeCompare(b.label, 'ko')),
       );
 
-      /* ── 메뉴 상태 ── */
+      /* ── 메뉴 상태 (localStorage 영속화) ── */
       const activeTop = ref('home');
-      const leftMenuOpen = ref(true);
+      const _lmSaved = localStorage.getItem('modu-bo-left-menu-open');
+      const leftMenuOpen = ref(_lmSaved !== null ? _lmSaved === 'true' : true);
+      watch(leftMenuOpen, (v) => localStorage.setItem('modu-bo-left-menu-open', String(v)));
+      const _tbSaved = localStorage.getItem('modu-bo-tab-bar-open');
+      const tabBarOpen = ref(_tbSaved !== null ? _tbSaved === 'true' : true);
+      watch(tabBarOpen, (v) => localStorage.setItem('modu-bo-tab-bar-open', String(v)));
+
+      /* ── 대메뉴 hover 드롭다운 ── */
+      const hoveredTop = ref(null);
+      let _hoverTimer = null;
+      const fnMegaMenuSections = (topId) => {
+        const items = LEFT_MENUS[topId] || [];
+        const sections = [];
+        let cur = null;
+        for (const item of items) {
+          if (item.group) { cur = { group: item.group, items: [] }; sections.push(cur); }
+          else if (cur) { cur.items.push(item); }
+          else { cur = { group: null, items: [item] }; sections.push(cur); }
+        }
+        return sections;
+      };
+      const onTopMenuEnter = (id) => {
+        clearTimeout(_hoverTimer);
+        if (LEFT_MENUS[id] && LEFT_MENUS[id].length) hoveredTop.value = id;
+        else hoveredTop.value = null;
+      };
+      const onTopMenuLeave = () => {
+        _hoverTimer = setTimeout(() => { hoveredTop.value = null; }, 180);
+      };
+      const onDropdownEnter = () => { clearTimeout(_hoverTimer); };
 
       /* ── Embed 모드 (URL에 embed=1 이면 상단 nav, 탭바, 좌측 사이드바 숨김) ── */
       const embed = ref(false);
@@ -257,9 +286,10 @@
       /* setTopMenu */
       const setTopMenu = (topId) => {
         activeTop.value = topId;
+        hoveredTop.value = null;
+        clearTimeout(_hoverTimer);
         // 홈: 좌측 메뉴 없이 대시보드로 바로 이동
         if (topId === 'home') { navigate('dashboard'); return; }
-        leftMenuOpen.value = true;
         const first = LEFT_MENUS_ALL[topId]?.find((p) => p.id);
         if (first) navigate(first.id);
       };
@@ -570,7 +600,9 @@
       window.showBoHelp = showHelp;
 
       /* ── 공통 필터 & 선택 모달 ── */
-      const rightPanelOpen = ref(true);
+      const _rpSaved = localStorage.getItem('modu-bo-right-panel-open');
+      const rightPanelOpen = ref(_rpSaved !== null ? _rpSaved === 'true' : true);
+      watch(rightPanelOpen, (v) => localStorage.setItem('modu-bo-right-panel-open', String(v)));
       const commonFilter = boCommonFilter;
 
       /* 사이트 필터 default 적용: store(svBoSiteId)가 있으면 그 값을 commonFilter.siteId 기본으로 세팅 */
@@ -813,9 +845,9 @@
 
       /* boApi 인터셉터로 로그 수집 */
 
-      /* ── 반응형: 화면 크기에 따라 사이드바 자동 열기/닫기 ── */
+      /* ── 반응형: 좁은 화면에서만 사이드바 강제 닫힘 (넓은 화면은 localStorage 값 유지) ── */
       const checkWidth = () => {
-        leftMenuOpen.value = window.innerWidth >= 920;
+        if (window.innerWidth < 920) leftMenuOpen.value = false;
       };
       onBeforeUnmount(() => window.removeEventListener('resize', checkWidth));
 
@@ -1237,6 +1269,8 @@
         profileModalShow: false,
         pwModalShow: false,
         relatedSiteOpen: false,
+        sitemapShow: false,
+        favPanelShow: false,
       });
 
       /* 프로필 모달 */
@@ -1785,6 +1819,9 @@
         closeCtxMenu();
         uiState.userMenuShow = false;
         boSettingShow.value = false;
+        hoveredTop.value = null;
+        uiState.sitemapShow = false;
+        uiState.favPanelShow = false;
       };
 
       return {
@@ -1824,8 +1861,13 @@
         cfOpenTabsWithGroup,
         activeTop,
         leftMenuOpen,
+        tabBarOpen,
         cfEmbed,
         setTopMenu,
+        hoveredTop,
+        onTopMenuEnter,
+        onTopMenuLeave,
+        onDropdownEnter,
         toasts,
         showToast,
         onToastAction,
@@ -1945,6 +1987,7 @@
   <!-- ① TOP NAV -->
   <nav class="bo-top-nav" v-if="!cfEmbed">
     <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" :title="leftMenuOpen ? '사이드바 접기' : '사이드바 펼치기'">{{ leftMenuOpen ? '‹' : '›' }}</button>
+    <button class="sidebar-toggle-btn tab-bar-toggle-btn" @click.stop="tabBarOpen=!tabBarOpen" :title="tabBarOpen ? '탭바 접기' : '탭바 펼치기'">{{ tabBarOpen ? '▲' : '▼' }}</button>
     <span class="brand" @click="onLogoClick" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
       ShopJoy
       <span class="fo-site-badge"
@@ -1965,10 +2008,12 @@
         borderColor: cfBoActive==='prod'?'#c62828':cfBoActive==='dev'?'#90caf9':cfBoActive==='local'?'#f9a825':'#ccc',
         }">{{ cfBoActive }}</span>
     </span>
-    <div class="top-nav-menus">
+    <div class="top-nav-menus"
+      @mouseleave="onTopMenuLeave">
       <span v-for="tm in TOP_MENUS" :key="tm.id"
         class="top-nav-item" :class="{active: activeTop===tm.id}"
-        @click="setTopMenu(tm.id)">{{ tm.label }}</span>
+        @click="setTopMenu(tm.id)"
+        @mouseenter="onTopMenuEnter(tm.id)">{{ tm.label }}</span>
     </div>
 
     <!-- 설정(개발) 드롭다운 -->
@@ -1989,6 +2034,19 @@
         </button>
       </div>
     </div>
+
+    <!-- 사이트맵 버튼 -->
+    <button @click.stop="uiState.sitemapShow=!uiState.sitemapShow; uiState.favPanelShow=false; hoveredTop=null"
+      title="사이트맵" class="nav-tool-btn" :class="{active: uiState.sitemapShow}">
+      🗺 사이트맵
+    </button>
+
+    <!-- 즐겨찾기 버튼 -->
+    <button @click.stop="uiState.favPanelShow=!uiState.favPanelShow; uiState.sitemapShow=false; hoveredTop=null"
+      title="즐겨찾기" class="nav-tool-btn" :class="{active: uiState.favPanelShow}" style="position:relative;">
+      ★
+      <span v-if="cfFavList.length" class="nav-fav-count">{{ cfFavList.length }}</span>
+    </button>
 
     <!-- 도움말 버튼 -->
     <button @click.stop="showHelp()"
@@ -2041,6 +2099,58 @@
       {{ rightPanelOpen ? '›' : '‹' }}
     </button>
   </nav>
+
+  <!-- 대메뉴 hover 드롭다운 (전체 사이트맵) -->
+  <div v-if="!cfEmbed && hoveredTop"
+    class="top-nav-mega-dd"
+    @mouseenter="onDropdownEnter"
+    @mouseleave="onTopMenuLeave"
+    @click.stop>
+    <div v-for="tm in TOP_MENUS.filter(t => t.id !== 'home')" :key="tm.id"
+      class="mega-dd-col" :class="{highlighted: hoveredTop===tm.id}">
+      <div class="mega-dd-top-lbl" @click="setTopMenu(tm.id)">{{ tm.label }}</div>
+      <template v-for="item in (LEFT_MENUS[tm.id] || [])" :key="item.group || item.id">
+        <div v-if="item.group" class="mega-dd-group">{{ item.group }}</div>
+        <div v-else class="mega-dd-item"
+          @click="navigate(item.id); hoveredTop=null">{{ item.label }}</div>
+      </template>
+    </div>
+  </div>
+
+  <!-- 사이트맵 패널 -->
+  <div v-if="!cfEmbed && uiState.sitemapShow" class="nav-sitemap-panel" @click.stop>
+    <div class="nav-panel-hd">
+      <span class="nav-panel-hd-title">🗺 사이트맵</span>
+      <button class="nav-panel-close" @click="uiState.sitemapShow=false">✕</button>
+    </div>
+    <div class="sitemap-body">
+      <div v-for="tm in TOP_MENUS.filter(t => t.id !== 'home')" :key="tm.id" class="sitemap-col">
+        <div class="sitemap-top-lbl" @click="setTopMenu(tm.id); uiState.sitemapShow=false">{{ tm.label }}</div>
+        <template v-for="item in (LEFT_MENUS[tm.id] || [])" :key="item.group || item.id">
+          <div v-if="item.group" class="sitemap-grp">{{ item.group }}</div>
+          <div v-else class="sitemap-lnk" @click="navigate(item.id); uiState.sitemapShow=false">{{ item.label }}</div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- 즐겨찾기 패널 -->
+  <div v-if="!cfEmbed && uiState.favPanelShow" class="nav-fav-panel" @click.stop>
+    <div class="nav-panel-hd">
+      <span class="nav-panel-hd-title">★ 즐겨찾기 <span v-if="cfFavList.length" style="font-size:11px;font-weight:400;opacity:.7;">({{ cfFavList.length }})</span></span>
+      <button class="nav-panel-close" @click="uiState.favPanelShow=false">✕</button>
+    </div>
+    <div class="nav-fav-body">
+      <div v-if="cfFavList.length===0" class="nav-fav-empty">즐겨찾기가 없습니다.<br>좌측 메뉴의 ★ 를 클릭해 추가하세요.</div>
+      <div v-for="fav in cfFavList" :key="fav.id" class="nav-fav-item"
+        @click="navigate(fav.id); uiState.favPanelShow=false">
+        <span class="nav-fav-top">{{ fav.topLabel }}</span>
+        <span class="nav-fav-sep">›</span>
+        <span class="nav-fav-lbl">{{ fav.label }}</span>
+        <button class="nav-fav-del" @click.stop="toggleFav(fav.id)" title="삭제">✕</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ③ BODY -->
   <div class="bo-body" :style="cfEmbed ? 'min-height:100vh;' : ''">
@@ -2245,7 +2355,7 @@
     <!-- Main Content -->
     <div class="bo-main">
       <!-- ② TAB BAR -->
-      <div class="bo-tab-bar-wrap" v-if="!cfEmbed">
+      <div class="bo-tab-bar-wrap" v-if="!cfEmbed && tabBarOpen">
         <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
         <div class="bo-tab-bar" ref="tabBarRef">
           <div v-for="tab in openTabs" :key="tab.id" :data-tab-id="tab.id"
