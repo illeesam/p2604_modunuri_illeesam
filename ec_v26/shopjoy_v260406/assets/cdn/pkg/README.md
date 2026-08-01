@@ -86,7 +86,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | `https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js` |
-| 로드 위치 | `index.html`, `bo.html`, `disp-ui.html` |
+| 로드 위치 | `index.html`, `bo.html`, `bo-disp-ui-pop.html`, `fo-disp-ui-pop.html` |
 | 사용 코드 | `const { ref, reactive, computed } = Vue;` |
 
 ### vue-demi · `vue-demi/0.14.10/vue-demi.iife.js`
@@ -115,7 +115,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | `https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js` |
-| 로드 위치 | `index.html`, `disp-ui.html` |
+| 로드 위치 | `index.html`, `fo-disp-ui-pop.html` |
 | 사용 파일 | `utils/axiosUtil.js` → `window.axiosApi` 제공 |
 | 사용 예시 | `window.axiosApi.get('my/orders.json')` |
 
@@ -127,7 +127,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | 없음 (로컬 구현) |
-| 로드 위치 | `bo.html`, `disp-ui.html` |
+| 로드 위치 | `bo.html`, `bo-disp-ui-pop.html` |
 | 지원 | `.required()`, `.min/max()`, `.oneOf()`, `.test()`, `.email()`, `.when()`, `.object({})`, `.array()` |
 | ⚠️ 미지원 | `.matches(regex)` — 별도 regex 검증으로 대체 |
 | 사용 위치 | `pages/admin/**/*Dtl.js` 저장 로직 (폼 유효성 검사) |
@@ -162,7 +162,7 @@ assets/cdn/pkg/
 | 항목 | 내용 |
 |---|---|
 | 원본 | `https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.umd.min.js` |
-| 로드 위치 | `index.html`, `bo.html`, `disp-ui.html` |
+| 로드 위치 | `index.html`, `bo.html`, `bo-disp-ui-pop.html`, `fo-disp-ui-pop.html` |
 | 사용 파일 | `components/disp/DispX04Widget.js:61` |
 
 ### JsBarcode · `jsbarcode/3.11.6/JsBarcode.all.min.js`
@@ -398,7 +398,7 @@ curl -Lo xlsx/0.20.3/xlsx.full.min.js              https://cdn.sheetjs.com/xlsx-
 <link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">
 ```
 
-### `disp-ui.html` (전시 UI 미리보기)
+### `bo-disp-ui-pop.html` / `fo-disp-ui-pop.html` (전시 UI 미리보기 팝업)
 
 ```html
 <!-- head -->

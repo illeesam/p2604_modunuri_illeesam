@@ -60,7 +60,7 @@ VS Code Live Server로 index.html 열기 → `http://127.0.0.1:5501/`
 |---|---|---|---|
 | `index.html` | **사용자 페이스** (front office) | `assets/css/foGlobalStyle0N.css` | `lib/base/foConfig.js` + 실 API(`foApiSvc`) |
 | `bo.html` | **관리자 페이스** (back office) | `assets/css/boGlobalStyle0N.css` | 실 API(`boApiSvc`) |
-| `fo-disp-ui.html` / `bo-disp-ui.html` | **전시 UI 미리보기** (독립 렌더) | `assets/css/boGlobalStyle0N.css` | 실 API(`boApiSvc`) + `api/xs/*` |
+| `fo-disp-ui-pop.html` / `bo-disp-ui-pop.html` | **전시 UI 미리보기** (독립 렌더) | `assets/css/boGlobalStyle0N.css` | 실 API(`boApiSvc`) + `api/xs/*` |
 
 테스트 프레임워크 없음. 브라우저 콘솔에서 직접 검증.
 
@@ -68,18 +68,31 @@ VS Code Live Server로 index.html 열기 → `http://127.0.0.1:5501/`
 
 루트에 위치하는 독립 HTML 진입점(각자 `<script>`로 Vue 앱을 직접 생성하는 파일)은 **관리자(BO) 전용이면 `bo-` 접두어, 사용자(FO) 전용이면 `fo-` 접두어**를 파일명 앞에 붙인다.
 
+추가로 **`window.open()` 으로만 열리는(팝업 전용) 파일은 `-pop` 접미어**를 붙인다 (2026-08-01).
+파일명만 보고 "이건 별도 창으로만 뜬다"를 알 수 있어야, iframe 으로 끼워 넣거나 탭 안에 렌더하는
+잘못된 재사용을 막을 수 있다.
+
 ```
-✅ bo-disp-ui.html        (관리자 컨텍스트 전시 UI 미리보기)
-✅ fo-disp-ui.html        (사용자 컨텍스트 전시 UI 미리보기)
-✅ bo-pd-opt-code-mng.html (관리자 상품옵션코드관리, PdProdMng 모달 + 좌측메뉴 양쪽에서 iframe 로드)
+✅ bo-disp-ui-pop.html           (관리자 컨텍스트 전시 UI 미리보기 — window.open 전용)
+✅ fo-disp-ui-pop.html           (사용자 컨텍스트 전시 UI 미리보기 — window.open 전용)
+✅ bo-od-order-kanban-pop.html   (주문 칸반보드 — window.open 전용)
+✅ bo-pd-opt-code-mng.html       (관리자 상품옵션코드관리 — iframe 인라인이므로 -pop 아님)
 
 ❌ disp-bo-ui.html / disp-fo-ui.html   (구 명명, 2026-07-16 bo-/fo- 접두어로 rename)
 ❌ sy-code-tree-mng.html / pd-opt-code-mng.html (구 명명, bo-pd-opt-code-mng.html 로 통합)
+❌ bo-disp-ui.html / fo-disp-ui.html   (구 명명, 2026-08-01 -pop 접미어 부여)
+```
+
+**`-pop` 판별 기준**: 그 파일을 가리키는 참조가 **전부** `window.open()` 이면 `-pop`.
+`<iframe src>` 나 `<a href>` 로도 열린다면 붙이지 않는다. rename 전에 참조를 전수 조사할 것:
+
+```bash
+grep -rn "대상파일.html" --include=*.js --include=*.html --include=*.md .
 ```
 
 **예외**: `index.html`(FO 메인 진입점), `bo.html`(BO 메인 진입점)은 프로젝트의 고정 최상위 진입점이므로 접두어를 붙이지 않는다.
 
-**적용 시점**: 신규로 독립 HTML 파일을 만들 때는 처음부터 `bo-`/`fo-` 접두어를 붙인다. 기존 파일을 rename할 때는 해당 파일을 참조하는 모든 곳(`window.open()`, `<iframe src>`, `window.pageUrl()` 호출부, 정책서 문서)을 함께 수정한다.
+**적용 시점**: 신규로 독립 HTML 파일을 만들 때는 처음부터 `bo-`/`fo-` 접두어(+ 팝업 전용이면 `-pop`)를 붙인다. 기존 파일을 rename할 때는 해당 파일을 참조하는 모든 곳(`window.open()`, `<iframe src>`, `window.pageUrl()` 호출부, 정책서 문서, `assets/cdn/pkg/README.md`)을 함께 수정한다.
 
 ## 기술 스택 (로컬 로드 중심)
 
@@ -195,11 +208,11 @@ template: `
   </div>`
 ```
 
-### 3) `fo-disp-ui.html` / `bo-disp-ui.html` — 전시 UI 미리보기
+### 3) `fo-disp-ui-pop.html` / `bo-disp-ui-pop.html` — 전시 UI 미리보기
 
 구조:
 ```
-bo-disp-ui.html (관리자 컨텍스트)  |  fo-disp-ui.html (사용자 컨텍스트)
+bo-disp-ui-pop.html (관리자 컨텍스트)  |  fo-disp-ui-pop.html (사용자 컨텍스트)
 ├─ head: Vue, axios, yup, boGlobalStyle0N.css
 ├─ lib/license/license{Bo,Fo}.js + lib/utils/{bo,fo}ApiAxios.js + {bo,fo}Util.js
 ├─ components/comp/BaseComp.js + CoWidgetComp.js + pages/base/{bo,fo}Error404.js

@@ -2825,10 +2825,10 @@
                   style="display:flex;align-items:center;gap:6px;padding:4px 6px;">
                   <span style="width:18px;text-align:center;font-size:12.5px;">{{ it.icon }}</span>
                   <span style="flex:1;font-size:12.5px;color:#333;">{{ it.label }}</span>
-                  <button @click="openRelatedLink('fo-disp-ui.html' + it.hash)"
+                  <button @click="openRelatedLink('fo-disp-ui-pop.html' + it.hash)"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:5px;cursor:pointer;"
                     title="사용자 미리보기">사용자 ↗</button>
-                  <button @click="openRelatedLink('bo-disp-ui.html' + it.hash)"
+                  <button @click="openRelatedLink('bo-disp-ui-pop.html' + it.hash)"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#fef3eb;color:#c2410c;border:1px solid #f5e8de;border-radius:5px;cursor:pointer;"
                     title="관리자 미리보기">관리자 ↗</button>
                 </div>
