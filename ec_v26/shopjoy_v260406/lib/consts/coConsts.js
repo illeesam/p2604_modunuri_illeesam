@@ -65,5 +65,31 @@
     EXCHANGE: ['교환요청', '수거예정', '수거중', '교환완료'],
   };
 
+  /* 외부 SDK / 서비스 연동 키 이름 — AppStore 가 svXxx 로 보관한다.
+   * boAppStore.js 와 foAppStore.js 에 26개가 통째로 복제돼 있던 것을 여기로 합쳤다
+   * ("키 추가/제거 시 양쪽을 동일하게 유지" 주석에 의존하던 수동 동기화 제거).
+   * 값은 로그인 시 서버 init data 로 주입된다 → coApiSvc.cm{Bo,Fo}AppStore.getInitData()
+   * 실제 읽기는 coExtSdk._key('svXxx') 가 store[name] 으로 직접 한다. */
+  coConsts.EXT_KEYS = [
+    // 소셜 로그인
+    'googleClientId', 'kakaoJsKey', 'naverClientId', 'naverCallbackUrl', 'facebookAppId', 'appleClientId',
+    // 결제
+    'tossClientKey', 'kakaoPayCid', 'naverPayClientId', 'inicisMid', 'kcpSiteCd',
+    // 지도
+    'naverMapClientId', 'kakaoMapJsKey', 'googleMapApiKey',
+    // AWS
+    'awsRegion', 'awsS3Bucket', 'awsS3PublicUrl', 'awsCognitoIdentityPoolId',
+    // 알림/메시징
+    'kakaoAlimtalkSenderKey', 'nhnCloudSmsAppKey', 'ncloudSensServiceId',
+    // 본인인증
+    'niceClientId', 'passClientId',
+    // 보안/분석
+    'recaptchaSiteKey', 'gaTrackingId', 'naverAnalyticsId', 'facebookPixelId',
+    // 채팅/CS
+    'channelTalkPluginKey',
+    // 기타
+    'daumPostcodeUrl',
+  ];
+
   global.coConsts = global.coConsts || coConsts;
 })(window);

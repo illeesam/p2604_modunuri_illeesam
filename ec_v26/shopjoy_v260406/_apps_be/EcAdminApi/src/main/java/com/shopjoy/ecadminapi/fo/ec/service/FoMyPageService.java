@@ -19,8 +19,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCacheRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.PmCouponRepository;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattRoomRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
@@ -55,7 +55,7 @@ public class FoMyPageService {
     private final PmCouponRepository     couponRepository;
     private final PmCacheRepository      cacheRepository;
     private final SyContactRepository    contactRepository;
-    private final CmChattRoomRepository  chattRoomRepository;
+    private final CmChattRepository      chattRepository;
     private final PasswordEncoder        passwordEncoder;
     @PersistenceContext
     private EntityManager em;
@@ -238,17 +238,22 @@ public class FoMyPageService {
         return contactRepository.selectPageData(req);
     }
 
-    /** getMyChats — 조회 (내 채팅방 목록, 기간 검색은 req 로 위임) */
-    public List<CmChattRoomDto.Item> getMyChats(CmChattRoomDto.Request req) {
-        if (req == null) req = new CmChattRoomDto.Request();
-        req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return chattRoomRepository.selectList(req);
+    /* 채팅은 cm_chatt 를 쓴다.
+       예전엔 cm_chatt_room(CmChattRoom) 을 조회했는데 그 테이블이 DB 에 존재하지 않아
+       /api/fo/my/chat/list · /chat/page 가 항상 500 이었다 (2026-08-01 수정).
+       회원 필터는 CmChattDto.Request.refId (= member_id) 로 건다. */
+
+    /** getMyChats — 조회 (내 채팅 목록, 기간 검색은 req 로 위임) */
+    public List<CmChattDto.Item> getMyChats(CmChattDto.Request req) {
+        if (req == null) req = new CmChattDto.Request();
+        req.setRefId(SecurityUtil.getAuthUser().authId());
+        return chattRepository.selectList(req);
     }
 
     /** getMyChatsPage — 서버사이드 페이징 조회 */
-    public BasePage<CmChattRoomDto.Item> getMyChatsPage(CmChattRoomDto.Request req) {
-        if (req == null) req = new CmChattRoomDto.Request();
-        req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return chattRoomRepository.selectPageData(req);
+    public BasePage<CmChattDto.Item> getMyChatsPage(CmChattDto.Request req) {
+        if (req == null) req = new CmChattDto.Request();
+        req.setRefId(SecurityUtil.getAuthUser().authId());
+        return chattRepository.selectPageData(req);
     }
 }

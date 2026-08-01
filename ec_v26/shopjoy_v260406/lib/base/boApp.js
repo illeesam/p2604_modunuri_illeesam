@@ -543,7 +543,6 @@
         syTemplateDtl: 'sy-template-dtl',
         syVendorMng: 'sy-vendor-mng',
         syVendorDtl: 'sy-vendor-dtl',
-        syBizMng: 'sy-biz-mng',
         syVendorUserMng: 'sy-vendor-user-mng',
         syVendorInfoMng: 'sy-vendor-info-mng',
         pdCategoryMng: 'pd-category-mng',
@@ -2083,14 +2082,11 @@
       const doLogout = async () => {
         try {
           const authStore = window.useBoAuthStore?.();
-          const configStore = window.useBoConfigStore?.();
-
           if (authStore) {
             await authStore.saLogout();
           }
-          if (configStore) {
-            configStore.saReset();
-          }
+          /* boConfigStore 는 사이트 식별정보(svSiteNo/svSiteId)만 갖는다.
+             사이트는 브라우저 단위 설정이라 로그아웃으로 지우지 않는다. */
 
           uiState.userMenuShow = false;
           openTabs.splice(0);
@@ -2918,7 +2914,6 @@
             <sy-template-mng v-else-if="page==='syTemplateMng'" :navigate="navigate" />
             <sy-template-dtl v-else-if="page==='syTemplateDtl'" :navigate="navigate" :dtl-id="dtlId" />
             <sy-vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate" />
-            <sy-biz-mng  v-else-if="page==='syBizMng'"  :navigate="navigate" />
             <sy-vendor-user-mng v-else-if="page==='syVendorUserMng'" :navigate="navigate" />
             <sy-vendor-info-mng v-else-if="page==='syVendorInfoMng'" :navigate="navigate" />
             <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :dtl-id="dtlId" />

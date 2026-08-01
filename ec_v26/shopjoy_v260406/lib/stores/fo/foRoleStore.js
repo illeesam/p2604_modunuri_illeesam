@@ -1,42 +1,15 @@
 /**
  * FO (Front Office) 역할 정보 Pinia 스토어
+ * - foAppInitStore 가 로그인 시 saSetRoles 로 채운다.
+ * - 개별 add/update/remove 액션은 호출처가 없어 제거함 (2026-08-01).
  */
 window.useFoRoleStore = Pinia.defineStore('foRole', {
-  state: () => {
-    return {
-      svRoles: [],
-    };
-  },
+  state: () => ({
+    svRoles: [],
+  }),
 
   actions: {
-    saSetRoles(rolesData) {
-      if (rolesData) {
-        this.svRoles = rolesData;
-      }
-    },
-
-    saAddRole(role) {
-      if (role) {
-        this.svRoles.push(role);
-      }
-    },
-
-    saUpdateRole(roleId, role) {
-      const idx = this.svRoles.findIndex(r => r.id === roleId);
-      if (idx >= 0) {
-        this.svRoles[idx] = { ...this.svRoles[idx], ...role };
-      }
-    },
-
-    saRemoveRole(roleId) {
-      const idx = this.svRoles.findIndex(r => r.id === roleId);
-      if (idx >= 0) {
-        this.svRoles.splice(idx, 1);
-      }
-    },
-
-    saClear() {
-      this.svRoles = [];
-    },
+    saSetRoles(rolesData) { this.svRoles = rolesData || []; },
+    saClear() { this.svRoles = []; },
   },
 });

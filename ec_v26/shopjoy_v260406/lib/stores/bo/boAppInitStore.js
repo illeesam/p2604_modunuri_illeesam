@@ -1,172 +1,81 @@
 /**
  * BO (Back Office) 애플리케이션 초기화 데이터 Pinia 스토어 (통합 관제)
- * - 로그인 후 필요한 모든 초기화 데이터 API 호출
- * - 각 항목을 독립 store로 분산 저장
- * - 로딩 상태, 에러 처리 중앙 관리
+ * - 로그인 후 필요한 초기화 데이터를 한 번에 받아 각 독립 store 로 분산 저장
  */
-window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
-  state: () => {
-    return {
-      svIsLoading: false,
-      svLastFetchTime: null,
-      svError: null,
-    };
-  },
 
-  getters: {
-    sgIsInitialized: (s) => {
-      const authStore = window.useBoAuthStore?.();
-      return !!(authStore && authStore.svAuthUser && authStore.svAuthUser.authId);
-    },
-  },
+/* 로그아웃 시 비울 스토어들 — saClearAll 이 순회한다 */
+const _BO_CLEAR_STORES = [
+  'useBoAuthStore', 'useBoRoleStore', 'useBoMenuStore',
+  'useBoCodeStore', 'useBoPropStore', 'useBoAppStore',
+];
+
+window.useBoAppInitStore = Pinia.defineStore('boAppInit', {
+  state: () => ({
+    svIsLoading: false,   // 중복 조회 방지 가드
+  }),
 
   actions: {
     /**
-     * BO 초기화 데이터 조회 (모든 항목)
-     * @param {string} names - 조회할 항목 ('^' 구분자, 예: "auth^user^role^menu^code^props^app")
-     *                        빈 값이면 모든 항목 조회
+     * BO 초기화 데이터 조회
+     * @param {string} names - 조회할 항목 ('^' 구분자, 예: "auth^user^role^menu^app").
+     *                         빈 값/'ALL' 이면 전체.
      */
     async saFetchBoAppInitData(names = 'ALL') {
       if (this.svIsLoading) return;
-
       this.svIsLoading = true;
-      this.svError = null;
 
       try {
         const res = await coApiSvc.cmBoAppStore.getInitData(names || 'ALL', '시스템', '초기화데이터조회');
-        console.log('[boAppInitStore] API response:', res);
+        const data = res?.data?.data;
+        if (!data) {
+          console.warn('[boAppInitStore] 초기화 데이터가 비어 있습니다:', res);
+          return;
+        }
 
-        if (res?.data?.data) {
-          const data = res.data.data;
-          console.log('[boAppInitStore] Init data:', data);
+        /* 백엔드 응답 키 → 각 스토어 (syAuth[토큰+사용자] / syRoles / syMenus / syCodes / syProps / syApp) */
+        if (data.syAuth)  { window.useBoAuthStore?.()?.saSetAuth(data.syAuth); }
+        if (data.syRoles) { window.useBoRoleStore?.()?.saSetRoles(data.syRoles); }
+        if (data.syCodes) { window.useBoCodeStore?.()?.saSetCodes(data.syCodes?.codes); }
+        if (data.syProps) { window.useBoPropStore?.()?.saSetProps(data.syProps); }
+        if (data.syApp)   { window.useBoAppStore?.()?.saSetApp(data.syApp); }
 
-          // 각 항목을 해당 store에 분산 저장 (백엔드 응답 키: syAuth[토큰+사용자], syRoles, syMenus, syCodes, syProps, syApp)
-          try {
-            if (data.syAuth) {
-              const authStore = window.useBoAuthStore?.();
-              authStore?.saSetAuth(data.syAuth);
-            }
+        /* 메뉴는 스토어 + 공통 필터용 전역 양쪽에 넣는다
+           (예전엔 이 블록이 위아래로 두 번 있어 saSetMenus 가 중복 호출됐다) */
+        if (data.syMenus) {
+          window.useBoMenuStore?.()?.saSetMenus(data.syMenus);
+          window._boCmMenus = data.syMenus?.menus || data.syMenus || [];
+        }
 
-            if (data.syRoles) {
-              const roleStore = window.useBoRoleStore?.();
-              roleStore?.saSetRoles(data.syRoles);
-            }
-
-            if (data.syMenus) {
-              const menuStore = window.useBoMenuStore?.();
-              menuStore?.saSetMenus(data.syMenus);
-            }
-
-            if (data.syCodes) {
-              const codeStore = window.useBoCodeStore?.();
-              codeStore?.saSetCodes(data.syCodes?.codes);
-            }
-
-            if (data.syProps) {
-              const propStore = window.useBoPropStore?.();
-              propStore?.saSetProps(data.syProps);
-            }
-
-            if (data.syApp) {
-              const appStore = window.useBoAppStore?.();
-              appStore?.saSetApp(data.syApp);
-            }
-
-            if (data.syPaths) {
-              window._boCmPaths = data.syPaths?.paths || data.syPaths || [];
-            }
-
-            if (data.syMenus) {
-              const menuStore = window.useBoMenuStore?.();
-              menuStore?.saSetMenus(data.syMenus);
-              window._boCmMenus = data.syMenus?.menus || data.syMenus || [];
-            }
-
-            if (data.syDepts) {
-              window._boCmDepts = data.syDepts?.depts || data.syDepts || [];
-            }
-
-            if (data.sySites) {
-              window._boCmSites = data.sySites?.sites || data.sySites || [];
-              if (window._boCmSites.length && boCommonFilter) {
-                boCommonFilter.siteId = window._boCmSites[0]?.siteId ?? null;
-              }
-            }
-
-            this.svLastFetchTime = new Date().getTime();
-            console.log('[boAppInitStore] All data stored successfully');
-          } catch (storeErr) {
-            console.error('[boAppInitStore] Store operation error:', storeErr);
-            throw storeErr;
+        /* 공통 필터/피커가 쓰는 전역 참조 데이터 */
+        if (data.syPaths) { window._boCmPaths = data.syPaths?.paths || data.syPaths || []; }
+        if (data.syDepts) { window._boCmDepts = data.syDepts?.depts || data.syDepts || []; }
+        if (data.sySites) {
+          window._boCmSites = data.sySites?.sites || data.sySites || [];
+          if (window._boCmSites.length && boCommonFilter) {
+            boCommonFilter.siteId = window._boCmSites[0]?.siteId ?? null;
           }
-        } else {
-          console.warn('[boAppInitStore] No data in response:', res);
         }
       } catch (err) {
         console.error('[boAppInitStore] saFetchBoAppInitData error:', err);
-        this.svError = err.message || 'Failed to fetch init data';
-        throw err;
+        throw err;                       // 401 판정 등은 호출자가 한다
       } finally {
         this.svIsLoading = false;
       }
     },
 
     /**
-     * 특정 항목만 조회
-     */
-    async saFetchBoAppInitDataPartial(names) {
-      return this.saFetchBoAppInitData(names);
-    },
-
-    /**
      * 전체 초기화 (로그아웃 시)
      */
     saClearAll() {
-      const authStore = window.useBoAuthStore?.();
-      const roleStore = window.useBoRoleStore?.();
-      const menuStore = window.useBoMenuStore?.();
-      const codeStore = window.useBoCodeStore?.();
-      const propStore = window.useBoPropStore?.();
-      const appStore = window.useBoAppStore?.();
-
-      authStore?.saClear();
-      roleStore?.saClear();
-      menuStore?.saClear();
-      codeStore?.saClear();
-      propStore?.saClear();
-      appStore?.saClear();
-
-      this.svLastFetchTime = null;
-      this.svError = null;
+      _BO_CLEAR_STORES.forEach((n) => { window[n]?.()?.saClear?.(); });
       this.svIsLoading = false;
     },
 
     /**
-     * localStorage에서 복원
+     * localStorage 에서 복원
      */
     saRestoreFromStorage() {
-      const authStore = window.useBoAuthStore?.();
-      return authStore?.saRestoreFromStorage() || false;
+      return window.useBoAuthStore?.()?.saRestoreFromStorage() || false;
     },
   },
 });
-
-// 함수형 유틸리티 제공
-window.sfGetBoAppInitStore = () => {
-  try {
-    return window.useBoAppInitStore?.() || {
-      svIsLoading: false,
-      svLastFetchTime: null,
-      svError: null,
-      sgIsInitialized: false,
-    };
-  } catch (e) {
-    console.error('[sfGetBoAppInitStore] error:', e);
-    return {
-      svIsLoading: false,
-      svLastFetchTime: null,
-      svError: null,
-      sgIsInitialized: false,
-    };
-  }
-};

@@ -1,80 +1,26 @@
 /**
  * BO 역할 정보 Pinia 스토어
- * - 관리자 역할/권한 관리
+ * - boAppInitStore / boAuthStore 가 로그인 시 saSetRoles 로 채운다.
+ * - 개별 add/update/remove 액션은 호출처가 없어 제거함 (2026-08-01). 역할 변경은 서버가 하고
+ *   클라이언트는 로그인/초기화 때 통째로 받는다.
  */
 window.useBoRoleStore = Pinia.defineStore('boRole', {
-  state: () => {
-    return {
-      svRoles: [],
-      svIsLoading: false,
-    };
-  },
-
-  getters: {
-    sgIsEmpty: (s) => !Array.isArray(s.svRoles) || s.svRoles.length === 0,
-  },
+  state: () => ({
+    svRoles: [],
+  }),
 
   actions: {
-    /**
-     * 역할 정보 설정
-     */
-    saSetRoles(rolesData) {
-      this.svRoles = rolesData || [];
-    },
-
-    /**
-     * 역할 추가
-     */
-    saAddRole(role) {
-      if (role && !this.svRoles.find(r => r.id === role.id)) {
-        this.svRoles.push(role);
-      }
-    },
-
-    /**
-     * 역할 업데이트
-     */
-    saUpdateRole(roleId, roleData) {
-      const idx = this.svRoles.findIndex(r => r.id === roleId);
-      if (idx !== -1) {
-        this.svRoles[idx] = { ...this.svRoles[idx], ...roleData };
-      }
-    },
-
-    /**
-     * 역할 삭제
-     */
-    saRemoveRole(roleId) {
-      const idx = this.svRoles.findIndex(r => r.id === roleId);
-      if (idx !== -1) {
-        this.svRoles.splice(idx, 1);
-      }
-    },
-
-    /**
-     * 초기화 (로그아웃 시)
-     */
-    saClear() {
-      this.svRoles = [];
-      this.svIsLoading = false;
-    },
+    saSetRoles(rolesData) { this.svRoles = rolesData || []; },
+    saClear() { this.svRoles = []; },
   },
 });
 
-// 함수형 유틸리티 제공
+/* sfGetBoRoleStore — Pinia 미초기화 구간에서도 안전하게 접근 */
 window.sfGetBoRoleStore = () => {
   try {
-    return window.useBoRoleStore?.() || {
-      svRoles: [],
-      sgIsEmpty: true,
-      svIsLoading: false,
-    };
+    return window.useBoRoleStore?.() || { svRoles: [] };
   } catch (e) {
     console.error('[sfGetBoRoleStore] error:', e);
-    return {
-      svRoles: [],
-      sgIsEmpty: true,
-      svIsLoading: false,
-    };
+    return { svRoles: [] };
   }
 };

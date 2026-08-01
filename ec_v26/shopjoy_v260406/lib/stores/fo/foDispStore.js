@@ -1,37 +1,19 @@
 /**
  * FO (Front Office) 전시 정보 Pinia 스토어
- * - 전시 구조(dispStruc)와 전시 데이터(dispData) 관리
+ * - foAppInitStore 가 로그인/초기화 시 saSetDispData 로 채운다.
+ * - saSetDispStruc / saSetDispDataContent 개별 세터는 호출처가 없어 제거함 (2026-08-01).
  */
 window.useFoDispStore = Pinia.defineStore('foDisp', {
-  state: () => {
-    return {
-      svDispStruc: {},
-      svDispData: {},
-    };
-  },
+  state: () => ({
+    svDispStruc: {},
+    svDispData: {},
+  }),
 
   actions: {
     saSetDispData(dispData) {
-      if (dispData) {
-        if (dispData.dispStruc) {
-          this.svDispStruc = dispData.dispStruc;
-        }
-        if (dispData.dispData) {
-          this.svDispData = dispData.dispData;
-        }
-      }
-    },
-
-    saSetDispStruc(dispStruc) {
-      if (dispStruc) {
-        this.svDispStruc = dispStruc;
-      }
-    },
-
-    saSetDispDataContent(dispData) {
-      if (dispData) {
-        this.svDispData = dispData;
-      }
+      if (!dispData) return;
+      if (dispData.dispStruc) this.svDispStruc = dispData.dispStruc;
+      if (dispData.dispData) this.svDispData = dispData.dispData;
     },
 
     saClear() {

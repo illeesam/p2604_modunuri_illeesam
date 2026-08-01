@@ -48,7 +48,6 @@
     getters: {
       sgIsLoggedIn: (state) => !!(state.svAuthUser?.authId) && !!state.svAccessToken,
       sgCurrentUser: (state) => state.svAuthUser || _defaultAuthUser(),
-      sgAuthHeader: (state) => (state.svAccessToken ? { Authorization: `Bearer ${state.svAccessToken}` } : {}),
     },
 
     actions: {
@@ -280,14 +279,14 @@
       return window.useBoAuthStore?.() || {
         svAuthUser: _defaultAuthUser(), svAccessToken: '', svRefreshToken: '',
         sgIsLoggedIn: false, svAccessExpiresIn: 0, svRefreshExpiresIn: 0,
-        sgCurrentUser: _defaultAuthUser(), sgAuthHeader: {},
+        sgCurrentUser: _defaultAuthUser(),
       };
     } catch (e) {
       console.error('sfGetBoAuthStore error:', e);
       return {
         svAuthUser: _defaultAuthUser(), svAccessToken: '', svRefreshToken: '',
         svAccessExpiresIn: 0, svRefreshExpiresIn: 0, sgIsLoggedIn: false,
-        sgCurrentUser: _defaultAuthUser(), sgAuthHeader: {},
+        sgCurrentUser: _defaultAuthUser(),
       };
     }
   };

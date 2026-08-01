@@ -66,17 +66,12 @@ window.useFoMenuStore = Pinia.defineStore('foMenu', {
   },
 
   actions: {
-    saSetMenus(menusData) {
-      if (menusData) this.svMenus = menusData;
-    },
-
-    saClear() {
-      this.svMenus = [];
-    },
+    saSetMenus(menusData) { this.svMenus = menusData || []; },
+    saClear() { this.svMenus = []; },
   },
 });
 
-// 함수형 유틸리티
+/* sfGetFoMenuStore — Pinia 미초기화 구간에서도 안전하게 접근 */
 window.sfGetFoMenuStore = () => {
   try { return window.useFoMenuStore?.(); } catch (e) { return null; }
 };

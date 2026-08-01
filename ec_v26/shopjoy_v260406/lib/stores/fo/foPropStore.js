@@ -1,44 +1,16 @@
 /**
- * FO (Front Office) 시스템 속성 Pinia 스토어
+ * FO (Front Office) 시스템 속성 Pinia 스토어 (sy_prop 키-값)
+ * - foAppInitStore 가 로그인 시 saSetProps 로 채운다.
+ * - 개별 set/remove/has 액션은 호출처가 없어 제거함 (2026-08-01).
+ *   값이 필요하면 store.svProps[key] 로 직접 읽는다.
  */
 window.useFoPropStore = Pinia.defineStore('foProp', {
-  state: () => {
-    return {
-      svProps: {},
-    };
-  },
+  state: () => ({
+    svProps: {},
+  }),
 
   actions: {
-    saSetProps(propsData) {
-      if (propsData) {
-        this.svProps = propsData;
-      }
-    },
-
-    saSetProp(key, value) {
-      if (key) {
-        this.svProps[key] = value;
-      }
-    },
-
-    saSetMultiProps(propsData) {
-      if (propsData) {
-        Object.assign(this.svProps, propsData);
-      }
-    },
-
-    saRemoveProp(key) {
-      if (key) {
-        delete this.svProps[key];
-      }
-    },
-
-    saHasProp(key) {
-      return key in this.svProps;
-    },
-
-    saClear() {
-      this.svProps = {};
-    },
+    saSetProps(propsData) { this.svProps = propsData || {}; },
+    saClear() { this.svProps = {}; },
   },
 });

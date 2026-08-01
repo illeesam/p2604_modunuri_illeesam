@@ -62,37 +62,25 @@ window.Location = {
     };
 
     // ★ onMounted
-    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
+    /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다.
+       지도 키는 coExtSdk.loadKakaoMap() 이 foAppStore.svKakaoMapJsKey 에서 읽는다.
+       (예전엔 SITE_CONFIG.kakaoMapKey 를 봤는데 그 키가 어디에도 정의돼 있지 않아
+        appKey 가 항상 '' → 카카오 지도가 뜬 적이 없고 늘 Google embed 로 빠졌다.)
+       키가 없거나 로드 실패면 기존대로 Google embed 로 폴백한다. */
     const initPage = async () => {
-      const appKey = (window.SITE_CONFIG && window.SITE_CONFIG.kakaoMapKey) || '';
-      if (appKey) {
-      const s = document.createElement('script');
-      s.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false`;
-      s.onload = () => {
-      kakao.maps.load(() => {
-      const el = document.getElementById('shopjoy-map');
-      if (!el) { return; }
-      const map = new kakao.maps.Map(el, {
-      center: new kakao.maps.LatLng(LAT, LNG),
-      level: 4,
-    });
-            new kakao.maps.Marker({
-              map,
-              position: new kakao.maps.LatLng(LAT, LNG),
-              title: 'ShopJoy 본사',
-            });
-            uiState.mapProvider = 'kakao_sdk';
-          });
-        };
-        s.onerror = () => {
-          uiState.mapProvider = 'google';
-          uiState.mapSrc = PROVIDERS.google;
-        };
-        document.head.appendChild(s);
-      } else {
-        /* API key 없음 → Google embed */
+      const fnFallbackGoogle = () => {
         uiState.mapProvider = 'google';
         uiState.mapSrc = PROVIDERS.google;
+      };
+      try {
+        const maps = await coExtSdk.loadKakaoMap();
+        const el = document.getElementById('shopjoy-map');
+        if (!el) { return; }
+        const map = new maps.Map(el, { center: new maps.LatLng(LAT, LNG), level: 4 });
+        new maps.Marker({ map, position: new maps.LatLng(LAT, LNG), title: 'ShopJoy 본사' });
+        uiState.mapProvider = 'kakao_sdk';
+      } catch (err) {
+        fnFallbackGoogle();
       }
     };
     onMounted(initPage);

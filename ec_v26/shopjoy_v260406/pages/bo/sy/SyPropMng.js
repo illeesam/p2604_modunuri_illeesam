@@ -245,15 +245,16 @@ window.SyPropMng = {
       }
     };
 
-    /* handleReload — 런타임 프로퍼티 갱신 (DB → Pinia boPropStore, coExtSdk 즉시 반영) */
+    /* handleReload — 런타임 프로퍼티 갱신 (DB → Pinia, coExtSdk 즉시 반영)
+       syApp 을 함께 받아 boAppStore 에 넣어야 실제로 "즉시 반영" 이 된다.
+       coExtSdk._key() 는 AppStore 의 svXxx 를 읽지 PropStore 를 보지 않는다.
+       (예전엔 syProps 만 받아 PropStore 에 넣어서, 외부 SDK 키를 바꿔도 반영되지 않았다) */
     const handleReload = async () => {
       try {
-        const res = await coApiSvc.cmBoAppStore.getInitData('syProps', '속성관리', '프로퍼티갱신');
+        const res = await coApiSvc.cmBoAppStore.getInitData('syProps^syApp', '속성관리', '프로퍼티갱신');
         const data = res?.data?.data;
-        if (data?.syProps) {
-          const propStore = window.useBoPropStore?.();
-          if (propStore) propStore.saSetProps(data.syProps);
-        }
+        if (data?.syProps) { window.useBoPropStore?.()?.saSetProps(data.syProps); }
+        if (data?.syApp)   { window.useBoAppStore?.()?.saSetApp(data.syApp); }
         showToast('런타임 프로퍼티가 갱신되었습니다.', 'success');
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '갱신 중 오류가 발생했습니다.', 'error', 0);

@@ -3,42 +3,15 @@
  * - 시스템 공통 코드 관리
  */
 window.useBoCodeStore = Pinia.defineStore('boCode', {
-  state: () => {
-    return {
-      svCodes: [], // 배열: [{ codeGrp, codeId, codeNm, codeVal, ... }, ...]
-      svIsLoading: false,
-      /* 지연 로딩 캐시 — 조회 완료한 그룹(빈 결과 포함) / 진행 중 Promise */
-      _svLoadedGrps: {},
-      _svInflight: {},
-    };
-  },
+  state: () => ({
+    svCodes: [], // 배열: [{ codeGrp, codeId, codeNm, codeVal, ... }, ...]
+    /* 지연 로딩 캐시 — 조회 완료한 그룹(빈 결과 포함) / 진행 중 Promise */
+    _svLoadedGrps: {},
+    _svInflight: {},
+  }),
 
   getters: {
-    sgIsEmpty: (s) => !Array.isArray(s.svCodes) || s.svCodes.length === 0,
-    // 코드 그룹별 조회
-    sgGetCodesByGroup: (s) => (grpVal) => {
-      if (!Array.isArray(s.svCodes)) return [];
-      return s.svCodes.filter(c => c.codeGrp === grpVal);
-    },
-    // 특정 코드 값 조회
-    sgGetCodeByVal: (s) => (grpVal, codeVal) => {
-      if (!Array.isArray(s.svCodes)) return null;
-      return s.svCodes.find(c => c.codeGrp === grpVal && c.codeVal === codeVal);
-    },
-    // 특정 코드명 조회
-    // 코드명 조회 — codeVal 우선, 없으면 codeNm(라벨)으로도 매칭 (목업이 라벨을 코드값 자리에 넣는 경우 대응)
-    sgGetCodeNmByVal: (s) => (grpVal, codeVal) => {
-      if (!Array.isArray(s.svCodes)) return codeVal;
-      const code = s.svCodes.find(c => c.codeGrp === grpVal && (c.codeVal === codeVal || c.codeNm === codeVal));
-      return code?.codeNm || codeVal;
-    },
-    // codeOpt1 조회 (배지 클래스 등) — codeVal 우선, 없으면 codeNm(라벨)으로도 매칭
-    sgGetCodeOpt1: (s) => (grpVal, codeVal) => {
-      if (!Array.isArray(s.svCodes)) return '';
-      const code = s.svCodes.find(c => c.codeGrp === grpVal && (c.codeVal === codeVal || c.codeNm === codeVal));
-      return code?.codeOpt1 || '';
-    },
-    // 코드 그룹을 { codeValue, codeLabel } 형식으로 변환
+    // 코드 그룹을 { codeValue, codeLabel } 형식으로 변환 — 화면 select 의 표준 입력
     sgGetGrpCodes: (s) => (grpVal) => {
       if (!Array.isArray(s.svCodes)) return [];
       return s.svCodes
@@ -46,33 +19,12 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
         .sort((a, b) => (Number(a.codeSortOrd || 0) - Number(b.codeSortOrd || 0)))
         .map(c => ({ codeValue: c.codeVal, codeLabel: (c.codeNm || c.codeVal) }));
     },
-    // 코드 그룹을 { codeValue, codeLabel } 형식으로 + 초기 항목 추가
-    sgGetGrpCodesFirstOpt: (s) => (grpVal, initVal, initLabel) => {
-      if (!Array.isArray(s.svCodes)) return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }] : [];
-      const codes = s.svCodes
-        .filter(c => c.codeGrp === grpVal && c.useYn !== 'N')
-        .sort((a, b) => (Number(a.codeSortOrd || 0) - Number(b.codeSortOrd || 0)))
-        .map(c => ({ codeValue: c.codeVal, codeLabel: (c.codeNm || c.codeVal) }));
-      return initVal && initLabel ? [{ codeValue: initVal, codeLabel: initLabel }, ...codes] : codes;
-    },
-    // 트리형 코드 그룹: 레벨/부모 필터 ({ codeValue, codeLabel, codeLevel, parentCodeValue, codeRemark } 반환)
-    //   grpVal           : 코드그룹 (예: 'PROD_OPT_CATEGORY')
-    //   level            : code_level 값 (1/2/3 ...) — null/undefined 면 전체
-    //   parentCodeValue  : 부모 code_value 로 필터 — null/undefined 면 전체
-    sgGetGrpCodesByLevel: (s) => (grpVal, level, parentCodeValue) => {
-      if (!Array.isArray(s.svCodes)) return [];
-      return s.svCodes
-        .filter(c => c.codeGrp === grpVal && c.useYn !== 'N')
-        .filter(c => level == null || Number(c.codeLevel || 1) === Number(level))
-        .filter(c => parentCodeValue == null || c.parentCodeValue === parentCodeValue)
-        .sort((a, b) => (Number(a.codeSortOrd || 0) - Number(b.codeSortOrd || 0)))
-        .map(c => ({
-          codeValue: c.codeVal,
-          codeLabel: (c.codeNm || c.codeVal),
-          codeLevel: Number(c.codeLevel || 1),
-          parentCodeValue: c.parentCodeValue || null,
-          codeRemark: c.codeRemark || '',
-        }));
+    // codeOpt1 조회 (배지 클래스 등) — coUtil.cofCodeBadge 가 사용
+    //   codeVal 우선, 없으면 codeNm(라벨)으로도 매칭
+    sgGetCodeOpt1: (s) => (grpVal, codeVal) => {
+      if (!Array.isArray(s.svCodes)) return '';
+      const code = s.svCodes.find(c => c.codeGrp === grpVal && (c.codeVal === codeVal || c.codeNm === codeVal));
+      return code?.codeOpt1 || '';
     },
   },
 
@@ -172,46 +124,10 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     },
 
     /**
-     * 코드 항목 추가
-     */
-    saAddCode(code) {
-      if (code) {
-        if (!this.svCodes.find(c => c.codeId === code.codeId)) {
-          this.svCodes.push(code);
-        }
-      }
-    },
-
-    /**
-     * 코드 항목 업데이트
-     */
-    saUpdateCode(codeId, codeData) {
-      if (codeId) {
-        const idx = this.svCodes.findIndex(c => c.codeId === codeId);
-        if (idx !== -1) {
-          this.svCodes[idx] = { ...this.svCodes[idx], ...codeData };
-        }
-      }
-    },
-
-    /**
-     * 코드 항목 삭제
-     */
-    saRemoveCode(codeId) {
-      if (codeId) {
-        const idx = this.svCodes.findIndex(c => c.codeId === codeId);
-        if (idx !== -1) {
-          this.svCodes.splice(idx, 1);
-        }
-      }
-    },
-
-    /**
      * 초기화 (로그아웃 시)
      */
     saClear() {
       this.svCodes = [];
-      this.svIsLoading = false;
       this._svLoadedGrps = {};
       this._svInflight = {};
     },
@@ -220,11 +136,8 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
 
 // 함수형 유틸리티 제공
 const _boCodeStoreFallback = {
-  svCodes: [], svIsLoading: false, sgIsEmpty: true,
+  svCodes: [],
   sgGetGrpCodes: () => [],
-  sgGetGrpCodesFirstOpt: (g, iv, il) => iv && il ? [{ codeValue: iv, codeLabel: il }] : [],
-  sgGetGrpCodesByLevel: () => [],
-  sgGetCodeNmByVal: (g, v) => v,
   sgGetCodeOpt1: () => '',
 };
 window.sfGetBoCodeStore = () => {

@@ -133,20 +133,15 @@
       return '';
     },
 
-    // 라이센스 번호 조회
+    // 라이센스 번호 조회 (localStorage → window.LICENSE_NO)
+    // ※ 예전엔 boConfigStore.svLicenseNo 를 먼저 봤으나 그 필드는 어느 스토어에도 없어
+    //    항상 건너뛰는 죽은 분기였다. 제거함.
     getCurrentLicenseNo() {
       try {
-        // BO: useBoConfigStore
-        const boConfig = global.useBoConfigStore?.();
-        if (boConfig?.svLicenseNo) {
-          return boConfig.svLicenseNo;
-        }
-        // localStorage에서 조회 (설정값)
         const storedLicense = localStorage.getItem('modu-sy-license-no');
         if (storedLicense) {
           return storedLicense;
         }
-        // window.LICENSE_NO
         if (global.LICENSE_NO) {
           return global.LICENSE_NO;
         }
@@ -799,6 +794,24 @@
     return Math.ceil(cnt / size);
   }
 
+  /* cofExtKeyState — 외부 SDK 키 이름 목록을 AppStore state 모양으로 만든다.
+   *   ['tossClientKey', ...] -> { svTossClientKey: '', ... }
+   *   bo/foAppStore 의 state 기본값과 saClear 초기화에 함께 쓴다.
+   *   @param src 없으면 전부 ''. 주면 src[키] 값을 채운다(데모 더미는 '' 취급 → cofIsDemoKey) */
+  function cofExtKeyState(src) {
+    return (global.coConsts?.EXT_KEYS || []).reduce((acc, k) => {
+      const v = src ? src[k] : '';
+      acc['sv' + k.charAt(0).toUpperCase() + k.slice(1)] = cofIsDemoKey(v) ? '' : (v || '');
+      return acc;
+    }, {});
+  }
+
+  /* cofIsDemoKey — 서버 init data 의 데모 플레이스홀더(DEMO_* / demo_* / test_ck_DEMO_*) 판별.
+   *   데모 더미를 빈 값으로 취급해야, 파일에 시드해둔 실키나 SDK 테스트키 폴백을 덮지 않는다. */
+  function cofIsDemoKey(v) {
+    return !!v && /(^|_)demo(_|$)/i.test(String(v));
+  }
+
   /* cofOmitEmpty — 객체에서 '' / null / undefined 값 키를 제거한 새 객체 반환
    *   사용: const params = { pageNo, pageSize, ...coUtil.cofOmitEmpty(searchParam) }; */
   function cofOmitEmpty(obj) {
@@ -1155,6 +1168,8 @@
   global.coUtil.cofMaxOf = global.coUtil.cofMaxOf || cofMaxOf;
   global.coUtil.cofBuildPagerNums = global.coUtil.cofBuildPagerNums || cofBuildPagerNums;
   global.coUtil.cofTotalPage = global.coUtil.cofTotalPage || cofTotalPage;
+  global.coUtil.cofExtKeyState = global.coUtil.cofExtKeyState || cofExtKeyState;
+  global.coUtil.cofIsDemoKey = global.coUtil.cofIsDemoKey || cofIsDemoKey;
   global.coUtil.cofOmitEmpty = global.coUtil.cofOmitEmpty || cofOmitEmpty;
   global.coUtil.cofImgSrc = global.coUtil.cofImgSrc || cofImgSrc;
   global.coUtil.cofHtmlCdnToAsset = global.coUtil.cofHtmlCdnToAsset || cofHtmlCdnToAsset;

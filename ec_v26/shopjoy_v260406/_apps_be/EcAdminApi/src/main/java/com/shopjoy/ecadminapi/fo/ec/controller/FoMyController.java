@@ -6,7 +6,7 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.fo.ec.service.FoMyPageService;
 import lombok.RequiredArgsConstructor;
@@ -106,13 +106,13 @@ public class FoMyController {
 
     /** getChats — 조회 (내 채팅방 목록, 기간 검색 지원) */
     @GetMapping("/chat/list")
-    public ResponseEntity<ApiResponse<List<CmChattRoomDto.Item>>> getChats(@jakarta.validation.Valid @ModelAttribute CmChattRoomDto.Request req) {
+    public ResponseEntity<ApiResponse<List<CmChattDto.Item>>> getChats(@jakarta.validation.Valid @ModelAttribute CmChattDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyChats(req)));
     }
 
     /** getChatsPage — 서버사이드 페이징 조회 (pageNo/pageSize + 기간 검색) */
     @GetMapping("/chat/page")
-    public ResponseEntity<ApiResponse<BasePage<CmChattRoomDto.Item>>> getChatsPage(@jakarta.validation.Valid @ModelAttribute CmChattRoomDto.Request req) {
+    public ResponseEntity<ApiResponse<BasePage<CmChattDto.Item>>> getChatsPage(@jakarta.validation.Valid @ModelAttribute CmChattDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyChatsPage(req)));
     }
 }

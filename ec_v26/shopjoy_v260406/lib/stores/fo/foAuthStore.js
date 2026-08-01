@@ -40,7 +40,6 @@
 
     getters: {
       sgIsLoggedIn: (s) => !!(s.svAuthUser?.authId) && !!s.svAccessToken,
-      sgIsTokenValid: (s) => !!(s.svAccessToken),
     },
 
     actions: {
@@ -60,20 +59,6 @@
           if (this.svTempAuthInfo) localStorage.setItem('modu-fo-auth-tempAuthInfo', JSON.stringify(this.svTempAuthInfo));
         } catch (e) {
           console.error('[foAuthStore] saSetAuth localStorage error:', e);
-        }
-      },
-
-      saUpdateAuth(authData) {
-        if (!authData) return;
-        this.svAccessToken = authData.accessToken || this.svAccessToken;
-        this.svRefreshToken = authData.refreshToken || this.svRefreshToken;
-        this.svAccessExpiresIn = authData.accessExpiresIn || this.svAccessExpiresIn;
-        this.svRefreshExpiresIn = authData.refreshExpiresIn || this.svRefreshExpiresIn;
-        try {
-          if (this.svAccessToken) localStorage.setItem('modu-fo-auth-accessToken', this.svAccessToken);
-          if (this.svRefreshToken) localStorage.setItem('modu-fo-auth-refreshToken', this.svRefreshToken);
-        } catch (e) {
-          console.error('[foAuthStore] saUpdateAuth localStorage error:', e);
         }
       },
 
