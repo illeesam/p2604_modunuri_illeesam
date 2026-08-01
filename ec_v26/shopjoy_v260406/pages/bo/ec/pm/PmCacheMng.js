@@ -123,7 +123,7 @@ window.PmCacheMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['CACHE_STATUS', 'CACHE_TRANS_TYPE', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['CACHE_STATUS', 'CACHE_TRANS_TYPE', 'DATE_RANGE_OPT'], {compNm: 'PmCacheMng'});
       try {
         codes.cache_statuses = codeStore.sgGetGrpCodes('CACHE_STATUS');
         codes.cache_trans_types = codeStore.sgGetGrpCodes('CACHE_TRANS_TYPE');

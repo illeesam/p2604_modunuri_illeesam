@@ -100,7 +100,7 @@ window.PdReviewMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['REVIEW_STATUS']);
+      await codeStore.saLoadCodes(['REVIEW_STATUS'], {compNm: 'PdReviewMng'});
       try {
         codes.review_statuses = codeStore.sgGetGrpCodes('REVIEW_STATUS');
       } catch (err) {

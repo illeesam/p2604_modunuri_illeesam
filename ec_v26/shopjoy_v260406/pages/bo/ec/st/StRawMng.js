@@ -81,7 +81,7 @@ window.StRawMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['RAW_TYPE_KR', 'RAW_COLLECT_STATUS', 'RAW_VENDOR_DIV', 'PAY_METHOD_KR', 'ORDER_STATUS_KR', 'CONFIRM_YN', 'CLOSE_YN', 'SEND_YN', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['RAW_TYPE_KR', 'RAW_COLLECT_STATUS', 'RAW_VENDOR_DIV', 'PAY_METHOD_KR', 'ORDER_STATUS_KR', 'CONFIRM_YN', 'CLOSE_YN', 'SEND_YN', 'DATE_RANGE_OPT'], {compNm: 'StRawMng'});
       try {
         codes.raw_types = codeStore.sgGetGrpCodes('RAW_TYPE_KR');
         codes.raw_collect_statuses = codeStore.sgGetGrpCodes('RAW_COLLECT_STATUS');

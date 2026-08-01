@@ -62,7 +62,7 @@ window.StErpViewMng = {
     const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await s.saLoadCodes(['ERP_STATUS', 'ERP_VOUCHER_TYPE_KR', 'ERP_VOUCHER_STATUS_KR', 'DATE_RANGE_OPT']);
+      await s.saLoadCodes(['ERP_STATUS', 'ERP_VOUCHER_TYPE_KR', 'ERP_VOUCHER_STATUS_KR', 'DATE_RANGE_OPT'], {compNm: 'StErpViewMng'});
       codes.erp_statuses         = s.sgGetGrpCodes('ERP_STATUS');
       codes.erp_voucher_types    = s.sgGetGrpCodes('ERP_VOUCHER_TYPE_KR');
       codes.erp_voucher_statuses = s.sgGetGrpCodes('ERP_VOUCHER_STATUS_KR');

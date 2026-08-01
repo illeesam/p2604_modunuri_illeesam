@@ -116,7 +116,7 @@ window.PmSaveMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['SAVE_STATUS', 'SAVE_ISSUE_TYPE', 'PROMO_STATUS', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['SAVE_STATUS', 'SAVE_ISSUE_TYPE', 'PROMO_STATUS', 'DATE_RANGE_OPT'], {compNm: 'PmSaveMng'});
       try {
         codes.save_statuses = codeStore.sgGetGrpCodes('SAVE_STATUS');
         codes.save_issue_types = codeStore.sgGetGrpCodes('SAVE_ISSUE_TYPE');

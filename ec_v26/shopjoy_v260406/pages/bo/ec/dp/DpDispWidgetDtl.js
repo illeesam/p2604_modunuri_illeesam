@@ -126,7 +126,7 @@ window.DpDispWidgetDtl = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE']);
+      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE'], {compNm: 'DpDispWidgetDtl'});
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
       /* 상태(form.status '활성'/'비활성') ↔ use_yn 변환 — 구 ACTIVE_STATUS 코드그룹 미사용 */
       codes.active_statuses = [{ codeValue: '활성', codeLabel: '활성' }, { codeValue: '비활성', codeLabel: '비활성' }];

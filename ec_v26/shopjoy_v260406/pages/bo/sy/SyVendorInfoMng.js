@@ -195,7 +195,7 @@ window.SyVendorInfoMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['VENDOR_STATUS', 'VENDOR_TYPE_KR']);
+      await codeStore.saLoadCodes(['VENDOR_STATUS', 'VENDOR_TYPE_KR'], {compNm: 'SyVendorInfoMng'});
       codes.vendor_status = codeStore.sgGetGrpCodes('VENDOR_STATUS');
       codes.vendor_type_kr = codeStore.sgGetGrpCodes('VENDOR_TYPE_KR');
     };

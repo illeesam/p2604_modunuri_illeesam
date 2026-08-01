@@ -120,7 +120,7 @@ window.SyBbmDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['BBM_TYPE', 'BBM_COMMENT_TYPE', 'BBM_ATTACH_TYPE', 'BBM_CONTENT_TYPE', 'BBM_SCOPE_TYPE', 'USE_YN']);
+        await codeStore.saLoadCodes(['BBM_TYPE', 'BBM_COMMENT_TYPE', 'BBM_ATTACH_TYPE', 'BBM_CONTENT_TYPE', 'BBM_SCOPE_TYPE', 'USE_YN'], {compNm: 'SyBbmDtl'});
         codes.bbm_types = codeStore.sgGetGrpCodes('BBM_TYPE');
         codes.bbm_comment_types = codeStore.sgGetGrpCodes('BBM_COMMENT_TYPE');
         codes.bbm_attach_types = codeStore.sgGetGrpCodes('BBM_ATTACH_TYPE');

@@ -71,7 +71,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['SETTLE_ADJ_TYPE_KR', 'SETTLE_ADJ_STATUS', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['SETTLE_ADJ_TYPE_KR', 'SETTLE_ADJ_STATUS', 'DATE_RANGE_OPT'], {compNm: 'StSettleAdjMng'});
       try {
         codes.settle_adj_types = codeStore.sgGetGrpCodes('SETTLE_ADJ_TYPE_KR');
         codes.settle_adj_statuses = codeStore.sgGetGrpCodes('SETTLE_ADJ_STATUS');

@@ -44,7 +44,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
      *
      * @param {string[]} grps 필요한 코드그룹 목록
      */
-    async saLoadCodes(grps) {
+    async saLoadCodes(grps, opts = {}) {
       const want = (Array.isArray(grps) ? grps : [grps]).filter(g => g && typeof g === 'string');
       if (!want.length) return;
 
@@ -55,7 +55,7 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
 
       let p = null;
       if (fresh.length) {
-        p = this._saFetchGrps(fresh);
+        p = this._saFetchGrps(fresh, opts.compNm);
         /* ① dedupe — 같은 그룹을 동시에 요청하면 이 Promise 를 공유한다 */
         fresh.forEach(g => { this._svInflight[g] = p; });
       }
@@ -82,10 +82,10 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
     },
 
     /** 배치 호출 1회 — 실패해도 화면을 죽이지 않는다(로그만) */
-    async _saFetchGrps(grps) {
+    async _saFetchGrps(grps, compNm) {
       try {
         const svc = window.coApiSvc;
-        const res = await svc.syCode.getGrpsCodes(grps, '공통코드', '그룹조회');
+        const res = await svc.syCode.getGrpsCodes(grps, '공통코드', '그룹조회', compNm);
         const rows = this._fnNormCodeRows(res?.data?.data || []);
         if (rows.length) this.svCodes = this.svCodes.concat(rows);
         /* ② negative caching — 응답에 없던 그룹도 "조회 완료" 로 기록해 재요청을 막는다.

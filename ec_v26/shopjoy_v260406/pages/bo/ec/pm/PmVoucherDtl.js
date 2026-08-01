@@ -160,7 +160,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['PROMO_STATUS']);
+      await codeStore.saLoadCodes(['PROMO_STATUS'], {compNm: 'PmVoucherDtl'});
       codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
     };
 

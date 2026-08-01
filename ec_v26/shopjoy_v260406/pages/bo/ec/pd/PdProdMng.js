@@ -302,7 +302,7 @@ window.PdProdMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'OPTION_TYPE', 'CATEGORY_DEPTH', 'PROD_DATE_TYPE', 'DATE_RANGE_OPT', 'PROD_TYPE']);
+      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'OPTION_TYPE', 'CATEGORY_DEPTH', 'PROD_DATE_TYPE', 'DATE_RANGE_OPT', 'PROD_TYPE'], {compNm: 'PdProdMng'});
       codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
       codes.option_types = codeStore.sgGetGrpCodes('OPTION_TYPE');
       codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');

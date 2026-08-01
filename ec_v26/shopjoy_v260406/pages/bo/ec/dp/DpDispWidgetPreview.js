@@ -24,7 +24,7 @@ const _WP_DispWidgetPreview = {
       const codeStore = window.sfGetBoCodeStore?.();
       if (codeStore) {
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['DISP_WIDGET_TYPE']);
+        await codeStore.saLoadCodes(['DISP_WIDGET_TYPE'], {compNm: 'DpDispWidgetPreview'});
         codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE') || [];
       }
     };
@@ -481,7 +481,7 @@ window.DpDispWidgetPreview = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE', 'DISP_ENV']);
+      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE', 'DISP_ENV'], {compNm: 'DpDispWidgetPreview'});
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
       codes.disp_envs = codeStore.sgGetGrpCodes('DISP_ENV');
     };

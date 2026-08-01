@@ -344,7 +344,7 @@ window.SyRoleMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ROLE_STATUS', 'USE_YN']);
+      await codeStore.saLoadCodes(['ROLE_STATUS', 'USE_YN'], {compNm: 'SyRoleMng'});
       codes.role_status = codeStore.sgGetGrpCodes('ROLE_STATUS');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
     };

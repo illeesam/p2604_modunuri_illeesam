@@ -185,7 +185,7 @@ window.DpDispWidgetMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE']);
+      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE'], {compNm: 'DpDispWidgetMng'});
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
       /* 상태 = use_yn(Y/N) — 검색 시 useYn 파라미터로 전달 (구 ACTIVE_STATUS '활성' 값은 백엔드 Y/N 비교와 불일치) */
       codes.active_statuses = [{ codeValue: 'Y', codeLabel: '활성' }, { codeValue: 'N', codeLabel: '비활성' }];

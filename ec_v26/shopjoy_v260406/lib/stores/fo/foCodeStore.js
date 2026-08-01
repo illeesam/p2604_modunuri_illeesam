@@ -23,7 +23,7 @@ window.useFoCodeStore = Pinia.defineStore('foCode', {
      * 코드그룹 지연 로딩 — 캐시에 없는 그룹만 배치로 받아 누적한다.
      * (BO codeStore.saLoadCodes 와 같은 규약)
      */
-    async saLoadCodes(grps) {
+    async saLoadCodes(grps, opts = {}) {
       const want = (Array.isArray(grps) ? grps : [grps]).filter(g => g && typeof g === 'string');
       if (!want.length) return;
       const need = [...new Set(want)].filter(g => !this._svLoadedGrps[g]);
@@ -31,7 +31,7 @@ window.useFoCodeStore = Pinia.defineStore('foCode', {
       const fresh = need.filter(g => !this._svInflight[g]);
       let p = null;
       if (fresh.length) {
-        p = this._saFetchGrps(fresh);
+        p = this._saFetchGrps(fresh, opts.compNm);
         fresh.forEach(g => { this._svInflight[g] = p; });
       }
       await Promise.all([...inflight, p].filter(Boolean));
@@ -56,9 +56,9 @@ window.useFoCodeStore = Pinia.defineStore('foCode', {
     },
 
     /** 배치 호출 1회 — 실패해도 화면을 죽이지 않는다(로그만) */
-    async _saFetchGrps(grps) {
+    async _saFetchGrps(grps, compNm) {
       try {
-        const res = await window.coApiSvc.syCode.getGrpsCodes(grps, '공통코드', '그룹조회');
+        const res = await window.coApiSvc.syCode.getGrpsCodes(grps, '공통코드', '그룹조회', compNm);
         const rows = this._fnNormCodeRows(res?.data?.data || []);
         if (rows.length) this.svCodes = this.svCodes.concat(rows);
         /* 응답에 없던 그룹도 조회 완료로 기록 — 매번 재요청 방지 */

@@ -187,7 +187,7 @@ window.SyBbsDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['BBS_POST_STATUS']);
+        await codeStore.saLoadCodes(['BBS_POST_STATUS'], {compNm: 'SyBbsDtl'});
         codes.bbs_post_statuses = codeStore.sgGetGrpCodes('BBS_POST_STATUS');
       } catch (err) {
         console.error('[fnLoadCodes]', err);

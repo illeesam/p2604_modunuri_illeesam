@@ -218,7 +218,7 @@ window.CmFaqMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['USE_YN']);
+      await codeStore.saLoadCodes(['USE_YN'], {compNm: 'CmFaqMng'});
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
     };
 

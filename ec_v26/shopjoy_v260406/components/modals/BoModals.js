@@ -2136,7 +2136,7 @@ window.BoExcelUploadModal = {
       const store = window.sfGetBoCodeStore?.();
       if (!store || useYnOptions.value.length) return;
       /* 읽기 전에 요청 — 지연 로딩에서는 캐시에 없으면 빈 배열이 된다 */
-      await store.saLoadCodes(['USE_YN']);
+      await store.saLoadCodes(['USE_YN'], {compNm: 'BoModals'});
       const list = store.sgGetGrpCodes?.('USE_YN') || [];
       useYnOptions.value = list.map(x => ({ value: x.codeValue ?? x.codeVal, label: x.codeLabel ?? x.codeNm }));
     };

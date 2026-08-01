@@ -131,7 +131,7 @@ window.SyVendorDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['ACTIVE_STATUS', 'VENDOR_TYPE_KR']);
+        await codeStore.saLoadCodes(['ACTIVE_STATUS', 'VENDOR_TYPE_KR'], {compNm: 'SyVendorDtl'});
         codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
         codes.vendor_type_kr = codeStore.sgGetGrpCodes('VENDOR_TYPE_KR');
       } catch (err) {

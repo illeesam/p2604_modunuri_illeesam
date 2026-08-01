@@ -216,7 +216,7 @@ window.PmGiftDtl = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['GIFT_COND_KR', 'GIFT_STATUS', 'PM_PROD_TARGET']);
+      await codeStore.saLoadCodes(['GIFT_COND_KR', 'GIFT_STATUS', 'PM_PROD_TARGET'], {compNm: 'PmGiftDtl'});
       codes.gift_cond_types = codeStore.sgGetGrpCodes('GIFT_COND_KR');
       codes.gift_statuses = codeStore.sgGetGrpCodes('GIFT_STATUS');
       codes.pm_prod_targets = codeStore.sgGetGrpCodes('PM_PROD_TARGET');

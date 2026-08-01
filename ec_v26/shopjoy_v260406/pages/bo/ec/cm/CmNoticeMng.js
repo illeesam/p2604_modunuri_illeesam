@@ -147,7 +147,7 @@ window.CmNoticeMng = {
     const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await s.saLoadCodes(['NOTICE_TYPE', 'NOTICE_STATUS', 'DATE_RANGE_OPT']);
+      await s.saLoadCodes(['NOTICE_TYPE', 'NOTICE_STATUS', 'DATE_RANGE_OPT'], {compNm: 'CmNoticeMng'});
       codes.noticeTypes     = s.sgGetGrpCodes('NOTICE_TYPE');
       codes.noticeStatuses  = s.sgGetGrpCodes('NOTICE_STATUS');
       codes.date_range_opts = s.sgGetGrpCodes('DATE_RANGE_OPT');

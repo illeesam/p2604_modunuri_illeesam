@@ -187,7 +187,7 @@ window.PmCacheDtl = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['CACHE_TRANS_TYPE', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE']);
+      await codeStore.saLoadCodes(['CACHE_TRANS_TYPE', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE'], {compNm: 'PmCacheDtl'});
       codes.cache_trans_types = codeStore.sgGetGrpCodes('CACHE_TRANS_TYPE');
       codes.pm_prod_targets   = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
       codes.pm_issue_grades   = codeStore.sgGetGrpCodes('PM_ISSUE_GRADE');

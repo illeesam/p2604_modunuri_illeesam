@@ -81,7 +81,7 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ST_STATUS_ORDER', 'CLAIM_TYPE_KR', 'CLAIM_STATUS_KR', 'PROMO_TYPE_KR', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['ST_STATUS_ORDER', 'CLAIM_TYPE_KR', 'CLAIM_STATUS_KR', 'PROMO_TYPE_KR', 'DATE_RANGE_OPT'], {compNm: 'StStatusMng'});
       try {
         codes.st_order_statuses = codeStore.sgGetGrpCodes('ST_STATUS_ORDER');
         codes.claim_types_kr = codeStore.sgGetGrpCodes('CLAIM_TYPE_KR');

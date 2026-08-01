@@ -60,7 +60,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['CLAIM_STATUS', 'RECON_RESULT_CLAIM', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['CLAIM_STATUS', 'RECON_RESULT_CLAIM', 'DATE_RANGE_OPT'], {compNm: 'StReconClaimMng'});
       try {
         codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
         codes.recon_results = codeStore.sgGetGrpCodes('RECON_RESULT_CLAIM');

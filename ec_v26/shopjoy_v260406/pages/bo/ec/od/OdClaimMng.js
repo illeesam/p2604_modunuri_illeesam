@@ -247,7 +247,7 @@ window.OdClaimMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ORDER_STATUS', 'CLAIM_TYPE', 'CLAIM_STATUS', 'DLIV_STATUS', 'PAYMENT_METHOD', 'CLAIM_DATE_TYPE', 'APPROVAL_ACTION', 'REQ_TARGET', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['ORDER_STATUS', 'CLAIM_TYPE', 'CLAIM_STATUS', 'DLIV_STATUS', 'PAYMENT_METHOD', 'CLAIM_DATE_TYPE', 'APPROVAL_ACTION', 'REQ_TARGET', 'DATE_RANGE_OPT'], {compNm: 'OdClaimMng'});
       codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
       codes.claim_types = codeStore.sgGetGrpCodes('CLAIM_TYPE');
       codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');

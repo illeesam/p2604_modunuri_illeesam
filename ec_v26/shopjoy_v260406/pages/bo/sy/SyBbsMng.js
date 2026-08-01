@@ -260,7 +260,7 @@ window.SyBbsMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['BBS_STATUS', 'BBS_POST_STATUS', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['BBS_STATUS', 'BBS_POST_STATUS', 'DATE_RANGE_OPT'], {compNm: 'SyBbsMng'});
       codes.bbs_status = codeStore.sgGetGrpCodes('BBS_STATUS');
       codes.bbs_post_statuses = codeStore.sgGetGrpCodes('BBS_POST_STATUS');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');

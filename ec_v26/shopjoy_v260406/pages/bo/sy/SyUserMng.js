@@ -328,7 +328,7 @@ window.SyUserMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['USER_STATUS', 'USER_ROLE', 'USER_DATE_TYPE', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['USER_STATUS', 'USER_ROLE', 'USER_DATE_TYPE', 'DATE_RANGE_OPT'], {compNm: 'SyUserMng'});
       codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
       codes.user_roles = codeStore.sgGetGrpCodes('USER_ROLE');
       codes.user_date_types = codeStore.sgGetGrpCodes('USER_DATE_TYPE');

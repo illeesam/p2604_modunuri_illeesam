@@ -373,7 +373,7 @@ window.SyBatchMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['BATCH_STATUS', 'ACTIVE_STATUS', 'BATCH_RUN_STATUS', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['BATCH_STATUS', 'ACTIVE_STATUS', 'BATCH_RUN_STATUS', 'DATE_RANGE_OPT'], {compNm: 'SyBatchMng'});
       codes.batch_status = codeStore.sgGetGrpCodes('BATCH_STATUS');
       codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       codes.batch_run_statuses = codeStore.sgGetGrpCodes('BATCH_RUN_STATUS');

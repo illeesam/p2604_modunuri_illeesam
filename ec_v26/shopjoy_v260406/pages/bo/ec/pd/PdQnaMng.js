@@ -190,7 +190,7 @@ window.PdQnaMng = {
          `QNA_STATUS` 를 읽고 있었는데 그 그룹은 DB 에 존재하지 않아 '상태' select 가
          항상 비어 있었다(2026-07-30). 이 select 의 key 는 answYn(답변여부 Y/N) 이므로
          관례({동사}_YN: SEND_YN/CLOSE_YN/CONFIRM_YN)에 맞춘 ANSW_YN 을 신설해 연결했다. */
-      await codeStore.saLoadCodes(['ANSW_YN']);
+      await codeStore.saLoadCodes(['ANSW_YN'], {compNm: 'PdQnaMng'});
       try {
         codes.qna_statuses = codeStore.sgGetGrpCodes('ANSW_YN');
       } catch (err) {

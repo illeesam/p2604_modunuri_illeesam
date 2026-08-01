@@ -316,7 +316,7 @@ window.PdProdDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['PRODUCT_STATUS', 'PROD_TYPE', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS']);
+        await codeStore.saLoadCodes(['PRODUCT_STATUS', 'PROD_TYPE', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS'], {compNm: 'PdProdDtl'});
         if (!codeStore?.svCodes) { return; }
         codes.length = 0;
         codes.push(...codeStore.svCodes);

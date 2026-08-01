@@ -56,7 +56,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['PAYMENT_METHOD', 'PAYMENT_STATUS', 'RECON_RESULT_PAY', 'DATE_RANGE_OPT']);
+      await codeStore.saLoadCodes(['PAYMENT_METHOD', 'PAYMENT_STATUS', 'RECON_RESULT_PAY', 'DATE_RANGE_OPT'], {compNm: 'StReconPayMng'});
       try {
         codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
         codes.payment_statuses = codeStore.sgGetGrpCodes('PAYMENT_STATUS');

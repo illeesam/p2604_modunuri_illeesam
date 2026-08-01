@@ -213,7 +213,7 @@ window.PmDiscntDtl = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['DISCNT_TYPE', 'DISCNT_VAL_TYPE', 'PROMO_STATUS', 'DISCNT_APPLY_TARGET', 'DISCNT_PROD_TARGET']);
+      await codeStore.saLoadCodes(['DISCNT_TYPE', 'DISCNT_VAL_TYPE', 'PROMO_STATUS', 'DISCNT_APPLY_TARGET', 'DISCNT_PROD_TARGET'], {compNm: 'PmDiscntDtl'});
       codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE');
       codes.discnt_val_types = codeStore.sgGetGrpCodes('DISCNT_VAL_TYPE');
       codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
