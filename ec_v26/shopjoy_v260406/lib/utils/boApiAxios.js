@@ -82,6 +82,8 @@
       var url     = cfg.url || '';
       var errMsg  = chk.errMsg + '\n\nMethod: ' + method + '\nURL: ' + url;
       console.error(TAG + ' ✗ REQUIRED HEADERS MISSING', { method: method, url: url });
+      /* 진행 오버레이를 이미 띄웠으면 여기서 내려야 한다 — response 인터셉터는 err.config 가 없어 처리 못 함 */
+      try { if (cfg._progressShown && typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
       /* api-response-error 이벤트 발행 → boApp 500 에러 화면에 method/url/메시지 표시 */
       try {
         global.dispatchEvent(new CustomEvent('api-response-error', {

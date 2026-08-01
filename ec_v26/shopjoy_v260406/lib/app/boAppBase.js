@@ -246,14 +246,45 @@
           .sort((a, b) => a.label.localeCompare(b.label, 'ko')),
       );
 
-      /* ── 메뉴 상태 (localStorage 영속화) ── */
+      /* ── 개인화 설정 헬퍼 ── */
+      // _suppressPrefSave: DB에서 로드한 값을 ref에 반영할 때 역방향 save 방지
+      let _suppressPrefSave = false;
+      const _PREF_KEYS = {
+        leftMenuOpen:  'ui.left_menu_open',
+        tabBarOpen:    'ui.tab_bar_open',
+        rightPanelOpen:'ui.right_panel_open',
+      };
+      const _savePref = (key, value) => {
+        if (_suppressPrefSave) return;
+        const strVal = String(value);
+        localStorage.setItem('modu-bo-' + key.replace(/\./g, '-'), strVal);
+        window.sfGetBoUserPrefStore?.()?.saSetPref?.(key, strVal);
+      };
+      const _syncPrefsFromDb = async () => {
+        const prefStore = window.sfGetBoUserPrefStore?.();
+        if (!prefStore) return;
+        await prefStore.saLoadPrefs();
+        _suppressPrefSave = true;
+        try {
+          const p = prefStore.prefs;
+          if (p[_PREF_KEYS.leftMenuOpen]   !== undefined) leftMenuOpen.value   = p[_PREF_KEYS.leftMenuOpen]   === 'true';
+          if (p[_PREF_KEYS.tabBarOpen]     !== undefined) tabBarOpen.value     = p[_PREF_KEYS.tabBarOpen]     === 'true';
+          if (p[_PREF_KEYS.rightPanelOpen] !== undefined) rightPanelOpen.value = p[_PREF_KEYS.rightPanelOpen] === 'true';
+        } finally {
+          _suppressPrefSave = false;
+        }
+      };
+      const _lsGet = (key, def) => {
+        const v = localStorage.getItem('modu-bo-' + key.replace(/\./g, '-'));
+        return v !== null ? v === 'true' : def;
+      };
+
+      /* ── 메뉴 상태 (localStorage 선로드 + DB 동기화) ── */
       const activeTop = ref('home');
-      const _lmSaved = localStorage.getItem('modu-bo-left-menu-open');
-      const leftMenuOpen = ref(_lmSaved !== null ? _lmSaved === 'true' : true);
-      watch(leftMenuOpen, (v) => localStorage.setItem('modu-bo-left-menu-open', String(v)));
-      const _tbSaved = localStorage.getItem('modu-bo-tab-bar-open');
-      const tabBarOpen = ref(_tbSaved !== null ? _tbSaved === 'true' : true);
-      watch(tabBarOpen, (v) => localStorage.setItem('modu-bo-tab-bar-open', String(v)));
+      const leftMenuOpen = ref(_lsGet(_PREF_KEYS.leftMenuOpen, true));
+      watch(leftMenuOpen, (v) => _savePref(_PREF_KEYS.leftMenuOpen, v));
+      const tabBarOpen = ref(_lsGet(_PREF_KEYS.tabBarOpen, true));
+      watch(tabBarOpen, (v) => _savePref(_PREF_KEYS.tabBarOpen, v));
 
       /* ── 대메뉴 hover 드롭다운 ── */
       const hoveredTop = ref(null);
@@ -600,9 +631,8 @@
       window.showBoHelp = showHelp;
 
       /* ── 공통 필터 & 선택 모달 ── */
-      const _rpSaved = localStorage.getItem('modu-bo-right-panel-open');
-      const rightPanelOpen = ref(_rpSaved !== null ? _rpSaved === 'true' : true);
-      watch(rightPanelOpen, (v) => localStorage.setItem('modu-bo-right-panel-open', String(v)));
+      const rightPanelOpen = ref(_lsGet(_PREF_KEYS.rightPanelOpen, true));
+      watch(rightPanelOpen, (v) => _savePref(_PREF_KEYS.rightPanelOpen, v));
       const commonFilter = boCommonFilter;
 
       /* 사이트 필터 default 적용: store(svBoSiteId)가 있으면 그 값을 commonFilter.siteId 기본으로 세팅 */
@@ -949,6 +979,7 @@
           try {
             await window.useBoAppInitStore?.()?.saFetchBoAppInitData?.();
             _syncCurrentAuthUser();
+            await _syncPrefsFromDb();
           } catch (e) {
             if (e?.response?.status === 401) {
               console.warn('[boApp] token invalid (401), reset session');
@@ -962,7 +993,7 @@
         boInitReady.value = true;
         window.boInitReady = true;
       })();
-      const activeRoleId = ref(null);
+      const activeRoleId = ref(localStorage.getItem('modu-bo-active-role-id') || null);
       const cfIsLoggedIn = computed(() => !!currentAuthUser?.authId);
       const currentAuthUserRoles = reactive([]);
       // getInitData 응답에 이미 사용자 역할 + 시스템 역할이 모두 들어있으므로
@@ -1027,6 +1058,7 @@
 
       /* onRoleChange */
       const onRoleChange = () => {
+        try { localStorage.setItem('modu-bo-active-role-id', activeRoleId.value || ''); } catch (_) {}
         location.reload();
       };
 
@@ -1271,6 +1303,7 @@
         relatedSiteOpen: false,
         sitemapShow: false,
         favPanelShow: false,
+        roleSwitchShow: false,
       });
 
       /* 프로필 모달 */
@@ -1455,6 +1488,7 @@
 
           await _boAuthStore.saLogin(loginForm.loginId, loginForm.loginPwd, loginForm.authMethod);
           _syncCurrentAuthUser();
+          _syncPrefsFromDb();
 
           openTabs.splice(0);
           loginForm.loginId = '';
@@ -1488,6 +1522,7 @@
             return;
           }
           _syncCurrentAuthUser();
+          _syncPrefsFromDb();
           openTabs.splice(0);
           closeLogin();
           navigate('dashboard');
@@ -1542,6 +1577,8 @@
           /* boConfigStore 는 사이트 식별정보(svSiteNo/svSiteId)만 갖는다.
              사이트는 브라우저 단위 설정이라 로그아웃으로 지우지 않는다. */
 
+          try { localStorage.removeItem('modu-bo-active-role-id'); } catch (_) {}
+          activeRoleId.value = null;
           uiState.userMenuShow = false;
           openTabs.splice(0);
           _syncCurrentAuthUser();
@@ -1818,6 +1855,7 @@
       const onRootClick = () => {
         closeCtxMenu();
         uiState.userMenuShow = false;
+        uiState.roleSwitchShow = false;
         boSettingShow.value = false;
         hoveredTop.value = null;
         uiState.sitemapShow = false;
@@ -2016,62 +2054,38 @@
         @mouseenter="onTopMenuEnter(tm.id)">{{ tm.label }}</span>
     </div>
 
-    <!-- 설정(개발) 드롭다운 -->
-    <div style="position:relative;flex-shrink:0;" @click.stop>
-      <button @click="onToggleBoSetting" title="설정"
-        style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px;transition:all .15s;"
-        :style="boSettingShow ? 'background:rgba(232,88,122,0.18);border:1px solid rgba(232,88,122,0.45);color:#e8587a;' : 'background:rgba(232,88,122,0.08);border:1px solid rgba(232,88,122,0.25);color:#e8587a;'">⚙</button>
-      <div v-if="boSettingShow"
-        style="position:absolute;right:0;top:calc(100% + 8px);width:190px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:9000;overflow:hidden;padding:4px 0;">
-        <button @click="onToggleApiToast"
-          style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:#374151;transition:background .15s;"
-          :style="apiToastEnabled ? 'background:rgba(232,88,122,0.08);color:#e8587a;font-weight:700;' : ''"
-          @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
-          @mouseleave="$event.currentTarget.style.background=apiToastEnabled?'rgba(232,88,122,0.08)':'transparent'">
-          <span style="font-size:13px;">🔔</span>
-          <span>API 토스트 출력</span>
-          <span style="margin-left:auto;font-size:10px;border-radius:8px;padding:1px 6px;font-weight:700;" :style="apiToastEnabled?'background:#e8587a;color:#fff;':'background:#e8e8e8;color:#888;'">{{ apiToastEnabled ? 'ON' : 'OFF' }}</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- 사이트맵 버튼 -->
-    <button @click.stop="uiState.sitemapShow=!uiState.sitemapShow; uiState.favPanelShow=false; hoveredTop=null"
-      title="사이트맵" class="nav-tool-btn" :class="{active: uiState.sitemapShow}">
-      🗺 사이트맵
-    </button>
-
-    <!-- 즐겨찾기 버튼 -->
-    <button @click.stop="uiState.favPanelShow=!uiState.favPanelShow; uiState.sitemapShow=false; hoveredTop=null"
-      title="즐겨찾기" class="nav-tool-btn" :class="{active: uiState.favPanelShow}" style="position:relative;">
-      ★
-      <span v-if="cfFavList.length" class="nav-fav-count">{{ cfFavList.length }}</span>
-    </button>
-
-    <!-- 도움말 버튼 -->
-    <button @click.stop="showHelp()"
-      title="도움말"
-      style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;font-weight:600;color:#e8587a;background:rgba(232,88,122,0.08);border:1px solid rgba(232,88,122,0.25);border-radius:6px;cursor:pointer;transition:all .15s;flex-shrink:0;"
-      @mouseenter="$event.target.style.background='rgba(232,88,122,0.18)'"
-      @mouseleave="$event.target.style.background='rgba(232,88,122,0.08)'">
-      <span style="font-size:13px;">❓</span> 도움말
-    </button>
-
     <!-- 로그인/유저 영역 -->
     <div class="top-nav-user" @click.stop>
       <template v-if="cfIsLoggedIn">
-        <select v-if="currentAuthUserRoles.length > 1" class="user-role-select" v-model="activeRoleId" @change="onRoleChange"
-          :title="'역할 ' + currentAuthUserRoles.length + '개 보유'"
-          style="margin-right:4px;padding:3px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;max-width:480px;min-width:320px;">
-          <option v-for="r in currentAuthUserRoles" :key="r.roleId" :value="r.roleId">{{ rolePath(r) }}</option>
-        </select>
-        <span v-if="currentAuthUserRoles.length >= 2"
-          :title="'역할 ' + currentAuthUserRoles.length + '개 보유'"
-          style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-right:8px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#ff6b9d,#c44569);border-radius:9px;">{{ currentAuthUserRoles.length }}</span>
-        <span v-else-if="currentAuthUserRoles.length === 1" class="user-role-label"
-          style="margin-right:8px;font-size:11px;color:#cdb4ff;font-weight:500;">{{ rolePath(currentAuthUserRoles[0]) }}</span>
-        <span class="user-name-label">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</span>
-        <button class="user-avatar-btn" @click="uiState.userMenuShow=!uiState.userMenuShow" :title="currentAuthUser?.email || ''">
+        <!-- 이름 + 역할명 세로 스택 -->
+        <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;margin-right:4px;gap:1px;" @click.stop>
+          <span style="font-size:12px;font-weight:600;color:#fff;white-space:nowrap;line-height:1.3;">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</span>
+          <div v-if="currentAuthUserRoles.length > 1" style="position:relative;">
+            <button @click="uiState.roleSwitchShow=!uiState.roleSwitchShow; uiState.userMenuShow=false; boSettingShow=false"
+              style="display:inline-flex;align-items:center;gap:3px;padding:0;border:none;background:none;font-size:10px;font-weight:500;color:#cdb4ff;cursor:pointer;white-space:nowrap;line-height:1.3;"
+              :title="'역할 ' + currentAuthUserRoles.length + '개 보유'">
+              {{ rolePath(currentAuthUserRoles.find(r => r.roleId === activeRoleId) || currentAuthUserRoles[0]) || '역할 선택' }}
+              <span style="font-size:8px;opacity:.7;">▾</span>
+            </button>
+            <div v-if="uiState.roleSwitchShow"
+              style="position:absolute;right:0;top:calc(100% + 4px);min-width:200px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:9100;padding:4px 0;">
+              <button v-for="r in currentAuthUserRoles" :key="r.roleId"
+                @click="activeRoleId=r.roleId; onRoleChange(); uiState.roleSwitchShow=false"
+                style="width:100%;padding:9px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:12px;display:flex;align-items:center;gap:8px;"
+                :style="r.roleId === activeRoleId ? 'background:rgba(232,88,122,0.08);color:#e8587a;font-weight:700;' : 'color:#374151;'"
+                @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
+                @mouseleave="$event.currentTarget.style.background=r.roleId===activeRoleId?'rgba(232,88,122,0.08)':'transparent'">
+                <span v-if="r.roleId === activeRoleId" style="flex-shrink:0;font-size:11px;">✓</span>
+                <span v-else style="flex-shrink:0;width:14px;display:inline-block;"></span>
+                {{ rolePath(r) }}
+              </button>
+            </div>
+          </div>
+          <span v-else-if="currentAuthUserRoles.length === 1" style="font-size:10px;font-weight:500;color:#cdb4ff;white-space:nowrap;line-height:1.3;">
+            {{ rolePath(currentAuthUserRoles[0]) }}
+          </span>
+        </div>
+        <button class="user-avatar-btn" @click="uiState.userMenuShow=!uiState.userMenuShow; boSettingShow=false; uiState.roleSwitchShow=false" :title="currentAuthUser?.email || ''">
           {{ ((currentAuthUser?.authNm || currentAuthUser?.name || '').charAt(0)) || '?' }}
         </button>
         <div v-if="uiState.userMenuShow" class="user-dropdown">
@@ -2087,6 +2101,46 @@
           <div class="user-dropdown-item danger" @click="doLogout">↩ 로그아웃</div>
           <div class="user-dropdown-sep"></div>
           <div class="user-dropdown-item" @click="doExpireToken" title="accessToken을 강제 만료시켜 refresh 자동 재갱신 흐름을 테스트합니다 (개발용)">🔄 토큰 강제만료 (refresh 테스트)</div>
+        </div>
+        <!-- ⚙ 설정 드롭다운 — 아바타 우측 -->
+        <div style="position:relative;flex-shrink:0;margin-left:4px;" @click.stop>
+          <button @click="boSettingShow=!boSettingShow; uiState.userMenuShow=false; uiState.roleSwitchShow=false" title="설정"
+            style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;transition:all .15s;"
+            :style="boSettingShow ? 'background:rgba(232,88,122,0.18);border:1px solid rgba(232,88,122,0.45);color:#e8587a;' : 'background:rgba(232,88,122,0.08);border:1px solid rgba(232,88,122,0.25);color:#e8587a;'">⚙</button>
+          <div v-if="boSettingShow"
+            style="position:absolute;right:0;top:calc(100% + 6px);width:200px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:9000;overflow:hidden;padding:4px 0;">
+            <button @click="boSettingShow=false; uiState.sitemapShow=true; uiState.favPanelShow=false; hoveredTop=null"
+              style="width:100%;padding:9px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:#374151;"
+              :style="uiState.sitemapShow ? 'background:rgba(232,88,122,0.08);color:#e8587a;font-weight:600;' : ''"
+              @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
+              @mouseleave="$event.currentTarget.style.background=uiState.sitemapShow?'rgba(232,88,122,0.08)':'transparent'">
+              <span>🗺</span> 사이트맵
+            </button>
+            <button @click="boSettingShow=false; uiState.favPanelShow=true; uiState.sitemapShow=false; hoveredTop=null"
+              style="width:100%;padding:9px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:#374151;"
+              :style="uiState.favPanelShow ? 'background:rgba(232,88,122,0.08);color:#e8587a;font-weight:600;' : ''"
+              @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
+              @mouseleave="$event.currentTarget.style.background=uiState.favPanelShow?'rgba(232,88,122,0.08)':'transparent'">
+              <span>★</span> 즐겨찾기
+              <span v-if="cfFavList.length" style="margin-left:auto;font-size:10px;font-weight:700;background:#e8587a;color:#fff;border-radius:8px;padding:1px 6px;">{{ cfFavList.length }}</span>
+            </button>
+            <button @click="boSettingShow=false; showHelp()"
+              style="width:100%;padding:9px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:#374151;"
+              @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
+              @mouseleave="$event.currentTarget.style.background='transparent'">
+              <span>❓</span> 도움말
+            </button>
+            <div style="height:1px;background:#f0f0f0;margin:4px 0;"></div>
+            <button @click="onToggleApiToast"
+              style="width:100%;padding:9px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:#374151;"
+              :style="apiToastEnabled ? 'background:rgba(232,88,122,0.08);color:#e8587a;font-weight:600;' : ''"
+              @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
+              @mouseleave="$event.currentTarget.style.background=apiToastEnabled?'rgba(232,88,122,0.08)':'transparent'">
+              <span>🔔</span>
+              <span>API 토스트</span>
+              <span style="margin-left:auto;font-size:10px;border-radius:8px;padding:1px 6px;font-weight:700;" :style="apiToastEnabled?'background:#e8587a;color:#fff;':'background:#e8e8e8;color:#888;'">{{ apiToastEnabled ? 'ON' : 'OFF' }}</span>
+            </button>
+          </div>
         </div>
       </template>
       <template v-else>
