@@ -29,8 +29,6 @@ public class FoPmCouponService {
     private final PmCouponService         pmCouponService;
     private final PmCouponProdRepository  pmCouponProdRepository;
 
-    private static final String DEFAULT_SITE_ID = "2604010000000001";
-
     /** getAvailableCoupons — 조회
      *  req.prodId 가 있으면 pm_coupon_prod 로 적용 가능한 쿠폰만 필터링 */
     public List<PmCouponIssueDto.Item> getAvailableCoupons(PmCouponIssueDto.Request req) {
@@ -41,8 +39,7 @@ public class FoPmCouponService {
         // prodId 가 있으면 해당 상품에 적용 가능한 쿠폰 ID 만 사전 필터
         String prodId = req.getProdId();
         if (StringUtils.hasText(prodId)) {
-            String siteId = StringUtils.hasText(req.getSiteId()) ? req.getSiteId() : DEFAULT_SITE_ID;
-            List<String> couponIds = pmCouponProdRepository.findCouponIdsByProdId(prodId, siteId);
+            List<String> couponIds = pmCouponProdRepository.findCouponIdsByProdId(prodId);
             if (couponIds.isEmpty()) return List.of();  // 적용 쿠폰 없음
             req.setCouponIds(couponIds);
         }

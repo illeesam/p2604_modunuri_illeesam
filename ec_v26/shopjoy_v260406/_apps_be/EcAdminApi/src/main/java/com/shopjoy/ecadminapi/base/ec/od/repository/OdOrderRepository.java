@@ -16,9 +16,7 @@ public interface OdOrderRepository extends JpaRepository<OdOrder, String>, QOdOr
      * 결제 완료 후 장시간 방치된 주문을 관리자 알림으로 보고한다.
      */
     @Query("SELECT o FROM OdOrder o " +
-           "WHERE o.siteId = :siteId " +
-           "AND o.orderStatusCd = 'PAID' " +
+           "WHERE o.orderStatusCd = 'PAID' " +
            "AND o.regDate < :threshold")
-    List<OdOrder> findStalePaidOrders(@Param("siteId") String siteId,
-                                       @Param("threshold") LocalDateTime threshold);
+    List<OdOrder> findStalePaidOrders(@Param("threshold") LocalDateTime threshold);
 }

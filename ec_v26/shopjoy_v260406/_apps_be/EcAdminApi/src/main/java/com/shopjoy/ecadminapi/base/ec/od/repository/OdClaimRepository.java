@@ -20,9 +20,7 @@ public interface OdClaimRepository extends JpaRepository<OdClaim, String>, QOdCl
      * 접수 후 장시간 처리되지 않은 클레임을 관리자 알림으로 보고한다.
      */
     @Query("SELECT c FROM OdClaim c " +
-           "WHERE c.siteId = :siteId " +
-           "AND c.claimStatusCd = 'REQUESTED' " +
+           "WHERE c.claimStatusCd = 'REQUESTED' " +
            "AND c.regDate < :threshold")
-    List<OdClaim> findStaleRequestedClaims(@Param("siteId") String siteId,
-                                            @Param("threshold") LocalDateTime threshold);
+    List<OdClaim> findStaleRequestedClaims(@Param("threshold") LocalDateTime threshold);
 }

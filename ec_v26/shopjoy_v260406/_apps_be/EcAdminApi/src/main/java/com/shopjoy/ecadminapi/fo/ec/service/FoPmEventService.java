@@ -41,7 +41,7 @@ public class FoPmEventService {
     /** getList — 조회. req.prodId 가 있으면 pm_event_prod 로 적용 가능한 이벤트만 필터링 */
     public List<PmEventDto.Item> getList(PmEventDto.Request req) {
         if (StringUtils.hasText(req.getProdId())) {
-            List<String> eventIds = pmEventProdRepository.findEventIdsByProdId(req.getProdId(), req.getSiteId());
+            List<String> eventIds = pmEventProdRepository.findEventIdsByProdId(req.getProdId());
             if (eventIds.isEmpty()) return List.of();
             req.setEventIds(eventIds);
         }
@@ -53,7 +53,7 @@ public class FoPmEventService {
     /** getPageData — 조회. req.prodId 가 있으면 pm_event_prod 로 적용 가능한 이벤트만 필터링 */
     public BasePage<PmEventDto.Item> getPageData(PmEventDto.Request req) {
         if (StringUtils.hasText(req.getProdId())) {
-            List<String> eventIds = pmEventProdRepository.findEventIdsByProdId(req.getProdId(), req.getSiteId());
+            List<String> eventIds = pmEventProdRepository.findEventIdsByProdId(req.getProdId());
             if (eventIds.isEmpty()) {
                 BasePage<PmEventDto.Item> empty = new BasePage<>();
                 return empty.setPageInfo(List.of(), 0L, 1, 10, req);

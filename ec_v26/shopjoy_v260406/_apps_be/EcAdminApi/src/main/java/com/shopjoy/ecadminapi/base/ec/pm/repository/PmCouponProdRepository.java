@@ -16,6 +16,6 @@ public interface PmCouponProdRepository extends JpaRepository<PmCouponProd, PmCo
     int deleteAllByCouponIds(@Param("couponIds") List<String> couponIds);
 
     /** 상품에 적용 가능한 활성 쿠폰 목록 조회 (FO 상품상세/주문 페이지용) */
-    @Query("SELECT p.couponId FROM PmCouponProd p WHERE p.prodId = :prodId AND p.siteId = :siteId")
-    List<String> findCouponIdsByProdId(@Param("prodId") String prodId, @Param("siteId") String siteId);
+    @Query("SELECT p.couponId FROM PmCouponProd p WHERE p.prodId = :prodId")
+    List<String> findCouponIdsByProdId(@Param("prodId") String prodId);
 }

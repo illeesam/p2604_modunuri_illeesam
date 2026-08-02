@@ -68,7 +68,7 @@ public class MbDormantJob implements SchBatchJobHandler {
 
             String siteId = site.getSiteId();
 
-            List<MbMember> targets = memberRepository.findDormantTargets(siteId, threshold);
+            List<MbMember> targets = memberRepository.findDormantTargets(threshold);
             if (targets.isEmpty()) continue;
 
             int converted = 0;

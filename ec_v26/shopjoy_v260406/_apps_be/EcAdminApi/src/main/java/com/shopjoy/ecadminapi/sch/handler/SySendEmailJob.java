@@ -72,7 +72,7 @@ public class SySendEmailJob implements SchBatchJobHandler {
             LocalDateTime dormantThreshold     = now.minusDays(DORMANT_DAYS);
 
             List<MbMember> warnTargets = memberRepository
-                .findDormantWarnTargets(siteId, dormantWarnThreshold, dormantThreshold);
+                .findDormantWarnTargets(dormantWarnThreshold, dormantThreshold);
 
             log.info("[{}] siteId={} 휴면예정 이메일 대상: {}명", batchCode(), siteId, warnTargets.size());
 

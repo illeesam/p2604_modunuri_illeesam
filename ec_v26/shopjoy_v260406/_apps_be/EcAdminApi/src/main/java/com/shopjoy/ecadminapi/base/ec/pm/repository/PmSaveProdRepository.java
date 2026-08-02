@@ -16,6 +16,6 @@ public interface PmSaveProdRepository extends JpaRepository<PmSaveProd, PmSavePr
     int deleteAllBySaveIds(@Param("saveIds") List<String> saveIds);
 
     /** 상품에 적용 가능한 활성 적립금 목록 조회 (FO 상품상세/주문 페이지용) */
-    @Query("SELECT p.saveId FROM PmSaveProd p WHERE p.prodId = :prodId AND p.siteId = :siteId")
-    List<String> findSaveIdsByProdId(@Param("prodId") String prodId, @Param("siteId") String siteId);
+    @Query("SELECT p.saveId FROM PmSaveProd p WHERE p.prodId = :prodId")
+    List<String> findSaveIdsByProdId(@Param("prodId") String prodId);
 }

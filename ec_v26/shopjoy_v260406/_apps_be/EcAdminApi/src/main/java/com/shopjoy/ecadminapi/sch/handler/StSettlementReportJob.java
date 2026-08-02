@@ -93,7 +93,7 @@ public class StSettlementReportJob implements SchBatchJobHandler {
             if (!"ACTIVE".equals(site.getSiteStatusCd())) continue;
             String siteId = site.getSiteId();
 
-            List<String> vendorIds = rawRepository.findDistinctVendorIdsBySettlePeriod(siteId, ymLabel);
+            List<String> vendorIds = rawRepository.findDistinctVendorIdsBySettlePeriod(ymLabel);
             if (vendorIds.isEmpty()) {
                 log.info("[{}] siteId={} — {} 원천 데이터 없음, 스킵", batchCode(), siteId, ymLabel);
                 continue;
@@ -101,7 +101,7 @@ public class StSettlementReportJob implements SchBatchJobHandler {
 
             for (String vendorId : vendorIds) {
                 totalVendors++;
-                List<StSettleRaw> raws = rawRepository.findBySettlePeriodAndVendor(siteId, ymLabel, vendorId);
+                List<StSettleRaw> raws = rawRepository.findBySettlePeriodAndVendor(ymLabel, vendorId);
 
                 // 집계
                 long   totalOrderAmt  = 0L, totalReturnAmt = 0L, totalDiscntAmt = 0L;

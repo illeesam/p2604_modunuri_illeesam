@@ -70,7 +70,6 @@ public class FoPdProdService {
 
     /* ── 목록 ────────────────────────────────────────────────── */
 
-    private static final String DEFAULT_SITE_ID = "2604010000000001";
 
     /* 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
@@ -235,13 +234,12 @@ public class FoPdProdService {
      */
     public Map<String, Object> getPromotions(String prodId) {
         PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
-        String siteId = DEFAULT_SITE_ID;
 
         // pm_*_prod 테이블에서 이 상품에 적용 가능한 ID 목록 조회
-        List<String> couponIds = pmCouponProdRepository.findCouponIdsByProdId(prodId, siteId);
-        List<String> discntIds = pmDiscntProdRepository.findDiscntIdsByProdId(prodId, siteId);
-        List<String> eventIds  = pmEventProdRepository.findEventIdsByProdId(prodId, siteId);
-        List<String> saveIds   = pmSaveProdRepository.findSaveIdsByProdId(prodId, siteId);
+        List<String> couponIds = pmCouponProdRepository.findCouponIdsByProdId(prodId);
+        List<String> discntIds = pmDiscntProdRepository.findDiscntIdsByProdId(prodId);
+        List<String> eventIds  = pmEventProdRepository.findEventIdsByProdId(prodId);
+        List<String> saveIds   = pmSaveProdRepository.findSaveIdsByProdId(prodId);
 
         Map<String, Object> result = new LinkedHashMap<>();
 

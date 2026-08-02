@@ -14,9 +14,7 @@ public interface PmCouponIssueRepository extends JpaRepository<PmCouponIssue, St
      * 지정 쿠폰ID 목록 중 미사용(use_yn='N') 발급 내역 조회 — 배치 발송 대상 추출용.
      */
     @Query("SELECT i FROM PmCouponIssue i " +
-           "WHERE i.siteId = :siteId " +
-           "AND i.couponId IN :couponIds " +
+           "WHERE i.couponId IN :couponIds " +
            "AND (i.useYn IS NULL OR i.useYn <> 'Y')")
-    List<PmCouponIssue> findUnusedByCouponIds(@Param("siteId") String siteId,
-                                               @Param("couponIds") List<String> couponIds);
+    List<PmCouponIssue> findUnusedByCouponIds(@Param("couponIds") List<String> couponIds);
 }

@@ -65,7 +65,7 @@ public class MbMemberGradeCalcJob implements SchBatchJobHandler {
             String siteId = site.getSiteId();
 
             // 이 사이트의 등급 기준 로드 (grade_rank 내림차순 — 높은 등급 먼저)
-            List<MbMemberGrade> grades = gradeRepository.findActiveBySiteIdOrderByRankDesc(siteId);
+            List<MbMemberGrade> grades = gradeRepository.findActiveOrderByRankDesc();
             if (grades.isEmpty()) {
                 log.warn("[{}] siteId={} 등록된 회원등급 없음 — 스킵", batchCode(), siteId);
                 continue;
@@ -74,7 +74,7 @@ public class MbMemberGradeCalcJob implements SchBatchJobHandler {
             // 최하위 등급 (grade_rank 가장 낮음 = 리스트 마지막)
             String lowestGradeCd = grades.get(grades.size() - 1).getGradeCd();
 
-            List<MbMember> members = memberRepository.findActiveForGradeCalc(siteId);
+            List<MbMember> members = memberRepository.findActiveForGradeCalc();
             int siteChecked = 0, siteChanged = 0;
 
             for (MbMember member : members) {

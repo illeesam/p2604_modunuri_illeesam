@@ -16,6 +16,6 @@ public interface PmDiscntProdRepository extends JpaRepository<PmDiscntProd, PmDi
     int deleteAllByDiscntIds(@Param("discntIds") List<String> discntIds);
 
     /** 상품에 적용 가능한 활성 할인 목록 조회 (FO 상품상세/주문 페이지용) */
-    @Query("SELECT p.discntId FROM PmDiscntProd p WHERE p.prodId = :prodId AND p.siteId = :siteId")
-    List<String> findDiscntIdsByProdId(@Param("prodId") String prodId, @Param("siteId") String siteId);
+    @Query("SELECT p.discntId FROM PmDiscntProd p WHERE p.prodId = :prodId")
+    List<String> findDiscntIdsByProdId(@Param("prodId") String prodId);
 }

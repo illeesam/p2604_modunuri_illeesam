@@ -69,7 +69,7 @@ public class SySendAlarmJob implements SchBatchJobHandler {
             /* ── 1) 미처리 주문 경보 ────────────────────────────────────── */
             LocalDateTime orderThreshold = now.minusHours(UNPAID_WARN_HOURS);
             List<OdOrder> stalePaidOrders = orderRepository
-                .findStalePaidOrders(siteId, orderThreshold);
+                .findStalePaidOrders(orderThreshold);
 
             if (!stalePaidOrders.isEmpty()) {
                 String title = "미처리 주문 경보";
@@ -90,7 +90,7 @@ public class SySendAlarmJob implements SchBatchJobHandler {
             /* ── 2) 미처리 클레임 경보 ──────────────────────────────────── */
             LocalDateTime claimThreshold = now.minusHours(CLAIM_WARN_HOURS);
             List<OdClaim> staleClaims = claimRepository
-                .findStaleRequestedClaims(siteId, claimThreshold);
+                .findStaleRequestedClaims(claimThreshold);
 
             if (!staleClaims.isEmpty()) {
                 String title = "미처리 클레임 경보";

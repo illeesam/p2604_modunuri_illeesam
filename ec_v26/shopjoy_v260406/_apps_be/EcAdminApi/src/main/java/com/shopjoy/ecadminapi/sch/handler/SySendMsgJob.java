@@ -73,7 +73,7 @@ public class SySendMsgJob implements SchBatchJobHandler {
 
             // 만료 D-3인 쿠폰 조회 (ACTIVE 상태)
             List<PmCoupon> expiringSoonCoupons = couponRepository
-                .findExpiringSoon(siteId, expireTarget);
+                .findExpiringSoon(expireTarget);
 
             if (!expiringSoonCoupons.isEmpty()) {
                 List<String> couponIds = expiringSoonCoupons.stream()
@@ -81,7 +81,7 @@ public class SySendMsgJob implements SchBatchJobHandler {
 
                 // 해당 쿠폰을 미사용으로 보유한 발급 내역 조회
                 List<PmCouponIssue> unusedIssues = couponIssueRepository
-                    .findUnusedByCouponIds(siteId, couponIds);
+                    .findUnusedByCouponIds(couponIds);
 
                 log.info("[{}] siteId={} 쿠폰 만료 D-3 발송 대상: {}건", batchCode(), siteId, unusedIssues.size());
 

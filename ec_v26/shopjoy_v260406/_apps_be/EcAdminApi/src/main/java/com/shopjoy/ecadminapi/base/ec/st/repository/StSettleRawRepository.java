@@ -15,22 +15,18 @@ public interface StSettleRawRepository extends JpaRepository<StSettleRaw, String
      * settle_id 미연결(null) 또는 재집계 대상(DRAFT 상태 정산의 원천) 모두 포함.
      */
     @Query("SELECT r FROM StSettleRaw r " +
-           "WHERE r.siteId = :siteId " +
-           "AND r.settlePeriod = :settlePeriod " +
+           "WHERE r.settlePeriod = :settlePeriod " +
            "AND r.vendorId = :vendorId")
     List<StSettleRaw> findBySettlePeriodAndVendor(
-            @Param("siteId")       String siteId,
             @Param("settlePeriod") String settlePeriod,
             @Param("vendorId")     String vendorId);
 
     /**
-     * 특정 정산기간에 원천 데이터가 존재하는 업체ID 목록 (사이트별).
+     * 특정 정산기간에 원천 데이터가 존재하는 업체ID 목록.
      */
     @Query("SELECT DISTINCT r.vendorId FROM StSettleRaw r " +
-           "WHERE r.siteId = :siteId " +
-           "AND r.settlePeriod = :settlePeriod " +
+           "WHERE r.settlePeriod = :settlePeriod " +
            "AND r.vendorId IS NOT NULL")
     List<String> findDistinctVendorIdsBySettlePeriod(
-            @Param("siteId")       String siteId,
             @Param("settlePeriod") String settlePeriod);
 }

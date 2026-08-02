@@ -58,7 +58,7 @@ public class FoCmBlogService {
         List<CmBlogCateDto.Item> list = cmBlogCateService.getList(req);
 
         // 카테고리별 공개 블로그 건수 집계 → Map<blogCateId, count>
-        Map<String, Long> cntMap = cmBlogRepository.countByBlogCate(req.getSiteId()).stream()
+        Map<String, Long> cntMap = cmBlogRepository.countByBlogCate().stream()
                 .collect(Collectors.toMap(
                         row -> (String) row[0],
                         row -> (Long) row[1],

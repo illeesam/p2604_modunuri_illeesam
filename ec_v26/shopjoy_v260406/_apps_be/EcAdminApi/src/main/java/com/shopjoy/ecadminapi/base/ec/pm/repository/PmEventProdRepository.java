@@ -16,6 +16,6 @@ public interface PmEventProdRepository extends JpaRepository<PmEventProd, PmEven
     int deleteAllByEventIds(@Param("eventIds") List<String> eventIds);
 
     /** 상품에 적용 가능한 활성 이벤트 목록 조회 (FO 상품상세/주문 페이지용) */
-    @Query("SELECT p.eventId FROM PmEventProd p WHERE p.prodId = :prodId AND p.siteId = :siteId")
-    List<String> findEventIdsByProdId(@Param("prodId") String prodId, @Param("siteId") String siteId);
+    @Query("SELECT p.eventId FROM PmEventProd p WHERE p.prodId = :prodId")
+    List<String> findEventIdsByProdId(@Param("prodId") String prodId);
 }
