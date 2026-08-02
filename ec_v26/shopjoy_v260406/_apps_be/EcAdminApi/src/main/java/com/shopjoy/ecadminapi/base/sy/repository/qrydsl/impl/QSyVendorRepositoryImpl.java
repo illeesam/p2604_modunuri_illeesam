@@ -109,7 +109,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                         syVendor.regBy,                       // 등록자
                         syVendor.regDate,                     // 등록일시
                         syVendor.updBy,                       // 수정자
-                        syVendor.updDate,                     // 수정일시
+                        syVendor.updDate                     // 수정일시
                 ))
                 .from(syVendor)
                 .leftJoin(cdVc).on(cdVc.codeGrp.eq("VENDOR_CLASS").and(cdVc.codeValue.eq(syVendor.vendorClassCd)))

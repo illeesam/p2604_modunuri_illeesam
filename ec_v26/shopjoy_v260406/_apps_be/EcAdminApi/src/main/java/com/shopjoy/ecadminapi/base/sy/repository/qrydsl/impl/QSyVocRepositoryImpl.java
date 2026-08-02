@@ -12,7 +12,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVoc;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVoc;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyVocRepository;
@@ -32,7 +31,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVocRepositoryImpl";
     private static final QSyVoc syVoc = QSyVoc.syVoc;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("useYn", syVoc.useYn),
         Map.entry("vocContent", syVoc.vocContent),
@@ -60,10 +58,9 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
                         syVoc.regBy,           // 등록자
                         syVoc.regDate,         // 등록일시
                         syVoc.updBy,           // 수정자
-                        syVoc.updDate,         // 수정일시
+                        syVoc.updDate         // 수정일시
                 ))
-                .from(syVoc)
-                .leftJoin(sySite).on(sySite.siteId.eq(syVoc.siteId));
+                .from(syVoc);
     }
 
     /* 고객의 소리(VOC) 키조회 */

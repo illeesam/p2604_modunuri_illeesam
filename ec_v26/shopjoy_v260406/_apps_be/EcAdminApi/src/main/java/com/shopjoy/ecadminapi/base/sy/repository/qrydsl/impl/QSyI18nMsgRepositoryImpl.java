@@ -35,7 +35,7 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         Map.entry("i18nId", syI18nMsg.i18nId),
         Map.entry("i18nMsg", syI18nMsg.i18nMsg),
         Map.entry("i18nMsgId", syI18nMsg.i18nMsgId),
-        Map.entry("langCd", syI18nMsg.langCd),
+        Map.entry("langCd", syI18nMsg.langCd)
     );
 
     /*

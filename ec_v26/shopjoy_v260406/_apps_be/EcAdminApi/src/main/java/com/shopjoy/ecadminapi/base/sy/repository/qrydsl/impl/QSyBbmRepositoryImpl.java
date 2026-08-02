@@ -14,7 +14,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBbm;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBbmRepository;
 import jakarta.persistence.EntityManager;
@@ -38,7 +37,6 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBbmRepositoryImpl";
     private static final QSyBbm syBbm = QSyBbm.syBbm;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("allowAttach", syBbm.allowAttach),
         Map.entry("allowComment", syBbm.allowComment),
@@ -80,10 +78,9 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                         syBbm.regBy,          // 등록자
                         syBbm.regDate,        // 등록일시
                         syBbm.updBy,          // 수정자
-                        syBbm.updDate,        // 수정일시
+                        syBbm.updDate        // 수정일시
                 ))
-                .from(syBbm)
-                .leftJoin(sySite).on(sySite.siteId.eq(syBbm.siteId));
+                .from(syBbm);
     }
 
     /* 게시판 마스터 키조회 */

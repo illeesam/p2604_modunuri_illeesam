@@ -13,7 +13,6 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyContact;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyContactRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyContactRepositoryImpl";
     private static final QSyContact syContact = QSyContact.syContact;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("answerUserId", syContact.answerUserId),
         Map.entry("contentAttachGrpId", syContact.contentAttachGrpId),
@@ -46,7 +44,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         Map.entry("contactStatusCd", syContact.contactStatusCd),
         Map.entry("contactTitle", syContact.contactTitle),
         Map.entry("memberId", syContact.memberId),
-        Map.entry("memberNm", syContact.memberNm),
+        Map.entry("memberNm", syContact.memberNm)
     );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -73,10 +71,9 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                         syContact.regBy,                // 등록자
                         syContact.regDate,              // 등록일시
                         syContact.updBy,                // 수정자
-                        syContact.updDate,              // 수정일시
+                        syContact.updDate              // 수정일시
                 ))
-                .from(syContact)
-                .leftJoin(sySite).on(sySite.siteId.eq(syContact.siteId));
+                .from(syContact);
     }
 
     /* 문의 키조회 */

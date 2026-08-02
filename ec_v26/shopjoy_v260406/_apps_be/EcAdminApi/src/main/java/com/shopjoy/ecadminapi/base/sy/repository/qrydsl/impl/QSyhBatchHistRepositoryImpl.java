@@ -14,7 +14,6 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhBatchHist;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchHist;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhBatchHistRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +44,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         Map.entry("batchNm", syhBatchHist.batchNm),
         Map.entry("detail", syhBatchHist.detail),
         Map.entry("message", syhBatchHist.message),
-        Map.entry("runStatus", syhBatchHist.runStatus),
+        Map.entry("runStatus", syhBatchHist.runStatus)
     );
 
     /*
@@ -71,10 +70,9 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
                         syhBatchHist.regBy,         // 등록자
                         syhBatchHist.regDate,       // 등록일시
                         syhBatchHist.updBy,         // 수정자
-                        syhBatchHist.updDate,       // 수정일시
+                        syhBatchHist.updDate       // 수정일시
                 ))
-                .from(syhBatchHist)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhBatchHist.siteId));
+                .from(syhBatchHist);
     }
 
     /* 배치 실행 이력 키조회 */

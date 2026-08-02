@@ -298,7 +298,7 @@ public class CmAppStoreDataService {
                 .userNm(CmUtil.nvlStr(user.getUserNm())) // 사용자명
                 .userEmail(CmUtil.nvlStr(user.getUserEmail())) // 이메일
                 .userHpNo(CmUtil.nvlStr(user.getUserPhone())) // 휴대폰
-                .siteId(CmUtil.nvlStr(user.getSiteId())) // 사이트ID
+                .siteId("") // 사이트ID (sy_user에서 제거됨)
                 .deptId(CmUtil.nvlStr(user.getDeptId())) // 부서ID
                 .deptNm(deptNm) // 부서명
                 .roleId(CmUtil.nvlStr(user.getRoleId())) // 역할ID
@@ -501,13 +501,11 @@ public class CmAppStoreDataService {
      * 속성 정보 조회 - sy_prop (시스템속성)
      */
     private StoreProp getProps(AuthPrincipal authUser) {
-        String siteId = authUser != null ? authUser.siteId() : null;
         String[] activeProfs = environment.getActiveProfiles();
         String activeProf = (activeProfs != null && activeProfs.length > 0) ? activeProfs[0] : "-";
-        // sy_prop :: select list :: siteId, useYn=Y, prop_profile 매칭
+        // sy_prop :: select list :: useYn=Y, prop_profile 매칭
         Map<String, StoreProp.PropInfo> propsByKey = syPropRepository.findAll().stream()
                 .filter(prop -> "Y".equals(prop.getUseYn())
-                        && (siteId == null || prop.getSiteId().equals(siteId))
                         && isPropProfileMatch(prop.getPropProfile(), activeProf))
                 .collect(Collectors.toMap(
                         SyProp::getPropKey,

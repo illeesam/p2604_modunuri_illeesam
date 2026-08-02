@@ -14,7 +14,6 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyTemplate;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyTemplate;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyTemplateRepository;
@@ -39,7 +38,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyTemplateRepositoryImpl";
     private static final QSyTemplate syTemplate = QSyTemplate.syTemplate;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syTemplate.regDate,
         "upd_date", syTemplate.updDate
@@ -75,10 +73,9 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                         syTemplate.regBy,                          // 등록자
                         syTemplate.regDate,                        // 등록일시
                         syTemplate.updBy,                          // 수정자
-                        syTemplate.updDate,                        // 수정일시
+                        syTemplate.updDate                        // 수정일시
                 ))
-                .from(syTemplate)
-                .leftJoin(sySite).on(sySite.siteId.eq(syTemplate.siteId));
+                .from(syTemplate);
     }
 
     /* 템플릿 키조회 */

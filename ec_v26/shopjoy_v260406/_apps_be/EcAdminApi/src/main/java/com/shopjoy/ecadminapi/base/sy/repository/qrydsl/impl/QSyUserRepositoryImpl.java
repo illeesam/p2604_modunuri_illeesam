@@ -270,7 +270,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
         JPAUpdateClause update = queryFactory.update(syUser);
 
-        if (entity.getSiteId()          != null) update.set(syUser.siteId,          entity.getSiteId());
         if (entity.getLoginId()         != null) update.set(syUser.loginId,         entity.getLoginId());
         if (entity.getLoginPwdHash()    != null) update.set(syUser.loginPwdHash,    entity.getLoginPwdHash());
         if (entity.getUserNm()          != null) update.set(syUser.userNm,          entity.getUserNm());

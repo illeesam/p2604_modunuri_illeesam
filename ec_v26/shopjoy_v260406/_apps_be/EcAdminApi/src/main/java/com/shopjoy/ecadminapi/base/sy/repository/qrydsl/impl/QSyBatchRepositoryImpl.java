@@ -14,7 +14,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBatch;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBatchRepository;
 import jakarta.persistence.EntityManager;
@@ -38,7 +37,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBatchRepositoryImpl";
     private static final QSyBatch syBatch = QSyBatch.syBatch;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("batchCode", syBatch.batchCode),
         Map.entry("batchCycleCd", syBatch.batchCycleCd),
@@ -49,7 +47,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         Map.entry("batchRunStatus", syBatch.batchRunStatus),
         Map.entry("batchStatusCd", syBatch.batchStatusCd),
         Map.entry("cronExpr", syBatch.cronExpr),
-        Map.entry("pathId", syBatch.pathId),
+        Map.entry("pathId", syBatch.pathId)
     );
 
     /*
@@ -78,10 +76,9 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                         syBatch.regDate,          // 등록일시
                         syBatch.updBy,            // 수정자
                         syBatch.updDate,          // 수정일시
-                        syBatch.pathId,           // 점(.) 구분 표시경로 (트리 빌드용)
+                        syBatch.pathId           // 점(.) 구분 표시경로 (트리 빌드용)
                 ))
-                .from(syBatch)
-                .leftJoin(sySite).on(sySite.siteId.eq(syBatch.siteId));
+                .from(syBatch);
     }
 
     /* 배치 키조회 */

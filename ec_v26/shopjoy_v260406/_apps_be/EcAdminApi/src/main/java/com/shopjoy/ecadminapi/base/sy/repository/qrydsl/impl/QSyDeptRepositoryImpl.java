@@ -78,7 +78,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                         syDept.regBy,          // 등록자
                         syDept.regDate,        // 등록일시
                         syDept.updBy,          // 수정자
-                        syDept.updDate,        // 수정일시
+                        syDept.updDate        // 수정일시
                 ))
                 .from(syDept)
                 .leftJoin(syUser).on(syUser.userId.eq(syDept.managerId))

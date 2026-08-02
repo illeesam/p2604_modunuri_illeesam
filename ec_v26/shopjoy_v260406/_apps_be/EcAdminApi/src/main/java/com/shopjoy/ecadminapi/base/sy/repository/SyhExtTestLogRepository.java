@@ -22,12 +22,11 @@ public interface SyhExtTestLogRepository extends JpaRepository<SyhExtTestLog, St
 
     @Query("""
         SELECT l FROM SyhExtTestLog l
-        WHERE l.siteId = :siteId
-          AND l.regDate = (
+        WHERE l.regDate = (
             SELECT MAX(l2.regDate) FROM SyhExtTestLog l2
-            WHERE l2.siteId = :siteId AND l2.channelKey = l.channelKey
+            WHERE l2.channelKey = l.channelKey
           )
         ORDER BY l.channelKey
         """)
-    List<SyhExtTestLog> findLatestByChannel(@Param("siteId") String siteId);
+    List<SyhExtTestLog> findLatestByChannel();
 }

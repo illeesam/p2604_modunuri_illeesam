@@ -13,7 +13,6 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbsDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBbs;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbs;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBbsRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBbsRepositoryImpl";
     private static final QSyBbs syBbs = QSyBbs.syBbs;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("attachGrpId", syBbs.attachGrpId),
         Map.entry("authorNm", syBbs.authorNm),
@@ -46,7 +44,7 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         Map.entry("isFixed", syBbs.isFixed),
         Map.entry("memberId", syBbs.memberId),
         Map.entry("parentBbsId", syBbs.parentBbsId),
-        Map.entry("pathId", syBbs.pathId),
+        Map.entry("pathId", syBbs.pathId)
     );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -75,10 +73,9 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                         syBbs.regBy,          // 등록자
                         syBbs.regDate,        // 등록일시
                         syBbs.updBy,          // 수정자
-                        syBbs.updDate,        // 수정일시
+                        syBbs.updDate        // 수정일시
                 ))
-                .from(syBbs)
-                .leftJoin(sySite).on(sySite.siteId.eq(syBbs.siteId));
+                .from(syBbs);
     }
 
     /* 게시판 게시물 키조회 */

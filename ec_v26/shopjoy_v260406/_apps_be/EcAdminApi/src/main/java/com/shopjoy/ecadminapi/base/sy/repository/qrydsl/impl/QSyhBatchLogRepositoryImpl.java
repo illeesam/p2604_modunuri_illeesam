@@ -48,7 +48,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         Map.entry("batchNm", syhBatchLog.batchNm),
         Map.entry("detail", syhBatchLog.detail),
         Map.entry("message", syhBatchLog.message),
-        Map.entry("runStatus", syhBatchLog.runStatus),
+        Map.entry("runStatus", syhBatchLog.runStatus)
     );
 
     /*

@@ -41,7 +41,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("menuId", vwRoleMenu.menuId),
         Map.entry("roleId", vwRoleMenu.roleId),
-        Map.entry("roleMenuId", vwRoleMenu.roleMenuId),
+        Map.entry("roleMenuId", vwRoleMenu.roleMenuId)
     );
 
     /*

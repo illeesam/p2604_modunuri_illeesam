@@ -97,11 +97,10 @@ public class BoSyExtTestLogController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    /** 사이트별 채널 최신 이력 1건씩 조회 (연동결과 초기값용) */
+    /** 채널별 최신 이력 1건씩 조회 (연동결과 초기값용) */
     @GetMapping("/latest")
     public ResponseEntity<ApiResponse<java.util.List<SyhExtTestLog>>> latest() {
-        String siteId = SecurityUtil.getSiteIdOrDefault();
-        java.util.List<SyhExtTestLog> list = repository.findLatestByChannel(siteId);
+        java.util.List<SyhExtTestLog> list = repository.findLatestByChannel();
         return ResponseEntity.ok(ApiResponse.ok(list));
     }
 

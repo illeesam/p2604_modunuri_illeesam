@@ -13,7 +13,6 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAttach;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyAttachRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAttachRepositoryImpl";
     private static final QSyAttach syAttach = QSyAttach.syAttach;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("attachGrpId", syAttach.attachGrpId),
         Map.entry("attachId", syAttach.attachId),
@@ -86,10 +84,9 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                         syAttach.regBy,              // 등록자
                         syAttach.regDate,            // 등록일시
                         syAttach.updBy,              // 수정자
-                        syAttach.updDate,            // 수정일시
+                        syAttach.updDate            // 수정일시
                 ))
-                .from(syAttach)
-                .leftJoin(sySite).on(sySite.siteId.eq(syAttach.siteId));
+                .from(syAttach);
     }
 
     /* 첨부파일 키조회 */

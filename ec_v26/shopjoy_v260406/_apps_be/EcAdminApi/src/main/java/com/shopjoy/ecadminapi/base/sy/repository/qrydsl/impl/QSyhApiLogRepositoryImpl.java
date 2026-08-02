@@ -14,7 +14,6 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhApiLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhApiLog;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhApiLog;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhApiLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -83,10 +82,9 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                         syhApiLog.regBy,          // 등록자
                         syhApiLog.regDate,        // 등록일시
                         syhApiLog.updBy,          // 수정자
-                        syhApiLog.updDate,        // 수정일시
+                        syhApiLog.updDate        // 수정일시
                 ))
-                .from(syhApiLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhApiLog.siteId));
+                .from(syhApiLog);
     }
 
     /* API 로그 키조회 */

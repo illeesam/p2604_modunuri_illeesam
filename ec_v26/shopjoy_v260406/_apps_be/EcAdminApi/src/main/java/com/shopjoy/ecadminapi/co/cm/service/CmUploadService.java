@@ -128,7 +128,6 @@ public class CmUploadService {
 
             SyAttach syAttach = SyAttach.builder()
                     .attachGrpId(CmUtil.nvlStr(attachGrpId))
-                    .siteId(resolveSiteId())   // sy_attach.site_id 는 NOT NULL — 비회원 업로드도 대표 사이트로 채움
                     .fileNm(originalName)
                     .fileSize(file.getSize())
                     .fileExt(fileUploadUtil.isVideo(ext) ? "mp4" : ext)
@@ -265,7 +264,6 @@ public class CmUploadService {
 
                     SyAttach syAttach = SyAttach.builder()
                             .attachGrpId(savedGrp.getAttachGrpId())
-                            .siteId(savedGrp.getSiteId() != null ? savedGrp.getSiteId() : resolveSiteId())
                             .fileNm(originalName)
                             .fileSize(file.getSize())
                             .fileExt(fileUploadUtil.isVideo(ext) ? "mp4" : ext)
@@ -404,14 +402,12 @@ public class CmUploadService {
             if (existing == null) throw new CmBizException("존재하지 않는 첨부 그룹입니다: " + attachGrpId + "::" + CmUtil.svcCallerInfo(this));
             return SyAttachGrp.builder()
                     .attachGrpId(existing.getAttachGrpId())
-                    .siteId(resolveSiteId())   // 기존 그룹에 추가되는 파일도 sy_attach.site_id NOT NULL 채움 (DTO에 siteId 없어 재결정)
                     .attachGrpCode(existing.getAttachGrpCode())
                     .attachGrpNm(existing.getAttachGrpNm())
                     .useYn(existing.getUseYn())
                     .build();
         }
         SyAttachGrp attachGrp = SyAttachGrp.builder()
-                .siteId(resolveSiteId())   // sy_attach_grp.site_id 는 NOT NULL — 비회원 업로드도 대표 사이트로 채움
                 .attachGrpCode(businessCode + "_" + System.currentTimeMillis())
                 .attachGrpNm(grpNm == null || grpNm.isEmpty() ? businessCode + " 파일 그룹" : grpNm)
                 .useYn("Y")
@@ -419,9 +415,4 @@ public class CmUploadService {
         return syAttachGrpService.create(attachGrp);
     }
 
-    /** resolveSiteId — 인증 사용자 siteId, 없으면(비회원 FO 업로드) 대표 사이트 fallback */
-    private String resolveSiteId() {
-        String siteId = com.shopjoy.ecadminapi.common.util.SecurityUtil.getSiteId();
-        return (siteId == null || siteId.isBlank()) ? "2604010000000001" : siteId;
-    }
 }

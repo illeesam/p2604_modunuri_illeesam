@@ -83,7 +83,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                         syMenu.regBy,          // 등록자
                         syMenu.regDate,        // 등록일시
                         syMenu.updBy,          // 수정자
-                        syMenu.updDate,        // 수정일시
+                        syMenu.updDate        // 수정일시
                 ))
                 .from(syMenu)
                 .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE").and(cdMt.codeValue.eq(syMenu.menuTypeCd)));

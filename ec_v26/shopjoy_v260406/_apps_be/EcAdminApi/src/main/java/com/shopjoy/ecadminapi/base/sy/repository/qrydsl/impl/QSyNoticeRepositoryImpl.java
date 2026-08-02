@@ -13,7 +13,6 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyNotice;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyNoticeRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyNoticeRepositoryImpl";
     private static final QSyNotice syNotice = QSyNotice.syNotice;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("attachGrpId", syNotice.attachGrpId),
         Map.entry("contentHtml", syNotice.contentHtml),
@@ -40,7 +38,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         Map.entry("noticeId", syNotice.noticeId),
         Map.entry("noticeStatusCd", syNotice.noticeStatusCd),
         Map.entry("noticeTitle", syNotice.noticeTitle),
-        Map.entry("noticeTypeCd", syNotice.noticeTypeCd),
+        Map.entry("noticeTypeCd", syNotice.noticeTypeCd)
     );
 
     /*
@@ -65,10 +63,9 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                         syNotice.regBy,           // 등록자
                         syNotice.regDate,         // 등록일시
                         syNotice.updBy,           // 수정자
-                        syNotice.updDate,         // 수정일시
+                        syNotice.updDate         // 수정일시
                 ))
-                .from(syNotice)
-                .leftJoin(sySite).on(sySite.siteId.eq(syNotice.siteId));
+                .from(syNotice);
     }
 
     /* 공지사항 키조회 */

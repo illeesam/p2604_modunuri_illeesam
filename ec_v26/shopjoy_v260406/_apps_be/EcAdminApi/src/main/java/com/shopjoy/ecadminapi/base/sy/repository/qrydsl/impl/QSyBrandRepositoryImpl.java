@@ -15,7 +15,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBrand;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBrandRepository;
 import jakarta.persistence.EntityManager;
@@ -39,7 +38,6 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBrandRepositoryImpl";
     private static final QSyBrand syBrand = QSyBrand.syBrand;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syBrand.regDate,
         "upd_date", syBrand.updDate
@@ -76,10 +74,9 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                         syBrand.regBy,        // 등록자
                         syBrand.regDate,      // 등록일시
                         syBrand.updBy,        // 수정자
-                        syBrand.updDate,      // 수정일시
+                        syBrand.updDate      // 수정일시
                 ))
-                .from(syBrand)
-                .leftJoin(sySite).on(sySite.siteId.eq(syBrand.siteId));
+                .from(syBrand);
     }
 
     /* 브랜드 키조회 */

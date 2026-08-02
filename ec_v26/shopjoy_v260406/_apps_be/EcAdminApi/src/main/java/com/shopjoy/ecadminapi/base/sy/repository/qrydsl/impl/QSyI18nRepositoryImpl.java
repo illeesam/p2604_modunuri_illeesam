@@ -13,7 +13,6 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyI18n;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyI18nRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyI18nRepositoryImpl";
     private static final QSyI18n syI18n = QSyI18n.syI18n;
-    private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("i18nCategory", syI18n.i18nCategory),
         Map.entry("i18nDesc", syI18n.i18nDesc),
@@ -60,10 +58,9 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                         syI18n.regBy,          // 등록자
                         syI18n.regDate,        // 등록일시
                         syI18n.updBy,          // 수정자
-                        syI18n.updDate,        // 수정일시
+                        syI18n.updDate        // 수정일시
                 ))
-                .from(syI18n)
-                .leftJoin(sySite).on(sySite.siteId.eq(syI18n.siteId));
+                .from(syI18n);
     }
 
     /* 다국어 키조회 */

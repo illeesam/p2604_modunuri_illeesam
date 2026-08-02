@@ -15,7 +15,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCodeGrp;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCode;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyCodeRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,6 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeRepositoryImpl";
     private static final QSyCode syCode = QSyCode.syCode;
-    private static final QSySite sySite = QSySite.sySite;
     private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syCode.regDate,
@@ -76,11 +74,10 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                         syCode.regBy,                         // 등록자
                         syCode.regDate,                       // 등록일시
                         syCode.updBy,                         // 수정자
-                        syCode.updDate,                       // 수정일시
+                        syCode.updDate                       // 수정일시
                 ))
                 .from(syCode)
-                .leftJoin(syCodeGrp).on(syCodeGrp.codeGrpId.eq(syCode.codeGrpId))
-                .leftJoin(sySite).on(sySite.siteId.eq(syCode.siteId));
+                .leftJoin(syCodeGrp).on(syCodeGrp.codeGrpId.eq(syCode.codeGrpId));
     }
 
     /* 키조회 */

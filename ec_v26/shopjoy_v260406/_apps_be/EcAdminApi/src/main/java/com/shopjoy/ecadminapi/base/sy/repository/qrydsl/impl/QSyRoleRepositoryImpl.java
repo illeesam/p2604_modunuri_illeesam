@@ -86,7 +86,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                         syRole.regDate,         // 등록일시
                         syRole.updBy,           // 수정자
                         syRole.updDate,         // 수정일시
-                        syRole.pathId,          // 점(.) 구분 표시경로 (트리 빌드용)
+                        syRole.pathId          // 점(.) 구분 표시경로 (트리 빌드용)
                 ))
                 .from(syRole)
                 .leftJoin(cdRt).on(cdRt.codeGrp.eq("ROLE_TYPE").and(cdRt.codeValue.eq(syRole.roleTypeCd)));

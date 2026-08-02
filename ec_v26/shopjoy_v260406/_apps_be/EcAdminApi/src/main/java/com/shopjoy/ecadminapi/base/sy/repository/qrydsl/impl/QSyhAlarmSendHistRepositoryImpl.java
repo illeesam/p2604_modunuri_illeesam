@@ -14,7 +14,6 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAlarmSendHistDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhAlarmSendHist;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAlarmSendHist;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhAlarmSendHistRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +46,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         Map.entry("userId", syhAlarmSendHist.userId),
         Map.entry("sendHistId", syhAlarmSendHist.sendHistId),
         Map.entry("sendHistStatusCd", syhAlarmSendHist.sendHistStatusCd),
-        Map.entry("sendTo", syhAlarmSendHist.sendTo),
+        Map.entry("sendTo", syhAlarmSendHist.sendTo)
     );
 
     /*
@@ -70,10 +69,9 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                         syhAlarmSendHist.regBy,                   // 등록자
                         syhAlarmSendHist.regDate,                 // 등록일시
                         syhAlarmSendHist.updBy,                   // 수정자
-                        syhAlarmSendHist.updDate,                 // 수정일시
+                        syhAlarmSendHist.updDate                 // 수정일시
                 ))
-                .from(syhAlarmSendHist)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhAlarmSendHist.siteId));
+                .from(syhAlarmSendHist);
     }
 
     /* 알람 발송 이력 키조회 */
