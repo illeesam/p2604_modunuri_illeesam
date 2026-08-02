@@ -81,8 +81,7 @@ public class FoMbLikeService {
         Optional<MbLike> existing = mbLikeRepository.findAll().stream()
             .filter(l -> authId.equals(l.getMemberId())
                       && targetId.equals(l.getTargetId())
-                      && targetTypeCd.equals(l.getTargetTypeCd())
-                      && (siteId == null || siteId.equals(l.getSiteId())))
+                      && targetTypeCd.equals(l.getTargetTypeCd()))
             .findFirst();
 
         if (existing.isPresent()) {

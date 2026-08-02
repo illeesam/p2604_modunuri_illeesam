@@ -290,7 +290,6 @@ public class SocialAuthService {
         LocalDateTime now = LocalDateTime.now();
         MbhMemberTokenLog tokenLog = MbhMemberTokenLog.builder()
             .logId(logId)
-            .siteId(siteId)
             .authId(authId)
             .memberId(authId)
             .actionCd(actionCd)
@@ -317,7 +316,6 @@ public class SocialAuthService {
                 + String.format("%04d", (int)(Math.random() * 10000));
             MbhMemberLoginLog loginLog = MbhMemberLoginLog.builder()
                 .logId(logId)
-                .siteId(siteId)
                 .authId(memberId)
                 .memberId(memberId)
                 .loginId(loginId)

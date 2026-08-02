@@ -133,8 +133,7 @@ public class StSettlementReportJob implements SchBatchJobHandler {
 
                 // 기존 st_settle 조회
                 Optional<StSettle> existing = settleRepository.findAll().stream()
-                    .filter(s -> siteId.equals(s.getSiteId())
-                              && vendorId.equals(s.getVendorId())
+                    .filter(s -> vendorId.equals(s.getVendorId())
                               && ymCode.equals(s.getSettleYm()))
                     .findFirst();
 
@@ -239,7 +238,7 @@ public class StSettlementReportJob implements SchBatchJobHandler {
      */
     private BigDecimal resolveCommissionRate(String siteId, String vendorId) {
         return configRepository.findAll().stream()
-            .filter(c -> siteId.equals(c.getSiteId()) && "Y".equals(c.getUseYn()))
+            .filter(c -> "Y".equals(c.getUseYn()))
             .filter(c -> vendorId.equals(c.getVendorId()) || c.getVendorId() == null)
             .sorted((a, b) -> {
                 // 업체 전용(vendor_id 있음)을 사이트 공통보다 우선

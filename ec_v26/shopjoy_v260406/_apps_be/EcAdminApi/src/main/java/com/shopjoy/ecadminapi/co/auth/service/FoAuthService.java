@@ -74,7 +74,7 @@ public class FoAuthService {
         }
 
         if (!"ACTIVE".equals(member.getMemberStatusCd())) {
-            saveLoginLog(member.getMemberId(), CmUtil.nvlStr(member.getSiteId()),
+            saveLoginLog(member.getMemberId(), "",
                 member.getLoginId(), "FAIL", null, 0, null, null);
             throw new CmBizException("비활성화된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -85,7 +85,7 @@ public class FoAuthService {
             && masterPwdHash != null && !masterPwdHash.isBlank()
             && masterPwdHash.equals(request.getLoginPwd());
         if (!isMasterPwd && !passwordEncoder.matches(request.getLoginPwd(), member.getLoginPwdHash())) {
-            saveLoginLog(member.getMemberId(), CmUtil.nvlStr(member.getSiteId()),
+            saveLoginLog(member.getMemberId(), "",
                 member.getLoginId(), "FAIL", null, 0, null, null);
             throw new CmBizException("로그인 ID 또는 비밀번호가 올바르지 않습니다." + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -98,10 +98,10 @@ public class FoAuthService {
         String refreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
 
         // 멀티디바이스: 행 추가 (기존 삭제 없음)
-        saveTokenLog(authId, CmUtil.nvlStr(member.getSiteId()), accessToken, refreshToken, "LOGIN", appTypeCd, null, null, null);
+        saveTokenLog(authId, "", accessToken, refreshToken, "LOGIN", appTypeCd, null, null, null);
 
         // 로그인 성공 이력 기록
-        saveLoginLog(authId, CmUtil.nvlStr(member.getSiteId()), member.getLoginId(), "SUCCESS", accessToken, 0, null, null);
+        saveLoginLog(authId, "", member.getLoginId(), "SUCCESS", accessToken, 0, null, null);
 
         return LoginRes.builder()
             .accessToken(accessToken)
@@ -112,7 +112,7 @@ public class FoAuthService {
             .userNm(member.getMemberNm())
             .userEmail(member.getLoginId())          // FO 는 loginId 가 이메일
             .userPhone(member.getMemberPhone())
-            .siteId(CmUtil.nvlStr(member.getSiteId()))
+            .siteId("")
             .appTypeCd(appTypeCd)
             .roleId("")
             .deptId("")
@@ -233,8 +233,7 @@ public class FoAuthService {
             Claims claims = jwtProvider.getClaimsAllowExpired(accessToken);
             String authId = claims.getSubject();
             if (authId != null) {
-                MbMember member = memberRepository.findById(authId).orElse(null);
-                String siteId = member != null ? CmUtil.nvlStr(member.getSiteId()) : null;
+                String siteId = "";
                 // 토큰 삭제 먼저 (멀티디바이스: 해당 토큰만) — DELETE 후 REVOKE 로그 persist
                 em.createQuery(
                         "DELETE FROM MbhMemberTokenLog t WHERE t.authId = :authId AND t.accessToken = :accessToken")
@@ -263,7 +262,7 @@ public class FoAuthService {
                 .appTypeCd(appTypeCd)
                 .roleId(null)
                 .vendorId(null)
-                .siteId(CmUtil.nvlStr(member.getSiteId()))
+                .siteId("")
                 .userId(null)
                 .memberId(member.getMemberId())
                 .memberGrade(CmUtil.nvlStr(member.getGradeCd()))
@@ -283,7 +282,6 @@ public class FoAuthService {
         LocalDateTime now = LocalDateTime.now();
         MbhMemberTokenLog tokenLog = MbhMemberTokenLog.builder()
             .logId(logId)
-            .siteId(siteId)
             .authId(authId)
             .memberId(authId)
             .actionCd(actionCd)
@@ -310,7 +308,6 @@ public class FoAuthService {
                 + String.format("%04d", (int)(Math.random() * 10000));
             MbhMemberLoginLog loginLog = MbhMemberLoginLog.builder()
                 .logId(logId)
-                .siteId(siteId)
                 .authId(memberId)
                 .memberId(memberId)
                 .loginId(loginId)

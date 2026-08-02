@@ -48,7 +48,6 @@ public class SyStatsDashboardJob implements SchBatchJobHandler {
 
     private static final DateTimeFormatter YMD_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final String S    = "shopjoy_2604";
-    private static final String SITE = "2604010000000001";
     private static final String UI   = "DashboardBoEc01";
 
     private final CmDashboardItemRepository     itemRepo;
@@ -71,9 +70,9 @@ public class SyStatsDashboardJob implements SchBatchJobHandler {
         log.info("[{}] 대시보드 데이터 생성 시작 — 대상일: {}", batchCode(), yyyymmdd);
 
         /* 패널 목록을 한 번에 로드 (siteId + uiNm 기준) */
-        List<CmDashboardItem> panels = itemRepo.findBySiteIdOrderBySortOrdAsc(SITE);
+        List<CmDashboardItem> panels = itemRepo.findAllByOrderBySortOrdAsc();
         if (panels.isEmpty()) {
-            log.warn("[{}] cm_dashboard_item 에 패널 정의가 없습니다 (siteId={})", batchCode(), SITE);
+            log.warn("[{}] cm_dashboard_item 에 패널 정의가 없습니다", batchCode());
             return;
         }
 
@@ -467,8 +466,8 @@ public class SyStatsDashboardJob implements SchBatchJobHandler {
      * unique key: (siteId, dashboardItemId, yyyymmdd).
      */
     private CmDashboardItemData findOrNew(CmDashboardItem panel, String yyyymmdd) {
-        Optional<CmDashboardItemData> existing = dataRepo.findBySiteIdAndDashboardItemIdAndYyyymmdd(
-            panel.getSiteId(), panel.getDashboardItemId(), yyyymmdd);
+        Optional<CmDashboardItemData> existing = dataRepo.findByDashboardItemIdAndYyyymmdd(
+            panel.getDashboardItemId(), yyyymmdd);
 
         if (existing.isPresent()) {
             return existing.get();

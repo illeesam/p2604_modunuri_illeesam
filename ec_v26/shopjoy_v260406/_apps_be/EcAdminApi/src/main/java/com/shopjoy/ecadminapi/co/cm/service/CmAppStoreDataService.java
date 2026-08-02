@@ -334,7 +334,7 @@ public class CmAppStoreDataService {
                 .memberId(member.getMemberId()) // 회원ID
                 .memberEmail(member.getLoginId()) // 이메일(로그인ID)
                 .memberNm(member.getMemberNm()) // 회원명
-                .siteId(CmUtil.nvlStr(member.getSiteId())) // 사이트ID
+                .siteId("") // 사이트ID
                 .appTypeCd(CmUtil.nvlStr(authUser.appTypeCd())) // 사용자타입
                 .memberTypeCd("") // 회원유형
                 .memberHpNo(CmUtil.nvlStr(member.getMemberPhone())) // 휴대폰
@@ -665,7 +665,7 @@ public class CmAppStoreDataService {
     private StoreDispStruct getDispStruc(AuthPrincipal authUser) {
         // dp_ui :: select list :: (filtered by siteId, useYn)
         List<DpUi> uis = dpUiRepository.findAll().stream()
-                .filter(ui -> ui.getSiteId().equals(authUser.siteId()) && "Y".equals(ui.getUseYn()))
+                .filter(ui -> "Y".equals(ui.getUseYn()))
                 .toList();
 
         List<StoreDispStruct.UiInfo> uiInfos = uis.stream()
@@ -679,7 +679,7 @@ public class CmAppStoreDataService {
                             .map(area -> {
                                 // dp_panel :: select list :: (filtered by siteId, useYn)
                                 List<DpPanel> panels = dpPanelRepository.findAll().stream()
-                                        .filter(panel -> panel.getSiteId().equals(authUser.siteId()) && "Y".equals(panel.getUseYn()))
+                                        .filter(panel -> "Y".equals(panel.getUseYn()))
                                         .toList();
 
                                 List<StoreDispStruct.UiInfo.AreaInfo.PanelInfo> panelInfos = panels.stream()
@@ -740,7 +740,7 @@ public class CmAppStoreDataService {
 
         // dp_ui :: select list :: (filtered by siteId, useYn)
         List<DpUi> uis = dpUiRepository.findAll().stream()
-                .filter(ui -> ui.getSiteId().equals(authUser.siteId()) && "Y".equals(ui.getUseYn()))
+                .filter(ui -> "Y".equals(ui.getUseYn()))
                 .toList();
 
         for (DpUi ui : uis) {
@@ -753,7 +753,7 @@ public class CmAppStoreDataService {
                 Map<String, Object> areaData = new java.util.HashMap<>();
                 // dp_panel :: select list :: (filtered by siteId, useYn)
                 List<DpPanel> panels = dpPanelRepository.findAll().stream()
-                        .filter(panel -> panel.getSiteId().equals(authUser.siteId()) && "Y".equals(panel.getUseYn()))
+                        .filter(panel -> "Y".equals(panel.getUseYn()))
                         .toList();
 
                 List<Map<String, Object>> panelDataList = new java.util.ArrayList<>();
