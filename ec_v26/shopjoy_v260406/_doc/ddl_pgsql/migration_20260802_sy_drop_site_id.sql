@@ -55,9 +55,46 @@ ALTER TABLE syh_send_msg_log      DROP COLUMN IF EXISTS site_id;
 ALTER TABLE syh_user_login_log    DROP COLUMN IF EXISTS site_id;
 ALTER TABLE syh_user_token_log    DROP COLUMN IF EXISTS site_id;
 
--- ── 뷰 재생성 (컬럼 제거 후 컬럼 참조가 사라지므로 재생성 필요) ──
--- vw_sy_attach, vw_sy_code, vw_sy_role_menu 는 뷰 정의 파일 참조 후 재실행
--- (뷰 DDL: _doc/ddl_pgsql/sy/vw_sy_*.sql)
+-- ── 뷰 재생성 (site_id 제거 후 — grp_site_id도 제거됨) ──
+
+DROP VIEW IF EXISTS vw_sy_attach    CASCADE;
+DROP VIEW IF EXISTS vw_sy_code      CASCADE;
+DROP VIEW IF EXISTS vw_sy_role_menu CASCADE;
+
+CREATE OR REPLACE VIEW vw_sy_attach AS
+SELECT a.attach_id, a.attach_grp_id, a.file_nm, a.file_size, a.file_ext,
+       a.mime_type_cd, a.stored_nm, a.storage_type, a.storage_path,
+       a.attach_url, a.cdn_host, a.cdn_img_url, a.cdn_thumb_url,
+       a.thumb_file_nm, a.thumb_stored_nm, a.thumb_url, a.thumb_cdn_url,
+       a.thumb_generated_yn, a.sort_ord, a.attach_memo, a.physical_path,
+       a.reg_by, a.reg_date, a.upd_by, a.upd_date,
+       g.attach_grp_code, g.attach_grp_nm, g.file_ext_allow,
+       g.max_file_size, g.max_file_count,
+       g.storage_path AS grp_storage_path,
+       g.use_yn AS grp_use_yn,
+       g.sort_ord AS grp_sort_ord
+FROM sy_attach a
+INNER JOIN sy_attach_grp g ON g.attach_grp_id = a.attach_grp_id;
+
+CREATE OR REPLACE VIEW vw_sy_code AS
+SELECT c.code_id, c.code_grp_id,
+       g.code_grp, g.grp_nm,
+       c.code_value, c.code_label, c.sort_ord, c.use_yn,
+       c.parent_code_value, c.child_code_values, c.code_remark,
+       c.code_level, c.code_opt1,
+       c.reg_by, c.reg_date, c.upd_by, c.upd_date
+FROM sy_code c
+LEFT JOIN sy_code_grp g ON g.code_grp_id = c.code_grp_id;
+
+CREATE OR REPLACE VIEW vw_sy_role_menu AS
+SELECT rm.role_menu_id, rm.role_id, rm.menu_id, rm.perm_level,
+       rm.reg_by, rm.reg_date, rm.upd_by, rm.upd_date,
+       r.role_code, r.role_nm, r.role_type_cd, r.role_remark,
+       r.use_yn AS role_use_yn,
+       r.parent_role_id,
+       r.sort_ord AS role_sort_ord
+FROM sy_role_menu rm
+INNER JOIN sy_role r ON r.role_id = rm.role_id;
 
 -- ============================================================
 -- 완료 검증:

@@ -24,8 +24,6 @@ public class SyVendorUser extends BaseEntity {
     @Column(name = "vendor_user_id", length = 21, nullable = false)
     private String vendorUserId;
 
-    @Comment("사이트ID")
-
     @Comment("판매/배송업체ID (sy_vendor.vendor_id)")
     @Column(name = "vendor_id", length = 21, nullable = false)
     private String vendorId;

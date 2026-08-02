@@ -24,8 +24,6 @@ public class SyhApiLog extends BaseEntity {
     @Column(name = "log_id", length = 21, nullable = false)
     private String logId;
 
-    @Comment("사이트ID")
-
     @Comment("연동유형코드 (PG/LOGISTICS/KAKAO/NAVER/SMS 등)")
     @Column(name = "api_type_cd", length = 50, nullable = false)
     private String apiTypeCd;

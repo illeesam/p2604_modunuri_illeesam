@@ -126,8 +126,4 @@ public class VwSyAttach {
     /** sy_attach_grp.sort_ord */
     @Column(name = "grp_sort_ord")
     private Integer grpSortOrd;
-
-    /** sy_attach_grp.site_id */
-    @Column(name = "grp_site_id", length = 21)
-    private String grpSiteId;
 }

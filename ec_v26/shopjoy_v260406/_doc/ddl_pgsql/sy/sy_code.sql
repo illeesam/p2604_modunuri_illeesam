@@ -48,9 +48,9 @@ CREATE INDEX idx_sy_code_use ON shopjoy_2604.sy_code USING btree (code_grp_id, u
 
 -- VIEW: vw_sy_code — sy_code JOIN sy_code_grp 으로 code_grp 텍스트 노출
 -- (QueryDSL 에서 QVwSyCode 로 사용, 코드그룹명 JOIN 조회용)
+-- 2026-08-02: site_id 컬럼 제거 (sy/syh 도메인 site_id 일괄 삭제 마이그레이션)
 CREATE OR REPLACE VIEW shopjoy_2604.vw_sy_code AS
 SELECT c.code_id,
-       c.site_id,
        c.code_grp_id,
        g.code_grp,
        g.grp_nm,
