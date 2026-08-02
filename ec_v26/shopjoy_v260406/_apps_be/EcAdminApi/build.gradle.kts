@@ -92,7 +92,29 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
 }
 
-// APT로 생성된 Q클래스를 소스셋에 포함
+// Q클래스 생성 전용 태스크
+// impl 파일들은 Q-클래스를 임포트하므로 제외 (Q-클래스가 아직 없을 때 컴파일 오류)
+tasks.register<JavaCompile>("generateQueryDsl") {
+    group = "build"
+    description = "QueryDSL Q-클래스 생성"
+    // @Entity 클래스 + 의존 공통 파일 (EntitySaveListener → SecurityUtil → AuthPrincipal)
+    source = fileTree("src/main/java") {
+        include(
+            "**/entity/*.java",
+            "**/data/entity/*.java",
+            "**/common/util/SecurityUtil.java",
+            "**/co/auth/security/AuthPrincipal.java"
+        )
+    }
+    classpath = configurations.compileClasspath.get()
+    options.encoding = "UTF-8"
+    options.annotationProcessorPath = configurations.annotationProcessor.get()
+    options.compilerArgs.addAll(listOf("-proc:only"))
+    destinationDirectory.set(layout.buildDirectory.dir("tmp/querydsl-apt-out"))
+    options.generatedSourceOutputDirectory.set(file(querydslDir))
+}
+
+// Q클래스를 소스셋에 포함
 sourceSets {
     main {
         java {
@@ -101,28 +123,23 @@ sourceSets {
     }
 }
 
-// 컴파일 시 Q클래스 생성 경로 지정
-tasks.withType<JavaCompile> {
+// compileJava 는 Q클래스 생성 후 실행
+// querydsl-apt 는 generateQueryDsl 에서 이미 실행됐으므로 제외 → 중복 생성 오류 방지
+tasks.named<JavaCompile>("compileJava") {
+    dependsOn("generateQueryDsl")
     options.encoding = "UTF-8"
     options.compilerArgs.add("-parameters")
-    options.generatedSourceOutputDirectory.set(file(querydslDir))  // 추가
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
-tasks.named<Jar>("jar") {
-    enabled = false
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
+    options.annotationProcessorPath = configurations.annotationProcessor.get().filter {
+        !it.name.startsWith("querydsl-apt")
+    }
 }
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
-    options.compilerArgs.add("-parameters")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 tasks.named<Jar>("jar") {

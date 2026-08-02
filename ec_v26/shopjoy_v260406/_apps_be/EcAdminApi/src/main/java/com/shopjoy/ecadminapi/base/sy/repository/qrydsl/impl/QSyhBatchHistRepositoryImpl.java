@@ -32,7 +32,6 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchHistRepositoryImpl";
     private static final QSyhBatchHist syhBatchHist   = QSyhBatchHist.syhBatchHist;
-    private static final QSySite       sySite = QSySite.sySite;
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhBatchHist.regDate,
         "upd_date", syhBatchHist.updDate

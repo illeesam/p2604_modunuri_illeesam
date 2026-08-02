@@ -37,7 +37,6 @@ public class BoSyExtTestLogController {
             jdbc.execute("""
                 CREATE TABLE IF NOT EXISTS shopjoy_2604.syh_ext_test_log (
                     log_id         VARCHAR(40)   NOT NULL,
-                    site_id        VARCHAR(20)   NOT NULL,
                     channel_key    VARCHAR(60)   NOT NULL,
                     channel_label  VARCHAR(100),
                     test_result    VARCHAR(10)   NOT NULL,
@@ -55,9 +54,9 @@ public class BoSyExtTestLogController {
             /* 기존 테이블에 신규 컬럼 추가 (이미 있으면 무시) */
             try { jdbc.execute("ALTER TABLE shopjoy_2604.syh_ext_test_log ADD COLUMN IF NOT EXISTS test_req_body VARCHAR(2000)"); } catch (Exception ignored) {}
             try { jdbc.execute("ALTER TABLE shopjoy_2604.syh_ext_test_log ADD COLUMN IF NOT EXISTS test_account VARCHAR(200)"); } catch (Exception ignored) {}
+            try { jdbc.execute("ALTER TABLE shopjoy_2604.syh_ext_test_log DROP COLUMN IF EXISTS site_id"); } catch (Exception ignored) {}
 
             jdbc.execute("CREATE INDEX IF NOT EXISTS idx_syh_ext_test_log_ch ON shopjoy_2604.syh_ext_test_log (channel_key, reg_date DESC)");
-            jdbc.execute("CREATE INDEX IF NOT EXISTS idx_syh_ext_test_log_si ON shopjoy_2604.syh_ext_test_log (site_id, reg_date DESC)");
         } catch (Exception e) {
             log.warn("syh_ext_test_log 테이블 초기화 경고: {}", e.getMessage());
         }

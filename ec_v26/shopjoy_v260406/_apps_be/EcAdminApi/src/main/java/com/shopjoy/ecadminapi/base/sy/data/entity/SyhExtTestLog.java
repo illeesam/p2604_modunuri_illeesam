@@ -18,9 +18,6 @@ public class SyhExtTestLog extends BaseEntity {
     @Comment("로그ID")
     private String logId;
 
-    @Column(name = "site_id", length = 20, nullable = false)
-    @Comment("사이트ID")
-
     @Column(name = "channel_key", length = 60, nullable = false)
     @Comment("채널키 (smtp/fcm/sms/ai 등)")
     private String channelKey;

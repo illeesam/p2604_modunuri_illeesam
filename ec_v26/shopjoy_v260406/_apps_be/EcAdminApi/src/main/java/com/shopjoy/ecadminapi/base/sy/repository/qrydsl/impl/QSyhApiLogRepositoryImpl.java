@@ -32,7 +32,6 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhApiLogRepositoryImpl";
     private static final QSyhApiLog syhApiLog   = QSyhApiLog.syhApiLog;
-    private static final QSySite    sySite = QSySite.sySite;
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhApiLog.regDate,
         "upd_date", syhApiLog.updDate

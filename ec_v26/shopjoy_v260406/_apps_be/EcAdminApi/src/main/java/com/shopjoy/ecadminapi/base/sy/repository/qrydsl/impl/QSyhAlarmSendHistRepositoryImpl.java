@@ -32,7 +32,6 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAlarmSendHistRepositoryImpl";
     private static final QSyhAlarmSendHist syhAlarmSendHist   = QSyhAlarmSendHist.syhAlarmSendHist;
-    private static final QSySite           sySite = QSySite.sySite;
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "send_date", syhAlarmSendHist.sendDate,
         "reg_date", syhAlarmSendHist.regDate,
