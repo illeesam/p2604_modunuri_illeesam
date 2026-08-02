@@ -20,7 +20,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveIssueDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSaveIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveIssueRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -43,8 +44,8 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
     private static final QOdOrder     odOrder  = QOdOrder.odOrder;
     private static final QOdOrderItem odOrderItem  = QOdOrderItem.odOrderItem;
     private static final QPdProd      pdProd  = QPdProd.pdProd;
-    private static final QSyCode      cdSit = new QSyCode("cd_sit");
-    private static final QSyCode      cdSis = new QSyCode("cd_sis");
+    private static final QVwSyCode      cdSit = new QVwSyCode("cd_sit");
+    private static final QVwSyCode      cdSis = new QVwSyCode("cd_sis");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmSaveIssue.regDate,
         "upd_date", pmSaveIssue.updDate

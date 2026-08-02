@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftCond;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGift;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGiftCond;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmGiftCondRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -36,7 +37,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     private static final QPmGiftCond pmGiftCond    = QPmGiftCond.pmGiftCond;
     private static final QPmGift     pmGift  = QPmGift.pmGift;
     private static final QSySite     sySite  = QSySite.sySite;
-    private static final QSyCode     cdGct = new QSyCode("cd_gct");
+    private static final QVwSyCode     cdGct = new QVwSyCode("cd_gct");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmGiftCond.regDate,
         "upd_date", pmGiftCond.updDate

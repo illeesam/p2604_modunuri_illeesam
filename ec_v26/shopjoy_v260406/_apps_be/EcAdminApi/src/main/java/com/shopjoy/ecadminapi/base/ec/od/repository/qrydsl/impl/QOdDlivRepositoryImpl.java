@@ -17,7 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdDliv;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdDlivRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -38,11 +39,11 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     private static final QOdDliv   odDliv    = QOdDliv.odDliv;
     private static final QOdOrder  odOrder    = QOdOrder.odOrder;
     private static final QSyVendor syVendor    = QSyVendor.syVendor;
-    private static final QSyCode   cdDs = new QSyCode("cd_ds");
-    private static final QSyCode   cdDt = new QSyCode("cd_dt");
-    private static final QSyCode   cdDd = new QSyCode("cd_dd");
-    private static final QSyCode   cdOc = new QSyCode("cd_oc");
-    private static final QSyCode   cdIc = new QSyCode("cd_ic");
+    private static final QVwSyCode   cdDs = new QVwSyCode("cd_ds");
+    private static final QVwSyCode   cdDt = new QVwSyCode("cd_dt");
+    private static final QVwSyCode   cdDd = new QVwSyCode("cd_dd");
+    private static final QVwSyCode   cdOc = new QVwSyCode("cd_oc");
+    private static final QVwSyCode   cdIc = new QVwSyCode("cd_ic");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "dliv_ship_date", odDliv.dlivShipDate,
         "dliv_date", odDliv.dlivDate,

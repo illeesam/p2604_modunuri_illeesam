@@ -20,7 +20,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
@@ -44,9 +45,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final QSyBrand    syBrand   = QSyBrand.syBrand;
     private static final QSyVendor   syVendor   = QSyVendor.syVendor;
     private static final QSyUser     syUser   = QSyUser.syUser;
-    private static final QSyCode     cdPs = new QSyCode("cd_ps");
-    private static final QSyCode     cdPt = new QSyCode("cd_pt");
-    private static final QSyCode     cdSz = new QSyCode("cd_sz");
+    private static final QVwSyCode     cdPs = new QVwSyCode("cd_ps");
+    private static final QVwSyCode     cdPt = new QVwSyCode("cd_pt");
+    private static final QVwSyCode     cdSz = new QVwSyCode("cd_sz");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProd.regDate,
         "upd_date", pdProd.updDate

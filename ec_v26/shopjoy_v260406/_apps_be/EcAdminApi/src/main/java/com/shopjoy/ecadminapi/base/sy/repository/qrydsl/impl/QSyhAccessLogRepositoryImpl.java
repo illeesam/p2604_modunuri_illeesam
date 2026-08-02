@@ -11,7 +11,8 @@ import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyDept;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -40,7 +41,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private static final QSyRole   syRole   = QSyRole.syRole;
     private static final QSyDept   syDept   = QSyDept.syDept;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
-    private static final QSyCode   cd_at    = new QSyCode("cd_at");
+    private static final QVwSyCode   cd_at    = new QVwSyCode("cd_at");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhAccessLog.regDate
     );

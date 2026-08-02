@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettlePayDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettlePay;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettlePay;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettlePayRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +39,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     private static final QStSettlePay stSettlePay     = QStSettlePay.stSettlePay;
     private static final QSyVendor    syVendor   = QSyVendor.syVendor;
     private static final QSySite      sySite   = QSySite.sySite;
-    private static final QSyCode      cdPmc = new QSyCode("cd_pmc");
-    private static final QSyCode      cdSps = new QSyCode("cd_sps");
+    private static final QVwSyCode      cdPmc = new QVwSyCode("cd_pmc");
+    private static final QVwSyCode      cdSps = new QVwSyCode("cd_sps");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stSettlePay.regDate,
         "upd_date", stSettlePay.updDate

@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -35,8 +36,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberRepositoryImpl";
     private static final QMbMember mbMember     = QMbMember.mbMember;
     private static final QSySite   sySite     = QSySite.sySite;
-    private static final QSyCode   cdGr  = new QSyCode("cd_gr");
-    private static final QSyCode   cdMs  = new QSyCode("cd_ms");
+    private static final QVwSyCode   cdGr  = new QVwSyCode("cd_gr");
+    private static final QVwSyCode   cdMs  = new QVwSyCode("cd_ms");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "join_date", mbMember.joinDate,
         "reg_date", mbMember.regDate,

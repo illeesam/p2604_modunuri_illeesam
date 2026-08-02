@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberGradeRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -34,7 +35,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGradeRepositoryImpl";
     private static final QMbMemberGrade mbMemberGrade    = QMbMemberGrade.mbMemberGrade;
     private static final QSySite        sySite  = QSySite.sySite;
-    private static final QSyCode        cdMg = new QSyCode("cd_mg");
+    private static final QVwSyCode        cdMg = new QVwSyCode("cd_mg");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", mbMemberGrade.regDate,
         "upd_date", mbMemberGrade.updDate

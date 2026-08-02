@@ -17,8 +17,8 @@ window.PdRestockNotiMng = {
     const checkedIds = reactive(new Set());        // 선택된 알림 ID Set
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({
-      product_statuses: [],
-      send_yn_opts: [{codeValue:'Y',codeLabel:'발송완료'},{codeValue:'N',codeLabel:'미발송'}],
+      PRODUCT_STATUS: [],
+      SEND_YN: [],
     });
 
     /* ===== 검색조건 ===== */
@@ -138,9 +138,10 @@ window.PdRestockNotiMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['PRODUCT_STATUS'], {compNm: 'PdRestockNotiMng'});
+      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'SEND_YN'], {compNm: 'PdRestockNotiMng'});
       try {
-        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        codes.PRODUCT_STATUS = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        codes.SEND_YN = codeStore.sgGetGrpCodes('SEND_YN');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -163,7 +164,7 @@ window.PdRestockNotiMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'prodId', label: '상품ID', type: 'text', placeholder: '상품ID 검색' },
-      { key: 'notiYn', label: '알림발송', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
+      { key: 'notiYn', label: '알림발송', type: 'select', options: () => codes.SEND_YN, nullLabel: '전체' },
     ];
 
     // 기본 그리드

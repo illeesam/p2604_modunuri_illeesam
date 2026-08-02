@@ -15,11 +15,9 @@ window.PdDlivTmpltMng = {
     const dlivTmplts = reactive([]);              // 배송템플릿 목록 (메인 그리드)
     const uiState = reactive({ loading: false, error: null, selectedId: null, sortKey: '', sortDir: 'asc', isNew: false });
     const codes = reactive({
-      dliv_template_types: [],
-      use_yn: [],
-      dliv_methods: [{value:'COURIER',label:'택배'},{value:'DIRECT',label:'직접배송'},{value:'PICKUP',label:'방문수령'}],
-      dliv_pay_types: [{value:'PREPAY',label:'선결제'},{value:'COD',label:'착불'}],
-      couriers: [{value:'CJ',label:'CJ'},{value:'LOGEN',label:'LOGEN'},{value:'LOTTE',label:'LOTTE'},{value:'HANJIN',label:'HANJIN'},{value:'POST',label:'POST'},{value:'EPOST',label:'EPOST'},{value:'KGB',label:'KGB'}],
+      DLIV_TEMPLATE_TYPE: [],
+      USE_YN: [],
+      DLIV_METHOD: [], DLIV_PAY_TYPE: [], COURIER: [],
     });
     const form = reactive({});                    // 상세 폼 데이터
     const SORT_MAP = { nm: { asc: 'dlivTmpltNm asc', desc: 'dlivTmpltNm desc' } };
@@ -197,10 +195,13 @@ window.PdDlivTmpltMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['DLIV_TEMPLATE_TYPE', 'USE_YN'], {compNm: 'PdDlivTmpltMng'});
+      await codeStore.saLoadCodes(['DLIV_TEMPLATE_TYPE', 'USE_YN', 'DLIV_METHOD', 'DLIV_PAY_TYPE', 'COURIER'], {compNm: 'PdDlivTmpltMng'});
       try {
-        codes.dliv_template_types = codeStore.sgGetGrpCodes('DLIV_TEMPLATE_TYPE');
-        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+        codes.DLIV_TEMPLATE_TYPE = codeStore.sgGetGrpCodes('DLIV_TEMPLATE_TYPE');
+        codes.USE_YN = codeStore.sgGetGrpCodes('USE_YN');
+        codes.DLIV_METHOD  = codeStore.sgGetGrpCodes('DLIV_METHOD');
+        codes.DLIV_PAY_TYPE = codeStore.sgGetGrpCodes('DLIV_PAY_TYPE');
+        codes.COURIER      = codeStore.sgGetGrpCodes('COURIER');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -225,8 +226,8 @@ window.PdDlivTmpltMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'searchValue', label: '템플릿명', type: 'text', placeholder: '템플릿명 검색' },
-      { key: 'dlivMethodCd', label: '배송방법', type: 'select', options: () => codes.dliv_methods, nullLabel: '전체' },
-      { key: 'useYn', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'dlivMethodCd', label: '배송방법', type: 'select', options: () => codes.DLIV_METHOD, nullLabel: '전체' },
+      { key: 'useYn', label: '사용여부', type: 'select', options: () => codes.USE_YN, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -251,12 +252,12 @@ window.PdDlivTmpltMng = {
       /* 1행: 템플릿명(2) + 배송방법(1) */
       { key: 'dlivTmpltNm',      label: '템플릿명', type: 'text', required: true, colSpan: 2 },
       { key: 'dlivMethodCd',     label: '배송방법', type: 'select', nullable: false,
-        options: () => codes.dliv_methods },
+        options: () => codes.DLIV_METHOD },
       /* 2행: 결제유형 + 택배사 + 기본배송비 */
       { key: 'dlivPayTypeCd',    label: '배송비 결제유형', type: 'select', nullable: false,
-        options: () => codes.dliv_pay_types },
+        options: () => codes.DLIV_PAY_TYPE },
       { key: 'dlivCourierCd',    label: '배송 택배사', type: 'select', nullLabel: '없음',
-        options: () => codes.couriers },
+        options: () => codes.COURIER },
       { key: 'dlivCost',         label: '기본 배송비 (원)', type: 'number' },
       /* 3행: 무료배송 최소 + 도서산간 + 반품배송비 편도 */
       { key: 'freeDlivMinAmt',   label: '무료배송 최소금액 (원)', type: 'number' },
@@ -265,12 +266,12 @@ window.PdDlivTmpltMng = {
       /* 4행: 교환배송 왕복 + 반품 택배사 + 반품지 우편번호 */
       { key: 'exchangeCost',     label: '교환배송비 왕복 (원)', type: 'number' },
       { key: 'returnCourierCd',  label: '반품 택배사', type: 'select', nullLabel: '없음',
-        options: () => codes.couriers },
+        options: () => codes.COURIER },
       { key: 'returnAddrZip',    label: '반품지 우편번호', type: 'text' },
       /* 5행: 반품지 전화번호 + 기본배송지 + 사용여부 */
       { key: 'returnTelNo',      label: '반품지 전화번호', type: 'text' },
-      { key: 'baseDlivYn',       label: '기본 배송지', type: 'select', options: () => codes.use_yn },
-      { key: 'useYn',            label: '사용여부', type: 'select', options: () => codes.use_yn },
+      { key: 'baseDlivYn',       label: '기본 배송지', type: 'select', options: () => codes.USE_YN },
+      { key: 'useYn',            label: '사용여부', type: 'select', options: () => codes.USE_YN },
       /* 6~7행: 반품지 주소/상세주소 (전체 폭) */
       { key: 'returnAddr',       label: '반품지 주소', type: 'text', colSpan: 3 },
       { key: 'returnAddrDetail', label: '반품지 상세주소', type: 'text', colSpan: 3 },

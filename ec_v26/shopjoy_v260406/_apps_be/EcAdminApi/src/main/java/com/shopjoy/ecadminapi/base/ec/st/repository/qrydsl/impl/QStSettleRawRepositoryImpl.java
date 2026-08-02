@@ -28,7 +28,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleRaw;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleRaw;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleRawRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
@@ -64,11 +65,11 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private static final QPmDiscnt    pmDiscnt  = QPmDiscnt.pmDiscnt;
     private static final QPmVoucher   pmVoucher  = QPmVoucher.pmVoucher;
     private static final QPmGift      pmGift  = QPmGift.pmGift;
-    private static final QSyCode      cdRt  = new QSyCode("cd_rt");
-    private static final QSyCode      cdRs  = new QSyCode("cd_rs");
-    private static final QSyCode      cdOis = new QSyCode("cd_ois");
-    private static final QSyCode      cdVt  = new QSyCode("cd_vt");
-    private static final QSyCode      cdPmc = new QSyCode("cd_pmc");
+    private static final QVwSyCode      cdRt  = new QVwSyCode("cd_rt");
+    private static final QVwSyCode      cdRs  = new QVwSyCode("cd_rs");
+    private static final QVwSyCode      cdOis = new QVwSyCode("cd_ois");
+    private static final QVwSyCode      cdVt  = new QVwSyCode("cd_vt");
+    private static final QVwSyCode      cdPmc = new QVwSyCode("cd_pmc");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "order_date", stSettleRaw.orderDate,
         "reg_date", stSettleRaw.regDate,

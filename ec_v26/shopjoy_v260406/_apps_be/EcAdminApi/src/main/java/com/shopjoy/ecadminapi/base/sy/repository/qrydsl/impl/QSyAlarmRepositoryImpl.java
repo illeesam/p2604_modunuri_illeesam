@@ -14,7 +14,8 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAlarm;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyAlarmRepository;
@@ -40,9 +41,9 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAlarmRepositoryImpl";
     private static final QSyAlarm syAlarm = QSyAlarm.syAlarm;
     private static final QSySite sySite = QSySite.sySite;
-    private static final QSyCode cdAt = new QSyCode("cd_at");
-    private static final QSyCode cdAc = new QSyCode("cd_ac");
-    private static final QSyCode cdAtt = new QSyCode("cd_att");
+    private static final QVwSyCode cdAt = new QVwSyCode("cd_at");
+    private static final QVwSyCode cdAc = new QVwSyCode("cd_ac");
+    private static final QVwSyCode cdAtt = new QVwSyCode("cd_att");
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("alarmId", syAlarm.alarmId),
         Map.entry("alarmMsg", syAlarm.alarmMsg),

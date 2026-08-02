@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmVoucher;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmVoucherRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -35,8 +36,8 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmVoucherRepositoryImpl";
     private static final QPmVoucher pmVoucher    = QPmVoucher.pmVoucher;
     private static final QSySite    sySite  = QSySite.sySite;
-    private static final QSyCode    cdVt = new QSyCode("cd_vt");
-    private static final QSyCode    cdVs = new QSyCode("cd_vs");
+    private static final QVwSyCode    cdVt = new QVwSyCode("cd_vt");
+    private static final QVwSyCode    cdVs = new QVwSyCode("cd_vs");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmVoucher.regDate,
         "upd_date", pmVoucher.updDate

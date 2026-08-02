@@ -15,7 +15,8 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
@@ -48,7 +49,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         this.em = em;
     }
     private static final QSySite sySite = QSySite.sySite;
-    private static final QSyCode cdRt = new QSyCode("cd_rt");
+    private static final QVwSyCode cdRt = new QVwSyCode("cd_rt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syRole.regDate,
         "upd_date", syRole.updDate

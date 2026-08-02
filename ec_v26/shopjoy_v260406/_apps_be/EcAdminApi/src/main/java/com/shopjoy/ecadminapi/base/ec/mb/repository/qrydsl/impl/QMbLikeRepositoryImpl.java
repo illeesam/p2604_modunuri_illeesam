@@ -18,7 +18,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbLike;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbLikeRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -38,7 +39,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     private static final QSySite   sySite  = QSySite.sySite;
     private static final QMbMember mbMember  = QMbMember.mbMember;
     private static final QPdProd   pdProd  = QPdProd.pdProd;
-    private static final QSyCode   cdLt = new QSyCode("cd_ltt");
+    private static final QVwSyCode   cdLt = new QVwSyCode("cd_ltt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", mbLike.regDate,
         "upd_date", mbLike.updDate

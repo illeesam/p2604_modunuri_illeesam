@@ -15,7 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuStockHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdSkuStockHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdhProdSkuStockHistRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -34,7 +35,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
     private static final QPdhProdSkuStockHist pdhProdSkuStockHist      = QPdhProdSkuStockHist.pdhProdSkuStockHist;
     private static final QSySite              sySite    = QSySite.sySite;
     private static final QPdProd              pdProd    = QPdProd.pdProd;
-    private static final QSyCode              cd_ssc = new QSyCode("cd_ssc");
+    private static final QVwSyCode              cd_ssc = new QVwSyCode("cd_ssc");
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("chgBy", pdhProdSkuStockHist.chgBy),
         Map.entry("chgReason", pdhProdSkuStockHist.chgReason),

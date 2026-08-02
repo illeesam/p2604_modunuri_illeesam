@@ -13,7 +13,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhBatchLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchLog;
@@ -35,7 +36,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchLogRepositoryImpl";
     private static final QSyhBatchLog syhBatchLog   = QSyhBatchLog.syhBatchLog;
     private static final QSySite      sySite = QSySite.sySite;
-    private static final QSyCode      cd_bs  = new QSyCode("cd_bs");
+    private static final QVwSyCode      cd_bs  = new QVwSyCode("cd_bs");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhBatchLog.regDate,
         "upd_date", syhBatchLog.updDate

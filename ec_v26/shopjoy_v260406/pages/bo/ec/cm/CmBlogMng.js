@@ -16,10 +16,8 @@ window.CmBlogMng = {
       loading: false, error: null, selectedId: null, sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({                       // 공통코드 / 정적 옵션
-      blog_display_statuses: [],
-      open_yn_opts:   [{ codeValue: 'Y', codeLabel: '공개' }, { codeValue: 'N', codeLabel: '비공개' }],
-      notice_yn_opts: [{ codeValue: 'Y', codeLabel: '공지' }, { codeValue: 'N', codeLabel: '일반' }],
-      blog_type_opts: [{ codeValue: 'NEWS', codeLabel: '뉴스' }, { codeValue: 'BLOG', codeLabel: '블로그' }],
+      BLOG_DISPLAY_STATUS: [],
+      OPEN_YN: [], NOTICE_YN: [], BLOG_TYPE: [],
     });
     const SORT_MAP = { nm: { asc: 'blogTitle asc', desc: 'blogTitle desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
@@ -368,8 +366,11 @@ window.CmBlogMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['BLOG_DISPLAY_STATUS'], {compNm: 'CmBlogMng'});
-      codes.blog_display_statuses = codeStore.sgGetGrpCodes('BLOG_DISPLAY_STATUS');
+      await codeStore.saLoadCodes(['BLOG_DISPLAY_STATUS', 'BLOG_TYPE', 'OPEN_YN', 'NOTICE_YN'], {compNm: 'CmBlogMng'});
+      codes.BLOG_DISPLAY_STATUS = codeStore.sgGetGrpCodes('BLOG_DISPLAY_STATUS');
+      codes.BLOG_TYPE  = codeStore.sgGetGrpCodes('BLOG_TYPE');
+      codes.OPEN_YN    = codeStore.sgGetGrpCodes('OPEN_YN');
+      codes.NOTICE_YN  = codeStore.sgGetGrpCodes('NOTICE_YN');
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -391,7 +392,7 @@ window.CmBlogMng = {
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* fnBlogTypeLabel — NEWS/BLOG → 한글 라벨 */
-    const fnBlogTypeLabel = v => (codes.blog_type_opts.find(o => o.codeValue === v) || {}).codeLabel || v || '-';
+    const fnBlogTypeLabel = v => (codes.BLOG_TYPE.find(o => o.codeValue === v) || {}).codeLabel || v || '-';
     /* fnBlogTypeBadge — 구분 배지 클래스 (뉴스=blue, 블로그=purple) */
     const fnBlogTypeBadge = v => v === 'NEWS' ? 'badge-blue' : 'badge-purple';
 
@@ -421,9 +422,9 @@ window.CmBlogMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'blogTypeCd', type: 'select', label: '구분', options: () => codes.blog_type_opts, nullLabel: '전체' },
-      { key: 'useYn', type: 'select', label: '공개여부', options: () => codes.open_yn_opts, nullLabel: '전체' },
-      { key: 'isNotice', type: 'select', label: '공지여부', options: () => codes.notice_yn_opts, nullLabel: '전체' },
+      { key: 'blogTypeCd', type: 'select', label: '구분', options: () => codes.BLOG_TYPE, nullLabel: '전체' },
+      { key: 'useYn', type: 'select', label: '공개여부', options: () => codes.OPEN_YN, nullLabel: '전체' },
+      { key: 'isNotice', type: 'select', label: '공지여부', options: () => codes.NOTICE_YN, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -447,13 +448,13 @@ window.CmBlogMng = {
     // 블로그 폼
     columns.blogForm = [
       { key: 'blogTypeCd',  label: '구분', type: 'select', required: true,
-        options: () => (codes.blog_type_opts || []).map(o => ({ value: o.codeValue, label: o.codeLabel })) },
+        options: () => (codes.BLOG_TYPE || []).map(o => ({ value: o.codeValue, label: o.codeLabel })) },
       { key: 'blogTitle',   label: '제목', type: 'text', required: true, colSpan: 2 },
       { key: 'blogAuthor',  label: '작성자', type: 'text' },
       { key: 'isNotice',    label: '공지여부', type: 'select',
-        options: () => (codes.notice_yn_opts || []).map(o => ({ value: o.codeValue, label: o.codeValue + ' (' + o.codeLabel + ')' })) },
+        options: () => (codes.NOTICE_YN || []).map(o => ({ value: o.codeValue, label: o.codeValue + ' (' + o.codeLabel + ')' })) },
       { key: 'useYn',       label: '공개여부', type: 'select',
-        options: () => (codes.open_yn_opts || []).map(o => ({ value: o.codeValue, label: o.codeValue + ' (' + o.codeLabel + ')' })) },
+        options: () => (codes.OPEN_YN || []).map(o => ({ value: o.codeValue, label: o.codeValue + ' (' + o.codeLabel + ')' })) },
       { type: 'rowBreak' },
       { key: 'blogSummary', label: '요약', type: 'text', placeholder: '목록에 표시될 요약 내용', colSpan: 3 },
       { type: 'rowBreak' },

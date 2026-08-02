@@ -11,7 +11,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdChgHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdSkuPriceHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdSkuStockHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdStatusHist;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -39,8 +39,8 @@ public class PdProdHistQueryRepository {
     private static final QPdhProdStatusHist   statusHist = QPdhProdStatusHist.pdhProdStatusHist;
     private static final QPdhProdChgHist      chgHist    = QPdhProdChgHist.pdhProdChgHist;
     private static final QSyUser              syUser     = QSyUser.syUser;
-    private static final QSyCode              syCode1    = new QSyCode("cd1");
-    private static final QSyCode              syCode2    = new QSyCode("cd2");
+    private static final QVwSyCode            syCode1    = new QVwSyCode("cd1");
+    private static final QVwSyCode            syCode2    = new QVwSyCode("cd2");
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

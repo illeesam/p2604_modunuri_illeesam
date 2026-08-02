@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlan;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmPlan;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmPlanRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -35,8 +36,8 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmPlanRepositoryImpl";
     private static final QPmPlan pmPlan    = QPmPlan.pmPlan;
     private static final QSySite sySite  = QSySite.sySite;
-    private static final QSyCode cdPt = new QSyCode("cd_pt");
-    private static final QSyCode cdPs = new QSyCode("cd_ps");
+    private static final QVwSyCode cdPt = new QVwSyCode("cd_pt");
+    private static final QVwSyCode cdPs = new QVwSyCode("cd_ps");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmPlan.regDate,
         "upd_date", pmPlan.updDate

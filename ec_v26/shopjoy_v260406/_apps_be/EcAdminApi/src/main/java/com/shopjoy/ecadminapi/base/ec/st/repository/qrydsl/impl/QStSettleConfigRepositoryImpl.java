@@ -17,7 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleConfigDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleConfig;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleConfig;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleConfigRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     private static final QSySite        sySite  = QSySite.sySite;
     private static final QSyVendor      syVendor  = QSyVendor.syVendor;
     private static final QPdCategory    pdCategory  = QPdCategory.pdCategory;
-    private static final QSyCode        cdSc = new QSyCode("cd_sc");
+    private static final QVwSyCode        cdSc = new QVwSyCode("cd_sc");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stSettleConfig.regDate,
         "upd_date", stSettleConfig.updDate

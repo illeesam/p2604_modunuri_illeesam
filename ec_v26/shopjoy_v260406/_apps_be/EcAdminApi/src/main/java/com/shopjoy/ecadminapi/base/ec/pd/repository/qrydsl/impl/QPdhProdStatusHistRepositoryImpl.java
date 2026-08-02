@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdhProdStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdStatusHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdStatusHist;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdhProdStatusHistRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
     private static final QPdhProdStatusHist pdhProdStatusHist     = QPdhProdStatusHist.pdhProdStatusHist;
     private static final QSySite            sySite   = QSySite.sySite;
     private static final QSyUser            syUser   = QSyUser.syUser;
-    private static final QSyCode            cd_beforeStatusCd = new QSyCode("cd_beforeStatusCd");
+    private static final QVwSyCode            cd_beforeStatusCd = new QVwSyCode("cd_beforeStatusCd");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdhProdStatusHist.regDate,
         "upd_date", pdhProdStatusHist.updDate

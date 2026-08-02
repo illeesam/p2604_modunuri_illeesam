@@ -14,7 +14,8 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyMenu;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
@@ -46,7 +47,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         this.em = em;
     }
     private static final QSySite sySite = QSySite.sySite;
-    private static final QSyCode cdMt = new QSyCode("cd_mt");
+    private static final QVwSyCode cdMt = new QVwSyCode("cd_mt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syMenu.regDate,
         "upd_date", syMenu.updDate

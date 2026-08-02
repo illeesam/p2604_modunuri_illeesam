@@ -22,15 +22,10 @@ window.PmCouponDtl = {
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({
-      coupon_statuses_dtl: [],
-      pm_prod_targets: [],
-      pm_issue_grades: [],
-      coupon_use_limit_opts: [{value:'unlimited',label:'무제한'},{value:'once',label:'1회만'},{value:'month',label:'월 1회'}],
-      coupon_issue_type_opts: [{value:'auto',label:'자동 발급'},{value:'manual',label:'수동 발급'},{value:'event',label:'이벤트 발급'}],
-      coupon_target_opts: [{value:'all',label:'전체 회원'},{value:'newMember',label:'신규 회원'},{value:'subscribe',label:'구독자'},{value:'purchase',label:'구매 고객'}],
-      coupon_apply_opts: [{value:'all',label:'모든 상품'},{value:'category',label:'카테고리 제한'},{value:'product',label:'특정 상품만'},{value:'exclude',label:'제외 상품'}],
-      coupon_types: ['상품할인쿠폰','주문할인쿠폰','배송비할인쿠폰','무료배송쿠폰','회원가입축하쿠폰','VIP쿠폰','클레임관리자지급쿠폰'],
-      discount_types: [{value:'amount',label:'정액'},{value:'percent',label:'정률'}],
+      COUPON_STATUS_DTL: [], COUPON_TYPE: [],
+      PM_PROD_TARGET: [], PM_ISSUE_GRADE: [],
+      COUPON_USE_LIMIT: [], COUPON_ISSUE_DISP: [], COUPON_TARGET: [], COUPON_APPLY: [],
+      COUPON_DISC_TYPE: [],
     });
 
     const form = reactive({
@@ -247,10 +242,16 @@ window.PmCouponDtl = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['COUPON_STATUS_DTL', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE'], {compNm: 'PmCouponDtl'});
-      codes.coupon_statuses_dtl = codeStore.sgGetGrpCodes('COUPON_STATUS_DTL');
-      codes.pm_prod_targets     = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
-      codes.pm_issue_grades     = codeStore.sgGetGrpCodes('PM_ISSUE_GRADE');
+      await codeStore.saLoadCodes(['COUPON_STATUS_DTL', 'COUPON_TYPE', 'PM_PROD_TARGET', 'PM_ISSUE_GRADE', 'COUPON_USE_LIMIT', 'COUPON_ISSUE_DISP', 'COUPON_TARGET', 'COUPON_APPLY', 'COUPON_DISC_TYPE'], {compNm: 'PmCouponDtl'});
+      codes.COUPON_STATUS_DTL    = codeStore.sgGetGrpCodes('COUPON_STATUS_DTL');
+      codes.COUPON_TYPE          = codeStore.sgGetGrpCodes('COUPON_TYPE');
+      codes.PM_PROD_TARGET       = codeStore.sgGetGrpCodes('PM_PROD_TARGET');
+      codes.PM_ISSUE_GRADE       = codeStore.sgGetGrpCodes('PM_ISSUE_GRADE');
+      codes.COUPON_USE_LIMIT       = codeStore.sgGetGrpCodes('COUPON_USE_LIMIT');
+      codes.COUPON_ISSUE_DISP      = codeStore.sgGetGrpCodes('COUPON_ISSUE_DISP');
+      codes.COUPON_TARGET          = codeStore.sgGetGrpCodes('COUPON_TARGET');
+      codes.COUPON_APPLY           = codeStore.sgGetGrpCodes('COUPON_APPLY');
+      codes.COUPON_DISC_TYPE       = codeStore.sgGetGrpCodes('COUPON_DISC_TYPE');
     };
 
     /* handleInitForm — 처리 */
@@ -461,12 +462,12 @@ window.PmCouponDtl = {
     // 정보 영역 폼
     columns.infoForm = [
       { key: 'couponTypeCd',   label: '쿠폰 타입', type: 'select', nullable: false,
-        options: () => codes.coupon_types },
+        options: () => codes.COUPON_TYPE },
       { key: 'couponNm',       label: '쿠폰명', type: 'text', required: true, placeholder: '쿠폰명 입력' },
       { key: 'couponCd',       label: '쿠폰코드', type: 'text', required: true,
         placeholder: '코드 자동생성/직접입력', mono: true },
-      { key: 'couponStatusCd', label: '상태', type: 'select', options: () => codes.coupon_statuses_dtl },
-      { key: 'discountType',   label: '할인 유형', type: 'select', options: () => codes.discount_types },
+      { key: 'couponStatusCd', label: '상태', type: 'select', options: () => codes.COUPON_STATUS_DTL },
+      { key: 'discountType',   label: '할인 유형', type: 'select', options: () => codes.COUPON_DISC_TYPE },
       { key: 'discountVal',    label: '할인값', type: 'number', required: true },
       { key: 'minOrderAmt',    label: '최소주문금액 (원)', type: 'number', placeholder: '0' },
       { key: 'maxDiscountAmt', label: '최대할인금액 (원)', type: 'number', placeholder: '0 = 무제한' },
@@ -474,7 +475,7 @@ window.PmCouponDtl = {
       { key: 'validTo',        label: '만료일', type: 'date', required: true },
       { key: 'issueLimit',     label: '총 발급수량', type: 'number', placeholder: '0 = 무제한' },
       { key: 'useLimit',       label: '사용 제한', type: 'select', nullable: false,
-        options: () => codes.coupon_use_limit_opts },
+        options: () => codes.COUPON_USE_LIMIT },
       { key: 'memo',           label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
       { key: 'vendorId',       label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff',    label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
@@ -484,17 +485,17 @@ window.PmCouponDtl = {
     // 발행 상세 폼
     columns.detailIssueForm = [
       { key: 'targetTypeCd',  label: '발급 대상 종류', type: 'select',
-        options: () => codes.pm_prod_targets },
+        options: () => codes.PM_PROD_TARGET },
       { key: 'issueMethods',   label: '지급 방법', type: 'select', nullable: false,
-        options: () => codes.coupon_issue_type_opts },
+        options: () => codes.COUPON_ISSUE_DISP },
       { key: 'issueCondition', label: '지급 조건', type: 'select', nullable: false,
-        options: () => codes.coupon_target_opts },
+        options: () => codes.COUPON_TARGET },
       { key: 'issueGrades', label: '적용 회원 등급', type: 'slot', name: 'issueGrades', colSpan: 3 },
     ];
     // 사용 상세 폼
     columns.detailUseForm = [
       { key: 'useScope',   label: '사용 범위', type: 'select', nullable: false, colSpan: 2,
-        options: () => codes.coupon_apply_opts },
+        options: () => codes.COUPON_APPLY },
       { key: 'useExclude', label: '제외 상품/카테고리', type: 'textarea', rows: 3,
         placeholder: '쉼표로 구분하여 입력 (예: 상품ID1, 상품ID2, 카테고리ID3)' },
       { key: 'useRemark',  label: '사용 제약사항', type: 'textarea', rows: 3,
@@ -736,7 +737,7 @@ window.PmCouponDtl = {
           <template #issueGrades>
             <bo-multi-check-select
               v-model="form.issueGrades"
-              :options="codes.pm_issue_grades"
+              :options="codes.PM_ISSUE_GRADE"
               placeholder="전체 등급 (미선택 시 전체)"
               :disabled="cfDtlMode" />
             <span style="font-size:12px;color:#aaa;margin-top:4px;display:block;">선택하지 않으면 전체 등급에 적용</span>

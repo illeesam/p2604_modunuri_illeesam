@@ -17,7 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderDiscnt;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderDiscntRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -38,7 +39,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     private static final QSySite        ste = new QSySite("ste");
     private static final QOdOrder       ord = new QOdOrder("ord");
     private static final QPmCoupon      cpn = new QPmCoupon("cpn");
-    private static final QSyCode        cdOdt = new QSyCode("cd_odt");
+    private static final QVwSyCode        cdOdt = new QVwSyCode("cd_odt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odOrderDiscnt.regDate,
         "upd_date", odOrderDiscnt.updDate

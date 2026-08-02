@@ -25,9 +25,9 @@ public class SyCode extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("코드그룹 (sy_code_grp.code_grp)")
-    @Column(name = "code_grp", length = 50, nullable = false)
-    private String codeGrp;
+    @Comment("코드그룹ID (sy_code_grp.code_grp_id FK)")
+    @Column(name = "code_grp_id", length = 50, nullable = false)
+    private String codeGrpId;
 
     @Comment("코드값 (저장값)")
     @Column(name = "code_value", length = 50, nullable = false)

@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleEtcAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleEtcAdj;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleEtcAdj;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleEtcAdjRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -35,8 +36,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleEtcAdjRepositoryImpl";
     private static final QStSettleEtcAdj stSettleEtcAdj     = QStSettleEtcAdj.stSettleEtcAdj;
     private static final QSySite         sySite   = QSySite.sySite;
-    private static final QSyCode         cdSeat = new QSyCode("cd_seat");
-    private static final QSyCode         cdAd   = new QSyCode("cd_ad");
+    private static final QVwSyCode         cdSeat = new QVwSyCode("cd_seat");
+    private static final QVwSyCode         cdAd   = new QVwSyCode("cd_ad");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stSettleEtcAdj.regDate,
         "upd_date", stSettleEtcAdj.updDate

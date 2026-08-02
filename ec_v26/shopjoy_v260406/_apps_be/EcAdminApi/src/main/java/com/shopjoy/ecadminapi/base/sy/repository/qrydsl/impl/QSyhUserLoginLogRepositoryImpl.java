@@ -13,7 +13,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserLoginLogDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhUserLoginLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
@@ -37,7 +38,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     private static final QSyhUserLoginLog syhUserLoginLog   = QSyhUserLoginLog.syhUserLoginLog;
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyUser          syUser = QSyUser.syUser;
-    private static final QSyCode          cd_lr = new QSyCode("cd_lr");
+    private static final QVwSyCode          cd_lr = new QVwSyCode("cd_lr");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhUserLoginLog.regDate
     );

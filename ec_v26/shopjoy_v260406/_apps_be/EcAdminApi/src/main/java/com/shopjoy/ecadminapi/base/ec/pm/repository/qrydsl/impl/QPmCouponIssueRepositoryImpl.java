@@ -18,7 +18,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCouponIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponIssueRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -37,7 +38,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
     private static final QPmCouponIssue pmCouponIssue    = QPmCouponIssue.pmCouponIssue;
     private static final QPmCoupon       pmCoupon    = QPmCoupon.pmCoupon;
     private static final QMbMember       mbMember    = QMbMember.mbMember;
-    private static final QSyCode         cdCt = new QSyCode("cd_ct");
+    private static final QVwSyCode         cdCt = new QVwSyCode("cd_ct");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "issue_date", pmCouponIssue.issueDate,
         "reg_date", pmCouponIssue.regDate,

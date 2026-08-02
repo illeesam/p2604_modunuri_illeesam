@@ -14,7 +14,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.shopjoy.ecadminapi.base.sy.repository.SyDeptRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyDept;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -51,8 +51,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     private static final QSyDept syDept = QSyDept.syDept;
     private static final QSyRole syRole = QSyRole.syRole;
     /* 같은 sy_code 테이블이 두 번 조인되므로 역할별 alias 부여 */
-    private static final QSyCode syCode_userStatusCd = new QSyCode("code_userStatusCd");
-    private static final QSyCode syCode_authMethodCd = new QSyCode("code_authMethodCd");
+    private static final QVwSyCode syCode_userStatusCd = new QVwSyCode("code_userStatusCd");
+    private static final QVwSyCode syCode_authMethodCd = new QVwSyCode("code_authMethodCd");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syUser.regDate,
         "upd_date", syUser.updDate,

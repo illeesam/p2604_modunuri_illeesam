@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleCloseDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleClose;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleClose;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleCloseRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -35,7 +36,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleCloseRepositoryImpl";
     private static final QStSettleClose stSettleClose   = QStSettleClose.stSettleClose;
     private static final QSySite        sySite = QSySite.sySite;
-    private static final QSyCode        cdScs = new QSyCode("cd_scs");
+    private static final QVwSyCode        cdScs = new QVwSyCode("cd_scs");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stSettleClose.regDate,
         "upd_date", stSettleClose.updDate

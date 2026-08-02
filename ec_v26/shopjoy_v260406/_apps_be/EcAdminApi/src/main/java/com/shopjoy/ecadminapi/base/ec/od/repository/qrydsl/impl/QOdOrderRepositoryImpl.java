@@ -21,7 +21,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -44,13 +45,13 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     private static final QOdOrderItem odOrderItemCnt = new QOdOrderItem("ooi_cnt");   // 주문항목 수 집계 전용
     private static final QSySite   sySite   = QSySite.sySite;
     private static final QPmCoupon pmCoupon = QPmCoupon.pmCoupon;
-    private static final QSyCode   cdOs = new QSyCode("cd_os");
-    private static final QSyCode   cdPm = new QSyCode("cd_pm");
-    private static final QSyCode   cdDs = new QSyCode("cd_ds");
-    private static final QSyCode   cdRb = new QSyCode("cd_rb");
-    private static final QSyCode   cdAp = new QSyCode("cd_ap");
-    private static final QSyCode   cdAt = new QSyCode("cd_at");
-    private static final QSyCode   cdAc = new QSyCode("cd_ac");
+    private static final QVwSyCode   cdOs = new QVwSyCode("cd_os");
+    private static final QVwSyCode   cdPm = new QVwSyCode("cd_pm");
+    private static final QVwSyCode   cdDs = new QVwSyCode("cd_ds");
+    private static final QVwSyCode   cdRb = new QVwSyCode("cd_rb");
+    private static final QVwSyCode   cdAp = new QVwSyCode("cd_ap");
+    private static final QVwSyCode   cdAt = new QVwSyCode("cd_at");
+    private static final QVwSyCode   cdAc = new QVwSyCode("cd_ac");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "order_date", odOrder.orderDate,
         "reg_date", odOrder.regDate,

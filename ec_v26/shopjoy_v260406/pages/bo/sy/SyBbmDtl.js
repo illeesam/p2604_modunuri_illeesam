@@ -18,8 +18,8 @@ window.SyBbmDtl = {
 
     const modals = reactive({ isPathPickModal: false });
     const uiState = reactive({ loading: false, error: null });
-    const codes = reactive({ bbm_types: [], bbm_comment_types: [], bbm_attach_types: [], bbm_content_types: [], bbm_scope_types: [], use_yn: [],
-      allow_yn_opts: [{codeValue:'Y',codeLabel:'허용'},{codeValue:'N',codeLabel:'불가'}],
+    const codes = reactive({ BBM_TYPE: [], BBM_COMMENT_TYPE: [], BBM_ATTACH_TYPE: [], BBM_CONTENT_TYPE: [], BBM_SCOPE_TYPE: [], USE_YN: [],
+      ALLOW_YN: [],
     });
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
@@ -120,13 +120,14 @@ window.SyBbmDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['BBM_TYPE', 'BBM_COMMENT_TYPE', 'BBM_ATTACH_TYPE', 'BBM_CONTENT_TYPE', 'BBM_SCOPE_TYPE', 'USE_YN'], {compNm: 'SyBbmDtl'});
-        codes.bbm_types = codeStore.sgGetGrpCodes('BBM_TYPE');
-        codes.bbm_comment_types = codeStore.sgGetGrpCodes('BBM_COMMENT_TYPE');
-        codes.bbm_attach_types = codeStore.sgGetGrpCodes('BBM_ATTACH_TYPE');
-        codes.bbm_content_types = codeStore.sgGetGrpCodes('BBM_CONTENT_TYPE');
-        codes.bbm_scope_types = codeStore.sgGetGrpCodes('BBM_SCOPE_TYPE');
-        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+        await codeStore.saLoadCodes(['BBM_TYPE', 'BBM_COMMENT_TYPE', 'BBM_ATTACH_TYPE', 'BBM_CONTENT_TYPE', 'BBM_SCOPE_TYPE', 'USE_YN', 'ALLOW_YN'], {compNm: 'SyBbmDtl'});
+        codes.BBM_TYPE = codeStore.sgGetGrpCodes('BBM_TYPE');
+        codes.BBM_COMMENT_TYPE = codeStore.sgGetGrpCodes('BBM_COMMENT_TYPE');
+        codes.BBM_ATTACH_TYPE = codeStore.sgGetGrpCodes('BBM_ATTACH_TYPE');
+        codes.BBM_CONTENT_TYPE = codeStore.sgGetGrpCodes('BBM_CONTENT_TYPE');
+        codes.BBM_SCOPE_TYPE = codeStore.sgGetGrpCodes('BBM_SCOPE_TYPE');
+        codes.USE_YN       = codeStore.sgGetGrpCodes('USE_YN');
+        codes.ALLOW_YN = codeStore.sgGetGrpCodes('ALLOW_YN');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -199,17 +200,17 @@ window.SyBbmDtl = {
       { key: '_siteNm',       label: '사이트명',    type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
       { key: 'bbmCode',       label: '게시판코드',  type: 'text', required: true, mono: true, placeholder: 'BOARD_CODE' },
       { key: 'bbmNm',         label: '게시판명',    type: 'text', required: true, placeholder: '게시판명' },
-      { key: 'bbmTypeCd',     label: '유형',        type: 'select', options: () => codes.bbm_types },
-      { key: 'allowComment',  label: '댓글허용',    type: 'select', options: () => codes.bbm_comment_types },
-      { key: 'allowAttach',   label: '첨부허용',    type: 'select', options: () => codes.bbm_attach_types },
-      { key: 'allowLike',     label: '좋아요허용',  type: 'select', options: () => codes.allow_yn_opts },
-      { key: 'contentTypeCd', label: '내용입력',    type: 'select', options: () => codes.bbm_content_types },
-      { key: 'scopeTypeCd',   label: '공개범위',    type: 'select', options: () => codes.bbm_scope_types },
+      { key: 'bbmTypeCd',     label: '유형',        type: 'select', options: () => codes.BBM_TYPE },
+      { key: 'allowComment',  label: '댓글허용',    type: 'select', options: () => codes.BBM_COMMENT_TYPE },
+      { key: 'allowAttach',   label: '첨부허용',    type: 'select', options: () => codes.BBM_ATTACH_TYPE },
+      { key: 'allowLike',     label: '좋아요허용',  type: 'select', options: () => codes.ALLOW_YN },
+      { key: 'contentTypeCd', label: '내용입력',    type: 'select', options: () => codes.BBM_CONTENT_TYPE },
+      { key: 'scopeTypeCd',   label: '공개범위',    type: 'select', options: () => codes.BBM_SCOPE_TYPE },
       { key: 'pathId',        label: '표시경로',    type: 'pathPick',
         pathLabel: (id) => pathLabel(id),
         onOpen: () => handleBtnAction('pathModal-open') },
       { key: 'sortOrd',       label: '정렬순서',    type: 'number', min: 1 },
-      { key: 'useYn',         label: '사용여부',    type: 'select', options: () => codes.use_yn },
+      { key: 'useYn',         label: '사용여부',    type: 'select', options: () => codes.USE_YN },
       { key: 'bbmRemark',     label: '비고',        type: 'text', placeholder: '비고' },
     ];
 

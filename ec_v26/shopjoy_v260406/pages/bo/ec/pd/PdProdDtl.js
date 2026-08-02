@@ -29,7 +29,7 @@ window.PdProdDtl = {
     const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null, stockCodePickerOpen: false, stockCodePickerSku: null, stockCodePickerSearch: '', stockCodePickerList: [] });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
-    const grpCodes = reactive({ product_statuses: [], prod_types: [], prod_plan_statuses: [], opt_stock_statuses: [], stock_filter_opts: [{value:'in',label:'재고있음'},{value:'out',label:'품절(0)'}] });
+    const grpCodes = reactive({ PRODUCT_STATUS: [], PROD_TYPE: [], PROD_PLAN_STATUS: [], OPT_STOCK_STATUS: [], STOCK_FILTER: [] });
 
     /* 상품 fnLoadCodes */
 
@@ -316,15 +316,16 @@ window.PdProdDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['PRODUCT_STATUS', 'PROD_TYPE', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS'], {compNm: 'PdProdDtl'});
+        await codeStore.saLoadCodes(['PRODUCT_STATUS', 'PROD_TYPE', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS', 'STOCK_FILTER'], {compNm: 'PdProdDtl'});
         if (!codeStore?.svCodes) { return; }
         codes.length = 0;
         codes.push(...codeStore.svCodes);
         if (codeStore.sgGetGrpCodes) {
-          grpCodes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
-          grpCodes.prod_types = codeStore.sgGetGrpCodes('PROD_TYPE');
-          grpCodes.prod_plan_statuses = codeStore.sgGetGrpCodes('PROD_PLAN_STATUS');
-          grpCodes.opt_stock_statuses = codeStore.sgGetGrpCodes('OPT_STOCK_STATUS');
+          grpCodes.PRODUCT_STATUS  = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+          grpCodes.PROD_TYPE = codeStore.sgGetGrpCodes('PROD_TYPE');
+          grpCodes.PROD_PLAN_STATUS = codeStore.sgGetGrpCodes('PROD_PLAN_STATUS');
+          grpCodes.OPT_STOCK_STATUS = codeStore.sgGetGrpCodes('OPT_STOCK_STATUS');
+          grpCodes.STOCK_FILTER = codeStore.sgGetGrpCodes('STOCK_FILTER');
         }
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -1669,7 +1670,7 @@ window.PdProdDtl = {
       { key: '_end',         label: '종료일시', style: 'width:196px;',
         dateTimePick: { dateKey: 'endDate', timeKey: 'endTime', showNow: false, showClear: false, dateWidth: '116px', timeWidth: '72px' } },
       { key: 'planStatus',   label: '상태',    style: 'width:80px;',
-        edit: 'select', options: () => grpCodes.prod_plan_statuses },
+        edit: 'select', options: () => grpCodes.PROD_PLAN_STATUS },
       { key: 'listPrice',    label: '정가',    style: 'width:90px;', edit: 'number', align: 'right' },
       { key: 'salePrice',    label: '판매가',  style: 'width:90px;', edit: 'number', align: 'right' },
       { key: 'purchasePrice', label: '매입가', style: 'width:80px;', edit: 'number', align: 'right' },
@@ -1695,7 +1696,7 @@ window.PdProdDtl = {
       { key: 'prodNm',       label: '상품명', type: 'text', required: true, placeholder: '상품명' },
       { key: 'prodCode',     label: '상품코드 (SKU)', type: 'text', placeholder: '예: SKU-20260419-001' },
       { key: 'prodTypeCd',   label: '상품유형 (prod_type_cd)', type: 'select', nullable: false,
-        options: () => grpCodes.prod_types },
+        options: () => grpCodes.PROD_TYPE },
       // 2행: 카테고리 / 브랜드 / 업체
       { key: '_categories',  label: '카테고리', type: 'slot', name: 'categories' },
       { key: 'brandId',      label: '브랜드', type: 'slot', name: 'brand' },
@@ -1704,7 +1705,7 @@ window.PdProdDtl = {
       { key: 'mdUserId',     label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
       { key: 'dlivTmpltId',  label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt' },
       { key: 'prodStatusCd', label: '상태 (prod_status_cd)', type: 'select',
-        options: () => grpCodes.product_statuses },
+        options: () => grpCodes.PRODUCT_STATUS },
       // 4행: 미판매메시지 / 무게 / 사이즈
       { key: 'unsaleMsg',    label: '미판매메시지', type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
         hint: '판매불가 시 고객 노출' },
@@ -2715,7 +2716,7 @@ window.PdProdDtl = {
               <span style="font-size:11px;color:#555;flex-shrink:0;">재고</span>
               <select v-model="skuFilterStock" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
                 <option value="">전체</option>
-                <option v-for="o in grpCodes.stock_filter_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
+                <option v-for="o in grpCodes.STOCK_FILTER" :key="o.value" :value="o.value">{{ o.label }}</option>
               </select>
             </div>
             <button v-if="skuFilter1||skuFilter2||skuFilterStock" class="btn btn-xs btn-secondary"
@@ -2812,7 +2813,7 @@ window.PdProdDtl = {
                 <td style="padding:2px 4px;background:#f8fff8;border-right:2px solid #e0e8ff;">
                   <select v-model="sku.statusCd"
                     :style="'width:100%;font-size:11px;border:1px solid #86efac;border-radius:4px;padding:2px 4px;height:22px;'+(sku.statusCd==='ON_SALE'?'color:#166534;':sku.statusCd==='SOLD_OUT'?'color:#f5a623;':sku.statusCd==='SUSPENDED'?'color:#cf1322;':'color:#555;')">
-                    <option v-for="c in grpCodes.opt_stock_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+                    <option v-for="c in grpCodes.OPT_STOCK_STATUS" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
                   </select>
                 </td>
                 <!-- ===== 기타 ===================================================== -->

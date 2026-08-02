@@ -15,7 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdhProdSkuChgHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdhProdSkuChgHist;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdhProdSkuChgHistRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -34,7 +35,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
     private static final QPdhProdSkuChgHist pdhProdSkuChgHist      = QPdhProdSkuChgHist.pdhProdSkuChgHist;
     private static final QSySite            sySite    = QSySite.sySite;
     private static final QPdProd            pdProd    = QPdProd.pdProd;
-    private static final QSyCode            cd_sct = new QSyCode("cd_sct");
+    private static final QVwSyCode            cd_sct = new QVwSyCode("cd_sct");
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("afterVal", pdhProdSkuChgHist.afterVal),
         Map.entry("beforeVal", pdhProdSkuChgHist.beforeVal),

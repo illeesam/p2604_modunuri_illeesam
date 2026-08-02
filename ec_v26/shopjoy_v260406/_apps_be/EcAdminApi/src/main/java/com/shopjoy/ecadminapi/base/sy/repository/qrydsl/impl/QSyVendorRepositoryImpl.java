@@ -14,7 +14,8 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
@@ -41,8 +42,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorRepositoryImpl";
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSySite sySite = QSySite.sySite;
-    private static final QSyCode cdVc = new QSyCode("cd_vc");
-    private static final QSyCode cdVs = new QSyCode("cd_vs");
+    private static final QVwSyCode cdVc = new QVwSyCode("cd_vc");
+    private static final QVwSyCode cdVs = new QVwSyCode("cd_vs");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syVendor.regDate,
         "upd_date", syVendor.updDate

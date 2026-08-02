@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.dto.StErpVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStErpVoucher;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStErpVoucherRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +38,8 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     private static final QStErpVoucher stErpVoucher    = QStErpVoucher.stErpVoucher;
     private static final QSySite       sySite  = QSySite.sySite;
     private static final QSyVendor     syVendor  = QSyVendor.syVendor;
-    private static final QSyCode       cdEvt = new QSyCode("cd_evt");
-    private static final QSyCode       cdEvs = new QSyCode("cd_evs");
+    private static final QVwSyCode       cdEvt = new QVwSyCode("cd_evt");
+    private static final QVwSyCode       cdEvs = new QVwSyCode("cd_evs");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stErpVoucher.regDate,
         "upd_date", stErpVoucher.updDate

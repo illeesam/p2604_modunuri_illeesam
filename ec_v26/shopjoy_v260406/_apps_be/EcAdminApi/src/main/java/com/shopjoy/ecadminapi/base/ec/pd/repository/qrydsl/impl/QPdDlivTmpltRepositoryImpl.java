@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdDlivTmpltDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdDlivTmplt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdDlivTmplt;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdDlivTmpltRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +38,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     private static final QPdDlivTmplt pdDlivTmplt      = QPdDlivTmplt.pdDlivTmplt;
     private static final QSySite      sySite    = QSySite.sySite;
     private static final QSyVendor    syVendor    = QSyVendor.syVendor;
-    private static final QSyCode      cdDm   = new QSyCode("cd_dm");
-    private static final QSyCode      cdDpt  = new QSyCode("cd_dpt");
+    private static final QVwSyCode      cdDm   = new QVwSyCode("cd_dm");
+    private static final QVwSyCode      cdDpt  = new QVwSyCode("cd_dpt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdDlivTmplt.regDate,
         "upd_date", pdDlivTmplt.updDate

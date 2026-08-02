@@ -18,7 +18,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdPay;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdRefundMethod;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdRefundMethodRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -39,8 +40,8 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     private static final QSySite         ste = new QSySite("ste");
     private static final QOdOrder        ord = new QOdOrder("ord");
     private static final QOdPay          pay = new QOdPay("pay");
-    private static final QSyCode         cdPm = new QSyCode("cd_pm");
-    private static final QSyCode         cdRs = new QSyCode("cd_rs");
+    private static final QVwSyCode         cdPm = new QVwSyCode("cd_pm");
+    private static final QVwSyCode         cdRs = new QVwSyCode("cd_rs");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odRefundMethod.regDate,
         "upd_date", odRefundMethod.updDate

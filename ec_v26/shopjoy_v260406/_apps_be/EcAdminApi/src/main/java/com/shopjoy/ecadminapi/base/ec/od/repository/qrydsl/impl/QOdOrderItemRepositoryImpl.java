@@ -19,7 +19,8 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderItemRepositor
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdSku;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -41,8 +42,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QPdProdSku     pdProdSku   = QPdProdSku.pdProdSku;
     private static final QPdProdOpt oi1  = new QPdProdOpt("oi1");
     private static final QPdProdOpt oi2  = new QPdProdOpt("oi2");
-    private static final QSyCode        cdIs = new QSyCode("cd_is");
-    private static final QSyCode        cdDc = new QSyCode("cd_dc");
+    private static final QVwSyCode        cdIs = new QVwSyCode("cd_is");
+    private static final QVwSyCode        cdDc = new QVwSyCode("cd_dc");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odOrderItem.regDate,
         "upd_date", odOrderItem.updDate

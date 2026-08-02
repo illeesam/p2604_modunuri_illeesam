@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.*;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.*;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.*;
 import com.shopjoy.ecadminapi.base.sy.repository.*;
 import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
@@ -472,9 +473,10 @@ public class CmAppStoreDataService {
     private StoreCode getCodes(AuthPrincipal authUser) {
         java.util.List<StoreCode.CodeInfo> codes = new java.util.ArrayList<>();
 
-        // sy_code :: select list :: useYn=Y
-        syCodeRepository.findAll().stream()
-                .filter(code -> "Y".equals(code.getUseYn()))
+        // sy_code :: select list :: useYn=Y (SyCodeDto.Item — codeGrp via JOIN)
+        SyCodeDto.Request codeReq = new SyCodeDto.Request();
+        codeReq.setUseYn("Y");
+        syCodeRepository.selectList(codeReq)
                 .forEach(code -> {
             StoreCode.CodeInfo codeInfo = StoreCode.CodeInfo.builder()
                     .codeGrp(code.getCodeGrp())

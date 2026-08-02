@@ -13,7 +13,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendEmailLogDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhSendEmailLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyTemplate;
@@ -39,7 +40,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyTemplate      syTemplate = QSyTemplate.syTemplate;
     private static final QSyUser          syUser = QSyUser.syUser;
-    private static final QSyCode          cd_sr = new QSyCode("cd_sr");
+    private static final QVwSyCode          cd_sr = new QVwSyCode("cd_sr");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "send_date", syhSendEmailLog.sendDate,
         "reg_date", syhSendEmailLog.regDate,

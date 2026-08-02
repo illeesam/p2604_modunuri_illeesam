@@ -17,7 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayMethodDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdPayMethod;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdPayMethod;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdPayMethodRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -36,7 +37,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdPayMethodRepositoryImpl";
     private static final QOdPayMethod odPayMethod   = QOdPayMethod.odPayMethod;
     private static final QMbMember    mem = new QMbMember("mem");
-    private static final QSyCode      cdPm = new QSyCode("cd_pm");
+    private static final QVwSyCode      cdPm = new QVwSyCode("cd_pm");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odPayMethod.regDate,
         "upd_date", odPayMethod.updDate

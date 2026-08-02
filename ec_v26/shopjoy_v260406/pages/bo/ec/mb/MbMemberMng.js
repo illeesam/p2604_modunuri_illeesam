@@ -16,7 +16,7 @@ window.MbMemberMng = {
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, sortKey: '', sortDir: 'asc',
     });
-    const codes = reactive({ member_statuses: [], member_grades: [] }); // 공통코드
+    const codes = reactive({ MEMBER_STATUS: [], MEMBER_GRADE: [] }); // 공통코드
     const SORT_MAP = { nm: { asc: 'memberNm asc', desc: 'memberNm desc' }, reg: { asc: 'joinDate asc', desc: 'joinDate desc' } };
 
     /* ===== 검색조건 ===== */
@@ -289,9 +289,18 @@ window.MbMemberMng = {
 
 
 
-    // ★ onMounted — 진입 시 목록 초기 조회
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      const codeStore = window.sfGetBoCodeStore();
+      await codeStore.saLoadCodes(['MEMBER_GRADE', 'MEMBER_STATUS'], { compNm: 'MbMemberMng' });
+      codes.MEMBER_GRADE = codeStore.sgGetGrpCodes('MEMBER_GRADE');
+      codes.MEMBER_STATUS = codeStore.sgGetGrpCodes('MEMBER_STATUS');
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
+      await fnLoadCodes();
       if (props.initSearchValue) {
         searchParam.searchValue = props.initSearchValue;
       }
@@ -329,8 +338,8 @@ window.MbMemberMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'gradeCd', type: 'select', label: '등급', options: () => codes.member_grades, nullLabel: '전체' },
-      { key: 'memberStatusCd', type: 'select', label: '상태', options: () => codes.member_statuses, nullLabel: '전체' },
+      { key: 'gradeCd', type: 'select', label: '등급', options: () => codes.MEMBER_GRADE, nullLabel: '전체' },
+      { key: 'memberStatusCd', type: 'select', label: '상태', options: () => codes.MEMBER_STATUS, nullLabel: '전체' },
     ];
 
     // 기본 그리드

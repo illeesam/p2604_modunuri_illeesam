@@ -14,7 +14,7 @@ window.MbMemGroupMng = {
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, checkAll: false, focusedIdx: null,
     });
-    const codes = reactive({ use_yn: [] }); // 공통코드
+    const codes = reactive({ USE_YN: [] }); // 공통코드
 
     /* ===== 검색조건 ===== */
 
@@ -205,9 +205,17 @@ window.MbMemGroupMng = {
 
 
 
-    // ★ onMounted — 진입 시 목록 초기 조회
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      const codeStore = window.sfGetBoCodeStore();
+      await codeStore.saLoadCodes(['USE_YN'], { compNm: 'MbMemGroupMng' });
+      codes.USE_YN = codeStore.sgGetGrpCodes('USE_YN');
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
+      await fnLoadCodes();
       handleSearchList();
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -223,7 +231,7 @@ window.MbMemGroupMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '그룹명', placeholder: '그룹명 검색' },
-      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.USE_YN, nullLabel: '전체' },
     ];
 
     // 기본 그리드
@@ -235,7 +243,7 @@ window.MbMemGroupMng = {
       { key: 'memberCnt', label: '회원수',   style: 'width:90px;text-align:right;',
         align: 'right', fmt: (v) => (v || 0).toLocaleString() },
       { key: 'useYn',     label: '사용여부', style: 'width:90px;text-align:center;',
-        edit: 'select', options: () => codes.use_yn },
+        edit: 'select', options: () => codes.USE_YN },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

@@ -15,9 +15,7 @@ window.PdReviewMng = {
     const reviews = reactive([]);
     const uiState = reactive({ loading: false, error: null, selectedId: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
-      review_statuses: [],
-      review_rating_opts: [{value:'5',label:'5점'},{value:'4',label:'4점대'},{value:'3',label:'3점대'},{value:'2',label:'2점대'},{value:'1',label:'1점대'}],
-      review_status_list: [{value:'ACTIVE',label:'공개'},{value:'HIDDEN',label:'숨김'},{value:'DELETED',label:'삭제'}],
+      REVIEW_STATUS: [], REVIEW_RATING: [],
     });
 
     /* 상품 리뷰 fnLoadCodes */
@@ -100,9 +98,10 @@ window.PdReviewMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['REVIEW_STATUS'], {compNm: 'PdReviewMng'});
+      await codeStore.saLoadCodes(['REVIEW_STATUS', 'REVIEW_RATING'], {compNm: 'PdReviewMng'});
       try {
-        codes.review_statuses = codeStore.sgGetGrpCodes('REVIEW_STATUS');
+        codes.REVIEW_STATUS = codeStore.sgGetGrpCodes('REVIEW_STATUS');
+        codes.REVIEW_RATING = codeStore.sgGetGrpCodes('REVIEW_RATING');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -352,8 +351,8 @@ window.PdReviewMng = {
         const columns = {};
         columns.baseSearch = [
       { key: 'searchValue', label: '리뷰제목', type: 'text', placeholder: '리뷰 제목 검색' },
-      { key: 'reviewStatusCd', label: '상태', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
-      { key: 'rating', label: '평점', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
+      { key: 'reviewStatusCd', label: '상태', type: 'select', options: () => codes.REVIEW_STATUS, nullLabel: '전체' },
+      { key: 'rating', label: '평점', type: 'select', options: () => codes.REVIEW_RATING, nullLabel: '전체' },
     ];
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
@@ -380,7 +379,7 @@ window.PdReviewMng = {
         fmt: (v, row) => (STATUS_LABEL[row.reviewStatusCd] || row.reviewStatusCd) },
       { key: 'reviewDate',      label: '작성일',   style: 'width:140px', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: '_statusChg',      label: '상태변경', style: 'width:90px;text-align:center', align: 'center',
-        selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.review_status_list,
+        selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.REVIEW_STATUS,
           onChange: (row, newVal, $event) => handleSelectAction('reviews-rowStatusChange', { row, evt: $event }) } },
     ];
     /* fnGridRowClass — 유틸 */
@@ -398,7 +397,7 @@ window.PdReviewMng = {
         fmt: (v, row) => (STATUS_LABEL[row.reviewStatusCd] || row.reviewStatusCd) },
       { key: 'reviewDate',     label: '작성일',   style: 'width:140px',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: '_statusChg',     label: '상태변경', style: 'width:90px;text-align:center', align: 'center',
-        selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.review_status_list,
+        selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.REVIEW_STATUS,
           onChange: (row, newVal, $event) => handleSelectAction('reviews-rowStatusChange', { row, evt: $event }) } },
     ];
     /* fnProdReviewRowClass — 유틸 */
@@ -482,7 +481,7 @@ window.PdReviewMng = {
         <select class="form-control" style="font-size:12px;padding:3px 6px;width:auto;height:28px;"
           :value="cfSelectedRow.reviewStatusCd"
           @change="handleSelectAction('reviews-rowStatusChange', { row: cfSelectedRow, evt: $event })">
-          <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">
+          <option v-for="s in codes.REVIEW_STATUS" :key="s.value" :value="s.value">
             {{ s.label }}
           </option>
         </select>

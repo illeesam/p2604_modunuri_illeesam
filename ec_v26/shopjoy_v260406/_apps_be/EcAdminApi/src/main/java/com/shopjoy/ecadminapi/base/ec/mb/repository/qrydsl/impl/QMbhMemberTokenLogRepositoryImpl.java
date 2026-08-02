@@ -17,7 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbhMemberTokenLog;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbhMemberTokenLogRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -36,8 +37,8 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     private static final QMbhMemberTokenLog mbhMemberTokenLog    = QMbhMemberTokenLog.mbhMemberTokenLog;
     private static final QSySite            sySite  = QSySite.sySite;
     private static final QMbMember          mbMember  = QMbMember.mbMember;
-    private static final QSyCode            cdTa = new QSyCode("cd_ta");
-    private static final QSyCode            cdTt = new QSyCode("cd_tt");
+    private static final QVwSyCode            cdTa = new QVwSyCode("cd_ta");
+    private static final QVwSyCode            cdTt = new QVwSyCode("cd_tt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", mbhMemberTokenLog.regDate
     );

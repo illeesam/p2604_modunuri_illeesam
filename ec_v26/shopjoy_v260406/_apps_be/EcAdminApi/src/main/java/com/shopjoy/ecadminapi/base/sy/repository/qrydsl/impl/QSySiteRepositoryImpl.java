@@ -14,7 +14,8 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSySiteRepository;
@@ -39,8 +40,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private final EntityManager em;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl";
     private static final QSySite sySite = QSySite.sySite;
-    private static final QSyCode cdSt = new QSyCode("cd_st");
-    private static final QSyCode cdSs = new QSyCode("cd_ss");
+    private static final QVwSyCode cdSt = new QVwSyCode("cd_st");
+    private static final QVwSyCode cdSs = new QVwSyCode("cd_ss");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", sySite.regDate,
         "upd_date", sySite.updDate

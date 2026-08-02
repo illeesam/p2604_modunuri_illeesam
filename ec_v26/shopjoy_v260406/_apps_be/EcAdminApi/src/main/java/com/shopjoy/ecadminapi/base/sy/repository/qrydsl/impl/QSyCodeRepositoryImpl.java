@@ -14,6 +14,7 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCodeGrp;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCode;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyCodeRepository;
@@ -34,13 +35,13 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeRepositoryImpl";
     private static final QSyCode syCode = QSyCode.syCode;
     private static final QSySite sySite = QSySite.sySite;
+    private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syCode.regDate,
         "upd_date", syCode.updDate
     );
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("childCodeValues", syCode.childCodeValues),
-        Map.entry("codeGrp", syCode.codeGrp),
         Map.entry("codeId", syCode.codeId),
         Map.entry("codeLabel", syCode.codeLabel),
         Map.entry("codeOpt1", syCode.codeOpt1),
@@ -60,25 +61,28 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     private JPAQuery<SyCodeDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyCodeDto.Item.class,
-                        syCode.codeId,            // 코드ID (YYMMDDhhmmss+rand4)
-                        syCode.siteId,            // 사이트ID (sy_site.site_id)
-                        syCode.codeGrp,           // 코드그룹 (sy_code_grp.code_grp)
-                        syCode.codeValue,         // 코드값 (저장값)
-                        syCode.codeLabel,         // 코드라벨 (표시명)
-                        syCode.sortOrd,           // 정렬순서
-                        syCode.useYn,             // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
-                        syCode.parentCodeValue,   // 부모 코드값 (트리 구조 시 상위 code_value, null 이면 루트)
-                        syCode.childCodeValues,   // 허용 자식/전이 코드값 목록 (^VAL1^VAL2^ 형식 — 상태 전이 제약이나 하위 코드 목록)
-                        syCode.codeRemark,        // 비고
-                        syCode.codeLevel,         // 코드 트리 레벨 (1=루트, 2=중간, 3=리프 등)
-                        syCode.codeOpt1,          // 코드별 부가 옵션 1 (스타일 색상 hex, 아이콘 클래스 등 자유 문자열)
-                        syCode.regBy,             // 등록자
-                        syCode.regDate,           // 등록일시
-                        syCode.updBy,             // 수정자
-                        syCode.updDate,           // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
+                        syCode.codeId,                        // 코드ID
+                        syCode.siteId,                        // 사이트ID
+                        syCode.codeGrpId,                     // 코드그룹ID (FK)
+                        syCodeGrp.codeGrp.as("codeGrp"),      // 코드그룹명 (sy_code_grp 조인)
+                        syCodeGrp.grpNm.as("grpNm"),          // 그룹명 (sy_code_grp 조인)
+                        syCode.codeValue,                     // 코드값
+                        syCode.codeLabel,                     // 코드라벨
+                        syCode.sortOrd,                       // 정렬순서
+                        syCode.useYn,                         // 사용여부
+                        syCode.parentCodeValue,               // 부모 코드값
+                        syCode.childCodeValues,               // 자식/전이 코드값 목록
+                        syCode.codeRemark,                    // 비고
+                        syCode.codeLevel,                     // 코드 트리 레벨
+                        syCode.codeOpt1,                      // 부가 옵션 1
+                        syCode.regBy,                         // 등록자
+                        syCode.regDate,                       // 등록일시
+                        syCode.updBy,                         // 수정자
+                        syCode.updDate,                       // 수정일시
+                        sySite.siteNm.as("siteNm")            // 사이트명 (sy_site 조인)
                 ))
                 .from(syCode)
+                .leftJoin(syCodeGrp).on(syCodeGrp.codeGrpId.eq(syCode.codeGrpId))
                 .leftJoin(sySite).on(sySite.siteId.eq(syCode.siteId));
     }
 
@@ -100,7 +104,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syCode.siteId, search.getSiteId()),
                 QdslUtil.strEq(syCode.codeId, search.getCodeId()),
-                QdslUtil.strEq(syCode.codeGrp, search.getCodeGrp()),
+                QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
                 andCodeGrpIn(search),
                 QdslUtil.strEq(syCode.codeValue, search.getCodeValue()),
                 QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()),
@@ -131,7 +135,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syCode.siteId, search.getSiteId()),
                 QdslUtil.strEq(syCode.codeId, search.getCodeId()),
-                QdslUtil.strEq(syCode.codeGrp, search.getCodeGrp()),
+                QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
                 andCodeGrpIn(search),
                 QdslUtil.strEq(syCode.codeValue, search.getCodeValue()),
                 QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()),
@@ -214,7 +218,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         boolean hasAny = false;
 
         if (entity.getSiteId()          != null) { update.set(syCode.siteId,          entity.getSiteId());          hasAny = true; }
-        if (entity.getCodeGrp()         != null) { update.set(syCode.codeGrp,         entity.getCodeGrp());         hasAny = true; }
+        if (entity.getCodeGrpId()       != null) { update.set(syCode.codeGrpId,       entity.getCodeGrpId());       hasAny = true; }
         if (entity.getCodeValue()       != null) { update.set(syCode.codeValue,       entity.getCodeValue());       hasAny = true; }
         if (entity.getCodeLabel()       != null) { update.set(syCode.codeLabel,       entity.getCodeLabel());       hasAny = true; }
         if (entity.getSortOrd()         != null) { update.set(syCode.sortOrd,         entity.getSortOrd());         hasAny = true; }
@@ -234,6 +238,6 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
 
     /** 코드그룹 다중 조회 — 화면 단위 지연 로딩에서 필요한 그룹을 한 번에 가져온다 */
     private BooleanExpression andCodeGrpIn(SyCodeDto.Request search) {
-        return QdslUtil.strIn(syCode.codeGrp, search.getCodeGrps());
+        return QdslUtil.strIn(syCodeGrp.codeGrp, search.getCodeGrps());
     }
 }

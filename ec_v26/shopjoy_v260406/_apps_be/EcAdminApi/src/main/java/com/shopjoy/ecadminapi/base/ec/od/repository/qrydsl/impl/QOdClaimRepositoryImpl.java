@@ -21,7 +21,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaim;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdClaimRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -42,16 +43,16 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private static final QOdOrder  odOrder   = QOdOrder.odOrder;
     private static final QMbMember mbMember   = QMbMember.mbMember;
     private static final QOdClaimItem odClaimItemCnt = new QOdClaimItem("oci_cnt");   // 클레임항목 수 집계 전용
-    private static final QSyCode   cdCt = new QSyCode("cd_ct");
-    private static final QSyCode   cdCs = new QSyCode("cd_cs");
-    private static final QSyCode   cdRm = new QSyCode("cd_rm");
-    private static final QSyCode   cdRb = new QSyCode("cd_rb");
-    private static final QSyCode   cdRc = new QSyCode("cd_rc");
-    private static final QSyCode   cdRs = new QSyCode("cd_rs");
-    private static final QSyCode   cdIc = new QSyCode("cd_ic");
-    private static final QSyCode   cdEc = new QSyCode("cd_ec");
-    private static final QSyCode   cdAp = new QSyCode("cd_ap");
-    private static final QSyCode   cdAt = new QSyCode("cd_at");
+    private static final QVwSyCode   cdCt = new QVwSyCode("cd_ct");
+    private static final QVwSyCode   cdCs = new QVwSyCode("cd_cs");
+    private static final QVwSyCode   cdRm = new QVwSyCode("cd_rm");
+    private static final QVwSyCode   cdRb = new QVwSyCode("cd_rb");
+    private static final QVwSyCode   cdRc = new QVwSyCode("cd_rc");
+    private static final QVwSyCode   cdRs = new QVwSyCode("cd_rs");
+    private static final QVwSyCode   cdIc = new QVwSyCode("cd_ic");
+    private static final QVwSyCode   cdEc = new QVwSyCode("cd_ec");
+    private static final QVwSyCode   cdAp = new QVwSyCode("cd_ap");
+    private static final QVwSyCode   cdAt = new QVwSyCode("cd_at");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "request_date", odClaim.requestDate,
         "proc_date", odClaim.procDate,

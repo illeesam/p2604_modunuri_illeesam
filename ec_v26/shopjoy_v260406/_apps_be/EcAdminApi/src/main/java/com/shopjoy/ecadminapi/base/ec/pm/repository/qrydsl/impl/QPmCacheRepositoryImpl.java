@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCache;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCache;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCacheRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -35,7 +36,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCacheRepositoryImpl";
     private static final QPmCache pmCache    = QPmCache.pmCache;
     private static final QSySite  sySite  = QSySite.sySite;
-    private static final QSyCode  cdCt = new QSyCode("cd_ct");
+    private static final QVwSyCode  cdCt = new QVwSyCode("cd_ct");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmCache.regDate,
         "upd_date", pmCache.updDate

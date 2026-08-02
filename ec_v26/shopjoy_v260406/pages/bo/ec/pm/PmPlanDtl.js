@@ -22,8 +22,7 @@ window.PmPlanDtl = {
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({
-      plan_categories: [{value:'패션',label:'패션'},{value:'스포츠',label:'스포츠'},{value:'스타일링',label:'스타일링'},{value:'직원전용',label:'직원전용'},{value:'명품',label:'명품'}],
-      plan_statuses: [{value:'활성',label:'활성'},{value:'예정',label:'예정'},{value:'비활성',label:'비활성'},{value:'종료',label:'종료'}],
+      PLAN_CATEGORY: [], PLAN_DISP_STATUS: [],
     });
 
     const _today = new Date();
@@ -45,7 +44,7 @@ window.PmPlanDtl = {
     ];
 
     const form = reactive({
-      planNm: '', category: '패션', theme: '', status: '활성',
+      planNm: '', category: 'FASHION', theme: '', status: 'ACTIVE',
       startDate: DEFAULT_START, endDate: DEFAULT_END,
       productIds: [], visibilityTargets: '^PUBLIC^',
       desc: '', bannerImage: '', content1: '', content2: '', content3: '',
@@ -208,7 +207,13 @@ window.PmPlanDtl = {
       { id: 'content', label: '내용입력', icon: '📝' },
       { id: 'preview', label: '미리보기', icon: '👁' },
     ]);
-    /* 프로모션 플랜 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      const codeStore = window.sfGetBoCodeStore();
+      await codeStore.saLoadCodes(['PLAN_CATEGORY', 'PLAN_DISP_STATUS'], {compNm: 'PmPlanDtl'});
+      codes.PLAN_CATEGORY   = codeStore.sgGetGrpCodes('PLAN_CATEGORY');
+      codes.PLAN_DISP_STATUS = codeStore.sgGetGrpCodes('PLAN_DISP_STATUS');
+    };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
 
@@ -225,6 +230,7 @@ window.PmPlanDtl = {
     // ★ onMounted
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
+      await fnLoadCodes();
       // 마운트 시 상세 조회 — 행 클릭으로 key 변경 시 재마운트되므로 watch(reloadTrigger)만으론 최초 로드 누락됨
       await handleSearchDetail();
     };
@@ -357,9 +363,9 @@ window.PmPlanDtl = {
       { key: 'planNm',    label: '기획전명', type: 'text', required: true,
         placeholder: '기획전명을 입력하세요', colSpan: 2 },
       { key: 'category',  label: '카테고리', type: 'select', required: true,
-        options: () => codes.plan_categories },
+        options: () => codes.PLAN_CATEGORY },
       { key: 'theme',     label: '테마', type: 'text', placeholder: '예: 봄맞이, 세일' },
-      { key: 'status',    label: '상태', type: 'select', options: () => codes.plan_statuses },
+      { key: 'status',    label: '상태', type: 'select', options: () => codes.PLAN_DISP_STATUS },
       { key: '_visibility', label: '공개대상', type: 'slot', name: 'visibility' },
       { key: 'startDate', label: '시작일', type: 'date' },
       { key: 'endDate',   label: '종료일', type: 'date' },

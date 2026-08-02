@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdCategoryRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
@@ -40,7 +41,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     }
     private static final QPdCategory p1  = new QPdCategory("p1");
     private static final QPdCategory p2  = new QPdCategory("p2");
-    private static final QSyCode     cdCs = new QSyCode("cd_cs");
+    private static final QVwSyCode     cdCs = new QVwSyCode("cd_cs");
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("categoryDesc", pdCategory.categoryDesc),
         Map.entry("categoryId", pdCategory.categoryId),

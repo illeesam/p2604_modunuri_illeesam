@@ -15,8 +15,8 @@ window.SyVendorUserMng = {
     const vendorUsers = reactive([]);
     const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, selectedPath: null, searchVendorId: null, bizSearchType: '', bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null, userSearchType: '', userSearchValue: '', userStatusFlt: ''});
     const codes = reactive({
-      user_status: [],
-      bool_opts: [{codeValue:'Y',codeLabel:'예'},{codeValue:'N',codeLabel:'아니오'}],
+      USER_STATUS: [],
+      BOOL_YN: [],
       vendor_types: [['SALES','판매업체'],['DELIVERY','배송업체'],['CS','콜센터업체'],['SITE','사이트운영업체'],['PROG','유지보수업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']],
       biz_status: [['ACTIVE','운영중'],['SUSPENDED','중지'],['TERMINATED','종료']],
       user_employ_status: [['ACTIVE','재직'],['LEFT','퇴직'],['SUSPENDED','중지']],
@@ -209,8 +209,9 @@ window.SyVendorUserMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['USER_STATUS'], {compNm: 'SyVendorUserMng'});
-      codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
+      await codeStore.saLoadCodes(['USER_STATUS', 'BOOL_YN'], {compNm: 'SyVendorUserMng'});
+      codes.USER_STATUS = codeStore.sgGetGrpCodes('USER_STATUS');
+      codes.BOOL_YN   = codeStore.sgGetGrpCodes('BOOL_YN');
     };
 
 
@@ -647,8 +648,8 @@ window.SyVendorUserMng = {
       { key: 'vendorUserMobile',  label: '휴대전화', type: 'text', required: true },
       { key: 'vendorUserEmail',   label: '이메일', type: 'text', required: true },
       { key: 'birthDate',         label: '생년월일', type: 'date' },
-      { key: 'isMain',            label: '대표 담당자', type: 'select', options: () => codes.bool_opts },
-      { key: 'authYn',            label: '관리권한', type: 'select', options: () => codes.bool_opts },
+      { key: 'isMain',            label: '대표 담당자', type: 'select', options: () => codes.BOOL_YN },
+      { key: 'authYn',            label: '관리권한', type: 'select', options: () => codes.BOOL_YN },
       { key: 'vendorUserStatusCd', label: '상태', type: 'select',
         options: () => (codes.user_employ_status || []).map(s => ({ value: s[0], label: s[1] })) },
       { key: 'joinDate',          label: '등록일', type: 'date' },

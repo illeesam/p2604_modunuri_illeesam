@@ -16,7 +16,7 @@ window.SyDeptMng = {
     const uiState = reactive({                     // UI 상태
       checkAll: false, loading: false, error: null, selectedTreeId: null, focusedIdx: null,
     });
-    const codes = reactive({ dept_status: [], use_yn: [], dept_types: ['경영','운영','기술','마케팅','CS','물류','재무','인사','법무','기타'] });
+    const codes = reactive({ USE_YN: [], DEPT_TYPE: [] });
 
     /* ===== 검색조건 ===== */
 
@@ -250,9 +250,18 @@ window.SyDeptMng = {
 
 
 
-    // ★ onMounted — 진입 시 트리 + 그리드 조회
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = async () => {
+      const codeStore = window.sfGetBoCodeStore();
+      await codeStore.saLoadCodes(['USE_YN', 'DEPT_TYPE'], { compNm: 'SyDeptMng' });
+      codes.USE_YN     = codeStore.sgGetGrpCodes('USE_YN');
+      codes.DEPT_TYPE  = codeStore.sgGetGrpCodes('DEPT_TYPE');
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 트리 + 그리드 조회
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
+      await fnLoadCodes();
       await handleSearchTree();
       expanded.add(null);
       await handleGridSearch();
@@ -304,7 +313,7 @@ window.SyDeptMng = {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
         deptId: _tempId--, deptCode: '', deptNm: '', parentDeptId: ref ? ref.parentDeptId : null,
-        deptTypeCd: ref ? ref.deptTypeCd : '운영',
+        deptTypeCd: ref ? ref.deptTypeCd : 'HQ',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
         useYn: 'Y', deptRemark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _row_org: null,
@@ -417,7 +426,7 @@ window.SyDeptMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'type', type: 'select', label: '유형', options: () => cfTypeOptions.value, nullLabel: '유형 전체' },
-      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.USE_YN, nullLabel: '사용여부 전체' },
     ];
 
     // 기본 그리드
@@ -428,9 +437,9 @@ window.SyDeptMng = {
       { key: 'parentDeptId', label: '상위부서', style: 'min-width:150px;',
         parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row),
           clear: (row) => { row.parentDeptId = null; onCellChange(row); }, title: '상위부서 선택' } },
-      { key: 'deptTypeCd',   label: '유형',     style: 'width:90px;',     edit: 'select', options: () => codes.dept_types.map(t => ({ value: t, label: t })) },
+      { key: 'deptTypeCd',   label: '유형',     style: 'width:90px;',     edit: 'select', options: () => codes.DEPT_TYPE },
       { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
-      { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: () => codes.use_yn },
+      { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: () => codes.USE_YN },
       { key: 'deptRemark',   label: '비고',     edit: 'text' },
       { key: 'siteNm',       label: '사이트명', style: 'width:80px;', align: 'center',
         cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },

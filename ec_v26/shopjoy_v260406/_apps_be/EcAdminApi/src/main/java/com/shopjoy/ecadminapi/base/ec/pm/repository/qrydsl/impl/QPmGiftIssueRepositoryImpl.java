@@ -19,7 +19,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGiftIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGift;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGiftIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmGiftIssueRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -41,7 +42,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
     private static final QMbMember    mbMember  = QMbMember.mbMember;
     private static final QOdOrder     odOrder  = QOdOrder.odOrder;
     private static final QSySite      sySite  = QSySite.sySite;
-    private static final QSyCode      cdGis = new QSyCode("cd_gis");
+    private static final QVwSyCode      cdGis = new QVwSyCode("cd_gis");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "issue_date", pmGiftIssue.issueDate,
         "reg_date", pmGiftIssue.regDate,

@@ -18,7 +18,8 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdPay;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdPay;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdPayRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -38,13 +39,13 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     private static final QOdPay    odPay   = QOdPay.odPay;
     private static final QOdOrder  odOrder   = QOdOrder.odOrder;
     private static final QMbMember mbMember   = QMbMember.mbMember;
-    private static final QSyCode   cdPs = new QSyCode("cd_ps");
-    private static final QSyCode   cdPm = new QSyCode("cd_pm");
-    private static final QSyCode   cdPd = new QSyCode("cd_pd");
-    private static final QSyCode   cdPc = new QSyCode("cd_pc");
-    private static final QSyCode   cdRs = new QSyCode("cd_rs");
-    private static final QSyCode   cdVb = new QSyCode("cd_vb");
-    private static final QSyCode   cdCt = new QSyCode("cd_ct");
+    private static final QVwSyCode   cdPs = new QVwSyCode("cd_ps");
+    private static final QVwSyCode   cdPm = new QVwSyCode("cd_pm");
+    private static final QVwSyCode   cdPd = new QVwSyCode("cd_pd");
+    private static final QVwSyCode   cdPc = new QVwSyCode("cd_pc");
+    private static final QVwSyCode   cdRs = new QVwSyCode("cd_rs");
+    private static final QVwSyCode   cdVb = new QVwSyCode("cd_vb");
+    private static final QVwSyCode   cdCt = new QVwSyCode("cd_ct");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "pay_date", odPay.payDate,
         "reg_date", odPay.regDate,

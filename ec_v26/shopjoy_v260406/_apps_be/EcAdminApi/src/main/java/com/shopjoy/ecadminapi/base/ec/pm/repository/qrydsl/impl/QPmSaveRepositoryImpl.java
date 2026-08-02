@@ -16,7 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSave;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -36,7 +37,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     private static final QPmSave   pmSave    = QPmSave.pmSave;
     private static final QSySite   sySite  = QSySite.sySite;
     private static final QMbMember mbMember  = QMbMember.mbMember;
-    private static final QSyCode   cdSt = new QSyCode("cd_st");
+    private static final QVwSyCode   cdSt = new QVwSyCode("cd_st");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmSave.regDate,
         "upd_date", pmSave.updDate

@@ -17,7 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStRecon;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleRaw;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StRecon;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStReconRepository;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +40,8 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     private static final QSySite      sySite  = QSySite.sySite;
     private static final QSyVendor    syVendor  = QSyVendor.syVendor;
     private static final QStSettleRaw stSettleRaw  = QStSettleRaw.stSettleRaw;
-    private static final QSyCode      cdRt = new QSyCode("cd_rt");
-    private static final QSyCode      cdRs = new QSyCode("cd_rs");
+    private static final QVwSyCode      cdRt = new QVwSyCode("cd_rt");
+    private static final QVwSyCode      cdRs = new QVwSyCode("cd_rs");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stRecon.regDate,
         "upd_date", stRecon.updDate
