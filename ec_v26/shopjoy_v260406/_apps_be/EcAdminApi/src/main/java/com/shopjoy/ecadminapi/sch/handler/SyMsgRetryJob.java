@@ -81,7 +81,7 @@ public class SyMsgRetryJob implements SchBatchJobHandler {
         for (SyhSendEmailLog log0 : targets) {
             try {
                 SendResultVo result = cmMailSendService.sendMail(
-                    log0.getSiteId(), log0.getToAddr(), log0.getSubject(), log0.getContent(),
+                    null, log0.getToAddr(), log0.getSubject(), log0.getContent(),
                     log0.getTemplateId(), log0.getTemplateCode(),
                     log0.getRefTypeCd(), log0.getRefId(), Map.of());
 
@@ -121,11 +121,11 @@ public class SyMsgRetryJob implements SchBatchJobHandler {
             try {
                 SendResultVo result = switch (CmUtil.nvlStr(msg.getChannelCd())) {
                     case "KAKAO" -> cmKakaoSendService.sendKakao(
-                        msg.getSiteId(), msg.getRecvPhone(), msg.getContent(),
+                        null, msg.getRecvPhone(), msg.getContent(),
                         msg.getKakaoTplCode(), msg.getTemplateId(), msg.getTemplateCode(),
                         msg.getRefTypeCd(), msg.getRefId(), Map.of());
                     case "SMS", "LMS" -> cmSmsSendService.sendSms(
-                        msg.getSiteId(), msg.getRecvPhone(), msg.getSenderPhone(), msg.getTitle(),
+                        null, msg.getRecvPhone(), msg.getSenderPhone(), msg.getTitle(),
                         msg.getContent(), msg.getTemplateId(), msg.getTemplateCode(),
                         msg.getRefTypeCd(), msg.getRefId(), Map.of());
                     default -> {
