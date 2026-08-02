@@ -43,7 +43,6 @@ public class SyhBatchLogDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────────
-        private String siteNm;
         private String runStatusNm;
     }
 

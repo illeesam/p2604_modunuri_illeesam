@@ -49,7 +49,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         Map.entry("propRemark", syProp.propRemark),
         Map.entry("propTypeCd", syProp.propTypeCd),
         Map.entry("propValue", syProp.propValue),
-        Map.entry("siteId", syProp.siteId),
         Map.entry("useYn", syProp.useYn)
     );
 
@@ -62,7 +61,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return queryFactory
                 .select(Projections.bean(SyPropDto.Item.class,
                         syProp.propId,          // 프로퍼티ID (PK, auto)
-                        syProp.siteId,          // 사이트ID (sy_site.site_id, NULL=전역)
                         syProp.pathId,          // 점(.) 구분 표시경로 (aa.bb.cc)
                         syProp.propKey,         // 키 (코드 식별자)
                         syProp.propValue,       // 값
@@ -76,7 +74,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                         syProp.regDate,         // 등록일시
                         syProp.updBy,           // 수정자
                         syProp.updDate,         // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syProp)
                 .leftJoin(sySite).on(sySite.siteId.eq(syProp.siteId));
@@ -98,7 +95,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         JPAQuery<SyPropDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syProp.siteId, search.getSiteId()),
                     andPathIdIn(search),
                     QdslUtil.strEq(syProp.propKey, search.getPropKey()),
                     andPropKeysIn(search),
@@ -129,7 +125,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syProp.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syProp.propKey, search.getPropKey()),
                 andPropKeysIn(search),
@@ -260,7 +255,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         JPAUpdateClause update = queryFactory.update(syProp);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(syProp.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getPathId()     != null) { update.set(syProp.pathId,     entity.getPathId());     hasAny = true; }
         if (entity.getPropKey()    != null) { update.set(syProp.propKey,    entity.getPropKey());    hasAny = true; }
         if (entity.getPropValue()  != null) { update.set(syProp.propValue,  entity.getPropValue());  hasAny = true; }

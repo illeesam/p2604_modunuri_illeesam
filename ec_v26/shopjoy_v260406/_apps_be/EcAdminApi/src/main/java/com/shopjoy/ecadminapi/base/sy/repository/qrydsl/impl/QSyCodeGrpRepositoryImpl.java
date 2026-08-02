@@ -50,7 +50,6 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         Map.entry("codeGrpId", syCodeGrp.codeGrpId),
         Map.entry("grpNm", syCodeGrp.grpNm),
         Map.entry("pathId", syCodeGrp.pathId),
-        Map.entry("siteId", syCodeGrp.siteId),
         Map.entry("useYn", syCodeGrp.useYn)
     );
 
@@ -63,7 +62,6 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         return queryFactory
                 .select(Projections.bean(SyCodeGrpDto.Item.class,
                         syCodeGrp.codeGrpId,     // 코드그룹ID (YYMMDDhhmmss+rand4)
-                        syCodeGrp.siteId,        // 사이트ID (sy_site.site_id)
                         syCodeGrp.codeGrp,       // 코드그룹코드 (예: MEMBER_GRADE, UNIQUE with site_id)
                         syCodeGrp.grpNm,         // 그룹명
                         syCodeGrp.pathId,        // 점(.) 구분 표시경로 (트리 빌드용)
@@ -73,7 +71,6 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                         syCodeGrp.regDate,       // 등록일시
                         syCodeGrp.updBy,         // 수정자
                         syCodeGrp.updDate,       // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syCodeGrp)
                 .leftJoin(sySite).on(sySite.siteId.eq(syCodeGrp.siteId));
@@ -95,7 +92,6 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyCodeGrpDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syCodeGrp.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()),
                 QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
@@ -124,7 +120,6 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syCodeGrp.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syCodeGrp.codeGrpId, search.getCodeGrpId()),
                 QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
@@ -212,7 +207,6 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         JPAUpdateClause update = queryFactory.update(syCodeGrp);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(syCodeGrp.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getCodeGrp()     != null) { update.set(syCodeGrp.codeGrp,     entity.getCodeGrp());     hasAny = true; }
         if (entity.getGrpNm()       != null) { update.set(syCodeGrp.grpNm,       entity.getGrpNm());       hasAny = true; }
         if (entity.getPathId()      != null) { update.set(syCodeGrp.pathId,      entity.getPathId());      hasAny = true; }

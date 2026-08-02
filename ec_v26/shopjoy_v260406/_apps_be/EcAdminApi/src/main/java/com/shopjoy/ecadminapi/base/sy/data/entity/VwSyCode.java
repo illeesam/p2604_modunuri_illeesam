@@ -22,8 +22,6 @@ public class VwSyCode {
     @Column(name = "code_id", length = 21, nullable = false)
     private String codeId;
 
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Column(name = "code_grp_id", length = 50)
     private String codeGrpId;

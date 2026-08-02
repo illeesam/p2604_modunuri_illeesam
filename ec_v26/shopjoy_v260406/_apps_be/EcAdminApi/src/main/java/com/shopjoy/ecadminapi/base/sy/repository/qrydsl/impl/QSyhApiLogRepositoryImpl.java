@@ -51,7 +51,6 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         Map.entry("reqBody", syhApiLog.reqBody),
         Map.entry("resBody", syhApiLog.resBody),
         Map.entry("resultCd", syhApiLog.resultCd),
-        Map.entry("siteId", syhApiLog.siteId),
         Map.entry("uiNm", syhApiLog.uiNm)
     );
 
@@ -85,7 +84,6 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                         syhApiLog.regDate,        // 등록일시
                         syhApiLog.updBy,          // 수정자
                         syhApiLog.updDate,        // 수정일시
-                        sySite.siteNm.as("siteNm")  // 사이트명 (조인: sy_site)
                 ))
                 .from(syhApiLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhApiLog.siteId));
@@ -108,7 +106,6 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
         JPAQuery<SyhApiLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syhApiLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -135,7 +132,6 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhApiLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -212,7 +208,6 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         JPAUpdateClause update = queryFactory.update(syhApiLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(syhApiLog.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getApiTypeCd()  != null) { update.set(syhApiLog.apiTypeCd,  entity.getApiTypeCd());  hasAny = true; }
         if (entity.getApiNm()      != null) { update.set(syhApiLog.apiNm,      entity.getApiNm());      hasAny = true; }
         if (entity.getUiNm()       != null) { update.set(syhApiLog.uiNm,       entity.getUiNm());       hasAny = true; }

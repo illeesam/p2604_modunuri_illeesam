@@ -65,7 +65,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         Map.entry("respBody", syhAccessLog.respBody),
         Map.entry("roleId", syhAccessLog.roleId),
         Map.entry("serverNm", syhAccessLog.serverNm),
-        Map.entry("siteId", syhAccessLog.siteId),
         Map.entry("threadNm", syhAccessLog.threadNm),
         Map.entry("traceId", syhAccessLog.traceId),
         Map.entry("uiNm", syhAccessLog.uiNm),
@@ -82,7 +81,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         return queryFactory
                 .select(Projections.bean(SyhAccessLogDto.Item.class,
                         syhAccessLog.logId,                     // PK: AL+yyMMddHHmmss+rand4
-                        syhAccessLog.siteId,                    // 사이트ID (sy_site.site_id)
                         syhAccessLog.reqMethod,                 // HTTP 메서드
                         syhAccessLog.reqHost,                   // Host 헤더 값
                         syhAccessLog.reqPath,                   // 요청 URI 경로
@@ -110,7 +108,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                         syhAccessLog.traceId,                    // 트레이스ID (X-헤더)
                         syhAccessLog.reqDt,                      // 요청 수신 시각
                         syhAccessLog.regDate,                    // DB 저장 시각
-                        sySite.siteNm.as("siteNm"),              // 사이트명 (조인: sy_site)
                         cd_at.codeLabel.as("appTypeCdNm"),        // 앱유형 코드명 (조인: sy_code APP_TYPE)
                         syUser.userNm.as("userNm"),              // 사용자명 (조인: sy_user)
                         syRole.roleNm.as("roleNm"),              // 역할명 (조인: sy_role)
@@ -118,7 +115,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                         syVendor.vendorNm.as("vendorNm")         // 업체명 (조인: sy_vendor)
                 ))
                 .from(syhAccessLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhAccessLog.siteId))
                 .leftJoin(syUser).on(syUser.userId.eq(syhAccessLog.userId))
                 .leftJoin(syRole).on(syRole.roleId.eq(syhAccessLog.roleId))
                 .leftJoin(syDept).on(syDept.deptId.eq(syhAccessLog.deptId))

@@ -44,7 +44,6 @@ public class SyPropDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
     }
 
 }

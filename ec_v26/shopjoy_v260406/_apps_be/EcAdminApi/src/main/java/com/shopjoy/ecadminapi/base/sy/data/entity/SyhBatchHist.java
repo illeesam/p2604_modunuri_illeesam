@@ -24,9 +24,6 @@ public class SyhBatchHist extends BaseEntity {
     @Column(name = "batch_hist_id", length = 21, nullable = false)
     private String batchHistId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("배치ID")
     @Column(name = "batch_id", length = 21, nullable = false)

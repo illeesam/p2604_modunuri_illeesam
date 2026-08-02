@@ -54,7 +54,6 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         Map.entry("os", syhUserLoginLog.os),
         Map.entry("refreshToken", syhUserLoginLog.refreshToken),
         Map.entry("resultCd", syhUserLoginLog.resultCd),
-        Map.entry("siteId", syhUserLoginLog.siteId),
         Map.entry("uiNm", syhUserLoginLog.uiNm),
         Map.entry("userId", syhUserLoginLog.userId)
     );
@@ -68,7 +67,6 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         return queryFactory
                 .select(Projections.bean(SyhUserLoginLogDto.Item.class,
                         syhUserLoginLog.logId,               // 로그ID (PK, YYMMDDhhmmss+rand4)
-                        syhUserLoginLog.siteId,               // 사이트ID (sy_site.site_id)
                         syhUserLoginLog.userId,                // 사용자ID (로그인 실패 시 NULL)
                         syhUserLoginLog.loginId,               // 입력한 로그인ID
                         syhUserLoginLog.loginDate,             // 로그인 시도일시
@@ -88,12 +86,10 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                         syhUserLoginLog.regDate,               // 등록일시
                         syhUserLoginLog.updBy,                 // 수정자
                         syhUserLoginLog.updDate,               // 수정일시
-                        sySite.siteNm.as("siteNm"),                  // 사이트명 (조인: sy_site)
                         syUser.userNm.as("userNm"),                  // 사용자명 (조인: sy_user)
                         cd_lr.codeLabel.as("resultCdNm")              // 로그인결과 코드명 (조인: sy_code LOGIN_RESULT)
                 ))
                 .from(syhUserLoginLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhUserLoginLog.siteId))
                 .leftJoin(syUser).on(syUser.userId.eq(syhUserLoginLog.userId))
                 .leftJoin(cd_lr).on(cd_lr.codeGrp.eq("LOGIN_RESULT").and(cd_lr.codeValue.eq(syhUserLoginLog.resultCd)));
     }
@@ -115,7 +111,6 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
         JPAQuery<SyhUserLoginLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syhUserLoginLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhUserLoginLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd()),
@@ -143,7 +138,6 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhUserLoginLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhUserLoginLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd()),
@@ -219,7 +213,6 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         JPAUpdateClause update = queryFactory.update(syhUserLoginLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(syhUserLoginLog.siteId,          entity.getSiteId());          hasAny = true; }
         if (entity.getUserId()          != null) { update.set(syhUserLoginLog.userId,          entity.getUserId());          hasAny = true; }
         if (entity.getLoginId()         != null) { update.set(syhUserLoginLog.loginId,         entity.getLoginId());         hasAny = true; }
         if (entity.getLoginDate()       != null) { update.set(syhUserLoginLog.loginDate,       entity.getLoginDate());       hasAny = true; }

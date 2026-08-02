@@ -23,9 +23,6 @@ public class SyRoleMenu extends BaseEntity {
     @Column(name = "role_menu_id", length = 21, nullable = false)
     private String roleMenuId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("역할ID")
     @Column(name = "role_id", length = 21, nullable = false)

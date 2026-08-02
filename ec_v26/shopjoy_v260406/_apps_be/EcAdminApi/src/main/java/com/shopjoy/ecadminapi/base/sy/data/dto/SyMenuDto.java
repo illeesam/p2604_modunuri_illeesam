@@ -41,7 +41,6 @@ public class SyMenuDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
         private String parentMenuNm;
     }
 

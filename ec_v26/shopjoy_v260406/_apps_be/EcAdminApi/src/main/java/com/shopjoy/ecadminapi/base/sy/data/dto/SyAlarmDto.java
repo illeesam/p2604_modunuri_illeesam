@@ -45,7 +45,6 @@ public class SyAlarmDto {
         private String pathId;
 
         // ── JOIN ──────────────────────────────────────────────────
-        private String siteNm;
         private String alarmTypeCdNm;
         private String channelCdNm;
         private String targetTypeCdNm;

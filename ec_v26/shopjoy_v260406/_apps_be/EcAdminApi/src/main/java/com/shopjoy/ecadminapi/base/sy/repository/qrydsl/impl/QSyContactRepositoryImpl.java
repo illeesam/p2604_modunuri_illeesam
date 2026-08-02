@@ -47,7 +47,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         Map.entry("contactTitle", syContact.contactTitle),
         Map.entry("memberId", syContact.memberId),
         Map.entry("memberNm", syContact.memberNm),
-        Map.entry("siteId", syContact.siteId)
     );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -59,7 +58,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         return queryFactory
                 .select(Projections.bean(SyContactDto.Item.class,
                         syContact.contactId,           // 문의ID (YYMMDDhhmmss+rand4)
-                        syContact.siteId,              // 사이트ID (sy_site.site_id)
                         syContact.memberId,             // 회원ID
                         syContact.memberNm,             // 문의자명
                         syContact.categoryCd,           // 문의유형
@@ -76,7 +74,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                         syContact.regDate,              // 등록일시
                         syContact.updBy,                // 수정자
                         syContact.updDate,              // 수정일시
-                        sySite.siteNm.as("siteNm")      // 사이트명 (sy_site 조인)
                 ))
                 .from(syContact)
                 .leftJoin(sySite).on(sySite.siteId.eq(syContact.siteId));
@@ -98,7 +95,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         JPAQuery<SyContactDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syContact.siteId, search.getSiteId()),
                     QdslUtil.strEq(syContact.contactId, search.getContactId()),
                     QdslUtil.strEq(syContact.memberId, search.getMemberId()),
                     QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()),
@@ -127,7 +123,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syContact.siteId, search.getSiteId()),
                 QdslUtil.strEq(syContact.contactId, search.getContactId()),
                 QdslUtil.strEq(syContact.memberId, search.getMemberId()),
                 QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()),
@@ -222,7 +217,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         JPAUpdateClause update = queryFactory.update(syContact);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(syContact.siteId,          entity.getSiteId());          hasAny = true; }
         if (entity.getMemberId()        != null) { update.set(syContact.memberId,        entity.getMemberId());        hasAny = true; }
         if (entity.getMemberNm()        != null) { update.set(syContact.memberNm,        entity.getMemberNm());        hasAny = true; }
         if (entity.getCategoryCd()      != null) { update.set(syContact.categoryCd,      entity.getCategoryCd());      hasAny = true; }

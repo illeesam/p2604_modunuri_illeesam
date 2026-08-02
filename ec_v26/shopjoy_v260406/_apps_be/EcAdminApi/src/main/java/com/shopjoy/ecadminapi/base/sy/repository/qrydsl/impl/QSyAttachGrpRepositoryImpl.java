@@ -37,7 +37,6 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         Map.entry("attachGrpNm", syAttachGrp.attachGrpNm),
         Map.entry("attachGrpRemark", syAttachGrp.attachGrpRemark),
         Map.entry("fileExtAllow", syAttachGrp.fileExtAllow),
-        Map.entry("siteId", syAttachGrp.siteId),
         Map.entry("storagePath", syAttachGrp.storagePath),
         Map.entry("useYn", syAttachGrp.useYn)
     );

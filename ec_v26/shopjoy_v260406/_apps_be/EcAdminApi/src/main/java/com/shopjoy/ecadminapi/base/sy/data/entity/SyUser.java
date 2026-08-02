@@ -24,9 +24,6 @@ public class SyUser extends BaseEntity {
     @Column(name = "user_id", length = 21, nullable = false)
     private String userId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("로그인 아이디")
     @Column(name = "login_id", length = 50, nullable = false)

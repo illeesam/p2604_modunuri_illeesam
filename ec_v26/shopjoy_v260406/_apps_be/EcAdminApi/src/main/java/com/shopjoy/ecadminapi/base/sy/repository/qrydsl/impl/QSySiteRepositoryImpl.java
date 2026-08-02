@@ -58,7 +58,6 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         Map.entry("siteDesc", sySite.siteDesc),
         Map.entry("siteDomain", sySite.siteDomain),
         Map.entry("siteEmail", sySite.siteEmail),
-        Map.entry("siteId", sySite.siteId),
         Map.entry("siteNm", sySite.siteNm),
         Map.entry("sitePhone", sySite.sitePhone),
         Map.entry("siteStatusCd", sySite.siteStatusCd),
@@ -74,10 +73,10 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private JPAQuery<SySiteDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SySiteDto.Item.class,
-                        sySite.siteId,           // 사이트ID (YYMMDDhhmmss+rand4)
+                        sySite.siteId,           // 사이트ID (PK)
+                        sySite.siteNm,           // 사이트명
                         sySite.siteCode,         // 사이트코드
                         sySite.siteTypeCd,       // 사이트유형 — SITE_TYPE {EC: '이커머스', ADMIN: '관리자', API: 'API'}
-                        sySite.siteNm,           // 사이트명
                         sySite.siteDomain,       // 도메인
                         sySite.logoUrl,          // 로고URL
                         sySite.faviconUrl,       // 파비콘URL
@@ -120,7 +119,6 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         JPAQuery<SySiteDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(sySite.siteId, search.getSiteId()),
                     andPathIdIn(search),
                     QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
                     QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),
@@ -148,7 +146,6 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(sySite.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
                 QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),

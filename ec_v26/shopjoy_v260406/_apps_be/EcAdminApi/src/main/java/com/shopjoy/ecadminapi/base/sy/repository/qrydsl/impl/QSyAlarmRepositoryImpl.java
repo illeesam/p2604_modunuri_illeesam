@@ -16,7 +16,6 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAlarm;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyAlarmRepository;
 import jakarta.persistence.EntityManager;
@@ -40,7 +39,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAlarmRepositoryImpl";
     private static final QSyAlarm syAlarm = QSyAlarm.syAlarm;
-    private static final QSySite sySite = QSySite.sySite;
     private static final QVwSyCode cdAt = new QVwSyCode("cd_at");
     private static final QVwSyCode cdAc = new QVwSyCode("cd_ac");
     private static final QVwSyCode cdAtt = new QVwSyCode("cd_att");
@@ -52,7 +50,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         Map.entry("alarmTypeCd", syAlarm.alarmTypeCd),
         Map.entry("channelCd", syAlarm.channelCd),
         Map.entry("pathId", syAlarm.pathId),
-        Map.entry("siteId", syAlarm.siteId),
         Map.entry("targetId", syAlarm.targetId),
         Map.entry("targetTypeCd", syAlarm.targetTypeCd),
         Map.entry("templateId", syAlarm.templateId)
@@ -69,7 +66,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         return queryFactory
                 .select(Projections.bean(SyAlarmDto.Item.class,
                         syAlarm.alarmId,          // 알림ID (YYMMDDhhmmss+rand4)
-                        syAlarm.siteId,           // 사이트ID (sy_site.site_id)
                         syAlarm.alarmTitle,       // 알림제목
                         syAlarm.alarmTypeCd,      // 알림유형 — ALARM_TYPE {ORDER: '주문', DELIVERY: '배송', CLAIM: '클레임', MARKETING: '마케팅', SYSTEM: '시스템'}
                         syAlarm.channelCd,        // 발송채널 — ALARM_CHANNEL {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
@@ -86,13 +82,11 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                         syAlarm.regDate,          // 등록일시
                         syAlarm.updBy,            // 수정자
                         syAlarm.updDate,          // 수정일시
-                        sySite.siteNm.as("siteNm"),               // 사이트명 (sy_site 조인)
                         cdAt.codeLabel.as("alarmTypeCdNm"),       // 알림유형 라벨 (sy_code ALARM_TYPE 조인)
                         cdAc.codeLabel.as("channelCdNm"),         // 발송채널 라벨 (sy_code ALARM_CHANNEL 조인)
                         cdAtt.codeLabel.as("targetTypeCdNm")      // 대상유형 라벨 (sy_code ALARM_TARGET_TYPE 조인)
                 ))
                 .from(syAlarm)
-                .leftJoin(sySite).on(sySite.siteId.eq(syAlarm.siteId))
                 .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd)))
                 .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(syAlarm.channelCd)))
                 .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(syAlarm.targetTypeCd)));
@@ -114,7 +108,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         JPAQuery<SyAlarmDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syAlarm.siteId, search.getSiteId()),
                     andPathIdIn(search),
                     QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()),
                     QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()),
@@ -142,7 +135,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syAlarm.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()),
                 QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()),
@@ -227,7 +219,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         JPAUpdateClause update = queryFactory.update(syAlarm);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(syAlarm.siteId,         entity.getSiteId());         hasAny = true; }
         if (entity.getAlarmTitle()     != null) { update.set(syAlarm.alarmTitle,     entity.getAlarmTitle());     hasAny = true; }
         if (entity.getAlarmTypeCd()    != null) { update.set(syAlarm.alarmTypeCd,    entity.getAlarmTypeCd());    hasAny = true; }
         if (entity.getChannelCd()      != null) { update.set(syAlarm.channelCd,      entity.getChannelCd());      hasAny = true; }

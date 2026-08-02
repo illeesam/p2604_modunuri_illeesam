@@ -24,9 +24,6 @@ public class SyBatch extends BaseEntity {
     @Column(name = "batch_id", length = 21, nullable = false)
     private String batchId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("배치코드")
     @Column(name = "batch_code", length = 50, nullable = false)

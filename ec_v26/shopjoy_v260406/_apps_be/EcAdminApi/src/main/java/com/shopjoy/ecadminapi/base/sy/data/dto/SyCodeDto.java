@@ -46,7 +46,6 @@ public class SyCodeDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
         private String grpNm;
     }
 

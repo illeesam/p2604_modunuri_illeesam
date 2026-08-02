@@ -23,9 +23,6 @@ public class SyCodeGrp extends BaseEntity {
     @Column(name = "code_grp_id", length = 21, nullable = false)
     private String codeGrpId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("코드그룹코드 (예: MEMBER_GRADE, UNIQUE with site_id)")
     @Column(name = "code_grp", length = 50, nullable = false)

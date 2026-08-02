@@ -20,7 +20,6 @@ public class SyhExtTestLog extends BaseEntity {
 
     @Column(name = "site_id", length = 20, nullable = false)
     @Comment("사이트ID")
-    private String siteId;
 
     @Column(name = "channel_key", length = 60, nullable = false)
     @Comment("채널키 (smtp/fcm/sms/ai 등)")

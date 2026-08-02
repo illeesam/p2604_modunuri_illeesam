@@ -50,7 +50,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         Map.entry("batchStatusCd", syBatch.batchStatusCd),
         Map.entry("cronExpr", syBatch.cronExpr),
         Map.entry("pathId", syBatch.pathId),
-        Map.entry("siteId", syBatch.siteId)
     );
 
     /*
@@ -63,7 +62,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         return queryFactory
                 .select(Projections.bean(SyBatchDto.Item.class,
                         syBatch.batchId,          // 배치ID (YYMMDDhhmmss+rand4)
-                        syBatch.siteId,           // 사이트ID (sy_site.site_id)
                         syBatch.batchCode,        // 배치코드
                         syBatch.batchNm,          // 배치명
                         syBatch.batchDesc,        // 배치설명
@@ -81,7 +79,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                         syBatch.updBy,            // 수정자
                         syBatch.updDate,          // 수정일시
                         syBatch.pathId,           // 점(.) 구분 표시경로 (트리 빌드용)
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syBatch)
                 .leftJoin(sySite).on(sySite.siteId.eq(syBatch.siteId));
@@ -103,7 +100,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         JPAQuery<SyBatchDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syBatch.siteId, search.getSiteId()),
                     andPathIdIn(search),
                     QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
                     QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
@@ -131,7 +127,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syBatch.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
                 QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
@@ -216,7 +211,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         JPAUpdateClause update = queryFactory.update(syBatch);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(syBatch.siteId,          entity.getSiteId());          hasAny = true; }
         if (entity.getBatchCode()       != null) { update.set(syBatch.batchCode,       entity.getBatchCode());       hasAny = true; }
         if (entity.getBatchNm()         != null) { update.set(syBatch.batchNm,         entity.getBatchNm());         hasAny = true; }
         if (entity.getBatchDesc()       != null) { update.set(syBatch.batchDesc,       entity.getBatchDesc());       hasAny = true; }

@@ -52,7 +52,6 @@ public class SyhUserTokenLogDto {
         private LocalDateTime updDate;
 
         // ── JOIN ─────────────────────────────────────────────────────────
-        private String siteNm;
         private String userNm;
         private String actionCdNm;
         private String tokenTypeCdNm;

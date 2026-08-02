@@ -62,7 +62,6 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         Map.entry("resultCd", syhSendMsgLog.resultCd),
         Map.entry("resultMsg", syhSendMsgLog.resultMsg),
         Map.entry("senderPhone", syhSendMsgLog.senderPhone),
-        Map.entry("siteId", syhSendMsgLog.siteId),
         Map.entry("templateCode", syhSendMsgLog.templateCode),
         Map.entry("templateId", syhSendMsgLog.templateId),
         Map.entry("title", syhSendMsgLog.title),
@@ -79,7 +78,6 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         return queryFactory
                 .select(Projections.bean(SyhSendMsgLogDto.Item.class,
                         syhSendMsgLog.logId,            // 로그ID (PK, YYMMDDhhmmss+rand4)
-                        syhSendMsgLog.siteId,           // 사이트ID (sy_site.site_id)
                         syhSendMsgLog.channelCd,        // 발송채널 — MSG_CHANNEL {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
                         syhSendMsgLog.templateId,       // 템플릿ID (sy_template.template_id)
                         syhSendMsgLog.templateCode,     // 템플릿코드 스냅샷
@@ -102,14 +100,12 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                         syhSendMsgLog.regDate,          // 등록일시
                         syhSendMsgLog.updBy,            // 수정자
                         syhSendMsgLog.updDate,          // 수정일시
-                        sySite.siteNm.as("siteNm"),                 // 사이트명 (조인: sy_site)
                         syTemplate.templateNm.as("templateNm"),     // 템플릿명 (조인: sy_template)
                         syUser.userNm.as("userNm"),                 // 관리자명 (조인: sy_user)
                         cd_mc.codeLabel.as("channelCdNm"),           // 발송채널 코드명 (조인: sy_code MSG_CHANNEL)
                         cd_sr.codeLabel.as("resultCdNm")             // 발송결과 코드명 (조인: sy_code SEND_RESULT)
                 ))
                 .from(syhSendMsgLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhSendMsgLog.siteId))
                 .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendMsgLog.templateId))
                 .leftJoin(syUser).on(syUser.userId.eq(syhSendMsgLog.userId))
                 .leftJoin(cd_mc).on(cd_mc.codeGrp.eq("MSG_CHANNEL").and(cd_mc.codeValue.eq(syhSendMsgLog.channelCd)))
@@ -133,7 +129,6 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
         JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syhSendMsgLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhSendMsgLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()),
@@ -162,7 +157,6 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhSendMsgLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhSendMsgLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()),
@@ -237,7 +231,6 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         JPAUpdateClause update = queryFactory.update(syhSendMsgLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(syhSendMsgLog.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getChannelCd()    != null) { update.set(syhSendMsgLog.channelCd,    entity.getChannelCd());    hasAny = true; }
         if (entity.getTemplateId()   != null) { update.set(syhSendMsgLog.templateId,   entity.getTemplateId());   hasAny = true; }
         if (entity.getTemplateCode() != null) { update.set(syhSendMsgLog.templateCode, entity.getTemplateCode()); hasAny = true; }

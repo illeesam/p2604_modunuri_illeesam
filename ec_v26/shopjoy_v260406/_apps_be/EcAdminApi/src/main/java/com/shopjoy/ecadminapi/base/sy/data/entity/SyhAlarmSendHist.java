@@ -24,9 +24,6 @@ public class SyhAlarmSendHist extends BaseEntity {
     @Column(name = "send_hist_id", length = 21, nullable = false)
     private String sendHistId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("알림ID")
     @Column(name = "alarm_id", length = 21, nullable = false)

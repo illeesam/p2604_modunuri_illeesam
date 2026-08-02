@@ -17,7 +17,6 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyDept;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyDept;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyDeptRepository;
@@ -42,7 +41,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         this.queryFactory = queryFactory;
         this.syDeptRepository = syDeptRepository;
     }
-    private static final QSySite sySite = QSySite.sySite;
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QVwSyCode cdDt = new QVwSyCode("cd_dt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
@@ -57,7 +55,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         Map.entry("deptTypeCd", syDept.deptTypeCd),
         Map.entry("managerId", syDept.managerId),
         Map.entry("parentDeptId", syDept.parentDeptId),
-        Map.entry("siteId", syDept.siteId),
         Map.entry("useYn", syDept.useYn)
     );
 
@@ -70,7 +67,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         return queryFactory
                 .select(Projections.bean(SyDeptDto.Item.class,
                         syDept.deptId,         // 부서ID (YYMMDDhhmmss+rand4)
-                        syDept.siteId,         // 사이트ID (sy_site.site_id)
                         syDept.deptCode,       // 부서코드
                         syDept.deptNm,         // 부서명
                         syDept.parentDeptId,   // 상위부서ID
@@ -83,10 +79,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                         syDept.regDate,        // 등록일시
                         syDept.updBy,          // 수정자
                         syDept.updDate,        // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syDept)
-                .leftJoin(sySite).on(sySite.siteId.eq(syDept.siteId))
                 .leftJoin(syUser).on(syUser.userId.eq(syDept.managerId))
                 .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE").and(cdDt.codeValue.eq(syDept.deptTypeCd)));
     }
@@ -107,7 +101,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyDeptDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syDept.siteId, search.getSiteId()),
                 andParentDeptIdIn(search),
                 QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syDept.useYn, search.getUseYn()),
@@ -135,7 +128,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syDept.siteId, search.getSiteId()),
                 andParentDeptIdIn(search),
                 QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syDept.useYn, search.getUseYn()),
@@ -225,7 +217,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         JPAUpdateClause update = queryFactory.update(syDept);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(syDept.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getDeptCode()     != null) { update.set(syDept.deptCode,     entity.getDeptCode());     hasAny = true; }
         if (entity.getDeptNm()       != null) { update.set(syDept.deptNm,       entity.getDeptNm());       hasAny = true; }
         if (entity.getParentDeptId() != null) { update.set(syDept.parentDeptId, entity.getParentDeptId()); hasAny = true; }

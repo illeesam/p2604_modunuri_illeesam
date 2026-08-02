@@ -41,7 +41,6 @@ public class SyNoticeDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
     }
 
 }

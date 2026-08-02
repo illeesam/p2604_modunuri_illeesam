@@ -42,7 +42,6 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         Map.entry("menuId", vwRoleMenu.menuId),
         Map.entry("roleId", vwRoleMenu.roleId),
         Map.entry("roleMenuId", vwRoleMenu.roleMenuId),
-        Map.entry("siteId", vwRoleMenu.siteId)
     );
 
     /*
@@ -54,7 +53,6 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         return queryFactory
                 .select(Projections.bean(SyRoleMenuDto.Item.class,
                         vwRoleMenu.roleMenuId,   // 역할메뉴ID
-                        vwRoleMenu.siteId,       // 사이트ID (sy_site.site_id)
                         vwRoleMenu.roleId,       // 역할ID
                         vwRoleMenu.menuId,       // 메뉴ID
                         vwRoleMenu.permLevel,    // 권한레벨 — PERM_LEVEL {1: '조회', 2: '수정', 3: '삭제'}
@@ -84,7 +82,6 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(vwRoleMenu.siteId, search.getSiteId()),
                 QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()),
                 QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()),
                 QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()),
@@ -112,7 +109,6 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(vwRoleMenu.siteId, search.getSiteId()),
                 QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()),
                 QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()),
                 QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()),
@@ -186,7 +182,6 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         JPAUpdateClause update = queryFactory.update(syRoleMenu);
         boolean hasAny = false;
 
-        if (entity.getSiteId()    != null) { update.set(syRoleMenu.siteId,    entity.getSiteId());    hasAny = true; }
         if (entity.getRoleId()    != null) { update.set(syRoleMenu.roleId,    entity.getRoleId());    hasAny = true; }
         if (entity.getMenuId()    != null) { update.set(syRoleMenu.menuId,    entity.getMenuId());    hasAny = true; }
         if (entity.getPermLevel() != null) { update.set(syRoleMenu.permLevel, entity.getPermLevel()); hasAny = true; }

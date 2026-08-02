@@ -24,9 +24,6 @@ public class SyContact extends BaseEntity {
     @Column(name = "contact_id", length = 21, nullable = false)
     private String contactId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("회원ID")
     @Column(name = "member_id", length = 21)

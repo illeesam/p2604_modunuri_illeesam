@@ -52,7 +52,6 @@ public class SyhUserLoginLogDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────────
-        private String siteNm;
         private String userNm;
         private String resultCdNm;
     }

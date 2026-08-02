@@ -61,21 +61,23 @@ public class SySendAlarmJob implements SchBatchJobHandler {
 
         int totalAlarms = 0;
 
+        // site_id 제거 후 EC 쿼리는 전사 단일 조회. 알림 발송은 활성 사이트별 1회.
+        LocalDateTime orderThreshold = now.minusHours(UNPAID_WARN_HOURS);
+        List<OdOrder> stalePaidOrders = orderRepository.findStalePaidOrders(orderThreshold);
+
+        LocalDateTime claimThreshold = now.minusHours(CLAIM_WARN_HOURS);
+        List<OdClaim> staleClaims = claimRepository.findStaleRequestedClaims(claimThreshold);
+
         for (SySite site : siteRepository.findAll()) {
             if (!"ACTIVE".equals(site.getSiteStatusCd())) continue;
 
             String siteId = site.getSiteId();
 
             /* ── 1) 미처리 주문 경보 ────────────────────────────────────── */
-            LocalDateTime orderThreshold = now.minusHours(UNPAID_WARN_HOURS);
-            List<OdOrder> stalePaidOrders = orderRepository
-                .findStalePaidOrders(orderThreshold);
-
             if (!stalePaidOrders.isEmpty()) {
                 String title = "미처리 주문 경보";
                 String msg   = "결제 완료 후 " + UNPAID_WARN_HOURS + "시간 이상 미처리 주문이 "
                     + stalePaidOrders.size() + "건 있습니다. 즉시 확인이 필요합니다.";
-
                 try {
                     cmMsgSendService.sendSystemAlarm(siteId, title, msg, "ORDER_WARN",
                         null, null, null, Map.of("count", stalePaidOrders.size()));
@@ -88,15 +90,10 @@ public class SySendAlarmJob implements SchBatchJobHandler {
             }
 
             /* ── 2) 미처리 클레임 경보 ──────────────────────────────────── */
-            LocalDateTime claimThreshold = now.minusHours(CLAIM_WARN_HOURS);
-            List<OdClaim> staleClaims = claimRepository
-                .findStaleRequestedClaims(claimThreshold);
-
             if (!staleClaims.isEmpty()) {
                 String title = "미처리 클레임 경보";
                 String msg   = "접수 후 " + CLAIM_WARN_HOURS + "시간 이상 미처리 클레임이 "
                     + staleClaims.size() + "건 있습니다. 즉시 확인이 필요합니다.";
-
                 try {
                     cmMsgSendService.sendSystemAlarm(siteId, title, msg, "CLAIM_WARN",
                         null, null, null, Map.of("count", staleClaims.size()));

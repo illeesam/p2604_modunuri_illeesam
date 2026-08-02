@@ -48,7 +48,6 @@ public class SyBatchDto {
         private String pathId;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
     }
 
     /** 응답 */

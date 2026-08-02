@@ -48,7 +48,6 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         Map.entry("sendHistId", syhAlarmSendHist.sendHistId),
         Map.entry("sendHistStatusCd", syhAlarmSendHist.sendHistStatusCd),
         Map.entry("sendTo", syhAlarmSendHist.sendTo),
-        Map.entry("siteId", syhAlarmSendHist.siteId)
     );
 
     /*
@@ -60,7 +59,6 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         return queryFactory
                 .select(Projections.bean(SyhAlarmSendHistDto.Item.class,
                         syhAlarmSendHist.sendHistId,             // 발송이력ID (PK)
-                        syhAlarmSendHist.siteId,                 // 사이트ID (sy_site.site_id)
                         syhAlarmSendHist.alarmId,                // 알림ID
                         syhAlarmSendHist.memberId,                // 수신자 회원ID
                         syhAlarmSendHist.userId,                  // 수신자 사용자ID (sy_user.user_id)
@@ -73,7 +71,6 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                         syhAlarmSendHist.regDate,                 // 등록일시
                         syhAlarmSendHist.updBy,                   // 수정자
                         syhAlarmSendHist.updDate,                 // 수정일시
-                        sySite.siteNm.as("siteNm")                // 사이트명 (조인: sy_site)
                 ))
                 .from(syhAlarmSendHist)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhAlarmSendHist.siteId));
@@ -96,7 +93,6 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
         JPAQuery<SyhAlarmSendHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syhAlarmSendHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()),
                 QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -123,7 +119,6 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhAlarmSendHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()),
                 QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -196,7 +191,6 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         JPAUpdateClause update = queryFactory.update(syhAlarmSendHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()           != null) { update.set(syhAlarmSendHist.siteId,           entity.getSiteId());           hasAny = true; }
         if (entity.getAlarmId()          != null) { update.set(syhAlarmSendHist.alarmId,          entity.getAlarmId());          hasAny = true; }
         if (entity.getMemberId()         != null) { update.set(syhAlarmSendHist.memberId,         entity.getMemberId());         hasAny = true; }
         if (entity.getUserId()           != null) { update.set(syhAlarmSendHist.userId,           entity.getUserId());           hasAny = true; }

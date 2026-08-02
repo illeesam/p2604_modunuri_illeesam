@@ -51,7 +51,6 @@ public class SyhSendEmailLogDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────────
-        private String siteNm;
         private String templateNm;
         private String userNm;
         private String resultCdNm;

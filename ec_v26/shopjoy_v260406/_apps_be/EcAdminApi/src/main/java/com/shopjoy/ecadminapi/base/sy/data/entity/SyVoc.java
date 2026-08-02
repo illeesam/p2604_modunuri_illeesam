@@ -22,9 +22,6 @@ public class SyVoc extends BaseEntity {
     @Column(name = "voc_id", length = 21, nullable = false)
     private String vocId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("VOC마스터코드 (코드: VOC_MASTER)")
     @Column(name = "voc_master_cd", length = 20, nullable = false)

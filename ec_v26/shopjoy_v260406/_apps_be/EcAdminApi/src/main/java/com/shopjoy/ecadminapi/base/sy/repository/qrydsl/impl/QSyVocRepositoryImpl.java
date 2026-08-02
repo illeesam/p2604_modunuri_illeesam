@@ -34,7 +34,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     private static final QSyVoc syVoc = QSyVoc.syVoc;
     private static final QSySite sySite = QSySite.sySite;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("siteId", syVoc.siteId),
         Map.entry("useYn", syVoc.useYn),
         Map.entry("vocContent", syVoc.vocContent),
         Map.entry("vocDetailCd", syVoc.vocDetailCd),
@@ -53,7 +52,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         return queryFactory
                 .select(Projections.bean(SyVocDto.Item.class,
                         syVoc.vocId,           // VOC분류ID (PK, YYMMDDhhmmss+rand4)
-                        syVoc.siteId,          // 사이트ID (sy_site.site_id)
                         syVoc.vocMasterCd,     // VOC마스터코드 — VOC_MASTER {DELIVERY: '배송', PRODUCT: '상품', PAYMENT: '결제', CLAIM: '클레임', SERVICE: '서비스', ETC: '기타'}
                         syVoc.vocDetailCd,     // VOC세부코드 — VOC_DETAIL {DELIVERY_DELAY: '배송지연', PRODUCT_DEFECT: '상품불량', PAYMENT_FAIL: '결제실패', CLAIM_RETURN: '반품처리', ETC: '기타' 등}
                         syVoc.vocNm,           // VOC항목명
@@ -63,7 +61,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
                         syVoc.regDate,         // 등록일시
                         syVoc.updBy,           // 수정자
                         syVoc.updDate,         // 수정일시
-                        sySite.siteNm.as("siteNm")  // 사이트명 (조인: sy_site)
                 ))
                 .from(syVoc)
                 .leftJoin(sySite).on(sySite.siteId.eq(syVoc.siteId));
@@ -85,7 +82,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         JPAQuery<SyVocDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syVoc.siteId, search.getSiteId()),
                     QdslUtil.strEq(syVoc.vocId, search.getVocId()),
                     QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()),
                     QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()),
@@ -113,7 +109,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syVoc.siteId, search.getSiteId()),
                 QdslUtil.strEq(syVoc.vocId, search.getVocId()),
                 QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()),
                 QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()),
@@ -191,7 +186,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         JPAUpdateClause update = queryFactory.update(syVoc);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(syVoc.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getVocMasterCd() != null) { update.set(syVoc.vocMasterCd, entity.getVocMasterCd()); hasAny = true; }
         if (entity.getVocDetailCd() != null) { update.set(syVoc.vocDetailCd, entity.getVocDetailCd()); hasAny = true; }
         if (entity.getVocNm()       != null) { update.set(syVoc.vocNm,       entity.getVocNm());       hasAny = true; }

@@ -38,7 +38,6 @@ public class SyI18nDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
     }
 
 }

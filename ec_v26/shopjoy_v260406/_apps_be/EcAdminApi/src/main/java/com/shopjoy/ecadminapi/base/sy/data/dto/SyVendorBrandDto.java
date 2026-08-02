@@ -14,7 +14,6 @@ public class SyVendorBrandDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
         @Size(max = 21) private String vendorId;
         @Size(max = 21) private String brandId;
         @Size(max = 21) private String vendorBrandId;

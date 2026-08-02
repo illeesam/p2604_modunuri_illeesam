@@ -15,8 +15,6 @@ public class SyUserDto {
     public static class Request extends BaseRequest {
 
         // ── 고유필드 (도메인 전용 검색조건) ────────────────────────
-        @Size(max = 21, message = "siteId 는 21자 이내여야 합니다.")
-        private String siteId;
 
         @Size(max = 21, message = "deptId 는 21자 이내여야 합니다.")
         private String deptId;
@@ -55,7 +53,6 @@ public class SyUserDto {
         private String profileAttachId;
 
         // ── JOIN ─────────────────────────────────────────────────────
-        private String siteNm;
         private String deptNm;
         private String roleNm;
         private String userStatusCdNm;

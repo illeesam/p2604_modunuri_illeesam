@@ -48,7 +48,6 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         Map.entry("imageUrl", syVendorContent.imageUrl),
         Map.entry("langCd", syVendorContent.langCd),
         Map.entry("linkUrl", syVendorContent.linkUrl),
-        Map.entry("siteId", syVendorContent.siteId),
         Map.entry("thumbUrl", syVendorContent.thumbUrl),
         Map.entry("useYn", syVendorContent.useYn),
         Map.entry("vendorContentId", syVendorContent.vendorContentId),
@@ -69,7 +68,6 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         return queryFactory
                 .select(Projections.bean(SyVendorContentDto.Item.class,
                         syVendorContent.vendorContentId,             // 업체콘텐츠ID (PK)
-                        syVendorContent.siteId,                      // 사이트ID (sy_site.site_id)
                         syVendorContent.vendorId,                    // 업체ID (sy_vendor.vendor_id)
                         syVendorContent.contentTypeCd,                // 콘텐츠유형 — VENDOR_CONTENT_TYPE {INTRO: '업체소개', POLICY: '정책/규정', NOTICE: '공지사항'}
                         syVendorContent.vendorContentTitle,           // 제목
@@ -116,7 +114,6 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorContentDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syVendorContent.siteId, search.getSiteId()),
                 QdslUtil.strEq(syVendorContent.vendorContentId, search.getVendorContentId()),
                 QdslUtil.strEq(syVendorContent.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendorContent.vendorContentStatusCd, search.getStatus()),
@@ -145,7 +142,6 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syVendorContent.siteId, search.getSiteId()),
                 QdslUtil.strEq(syVendorContent.vendorContentId, search.getVendorContentId()),
                 QdslUtil.strEq(syVendorContent.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendorContent.vendorContentStatusCd, search.getStatus()),
@@ -229,7 +225,6 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         JPAUpdateClause update = queryFactory.update(syVendorContent);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                != null) { update.set(syVendorContent.siteId,                entity.getSiteId());                hasAny = true; }
         if (entity.getVendorId()              != null) { update.set(syVendorContent.vendorId,              entity.getVendorId());              hasAny = true; }
         if (entity.getContentTypeCd()         != null) { update.set(syVendorContent.contentTypeCd,         entity.getContentTypeCd());         hasAny = true; }
         if (entity.getVendorContentTitle()    != null) { update.set(syVendorContent.vendorContentTitle,    entity.getVendorContentTitle());    hasAny = true; }

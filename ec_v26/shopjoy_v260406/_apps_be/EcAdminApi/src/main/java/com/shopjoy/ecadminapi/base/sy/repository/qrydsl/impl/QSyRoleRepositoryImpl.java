@@ -18,7 +18,6 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyRoleRepository;
 import jakarta.persistence.EntityManager;
@@ -48,7 +47,6 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         this.syRoleRepository = syRoleRepository;
         this.em = em;
     }
-    private static final QSySite sySite = QSySite.sySite;
     private static final QVwSyCode cdRt = new QVwSyCode("cd_rt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syRole.regDate,
@@ -63,7 +61,6 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         Map.entry("roleNm", syRole.roleNm),
         Map.entry("roleRemark", syRole.roleRemark),
         Map.entry("roleTypeCd", syRole.roleTypeCd),
-        Map.entry("siteId", syRole.siteId),
         Map.entry("useYn", syRole.useYn)
     );
 
@@ -77,7 +74,6 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         return queryFactory
                 .select(Projections.bean(SyRoleDto.Item.class,
                         syRole.roleId,          // 역할ID (YYMMDDhhmmss+rand4)
-                        syRole.siteId,          // 사이트ID (sy_site.site_id)
                         syRole.roleCode,        // 역할코드
                         syRole.roleNm,          // 역할명
                         syRole.parentRoleId,    // 상위역할ID
@@ -91,10 +87,8 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                         syRole.updBy,           // 수정자
                         syRole.updDate,         // 수정일시
                         syRole.pathId,          // 점(.) 구분 표시경로 (트리 빌드용)
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syRole)
-                .leftJoin(sySite).on(sySite.siteId.eq(syRole.siteId))
                 .leftJoin(cdRt).on(cdRt.codeGrp.eq("ROLE_TYPE").and(cdRt.codeValue.eq(syRole.roleTypeCd)));
     }
 
@@ -114,7 +108,6 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syRole.siteId, search.getSiteId()),
                 QdslUtil.strEq(syRole.roleId, search.getRoleId()),
                 andParentRoleIdIn(search),
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
@@ -143,7 +136,6 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syRole.siteId, search.getSiteId()),
                 QdslUtil.strEq(syRole.roleId, search.getRoleId()),
                 andParentRoleIdIn(search),
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
@@ -178,7 +170,6 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     @Override
     public long selectCount(SyRoleDto.Request search) {
         Long total = queryFactory.select(syRole.count()).setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syRole).where(
-                QdslUtil.strEq(syRole.siteId, search.getSiteId()),
                 QdslUtil.strEq(syRole.roleId, search.getRoleId()),
                 andParentRoleIdIn(search),
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
@@ -257,7 +248,6 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         JPAUpdateClause update = queryFactory.update(syRole);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(syRole.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getRoleCode()     != null) { update.set(syRole.roleCode,     entity.getRoleCode());     hasAny = true; }
         if (entity.getRoleNm()       != null) { update.set(syRole.roleNm,       entity.getRoleNm());       hasAny = true; }
         if (entity.getParentRoleId() != null) { update.set(syRole.parentRoleId, entity.getParentRoleId()); hasAny = true; }

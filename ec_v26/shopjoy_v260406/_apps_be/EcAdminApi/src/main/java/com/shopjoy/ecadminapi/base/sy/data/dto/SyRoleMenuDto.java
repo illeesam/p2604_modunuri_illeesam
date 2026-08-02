@@ -12,7 +12,6 @@ public class SyRoleMenuDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
         @Size(max = 21) private String roleMenuId;
         @Size(max = 21) private String roleId;
         @Size(max = 21) private String menuId;

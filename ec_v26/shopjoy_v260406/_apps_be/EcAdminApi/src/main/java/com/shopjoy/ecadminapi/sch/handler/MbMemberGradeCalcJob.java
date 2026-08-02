@@ -5,8 +5,6 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberGradeRepository;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
-import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -42,7 +40,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MbMemberGradeCalcJob implements SchBatchJobHandler {
 
-    private final SySiteRepository        siteRepository;
     private final MbMemberRepository      memberRepository;
     private final MbMemberGradeRepository gradeRepository;
 
@@ -59,48 +56,32 @@ public class MbMemberGradeCalcJob implements SchBatchJobHandler {
 
         int totalChecked = 0, totalChanged = 0;
 
-        for (SySite site : siteRepository.findAll()) {
-            if (!"ACTIVE".equals(site.getSiteStatusCd())) continue;
+        // site_id 제거 후 등급/회원 데이터가 전사 공유 — 한 번만 처리
+        List<MbMemberGrade> grades = gradeRepository.findActiveOrderByRankDesc();
+        if (grades.isEmpty()) {
+            log.warn("[{}] 등록된 회원등급 없음 — 스킵", batchCode());
+            return;
+        }
+        String lowestGradeCd = grades.get(grades.size() - 1).getGradeCd();
 
-            String siteId = site.getSiteId();
+        List<MbMember> members = memberRepository.findActiveForGradeCalc();
+        for (MbMember member : members) {
+            totalChecked++;
+            long purchaseAmt = member.getTotalPurchaseAmt() != null
+                ? member.getTotalPurchaseAmt() : 0L;
 
-            // 이 사이트의 등급 기준 로드 (grade_rank 내림차순 — 높은 등급 먼저)
-            List<MbMemberGrade> grades = gradeRepository.findActiveOrderByRankDesc();
-            if (grades.isEmpty()) {
-                log.warn("[{}] siteId={} 등록된 회원등급 없음 — 스킵", batchCode(), siteId);
-                continue;
-            }
+            String newGrade = resolveGrade(purchaseAmt, grades, lowestGradeCd);
+            if (newGrade.equals(member.getGradeCd())) continue;
 
-            // 최하위 등급 (grade_rank 가장 낮음 = 리스트 마지막)
-            String lowestGradeCd = grades.get(grades.size() - 1).getGradeCd();
+            log.debug("[{}] 등급 변경 — memberId={} {} → {} (누적구매금액: {}원)",
+                batchCode(), member.getMemberId(),
+                member.getGradeCd(), newGrade, purchaseAmt);
 
-            List<MbMember> members = memberRepository.findActiveForGradeCalc();
-            int siteChecked = 0, siteChanged = 0;
-
-            for (MbMember member : members) {
-                siteChecked++;
-                long purchaseAmt = member.getTotalPurchaseAmt() != null
-                    ? member.getTotalPurchaseAmt() : 0L;
-
-                String newGrade = resolveGrade(purchaseAmt, grades, lowestGradeCd);
-                if (newGrade.equals(member.getGradeCd())) continue;
-
-                log.debug("[{}] 등급 변경 — memberId={} {} → {} (누적구매금액: {}원)",
-                    batchCode(), member.getMemberId(),
-                    member.getGradeCd(), newGrade, purchaseAmt);
-
-                member.setGradeCd(newGrade);
-                member.setUpdBy("BATCH");
-                member.setUpdDate(now);
-                memberRepository.save(member);
-                siteChanged++;
-            }
-
-            log.info("[{}] siteId={} — {}명 검토 / {}명 등급 변경",
-                batchCode(), siteId, siteChecked, siteChanged);
-
-            totalChecked += siteChecked;
-            totalChanged += siteChanged;
+            member.setGradeCd(newGrade);
+            member.setUpdBy("BATCH");
+            member.setUpdDate(now);
+            memberRepository.save(member);
+            totalChanged++;
         }
 
         log.info("[{}] 회원 등급 재산정 완료 — 총 {}명 검토 / {}명 등급 변경",

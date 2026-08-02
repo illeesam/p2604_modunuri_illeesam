@@ -25,9 +25,6 @@ public class SyVendorUserRole extends BaseEntity {
     @Column(name = "vendor_user_role_id", length = 21, nullable = false)
     private String vendorUserRoleId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("업체ID (sy_vendor.vendor_id)")
     @Column(name = "vendor_id", length = 21, nullable = false)

@@ -41,7 +41,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         Map.entry("noticeStatusCd", syNotice.noticeStatusCd),
         Map.entry("noticeTitle", syNotice.noticeTitle),
         Map.entry("noticeTypeCd", syNotice.noticeTypeCd),
-        Map.entry("siteId", syNotice.siteId)
     );
 
     /*
@@ -54,7 +53,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         return queryFactory
                 .select(Projections.bean(SyNoticeDto.Item.class,
                         syNotice.noticeId,        // 공지ID (YYMMDDhhmmss+rand4)
-                        syNotice.siteId,          // 사이트ID (sy_site.site_id)
                         syNotice.noticeTitle,     // 제목
                         syNotice.noticeTypeCd,    // 공지유형 — NOTICE_TYPE {NORMAL: '일반', URGENT: '긴급'}
                         syNotice.isFixed,         // 상단고정 — IS_FIXED {Y: '상단고정', N: '일반'}
@@ -68,7 +66,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                         syNotice.regDate,         // 등록일시
                         syNotice.updBy,           // 수정자
                         syNotice.updDate,         // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syNotice)
                 .leftJoin(sySite).on(sySite.siteId.eq(syNotice.siteId));
@@ -90,7 +87,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syNotice.siteId, search.getSiteId()),
                     QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()),
                     QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()),
                     QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()),
@@ -118,7 +114,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syNotice.siteId, search.getSiteId()),
                 QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()),
                 QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()),
                 QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()),
@@ -196,7 +191,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         JPAUpdateClause update = queryFactory.update(syNotice);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(syNotice.siteId,         entity.getSiteId());         hasAny = true; }
         if (entity.getNoticeTitle()    != null) { update.set(syNotice.noticeTitle,    entity.getNoticeTitle());    hasAny = true; }
         if (entity.getNoticeTypeCd()   != null) { update.set(syNotice.noticeTypeCd,   entity.getNoticeTypeCd());   hasAny = true; }
         if (entity.getIsFixed()        != null) { update.set(syNotice.isFixed,        entity.getIsFixed());        hasAny = true; }

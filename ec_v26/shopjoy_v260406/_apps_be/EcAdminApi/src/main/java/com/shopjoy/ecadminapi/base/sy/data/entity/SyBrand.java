@@ -23,9 +23,6 @@ public class SyBrand extends BaseEntity {
     @Column(name = "brand_id", length = 21, nullable = false)
     private String brandId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("브랜드코드")
     @Column(name = "brand_code", length = 50, nullable = false)

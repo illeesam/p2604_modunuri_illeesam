@@ -16,7 +16,6 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorBrandDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendorBrand;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorBrand;
@@ -37,7 +36,6 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorBrandRepositoryImpl";
     private static final QSyVendorBrand syVendorBrand = QSyVendorBrand.syVendorBrand;
-    private static final QSySite sySite = QSySite.sySite;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyBrand syBrand = QSyBrand.syBrand;
     private static final QVwSyCode cdVbc = new QVwSyCode("cd_vbc");
@@ -49,7 +47,6 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         Map.entry("brandId", syVendorBrand.brandId),
         Map.entry("contractCd", syVendorBrand.contractCd),
         Map.entry("isMain", syVendorBrand.isMain),
-        Map.entry("siteId", syVendorBrand.siteId),
         Map.entry("useYn", syVendorBrand.useYn),
         Map.entry("vendorBrandId", syVendorBrand.vendorBrandId),
         Map.entry("vendorBrandRemark", syVendorBrand.vendorBrandRemark),
@@ -65,7 +62,6 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         return queryFactory
                 .select(Projections.bean(SyVendorBrandDto.Item.class,
                         syVendorBrand.vendorBrandId,               // 업체브랜드ID (PK)
-                        syVendorBrand.siteId,                      // 사이트ID (sy_site.site_id)
                         syVendorBrand.vendorId,                    // 업체ID (sy_vendor.vendor_id)
                         syVendorBrand.brandId,                     // 브랜드ID (sy_brand.brand_id)
                         syVendorBrand.isMain,                      // 대표 브랜드 여부 Y/N
@@ -84,7 +80,6 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                         syBrand.brandNm.as("brandNm")              // 브랜드명 (조인: sy_brand)
                 ))
                 .from(syVendorBrand)
-                .leftJoin(sySite).on(sySite.siteId.eq(syVendorBrand.siteId))
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorBrand.vendorId))
                 .leftJoin(syBrand).on(syBrand.brandId.eq(syVendorBrand.brandId))
                 .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("VENDOR_BRAND_CONTRACT").and(cdVbc.codeValue.eq(syVendorBrand.contractCd)));
@@ -106,7 +101,6 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syVendorBrand.siteId, search.getSiteId()),
                 QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()),
                 QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()),
@@ -134,7 +128,6 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syVendorBrand.siteId, search.getSiteId()),
                 QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()),
                 QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()),
@@ -213,7 +206,6 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         JPAUpdateClause update = queryFactory.update(syVendorBrand);
         boolean hasAny = false;
 
-        if (entity.getSiteId()            != null) { update.set(syVendorBrand.siteId,            entity.getSiteId());            hasAny = true; }
         if (entity.getVendorId()          != null) { update.set(syVendorBrand.vendorId,          entity.getVendorId());          hasAny = true; }
         if (entity.getBrandId()           != null) { update.set(syVendorBrand.brandId,           entity.getBrandId());           hasAny = true; }
         if (entity.getIsMain()            != null) { update.set(syVendorBrand.isMain,            entity.getIsMain());            hasAny = true; }

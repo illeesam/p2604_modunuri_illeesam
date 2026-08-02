@@ -731,10 +731,23 @@ window.BoGrid = {
         : coUtil.cofCountText(cfTotal.value, props.loadedCount)
     ));
 
+    /* cfEffectiveCols — 명/제목/이름 끝 컬럼을 link:true 로 자동 표시 (링크스타일 + cell-click emit).
+       badge/edit/refLink/명시적 link 있으면 스킵. link:false 명시 시도 스킵. */
+    const cfEffectiveCols = Vue.computed(() => props.columns.map(col => {
+      if (col.link != null || col.badge || col.edit || col.refLink) return col;
+      const k = (col.key || '').toLowerCase();
+      const l = col.label || '';
+      if (/(nm|name|title)$/.test(k) || /명$|제목$|이름$/.test(l)) {
+        return Object.assign({}, col, { link: true });
+      }
+      return col;
+    }));
+
     return { U, cfTotal, cfCountText, cfScrollMaxHeight, cfBodyStyle, bodyRef, onScroll, cfShowTfoot, rowNo, sortIcon, sortActive,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
              handleBtnAction, handleSelectAction,
-             colWidths, onResizeStart, thResizeStyle };
+             colWidths, onResizeStart, thResizeStyle,
+             columns: cfEffectiveCols };
   },
   template: /* html */`
 <div :class="bare ? '' : 'card'">

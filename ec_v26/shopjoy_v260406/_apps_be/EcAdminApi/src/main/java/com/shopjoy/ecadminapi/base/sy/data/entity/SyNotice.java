@@ -24,9 +24,6 @@ public class SyNotice extends BaseEntity {
     @Column(name = "notice_id", length = 21, nullable = false)
     private String noticeId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("제목")
     @Column(name = "notice_title", length = 200, nullable = false)

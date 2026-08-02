@@ -22,9 +22,6 @@ public class SyMenu extends BaseEntity {
     @Column(name = "menu_id", length = 21, nullable = false)
     private String menuId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("메뉴코드")
     @Column(name = "menu_code", length = 50, nullable = false)

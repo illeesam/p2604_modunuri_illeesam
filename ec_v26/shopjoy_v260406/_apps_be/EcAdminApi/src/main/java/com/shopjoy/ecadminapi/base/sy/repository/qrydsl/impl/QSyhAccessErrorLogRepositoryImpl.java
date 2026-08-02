@@ -66,7 +66,6 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         Map.entry("reqUa", syhAccessErrorLog.reqUa),
         Map.entry("roleId", syhAccessErrorLog.roleId),
         Map.entry("serverNm", syhAccessErrorLog.serverNm),
-        Map.entry("siteId", syhAccessErrorLog.siteId),
         Map.entry("stackTrace", syhAccessErrorLog.stackTrace),
         Map.entry("threadNm", syhAccessErrorLog.threadNm),
         Map.entry("traceId", syhAccessErrorLog.traceId),
@@ -84,7 +83,6 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         return queryFactory
                 .select(Projections.bean(SyhAccessErrorLogDto.Item.class,
                         syhAccessErrorLog.logId,                    // PK: EL+yyMMddHHmmss+rand4
-                        syhAccessErrorLog.siteId,                   // 사이트ID (sy_site.site_id) — 미인증 요청은 null 허용
                         syhAccessErrorLog.reqMethod,                // HTTP 메서드
                         syhAccessErrorLog.reqHost,                  // Host 헤더 값
                         syhAccessErrorLog.reqPath,                  // 요청 URI 경로
@@ -113,7 +111,6 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
                         syhAccessErrorLog.loggerNm,                  // 로거 클래스 이름
                         syhAccessErrorLog.logDt,                     // 에러 발생 시각
                         syhAccessErrorLog.regDate,                   // DB 저장 시각
-                        sySite.siteNm.as("siteNm"),                  // 사이트명 (조인: sy_site)
                         cd_at.codeLabel.as("appTypeCdNm"),            // 앱유형 코드명 (조인: sy_code APP_TYPE)
                         syUser.userNm.as("userNm"),                  // 사용자명 (조인: sy_user)
                         syRole.roleNm.as("roleNm"),                  // 역할명 (조인: sy_role)
@@ -121,7 +118,6 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
                         syVendor.vendorNm.as("vendorNm")             // 업체명 (조인: sy_vendor)
                 ))
                 .from(syhAccessErrorLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhAccessErrorLog.siteId))
                 .leftJoin(syUser).on(syUser.userId.eq(syhAccessErrorLog.userId))
                 .leftJoin(syRole).on(syRole.roleId.eq(syhAccessErrorLog.roleId))
                 .leftJoin(syDept).on(syDept.deptId.eq(syhAccessErrorLog.deptId))

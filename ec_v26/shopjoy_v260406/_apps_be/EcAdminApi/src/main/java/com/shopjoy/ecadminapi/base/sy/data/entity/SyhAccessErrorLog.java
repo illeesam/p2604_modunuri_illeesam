@@ -21,9 +21,6 @@ public class SyhAccessErrorLog {
     @Column(name = "log_id", length = 20, nullable = false)
     private String logId;
 
-    @Comment("사이트ID (sy_site.site_id) — 미인증 요청은 null 허용")
-    @Column(name = "site_id", length = 21)
-    private String siteId;
 
     // ── 요청 정보 ────────────────────────────────────────
     @Comment("HTTP 메서드")

@@ -44,7 +44,6 @@ public class SyBbsDto {
         private String pathId;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
         private String bbmNm;
     }
 

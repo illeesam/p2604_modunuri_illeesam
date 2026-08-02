@@ -17,7 +17,6 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyMenu;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyMenuRepository;
 import jakarta.persistence.EntityManager;
@@ -46,7 +45,6 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         this.syMenuRepository = syMenuRepository;
         this.em = em;
     }
-    private static final QSySite sySite = QSySite.sySite;
     private static final QVwSyCode cdMt = new QVwSyCode("cd_mt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syMenu.regDate,
@@ -61,7 +59,6 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         Map.entry("menuTypeCd", syMenu.menuTypeCd),
         Map.entry("menuUrl", syMenu.menuUrl),
         Map.entry("parentMenuId", syMenu.parentMenuId),
-        Map.entry("siteId", syMenu.siteId),
         Map.entry("useYn", syMenu.useYn)
     );
 
@@ -74,7 +71,6 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         return queryFactory
                 .select(Projections.bean(SyMenuDto.Item.class,
                         syMenu.menuId,         // 메뉴ID (YYMMDDhhmmss+rand4)
-                        syMenu.siteId,         // 사이트ID (sy_site.site_id)
                         syMenu.menuCode,       // 메뉴코드
                         syMenu.menuNm,         // 메뉴명
                         syMenu.parentMenuId,   // 상위메뉴ID
@@ -88,10 +84,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                         syMenu.regDate,        // 등록일시
                         syMenu.updBy,          // 수정자
                         syMenu.updDate,        // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syMenu)
-                .leftJoin(sySite).on(sySite.siteId.eq(syMenu.siteId))
                 .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE").and(cdMt.codeValue.eq(syMenu.menuTypeCd)));
     }
 
@@ -111,7 +105,6 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyMenuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syMenu.siteId, search.getSiteId()),
                 andMenuIdIn(search),
                 QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd()),
                 QdslUtil.strEq(syMenu.useYn, search.getUseYn()),
@@ -139,7 +132,6 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syMenu.siteId, search.getSiteId()),
                 andMenuIdIn(search),
                 QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd()),
                 QdslUtil.strEq(syMenu.useYn, search.getUseYn()),
@@ -237,7 +229,6 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         JPAUpdateClause update = queryFactory.update(syMenu);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(syMenu.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getMenuCode()     != null) { update.set(syMenu.menuCode,     entity.getMenuCode());     hasAny = true; }
         if (entity.getMenuNm()       != null) { update.set(syMenu.menuNm,       entity.getMenuNm());       hasAny = true; }
         if (entity.getParentMenuId() != null) { update.set(syMenu.parentMenuId, entity.getParentMenuId()); hasAny = true; }

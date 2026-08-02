@@ -43,7 +43,6 @@ public class SyBbmDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
     }
 
 }

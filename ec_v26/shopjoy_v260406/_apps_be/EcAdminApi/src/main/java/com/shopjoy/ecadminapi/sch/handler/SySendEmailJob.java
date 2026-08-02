@@ -62,60 +62,59 @@ public class SySendEmailJob implements SchBatchJobHandler {
 
         int totalSent = 0, totalFail = 0;
 
-        for (SySite site : siteRepository.findAll()) {
-            if (!"ACTIVE".equals(site.getSiteStatusCd())) continue;
-
-            String siteId = site.getSiteId();
-
-            /* ── 1) 휴면 예정 안내 ──────────────────────────────────────── */
-            LocalDateTime dormantWarnThreshold = now.minusDays(DORMANT_WARN_DAYS);
-            LocalDateTime dormantThreshold     = now.minusDays(DORMANT_DAYS);
-
-            List<MbMember> warnTargets = memberRepository
-                .findDormantWarnTargets(dormantWarnThreshold, dormantThreshold);
-
-            log.info("[{}] siteId={} 휴면예정 이메일 대상: {}명", batchCode(), siteId, warnTargets.size());
-
-            for (MbMember member : warnTargets) {
-                String email = member.getLoginId();
-                if (email == null || email.isBlank()) continue;
-
-                Map<String, Object> params = new HashMap<>();
-                params.put("name",        CmUtil.nvlStr(member.getMemberNm()));
-                params.put("email",       email);
-                params.put("dormantDays", DORMANT_DAYS);
-                params.put("warnDays",    DORMANT_DAYS - DORMANT_WARN_DAYS);
-
-                try {
-                    SendResultVo result = cmMsgSendService.sendMailByTemplate(
-                        siteId,
-                        email,
-                        "DORMANT_WARN_MAIL",
-                        "[ShopJoy] 휴면 계정 전환 예정 안내",
-                        buildDormantWarnContent(member),
-                        "DORMANT_WARN",
-                        member.getMemberId(),
-                        params
-                    );
-
-                    if (Boolean.TRUE.equals(result.getSuccess())) {
-                        totalSent++;
-                        log.debug("[{}] 휴면예정 메일 발송 완료 — memberId={}", batchCode(), member.getMemberId());
-                    } else {
-                        totalFail++;
-                        log.warn("[{}] 휴면예정 메일 발송 실패 — memberId={}, reason={}",
-                            batchCode(), member.getMemberId(), result.getFailReason());
-                    }
-                } catch (Exception e) {
-                    totalFail++;
-                    log.error("[{}] 휴면예정 메일 발송 오류 — memberId={}", batchCode(), member.getMemberId(), e);
-                }
-            }
-
-            /* ── 2) 추가 발송 시나리오 확장 포인트 ──────────────────────── */
-            // TODO: 주문 7일 경과 리뷰 요청 이메일 (별도 OdOrder 조회 + REVIEW_REQUEST_MAIL 템플릿)
-            // TODO: 쿠폰 만료 D-3 이메일 (PmCouponIssue 조회 + COUPON_EXPIRE_MAIL 템플릿)
+        // site_id 제거 후 EC 쿼리 1회 + 첫 번째 활성 사이트 컨텍스트로 발송
+        SySite activeSite = siteRepository.findAll().stream()
+            .filter(s -> "ACTIVE".equals(s.getSiteStatusCd()))
+            .findFirst().orElse(null);
+        if (activeSite == null) {
+            log.warn("[{}] 활성 사이트 없음 — 스킵", batchCode());
+            return;
         }
+        String siteId = activeSite.getSiteId();
+
+        /* ── 1) 휴면 예정 안내 ──────────────────────────────────────── */
+        LocalDateTime dormantWarnThreshold = now.minusDays(DORMANT_WARN_DAYS);
+        LocalDateTime dormantThreshold     = now.minusDays(DORMANT_DAYS);
+        List<MbMember> warnTargets = memberRepository
+            .findDormantWarnTargets(dormantWarnThreshold, dormantThreshold);
+
+        log.info("[{}] 휴면예정 이메일 대상: {}명", batchCode(), warnTargets.size());
+
+        for (MbMember member : warnTargets) {
+            String email = member.getLoginId();
+            if (email == null || email.isBlank()) continue;
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("name",        CmUtil.nvlStr(member.getMemberNm()));
+            params.put("email",       email);
+            params.put("dormantDays", DORMANT_DAYS);
+            params.put("warnDays",    DORMANT_DAYS - DORMANT_WARN_DAYS);
+
+            try {
+                SendResultVo result = cmMsgSendService.sendMailByTemplate(
+                    siteId, email, "DORMANT_WARN_MAIL",
+                    "[ShopJoy] 휴면 계정 전환 예정 안내",
+                    buildDormantWarnContent(member),
+                    "DORMANT_WARN", member.getMemberId(), params
+                );
+
+                if (Boolean.TRUE.equals(result.getSuccess())) {
+                    totalSent++;
+                    log.debug("[{}] 휴면예정 메일 발송 완료 — memberId={}", batchCode(), member.getMemberId());
+                } else {
+                    totalFail++;
+                    log.warn("[{}] 휴면예정 메일 발송 실패 — memberId={}, reason={}",
+                        batchCode(), member.getMemberId(), result.getFailReason());
+                }
+            } catch (Exception e) {
+                totalFail++;
+                log.error("[{}] 휴면예정 메일 발송 오류 — memberId={}", batchCode(), member.getMemberId(), e);
+            }
+        }
+
+        /* ── 2) 추가 발송 시나리오 확장 포인트 ──────────────────────── */
+        // TODO: 주문 7일 경과 리뷰 요청 이메일 (별도 OdOrder 조회 + REVIEW_REQUEST_MAIL 템플릿)
+        // TODO: 쿠폰 만료 D-3 이메일 (PmCouponIssue 조회 + COUPON_EXPIRE_MAIL 템플릿)
 
         log.info("[{}] 이메일 배치 발송 완료 — 성공: {}, 실패: {}", batchCode(), totalSent, totalFail);
     }

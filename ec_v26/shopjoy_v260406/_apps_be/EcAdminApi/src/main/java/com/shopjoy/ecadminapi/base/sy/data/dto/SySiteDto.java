@@ -26,9 +26,10 @@ public class SySiteDto {
     public static class Item {
 
         // ── sy_site ──────────────────────────────────────────
+        private String siteId;
+        private String siteNm;
         private String siteCode;
         private String siteTypeCd;
-        private String siteNm;
         private String siteDomain;
         private String logoUrl;
         private String faviconUrl;

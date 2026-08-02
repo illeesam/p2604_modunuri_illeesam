@@ -47,7 +47,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         Map.entry("memberId", syBbs.memberId),
         Map.entry("parentBbsId", syBbs.parentBbsId),
         Map.entry("pathId", syBbs.pathId),
-        Map.entry("siteId", syBbs.siteId)
     );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -60,7 +59,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         return queryFactory
                 .select(Projections.bean(SyBbsDto.Item.class,
                         syBbs.bbsId,          // 게시물ID (YYMMDDhhmmss+rand4)
-                        syBbs.siteId,         // 사이트ID (sy_site.site_id)
                         syBbs.bbmId,          // 게시판ID
                         syBbs.parentBbsId,    // 부모게시물ID (답글)
                         syBbs.memberId,       // 작성자 회원ID
@@ -78,7 +76,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                         syBbs.regDate,        // 등록일시
                         syBbs.updBy,          // 수정자
                         syBbs.updDate,        // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syBbs)
                 .leftJoin(sySite).on(sySite.siteId.eq(syBbs.siteId));
@@ -100,7 +97,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syBbs.siteId, search.getSiteId()),
                     QdslUtil.strEq(syBbs.bbsId, search.getBbsId()),
                     QdslUtil.strEq(syBbs.bbmId, search.getBbmId()),
                     QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()),
@@ -128,7 +124,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syBbs.siteId, search.getSiteId()),
                 QdslUtil.strEq(syBbs.bbsId, search.getBbsId()),
                 QdslUtil.strEq(syBbs.bbmId, search.getBbmId()),
                 QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()),
@@ -222,7 +217,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         JPAUpdateClause update = queryFactory.update(syBbs);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(syBbs.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getBbmId()        != null) { update.set(syBbs.bbmId,        entity.getBbmId());        hasAny = true; }
         if (entity.getParentBbsId()  != null) { update.set(syBbs.parentBbsId,  entity.getParentBbsId());  hasAny = true; }
         if (entity.getMemberId()     != null) { update.set(syBbs.memberId,     entity.getMemberId());     hasAny = true; }

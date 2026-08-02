@@ -47,7 +47,6 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("grantUserId", syVendorUserRole.grantUserId),
         Map.entry("roleId", syVendorUserRole.roleId),
-        Map.entry("siteId", syVendorUserRole.siteId),
         Map.entry("userId", syVendorUserRole.userId),
         Map.entry("vendorId", syVendorUserRole.vendorId),
         Map.entry("vendorUserRoleId", syVendorUserRole.vendorUserRoleId),

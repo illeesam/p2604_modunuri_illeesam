@@ -42,7 +42,6 @@ public class SyDeptDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
     }
 
     /** 응답 (pageList + 페이징 메타 + 조회조건 echo) */

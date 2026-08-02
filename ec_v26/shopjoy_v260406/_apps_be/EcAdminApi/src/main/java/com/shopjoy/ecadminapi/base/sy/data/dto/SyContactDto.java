@@ -43,7 +43,6 @@ public class SyContactDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
     }
 
 }

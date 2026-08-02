@@ -47,7 +47,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("pathId", syTemplate.pathId),
         Map.entry("sampleParams", syTemplate.sampleParams),
-        Map.entry("siteId", syTemplate.siteId),
         Map.entry("templateCode", syTemplate.templateCode),
         Map.entry("templateContent", syTemplate.templateContent),
         Map.entry("templateId", syTemplate.templateId),
@@ -65,7 +64,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         return queryFactory
                 .select(Projections.bean(SyTemplateDto.Item.class,
                         syTemplate.templateId,                    // 템플릿ID (PK, YYMMDDhhmmss+rand4)
-                        syTemplate.siteId,                        // 사이트ID (sy_site.site_id)
                         syTemplate.templateTypeCd,                 // 템플릿유형 — TEMPLATE_TYPE {EMAIL: '이메일', SMS: 'SMS', KAKAO: '알림톡', PUSH: '푸시'}
                         syTemplate.templateCode,                   // 템플릿코드
                         syTemplate.templateNm,                     // 템플릿명
@@ -78,7 +76,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                         syTemplate.regDate,                        // 등록일시
                         syTemplate.updBy,                          // 수정자
                         syTemplate.updDate,                        // 수정일시
-                        sySite.siteNm.as("siteNm")                 // 사이트명 (조인: sy_site)
                 ))
                 .from(syTemplate)
                 .leftJoin(sySite).on(sySite.siteId.eq(syTemplate.siteId));
@@ -100,7 +97,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         JPAQuery<SyTemplateDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syTemplate.siteId, search.getSiteId()),
                     andPathIdIn(search),
                     QdslUtil.strEq(syTemplate.templateId, search.getTemplateId()),
                     QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()),
@@ -129,7 +125,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syTemplate.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syTemplate.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()),
@@ -215,7 +210,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         JPAUpdateClause update = queryFactory.update(syTemplate);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(syTemplate.siteId,          entity.getSiteId());          hasAny = true; }
         if (entity.getTemplateTypeCd()  != null) { update.set(syTemplate.templateTypeCd,  entity.getTemplateTypeCd());  hasAny = true; }
         if (entity.getTemplateCode()    != null) { update.set(syTemplate.templateCode,    entity.getTemplateCode());    hasAny = true; }
         if (entity.getTemplateNm()      != null) { update.set(syTemplate.templateNm,      entity.getTemplateNm());      hasAny = true; }

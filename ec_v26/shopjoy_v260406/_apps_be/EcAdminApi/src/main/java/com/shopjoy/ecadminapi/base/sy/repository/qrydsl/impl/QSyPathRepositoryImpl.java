@@ -37,7 +37,6 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         Map.entry("pathId", syPath.pathId),
         Map.entry("pathLabel", syPath.pathLabel),
         Map.entry("pathRemark", syPath.pathRemark),
-        Map.entry("siteId", syPath.siteId),
         Map.entry("useYn", syPath.useYn)
     );
 

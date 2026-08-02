@@ -17,7 +17,6 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyDept;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyUserRepository;
 import jakarta.persistence.EntityManager;
@@ -47,7 +46,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyUserRepositoryImpl";
     private static final QSyUser syUser = QSyUser.syUser;
-    private static final QSySite sySite = QSySite.sySite;
     private static final QSyDept syDept = QSyDept.syDept;
     private static final QSyRole syRole = QSyRole.syRole;
     /* 같은 sy_code 테이블이 두 번 조인되므로 역할별 alias 부여 */
@@ -65,7 +63,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         Map.entry("loginPwdHash", syUser.loginPwdHash),
         Map.entry("profileAttachId", syUser.profileAttachId),
         Map.entry("roleId", syUser.roleId),
-        Map.entry("siteId", syUser.siteId),
         Map.entry("userEmail", syUser.userEmail),
         Map.entry("userId", syUser.userId),
         Map.entry("userMemo", syUser.userMemo),
@@ -88,7 +85,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         return queryFactory
                 .select(Projections.bean(SyUserDto.Item.class,
                         syUser.userId,                              // 사용자ID (PK, YYMMDDhhmmss+rand4)
-                        syUser.siteId,                               // 사이트ID (sy_site.site_id)
                         syUser.loginId,                              // 로그인 아이디
                         syUser.loginPwdHash,                         // 비밀번호 (bcrypt)
                         syUser.userNm,                               // 사용자명
@@ -107,14 +103,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                         syUser.authMethodCd,                         // 인증방식 — AUTH_METHOD {EMAIL: '이메일', GOOGLE: '구글', KAKAO: '카카오', NAVER: '네이버'}
                         syUser.lastLoginDate,                        // 마지막 로그인 일시
                         syUser.profileAttachId,                      // 프로필 첨부아이디
-                        sySite.siteNm.as("siteNm"),                  // 사이트명 (조인: sy_site)
                         syDept.deptNm.as("deptNm"),                  // 부서명 (조인: sy_dept)
                         syRole.roleNm.as("roleNm"),                  // 역할명 (조인: sy_role)
                         syCode_userStatusCd.codeLabel.as("userStatusCdNm"),   // 상태 코드명 (조인: sy_code USER_STATUS)
                         syCode_authMethodCd.codeLabel.as("authMethodCdNm")   // 인증방식 코드명 (조인: sy_code AUTH_METHOD)
                 ))
                 .from(syUser)
-                .leftJoin(sySite).on(sySite.siteId.eq(syUser.siteId))
                 .leftJoin(syDept).on(syDept.deptId.eq(syUser.deptId))
                 .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId))
                 .leftJoin(syCode_userStatusCd).on(syCode_userStatusCd.codeGrp.eq("USER_STATUS").and(syCode_userStatusCd.codeValue.eq(syUser.userStatusCd)))
@@ -143,7 +137,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syUser.siteId, search.getSiteId()),
                     andDeptIdIn(search),
                     QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                     QdslUtil.strEq(syRole.roleNm, search.getRole()),
@@ -171,7 +164,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syUser.siteId, search.getSiteId()),
                 andDeptIdIn(search),
                 QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                 QdslUtil.strEq(syRole.roleNm, search.getRole()),
@@ -209,7 +201,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 /* andRoleEq 이 syRole 을 참조하므로 join 필요 (목록/페이징과 동일 필터 집합 유지) */
                 .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId))
                 .where(
-                    QdslUtil.strEq(syUser.siteId, search.getSiteId()),
                     andDeptIdIn(search),
                     QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                     QdslUtil.strEq(syRole.roleNm, search.getRole()),

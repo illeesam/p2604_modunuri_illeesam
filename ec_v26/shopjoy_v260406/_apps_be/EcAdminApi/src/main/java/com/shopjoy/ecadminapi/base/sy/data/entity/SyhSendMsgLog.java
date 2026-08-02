@@ -24,9 +24,6 @@ public class SyhSendMsgLog extends BaseEntity {
     @Column(name = "log_id", length = 21, nullable = false)
     private String logId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("발송채널 (코드: MSG_CHANNEL)")
     @Column(name = "channel_cd", length = 20, nullable = false)

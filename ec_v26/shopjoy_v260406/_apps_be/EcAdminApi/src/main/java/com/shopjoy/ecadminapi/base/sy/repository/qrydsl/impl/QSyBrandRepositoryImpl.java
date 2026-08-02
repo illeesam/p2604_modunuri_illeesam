@@ -52,7 +52,6 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         Map.entry("brandRemark", syBrand.brandRemark),
         Map.entry("logoUrl", syBrand.logoUrl),
         Map.entry("pathId", syBrand.pathId),
-        Map.entry("siteId", syBrand.siteId),
         Map.entry("useYn", syBrand.useYn),
         Map.entry("vendorId", syBrand.vendorId)
     );
@@ -65,7 +64,6 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         return queryFactory
                 .select(Projections.bean(SyBrandDto.Item.class,
                         syBrand.brandId,      // 브랜드ID (YYMMDDhhmmss+rand4)
-                        syBrand.siteId,       // 사이트ID (sy_site.site_id)
                         syBrand.brandCode,    // 브랜드코드
                         syBrand.brandNm,      // 브랜드명 (한글)
                         syBrand.brandEnNm,    // 브랜드영문명
@@ -79,7 +77,6 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                         syBrand.regDate,      // 등록일시
                         syBrand.updBy,        // 수정자
                         syBrand.updDate,      // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syBrand)
                 .leftJoin(sySite).on(sySite.siteId.eq(syBrand.siteId));
@@ -101,7 +98,6 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syBrand.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syBrand.vendorId, search.getVendorId()),
@@ -130,7 +126,6 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syBrand.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syBrand.vendorId, search.getVendorId()),
@@ -221,7 +216,6 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         JPAUpdateClause update = queryFactory.update(syBrand);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(syBrand.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getBrandCode()   != null) { update.set(syBrand.brandCode,   entity.getBrandCode());   hasAny = true; }
         if (entity.getBrandNm()     != null) { update.set(syBrand.brandNm,     entity.getBrandNm());     hasAny = true; }
         if (entity.getBrandEnNm()   != null) { update.set(syBrand.brandEnNm,   entity.getBrandEnNm());   hasAny = true; }

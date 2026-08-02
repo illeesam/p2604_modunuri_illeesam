@@ -34,9 +34,6 @@ public class AccessLogFilter extends OncePerRequestFilter {
     public static final String ATTR_DEPT_ID   = "_authDeptId";
     public static final String ATTR_VENDOR_ID = "_authVendorId";
 
-    /** site_id 는 NOT NULL — X-Site-Id 헤더 미수신 시 대표 사이트로 fallback */
-    private static final String DEFAULT_SITE_ID = "2604010000000001";
-
     /** logId 생성용 타임스탬프 포맷 (yyMMddHHmmss) */
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
@@ -158,10 +155,6 @@ public class AccessLogFilter extends OncePerRequestFilter {
                     String lineNo = request.getHeader("X-Line-No");
                     String traceId = request.getHeader("X-Trace-Id");
 
-                    // site_id 는 NOT NULL — X-Site-Id 헤더값 사용, 없으면 대표 사이트로 fallback
-                    String siteId = request.getHeader("X-Site-Id");
-                    if (siteId == null || siteId.isBlank()) siteId = DEFAULT_SITE_ID;
-
                     SyhAccessLog entry = SyhAccessLog.builder()
                             .logId(generateId())
                             .reqMethod(request.getMethod())
@@ -171,7 +164,6 @@ public class AccessLogFilter extends OncePerRequestFilter {
                             .reqIp(resolveIp(request))
                             .reqUa(truncate(ua, 500))
                             .reqBody(reqWrap != null ? bodyOf(reqWrap.getContentAsByteArray(),  props.getMaxBodySize()) : (isMultipart ? "[multipart/form-data omitted]" : null))
-                            .siteId(siteId)
                             .appTypeCd(appTypeCd)
                             .userId(userId)
                             .roleId(roleId)

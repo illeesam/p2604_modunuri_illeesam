@@ -44,7 +44,6 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("grantUserId", syUserRole.grantUserId),
         Map.entry("roleId", syUserRole.roleId),
-        Map.entry("siteId", syUserRole.siteId),
         Map.entry("userId", syUserRole.userId),
         Map.entry("userRoleId", syUserRole.userRoleId),
         Map.entry("userRoleRemark", syUserRole.userRoleRemark)

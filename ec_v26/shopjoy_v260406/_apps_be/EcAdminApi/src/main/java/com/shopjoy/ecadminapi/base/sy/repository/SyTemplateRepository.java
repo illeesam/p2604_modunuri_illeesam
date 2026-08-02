@@ -9,6 +9,6 @@ import java.util.Optional;
 
 public interface SyTemplateRepository extends JpaRepository<SyTemplate, String>, QSyTemplateRepository {
 
-    /** 사이트 + 템플릿코드 + 사용여부(Y) 로 단건 조회 (발송용). 동일 코드 다건이면 첫 건. */
-    Optional<SyTemplate> findFirstBySiteIdAndTemplateCodeAndUseYn(String siteId, String templateCode, String useYn);
+    /** 템플릿코드 + 사용여부(Y) 로 단건 조회 (발송용). 동일 코드 다건이면 첫 건. */
+    Optional<SyTemplate> findFirstByTemplateCodeAndUseYn(String templateCode, String useYn);
 }

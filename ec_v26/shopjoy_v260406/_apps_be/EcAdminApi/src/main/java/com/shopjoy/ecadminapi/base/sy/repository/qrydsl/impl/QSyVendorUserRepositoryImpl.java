@@ -15,7 +15,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorUserDto;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendorUser;
@@ -37,7 +36,6 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorUserRepositoryImpl";
     private static final QSyVendorUser syVendorUser = QSyVendorUser.syVendorUser;
-    private static final QSySite sySite = QSySite.sySite;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QVwSyCode cdP = new QVwSyCode("cd_p");
@@ -51,7 +49,6 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         Map.entry("isMain", syVendorUser.isMain),
         Map.entry("memberNm", syVendorUser.memberNm),
         Map.entry("positionCd", syVendorUser.positionCd),
-        Map.entry("siteId", syVendorUser.siteId),
         Map.entry("userId", syVendorUser.userId),
         Map.entry("vendorId", syVendorUser.vendorId),
         Map.entry("vendorUserDeptNm", syVendorUser.vendorUserDeptNm),
@@ -95,7 +92,6 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                         syVendor.vendorNm.as("vendorNm")           // 업체명 (조인: sy_vendor)
                 ))
                 .from(syVendorUser)
-                .leftJoin(sySite).on(sySite.siteId.eq(syVendorUser.siteId))
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorUser.vendorId))
                 .leftJoin(syUser).on(syUser.userId.eq(syVendorUser.userId))
                 .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION").and(cdP.codeValue.eq(syVendorUser.positionCd)))
@@ -118,7 +114,6 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorUserDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syVendorUser.siteId, search.getSiteId()),
                 QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId()),
                 QdslUtil.strEq(syVendorUser.userId, search.getUserId()),
                 QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId()),
@@ -147,7 +142,6 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syVendorUser.siteId, search.getSiteId()),
                 QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId()),
                 QdslUtil.strEq(syVendorUser.userId, search.getUserId()),
                 QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId()),
@@ -226,7 +220,6 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         JPAUpdateClause update = queryFactory.update(syVendorUser);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(syVendorUser.siteId,             entity.getSiteId());             hasAny = true; }
         if (entity.getVendorId()           != null) { update.set(syVendorUser.vendorId,           entity.getVendorId());           hasAny = true; }
         if (entity.getUserId()             != null) { update.set(syVendorUser.userId,             entity.getUserId());             hasAny = true; }
         if (entity.getMemberNm()           != null) { update.set(syVendorUser.memberNm,           entity.getMemberNm());           hasAny = true; }

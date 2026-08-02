@@ -25,8 +25,6 @@ public class VwSyAttach {
     @Column(name = "attach_id", length = 21, nullable = false)
     private String attachId;
 
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Column(name = "attach_grp_id", length = 21, nullable = false)
     private String attachGrpId;

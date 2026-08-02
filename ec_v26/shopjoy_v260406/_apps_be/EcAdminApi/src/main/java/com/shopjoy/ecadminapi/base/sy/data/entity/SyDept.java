@@ -22,9 +22,6 @@ public class SyDept extends BaseEntity {
     @Column(name = "dept_id", length = 21, nullable = false)
     private String deptId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("부서코드")
     @Column(name = "dept_code", length = 50, nullable = false)

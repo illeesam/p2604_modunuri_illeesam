@@ -3,8 +3,6 @@ package com.shopjoy.ecadminapi.sch.handler;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.MbMemberRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
-import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -45,7 +43,6 @@ public class MbDormantJob implements SchBatchJobHandler {
     /* 1년(365일) 미로그인 시 휴면 전환 */
     private static final int DORMANT_DAYS = 365;
 
-    private final SySiteRepository   siteRepository;
     private final MbMemberRepository memberRepository;
 
     @Override
@@ -61,32 +58,19 @@ public class MbDormantJob implements SchBatchJobHandler {
 
         log.info("[{}] 회원 휴면 전환 배치 시작 — 기준: {} 이전 미로그인", batchCode(), threshold.toLocalDate());
 
+        // site_id 제거 후 전사 단일 처리
+        List<MbMember> targets = memberRepository.findDormantTargets(threshold);
         int totalConverted = 0;
-
-        for (SySite site : siteRepository.findAll()) {
-            if (!"ACTIVE".equals(site.getSiteStatusCd())) continue;
-
-            String siteId = site.getSiteId();
-
-            List<MbMember> targets = memberRepository.findDormantTargets(threshold);
-            if (targets.isEmpty()) continue;
-
-            int converted = 0;
-            for (MbMember m : targets) {
-                try {
-                    m.setMemberStatusCdBefore(m.getMemberStatusCd());
-                    m.setMemberStatusCd("DORMANT");
-                    m.setUpdDate(now);
-                    memberRepository.save(m);
-                    converted++;
-                } catch (Exception e) {
-                    log.error("[{}] siteId={} memberId={} 휴면 전환 실패",
-                        batchCode(), siteId, m.getMemberId(), e);
-                }
+        for (MbMember m : targets) {
+            try {
+                m.setMemberStatusCdBefore(m.getMemberStatusCd());
+                m.setMemberStatusCd("DORMANT");
+                m.setUpdDate(now);
+                memberRepository.save(m);
+                totalConverted++;
+            } catch (Exception e) {
+                log.error("[{}] memberId={} 휴면 전환 실패", batchCode(), m.getMemberId(), e);
             }
-
-            totalConverted += converted;
-            log.info("[{}] siteId={} 휴면 전환 완료 — {}건", batchCode(), siteId, converted);
         }
 
         log.info("[{}] 회원 휴면 전환 배치 완료 — 총 {}건 전환", batchCode(), totalConverted);

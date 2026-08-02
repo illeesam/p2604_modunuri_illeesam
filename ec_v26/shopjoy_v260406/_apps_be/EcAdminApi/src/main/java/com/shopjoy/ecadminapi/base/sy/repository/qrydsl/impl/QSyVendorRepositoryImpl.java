@@ -16,7 +16,6 @@ import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyVendorRepository;
@@ -41,7 +40,6 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorRepositoryImpl";
     private static final QSyVendor syVendor = QSyVendor.syVendor;
-    private static final QSySite sySite = QSySite.sySite;
     private static final QVwSyCode cdVc = new QVwSyCode("cd_vc");
     private static final QVwSyCode cdVs = new QVwSyCode("cd_vs");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
@@ -52,7 +50,6 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         Map.entry("ceoNm", syVendor.ceoNm),
         Map.entry("corpNo", syVendor.corpNo),
         Map.entry("pathId", syVendor.pathId),
-        Map.entry("siteId", syVendor.siteId),
         Map.entry("vendorAddr", syVendor.vendorAddr),
         Map.entry("vendorAddrDetail", syVendor.vendorAddrDetail),
         Map.entry("vendorBankAccount", syVendor.vendorBankAccount),
@@ -85,7 +82,6 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         return queryFactory
                 .select(Projections.bean(SyVendorDto.Item.class,
                         syVendor.vendorId,                    // 판매/배송업체ID (PK, YYMMDDhhmmss+rand4)
-                        syVendor.siteId,                      // 사이트ID (sy_site.site_id)
                         syVendor.vendorNo,                    // 판매/배송업체등록번호
                         syVendor.corpNo,                      // 법인등록번호 (선택)
                         syVendor.vendorNm,                    // 상호 / 회사명
@@ -114,10 +110,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                         syVendor.regDate,                     // 등록일시
                         syVendor.updBy,                       // 수정자
                         syVendor.updDate,                     // 수정일시
-                        sySite.siteNm.as("siteNm")            // 사이트명 (조인: sy_site)
                 ))
                 .from(syVendor)
-                .leftJoin(sySite).on(sySite.siteId.eq(syVendor.siteId))
                 .leftJoin(cdVc).on(cdVc.codeGrp.eq("VENDOR_CLASS").and(cdVc.codeValue.eq(syVendor.vendorClassCd)))
                 .leftJoin(cdVs).on(cdVs.codeGrp.eq("VENDOR_STATUS").and(cdVs.codeValue.eq(syVendor.vendorStatusCd)));
     }
@@ -138,7 +132,6 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syVendor.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syVendor.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()),
@@ -168,7 +161,6 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syVendor.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(syVendor.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()),
@@ -255,7 +247,6 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         JPAUpdateClause update = queryFactory.update(syVendor);
         boolean hasAny = false;
 
-        if (entity.getSiteId()            != null) { update.set(syVendor.siteId,            entity.getSiteId());            hasAny = true; }
         if (entity.getVendorNo()          != null) { update.set(syVendor.vendorNo,          entity.getVendorNo());          hasAny = true; }
         if (entity.getCorpNo()            != null) { update.set(syVendor.corpNo,            entity.getCorpNo());            hasAny = true; }
         if (entity.getVendorNm()          != null) { update.set(syVendor.vendorNm,          entity.getVendorNm());          hasAny = true; }

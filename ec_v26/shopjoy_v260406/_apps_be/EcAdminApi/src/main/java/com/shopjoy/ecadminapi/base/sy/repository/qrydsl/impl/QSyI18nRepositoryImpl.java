@@ -39,7 +39,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         Map.entry("i18nId", syI18n.i18nId),
         Map.entry("i18nKey", syI18n.i18nKey),
         Map.entry("i18nScopeCd", syI18n.i18nScopeCd),
-        Map.entry("siteId", syI18n.siteId),
         Map.entry("useYn", syI18n.useYn)
     );
 
@@ -52,7 +51,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         return queryFactory
                 .select(Projections.bean(SyI18nDto.Item.class,
                         syI18n.i18nId,         // 다국어ID (YYMMDDhhmmss+rand4)
-                        syI18n.siteId,         // 사이트ID (sy_site.site_id, NULL=전체 공용)
                         syI18n.i18nKey,        // 다국어 키 (예: common.bt.save, error.FORBIDDEN)
                         syI18n.i18nDesc,       // 키 설명 (번역자 참고용)
                         syI18n.i18nScopeCd,    // 적용범위 — I18N_SCOPE {FO: '프론트', BO: '관리자', COMMON: '공통'}
@@ -63,7 +61,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                         syI18n.regDate,        // 등록일시
                         syI18n.updBy,          // 수정자
                         syI18n.updDate,        // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
                 ))
                 .from(syI18n)
                 .leftJoin(sySite).on(sySite.siteId.eq(syI18n.siteId));
@@ -85,7 +82,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(syI18n.siteId, search.getSiteId()),
                     QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
                     QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
                     QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
@@ -112,7 +108,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syI18n.siteId, search.getSiteId()),
                 QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
                 QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
                 QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
@@ -191,7 +186,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         JPAUpdateClause update = queryFactory.update(syI18n);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(syI18n.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getI18nKey()      != null) { update.set(syI18n.i18nKey,      entity.getI18nKey());      hasAny = true; }
         if (entity.getI18nDesc()     != null) { update.set(syI18n.i18nDesc,     entity.getI18nDesc());     hasAny = true; }
         if (entity.getI18nScopeCd()  != null) { update.set(syI18n.i18nScopeCd,  entity.getI18nScopeCd());  hasAny = true; }

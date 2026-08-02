@@ -23,9 +23,6 @@ public class SyBbm extends BaseEntity {
     @Column(name = "bbm_id", length = 21, nullable = false)
     private String bbmId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("게시판코드")
     @Column(name = "bbm_code", length = 50, nullable = false)

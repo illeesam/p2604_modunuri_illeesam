@@ -24,9 +24,6 @@ public class SyhSendEmailLog extends BaseEntity {
     @Column(name = "log_id", length = 21, nullable = false)
     private String logId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("템플릿ID (sy_template.template_id)")
     @Column(name = "template_id", length = 21)

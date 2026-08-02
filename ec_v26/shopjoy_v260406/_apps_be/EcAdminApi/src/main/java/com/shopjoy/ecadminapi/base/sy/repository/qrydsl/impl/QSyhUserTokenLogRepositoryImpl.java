@@ -55,7 +55,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         Map.entry("prevToken", syhUserTokenLog.prevToken),
         Map.entry("refreshToken", syhUserTokenLog.refreshToken),
         Map.entry("revokeReason", syhUserTokenLog.revokeReason),
-        Map.entry("siteId", syhUserTokenLog.siteId),
         Map.entry("tokenTypeCd", syhUserTokenLog.tokenTypeCd),
         Map.entry("uiNm", syhUserTokenLog.uiNm),
         Map.entry("userId", syhUserTokenLog.userId)
@@ -70,7 +69,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         return queryFactory
                 .select(Projections.bean(SyhUserTokenLogDto.Item.class,
                         syhUserTokenLog.logId,              // 로그ID (PK, YYMMDDhhmmss+rand4)
-                        syhUserTokenLog.siteId,              // 사이트ID (sy_site.site_id)
                         syhUserTokenLog.userId,               // 사용자ID (sy_user.user_id)
                         syhUserTokenLog.loginLogId,           // 최초 로그인 로그ID (sy_user_login_log.log_id)
                         syhUserTokenLog.actionCd,             // 토큰 액션 — TOKEN_ACTION {ISSUE: '발급', REFRESH: '갱신', EXPIRE: '만료', REVOKE: '강제폐기'}
@@ -89,13 +87,11 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                         syhUserTokenLog.regDate,              // 등록일시
                         syhUserTokenLog.updBy,                // 수정자
                         syhUserTokenLog.updDate,              // 수정일시
-                        sySite.siteNm.as("siteNm"),                    // 사이트명 (조인: sy_site)
                         syUser.userNm.as("userNm"),                    // 사용자명 (조인: sy_user)
                         cd_ta.codeLabel.as("actionCdNm"),               // 토큰액션 코드명 (조인: sy_code TOKEN_ACTION)
                         cd_tt.codeLabel.as("tokenTypeCdNm")             // 토큰유형 코드명 (조인: sy_code TOKEN_TYPE)
                 ))
                 .from(syhUserTokenLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhUserTokenLog.siteId))
                 .leftJoin(syUser).on(syUser.userId.eq(syhUserTokenLog.userId))
                 .leftJoin(cd_ta).on(cd_ta.codeGrp.eq("TOKEN_ACTION").and(cd_ta.codeValue.eq(syhUserTokenLog.actionCd)))
                 .leftJoin(cd_tt).on(cd_tt.codeGrp.eq("TOKEN_TYPE").and(cd_tt.codeValue.eq(syhUserTokenLog.tokenTypeCd)));
@@ -118,7 +114,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
 
         JPAQuery<SyhUserTokenLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syhUserTokenLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
@@ -147,7 +142,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhUserTokenLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
@@ -224,7 +218,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         JPAUpdateClause update = queryFactory.update(syhUserTokenLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(syhUserTokenLog.siteId,         entity.getSiteId());         hasAny = true; }
         if (entity.getUserId()         != null) { update.set(syhUserTokenLog.userId,         entity.getUserId());         hasAny = true; }
         if (entity.getLoginLogId()     != null) { update.set(syhUserTokenLog.loginLogId,     entity.getLoginLogId());     hasAny = true; }
         if (entity.getActionCd()       != null) { update.set(syhUserTokenLog.actionCd,       entity.getActionCd());       hasAny = true; }

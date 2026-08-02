@@ -66,7 +66,6 @@ public class SyhAccessErrorLogDto {
         private String regSiteId;
 
         // ── 조인 파생 (코드명/연관명) — 단건 상세조회(selectById)에서만 채워짐 ──
-        private String siteNm;
         private String appTypeCdNm;
         private String userNm;
         private String roleNm;

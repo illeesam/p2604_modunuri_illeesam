@@ -22,9 +22,6 @@ public class SyRole extends BaseEntity {
     @Column(name = "role_id", length = 21, nullable = false)
     private String roleId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("역할코드")
     @Column(name = "role_code", length = 50, nullable = false)

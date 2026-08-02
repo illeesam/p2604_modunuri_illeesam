@@ -49,7 +49,6 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         Map.entry("detail", syhBatchLog.detail),
         Map.entry("message", syhBatchLog.message),
         Map.entry("runStatus", syhBatchLog.runStatus),
-        Map.entry("siteId", syhBatchLog.siteId)
     );
 
     /*
@@ -61,7 +60,6 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         return queryFactory
                 .select(Projections.bean(SyhBatchLogDto.Item.class,
                         syhBatchLog.batchLogId,   // 로그ID (PK, YYMMDDhhmmss+rand4)
-                        syhBatchLog.siteId,       // 사이트ID (sy_site.site_id)
                         syhBatchLog.batchId,      // 배치ID
                         syhBatchLog.batchCode,    // 배치코드
                         syhBatchLog.batchNm,      // 배치명
@@ -77,11 +75,9 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                         syhBatchLog.regDate,      // 등록일시
                         syhBatchLog.updBy,        // 수정자
                         syhBatchLog.updDate,      // 수정일시
-                        sySite.siteNm.as("siteNm"),        // 사이트명 (조인: sy_site)
                         cd_bs.codeLabel.as("runStatusNm")  // 실행결과 코드명 (조인: sy_code BATCH_STATUS)
                 ))
                 .from(syhBatchLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhBatchLog.siteId))
                 .leftJoin(cd_bs).on(cd_bs.codeGrp.eq("BATCH_STATUS").and(cd_bs.codeValue.eq(syhBatchLog.runStatus)));
     }
 
@@ -102,7 +98,6 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
         JPAQuery<SyhBatchLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syhBatchLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -128,7 +123,6 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhBatchLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -204,7 +198,6 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         JPAUpdateClause update = queryFactory.update(syhBatchLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(syhBatchLog.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getBatchId()    != null) { update.set(syhBatchLog.batchId,    entity.getBatchId());    hasAny = true; }
         if (entity.getBatchCode()  != null) { update.set(syhBatchLog.batchCode,  entity.getBatchCode());  hasAny = true; }
         if (entity.getBatchNm()    != null) { update.set(syhBatchLog.batchNm,    entity.getBatchNm());    hasAny = true; }

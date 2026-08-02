@@ -40,7 +40,6 @@ public class SyTemplateDto {
         private String pathId;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
     }
 
 }

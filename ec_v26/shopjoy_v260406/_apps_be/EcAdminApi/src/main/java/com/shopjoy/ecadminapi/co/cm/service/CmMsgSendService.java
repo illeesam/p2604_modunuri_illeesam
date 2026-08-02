@@ -36,8 +36,6 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class CmMsgSendService {
 
-    private static final String DEFAULT_SITE_ID = "2604010000000001";
-
     private final SyTemplateRepository syTemplateRepository;
     private final CmMailSendService  cmMailSendService;
     private final CmKakaoSendService cmKakaoSendService;
@@ -72,7 +70,7 @@ public class CmMsgSendService {
      * 고객센터 문의 접수 완료 알림을 3개 채널(메일/카카오/시스템알림)로 **동기** 발송한다.
      * 결과를 즉시 확인해야 하는 컨트롤러/테스트용. 일반 업무 흐름은 {@link #sendContactReceivedAsync} 사용.
      *
-     * @param siteId      사이트ID (null 이면 대표 사이트)
+     * @param siteId      (예약됨 — 현재 미사용)
      * @param blogId      문의 글ID (cm_blog.blog_id) — 이력 ref_id 로 기록
      * @param name        문의자 이름
      * @param email       문의자 이메일 (메일 수신처)
@@ -83,7 +81,6 @@ public class CmMsgSendService {
     @Transactional
     public List<SendResultVo> sendContactReceived(String siteId, String blogId, String name,
                                                   String email, String tel, String inquiryType) {
-        String sid = nzSite(siteId);
         Map<String, Object> params = Map.of(
             "name",        CmUtil.nvlStr(name),
             "inquiryType", CmUtil.nvlStr(inquiryType),
@@ -93,27 +90,27 @@ public class CmMsgSendService {
         List<SendResultVo> results = new ArrayList<>();
 
         // 1) 메일
-        Tpl mail = resolve(sid, "CONTACT_RECEIVED_MAIL", params);
+        Tpl mail = resolve("CONTACT_RECEIVED_MAIL", params);
         String mailSubject = mail.subject != null ? mail.subject : "[ShopJoy] 문의가 정상 접수되었습니다.";
         String mailContent = mail.content != null ? mail.content
             : ("안녕하세요 " + CmUtil.nvlStr(name) + "님,\n\n문의가 정상적으로 접수되었습니다. 빠르게 답변드리겠습니다.\n\n- ShopJoy 고객센터");
-        results.add(cmMailSendService.sendMail(sid, email, mailSubject, mailContent,
+        results.add(cmMailSendService.sendMail(siteId, email, mailSubject, mailContent,
             mail.templateId, "CONTACT_RECEIVED_MAIL", "CONTACT", blogId, params));
 
         // 2) 카카오 알림톡
-        Tpl kakao = resolve(sid, "CONTACT_RECEIVED_KAKAO", params);
+        Tpl kakao = resolve("CONTACT_RECEIVED_KAKAO", params);
         String kakaoContent = kakao.content != null ? kakao.content
             : ("[ShopJoy] " + CmUtil.nvlStr(name) + "님, 문의가 정상 접수되었습니다.");
-        results.add(cmKakaoSendService.sendKakao(sid, tel, kakaoContent,
+        results.add(cmKakaoSendService.sendKakao(siteId, tel, kakaoContent,
             kakao.templateCode != null ? kakao.templateCode : "CONTACT_RECEIVED_KAKAO",
             kakao.templateId, "CONTACT_RECEIVED_KAKAO", "CONTACT", blogId, params));
 
         // 3) 시스템 알림
-        Tpl alarm = resolve(sid, "CONTACT_RECEIVED_ALARM", params);
+        Tpl alarm = resolve("CONTACT_RECEIVED_ALARM", params);
         String alarmTitle = alarm.subject != null ? alarm.subject : "신규 문의 접수";
         String alarmMsg   = alarm.content != null ? alarm.content
             : (CmUtil.nvlStr(name) + "님이 문의를 접수했습니다. (" + CmUtil.nvlStr(inquiryType) + ")");
-        results.add(cmAlarmSendService.sendSystemAlarm(sid, alarmTitle, alarmMsg, "CONTACT",
+        results.add(cmAlarmSendService.sendSystemAlarm(siteId, alarmTitle, alarmMsg, "CONTACT",
             null, email, alarm.templateId, blogId, params));
 
         return results;
@@ -128,9 +125,8 @@ public class CmMsgSendService {
     public SendResultVo sendMailByTemplate(String siteId, String toAddr, String templateCode,
                                            String fallbackSubject, String fallbackContent,
                                            String refTypeCd, String refId, Map<String, Object> params) {
-        String sid = nzSite(siteId);
-        Tpl t = resolve(sid, templateCode, params);
-        return cmMailSendService.sendMail(sid, toAddr,
+        Tpl t = resolve(templateCode, params);
+        return cmMailSendService.sendMail(siteId, toAddr,
             t.subject != null ? t.subject : fallbackSubject,
             t.content != null ? t.content : fallbackContent,
             t.templateId, templateCode, refTypeCd, refId, params);
@@ -141,9 +137,8 @@ public class CmMsgSendService {
     public SendResultVo sendKakaoByTemplate(String siteId, String recvPhone, String templateCode,
                                             String fallbackContent, String refTypeCd, String refId,
                                             Map<String, Object> params) {
-        String sid = nzSite(siteId);
-        Tpl t = resolve(sid, templateCode, params);
-        return cmKakaoSendService.sendKakao(sid, recvPhone,
+        Tpl t = resolve(templateCode, params);
+        return cmKakaoSendService.sendKakao(siteId, recvPhone,
             t.content != null ? t.content : fallbackContent,
             templateCode, t.templateId, templateCode, refTypeCd, refId, params);
     }
@@ -153,9 +148,8 @@ public class CmMsgSendService {
     public SendResultVo sendSmsByTemplate(String siteId, String recvPhone, String senderPhone, String title,
                                           String templateCode, String fallbackContent, String refTypeCd,
                                           String refId, Map<String, Object> params) {
-        String sid = nzSite(siteId);
-        Tpl t = resolve(sid, templateCode, params);
-        return cmSmsSendService.sendSms(sid, recvPhone, senderPhone, title,
+        Tpl t = resolve(templateCode, params);
+        return cmSmsSendService.sendSms(siteId, recvPhone, senderPhone, title,
             t.content != null ? t.content : fallbackContent,
             t.templateId, templateCode, refTypeCd, refId, params);
     }
@@ -164,7 +158,7 @@ public class CmMsgSendService {
     @Transactional
     public SendResultVo sendSystemAlarm(String siteId, String title, String msg, String alarmTypeCd,
                                         String memberId, String sendTo, String refId, Map<String, Object> params) {
-        return cmAlarmSendService.sendSystemAlarm(nzSite(siteId), title, msg, alarmTypeCd, memberId, sendTo, null, refId, params);
+        return cmAlarmSendService.sendSystemAlarm(siteId, title, msg, alarmTypeCd, memberId, sendTo, null, refId, params);
     }
 
     /* ─────────────────────────────────────────────────────────────
@@ -179,13 +173,13 @@ public class CmMsgSendService {
         String content;   // 치환 완료 (없으면 null)
     }
 
-    /** 사이트+코드로 사용중(Y) 템플릿 조회 후 파라미터 치환. 없으면 빈 Tpl(모두 null). */
-    private Tpl resolve(String siteId, String templateCode, Map<String, Object> params) {
+    /** 코드로 사용중(Y) 템플릿 조회 후 파라미터 치환. 없으면 빈 Tpl(모두 null). */
+    private Tpl resolve(String templateCode, Map<String, Object> params) {
         Tpl t = new Tpl();
         t.templateCode = templateCode;
         try {
             SyTemplate tpl = syTemplateRepository
-                .findFirstBySiteIdAndTemplateCodeAndUseYn(siteId, templateCode, "Y").orElse(null);
+                .findFirstByTemplateCodeAndUseYn(templateCode, "Y").orElse(null);
             if (tpl != null) {
                 t.templateId = tpl.getTemplateId();
                 t.subject = tpl.getTemplateSubject() != null ? CmUtil.fillTemplate(tpl.getTemplateSubject(), params) : null;
@@ -195,10 +189,5 @@ public class CmMsgSendService {
             log.warn("[CmMsgSend] 템플릿 조회 실패 (code={}): {}", templateCode, e.getMessage());
         }
         return t;
-    }
-
-
-    private static String nzSite(String siteId) {
-        return (siteId == null || siteId.isBlank()) ? DEFAULT_SITE_ID : siteId;
     }
 }

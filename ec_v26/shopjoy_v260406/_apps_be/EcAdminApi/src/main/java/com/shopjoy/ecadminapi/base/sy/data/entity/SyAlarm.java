@@ -24,9 +24,6 @@ public class SyAlarm extends BaseEntity {
     @Column(name = "alarm_id", length = 21, nullable = false)
     private String alarmId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("알림제목")
     @Column(name = "alarm_title", length = 200, nullable = false)

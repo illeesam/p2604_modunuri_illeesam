@@ -25,8 +25,6 @@ public class VwSyRoleMenu {
     @Column(name = "role_menu_id", length = 21, nullable = false)
     private String roleMenuId;
 
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Column(name = "role_id", length = 21, nullable = false)
     private String roleId;

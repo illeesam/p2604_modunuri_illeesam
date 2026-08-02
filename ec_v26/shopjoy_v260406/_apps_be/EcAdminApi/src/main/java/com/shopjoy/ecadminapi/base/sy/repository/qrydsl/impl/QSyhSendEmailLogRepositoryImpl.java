@@ -58,7 +58,6 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         Map.entry("refId", syhSendEmailLog.refId),
         Map.entry("refTypeCd", syhSendEmailLog.refTypeCd),
         Map.entry("resultCd", syhSendEmailLog.resultCd),
-        Map.entry("siteId", syhSendEmailLog.siteId),
         Map.entry("subject", syhSendEmailLog.subject),
         Map.entry("templateCode", syhSendEmailLog.templateCode),
         Map.entry("templateId", syhSendEmailLog.templateId),
@@ -75,7 +74,6 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         return queryFactory
                 .select(Projections.bean(SyhSendEmailLogDto.Item.class,
                         syhSendEmailLog.logId,           // 로그ID (PK, YYMMDDhhmmss+rand4)
-                        syhSendEmailLog.siteId,          // 사이트ID (sy_site.site_id)
                         syhSendEmailLog.templateId,      // 템플릿ID (sy_template.template_id)
                         syhSendEmailLog.templateCode,    // 템플릿코드 스냅샷
                         syhSendEmailLog.memberId,        // 대상 회원ID (ec_member.member_id, 비회원 NULL)
@@ -96,13 +94,11 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                         syhSendEmailLog.regDate,         // 등록일시
                         syhSendEmailLog.updBy,           // 수정자
                         syhSendEmailLog.updDate,         // 수정일시
-                        sySite.siteNm.as("siteNm"),                  // 사이트명 (조인: sy_site)
                         syTemplate.templateNm.as("templateNm"),      // 템플릿명 (조인: sy_template)
                         syUser.userNm.as("userNm"),                  // 관리자명 (조인: sy_user)
                         cd_sr.codeLabel.as("resultCdNm")              // 발송결과 코드명 (조인: sy_code SEND_RESULT)
                 ))
                 .from(syhSendEmailLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhSendEmailLog.siteId))
                 .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendEmailLog.templateId))
                 .leftJoin(syUser).on(syUser.userId.eq(syhSendEmailLog.userId))
                 .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendEmailLog.resultCd)));
@@ -125,7 +121,6 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
         JPAQuery<SyhSendEmailLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syhSendEmailLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()),
@@ -154,7 +149,6 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhSendEmailLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhSendEmailLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhSendEmailLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()),
@@ -229,7 +223,6 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         JPAUpdateClause update = queryFactory.update(syhSendEmailLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(syhSendEmailLog.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getTemplateId()   != null) { update.set(syhSendEmailLog.templateId,   entity.getTemplateId());   hasAny = true; }
         if (entity.getTemplateCode() != null) { update.set(syhSendEmailLog.templateCode, entity.getTemplateCode()); hasAny = true; }
         if (entity.getMemberId()     != null) { update.set(syhSendEmailLog.memberId,     entity.getMemberId());     hasAny = true; }

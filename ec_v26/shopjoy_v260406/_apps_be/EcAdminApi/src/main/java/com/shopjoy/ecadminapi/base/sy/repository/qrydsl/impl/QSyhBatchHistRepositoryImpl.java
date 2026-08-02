@@ -46,7 +46,6 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         Map.entry("detail", syhBatchHist.detail),
         Map.entry("message", syhBatchHist.message),
         Map.entry("runStatus", syhBatchHist.runStatus),
-        Map.entry("siteId", syhBatchHist.siteId)
     );
 
     /*
@@ -58,7 +57,6 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         return queryFactory
                 .select(Projections.bean(SyhBatchHistDto.Item.class,
                         syhBatchHist.batchHistId,   // 이력ID (PK)
-                        syhBatchHist.siteId,        // 사이트ID (sy_site.site_id)
                         syhBatchHist.batchId,       // 배치ID
                         syhBatchHist.batchCode,     // 배치코드
                         syhBatchHist.batchNm,       // 배치명
@@ -74,7 +72,6 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
                         syhBatchHist.regDate,       // 등록일시
                         syhBatchHist.updBy,         // 수정자
                         syhBatchHist.updDate,       // 수정일시
-                        sySite.siteNm.as("siteNm")  // 사이트명 (조인: sy_site)
                 ))
                 .from(syhBatchHist)
                 .leftJoin(sySite).on(sySite.siteId.eq(syhBatchHist.siteId));
@@ -97,7 +94,6 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
 
         JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syhBatchHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhBatchHist.batchHistId, search.getBatchHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -123,7 +119,6 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhBatchHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(syhBatchHist.batchHistId, search.getBatchHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -199,7 +194,6 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         JPAUpdateClause update = queryFactory.update(syhBatchHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(syhBatchHist.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getBatchId()    != null) { update.set(syhBatchHist.batchId,    entity.getBatchId());    hasAny = true; }
         if (entity.getBatchCode()  != null) { update.set(syhBatchHist.batchCode,  entity.getBatchCode());  hasAny = true; }
         if (entity.getBatchNm()    != null) { update.set(syhBatchHist.batchNm,    entity.getBatchNm());    hasAny = true; }

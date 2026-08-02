@@ -44,7 +44,6 @@ public class SyBrandDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteNm;
         private String vendorNm;
     }
 

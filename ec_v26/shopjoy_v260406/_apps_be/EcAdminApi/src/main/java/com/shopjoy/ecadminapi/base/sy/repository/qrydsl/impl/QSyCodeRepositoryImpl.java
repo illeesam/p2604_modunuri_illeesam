@@ -48,7 +48,6 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         Map.entry("codeRemark", syCode.codeRemark),
         Map.entry("codeValue", syCode.codeValue),
         Map.entry("parentCodeValue", syCode.parentCodeValue),
-        Map.entry("siteId", syCode.siteId),
         Map.entry("useYn", syCode.useYn)
     );
 
@@ -78,7 +77,6 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                         syCode.regDate,                       // 등록일시
                         syCode.updBy,                         // 수정자
                         syCode.updDate,                       // 수정일시
-                        sySite.siteNm.as("siteNm")            // 사이트명 (sy_site 조인)
                 ))
                 .from(syCode)
                 .leftJoin(syCodeGrp).on(syCodeGrp.codeGrpId.eq(syCode.codeGrpId))
@@ -101,7 +99,6 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyCodeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syCode.siteId, search.getSiteId()),
                 QdslUtil.strEq(syCode.codeId, search.getCodeId()),
                 QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
                 andCodeGrpIn(search),
@@ -132,7 +129,6 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syCode.siteId, search.getSiteId()),
                 QdslUtil.strEq(syCode.codeId, search.getCodeId()),
                 QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
                 andCodeGrpIn(search),
@@ -216,7 +212,6 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         JPAUpdateClause update = queryFactory.update(syCode);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(syCode.siteId,          entity.getSiteId());          hasAny = true; }
         if (entity.getCodeGrpId()       != null) { update.set(syCode.codeGrpId,       entity.getCodeGrpId());       hasAny = true; }
         if (entity.getCodeValue()       != null) { update.set(syCode.codeValue,       entity.getCodeValue());       hasAny = true; }
         if (entity.getCodeLabel()       != null) { update.set(syCode.codeLabel,       entity.getCodeLabel());       hasAny = true; }
