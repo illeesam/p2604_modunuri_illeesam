@@ -19,7 +19,6 @@ public class OdRefundDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String refundId;
-        private String siteId;
         private String orderId;
         private String claimId;
         private String refundTypeCd;
@@ -38,6 +37,7 @@ public class OdRefundDto {
         private String memo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

@@ -28,6 +28,7 @@ public class CmBlogFileDto {
         private Integer sortOrd;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

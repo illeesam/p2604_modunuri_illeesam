@@ -46,7 +46,6 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         Map.entry("blogTitle", cmBlog.blogTitle),
         Map.entry("isNotice", cmBlog.isNotice),
         Map.entry("prodId", cmBlog.prodId),
-        Map.entry("siteId", cmBlog.siteId),
         Map.entry("useYn", cmBlog.useYn)
     );
 
@@ -60,7 +59,6 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         return queryFactory
                 .select(Projections.bean(CmBlogDto.Item.class,
                         cmBlog.blogId,       // 블로그ID (PK)
-                        cmBlog.siteId,       // 사이트ID (sy_site.site_id)
                         cmBlog.blogCateId,   // 블로그카테고리ID (cm_blog_cate.blog_cate_id)
                         cmBlog.blogTypeCd,   // 게시글 구분 — BLOG_TYPE_CD {NEWS: '뉴스', BLOG: '블로그'}
                         cmBlog.blogTitle,    // 제목
@@ -95,7 +93,6 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmBlogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(cmBlog.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmBlog.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd()),
                 QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId()),
@@ -125,7 +122,6 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmBlog.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmBlog.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlog.blogTypeCd, search.getBlogTypeCd()),
                 QdslUtil.strEq(cmBlog.blogCateId, search.getBlogCateId()),
@@ -206,7 +202,6 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         JPAUpdateClause update = queryFactory.update(cmBlog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(cmBlog.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getBlogCateId()  != null) { update.set(cmBlog.blogCateId,  entity.getBlogCateId());  hasAny = true; }
         if (entity.getBlogTypeCd()  != null) { update.set(cmBlog.blogTypeCd,  entity.getBlogTypeCd());  hasAny = true; }
         if (entity.getBlogTitle()   != null) { update.set(cmBlog.blogTitle,   entity.getBlogTitle());   hasAny = true; }

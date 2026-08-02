@@ -25,9 +25,6 @@ public class PmSaveIssue extends BaseEntity {
     @Column(name = "save_issue_id", length = 21, nullable = false)
     private String saveIssueId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)

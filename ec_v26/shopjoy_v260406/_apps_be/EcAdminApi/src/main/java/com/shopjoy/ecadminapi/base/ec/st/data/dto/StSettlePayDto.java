@@ -21,7 +21,6 @@ public class StSettlePayDto {
     public static class Item {
         private String settlePayId;
         private String settleId;
-        private String siteId;
         private String vendorId;
         private Long payAmt;
         private String payMethodCd;
@@ -35,6 +34,7 @@ public class StSettlePayDto {
         private String settlePayMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

@@ -45,7 +45,6 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         Map.entry("orderId", pmCouponUsage.orderId),
         Map.entry("orderItemId", pmCouponUsage.orderItemId),
         Map.entry("prodId", pmCouponUsage.prodId),
-        Map.entry("siteId", pmCouponUsage.siteId),
         Map.entry("usageId", pmCouponUsage.usageId)
     );
 
@@ -57,7 +56,6 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         return queryFactory
                 .select(Projections.bean(PmCouponUsageDto.Item.class,
                         pmCouponUsage.usageId,          // 사용이력ID (PK, YYMMDDhhmmss+rand4)
-                        pmCouponUsage.siteId,           // 사이트ID (sy_site.site_id)
                         pmCouponUsage.couponId,         // 쿠폰ID (pm_coupon.coupon_id)
                         pmCouponUsage.couponCode,       // 쿠폰코드 스냅샷
                         pmCouponUsage.couponNm,         // 쿠폰명 스냅샷
@@ -91,7 +89,6 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         JPAQuery<PmCouponUsageDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmCouponUsage.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmCouponUsage.usageId, search.getUsageId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -117,7 +114,6 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmCouponUsage.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmCouponUsage.usageId, search.getUsageId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -193,7 +189,6 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         JPAUpdateClause update = queryFactory.update(pmCouponUsage);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(pmCouponUsage.siteId,         entity.getSiteId());         hasAny = true; }
         if (entity.getCouponId()       != null) { update.set(pmCouponUsage.couponId,       entity.getCouponId());       hasAny = true; }
         if (entity.getCouponCode()     != null) { update.set(pmCouponUsage.couponCode,     entity.getCouponCode());     hasAny = true; }
         if (entity.getCouponNm()       != null) { update.set(pmCouponUsage.couponNm,       entity.getCouponNm());       hasAny = true; }

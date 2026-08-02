@@ -70,9 +70,7 @@ public class BoCmPopupPickController {
     @GetMapping("/popup/list")
     public ResponseEntity<ApiResponse<List<CmPopup>>> popupList(
             @RequestParam(required = false) String siteId) {
-        List<CmPopup> list = siteId != null
-            ? cmPopupRepository.findBySiteIdAndUseYnOrderBySortOrdAsc(siteId, "Y")
-            : cmPopupRepository.findByUseYnOrderBySortOrdAsc("Y");
+        List<CmPopup> list = cmPopupRepository.findByUseYnOrderBySortOrdAsc("Y");
         return ResponseEntity.ok(ApiResponse.ok(list));
     }
 

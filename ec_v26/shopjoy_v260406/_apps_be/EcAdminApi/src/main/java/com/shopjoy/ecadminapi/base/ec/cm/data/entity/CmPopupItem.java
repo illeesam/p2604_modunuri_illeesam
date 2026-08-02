@@ -21,9 +21,6 @@ public class CmPopupItem extends BaseEntity {
     @Column(name = "popup_item_id", length = 21, nullable = false)
     private String popupItemId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("팝업ID (cm_popup.popup_id FK)")
     @Column(name = "popup_id", length = 21, nullable = false)

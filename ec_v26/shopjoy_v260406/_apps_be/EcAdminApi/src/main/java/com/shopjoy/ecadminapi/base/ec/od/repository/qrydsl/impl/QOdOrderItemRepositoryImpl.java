@@ -67,7 +67,6 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         Map.entry("prodNm", odOrderItem.prodNm),
         Map.entry("reserveSaleYn", odOrderItem.reserveSaleYn),
         Map.entry("settleYn", odOrderItem.settleYn),
-        Map.entry("siteId", odOrderItem.siteId),
         Map.entry("prodSkuId", odOrderItem.prodSkuId)
     );
 
@@ -80,7 +79,6 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         return queryFactory
                 .select(Projections.bean(OdOrderItemDto.Item.class,
                         odOrderItem.orderItemId,             // 주문상품ID (YYMMDDhhmmss+rand4)
-                        odOrderItem.siteId,                  // 사이트ID
                         odOrderItem.orderId,                 // 주문ID (od_order.)
                         odOrderItem.prodId,                  // 상품ID (pd_prod.)
                         odOrderItem.prodSkuId,               // SKU ID (pd_prod_sku.prod_sku_id, 무옵션 시 NULL)
@@ -159,7 +157,6 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .where(
                     QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()),
                     QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()),
-                    QdslUtil.strEq(odOrderItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -187,7 +184,6 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()),
                 QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()),
-                QdslUtil.strEq(odOrderItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)

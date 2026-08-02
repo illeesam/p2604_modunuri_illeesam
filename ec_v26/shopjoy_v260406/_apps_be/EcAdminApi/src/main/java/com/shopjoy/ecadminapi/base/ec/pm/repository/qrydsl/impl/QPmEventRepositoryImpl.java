@@ -46,7 +46,6 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         Map.entry("eventTitle", pmEvent.eventTitle),
         Map.entry("eventTypeCd", pmEvent.eventTypeCd),
         Map.entry("imgUrl", pmEvent.imgUrl),
-        Map.entry("siteId", pmEvent.siteId),
         Map.entry("targetTypeCd", pmEvent.targetTypeCd),
         Map.entry("useYn", pmEvent.useYn)
     );
@@ -61,7 +60,6 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         return queryFactory
                 .select(Projections.bean(PmEventDto.Item.class,
                         pmEvent.eventId,               // 이벤트ID (PK, YYMMDDhhmmss+rand4)
-                        pmEvent.siteId,                // 사이트ID (sy_site.site_id)
                         pmEvent.eventNm,               // 이벤트명
                         pmEvent.eventTypeCd,           // 이벤트유형 — EVENT_TYPE {PROMOTION, FLASH, CAMPAIGN, COUPON}
                         pmEvent.imgUrl,                // 배너이미지URL
@@ -100,7 +98,6 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmEvent.siteId, search.getSiteId()),
                     QdslUtil.strIn(pmEvent.eventId, search.getEventIds()),
                     QdslUtil.strEq(pmEvent.eventId, search.getEventId()),
                     QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
@@ -129,7 +126,6 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmEvent.siteId, search.getSiteId()),
                 QdslUtil.strIn(pmEvent.eventId, search.getEventIds()),
                 QdslUtil.strEq(pmEvent.eventId, search.getEventId()),
                 QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
@@ -213,7 +209,6 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         JPAUpdateClause update = queryFactory.update(pmEvent);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(pmEvent.siteId,              entity.getSiteId());              hasAny = true; }
         if (entity.getEventNm()             != null) { update.set(pmEvent.eventNm,             entity.getEventNm());             hasAny = true; }
         if (entity.getEventTypeCd()         != null) { update.set(pmEvent.eventTypeCd,         entity.getEventTypeCd());         hasAny = true; }
         if (entity.getImgUrl()              != null) { update.set(pmEvent.imgUrl,              entity.getImgUrl());              hasAny = true; }

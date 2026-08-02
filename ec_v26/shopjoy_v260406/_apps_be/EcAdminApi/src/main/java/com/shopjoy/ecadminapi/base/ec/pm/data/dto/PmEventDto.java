@@ -25,7 +25,6 @@ public class PmEventDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String eventId;
-        private String siteId;
         private String eventNm;
         private String eventTypeCd;
         private String imgUrl;
@@ -44,6 +43,7 @@ public class PmEventDto {
         private String eventDesc;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         // ── 연관정보 (getById / 목록 시 채움) ──

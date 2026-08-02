@@ -47,7 +47,6 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         Map.entry("notiYn", pdRestockNoti.notiYn),
         Map.entry("prodId", pdRestockNoti.prodId),
         Map.entry("restockNotiId", pdRestockNoti.restockNotiId),
-        Map.entry("siteId", pdRestockNoti.siteId),
         Map.entry("skuId", pdRestockNoti.prodSkuId)
     );
 
@@ -60,7 +59,6 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         return queryFactory
                 .select(Projections.bean(PdRestockNotiDto.Item.class,
                         pdRestockNoti.restockNotiId,   // 재입고알림ID (PK, YYMMDDhhmmss+rand4)
-                        pdRestockNoti.siteId,           // 사이트ID (sy_site.site_id)
                         pdRestockNoti.prodId,           // 상품ID (pd_prod.prod_id)
                         pdRestockNoti.prodSkuId,        // SKUID (pd_prod_sku.prod_sku_id)
                         pdRestockNoti.memberId,         // 회원ID (mb_member.member_id)
@@ -69,7 +67,6 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                         pdRestockNoti.regBy, pdRestockNoti.regDate, pdRestockNoti.updBy, pdRestockNoti.updDate
                 ))
                 .from(pdRestockNoti)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdRestockNoti.siteId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pdRestockNoti.prodId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(pdRestockNoti.memberId));
     }
@@ -91,7 +88,6 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdRestockNoti.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdRestockNoti.restockNotiId, search.getRestockNotiId()),
                     QdslUtil.strEq(pdRestockNoti.prodId, search.getProdId()),
                     QdslUtil.strEq(pdRestockNoti.notiYn, search.getNotiYn()),
@@ -119,7 +115,6 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdRestockNoti.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdRestockNoti.restockNotiId, search.getRestockNotiId()),
                 QdslUtil.strEq(pdRestockNoti.prodId, search.getProdId()),
                 QdslUtil.strEq(pdRestockNoti.notiYn, search.getNotiYn()),
@@ -194,7 +189,6 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         JPAUpdateClause update = queryFactory.update(pdRestockNoti);
         boolean hasAny = false;
 
-        if (entity.getSiteId()   != null) { update.set(pdRestockNoti.siteId,   entity.getSiteId());   hasAny = true; }
         if (entity.getProdId()   != null) { update.set(pdRestockNoti.prodId,   entity.getProdId());   hasAny = true; }
         if (entity.getProdSkuId() != null) { update.set(pdRestockNoti.prodSkuId, entity.getProdSkuId()); hasAny = true; }
         if (entity.getMemberId() != null) { update.set(pdRestockNoti.memberId, entity.getMemberId()); hasAny = true; }

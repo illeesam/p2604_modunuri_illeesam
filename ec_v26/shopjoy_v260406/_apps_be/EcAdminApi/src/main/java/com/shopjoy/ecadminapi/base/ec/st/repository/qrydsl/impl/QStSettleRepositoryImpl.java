@@ -49,7 +49,6 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         Map.entry("settleStatusCd", stSettle.settleStatusCd),
         Map.entry("settleStatusCdBefore", stSettle.settleStatusCdBefore),
         Map.entry("settleYm", stSettle.settleYm),
-        Map.entry("siteId", stSettle.siteId),
         Map.entry("vendorId", stSettle.vendorId)
     );
 
@@ -62,7 +61,6 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         return queryFactory
                 .select(Projections.bean(StSettleDto.Item.class,
                         stSettle.settleId,                 // 정산ID (PK, YYMMDDhhmmss+rand4)
-                        stSettle.siteId,                   // 사이트ID
                         stSettle.vendorId,                  // 업체ID (sy_vendor.vendor_id)
                         stSettle.settleYm,                  // 정산년월 (YYYYMM)
                         stSettle.settleStartDate,           // 정산 기준 시작일
@@ -85,12 +83,10 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
                         stSettle.updBy,                     // 수정자
                         stSettle.updDate,                   // 수정일시
                         syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
-                        sySite.siteNm.as("siteNm"),                     // 사이트명 (조인)
                         cdSs.codeLabel.as("settleStatusCdNm")           // 상태명 (sy_code 조인)
                 ))
                 .from(stSettle)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettle.vendorId))
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettle.siteId))
                 .leftJoin(cdSs).on(cdSs.codeGrp.eq("SETTLE_STATUS").and(cdSs.codeValue.eq(stSettle.settleStatusCd)));
     }
 
@@ -111,7 +107,6 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         JPAQuery<StSettleDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stSettle.siteId, search.getSiteId()),
                     QdslUtil.strEq(stSettle.settleId, search.getSettleId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -137,7 +132,6 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stSettle.siteId, search.getSiteId()),
                 QdslUtil.strEq(stSettle.settleId, search.getSettleId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -209,7 +203,6 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         JPAUpdateClause update = queryFactory.update(stSettle);
         boolean hasAny = false;
 
-        if (entity.getSiteId()               != null) { update.set(stSettle.siteId,               entity.getSiteId());               hasAny = true; }
         if (entity.getVendorId()             != null) { update.set(stSettle.vendorId,             entity.getVendorId());             hasAny = true; }
         if (entity.getSettleYm()             != null) { update.set(stSettle.settleYm,             entity.getSettleYm());             hasAny = true; }
         if (entity.getSettleStartDate()      != null) { update.set(stSettle.settleStartDate,      entity.getSettleStartDate());      hasAny = true; }

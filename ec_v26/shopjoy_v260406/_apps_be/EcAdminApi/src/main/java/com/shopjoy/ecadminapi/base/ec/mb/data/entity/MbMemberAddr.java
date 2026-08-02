@@ -23,9 +23,6 @@ public class MbMemberAddr extends BaseEntity {
     @Column(name = "member_addr_id", length = 21, nullable = false)
     private String memberAddrId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)

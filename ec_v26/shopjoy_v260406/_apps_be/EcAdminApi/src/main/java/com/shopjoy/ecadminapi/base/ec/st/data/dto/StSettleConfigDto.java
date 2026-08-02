@@ -21,7 +21,6 @@ public class StSettleConfigDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String settleConfigId;
-        private String siteId;
         private String vendorId;
         private String categoryId;
         private String settleCycleCd;
@@ -32,6 +31,7 @@ public class StSettleConfigDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

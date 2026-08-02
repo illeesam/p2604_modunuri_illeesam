@@ -47,7 +47,6 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("likeId", mbLike.likeId),
         Map.entry("memberId", mbLike.memberId),
-        Map.entry("siteId", mbLike.siteId),
         Map.entry("targetId", mbLike.targetId),
         Map.entry("targetTypeCd", mbLike.targetTypeCd)
     );
@@ -60,7 +59,6 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         return queryFactory
                 .select(Projections.bean(MbLikeDto.Item.class,
                         mbLike.likeId,         // 좋아요ID (PK)
-                        mbLike.siteId,         // 사이트ID (sy_site.site_id)
                         mbLike.memberId,       // 회원ID (mb_member.member_id)
                         mbLike.targetTypeCd,   // 대상유형 — LIKE_TARGET_TYPE {PRODUCT: '상품', BRAND: '브랜드'}
                         mbLike.targetId,       // 대상ID (targetTypeCd 별 참조 테이블 PK)
@@ -70,7 +68,6 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                         mbLike.updDate         // 수정일
                 ))
                 .from(mbLike)
-                .leftJoin(sySite).on(sySite.siteId.eq(mbLike.siteId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbLike.memberId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(mbLike.targetId))
                 .leftJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(mbLike.targetTypeCd)));
@@ -91,7 +88,6 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(mbLike.siteId, search.getSiteId()),
                     QdslUtil.strEq(mbLike.likeId, search.getLikeId()),
                     QdslUtil.strEq(mbLike.memberId, search.getMemberId()),
                     QdslUtil.strEq(mbLike.targetId, search.getTargetId()),
@@ -119,7 +115,6 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(mbLike.siteId, search.getSiteId()),
                 QdslUtil.strEq(mbLike.likeId, search.getLikeId()),
                 QdslUtil.strEq(mbLike.memberId, search.getMemberId()),
                 QdslUtil.strEq(mbLike.targetId, search.getTargetId()),
@@ -193,7 +188,6 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         if (entity.getLikeId() == null) return 0;
         JPAUpdateClause update = queryFactory.update(mbLike);
         boolean hasAny = false;
-        if (entity.getSiteId()       != null) { update.set(mbLike.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getMemberId()     != null) { update.set(mbLike.memberId,     entity.getMemberId());     hasAny = true; }
         if (entity.getTargetTypeCd() != null) { update.set(mbLike.targetTypeCd, entity.getTargetTypeCd()); hasAny = true; }
         if (entity.getTargetId()     != null) { update.set(mbLike.targetId,     entity.getTargetId());     hasAny = true; }

@@ -23,9 +23,6 @@ public class PdTag extends BaseEntity {
     @Column(name = "tag_id", length = 21, nullable = false)
     private String tagId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("태그명")
     @Column(name = "tag_nm", length = 100, nullable = false)

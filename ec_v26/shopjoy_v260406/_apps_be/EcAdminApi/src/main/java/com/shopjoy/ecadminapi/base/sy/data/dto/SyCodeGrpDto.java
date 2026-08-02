@@ -24,7 +24,6 @@ public class SyCodeGrpDto {
 
         // ── sy_code_grp ──────────────────────────────────────────
         private String codeGrpId;
-        private String siteId;
         private String codeGrp;
         private String grpNm;
         private String pathId;
@@ -32,6 +31,7 @@ public class SyCodeGrpDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

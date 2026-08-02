@@ -49,7 +49,6 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         Map.entry("refId", cmhPushLog.refId),
         Map.entry("refTypeCd", cmhPushLog.refTypeCd),
         Map.entry("resultCd", cmhPushLog.resultCd),
-        Map.entry("siteId", cmhPushLog.siteId),
         Map.entry("templateId", cmhPushLog.templateId)
     );
 
@@ -63,7 +62,6 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         return queryFactory
                 .select(Projections.bean(CmhPushLogDto.Item.class,
                         cmhPushLog.logId,           // 로그ID (PK, YYMMDDhhmmss+rand4)
-                        cmhPushLog.siteId,          // 사이트ID
                         cmhPushLog.channelCd,       // 발송채널 (코드: PUSH_CHANNEL — sy_code 미등록)
                         cmhPushLog.templateId,      // 템플릿ID (sy_template.template_id)
                         cmhPushLog.memberId,        // 대상 회원ID
@@ -99,7 +97,6 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(cmhPushLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmhPushLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -125,7 +122,6 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmhPushLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmhPushLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -202,7 +198,6 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         JPAUpdateClause update = queryFactory.update(cmhPushLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(cmhPushLog.siteId,         entity.getSiteId());         hasAny = true; }
         if (entity.getChannelCd()      != null) { update.set(cmhPushLog.channelCd,      entity.getChannelCd());      hasAny = true; }
         if (entity.getTemplateId()     != null) { update.set(cmhPushLog.templateId,     entity.getTemplateId());     hasAny = true; }
         if (entity.getMemberId()       != null) { update.set(cmhPushLog.memberId,       entity.getMemberId());       hasAny = true; }

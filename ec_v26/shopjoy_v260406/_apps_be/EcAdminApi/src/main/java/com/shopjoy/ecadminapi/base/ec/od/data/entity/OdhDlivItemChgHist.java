@@ -24,9 +24,6 @@ public class OdhDlivItemChgHist extends BaseEntity {
     @Column(name = "dliv_item_chg_hist_id", length = 21, nullable = false)
     private String dlivItemChgHistId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("배송ID (od_dliv.)")
     @Column(name = "dliv_id", length = 21, nullable = false)

@@ -50,8 +50,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         Map.entry("discntTypeCd", odOrderDiscnt.discntTypeCd),
         Map.entry("orderDiscntId", odOrderDiscnt.orderDiscntId),
         Map.entry("orderId", odOrderDiscnt.orderId),
-        Map.entry("restoreYn", odOrderDiscnt.restoreYn),
-        Map.entry("siteId", odOrderDiscnt.siteId)
+        Map.entry("restoreYn", odOrderDiscnt.restoreYn)
     );
 
     /*
@@ -62,7 +61,6 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         return queryFactory
                 .select(Projections.bean(OdOrderDiscntDto.Item.class,
                         odOrderDiscnt.orderDiscntId,  // 주문할인ID (YYMMDDhhmmss+rand4)
-                        odOrderDiscnt.siteId,          // 사이트ID
                         odOrderDiscnt.orderId,         // 주문ID (od_order.order_id)
                         odOrderDiscnt.discntTypeCd,    // 할인유형코드 — ORDER_DISCNT_TYPE {SALE_PRICE:판매가할인, PAY_DISCNT:결제할인, COUPON:쿠폰할인, PROMOTION:프로모션할인, SHIP_DISCNT:배송비할인, PRODUCT_DISCNT:상품할인, CLAIM_SHIP:클레임배송비할인}
                         odOrderDiscnt.couponId,        // 쿠폰ID (pm_coupon.coupon_id — ORDER_COUPON인 경우)
@@ -76,7 +74,6 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                         odOrderDiscnt.regBy, odOrderDiscnt.regDate
                 ))
                 .from(odOrderDiscnt)
-                .leftJoin(ste).on(ste.siteId.eq(odOrderDiscnt.siteId))
                 .leftJoin(ord).on(ord.orderId.eq(odOrderDiscnt.orderId))
                 .leftJoin(cpn).on(cpn.couponId.eq(odOrderDiscnt.couponId))
                 .leftJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(odOrderDiscnt.discntTypeCd)));
@@ -101,7 +98,6 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                 .where(
                     QdslUtil.strIn(odOrderDiscnt.orderId, search.getOrderIds()),
                     QdslUtil.strEq(odOrderDiscnt.orderId, search.getOrderId()),
-                    QdslUtil.strEq(odOrderDiscnt.siteId, search.getSiteId()),
                     QdslUtil.strEq(odOrderDiscnt.orderDiscntId, search.getOrderDiscntId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -129,7 +125,6 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odOrderDiscnt.orderId, search.getOrderIds()),
                 QdslUtil.strEq(odOrderDiscnt.orderId, search.getOrderId()),
-                QdslUtil.strEq(odOrderDiscnt.siteId, search.getSiteId()),
                 QdslUtil.strEq(odOrderDiscnt.orderDiscntId, search.getOrderDiscntId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -201,7 +196,6 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         JPAUpdateClause update = queryFactory.update(odOrderDiscnt);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(odOrderDiscnt.siteId,        entity.getSiteId());        hasAny = true; }
         if (entity.getOrderId()       != null) { update.set(odOrderDiscnt.orderId,       entity.getOrderId());       hasAny = true; }
         if (entity.getDiscntTypeCd()  != null) { update.set(odOrderDiscnt.discntTypeCd,  entity.getDiscntTypeCd());  hasAny = true; }
         if (entity.getCouponId()      != null) { update.set(odOrderDiscnt.couponId,      entity.getCouponId());      hasAny = true; }

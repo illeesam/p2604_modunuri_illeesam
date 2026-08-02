@@ -53,7 +53,6 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         Map.entry("settleId", stSettleItem.settleId),
         Map.entry("settleItemId", stSettleItem.settleItemId),
         Map.entry("settleItemTypeCd", stSettleItem.settleItemTypeCd),
-        Map.entry("siteId", stSettleItem.siteId),
         Map.entry("vendorId", stSettleItem.vendorId)
     );
 
@@ -67,7 +66,6 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                 .select(Projections.bean(StSettleItemDto.Item.class,
                         stSettleItem.settleItemId,       // 정산항목ID (PK)
                         stSettleItem.settleId,            // 정산ID (st_settle.settle_id)
-                        stSettleItem.siteId,               // 사이트ID
                         stSettleItem.orderId,              // 주문ID (od_order.order_id)
                         stSettleItem.orderItemId,          // 주문항목ID (od_order_item.order_item_id)
                         stSettleItem.vendorId,             // 업체ID
@@ -85,13 +83,11 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                         stSettleItem.regDate,               // 등록일시
                         odOrder.memberNm.as("orderNm"),                     // 주문 회원명 (조인)
                         odOrderItem.prodNm.as("orderItemNm"),               // 주문항목 상품명 (조인)
-                        sySite.siteNm.as("siteNm"),                         // 사이트명 (조인)
                         cdSit.codeLabel.as("settleItemTypeCdNm")            // 항목유형명 (sy_code 조인)
                 ))
                 .from(stSettleItem)
                 .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleItem.orderId))
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleItem.orderItemId))
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettleItem.siteId))
                 .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE").and(cdSit.codeValue.eq(stSettleItem.settleItemTypeCd)));
     }
 
@@ -112,7 +108,6 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         JPAQuery<StSettleItemDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stSettleItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -138,7 +133,6 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stSettleItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -211,7 +205,6 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         boolean hasAny = false;
 
         if (entity.getSettleId()         != null) { update.set(stSettleItem.settleId,         entity.getSettleId());         hasAny = true; }
-        if (entity.getSiteId()           != null) { update.set(stSettleItem.siteId,           entity.getSiteId());           hasAny = true; }
         if (entity.getOrderId()          != null) { update.set(stSettleItem.orderId,          entity.getOrderId());          hasAny = true; }
         if (entity.getOrderItemId()      != null) { update.set(stSettleItem.orderItemId,      entity.getOrderItemId());      hasAny = true; }
         if (entity.getVendorId()         != null) { update.set(stSettleItem.vendorId,         entity.getVendorId());         hasAny = true; }

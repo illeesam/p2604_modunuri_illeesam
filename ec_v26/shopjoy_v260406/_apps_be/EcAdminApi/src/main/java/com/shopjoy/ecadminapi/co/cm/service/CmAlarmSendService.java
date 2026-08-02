@@ -66,7 +66,6 @@ public class CmAlarmSendService {
             SyAlarm alarm = new SyAlarm();
             alarmId = CmUtil.generateId("sy_alarm");
             alarm.setAlarmId(alarmId);
-            alarm.setSiteId(siteId);
             alarm.setAlarmTitle(title);
             alarm.setAlarmTypeCd(typeCd);
             alarm.setChannelCd(CHANNEL_SYSTEM);
@@ -98,7 +97,6 @@ public class CmAlarmSendService {
             SyhAlarmSendHist hist = new SyhAlarmSendHist();
             sendHistId = CmUtil.generateId("syh_alarm_send_hist");
             hist.setSendHistId(sendHistId);
-            hist.setSiteId(siteId);
             hist.setAlarmId(alarmId);
             hist.setMemberId(memberId);
             hist.setChannel(CHANNEL_SYSTEM);

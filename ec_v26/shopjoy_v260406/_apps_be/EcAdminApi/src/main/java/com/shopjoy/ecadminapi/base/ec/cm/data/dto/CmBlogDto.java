@@ -24,7 +24,6 @@ public class CmBlogDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String blogId;
-        private String siteId;
         private String blogCateId;
         private String blogTypeCd;
         private String blogTitle;
@@ -37,6 +36,7 @@ public class CmBlogDto {
         private String isNotice;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         // ── 연관정보 (getById / 목록 시 채움) ──

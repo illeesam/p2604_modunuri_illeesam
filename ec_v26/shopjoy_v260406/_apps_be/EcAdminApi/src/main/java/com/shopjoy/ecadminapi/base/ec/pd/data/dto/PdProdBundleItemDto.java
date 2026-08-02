@@ -21,7 +21,6 @@ public class PdProdBundleItemDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String bundleItemId;
-        private String siteId;
         private String bundleProdId;
         private String itemProdId;
         private String itemSkuId;
@@ -31,6 +30,7 @@ public class PdProdBundleItemDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

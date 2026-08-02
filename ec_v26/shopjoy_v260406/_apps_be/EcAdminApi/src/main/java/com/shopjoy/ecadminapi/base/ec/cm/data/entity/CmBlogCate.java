@@ -23,9 +23,6 @@ public class CmBlogCate extends BaseEntity {
     @Column(name = "blog_cate_id", length = 21, nullable = false)
     private String blogCateId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("카테고리명")
     @Column(name = "blog_cate_nm", length = 100, nullable = false)

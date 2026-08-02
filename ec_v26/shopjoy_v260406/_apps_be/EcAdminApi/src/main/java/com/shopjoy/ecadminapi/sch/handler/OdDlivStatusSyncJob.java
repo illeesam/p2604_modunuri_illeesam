@@ -153,7 +153,6 @@ public class OdDlivStatusSyncJob implements SchBatchJobHandler {
 
         OdhDlivStatusHist hist = new OdhDlivStatusHist();
         hist.setDlivStatusHistId(CmUtil.generateId("odh_dliv_status_hist"));
-        hist.setSiteId(dliv.getSiteId());
         hist.setDlivId(dliv.getDlivId());
         hist.setOrderId(dliv.getOrderId());
         hist.setDlivStatusCdBefore(prevStatus);

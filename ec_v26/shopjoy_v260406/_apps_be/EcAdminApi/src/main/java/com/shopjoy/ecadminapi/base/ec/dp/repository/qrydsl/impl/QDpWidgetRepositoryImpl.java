@@ -36,7 +36,6 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     private static final QDpWidget dpWidget = QDpWidget.dpWidget;
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("dispEnv", dpWidget.dispEnv),
-        Map.entry("siteId", dpWidget.siteId),
         Map.entry("thumbnailUrl", dpWidget.thumbnailUrl),
         Map.entry("titleShowYn", dpWidget.titleShowYn),
         Map.entry("useYn", dpWidget.useYn),
@@ -68,7 +67,6 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         return queryFactory.select(Projections.bean(DpWidgetDto.Item.class,
                 dpWidget.widgetId,          // 위젯ID (PK, YYMMDDhhmmss+rand4)
                 dpWidget.widgetLibId,       // 위젯라이브러리ID (dp_widget_lib.widget_lib_id, 참조 선택사항)
-                dpWidget.siteId,            // 사이트ID (sy_site.site_id)
                 dpWidget.widgetNm,          // 위젯명
                 dpWidget.widgetTypeCd,      // 위젯유형 — WIDGET_TYPE_CD (코드: DISP_WIDGET_TYPE, 27종)
                 dpWidget.widgetDesc,        // 위젯설명
@@ -103,7 +101,6 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         JPAQuery<DpWidgetDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(dpWidget.siteId, search.getSiteId()),
                     QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()),
                     QdslUtil.strEq(dpWidget.useYn, search.getUseYn()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -128,7 +125,6 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(dpWidget.siteId, search.getSiteId()),
                 QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()),
                 QdslUtil.strEq(dpWidget.useYn, search.getUseYn()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -205,7 +201,6 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         JPAUpdateClause update = queryFactory.update(dpWidget);
         boolean hasAny = false;
         if (entity.getWidgetLibId()      != null) { update.set(dpWidget.widgetLibId,      entity.getWidgetLibId());      hasAny = true; }
-        if (entity.getSiteId()           != null) { update.set(dpWidget.siteId,           entity.getSiteId());           hasAny = true; }
         if (entity.getWidgetNm()         != null) { update.set(dpWidget.widgetNm,         entity.getWidgetNm());         hasAny = true; }
         if (entity.getWidgetTypeCd()     != null) { update.set(dpWidget.widgetTypeCd,     entity.getWidgetTypeCd());     hasAny = true; }
         if (entity.getWidgetDesc()       != null) { update.set(dpWidget.widgetDesc,       entity.getWidgetDesc());       hasAny = true; }

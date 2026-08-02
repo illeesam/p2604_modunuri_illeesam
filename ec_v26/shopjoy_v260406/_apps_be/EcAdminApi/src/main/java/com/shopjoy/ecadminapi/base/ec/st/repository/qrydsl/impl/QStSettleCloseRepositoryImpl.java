@@ -46,8 +46,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         Map.entry("closeReason", stSettleClose.closeReason),
         Map.entry("closeStatusCd", stSettleClose.closeStatusCd),
         Map.entry("settleCloseId", stSettleClose.settleCloseId),
-        Map.entry("settleId", stSettleClose.settleId),
-        Map.entry("siteId", stSettleClose.siteId)
+        Map.entry("settleId", stSettleClose.settleId)
     );
 
     /*
@@ -60,7 +59,6 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                 .select(Projections.bean(StSettleCloseDto.Item.class,
                         stSettleClose.settleCloseId,     // 마감이력ID (PK)
                         stSettleClose.settleId,           // 정산ID (st_settle.settle_id)
-                        stSettleClose.siteId,             // 사이트ID
                         stSettleClose.closeStatusCd,      // 마감상태 — SETTLE_CLOSE_STATUS {DRAFT: '임시마감', CONFIRMED: '확정마감', PAID: '지급완료'}
                         stSettleClose.closeReason,        // 마감/재오픈 사유
                         stSettleClose.finalSettleAmt,     // 마감 시점 최종정산금액 스냅샷
@@ -68,11 +66,9 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                         stSettleClose.closeDate,          // 처리일시
                         stSettleClose.regBy,              // 등록자
                         stSettleClose.regDate,            // 등록일시
-                        sySite.siteNm.as("siteNm"),                   // 사이트명 (조인)
                         cdScs.codeLabel.as("closeStatusCdNm")         // 마감상태명 (sy_code 조인)
                 ))
                 .from(stSettleClose)
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettleClose.siteId))
                 .leftJoin(cdScs).on(cdScs.codeGrp.eq("SETTLE_CLOSE_STATUS").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd)));
     }
 
@@ -93,7 +89,6 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         JPAQuery<StSettleCloseDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stSettleClose.siteId, search.getSiteId()),
                     QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -119,7 +114,6 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stSettleClose.siteId, search.getSiteId()),
                 QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -192,7 +186,6 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         boolean hasAny = false;
 
         if (entity.getSettleId()      != null) { update.set(stSettleClose.settleId,      entity.getSettleId());      hasAny = true; }
-        if (entity.getSiteId()        != null) { update.set(stSettleClose.siteId,        entity.getSiteId());        hasAny = true; }
         if (entity.getCloseStatusCd() != null) { update.set(stSettleClose.closeStatusCd, entity.getCloseStatusCd()); hasAny = true; }
         if (entity.getCloseReason()   != null) { update.set(stSettleClose.closeReason,   entity.getCloseReason());   hasAny = true; }
         if (entity.getFinalSettleAmt()!= null) { update.set(stSettleClose.finalSettleAmt,entity.getFinalSettleAmt());hasAny = true; }

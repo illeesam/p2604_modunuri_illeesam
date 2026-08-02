@@ -27,7 +27,6 @@ public class CmFaqDto {
 
         // ── cm_faq ────────────────────────────────────────────────
         private String faqId;
-        private String siteId;
         private String pathId;
         private String faqQuestion;
         private String faqAnswer;
@@ -37,6 +36,7 @@ public class CmFaqDto {
         private Integer viewCount;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

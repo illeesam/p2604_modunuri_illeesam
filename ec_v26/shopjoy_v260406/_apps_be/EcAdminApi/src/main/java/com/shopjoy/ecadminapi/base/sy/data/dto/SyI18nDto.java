@@ -25,7 +25,6 @@ public class SyI18nDto {
 
         // ── sy_i18n ──────────────────────────────────────────
         private String i18nId;
-        private String siteId;
         private String i18nKey;
         private String i18nDesc;
         private String i18nScopeCd;
@@ -34,6 +33,7 @@ public class SyI18nDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

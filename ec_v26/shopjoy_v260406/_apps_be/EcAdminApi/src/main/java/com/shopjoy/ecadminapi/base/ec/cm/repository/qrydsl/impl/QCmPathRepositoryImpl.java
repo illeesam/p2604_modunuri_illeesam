@@ -40,7 +40,6 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         Map.entry("bizCd", cmPath.bizCd),
         Map.entry("pathLabel", cmPath.pathLabel),
         Map.entry("pathRemark", cmPath.pathRemark),
-        Map.entry("siteId", cmPath.siteId),
         Map.entry("useYn", cmPath.useYn)
     );
 

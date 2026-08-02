@@ -21,9 +21,6 @@ public class CmDashboardItem extends BaseEntity {
     @Column(name = "dashboard_item_id", length = 21, nullable = false)
     private String dashboardItemId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("대시보드ID (cm_dashboard.dashboard_id FK)")
     @Column(name = "dashboard_id", length = 21, nullable = false)

@@ -19,7 +19,6 @@ public class MbhMemberTokenLogDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String logId;
-        private String siteId;
         private String memberId;
         private String loginLogId;
         private String actionCd;
@@ -36,6 +35,7 @@ public class MbhMemberTokenLogDto {
         private String cmdNm;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String siteNm;

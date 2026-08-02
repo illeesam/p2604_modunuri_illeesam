@@ -22,7 +22,6 @@ public class DpWidgetLibDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String widgetLibId;
-        private String siteId;
         private String widgetCode;
         private String widgetNm;
         private String widgetTypeCd;
@@ -36,6 +35,7 @@ public class DpWidgetLibDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

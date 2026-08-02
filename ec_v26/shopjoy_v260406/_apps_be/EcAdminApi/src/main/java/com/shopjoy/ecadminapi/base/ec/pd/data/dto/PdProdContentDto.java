@@ -21,7 +21,6 @@ public class PdProdContentDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String prodContentId;
-        private String siteId;
         private String prodId;
         private String contentTypeCd;
         private String contentHtml;
@@ -29,6 +28,7 @@ public class PdProdContentDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

@@ -26,6 +26,7 @@ public class CmPathDto {
         private String pathRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

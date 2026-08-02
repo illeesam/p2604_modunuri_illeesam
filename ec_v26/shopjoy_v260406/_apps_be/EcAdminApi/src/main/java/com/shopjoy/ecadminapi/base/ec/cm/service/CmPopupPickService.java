@@ -60,10 +60,9 @@ public class CmPopupPickService {
 
     /* ── 메타 조회 ─────────────────────────────────────────────── */
 
-    /** 팝업 정의 조회 (siteId 우선, 없으면 전역) */
+    /** 팝업 정의 조회 */
     public CmPopup getPopup(String popupCode, String siteId) {
-        return cmPopupRepository.findBySiteIdAndPopupCodeAndUseYn(siteId, popupCode, "Y")
-            .or(() -> cmPopupRepository.findByPopupCodeAndUseYn(popupCode, "Y"))
+        return cmPopupRepository.findByPopupCodeAndUseYn(popupCode, "Y")
             .orElseThrow(() -> new CmBizException(
                 "등록되지 않은 팝업코드입니다: " + popupCode + "::" + CmUtil.svcCallerInfo(this)));
     }

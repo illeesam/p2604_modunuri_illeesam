@@ -48,7 +48,6 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         Map.entry("itemSkuId", pdProdSetItem.itemSkuId),
         Map.entry("setItemId", pdProdSetItem.setItemId),
         Map.entry("setProdId", pdProdSetItem.setProdId),
-        Map.entry("siteId", pdProdSetItem.siteId),
         Map.entry("useYn", pdProdSetItem.useYn)
     );
 
@@ -61,7 +60,6 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         return queryFactory
                 .select(Projections.bean(PdProdSetItemDto.Item.class,
                         pdProdSetItem.setItemId,     // 세트구성ID (PK, YYMMDDhhmmss+rand4)
-                        pdProdSetItem.siteId,         // 사이트ID (sy_site.site_id)
                         pdProdSetItem.setProdId,       // 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
                         pdProdSetItem.itemProdId,      // 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
                         pdProdSetItem.itemSkuId,       // 구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)
@@ -73,7 +71,6 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
                         pdProdSetItem.regBy, pdProdSetItem.regDate, pdProdSetItem.updBy, pdProdSetItem.updDate
                 ))
                 .from(pdProdSetItem)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdProdSetItem.siteId))
                 .leftJoin(prd).on(prd.prodId.eq(pdProdSetItem.setProdId))
                 .leftJoin(prd2).on(prd2.prodId.eq(pdProdSetItem.itemProdId));
     }
@@ -95,7 +92,6 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         JPAQuery<PdProdSetItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdProdSetItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProdSetItem.setItemId, search.getSetItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -121,7 +117,6 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdProdSetItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProdSetItem.setItemId, search.getSetItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -202,7 +197,6 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         JPAUpdateClause update = queryFactory.update(pdProdSetItem);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(pdProdSetItem.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getSetProdId()  != null) { update.set(pdProdSetItem.setProdId,  entity.getSetProdId());  hasAny = true; }
         if (entity.getItemProdId() != null) { update.set(pdProdSetItem.itemProdId, entity.getItemProdId()); hasAny = true; }
         if (entity.getItemSkuId()  != null) { update.set(pdProdSetItem.itemSkuId,  entity.getItemSkuId());  hasAny = true; }

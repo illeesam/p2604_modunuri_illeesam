@@ -48,7 +48,6 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmPopup.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmPopup.useYn, search.getUseYn()),
                 andPopupPatternEq(search),
                 /* searchType 을 주지 않으면 SEARCH_FIELDS 전체 OR — 팝업명/코드/엔티티명 통합검색 */

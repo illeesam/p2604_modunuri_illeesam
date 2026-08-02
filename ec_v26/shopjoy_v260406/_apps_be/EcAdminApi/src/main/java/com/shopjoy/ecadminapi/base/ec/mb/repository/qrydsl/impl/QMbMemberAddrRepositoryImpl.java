@@ -48,7 +48,6 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         Map.entry("memberId", mbMemberAddr.memberId),
         Map.entry("recvNm", mbMemberAddr.recvNm),
         Map.entry("recvPhone", mbMemberAddr.recvPhone),
-        Map.entry("siteId", mbMemberAddr.siteId),
         Map.entry("zipCd", mbMemberAddr.zipCd)
     );
 
@@ -74,8 +73,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
                         mbMemberAddr.updDate                   // 수정일
                 ))
                 .from(mbMemberAddr)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberAddr.memberId))
-                .leftJoin(sySite).on(sySite.siteId.eq(mbMemberAddr.siteId));
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberAddr.memberId));
     }
 
     /* 회원 주소 키조회 */
@@ -194,7 +192,6 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         if (entity.getMemberAddrId() == null) return 0;
         JPAUpdateClause update = queryFactory.update(mbMemberAddr);
         boolean hasAny = false;
-        if (entity.getSiteId()     != null) { update.set(mbMemberAddr.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getMemberId()   != null) { update.set(mbMemberAddr.memberId,   entity.getMemberId());   hasAny = true; }
         if (entity.getAddrNm()     != null) { update.set(mbMemberAddr.addrNm,     entity.getAddrNm());     hasAny = true; }
         if (entity.getRecvNm()     != null) { update.set(mbMemberAddr.recvNm,     entity.getRecvNm());     hasAny = true; }

@@ -24,9 +24,6 @@ public class DpUi extends BaseEntity {
     @Column(name = "ui_id", length = 21, nullable = false)
     private String uiId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("UI코드 (예: MOBILE_MAIN, PC_MAIN)")
     @Column(name = "ui_cd", length = 50, nullable = false)

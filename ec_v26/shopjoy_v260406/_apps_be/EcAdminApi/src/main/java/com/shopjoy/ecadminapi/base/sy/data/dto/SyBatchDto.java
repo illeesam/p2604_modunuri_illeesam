@@ -28,7 +28,6 @@ public class SyBatchDto {
 
         // ── sy_batch ──────────────────────────────────────────
         private String batchId;
-        private String siteId;
         private String batchCode;
         private String batchNm;
         private String batchDesc;
@@ -43,6 +42,7 @@ public class SyBatchDto {
         private String batchMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String pathId;

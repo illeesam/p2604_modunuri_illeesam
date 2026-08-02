@@ -20,7 +20,6 @@ public class PmVoucherIssueDto {
     public static class Item {
         private String voucherIssueId;
         private String voucherId;
-        private String siteId;
         private String memberId;
         private String voucherCode;
         private LocalDateTime issueDate;
@@ -32,6 +31,7 @@ public class PmVoucherIssueDto {
         private String voucherIssueStatusCdBefore;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

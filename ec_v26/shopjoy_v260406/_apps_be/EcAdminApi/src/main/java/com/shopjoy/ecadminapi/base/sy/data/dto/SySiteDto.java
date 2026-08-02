@@ -26,7 +26,6 @@ public class SySiteDto {
     public static class Item {
 
         // ── sy_site ──────────────────────────────────────────
-        private String siteId;
         private String siteCode;
         private String siteTypeCd;
         private String siteNm;
@@ -44,6 +43,7 @@ public class SySiteDto {
         private String configJson;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String pathId;

@@ -23,9 +23,6 @@ public class PdReviewAttach extends BaseEntity {
     @Column(name = "review_attach_id", length = 21, nullable = false)
     private String reviewAttachId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("리뷰ID (pd_review.)")
     @Column(name = "review_id", length = 21, nullable = false)

@@ -24,9 +24,6 @@ public class PdhProdStatusHist extends BaseEntity {
     @Column(name = "prod_status_hist_id", length = 21, nullable = false)
     private String prodStatusHistId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("상품ID")
     @Column(name = "prod_id", length = 21, nullable = false)

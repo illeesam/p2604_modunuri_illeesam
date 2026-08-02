@@ -28,7 +28,6 @@ public class SyCodeDto {
 
         // ── sy_code ──────────────────────────────────────────
         private String codeId;
-        private String siteId;
         private String codeGrpId;  // FK → sy_code_grp.code_grp_id
         private String codeGrp;    // JOIN from sy_code_grp.code_grp (읽기 전용)
         private String codeValue;
@@ -42,6 +41,7 @@ public class SyCodeDto {
         private String codeOpt1;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

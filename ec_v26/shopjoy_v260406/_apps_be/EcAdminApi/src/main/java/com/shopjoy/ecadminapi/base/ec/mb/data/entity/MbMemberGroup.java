@@ -23,9 +23,6 @@ public class MbMemberGroup extends BaseEntity {
     @Column(name = "member_group_id", length = 21, nullable = false)
     private String memberGroupId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("그룹명")
     @Column(name = "group_nm", length = 100, nullable = false)

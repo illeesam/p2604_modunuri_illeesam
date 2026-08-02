@@ -72,7 +72,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         Map.entry("prodTypeCd", pdProd.prodTypeCd),
         Map.entry("sameDayDlivYn", pdProd.sameDayDlivYn),
         Map.entry("saveUseYn", pdProd.saveUseYn),
-        Map.entry("siteId", pdProd.siteId),
         Map.entry("sizeInfoCd", pdProd.sizeInfoCd),
         Map.entry("soldOutYn", pdProd.soldOutYn),
         Map.entry("thumbnailUrl", pdProd.thumbnailUrl),
@@ -96,7 +95,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         return queryFactory
                 .select(Projections.bean(PdProdDto.Item.class,
                         pdProd.prodId,                  // 상품ID (PK, YYMMDDhhmmss+rand4)
-                        pdProd.siteId,                   // 사이트ID (sy_site.site_id)
                         pdProd.categoryId,                // 카테고리ID
                         pdProd.brandId,                   // 브랜드ID
                         pdProd.vendorId,                  // 업체ID
@@ -190,7 +188,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .select(Projections.bean(PdProdDto.Item.class,
                         // a.* equivalent
                         pdProd.prodId,                  // 상품ID (PK)
-                        pdProd.siteId,                   // 사이트ID
                         pdProd.categoryId,                // 카테고리ID
                         pdProd.brandId,                   // 브랜드ID
                         pdProd.vendorId,                  // 업체ID
@@ -267,7 +264,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strIn(pdProd.prodId, search.getProdIds()),
-                    QdslUtil.strEq(pdProd.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProd.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProd.brandId, search.getBrandId()),
                     QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
@@ -299,7 +295,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdProd.prodId, search.getProdIds()),
-                QdslUtil.strEq(pdProd.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProd.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProd.brandId, search.getBrandId()),
                 QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),

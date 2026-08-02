@@ -48,7 +48,6 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         Map.entry("dvcMwebYn", pmDiscnt.dvcMwebYn),
         Map.entry("dvcPcYn", pmDiscnt.dvcPcYn),
         Map.entry("memGradeCd", pmDiscnt.memGradeCd),
-        Map.entry("siteId", pmDiscnt.siteId),
         Map.entry("useYn", pmDiscnt.useYn)
     );
 
@@ -62,7 +61,6 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         return queryFactory
                 .select(Projections.bean(PmDiscntDto.Item.class,
                         pmDiscnt.discntId,               // 할인ID (PK, YYMMDDhhmmss+rand4)
-                        pmDiscnt.siteId,                 // 사이트ID (sy_site.site_id)
                         pmDiscnt.discntNm,                // 할인명
                         pmDiscnt.discntTypeCd,           // 할인유형 — DISCNT_TYPE {PROD, ORDER, SHIP, SHIP_FREE}
                         pmDiscnt.discntTargetCd,         // 할인대상 — DISCNT_TARGET {ALL, CATEGORY, PRODUCT, MEMBER_GRADE}
@@ -103,7 +101,6 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId()),
                     QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()),
                     QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()),
                     QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()),
@@ -133,7 +130,6 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmDiscnt.siteId, search.getSiteId()),
                 QdslUtil.strIn(pmDiscnt.discntId, search.getDiscntIds()),
                 QdslUtil.strEq(pmDiscnt.discntId, search.getDiscntId()),
                 QdslUtil.strEq(pmDiscnt.useYn, search.getUseYn()),
@@ -213,7 +209,6 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         JPAUpdateClause update = queryFactory.update(pmDiscnt);
         boolean hasAny = false;
 
-        if (entity.getSiteId()               != null) { update.set(pmDiscnt.siteId,               entity.getSiteId());               hasAny = true; }
         if (entity.getDiscntNm()             != null) { update.set(pmDiscnt.discntNm,             entity.getDiscntNm());             hasAny = true; }
         if (entity.getDiscntTypeCd()         != null) { update.set(pmDiscnt.discntTypeCd,         entity.getDiscntTypeCd());         hasAny = true; }
         if (entity.getDiscntTargetCd()       != null) { update.set(pmDiscnt.discntTargetCd,       entity.getDiscntTargetCd());       hasAny = true; }

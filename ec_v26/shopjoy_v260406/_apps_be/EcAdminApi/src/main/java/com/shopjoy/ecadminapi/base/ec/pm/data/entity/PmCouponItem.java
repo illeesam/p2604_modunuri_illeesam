@@ -27,9 +27,6 @@ public class PmCouponItem extends BaseEntity {
     @Column(name = "coupon_id", length = 21, nullable = false)
     private String couponId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("대상유형 (코드: PROMO_TARGET_TYPE — PRODUCT/CATEGORY/VENDOR/BRAND)")
     @Column(name = "target_type_cd", length = 20, nullable = false)

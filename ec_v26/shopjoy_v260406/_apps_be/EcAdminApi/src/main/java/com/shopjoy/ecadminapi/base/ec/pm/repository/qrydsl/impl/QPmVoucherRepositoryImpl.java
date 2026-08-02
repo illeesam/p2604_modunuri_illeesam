@@ -43,7 +43,6 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         "upd_date", pmVoucher.updDate
     );
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("siteId", pmVoucher.siteId),
         Map.entry("useYn", pmVoucher.useYn),
         Map.entry("voucherDesc", pmVoucher.voucherDesc),
         Map.entry("voucherId", pmVoucher.voucherId),
@@ -62,7 +61,6 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         return queryFactory
                 .select(Projections.bean(PmVoucherDto.Item.class,
                         pmVoucher.voucherId,               // 상품권ID (PK, YYMMDDhhmmss+rand4)
-                        pmVoucher.siteId,                  // 사이트ID
                         pmVoucher.voucherNm,               // 상품권명
                         pmVoucher.voucherTypeCd,           // 유형 — VOUCHER_TYPE {AMOUNT: '금액권', RATE: '정률권'}
                         pmVoucher.voucherValue,            // 권면금액 또는 할인율
@@ -75,7 +73,6 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                         pmVoucher.useYn, pmVoucher.regBy, pmVoucher.regDate, pmVoucher.updBy, pmVoucher.updDate
                 ))
                 .from(pmVoucher)
-                .leftJoin(sySite).on(sySite.siteId.eq(pmVoucher.siteId))
                 .leftJoin(cdVt).on(cdVt.codeGrp.eq("VOUCHER_TYPE").and(cdVt.codeValue.eq(pmVoucher.voucherTypeCd)))
                 .leftJoin(cdVs).on(cdVs.codeGrp.eq("VOUCHER_STATUS").and(cdVs.codeValue.eq(pmVoucher.voucherStatusCd)));
     }
@@ -97,7 +94,6 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         JPAQuery<PmVoucherDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmVoucher.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmVoucher.voucherId, search.getVoucherId()),
                     QdslUtil.strEq(pmVoucher.voucherStatusCd, search.getVoucherStatusCd()),
                     QdslUtil.strEq(pmVoucher.useYn, search.getUseYn()),
@@ -125,7 +121,6 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmVoucher.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmVoucher.voucherId, search.getVoucherId()),
                 QdslUtil.strEq(pmVoucher.voucherStatusCd, search.getVoucherStatusCd()),
                 QdslUtil.strEq(pmVoucher.useYn, search.getUseYn()),
@@ -203,7 +198,6 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         JPAUpdateClause update = queryFactory.update(pmVoucher);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                != null) { update.set(pmVoucher.siteId,                entity.getSiteId());                hasAny = true; }
         if (entity.getVoucherNm()             != null) { update.set(pmVoucher.voucherNm,             entity.getVoucherNm());             hasAny = true; }
         if (entity.getVoucherTypeCd()         != null) { update.set(pmVoucher.voucherTypeCd,         entity.getVoucherTypeCd());         hasAny = true; }
         if (entity.getVoucherValue()          != null) { update.set(pmVoucher.voucherValue,          entity.getVoucherValue());          hasAny = true; }

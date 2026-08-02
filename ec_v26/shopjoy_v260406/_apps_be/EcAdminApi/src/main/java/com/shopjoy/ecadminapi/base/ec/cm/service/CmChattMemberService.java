@@ -49,7 +49,6 @@ public class CmChattMemberService {
     public CmChattMember addMember(String chattId, String siteId, String memberTypeCd, String refId, String refNm) {
         CmChattMember member = new CmChattMember();
         member.setChattMemberId(CmUtil.generateId("cm_chatt_member"));
-        member.setSiteId(siteId);
         member.setChattId(chattId);
         member.setMemberTypeCd(memberTypeCd);
         member.setRefId(refId);

@@ -28,7 +28,6 @@ public class SyhSendEmailLogDto {
 
         // ── syh_send_email_log ──────────────────────────────────────────
         private String logId;
-        private String siteId;
         private String templateId;
         private String templateCode;
         private String memberId;
@@ -47,6 +46,7 @@ public class SyhSendEmailLogDto {
         private String refId;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

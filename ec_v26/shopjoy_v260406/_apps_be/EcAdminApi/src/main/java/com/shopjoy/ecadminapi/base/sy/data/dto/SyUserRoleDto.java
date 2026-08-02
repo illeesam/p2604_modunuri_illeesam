@@ -32,6 +32,7 @@ public class SyUserRoleDto {
         private String userRoleRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

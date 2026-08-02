@@ -26,6 +26,7 @@ public class MbMemberSnsDto {
         private String snsUserId;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

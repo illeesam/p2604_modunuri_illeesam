@@ -143,7 +143,6 @@ public class StSettlementReportJob implements SchBatchJobHandler {
                     // 신규 INSERT
                     settle = new StSettle();
                     settle.setSettleId(CmUtil.generateId("st_settle"));
-                    settle.setSiteId(siteId);
                     settle.setVendorId(vendorId);
                     settle.setSettleYm(ymCode);
                     settle.setSettleStartDate(startDt);

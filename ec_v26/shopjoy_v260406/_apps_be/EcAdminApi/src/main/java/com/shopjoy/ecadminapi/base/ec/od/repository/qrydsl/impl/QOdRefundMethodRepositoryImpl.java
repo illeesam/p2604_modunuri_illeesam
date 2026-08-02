@@ -55,8 +55,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         Map.entry("refundId", odRefundMethod.refundId),
         Map.entry("refundMethodId", odRefundMethod.refundMethodId),
         Map.entry("refundStatusCd", odRefundMethod.refundStatusCd),
-        Map.entry("refundStatusCdBefore", odRefundMethod.refundStatusCdBefore),
-        Map.entry("siteId", odRefundMethod.siteId)
+        Map.entry("refundStatusCdBefore", odRefundMethod.refundStatusCdBefore)
     );
 
     /*
@@ -68,7 +67,6 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         return queryFactory
                 .select(Projections.bean(OdRefundMethodDto.Item.class,
                         odRefundMethod.refundMethodId,      // 환불수단ID (YYMMDDhhmmss+rand4)
-                        odRefundMethod.siteId,                // 사이트ID (sy_site.site_id)
                         odRefundMethod.refundId,              // 환불ID (od_refund.refund_id)
                         odRefundMethod.orderId,               // 주문ID (od_order.order_id)
                         odRefundMethod.payMethodCd,           // 결제수단코드 — PAY_METHOD {BANK_TRANSFER:무통장입금, VBANK:가상계좌, TOSS:토스페이먼츠, KAKAO:카카오페이, NAVER:네이버페이, MOBILE:핸드폰결제, SAVE:적립금결제, ZERO:0원결제}
@@ -84,7 +82,6 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                         odRefundMethod.regBy, odRefundMethod.regDate, odRefundMethod.updBy, odRefundMethod.updDate
                 ))
                 .from(odRefundMethod)
-                .leftJoin(ste).on(ste.siteId.eq(odRefundMethod.siteId))
                 .leftJoin(ord).on(ord.orderId.eq(odRefundMethod.orderId))
                 .leftJoin(pay).on(pay.payId.eq(odRefundMethod.payId))
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odRefundMethod.payMethodCd)))
@@ -108,7 +105,6 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         JPAQuery<OdRefundMethodDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odRefundMethod.siteId, search.getSiteId()),
                     QdslUtil.strEq(odRefundMethod.refundMethodId, search.getRefundMethodId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -134,7 +130,6 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odRefundMethod.siteId, search.getSiteId()),
                 QdslUtil.strEq(odRefundMethod.refundMethodId, search.getRefundMethodId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -206,7 +201,6 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         JPAUpdateClause update = queryFactory.update(odRefundMethod);
         boolean hasAny = false;
 
-        if (entity.getSiteId()               != null) { update.set(odRefundMethod.siteId,               entity.getSiteId());               hasAny = true; }
         if (entity.getRefundId()             != null) { update.set(odRefundMethod.refundId,             entity.getRefundId());             hasAny = true; }
         if (entity.getOrderId()              != null) { update.set(odRefundMethod.orderId,              entity.getOrderId());              hasAny = true; }
         if (entity.getPayMethodCd()          != null) { update.set(odRefundMethod.payMethodCd,          entity.getPayMethodCd());          hasAny = true; }

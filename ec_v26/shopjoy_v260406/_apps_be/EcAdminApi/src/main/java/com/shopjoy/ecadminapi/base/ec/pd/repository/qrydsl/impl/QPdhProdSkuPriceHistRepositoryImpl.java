@@ -38,7 +38,6 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         Map.entry("chgReason", pdhProdSkuPriceHist.chgReason),
         Map.entry("histId", pdhProdSkuPriceHist.histId),
         Map.entry("prodId", pdhProdSkuPriceHist.prodId),
-        Map.entry("siteId", pdhProdSkuPriceHist.siteId),
         Map.entry("skuId", pdhProdSkuPriceHist.prodSkuId)
     );
 
@@ -47,7 +46,6 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         return queryFactory
                 .select(Projections.bean(PdhProdSkuPriceHistDto.Item.class,
                         pdhProdSkuPriceHist.histId,          // 이력ID (PK, YYMMDDhhmmss+rand4)
-                        pdhProdSkuPriceHist.siteId,           // 사이트ID (sy_site.site_id)
                         pdhProdSkuPriceHist.prodSkuId,        // SKU ID (pd_prod_sku.prod_sku_id)
                         pdhProdSkuPriceHist.prodId,           // 상품ID (pd_prod.prod_id)
                         pdhProdSkuPriceHist.addPriceBefore,   // 변경 전 옵션 추가금액
@@ -59,7 +57,6 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
                         pdhProdSkuPriceHist.regDate
                 ))
                 .from(pdhProdSkuPriceHist)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdhProdSkuPriceHist.siteId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuPriceHist.prodId));
     }
 
@@ -80,7 +77,6 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
 
         JPAQuery<PdhProdSkuPriceHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(pdhProdSkuPriceHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdSkuPriceHist.histId, search.getHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
@@ -105,7 +101,6 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdhProdSkuPriceHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdSkuPriceHist.histId, search.getHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -176,7 +171,6 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         JPAUpdateClause update = queryFactory.update(pdhProdSkuPriceHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(pdhProdSkuPriceHist.siteId,         entity.getSiteId());         hasAny = true; }
         if (entity.getProdSkuId()      != null) { update.set(pdhProdSkuPriceHist.prodSkuId,      entity.getProdSkuId());      hasAny = true; }
         if (entity.getProdId()         != null) { update.set(pdhProdSkuPriceHist.prodId,         entity.getProdId());         hasAny = true; }
         if (entity.getAddPriceBefore() != null) { update.set(pdhProdSkuPriceHist.addPriceBefore, entity.getAddPriceBefore()); hasAny = true; }

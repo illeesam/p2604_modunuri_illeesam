@@ -22,7 +22,6 @@ public class OdDlivItemDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String dlivItemId;
-        private String siteId;
         private String dlivId;
         private String orderItemId;
         private String prodId;
@@ -35,6 +34,7 @@ public class OdDlivItemDto {
         private String dlivItemStatusCdBefore;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

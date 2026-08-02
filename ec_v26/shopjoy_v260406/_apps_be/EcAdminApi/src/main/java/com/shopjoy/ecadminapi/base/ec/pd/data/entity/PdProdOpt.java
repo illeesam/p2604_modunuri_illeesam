@@ -23,9 +23,6 @@ public class PdProdOpt extends BaseEntity {
     @Column(name = "prod_opt_id", length = 21, nullable = false)
     private String prodOptId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("상품ID (pd_prod.prod_id) — 조회 편의용 비정규화 컬럼")
     @Column(name = "prod_id", length = 21, nullable = false)

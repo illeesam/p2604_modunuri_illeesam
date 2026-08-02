@@ -25,9 +25,6 @@ public class PmDiscntProd {
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("배치 생성일시")
     @Column(name = "reg_date")

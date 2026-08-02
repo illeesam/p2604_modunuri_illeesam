@@ -48,8 +48,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         Map.entry("refTypeCd", pmSave.refTypeCd),
         Map.entry("saveId", pmSave.saveId),
         Map.entry("saveMemo", pmSave.saveMemo),
-        Map.entry("saveTypeCd", pmSave.saveTypeCd),
-        Map.entry("siteId", pmSave.siteId)
+        Map.entry("saveTypeCd", pmSave.saveTypeCd)
     );
 
     /*
@@ -61,7 +60,6 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         return queryFactory
                 .select(Projections.bean(PmSaveDto.Item.class,
                         pmSave.saveId,        // 적립금ID (PK, YYMMDDhhmmss+rand4)
-                        pmSave.siteId,        // 사이트ID
                         pmSave.memberId,      // 회원ID (mb_member.member_id)
                         pmSave.saveTypeCd,    // 적립금유형 — SAVE_TYPE {EARN, USE, EXPIRE, CANCEL, ADMIN}
                         pmSave.saveAmt,       // 변동액 (양수:적립, 음수:차감)
@@ -73,7 +71,6 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                         pmSave.regBy, pmSave.regDate
                 ))
                 .from(pmSave)
-                .leftJoin(sySite).on(sySite.siteId.eq(pmSave.siteId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(pmSave.memberId))
                 .leftJoin(cdSt).on(cdSt.codeGrp.eq("SAVE_TYPE").and(cdSt.codeValue.eq(pmSave.saveTypeCd)));
     }
@@ -95,7 +92,6 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmSave.siteId, search.getSiteId()),
                     QdslUtil.strIn(pmSave.saveId, search.getSaveIds()),
                     QdslUtil.strEq(pmSave.saveId, search.getSaveId()),
                     QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()),
@@ -123,7 +119,6 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmSave.siteId, search.getSiteId()),
                 QdslUtil.strIn(pmSave.saveId, search.getSaveIds()),
                 QdslUtil.strEq(pmSave.saveId, search.getSaveId()),
                 QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()),
@@ -197,7 +192,6 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         JPAUpdateClause update = queryFactory.update(pmSave);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(pmSave.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getMemberId()   != null) { update.set(pmSave.memberId,   entity.getMemberId());   hasAny = true; }
         if (entity.getSaveTypeCd() != null) { update.set(pmSave.saveTypeCd, entity.getSaveTypeCd()); hasAny = true; }
         if (entity.getSaveAmt()    != null) { update.set(pmSave.saveAmt,    entity.getSaveAmt());    hasAny = true; }

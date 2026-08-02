@@ -23,13 +23,13 @@ public class PmGiftCondDto {
     public static class Item {
         private String giftCondId;
         private String giftId;
-        private String siteId;
         private String condTypeCd;
         private Long minOrderAmt;
         private String targetTypeCd;
         private String targetId;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

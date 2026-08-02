@@ -41,7 +41,6 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         Map.entry("groupMemo", mbMemberGroup.groupMemo),
         Map.entry("groupNm", mbMemberGroup.groupNm),
         Map.entry("memberGroupId", mbMemberGroup.memberGroupId),
-        Map.entry("siteId", mbMemberGroup.siteId),
         Map.entry("useYn", mbMemberGroup.useYn)
     );
 
@@ -53,7 +52,6 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         return queryFactory
                 .select(Projections.bean(MbMemberGroupDto.Item.class,
                         mbMemberGroup.memberGroupId,   // 그룹ID (PK)
-                        mbMemberGroup.siteId,          // 사이트ID (sy_site.site_id)
                         mbMemberGroup.groupNm,         // 그룹명
                         mbMemberGroup.groupMemo,       // 메모
                         mbMemberGroup.useYn,           // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
@@ -62,8 +60,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
                         mbMemberGroup.updBy,           // 수정자ID
                         mbMemberGroup.updDate          // 수정일시
                 ))
-                .from(mbMemberGroup)
-                .leftJoin(sySite).on(sySite.siteId.eq(mbMemberGroup.siteId));
+                .from(mbMemberGroup);
     }
 
     /* 회원 그룹 키조회 */
@@ -81,7 +78,6 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(mbMemberGroup.siteId, search.getSiteId()),
                     QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()),
                     QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -107,7 +103,6 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(mbMemberGroup.siteId, search.getSiteId()),
                 QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()),
                 QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -182,7 +177,6 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         if (entity.getMemberGroupId() == null) return 0;
         JPAUpdateClause update = queryFactory.update(mbMemberGroup);
         boolean hasAny = false;
-        if (entity.getSiteId()    != null) { update.set(mbMemberGroup.siteId,    entity.getSiteId());    hasAny = true; }
         if (entity.getGroupNm()   != null) { update.set(mbMemberGroup.groupNm,   entity.getGroupNm());   hasAny = true; }
         if (entity.getGroupMemo() != null) { update.set(mbMemberGroup.groupMemo, entity.getGroupMemo()); hasAny = true; }
         if (entity.getUseYn()     != null) { update.set(mbMemberGroup.useYn,     entity.getUseYn());     hasAny = true; }

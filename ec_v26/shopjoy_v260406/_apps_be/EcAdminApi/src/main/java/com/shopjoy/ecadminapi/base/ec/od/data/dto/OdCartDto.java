@@ -22,7 +22,6 @@ public class OdCartDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String cartId;
-        private String siteId;
         private String memberId;
         private String sessionKey;
         private String prodId;
@@ -35,6 +34,7 @@ public class OdCartDto {
         private String isChecked;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String siteNm;

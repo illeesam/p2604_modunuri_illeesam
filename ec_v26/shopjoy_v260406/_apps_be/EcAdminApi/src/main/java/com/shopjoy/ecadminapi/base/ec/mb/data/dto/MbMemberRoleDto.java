@@ -28,6 +28,7 @@ public class MbMemberRoleDto {
         private String memberRoleRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String memberNm;

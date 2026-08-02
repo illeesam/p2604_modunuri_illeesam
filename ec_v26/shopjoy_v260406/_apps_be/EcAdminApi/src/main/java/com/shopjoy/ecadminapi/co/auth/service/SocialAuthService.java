@@ -84,7 +84,7 @@ public class SocialAuthService {
         // 2) (siteId, snsChannelCd, snsUserId) 매칭 → 기존 연동 회원 조회
         MbMember member;
         Optional<MbMemberSns> snsOpt = memberSnsRepository
-            .findBySiteIdAndSnsChannelCdAndSnsUserId(siteId, info.getSnsChannelCd(), info.getSnsUserId());
+            .findBySnsChannelCdAndSnsUserId(info.getSnsChannelCd(), info.getSnsUserId());
 
         if (snsOpt.isPresent()) {
             String memberId = snsOpt.get().getMemberId();
@@ -98,7 +98,7 @@ public class SocialAuthService {
 
         // 상태 검증
         if (!"ACTIVE".equals(member.getMemberStatusCd())) {
-            saveLoginLog(member.getMemberId(), CmUtil.nvlStr(member.getSiteId()),
+            saveLoginLog(member.getMemberId(), siteId,
                 member.getLoginId(), "FAIL", null, 0, null, null);
             throw new CmBizException("비활성화된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -112,10 +112,10 @@ public class SocialAuthService {
         String refreshToken = jwtProvider.createRefreshToken(authId, appTypeCd);
 
         // 멀티디바이스: 행 추가 (기존 삭제 없음)
-        saveTokenLog(authId, CmUtil.nvlStr(member.getSiteId()), accessToken, refreshToken, "LOGIN", appTypeCd, null, null, null);
+        saveTokenLog(authId, siteId, accessToken, refreshToken, "LOGIN", appTypeCd, null, null, null);
 
         // 로그인 성공 이력 기록
-        saveLoginLog(authId, CmUtil.nvlStr(member.getSiteId()), member.getLoginId(), "SUCCESS", accessToken, 0, null, null);
+        saveLoginLog(authId, siteId, member.getLoginId(), "SUCCESS", accessToken, 0, null, null);
 
         return LoginRes.builder()
             .accessToken(accessToken)
@@ -126,7 +126,7 @@ public class SocialAuthService {
             .userNm(member.getMemberNm())
             .userEmail(member.getLoginId())
             .userPhone(member.getMemberPhone())
-            .siteId(CmUtil.nvlStr(member.getSiteId()))
+            .siteId(siteId)
             .appTypeCd(appTypeCd)
             .roleId("")
             .deptId("")
@@ -169,7 +169,7 @@ public class SocialAuthService {
             throw new CmBizException("이미 탈퇴된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
-        String siteId = CmUtil.nvlStr(member.getSiteId());
+        String siteId = "";
 
         // 1) SNS 연동행 전체 삭제 (소셜 연동 정보 제거)
         memberSnsRepository.deleteByMemberId(memberId);
@@ -216,7 +216,7 @@ public class SocialAuthService {
         Optional<MbMember> existing = memberRepository.findByLoginId(loginId);
         if (existing.isPresent()) {
             MbMember exist = existing.get();
-            createSnsLink(memberSnsId, exist.getSiteId() != null ? exist.getSiteId() : siteId,
+            createSnsLink(memberSnsId, siteId,
                 exist.getMemberId(), info);
             return exist;
         }
@@ -225,7 +225,6 @@ public class SocialAuthService {
 
         MbMember member = new MbMember();
         member.setMemberId(memberId);
-        member.setSiteId(siteId);
         member.setLoginId(loginId);
         // 소셜 회원: 비밀번호 직접 로그인 불가 → 추측 불가능한 랜덤값 bcrypt 저장
         member.setLoginPwdHash(passwordEncoder.encode("SOCIAL$" + UUID.randomUUID()));
@@ -249,7 +248,6 @@ public class SocialAuthService {
     private void createSnsLink(String memberSnsId, String siteId, String memberId, SocialUserInfo info) {
         MbMemberSns sns = new MbMemberSns();
         sns.setMemberSnsId(memberSnsId);
-        sns.setSiteId(siteId);
         sns.setMemberId(memberId);
         sns.setSnsChannelCd(info.getSnsChannelCd());
         sns.setSnsUserId(info.getSnsUserId());
@@ -272,7 +270,7 @@ public class SocialAuthService {
                 .appTypeCd(appTypeCd)
                 .roleId(null)
                 .vendorId(null)
-                .siteId(CmUtil.nvlStr(member.getSiteId()))
+                .siteId("")
                 .userId(null)
                 .memberId(member.getMemberId())
                 .memberGrade(CmUtil.nvlStr(member.getGradeCd()))

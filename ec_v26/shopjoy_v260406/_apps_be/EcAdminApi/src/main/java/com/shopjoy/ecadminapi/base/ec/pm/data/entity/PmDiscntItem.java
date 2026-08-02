@@ -27,9 +27,6 @@ public class PmDiscntItem extends BaseEntity {
     @Column(name = "discnt_id", length = 21, nullable = false)
     private String discntId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("대상유형 (코드: PROMO_TARGET_TYPE)")
     @Column(name = "target_type_cd", length = 20, nullable = false)

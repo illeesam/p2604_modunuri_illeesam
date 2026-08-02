@@ -55,7 +55,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         Map.entry("giftTypeCd", pmGift.giftTypeCd),
         Map.entry("memGradeCd", pmGift.memGradeCd),
         Map.entry("prodId", pmGift.prodId),
-        Map.entry("siteId", pmGift.siteId),
         Map.entry("useYn", pmGift.useYn)
     );
 
@@ -70,7 +69,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         return queryFactory
                 .select(Projections.bean(PmGiftDto.Item.class,
                         pmGift.giftId,               // 사은품ID (PK, YYMMDDhhmmss+rand4)
-                        pmGift.siteId,               // 사이트ID
                         pmGift.giftNm,               // 사은품명
                         pmGift.giftTypeCd,           // 사은품유형 — GIFT_TYPE {PRODUCT: '상품', SAMPLE: '샘플', ETC: '기타'}
                         pmGift.prodId,               // 연결 상품ID (pd_prod.prod_id)
@@ -89,7 +87,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 ))
                 .from(pmGift)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmGift.prodId))
-                .leftJoin(sySite).on(sySite.siteId.eq(pmGift.siteId))
                 .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE").and(cdGt.codeValue.eq(pmGift.giftTypeCd)))
                 .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS").and(cdGs.codeValue.eq(pmGift.giftStatusCd)))
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmGift.memGradeCd)));
@@ -112,7 +109,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmGift.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmGift.giftId, search.getGiftId()),
                     QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()),
                     QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
@@ -141,7 +137,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmGift.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmGift.giftId, search.getGiftId()),
                 QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()),
                 QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
@@ -221,7 +216,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         JPAUpdateClause update = queryFactory.update(pmGift);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(pmGift.siteId,             entity.getSiteId());             hasAny = true; }
         if (entity.getGiftNm()             != null) { update.set(pmGift.giftNm,             entity.getGiftNm());             hasAny = true; }
         if (entity.getGiftTypeCd()         != null) { update.set(pmGift.giftTypeCd,         entity.getGiftTypeCd());         hasAny = true; }
         if (entity.getProdId()             != null) { update.set(pmGift.prodId,             entity.getProdId());             hasAny = true; }

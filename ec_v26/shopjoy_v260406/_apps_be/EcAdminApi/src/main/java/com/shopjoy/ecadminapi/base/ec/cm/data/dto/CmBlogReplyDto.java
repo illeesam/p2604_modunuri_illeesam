@@ -22,7 +22,6 @@ public class CmBlogReplyDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String commentId;
-        private String siteId;
         private String blogId;
         private String parentCommentId;
         private String writerId;
@@ -32,6 +31,7 @@ public class CmBlogReplyDto {
         private String commentStatusCdBefore;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

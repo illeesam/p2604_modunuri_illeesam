@@ -54,7 +54,6 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         Map.entry("erpVoucherTypeCd", stErpVoucher.erpVoucherTypeCd),
         Map.entry("settleId", stErpVoucher.settleId),
         Map.entry("settleYm", stErpVoucher.settleYm),
-        Map.entry("siteId", stErpVoucher.siteId),
         Map.entry("vendorId", stErpVoucher.vendorId)
     );
 
@@ -68,7 +67,6 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         return queryFactory
                 .select(Projections.bean(StErpVoucherDto.Item.class,
                         stErpVoucher.erpVoucherId,               // ERP전표ID (PK, YYMMDDhhmmss+rand4)
-                        stErpVoucher.siteId,                     // 사이트ID
                         stErpVoucher.vendorId,                   // 업체ID
                         stErpVoucher.settleId,                   // 정산ID (st_settle.settle_id)
                         stErpVoucher.settleYm,                   // 정산년월 (YYYYMM)
@@ -86,13 +84,11 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                         stErpVoucher.regDate,                      // 등록일시
                         stErpVoucher.updBy,                        // 수정자
                         stErpVoucher.updDate,                      // 수정일시
-                        sySite.siteNm.as("siteNm"),                 // 사이트명 (조인)
                         syVendor.vendorNm.as("vendorNm"),           // 업체명 (조인)
                         cdEvt.codeLabel.as("erpVoucherTypeCdNm"),   // 전표유형명 (sy_code 조인)
                         cdEvs.codeLabel.as("erpVoucherStatusCdNm") // 전표상태명 (sy_code 조인)
                 ))
                 .from(stErpVoucher)
-                .leftJoin(sySite).on(sySite.siteId.eq(stErpVoucher.siteId))
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stErpVoucher.vendorId))
                 .leftJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd)))
                 .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd)));
@@ -115,7 +111,6 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         JPAQuery<StErpVoucherDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stErpVoucher.siteId, search.getSiteId()),
                     QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()),
                     QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()),
                     QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()),
@@ -143,7 +138,6 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stErpVoucher.siteId, search.getSiteId()),
                 QdslUtil.strEq(stErpVoucher.erpVoucherId, search.getErpVoucherId()),
                 QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()),
                 QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()),
@@ -217,7 +211,6 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         JPAUpdateClause update = queryFactory.update(stErpVoucher);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                   != null) { update.set(stErpVoucher.siteId,                   entity.getSiteId());                   hasAny = true; }
         if (entity.getVendorId()                 != null) { update.set(stErpVoucher.vendorId,                 entity.getVendorId());                 hasAny = true; }
         if (entity.getSettleId()                 != null) { update.set(stErpVoucher.settleId,                 entity.getSettleId());                 hasAny = true; }
         if (entity.getSettleYm()                 != null) { update.set(stErpVoucher.settleYm,                 entity.getSettleYm());                 hasAny = true; }

@@ -27,7 +27,6 @@ public class DpAreaDto {
     public static class Item {
         private String areaId;
         private String uiId;
-        private String siteId;
         private String areaCd;
         private String areaNm;
         private String areaTypeCd;
@@ -38,6 +37,7 @@ public class DpAreaDto {
         private LocalDate useEndDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         // ── 연관정보 (getById / 목록 시 채움) ──

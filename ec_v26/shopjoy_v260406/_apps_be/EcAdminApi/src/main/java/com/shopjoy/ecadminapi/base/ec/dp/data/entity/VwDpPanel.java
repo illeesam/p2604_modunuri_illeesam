@@ -26,8 +26,6 @@ public class VwDpPanel {
     @Column(name = "panel_id", length = 21, nullable = false)
     private String panelId;
 
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Column(name = "area_id", length = 21)
     private String areaId;
@@ -67,6 +65,9 @@ public class VwDpPanel {
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
+
+    @Column(name = "reg_site_id", length = 21)
+    private String regSiteId;
 
     @Column(name = "upd_by", length = 30)
     private String updBy;

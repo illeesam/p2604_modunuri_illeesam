@@ -41,7 +41,6 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         Map.entry("dispYn", dpPanelItem.dispYn),
         Map.entry("panelId", dpPanelItem.panelId),
         Map.entry("panelItemId", dpPanelItem.panelItemId),
-        Map.entry("siteId", dpPanelItem.siteId),
         Map.entry("titleShowYn", dpPanelItem.titleShowYn),
         Map.entry("useYn", dpPanelItem.useYn),
         Map.entry("visibilityTargets", dpPanelItem.visibilityTargets),

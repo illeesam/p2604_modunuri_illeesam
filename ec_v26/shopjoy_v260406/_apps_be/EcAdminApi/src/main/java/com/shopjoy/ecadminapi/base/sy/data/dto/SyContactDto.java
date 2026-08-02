@@ -24,7 +24,6 @@ public class SyContactDto {
 
         // ── sy_contact ──────────────────────────────────────────
         private String contactId;
-        private String siteId;
         private String memberId;
         private String memberNm;
         private String categoryCd;
@@ -39,6 +38,7 @@ public class SyContactDto {
         private LocalDateTime contactDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

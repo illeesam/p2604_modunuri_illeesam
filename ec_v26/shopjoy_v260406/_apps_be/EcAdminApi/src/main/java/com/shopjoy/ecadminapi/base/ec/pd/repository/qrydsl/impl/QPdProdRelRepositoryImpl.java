@@ -41,7 +41,6 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         Map.entry("prodRelId", pdProdRel.prodRelId),
         Map.entry("prodRelTypeCd", pdProdRel.prodRelTypeCd),
         Map.entry("relProdId", pdProdRel.relProdId),
-        Map.entry("siteId", pdProdRel.siteId),
         Map.entry("useYn", pdProdRel.useYn)
     );
 

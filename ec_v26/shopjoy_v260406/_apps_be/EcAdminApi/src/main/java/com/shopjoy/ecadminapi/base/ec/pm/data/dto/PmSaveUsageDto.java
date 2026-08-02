@@ -19,7 +19,6 @@ public class PmSaveUsageDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String saveUsageId;
-        private String siteId;
         private String memberId;
         private String orderId;
         private String orderItemId;
@@ -29,6 +28,7 @@ public class PmSaveUsageDto {
         private LocalDateTime usedDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

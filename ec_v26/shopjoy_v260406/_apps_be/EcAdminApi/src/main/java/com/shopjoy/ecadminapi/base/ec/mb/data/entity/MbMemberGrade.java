@@ -24,9 +24,6 @@ public class MbMemberGrade extends BaseEntity {
     @Column(name = "member_grade_id", length = 21, nullable = false)
     private String memberGradeId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("등급코드 (코드: MEMBER_GRADE)")
     @Column(name = "grade_cd", length = 20, nullable = false)

@@ -34,21 +34,19 @@ public class CmDashboardDataService {
 
     /**
      * getList — 목록조회.
-     * 파라미터: siteId, dashboardItemId, yyyymmdd (모두 선택)
-     * siteId+uiNm+yyyymmdd 있으면 해당 조건으로 조회, 없으면 전체 조회.
+     * 파라미터: dashboardItemId, yyyymmdd, uiNm (모두 선택)
      */
     public List<CmDashboardData> getList(Map<String, Object> p) {
-        String siteId           = (String) p.get("siteId");
         String uiNm             = (String) p.get("uiNm");
         String dashboardItemId  = (String) p.get("dashboardItemId");
         String yyyymmdd         = (String) p.get("yyyymmdd");
 
-        if (siteId != null && uiNm != null && yyyymmdd != null) {
-            return cmDashboardDataRepository.findBySiteIdAndUiNmAndYyyymmddOrderByDashboardItemIdAsc(siteId, uiNm, yyyymmdd);
+        if (uiNm != null && yyyymmdd != null) {
+            return cmDashboardDataRepository.findByUiNmAndYyyymmddOrderByDashboardItemIdAsc(uiNm, yyyymmdd);
         }
-        if (siteId != null && dashboardItemId != null && yyyymmdd != null) {
+        if (dashboardItemId != null && yyyymmdd != null) {
             Optional<CmDashboardData> found =
-                cmDashboardDataRepository.findBySiteIdAndDashboardItemIdAndYyyymmdd(siteId, dashboardItemId, yyyymmdd);
+                cmDashboardDataRepository.findByDashboardItemIdAndYyyymmdd(dashboardItemId, yyyymmdd);
             return found.map(List::of).orElseGet(List::of);
         }
         return cmDashboardDataRepository.findAll();
@@ -65,12 +63,11 @@ public class CmDashboardDataService {
         String authId    = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
-        // ID 명시 없으면 siteId+dashboardItemId+yyyymmdd 로 기존 행 탐색
+        // ID 명시 없으면 dashboardItemId+yyyymmdd 로 기존 행 탐색
         if (body.getDashboardDataId() == null || body.getDashboardDataId().isBlank()) {
-            if (body.getSiteId() != null && body.getDashboardItemId() != null && body.getYyyymmdd() != null) {
+            if (body.getDashboardItemId() != null && body.getYyyymmdd() != null) {
                 Optional<CmDashboardData> existing = cmDashboardDataRepository
-                    .findBySiteIdAndDashboardItemIdAndYyyymmdd(
-                        body.getSiteId(), body.getDashboardItemId(), body.getYyyymmdd());
+                    .findByDashboardItemIdAndYyyymmdd(body.getDashboardItemId(), body.getYyyymmdd());
                 if (existing.isPresent()) {
                     body.setDashboardDataId(existing.get().getDashboardDataId());
                 }
@@ -101,14 +98,13 @@ public class CmDashboardDataService {
     }
 
     /**
-     * deleteByItemAndDate — siteId+dashboardItemId+yyyymmdd 조합으로 삭제.
+     * deleteByItemAndDate — dashboardItemId+yyyymmdd 조합으로 삭제.
      */
     @Transactional
-    public void deleteByItemAndDate(String siteId, String dashboardItemId, String yyyymmdd) {
-        CmUtil.requireId(siteId, "siteId", this);
+    public void deleteByItemAndDate(String dashboardItemId, String yyyymmdd) {
         CmUtil.requireId(dashboardItemId, "dashboardItemId", this);
         CmUtil.requireId(yyyymmdd, "yyyymmdd", this);
-        cmDashboardDataRepository.deleteBySiteIdAndDashboardItemIdAndYyyymmdd(siteId, dashboardItemId, yyyymmdd);
+        cmDashboardDataRepository.deleteByDashboardItemIdAndYyyymmdd(dashboardItemId, yyyymmdd);
         em.flush();
     }
 }

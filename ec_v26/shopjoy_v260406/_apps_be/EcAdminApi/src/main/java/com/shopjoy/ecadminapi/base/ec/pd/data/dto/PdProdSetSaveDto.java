@@ -17,7 +17,6 @@ public class PdProdSetSaveDto {
     @Getter @Setter @NoArgsConstructor
     public static class CreateRequest {
         private String prodNm;
-        private String siteId;
         private List<Item> items;
     }
 

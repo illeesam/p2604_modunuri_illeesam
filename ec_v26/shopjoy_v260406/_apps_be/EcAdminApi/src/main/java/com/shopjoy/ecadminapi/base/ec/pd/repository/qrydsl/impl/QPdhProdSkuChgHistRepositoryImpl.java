@@ -44,7 +44,6 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         Map.entry("chgTypeCd", pdhProdSkuChgHist.chgTypeCd),
         Map.entry("histId", pdhProdSkuChgHist.histId),
         Map.entry("prodId", pdhProdSkuChgHist.prodId),
-        Map.entry("siteId", pdhProdSkuChgHist.siteId),
         Map.entry("skuId", pdhProdSkuChgHist.prodSkuId)
     );
 
@@ -57,7 +56,6 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         return queryFactory
                 .select(Projections.bean(PdhProdSkuChgHistDto.Item.class,
                         pdhProdSkuChgHist.histId,        // 이력ID (PK, YYMMDDhhmmss+rand4)
-                        pdhProdSkuChgHist.siteId,         // 사이트ID (sy_site.site_id)
                         pdhProdSkuChgHist.prodSkuId,      // SKU ID (pd_prod_sku.prod_sku_id)
                         pdhProdSkuChgHist.prodId,         // 상품ID (pd_prod.prod_id)
                         pdhProdSkuChgHist.chgTypeCd,       // 변경유형 (코드: SKU_CHG_TYPE)
@@ -70,7 +68,6 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
                         pdhProdSkuChgHist.regDate
                 ))
                 .from(pdhProdSkuChgHist)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdhProdSkuChgHist.siteId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuChgHist.prodId))
                 .leftJoin(cd_sct).on(cd_sct.codeGrp.eq("SKU_CHG_TYPE").and(cd_sct.codeValue.eq(pdhProdSkuChgHist.chgTypeCd)));
     }
@@ -92,7 +89,6 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
 
         JPAQuery<PdhProdSkuChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(pdhProdSkuChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdSkuChgHist.histId, search.getHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
@@ -117,7 +113,6 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdhProdSkuChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdSkuChgHist.histId, search.getHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -188,7 +183,6 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
         JPAUpdateClause update = queryFactory.update(pdhProdSkuChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()    != null) { update.set(pdhProdSkuChgHist.siteId,    entity.getSiteId());    hasAny = true; }
         if (entity.getProdSkuId() != null) { update.set(pdhProdSkuChgHist.prodSkuId, entity.getProdSkuId()); hasAny = true; }
         if (entity.getProdId()    != null) { update.set(pdhProdSkuChgHist.prodId,    entity.getProdId());    hasAny = true; }
         if (entity.getChgTypeCd() != null) { update.set(pdhProdSkuChgHist.chgTypeCd, entity.getChgTypeCd()); hasAny = true; }

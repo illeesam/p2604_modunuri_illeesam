@@ -40,7 +40,6 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         Map.entry("prodOptId1", pdProdSku.prodOptId1),
         Map.entry("prodOptId2", pdProdSku.prodOptId2),
         Map.entry("prodId", pdProdSku.prodId),
-        Map.entry("siteId", pdProdSku.siteId),
         Map.entry("prodSkuCode", pdProdSku.prodSkuCode),
         Map.entry("prodSkuId", pdProdSku.prodSkuId),
         Map.entry("useYn", pdProdSku.useYn)
@@ -87,7 +86,6 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                 .where(
                     QdslUtil.strIn(pdProdSku.prodId, search.getProdIds()),
                     QdslUtil.strEq(pdProdSku.prodId, search.getProdId()),
-                    QdslUtil.strEq(pdProdSku.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -115,7 +113,6 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdProdSku.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProdSku.prodId, search.getProdId()),
-                QdslUtil.strEq(pdProdSku.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -188,7 +185,6 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         JPAUpdateClause update = queryFactory.update(pdProdSku);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(pdProdSku.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getProdId()       != null) { update.set(pdProdSku.prodId,       entity.getProdId());       hasAny = true; }
         if (entity.getProdOptId1()   != null) { update.set(pdProdSku.prodOptId1,   entity.getProdOptId1());   hasAny = true; }
         if (entity.getProdOptId2()   != null) { update.set(pdProdSku.prodOptId2,   entity.getProdOptId2());   hasAny = true; }

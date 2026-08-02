@@ -71,8 +71,8 @@ public class CmDashboardService {
 
         // cm_dashboard 헤더로 dashboardId 조회
         String dashboardId = null;
-        if (siteId != null && uiNm != null) {
-            CmDashboard dash = cmDashboardRepository.findBySiteIdAndUiCompNm(siteId, uiNm).orElse(null);
+        if (uiNm != null) {
+            CmDashboard dash = cmDashboardRepository.findByUiCompNm(uiNm).orElse(null);
             if (dash != null) dashboardId = dash.getDashboardId();
         }
 
@@ -80,10 +80,8 @@ public class CmDashboardService {
         List<CmDashboardItem> itemList;
         if (dashboardId != null) {
             itemList = cmDashboardItemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
-        } else if (siteId != null) {
-            itemList = cmDashboardItemRepository.findBySiteIdOrderBySortOrdAsc(siteId);
         } else {
-            itemList = cmDashboardItemRepository.findAll();
+            itemList = cmDashboardItemRepository.findAllByOrderBySortOrdAsc();
         }
 
         CmDashboardItem panel = itemList.stream()
@@ -97,7 +95,7 @@ public class CmDashboardService {
         String endYmd   = str(p.get("endYmd"));
         Object limitObj = p.get("limit");
 
-        List<CmDashboardItemData> rows = queryRows(panel.getSiteId(), panel.getDashboardItemId(), startYmd, endYmd);
+        List<CmDashboardItemData> rows = queryRows(null, panel.getDashboardItemId(), startYmd, endYmd);
 
         /* 자체 데이터가 없고 optionJson._srcItemId(원본 패널 참조)가 있으면 원본 데이터로 폴백
          * — 파생 대시보드(EC02/03·개인화)가 원본(EC01) 집계 데이터를 공유하는 규약 */
@@ -105,7 +103,7 @@ public class CmDashboardService {
             String srcItemId = extractSrcItemId(panel.getOptionJson());
             if (srcItemId != null) {
                 CmDashboardItem src = cmDashboardItemRepository.findById(srcItemId).orElse(null);
-                if (src != null) rows = queryRows(src.getSiteId(), src.getDashboardItemId(), startYmd, endYmd);
+                if (src != null) rows = queryRows(null, src.getDashboardItemId(), startYmd, endYmd);
             }
         }
 
@@ -119,11 +117,11 @@ public class CmDashboardService {
     private List<CmDashboardItemData> queryRows(String siteId, String itemId, String startYmd, String endYmd) {
         if (startYmd != null && endYmd != null) {
             return cmDashboardItemDataRepository
-                .findBySiteIdAndDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
-                    siteId, itemId, startYmd, endYmd);
+                .findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
+                    itemId, startYmd, endYmd);
         }
         return cmDashboardItemDataRepository
-            .findBySiteIdAndDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(siteId, itemId);
+            .findByDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(itemId);
     }
 
     /** optionJson 에서 _srcItemId 문자열 추출 (없거나 파싱 실패 시 null) */
@@ -144,7 +142,7 @@ public class CmDashboardService {
             .dashboardId(d.getItemDataId())
             .compId(d.getItemKey())
             .yyyymmdd(d.getYyyymmdd())
-            .siteNo(d.getSiteId())
+            .siteNo(null)
             .uiNm(d.getUiNm())
             .deptId(d.getDeptId())
             .userId(d.getUserId())

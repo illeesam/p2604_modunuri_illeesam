@@ -40,8 +40,7 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         Map.entry("chgUserId", odhDlivItemChgHist.chgUserId),
         Map.entry("dlivId", odhDlivItemChgHist.dlivId),
         Map.entry("dlivItemChgHistId", odhDlivItemChgHist.dlivItemChgHistId),
-        Map.entry("dlivItemId", odhDlivItemChgHist.dlivItemId),
-        Map.entry("siteId", odhDlivItemChgHist.siteId)
+        Map.entry("dlivItemId", odhDlivItemChgHist.dlivItemId)
     );
 
     /*
@@ -53,7 +52,6 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         return queryFactory
                 .select(Projections.bean(OdhDlivItemChgHistDto.Item.class,
                         odhDlivItemChgHist.dlivItemChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
-                        odhDlivItemChgHist.siteId,            // 사이트ID
                         odhDlivItemChgHist.dlivId,            // 배송ID (od_dliv.)
                         odhDlivItemChgHist.dlivItemId,        // 배송품목ID (od_dliv_item.)
                         odhDlivItemChgHist.chgTypeCd,         // 변경유형코드 — CHG_TYPE {QTY:수량변경, STATUS:상태변경, CARRIER:택배사변경, TRACK_NO:송장번호변경, RECV_INFO:수령정보변경}
@@ -84,7 +82,6 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         JPAQuery<OdhDlivItemChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhDlivItemChgHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhDlivItemChgHist.dlivItemChgHistId, search.getDlivItemChgHistId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -109,7 +106,6 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhDlivItemChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhDlivItemChgHist.dlivItemChgHistId, search.getDlivItemChgHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -180,7 +176,6 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         JPAUpdateClause update = queryFactory.update(odhDlivItemChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(odhDlivItemChgHist.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getDlivId()     != null) { update.set(odhDlivItemChgHist.dlivId,     entity.getDlivId());     hasAny = true; }
         if (entity.getDlivItemId() != null) { update.set(odhDlivItemChgHist.dlivItemId, entity.getDlivItemId()); hasAny = true; }
         if (entity.getChgTypeCd()  != null) { update.set(odhDlivItemChgHist.chgTypeCd,  entity.getChgTypeCd());  hasAny = true; }

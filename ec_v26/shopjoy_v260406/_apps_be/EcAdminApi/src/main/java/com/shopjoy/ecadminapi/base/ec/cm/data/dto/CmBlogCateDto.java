@@ -20,13 +20,13 @@ public class CmBlogCateDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String blogCateId;
-        private String siteId;
         private String blogCateNm;
         private String parentBlogCateId;
         private Integer sortOrd;
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String siteNm;

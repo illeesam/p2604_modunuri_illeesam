@@ -24,9 +24,6 @@ public class PmVoucher extends BaseEntity {
     @Column(name = "voucher_id", length = 21, nullable = false)
     private String voucherId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("상품권명")
     @Column(name = "voucher_nm", length = 100, nullable = false)

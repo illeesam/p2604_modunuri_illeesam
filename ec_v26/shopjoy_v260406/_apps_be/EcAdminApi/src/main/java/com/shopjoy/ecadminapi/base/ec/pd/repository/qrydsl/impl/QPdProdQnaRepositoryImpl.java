@@ -50,7 +50,6 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         Map.entry("prodQnaTitle", pdProdQna.prodQnaTitle),
         Map.entry("prodQnaTypeCd", pdProdQna.prodQnaTypeCd),
         Map.entry("scrtYn", pdProdQna.scrtYn),
-        Map.entry("siteId", pdProdQna.siteId),
         Map.entry("prodSkuId", pdProdQna.prodSkuId),
         Map.entry("useYn", pdProdQna.useYn)
     );
@@ -64,7 +63,6 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         return queryFactory
                 .select(Projections.bean(PdProdQnaDto.Item.class,
                         pdProdQna.prodQnaId,      // 문의ID (PK, YYMMDDhhmmss+rand4)
-                        pdProdQna.siteId,          // 사이트ID (sy_site.site_id)
                         pdProdQna.prodId,          // 상품ID (pd_prod.prod_id)
                         pdProdQna.prodSkuId,       // SKUID (pd_prod_sku.prod_sku_id)
                         pdProdQna.memberId,        // 회원ID (mb_member.member_id)
@@ -100,7 +98,6 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         JPAQuery<PdProdQnaDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdProdQna.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId()),
                     QdslUtil.strEq(pdProdQna.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()),
@@ -129,7 +126,6 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdProdQna.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProdQna.prodQnaId, search.getProdQnaId()),
                 QdslUtil.strEq(pdProdQna.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()),
@@ -211,7 +207,6 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         JPAUpdateClause update = queryFactory.update(pdProdQna);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(pdProdQna.siteId,        entity.getSiteId());        hasAny = true; }
         if (entity.getProdId()        != null) { update.set(pdProdQna.prodId,        entity.getProdId());        hasAny = true; }
         if (entity.getProdSkuId()     != null) { update.set(pdProdQna.prodSkuId,     entity.getProdSkuId());     hasAny = true; }
         if (entity.getMemberId()      != null) { update.set(pdProdQna.memberId,      entity.getMemberId());      hasAny = true; }

@@ -24,9 +24,6 @@ public class OdhPayStatusHist extends BaseEntity {
     @Column(name = "pay_status_hist_id", length = 21, nullable = false)
     private String payStatusHistId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("결제ID (od_pay.)")
     @Column(name = "pay_id", length = 21, nullable = false)

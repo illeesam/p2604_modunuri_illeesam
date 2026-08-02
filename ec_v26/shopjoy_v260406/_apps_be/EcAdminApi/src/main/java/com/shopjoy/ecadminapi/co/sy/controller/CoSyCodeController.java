@@ -48,7 +48,6 @@ public class CoSyCodeController {
             @RequestParam(value = "siteId", required = false) String siteId) {
         SyCodeDto.Request req = new SyCodeDto.Request();
         req.setCodeGrps(codeGrps);
-        req.setSiteId(siteId);
         return ResponseEntity.ok(ApiResponse.ok(syCodeService.getList(req)));
     }
 

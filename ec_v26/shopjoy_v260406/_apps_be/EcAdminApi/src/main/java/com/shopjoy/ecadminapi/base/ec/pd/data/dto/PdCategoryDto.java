@@ -22,7 +22,6 @@ public class PdCategoryDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String categoryId;
-        private String siteId;
         private String parentCategoryId;
         private String categoryNm;
         private Integer categoryDepth;
@@ -33,6 +32,7 @@ public class PdCategoryDto {
         private String categoryDesc;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String parentCategoryNm;

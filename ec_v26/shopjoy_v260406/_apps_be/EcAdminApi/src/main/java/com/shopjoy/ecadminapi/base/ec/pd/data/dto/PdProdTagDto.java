@@ -19,11 +19,11 @@ public class PdProdTagDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String prodTagId;
-        private String siteId;
         private String prodId;
         private String tagId;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

@@ -25,7 +25,6 @@ public class SyVendorContentDto {
 
         // ── sy_vendor_content ──────────────────────────────────────────
         private String vendorContentId;
-        private String siteId;
         private String vendorId;
         private String contentTypeCd;
         private String vendorContentTitle;
@@ -45,6 +44,7 @@ public class SyVendorContentDto {
         private String vendorContentRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

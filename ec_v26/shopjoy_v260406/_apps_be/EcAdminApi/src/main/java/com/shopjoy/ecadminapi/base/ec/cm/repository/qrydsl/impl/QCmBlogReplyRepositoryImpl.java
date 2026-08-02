@@ -44,7 +44,6 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         Map.entry("commentStatusCd", cmBlogReply.commentStatusCd),
         Map.entry("commentStatusCdBefore", cmBlogReply.commentStatusCdBefore),
         Map.entry("parentCommentId", cmBlogReply.parentCommentId),
-        Map.entry("siteId", cmBlogReply.siteId),
         Map.entry("writerId", cmBlogReply.writerId),
         Map.entry("writerNm", cmBlogReply.writerNm)
     );
@@ -57,7 +56,6 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         return queryFactory
                 .select(Projections.bean(CmBlogReplyDto.Item.class,
                         cmBlogReply.commentId,             // 댓글ID (PK)
-                        cmBlogReply.siteId,                 // 사이트ID
                         cmBlogReply.blogId,                 // 블로그ID
                         cmBlogReply.parentCommentId,         // 대댓글 부모ID
                         cmBlogReply.writerId,                // 작성자ID
@@ -91,7 +89,6 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()),
-                QdslUtil.strEq(cmBlogReply.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmBlogReply.commentId, search.getCommentId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -119,7 +116,6 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()),
-                QdslUtil.strEq(cmBlogReply.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmBlogReply.commentId, search.getCommentId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -196,7 +192,6 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         JPAUpdateClause update = queryFactory.update(cmBlogReply);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                != null) { update.set(cmBlogReply.siteId,                entity.getSiteId());                hasAny = true; }
         if (entity.getBlogId()                != null) { update.set(cmBlogReply.blogId,                entity.getBlogId());                hasAny = true; }
         if (entity.getParentCommentId()       != null) { update.set(cmBlogReply.parentCommentId,       entity.getParentCommentId());       hasAny = true; }
         if (entity.getWriterId()              != null) { update.set(cmBlogReply.writerId,              entity.getWriterId());              hasAny = true; }

@@ -28,7 +28,6 @@ public class SyPropDto {
 
         // ── sy_prop ──────────────────────────────────────────
         private String propId;
-        private String siteId;
         private String pathId;
         private String propKey;
         private String propValue;
@@ -40,6 +39,7 @@ public class SyPropDto {
         private String propProfile;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

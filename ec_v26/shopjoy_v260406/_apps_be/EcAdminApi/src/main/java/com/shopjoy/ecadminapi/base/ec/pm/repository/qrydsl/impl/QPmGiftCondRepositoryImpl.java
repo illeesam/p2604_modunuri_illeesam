@@ -46,7 +46,6 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         Map.entry("condTypeCd", pmGiftCond.condTypeCd),
         Map.entry("giftCondId", pmGiftCond.giftCondId),
         Map.entry("giftId", pmGiftCond.giftId),
-        Map.entry("siteId", pmGiftCond.siteId),
         Map.entry("targetId", pmGiftCond.targetId),
         Map.entry("targetTypeCd", pmGiftCond.targetTypeCd)
     );
@@ -61,7 +60,6 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 .select(Projections.bean(PmGiftCondDto.Item.class,
                         pmGiftCond.giftCondId,     // 사은품조건ID (PK)
                         pmGiftCond.giftId,         // 사은품ID (pm_gift.gift_id)
-                        pmGiftCond.siteId,         // 사이트ID
                         pmGiftCond.condTypeCd,     // 조건유형 — GIFT_COND_TYPE {ORDER_AMT: '주문금액', PRODUCT: '특정상품', MEMBER_GRADE: '회원등급'}
                         pmGiftCond.minOrderAmt,    // 최소주문금액 (ORDER_AMT 조건)
                         pmGiftCond.targetTypeCd,   // 대상유형 — PRODUCT/CATEGORY/MEMBER_GRADE
@@ -70,7 +68,6 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 ))
                 .from(pmGiftCond)
                 .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftCond.giftId))
-                .leftJoin(sySite).on(sySite.siteId.eq(pmGiftCond.siteId))
                 .leftJoin(cdGct).on(cdGct.codeGrp.eq("GIFT_COND_TYPE").and(cdGct.codeValue.eq(pmGiftCond.condTypeCd)));
     }
 
@@ -91,7 +88,6 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmGiftCond.giftCondId, search.getGiftCondId()),
                     QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId()),
                     QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()),
@@ -120,7 +116,6 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmGiftCond.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmGiftCond.giftCondId, search.getGiftCondId()),
                 QdslUtil.strEq(pmGiftCond.giftId, search.getGiftId()),
                 QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()),
@@ -196,7 +191,6 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         boolean hasAny = false;
 
         if (entity.getGiftId()       != null) { update.set(pmGiftCond.giftId,       entity.getGiftId());       hasAny = true; }
-        if (entity.getSiteId()       != null) { update.set(pmGiftCond.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getCondTypeCd()   != null) { update.set(pmGiftCond.condTypeCd,   entity.getCondTypeCd());   hasAny = true; }
         if (entity.getMinOrderAmt()  != null) { update.set(pmGiftCond.minOrderAmt,  entity.getMinOrderAmt());  hasAny = true; }
         if (entity.getTargetTypeCd() != null) { update.set(pmGiftCond.targetTypeCd, entity.getTargetTypeCd()); hasAny = true; }

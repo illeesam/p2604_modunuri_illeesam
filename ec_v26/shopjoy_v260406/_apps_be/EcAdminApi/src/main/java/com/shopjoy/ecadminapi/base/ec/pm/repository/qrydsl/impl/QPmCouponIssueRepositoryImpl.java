@@ -49,7 +49,6 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         Map.entry("issueId", pmCouponIssue.issueId),
         Map.entry("memberId", pmCouponIssue.memberId),
         Map.entry("orderId", pmCouponIssue.orderId),
-        Map.entry("siteId", pmCouponIssue.siteId),
         Map.entry("useYn", pmCouponIssue.useYn)
     );
 
@@ -62,7 +61,6 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         return queryFactory
                 .select(Projections.bean(PmCouponIssueDto.Item.class,
                         pmCouponIssue.issueId,     // 발급ID (PK)
-                        pmCouponIssue.siteId,      // 사이트ID (sy_site.site_id)
                         pmCouponIssue.couponId,    // 쿠폰ID (pm_coupon.coupon_id)
                         pmCouponIssue.memberId,    // 회원ID
                         pmCouponIssue.issueDate,   // 발급일시
@@ -105,7 +103,6 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         JPAQuery<PmCouponIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmCouponIssue.siteId, search.getSiteId()),
                     QdslUtil.strIn(pmCouponIssue.couponId, search.getCouponIds()),
                     QdslUtil.strEq(pmCouponIssue.issueId, search.getIssueId()),
                     QdslUtil.strEq(pmCouponIssue.memberId, search.getMemberId()),
@@ -134,7 +131,6 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmCouponIssue.siteId, search.getSiteId()),
                 QdslUtil.strIn(pmCouponIssue.couponId, search.getCouponIds()),
                 QdslUtil.strEq(pmCouponIssue.issueId, search.getIssueId()),
                 QdslUtil.strEq(pmCouponIssue.memberId, search.getMemberId()),

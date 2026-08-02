@@ -24,9 +24,6 @@ public class PdhProdViewLog extends BaseEntity {
     @Column(name = "log_id", length = 21, nullable = false)
     private String logId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("회원ID (비회원 NULL)")
     @Column(name = "member_id", length = 21)

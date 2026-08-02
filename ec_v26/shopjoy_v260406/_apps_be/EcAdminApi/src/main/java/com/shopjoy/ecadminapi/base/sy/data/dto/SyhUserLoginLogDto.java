@@ -30,7 +30,6 @@ public class SyhUserLoginLogDto {
 
         // ── syh_user_login_log ──────────────────────────────────────────
         private String logId;
-        private String siteId;
         private String userId;
         private String loginId;
         private LocalDateTime loginDate;
@@ -48,6 +47,7 @@ public class SyhUserLoginLogDto {
         private String cmdNm;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

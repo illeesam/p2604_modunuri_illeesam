@@ -24,12 +24,12 @@ public class MbLikeDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String likeId;
-        private String siteId;
         private String memberId;
         private String targetTypeCd;
         private String targetId;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         // ── 연관정보 (목록 시 채움, targetTypeCd=PROD 인 경우) ──

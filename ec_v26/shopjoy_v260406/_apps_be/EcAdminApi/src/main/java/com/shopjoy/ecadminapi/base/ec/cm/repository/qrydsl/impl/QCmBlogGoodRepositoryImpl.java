@@ -40,7 +40,6 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("blogId", cmBlogGood.blogId),
         Map.entry("likeId", cmBlogGood.likeId),
-        Map.entry("siteId", cmBlogGood.siteId),
         Map.entry("userId", cmBlogGood.userId)
     );
 

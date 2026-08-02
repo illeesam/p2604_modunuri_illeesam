@@ -27,9 +27,6 @@ public class DpWidget extends BaseEntity {
     @Column(name = "widget_lib_id", length = 21)
     private String widgetLibId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("위젯명")
     @Column(name = "widget_nm", length = 100, nullable = false)

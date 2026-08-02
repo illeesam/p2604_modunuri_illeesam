@@ -56,7 +56,6 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         Map.entry("returnAddrZip", pdDlivTmplt.returnAddrZip),
         Map.entry("returnCourierCd", pdDlivTmplt.returnCourierCd),
         Map.entry("returnTelNo", pdDlivTmplt.returnTelNo),
-        Map.entry("siteId", pdDlivTmplt.siteId),
         Map.entry("useYn", pdDlivTmplt.useYn),
         Map.entry("vendorId", pdDlivTmplt.vendorId)
     );
@@ -72,7 +71,6 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         return queryFactory
                 .select(Projections.bean(PdDlivTmpltDto.Item.class,
                         pdDlivTmplt.dlivTmpltId,          // 배송템플릿ID (PK, YYMMDDhhmmss+rand4)
-                        pdDlivTmplt.siteId,                // 사이트ID (sy_site.site_id)
                         pdDlivTmplt.vendorId,               // 업체ID (sy_vendor.vendor_id)
                         pdDlivTmplt.dlivTmpltNm,             // 템플릿명
                         pdDlivTmplt.dlivMethodCd,             // 배송방법 — {COURIER: '택배', DIRECT: '직접배송', PICKUP: '방문수령'}
@@ -93,7 +91,6 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                         pdDlivTmplt.regBy, pdDlivTmplt.regDate, pdDlivTmplt.updBy, pdDlivTmplt.updDate
                 ))
                 .from(pdDlivTmplt)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdDlivTmplt.siteId))
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdDlivTmplt.vendorId))
                 .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD").and(cdDm.codeValue.eq(pdDlivTmplt.dlivMethodCd)))
                 .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE").and(cdDpt.codeValue.eq(pdDlivTmplt.dlivPayTypeCd)));
@@ -116,7 +113,6 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdDlivTmplt.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()),
                     QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()),
                     QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()),
@@ -144,7 +140,6 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdDlivTmplt.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdDlivTmplt.dlivTmpltId, search.getDlivTmpltId()),
                 QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()),
                 QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()),
@@ -222,7 +217,6 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         JPAUpdateClause update = queryFactory.update(pdDlivTmplt);
         boolean hasAny = false;
 
-        if (entity.getSiteId()           != null) { update.set(pdDlivTmplt.siteId,           entity.getSiteId());           hasAny = true; }
         if (entity.getVendorId()         != null) { update.set(pdDlivTmplt.vendorId,         entity.getVendorId());         hasAny = true; }
         if (entity.getDlivTmpltNm()      != null) { update.set(pdDlivTmplt.dlivTmpltNm,      entity.getDlivTmpltNm());      hasAny = true; }
         if (entity.getDlivMethodCd()     != null) { update.set(pdDlivTmplt.dlivMethodCd,     entity.getDlivMethodCd());     hasAny = true; }

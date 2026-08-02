@@ -23,11 +23,11 @@ public class PmCouponItemDto {
     public static class Item {
         private String couponItemId;
         private String couponId;
-        private String siteId;
         private String targetTypeCd;
         private String targetId;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

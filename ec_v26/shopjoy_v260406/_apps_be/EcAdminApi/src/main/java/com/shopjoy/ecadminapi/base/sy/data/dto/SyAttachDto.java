@@ -51,7 +51,6 @@ public class SyAttachDto {
 
         // ── sy_attach ──────────────────────────────────────────
         private String attachId;
-        private String siteId;
         private String attachGrpId;
         private String fileNm;
         private Long fileSize;
@@ -73,6 +72,7 @@ public class SyAttachDto {
         private String attachMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

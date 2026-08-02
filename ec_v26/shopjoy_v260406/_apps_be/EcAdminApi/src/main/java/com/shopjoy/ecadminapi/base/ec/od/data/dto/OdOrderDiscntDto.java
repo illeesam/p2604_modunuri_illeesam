@@ -23,7 +23,6 @@ public class OdOrderDiscntDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String orderDiscntId;
-        private String siteId;
         private String orderId;
         private String discntTypeCd;
         private String couponId;
@@ -36,6 +35,7 @@ public class OdOrderDiscntDto {
         private LocalDateTime restoreDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

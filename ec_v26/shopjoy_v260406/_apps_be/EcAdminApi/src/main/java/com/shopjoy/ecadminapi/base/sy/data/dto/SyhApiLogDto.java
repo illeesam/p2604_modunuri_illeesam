@@ -26,7 +26,6 @@ public class SyhApiLogDto {
 
         // ── syh_api_log ──────────────────────────────────────────
         private String logId;
-        private String siteId;
         private String apiTypeCd;
         private String apiNm;
         private String uiNm;
@@ -44,6 +43,7 @@ public class SyhApiLogDto {
         private LocalDateTime callDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

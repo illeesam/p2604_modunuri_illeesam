@@ -23,12 +23,12 @@ public class SyRoleMenuDto {
 
         // ── sy_role_menu ──────────────────────────────────────────
         private String roleMenuId;
-        private String siteId;
         private String roleId;
         private String menuId;
         private Integer permLevel;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

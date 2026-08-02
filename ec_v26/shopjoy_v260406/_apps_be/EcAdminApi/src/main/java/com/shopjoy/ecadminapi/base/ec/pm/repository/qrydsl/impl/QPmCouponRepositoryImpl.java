@@ -56,7 +56,6 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         Map.entry("memGradeCd", pmCoupon.memGradeCd),
         Map.entry("memo", pmCoupon.memo),
         Map.entry("sellerCdivRemark", pmCoupon.sellerCdivRemark),
-        Map.entry("siteId", pmCoupon.siteId),
         Map.entry("targetTypeCd", pmCoupon.targetTypeCd),
         Map.entry("targetValue", pmCoupon.targetValue),
         Map.entry("useYn", pmCoupon.useYn)
@@ -73,7 +72,6 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         return queryFactory
                 .select(Projections.bean(PmCouponDto.Item.class,
                         pmCoupon.couponId,              // 쿠폰ID (PK, YYMMDDhhmmss+rand4)
-                        pmCoupon.siteId,                // 사이트ID (sy_site.site_id)
                         pmCoupon.couponCd,               // 쿠폰코드 (UNIQUE)
                         pmCoupon.couponNm,               // 쿠폰명
                         pmCoupon.couponTypeCd,           // 쿠폰유형 — COUPON_TYPE {PROD_DISCNT, ORDER_DISCNT, SHIP_DISCNT, SHIP_FREE, JOIN_GIFT, VIP, CLAIM_COMP}
@@ -132,7 +130,6 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()),
-                    QdslUtil.strEq(pmCoupon.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()),
                     QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()),
@@ -161,7 +158,6 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()),
-                QdslUtil.strEq(pmCoupon.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()),
                 QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()),

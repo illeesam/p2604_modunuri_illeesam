@@ -23,11 +23,11 @@ public class PmDiscntItemDto {
     public static class Item {
         private String discntItemId;
         private String discntId;
-        private String siteId;
         private String targetTypeCd;
         private String targetId;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

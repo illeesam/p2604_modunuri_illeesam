@@ -68,12 +68,10 @@ public class BoCmDashboardController {
             @RequestParam(required = false) String useYn,
             @RequestParam(required = false) String scope) {
         List<CmDashboard> result;
-        if (siteId != null && useYn != null) {
-            result = cmDashboardRepository.findBySiteIdAndUseYnOrderBySortOrdAsc(siteId, useYn);
-        } else if (siteId != null) {
-            result = cmDashboardRepository.findBySiteIdOrderBySortOrdAsc(siteId);
+        if (useYn != null) {
+            result = cmDashboardRepository.findByUseYnOrderBySortOrdAsc(useYn);
         } else {
-            result = cmDashboardRepository.findAll();
+            result = cmDashboardRepository.findAllByOrderBySortOrdAsc();
         }
         if (scope != null && !scope.isBlank()) {
             AuthPrincipal me = SecurityUtil.getAuthUser();
@@ -264,11 +262,11 @@ public class BoCmDashboardController {
         String scp = normScope(scope);
         if ("SYS".equals(scp)) {
             return ResponseEntity.ok(ApiResponse.ok(
-                cmDashboardMenuRepository.findBySiteIdAndMenuScopeCdOrderBySortOrdAsc(sid, scp)));
+                cmDashboardMenuRepository.findByMenuScopeCdOrderBySortOrdAsc(scp)));
         }
         String uid = SecurityUtil.getAuthUser().authId();
         return ResponseEntity.ok(ApiResponse.ok(
-            cmDashboardMenuRepository.findBySiteIdAndMenuScopeCdAndOwnerUserIdOrderBySortOrdAsc(sid, scp, uid)));
+            cmDashboardMenuRepository.findByMenuScopeCdAndOwnerUserIdOrderBySortOrdAsc(scp, uid)));
     }
 
     /**
@@ -286,8 +284,8 @@ public class BoCmDashboardController {
         String sid = siteId == null ? SecurityUtil.getSiteId() : siteId;
         String scp = normScope(scope);
         String uid = SecurityUtil.getAuthUser().authId();
-        if ("SYS".equals(scp)) cmDashboardMenuRepository.deleteBySiteIdAndMenuScopeCd(sid, scp);
-        else                   cmDashboardMenuRepository.deleteBySiteIdAndMenuScopeCdAndOwnerUserId(sid, scp, uid);
+        if ("SYS".equals(scp)) cmDashboardMenuRepository.deleteByMenuScopeCd(scp);
+        else                   cmDashboardMenuRepository.deleteByMenuScopeCdAndOwnerUserId(scp, uid);
         cmDashboardMenuRepository.flush();
         LocalDateTime now = LocalDateTime.now();
         /* 클라이언트는 임시 키로 부모를 가리킨다. 실제 ID 를 새로 만들면서 키→ID 로 바꿔준다
@@ -301,7 +299,6 @@ public class BoCmDashboardController {
             String pk = n.getParentNodeId();
             n.setParentNodeId(pk == null || pk.isBlank() ? null : keyToId.get(pk));
             n.setMenuNodeId(keyToId.get(n.getMenuNodeId()));
-            n.setSiteId(sid);
             n.setMenuScopeCd(scp);
             /* SYS 는 주인이 없다. USER 는 세션 고정 — 클라이언트 값 무시 */
             n.setOwnerUserId("SYS".equals(scp) ? null : uid);

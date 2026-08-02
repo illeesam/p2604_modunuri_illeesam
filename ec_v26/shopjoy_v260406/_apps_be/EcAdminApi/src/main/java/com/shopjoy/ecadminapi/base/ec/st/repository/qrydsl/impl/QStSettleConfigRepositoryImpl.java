@@ -50,7 +50,6 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         Map.entry("settleConfigId", stSettleConfig.settleConfigId),
         Map.entry("settleConfigRemark", stSettleConfig.settleConfigRemark),
         Map.entry("settleCycleCd", stSettleConfig.settleCycleCd),
-        Map.entry("siteId", stSettleConfig.siteId),
         Map.entry("useYn", stSettleConfig.useYn),
         Map.entry("vendorId", stSettleConfig.vendorId)
     );
@@ -64,7 +63,6 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         return queryFactory
                 .select(Projections.bean(StSettleConfigDto.Item.class,
                         stSettleConfig.settleConfigId,       // 정산기준ID (PK, YYMMDDhhmmss+rand4)
-                        stSettleConfig.siteId,                // 사이트ID (sy_site.site_id)
                         stSettleConfig.vendorId,               // 업체ID (NULL=전체 기준)
                         stSettleConfig.categoryId,             // 카테고리ID (NULL=전체 기준)
                         stSettleConfig.settleCycleCd,          // 정산주기 — SETTLE_CYCLE {DAILY: '일정산', WEEKLY: '주정산', BIWEEKLY: '격주', MONTHLY: '월정산'}
@@ -77,13 +75,11 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                         stSettleConfig.regDate,                // 등록일시
                         stSettleConfig.updBy,                  // 수정자
                         stSettleConfig.updDate,                // 수정일시
-                        sySite.siteNm.as("siteNm"),                     // 사이트명 (조인)
                         syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
                         pdCategory.categoryNm.as("categoryNm"),         // 카테고리명 (조인)
                         cdSc.codeLabel.as("settleCycleCdNm")            // 정산주기명 (sy_code 조인)
                 ))
                 .from(stSettleConfig)
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettleConfig.siteId))
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettleConfig.vendorId))
                 .leftJoin(pdCategory).on(pdCategory.categoryId.eq(stSettleConfig.categoryId))
                 .leftJoin(cdSc).on(cdSc.codeGrp.eq("SETTLE_CYCLE").and(cdSc.codeValue.eq(stSettleConfig.settleCycleCd)));
@@ -106,7 +102,6 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         JPAQuery<StSettleConfigDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stSettleConfig.siteId, search.getSiteId()),
                     QdslUtil.strEq(stSettleConfig.settleConfigId, search.getSettleConfigId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -132,7 +127,6 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stSettleConfig.siteId, search.getSiteId()),
                 QdslUtil.strEq(stSettleConfig.settleConfigId, search.getSettleConfigId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -204,7 +198,6 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         JPAUpdateClause update = queryFactory.update(stSettleConfig);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(stSettleConfig.siteId,             entity.getSiteId());             hasAny = true; }
         if (entity.getVendorId()           != null) { update.set(stSettleConfig.vendorId,           entity.getVendorId());           hasAny = true; }
         if (entity.getCategoryId()         != null) { update.set(stSettleConfig.categoryId,         entity.getCategoryId());         hasAny = true; }
         if (entity.getSettleCycleCd()      != null) { update.set(stSettleConfig.settleCycleCd,      entity.getSettleCycleCd());      hasAny = true; }

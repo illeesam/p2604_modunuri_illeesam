@@ -39,7 +39,6 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         Map.entry("payStatusCd", odhPayStatusHist.payStatusCd),
         Map.entry("payStatusCdBefore", odhPayStatusHist.payStatusCdBefore),
         Map.entry("payStatusHistId", odhPayStatusHist.payStatusHistId),
-        Map.entry("siteId", odhPayStatusHist.siteId),
         Map.entry("statusReason", odhPayStatusHist.statusReason)
     );
 
@@ -51,7 +50,6 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         return queryFactory
                 .select(Projections.bean(OdhPayStatusHistDto.Item.class,
                         odhPayStatusHist.payStatusHistId,   // 결제상태이력ID (YYMMDDhhmmss+rand4)
-                        odhPayStatusHist.siteId,              // 사이트ID
                         odhPayStatusHist.payId,               // 결제ID (od_pay.)
                         odhPayStatusHist.orderId,             // 주문ID (od_order.)
                         odhPayStatusHist.payStatusCdBefore,   // 변경 전 결제상태 — PAY_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
@@ -81,7 +79,6 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         JPAQuery<OdhPayStatusHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhPayStatusHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhPayStatusHist.payStatusHistId, search.getPayStatusHistId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -106,7 +103,6 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhPayStatusHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhPayStatusHist.payStatusHistId, search.getPayStatusHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -177,7 +173,6 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         JPAUpdateClause update = queryFactory.update(odhPayStatusHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()            != null) { update.set(odhPayStatusHist.siteId,            entity.getSiteId());            hasAny = true; }
         if (entity.getPayId()             != null) { update.set(odhPayStatusHist.payId,             entity.getPayId());             hasAny = true; }
         if (entity.getOrderId()           != null) { update.set(odhPayStatusHist.orderId,           entity.getOrderId());           hasAny = true; }
         if (entity.getPayStatusCdBefore() != null) { update.set(odhPayStatusHist.payStatusCdBefore, entity.getPayStatusCdBefore()); hasAny = true; }

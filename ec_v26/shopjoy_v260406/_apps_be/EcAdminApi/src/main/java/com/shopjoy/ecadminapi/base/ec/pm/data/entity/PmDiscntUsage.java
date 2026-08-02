@@ -25,9 +25,6 @@ public class PmDiscntUsage extends BaseEntity {
     @Column(name = "discnt_usage_id", length = 21, nullable = false)
     private String discntUsageId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("할인ID (pm_discnt.discnt_id)")
     @Column(name = "discnt_id", length = 21, nullable = false)

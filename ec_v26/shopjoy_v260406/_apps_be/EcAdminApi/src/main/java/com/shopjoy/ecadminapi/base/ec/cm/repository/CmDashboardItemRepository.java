@@ -10,5 +10,5 @@ import java.util.List;
 public interface CmDashboardItemRepository extends JpaRepository<CmDashboardItem, String> {
     List<CmDashboardItem> findByDashboardIdOrderBySortOrdAsc(String dashboardId);
     List<CmDashboardItem> findByDashboardIdAndUseYnOrderBySortOrdAsc(String dashboardId, String useYn);
-    List<CmDashboardItem> findBySiteIdOrderBySortOrdAsc(String siteId);
+    List<CmDashboardItem> findAllByOrderBySortOrdAsc();
 }

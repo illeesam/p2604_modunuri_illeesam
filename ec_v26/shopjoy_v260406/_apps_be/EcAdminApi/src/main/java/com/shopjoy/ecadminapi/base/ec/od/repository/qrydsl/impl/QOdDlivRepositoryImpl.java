@@ -80,7 +80,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         Map.entry("recvPhone", odDliv.recvPhone),
         Map.entry("recvZip", odDliv.recvZip),
         Map.entry("shippingFeeTypeCd", odDliv.shippingFeeTypeCd),
-        Map.entry("siteId", odDliv.siteId),
         Map.entry("vendorId", odDliv.vendorId)
     );
 
@@ -95,7 +94,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         return queryFactory
                 .select(Projections.bean(OdDlivDto.Item.class,
                         odDliv.dlivId,                // 배송ID (YYMMDDhhmmss+rand4)
-                        odDliv.siteId,                 // 사이트ID (sy_site.site_id)
                         odDliv.orderId,                // 주문ID (od_order.)
                         odDliv.vendorId,               // 출고 업체ID (벤더별 분리출고 시)
                         odDliv.dlivTypeCd,             // 배송유형 — DLIV_TYPE {NORMAL:정상배송, RETURN:반품, EXCHANGE:교환반품, EXCHANGE_OUT:교환출고}
@@ -156,7 +154,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 .where(
                     QdslUtil.strIn(odDliv.orderId, search.getOrderIds()),
                     QdslUtil.strEq(odDliv.orderId, search.getOrderId()),
-                    QdslUtil.strEq(odDliv.siteId, search.getSiteId()),
                     QdslUtil.strEq(odDliv.dlivId, search.getDlivId()),
                     QdslUtil.strEq(odDliv.memberId, search.getMemberId()),
                     QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),
@@ -186,7 +183,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odDliv.orderId, search.getOrderIds()),
                 QdslUtil.strEq(odDliv.orderId, search.getOrderId()),
-                QdslUtil.strEq(odDliv.siteId, search.getSiteId()),
                 QdslUtil.strEq(odDliv.dlivId, search.getDlivId()),
                 QdslUtil.strEq(odDliv.memberId, search.getMemberId()),
                 QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),

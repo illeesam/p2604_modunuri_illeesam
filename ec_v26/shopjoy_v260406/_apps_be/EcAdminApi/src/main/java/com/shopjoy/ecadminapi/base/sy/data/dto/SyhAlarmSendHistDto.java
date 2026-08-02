@@ -26,7 +26,6 @@ public class SyhAlarmSendHistDto {
 
         // ── syh_alarm_send_hist ──────────────────────────────────────────
         private String sendHistId;
-        private String siteId;
         private String alarmId;
         private String memberId;
         private String userId;
@@ -37,6 +36,7 @@ public class SyhAlarmSendHistDto {
         private String errorMsg;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

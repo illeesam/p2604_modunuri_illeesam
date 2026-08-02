@@ -26,7 +26,6 @@ public class CmChattMsgDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String chattMsgId;
-        private String siteId;
         private String chattId;
         private String senderTypeCd;
         private String senderId;
@@ -40,6 +39,7 @@ public class CmChattMsgDto {
         private LocalDateTime sendDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         /* 첨부는 공통 축약 DTO 를 쓴다 — sy_attach 컬럼명 그대로라 도메인마다 키가 갈리지 않는다.

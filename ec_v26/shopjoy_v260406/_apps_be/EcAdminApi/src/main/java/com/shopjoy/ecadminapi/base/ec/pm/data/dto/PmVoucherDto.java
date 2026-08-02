@@ -22,7 +22,6 @@ public class PmVoucherDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String voucherId;
-        private String siteId;
         private String voucherNm;
         private String voucherTypeCd;
         private BigDecimal voucherValue;
@@ -35,6 +34,7 @@ public class PmVoucherDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

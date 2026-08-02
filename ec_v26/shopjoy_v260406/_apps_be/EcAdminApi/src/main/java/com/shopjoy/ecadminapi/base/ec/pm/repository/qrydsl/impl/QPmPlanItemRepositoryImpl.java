@@ -46,8 +46,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         Map.entry("planId", pmPlanItem.planId),
         Map.entry("planItemId", pmPlanItem.planItemId),
         Map.entry("planItemMemo", pmPlanItem.planItemMemo),
-        Map.entry("prodId", pmPlanItem.prodId),
-        Map.entry("siteId", pmPlanItem.siteId)
+        Map.entry("prodId", pmPlanItem.prodId)
     );
 
     /* 프로모션 플랜 아이템 baseSelColumnQuery — 코드성 필드 없음 (상품 매핑·진열순서·메모만 보유) */
@@ -56,7 +55,6 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                 .select(Projections.bean(PmPlanItemDto.Item.class,
                         pmPlanItem.planItemId,     // 기획전상품ID (PK)
                         pmPlanItem.planId,         // 기획전ID (pm_plan.plan_id)
-                        pmPlanItem.siteId,         // 사이트ID
                         pmPlanItem.prodId,         // 상품ID (pd_prod.prod_id)
                         pmPlanItem.sortOrd,        // 정렬순서
                         pmPlanItem.planItemMemo,   // 항목 메모 (특가/한정수량 등)
@@ -64,8 +62,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                 ))
                 .from(pmPlanItem)
                 .leftJoin(pmPlan).on(pmPlan.planId.eq(pmPlanItem.planId))
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pmPlanItem.prodId))
-                .leftJoin(sySite).on(sySite.siteId.eq(pmPlanItem.siteId));
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pmPlanItem.prodId));
     }
 
     /* 프로모션 플랜 아이템 키조회 */
@@ -85,7 +82,6 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         JPAQuery<PmPlanItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmPlanItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -111,7 +107,6 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmPlanItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -189,7 +184,6 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         boolean hasAny = false;
 
         if (entity.getPlanId()       != null) { update.set(pmPlanItem.planId,       entity.getPlanId());       hasAny = true; }
-        if (entity.getSiteId()       != null) { update.set(pmPlanItem.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getProdId()       != null) { update.set(pmPlanItem.prodId,       entity.getProdId());       hasAny = true; }
         if (entity.getSortOrd()      != null) { update.set(pmPlanItem.sortOrd,      entity.getSortOrd());      hasAny = true; }
         if (entity.getPlanItemMemo() != null) { update.set(pmPlanItem.planItemMemo, entity.getPlanItemMemo()); hasAny = true; }

@@ -23,9 +23,6 @@ public class PdProdSetItem extends BaseEntity {
     @Column(name = "set_item_id", length = 21, nullable = false)
     private String setItemId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("세트상품ID (pd_prod.prod_id, prod_type_cd=SET)")
     @Column(name = "set_prod_id", length = 21, nullable = false)

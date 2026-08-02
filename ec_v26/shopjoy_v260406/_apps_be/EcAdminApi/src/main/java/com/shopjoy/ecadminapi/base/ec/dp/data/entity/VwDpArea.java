@@ -29,8 +29,6 @@ public class VwDpArea {
     @Column(name = "ui_id", length = 21, nullable = false)
     private String uiId;
 
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Column(name = "area_cd", length = 50, nullable = false)
     private String areaCd;
@@ -61,6 +59,9 @@ public class VwDpArea {
 
     @Column(name = "reg_date")
     private LocalDateTime regDate;
+
+    @Column(name = "reg_site_id", length = 21)
+    private String regSiteId;
 
     @Column(name = "upd_by", length = 30)
     private String updBy;

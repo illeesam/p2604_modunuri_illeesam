@@ -24,7 +24,6 @@ public class SyBbsDto {
 
         // ── sy_bbs ──────────────────────────────────────────
         private String bbsId;
-        private String siteId;
         private String bbmId;
         private String parentBbsId;
         private String memberId;
@@ -39,6 +38,7 @@ public class SyBbsDto {
         private String bbsStatusCd;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String pathId;

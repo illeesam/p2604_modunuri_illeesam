@@ -21,6 +21,7 @@ public class CmBlogGoodDto {
         private String blogId;
         private String userId;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

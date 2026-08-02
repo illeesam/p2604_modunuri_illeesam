@@ -41,7 +41,6 @@ public class FoCmChattService {
     public List<CmChattDto.Item> getMyChattList(String siteId) {
         String memberId = SecurityUtil.getAuthUser().authId();
         CmChattDto.Request req = new CmChattDto.Request();
-        req.setSiteId(siteId);
         req.setRefId(memberId);
         return cmChattService.getList(req);
     }
@@ -59,7 +58,6 @@ public class FoCmChattService {
 
         // 기존 열린 방 조회
         CmChattDto.Request req = new CmChattDto.Request();
-        req.setSiteId(siteId);
         req.setRefId(memberId);
         List<CmChattDto.Item> existing = cmChattService.getList(req);
         if (existing != null && !existing.isEmpty()) {
@@ -71,7 +69,6 @@ public class FoCmChattService {
 
         // 새 채팅방 생성
         CmChatt body = new CmChatt();
-        body.setSiteId(siteId);
         body.setSubject(subject != null ? subject : "고객 문의");
         body.setChattStatusCd("PENDING");
 
@@ -104,7 +101,6 @@ public class FoCmChattService {
 
         String memberId = SecurityUtil.getAuthUser().authId();
         CmChattMsg msg = new CmChattMsg();
-        msg.setSiteId(chatt.getSiteId());
         msg.setChattId(chattId);
         msg.setSenderTypeCd("MEMBER");
         msg.setSenderId(memberId);

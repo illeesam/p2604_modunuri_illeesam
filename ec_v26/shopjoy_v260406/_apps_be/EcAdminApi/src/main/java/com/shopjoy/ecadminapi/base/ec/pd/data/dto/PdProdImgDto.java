@@ -22,7 +22,6 @@ public class PdProdImgDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String prodImgId;
-        private String siteId;
         private String prodId;
         private String prodOptId1;
         private String prodOptId2;
@@ -35,6 +34,7 @@ public class PdProdImgDto {
         private String isThumb;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

@@ -53,7 +53,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         Map.entry("panelNm", dpPanel.panelNm),
         Map.entry("panelTypeCd", dpPanel.panelTypeCd),
         Map.entry("pathId", dpPanel.pathId),
-        Map.entry("siteId", dpPanel.siteId),
         Map.entry("useYn", dpPanel.useYn),
         Map.entry("visibilityTargets", dpPanel.visibilityTargets)
     );
@@ -68,7 +67,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     private JPAQuery<DpPanelDto.Item> baseSelColumnQuery() {
         return queryFactory.select(Projections.bean(DpPanelDto.Item.class,
                 dpPanel.panelId,                  // 패널ID (PK, YYMMDDhhmmss+rand4)
-                dpPanel.siteId,                   // 사이트ID (sy_site.site_id)
                 dpPanel.areaId,                   // 영역ID (dp_area.area_id, FK)
                 dpPanel.panelNm,                  // 패널명
                 dpPanel.panelTypeCd,               // 표시유형 — PANEL_TYPE_CD (코드: DISP_TYPE)
@@ -102,7 +100,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(dpPanel.siteId, search.getSiteId()),
                     QdslUtil.strEq(dpPanel.areaId, search.getAreaId()),
                     QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()),
                     andPathIdIn(search),
@@ -133,7 +130,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(dpPanel.siteId, search.getSiteId()),
                 QdslUtil.strEq(dpPanel.areaId, search.getAreaId()),
                 QdslUtil.strIn(dpPanel.areaId, search.getAreaIds()),
                 andPathIdIn(search),
@@ -217,7 +213,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         if (entity.getPanelId() == null) return 0;
         JPAUpdateClause update = queryFactory.update(dpPanel);
         boolean hasAny = false;
-        if (entity.getSiteId()                  != null) { update.set(dpPanel.siteId,                  entity.getSiteId());                  hasAny = true; }
         if (entity.getAreaId()                  != null) { update.set(dpPanel.areaId,                  entity.getAreaId());                  hasAny = true; }
         if (entity.getPanelNm()                 != null) { update.set(dpPanel.panelNm,                 entity.getPanelNm());                 hasAny = true; }
         if (entity.getPanelTypeCd()             != null) { update.set(dpPanel.panelTypeCd,             entity.getPanelTypeCd());             hasAny = true; }

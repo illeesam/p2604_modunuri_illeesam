@@ -23,7 +23,6 @@ public class MbMemberDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String memberId;
-        private String siteId;
         private String loginId;
         private String memberNm;
         private String memberPhone;
@@ -43,6 +42,7 @@ public class MbMemberDto {
         private String memberMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String siteNm;

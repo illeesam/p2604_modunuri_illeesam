@@ -21,7 +21,6 @@ public class PdRestockNotiDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String restockNotiId;
-        private String siteId;
         private String prodId;
         private String prodSkuId;
         private String memberId;
@@ -29,6 +28,7 @@ public class PdRestockNotiDto {
         private LocalDateTime notiDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

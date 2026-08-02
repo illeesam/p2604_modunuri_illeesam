@@ -133,7 +133,6 @@ public class BoOdClaimService {
 
         /* 상태 변경 이력 INSERT */
         OdhClaimStatusHist hist = new OdhClaimStatusHist();
-        hist.setSiteId(entity.getSiteId());
         hist.setClaimId(entity.getClaimId());
         hist.setOrderId(entity.getOrderId());
         hist.setClaimStatusCdBefore(prevStatus);

@@ -43,7 +43,6 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         Map.entry("areaNm", dpArea.areaNm),
         Map.entry("areaTypeCd", dpArea.areaTypeCd),
         Map.entry("pathId", dpArea.pathId),
-        Map.entry("siteId", dpArea.siteId),
         Map.entry("uiId", dpArea.uiId),
         Map.entry("useYn", dpArea.useYn)
     );
@@ -57,7 +56,6 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         return queryFactory.select(Projections.bean(DpAreaDto.Item.class,
                 dpArea.areaId,        // 영역ID (PK, YYMMDDhhmmss+rand4)
                 dpArea.uiId,          // UIID (dp_ui.ui_id, FK)
-                dpArea.siteId,        // 사이트ID (sy_site.site_id)
                 dpArea.areaCd,        // 영역코드 (예: MAIN_TOP, SIDEBAR_MID)
                 dpArea.areaNm,        // 영역명
                 dpArea.areaTypeCd,    // 영역유형 — AREA_TYPE_CD (코드: DISP_AREA_TYPE)
@@ -89,7 +87,6 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strIn(dpArea.uiId, search.getUiIds()),
-                    QdslUtil.strEq(dpArea.siteId, search.getSiteId()),
                     andPathIdIn(search),
                     QdslUtil.strEq(dpArea.useYn, search.getUseYn()),
                     QdslUtil.strEq(dpArea.areaId, search.getAreaId()),
@@ -117,7 +114,6 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(dpArea.uiId, search.getUiIds()),
-                QdslUtil.strEq(dpArea.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(dpArea.useYn, search.getUseYn()),
                 QdslUtil.strEq(dpArea.areaId, search.getAreaId()),
@@ -199,7 +195,6 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         JPAUpdateClause update = queryFactory.update(dpArea);
         boolean hasAny = false;
         if (entity.getUiId()         != null) { update.set(dpArea.uiId,         entity.getUiId());         hasAny = true; }
-        if (entity.getSiteId()       != null) { update.set(dpArea.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getAreaCd()       != null) { update.set(dpArea.areaCd,       entity.getAreaCd());       hasAny = true; }
         if (entity.getAreaNm()       != null) { update.set(dpArea.areaNm,       entity.getAreaNm());       hasAny = true; }
         if (entity.getAreaTypeCd()   != null) { update.set(dpArea.areaTypeCd,   entity.getAreaTypeCd());   hasAny = true; }

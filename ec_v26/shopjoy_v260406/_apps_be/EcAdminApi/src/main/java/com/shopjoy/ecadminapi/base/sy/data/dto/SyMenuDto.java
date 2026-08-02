@@ -25,7 +25,6 @@ public class SyMenuDto {
 
         // ── sy_menu ──────────────────────────────────────────
         private String menuId;
-        private String siteId;
         private String menuCode;
         private String menuNm;
         private String parentMenuId;
@@ -37,6 +36,7 @@ public class SyMenuDto {
         private String menuRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

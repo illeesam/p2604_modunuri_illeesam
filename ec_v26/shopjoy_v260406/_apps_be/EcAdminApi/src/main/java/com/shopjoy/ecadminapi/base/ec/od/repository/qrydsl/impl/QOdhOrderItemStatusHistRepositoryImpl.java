@@ -39,7 +39,6 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         Map.entry("orderItemStatusCd", odhOrderItemStatusHist.orderItemStatusCd),
         Map.entry("orderItemStatusCdBefore", odhOrderItemStatusHist.orderItemStatusCdBefore),
         Map.entry("orderItemStatusHistId", odhOrderItemStatusHist.orderItemStatusHistId),
-        Map.entry("siteId", odhOrderItemStatusHist.siteId),
         Map.entry("statusReason", odhOrderItemStatusHist.statusReason)
     );
 
@@ -51,7 +50,6 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         return queryFactory
                 .select(Projections.bean(OdhOrderItemStatusHistDto.Item.class,
                         odhOrderItemStatusHist.orderItemStatusHistId,   // 주문상품상태이력ID (YYMMDDhhmmss+rand4)
-                        odhOrderItemStatusHist.siteId,                  // 사이트ID
                         odhOrderItemStatusHist.orderItemId,             // 주문상품ID (od_order_item.order_item_id)
                         odhOrderItemStatusHist.orderId,                 // 주문ID (od_order.order_id)
                         odhOrderItemStatusHist.orderItemStatusCdBefore, // 변경 전 주문상품상태 — ORDER_ITEM_STATUS {ORDERED:주문완료, PAID:결제완료, PREPARING:준비중, SHIPPING:배송중, DELIVERED:배송완료, CONFIRMED:구매확정, CANCELLED:취소}
@@ -81,7 +79,6 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         JPAQuery<OdhOrderItemStatusHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhOrderItemStatusHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhOrderItemStatusHist.orderItemStatusHistId, search.getOrderItemStatusHistId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -106,7 +103,6 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhOrderItemStatusHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhOrderItemStatusHist.orderItemStatusHistId, search.getOrderItemStatusHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -177,7 +173,6 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         JPAUpdateClause update = queryFactory.update(odhOrderItemStatusHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                  != null) { update.set(odhOrderItemStatusHist.siteId,                  entity.getSiteId());                  hasAny = true; }
         if (entity.getOrderItemId()             != null) { update.set(odhOrderItemStatusHist.orderItemId,             entity.getOrderItemId());             hasAny = true; }
         if (entity.getOrderId()                 != null) { update.set(odhOrderItemStatusHist.orderId,                 entity.getOrderId());                 hasAny = true; }
         if (entity.getOrderItemStatusCdBefore() != null) { update.set(odhOrderItemStatusHist.orderItemStatusCdBefore, entity.getOrderItemStatusCdBefore()); hasAny = true; }

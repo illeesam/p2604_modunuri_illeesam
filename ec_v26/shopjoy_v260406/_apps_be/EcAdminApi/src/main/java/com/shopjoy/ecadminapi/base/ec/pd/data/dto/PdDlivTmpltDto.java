@@ -21,7 +21,6 @@ public class PdDlivTmpltDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String dlivTmpltId;
-        private String siteId;
         private String vendorId;
         private String dlivTmpltNm;
         private String dlivMethodCd;
@@ -41,6 +40,7 @@ public class PdDlivTmpltDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

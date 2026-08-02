@@ -61,8 +61,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         Map.entry("refTypeCd", pmSaveIssue.refTypeCd),
         Map.entry("saveIssueId", pmSaveIssue.saveIssueId),
         Map.entry("saveIssueTypeCd", pmSaveIssue.saveIssueTypeCd),
-        Map.entry("saveMemo", pmSaveIssue.saveMemo),
-        Map.entry("siteId", pmSaveIssue.siteId)
+        Map.entry("saveMemo", pmSaveIssue.saveMemo)
     );
 
     /*
@@ -75,7 +74,6 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         return queryFactory
                 .select(Projections.bean(PmSaveIssueDto.Item.class,
                         pmSaveIssue.saveIssueId,               // 적립지급ID (PK, YYMMDDhhmmss+rand4)
-                        pmSaveIssue.siteId,                    // 사이트ID (sy_site.site_id)
                         pmSaveIssue.memberId,                  // 회원ID (mb_member.member_id)
                         pmSaveIssue.saveIssueTypeCd,           // 지급유형 — SAVE_ISSUE_TYPE {ORDER, EVENT, REVIEW, REFERRAL, ADMIN}
                         pmSaveIssue.saveAmt,                   // 지급 적립금액
@@ -92,7 +90,6 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                         pmSaveIssue.regBy, pmSaveIssue.regDate, pmSaveIssue.updBy, pmSaveIssue.updDate
                 ))
                 .from(pmSaveIssue)
-                .leftJoin(sySite).on(sySite.siteId.eq(pmSaveIssue.siteId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(pmSaveIssue.memberId))
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveIssue.orderId))
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveIssue.orderItemId))
@@ -118,7 +115,6 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         JPAQuery<PmSaveIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmSaveIssue.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmSaveIssue.saveIssueId, search.getSaveIssueId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -144,7 +140,6 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmSaveIssue.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmSaveIssue.saveIssueId, search.getSaveIssueId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -216,7 +211,6 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         JPAUpdateClause update = queryFactory.update(pmSaveIssue);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(pmSaveIssue.siteId,              entity.getSiteId());              hasAny = true; }
         if (entity.getMemberId()            != null) { update.set(pmSaveIssue.memberId,            entity.getMemberId());            hasAny = true; }
         if (entity.getSaveIssueTypeCd()     != null) { update.set(pmSaveIssue.saveIssueTypeCd,     entity.getSaveIssueTypeCd());     hasAny = true; }
         if (entity.getSaveAmt()             != null) { update.set(pmSaveIssue.saveAmt,             entity.getSaveAmt());             hasAny = true; }

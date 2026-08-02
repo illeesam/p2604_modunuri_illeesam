@@ -36,6 +36,7 @@ public class ZzExmy2Dto {
         private String col25;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

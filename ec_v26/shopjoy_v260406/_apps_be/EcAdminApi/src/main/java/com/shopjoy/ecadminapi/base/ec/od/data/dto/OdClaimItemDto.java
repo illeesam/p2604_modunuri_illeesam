@@ -22,7 +22,6 @@ public class OdClaimItemDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String claimItemId;
-        private String siteId;
         private String claimId;
         private String orderItemId;
         private String prodId;
@@ -50,6 +49,7 @@ public class OdClaimItemDto {
         private Long exchangeShippingFee;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

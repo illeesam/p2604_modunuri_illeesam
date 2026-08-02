@@ -48,8 +48,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         Map.entry("memberId", pmCache.memberId),
         Map.entry("memberNm", pmCache.memberNm),
         Map.entry("procUserId", pmCache.procUserId),
-        Map.entry("refId", pmCache.refId),
-        Map.entry("siteId", pmCache.siteId)
+        Map.entry("refId", pmCache.refId)
     );
 
     /*
@@ -61,7 +60,6 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         return queryFactory
                 .select(Projections.bean(PmCacheDto.Item.class,
                         pmCache.cacheId,       // 적립금(캐시)ID (PK, YYMMDDhhmmss+rand4)
-                        pmCache.siteId,        // 사이트ID (sy_site.site_id)
                         pmCache.memberId,      // 회원ID (mb_member.member_id)
                         pmCache.memberNm,      // 회원명 (스냅샷)
                         pmCache.cacheTypeCd,   // 유형 — CACHE_TYPE {EARN_BUY, EARN_ADMIN, EARN_EVENT, USE_ORDER, REFUND, EXPIRE}
@@ -75,7 +73,6 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                         pmCache.regBy, pmCache.regDate, pmCache.updBy, pmCache.updDate
                 ))
                 .from(pmCache)
-                .leftJoin(sySite).on(sySite.siteId.eq(pmCache.siteId))
                 .leftJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE").and(cdCt.codeValue.eq(pmCache.cacheTypeCd)));
     }
 
@@ -96,7 +93,6 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmCache.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmCache.cacheId, search.getCacheId()),
                     QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -123,7 +119,6 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmCache.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmCache.cacheId, search.getCacheId()),
                 QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -200,7 +195,6 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         JPAUpdateClause update = queryFactory.update(pmCache);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(pmCache.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getMemberId()    != null) { update.set(pmCache.memberId,    entity.getMemberId());    hasAny = true; }
         if (entity.getMemberNm()    != null) { update.set(pmCache.memberNm,    entity.getMemberNm());    hasAny = true; }
         if (entity.getCacheTypeCd() != null) { update.set(pmCache.cacheTypeCd, entity.getCacheTypeCd()); hasAny = true; }

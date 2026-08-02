@@ -39,7 +39,6 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         "upd_date", pdTag.updDate
     );
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("siteId", pdTag.siteId),
         Map.entry("tagDesc", pdTag.tagDesc),
         Map.entry("tagId", pdTag.tagId),
         Map.entry("tagNm", pdTag.tagNm),
@@ -55,7 +54,6 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         return queryFactory
                 .select(Projections.bean(PdTagDto.Item.class,
                         pdTag.tagId,       // 태그ID (PK, YYMMDDhhmmss+rand4)
-                        pdTag.siteId,       // 사이트ID (sy_site.site_id)
                         pdTag.tagNm,       // 태그명
                         pdTag.tagDesc,     // 태그설명
                         pdTag.useCount,    // 사용 빈도
@@ -63,8 +61,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
                         pdTag.useYn,         // 사용여부 — {Y: '사용', N: '미사용'}
                         pdTag.regBy, pdTag.regDate, pdTag.updBy, pdTag.updDate
                 ))
-                .from(pdTag)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdTag.siteId));
+                .from(pdTag);
     }
 
     /* 태그 키조회 */
@@ -84,7 +81,6 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         JPAQuery<PdTagDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdTag.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdTag.tagId, search.getTagId()),
                     QdslUtil.strEq(pdTag.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -111,7 +107,6 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdTag.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdTag.tagId, search.getTagId()),
                 QdslUtil.strEq(pdTag.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -193,7 +188,6 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         JPAUpdateClause update = queryFactory.update(pdTag);
         boolean hasAny = false;
 
-        if (entity.getSiteId()   != null) { update.set(pdTag.siteId,   entity.getSiteId());   hasAny = true; }
         if (entity.getTagNm()    != null) { update.set(pdTag.tagNm,    entity.getTagNm());    hasAny = true; }
         if (entity.getTagDesc()  != null) { update.set(pdTag.tagDesc,  entity.getTagDesc());  hasAny = true; }
         if (entity.getUseCount() != null) { update.set(pdTag.useCount, entity.getUseCount()); hasAny = true; }

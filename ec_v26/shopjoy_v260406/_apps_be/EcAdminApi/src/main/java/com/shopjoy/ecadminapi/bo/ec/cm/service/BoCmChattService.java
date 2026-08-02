@@ -98,7 +98,6 @@ public class BoCmChattService {
 
         String authId = SecurityUtil.getAuthUser().authId();
         CmChattMsg msg = new CmChattMsg();
-        msg.setSiteId(chatt.getSiteId());
         msg.setChattId(chattId);
         msg.setSenderTypeCd(body.getSenderTypeCd() != null ? body.getSenderTypeCd() : "ADMIN");
         msg.setSenderId(authId);

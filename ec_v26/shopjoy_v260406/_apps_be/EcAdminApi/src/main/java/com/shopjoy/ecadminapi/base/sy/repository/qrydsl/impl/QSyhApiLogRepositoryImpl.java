@@ -66,7 +66,6 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         return queryFactory
                 .select(Projections.bean(SyhApiLogDto.Item.class,
                         syhApiLog.logId,          // 로그ID (PK, YYMMDDhhmmss+rand4)
-                        syhApiLog.siteId,         // 사이트ID
                         syhApiLog.apiTypeCd,      // 연동유형코드 — {PG: 'PG결제', LOGISTICS: '물류/택배', KAKAO: '카카오', NAVER: '네이버', SMS: 'SMS'}
                         syhApiLog.apiNm,          // API명 (예: 결제승인)
                         syhApiLog.uiNm,           // 화면명 (X-UI-Nm 헤더)

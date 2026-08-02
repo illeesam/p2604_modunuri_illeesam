@@ -23,7 +23,6 @@ public class PdProdOptDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String prodOptId;
-        private String siteId;
         private String prodId;
         private String prodOptNm;
         private String prodOptVal;
@@ -37,6 +36,7 @@ public class PdProdOptDto {
         private String prodOptType2Cd;     // 옵션유형2 분류코드 (예: SIZE)
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

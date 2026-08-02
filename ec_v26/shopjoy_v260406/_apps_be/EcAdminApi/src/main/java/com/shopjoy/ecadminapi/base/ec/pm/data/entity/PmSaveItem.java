@@ -28,8 +28,6 @@ public class PmSaveItem extends BaseEntity {
     private String saveId;
 
     @Comment("FK: sy_site.site_id (NULL=전사 공통)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)")
     @Column(name = "target_type_cd", length = 20, nullable = false)

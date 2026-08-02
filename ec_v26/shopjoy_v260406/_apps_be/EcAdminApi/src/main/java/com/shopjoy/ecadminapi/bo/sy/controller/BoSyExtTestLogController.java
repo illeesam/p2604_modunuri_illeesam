@@ -69,7 +69,6 @@ public class BoSyExtTestLogController {
         String authId = SecurityUtil.getAuthUser().authId();
         SyhExtTestLog entity = new SyhExtTestLog();
         entity.setLogId(UUID.randomUUID().toString().replace("-", "")); // 32자 고정
-        entity.setSiteId(str(body, "siteId", SecurityUtil.DEFAULT_SITE_ID));
         entity.setChannelKey(str(body, "channelKey", "unknown"));
         entity.setChannelLabel(str(body, "channelLabel", null));
         entity.setTestResult(str(body, "testResult", "FAIL"));

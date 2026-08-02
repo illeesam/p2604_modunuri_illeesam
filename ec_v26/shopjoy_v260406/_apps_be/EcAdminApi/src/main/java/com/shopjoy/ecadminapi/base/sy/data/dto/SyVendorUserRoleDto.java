@@ -34,6 +34,7 @@ public class SyVendorUserRoleDto {
         private String vendorUserRoleRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

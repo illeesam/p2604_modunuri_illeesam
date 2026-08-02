@@ -112,7 +112,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         Map.entry("settleId", stSettleRaw.settleId),
         Map.entry("settlePeriod", stSettleRaw.settlePeriod),
         Map.entry("settleRawId", stSettleRaw.settleRawId),
-        Map.entry("siteId", stSettleRaw.siteId),
         Map.entry("prodSkuId", stSettleRaw.prodSkuId),
         Map.entry("vendorId", stSettleRaw.vendorId),
         Map.entry("vendorTypeCd", stSettleRaw.vendorTypeCd),
@@ -133,7 +132,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         return queryFactory
                 .select(Projections.bean(StSettleRawDto.Item.class,
                         stSettleRaw.settleRawId,           // 수집원장ID (PK, YYMMDDhhmmss+rand4)
-                        stSettleRaw.siteId,                 // 사이트ID
                         stSettleRaw.rawTypeCd,              // 수집유형 — RAW_TYPE {ORDER: '주문', CLAIM: '클레임', ADJ: '조정'}
                         stSettleRaw.rawStatusCd,            // 수집상태 — RAW_STATUS {COLLECTED: '수집완료', EXCLUDED: '제외', SETTLED: '정산반영'}
                         stSettleRaw.rawStatusCdBefore,      // 변경 전 수집상태
@@ -200,7 +198,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                         stSettleRaw.regDate,                  // 등록일시
                         stSettleRaw.updBy,                    // 수정자
                         stSettleRaw.updDate,                  // 수정일시
-                        sySite.siteNm.as("siteNm"),                             // 사이트명 (조인)
                         odOrder.memberNm.as("orderNm"),                         // 주문 회원명 (조인)
                         odOrderItem.prodNm.as("orderItemNm"),                   // 주문항목 상품명 (조인)
                         mbMember.memberNm.as("memberNm"),                       // 회원명 (조인)
@@ -222,7 +219,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                         cdPmc.codeLabel.as("payMethodCdNm")                     // 결제수단명 (sy_code 조인)
                 ))
                 .from(stSettleRaw)
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettleRaw.siteId))
                 .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleRaw.orderId))
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleRaw.orderItemId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(stSettleRaw.memberId))
@@ -261,7 +257,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         JPAQuery<StSettleRawDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stSettleRaw.siteId, search.getSiteId()),
                     QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId()),
                     QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId()),
                     QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId()),
@@ -302,7 +297,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stSettleRaw.siteId, search.getSiteId()),
                 QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId()),
                 QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId()),
                 QdslUtil.strEq(stSettleRaw.orderItemId, search.getOrderItemId()),
@@ -393,7 +387,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         JPAUpdateClause update = queryFactory.update(stSettleRaw);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(stSettleRaw.siteId,              entity.getSiteId());              hasAny = true; }
         if (entity.getRawTypeCd()           != null) { update.set(stSettleRaw.rawTypeCd,           entity.getRawTypeCd());           hasAny = true; }
         if (entity.getRawStatusCd()         != null) { update.set(stSettleRaw.rawStatusCd,         entity.getRawStatusCd());         hasAny = true; }
         if (entity.getRawStatusCdBefore()   != null) { update.set(stSettleRaw.rawStatusCdBefore,   entity.getRawStatusCdBefore());   hasAny = true; }

@@ -25,9 +25,6 @@ public class PmCache extends BaseEntity {
     @Column(name = "cache_id", length = 21, nullable = false)
     private String cacheId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("회원ID")
     @Column(name = "member_id", length = 21, nullable = false)

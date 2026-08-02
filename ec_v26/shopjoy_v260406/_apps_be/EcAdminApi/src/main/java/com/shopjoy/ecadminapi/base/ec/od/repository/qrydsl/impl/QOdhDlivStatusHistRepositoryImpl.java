@@ -39,7 +39,6 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         Map.entry("dlivStatusHistId", odhDlivStatusHist.dlivStatusHistId),
         Map.entry("memo", odhDlivStatusHist.memo),
         Map.entry("orderId", odhDlivStatusHist.orderId),
-        Map.entry("siteId", odhDlivStatusHist.siteId),
         Map.entry("statusReason", odhDlivStatusHist.statusReason)
     );
 
@@ -51,7 +50,6 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         return queryFactory
                 .select(Projections.bean(OdhDlivStatusHistDto.Item.class,
                         odhDlivStatusHist.dlivStatusHistId,   // 배송상태이력ID (YYMMDDhhmmss+rand4)
-                        odhDlivStatusHist.siteId,              // 사이트ID
                         odhDlivStatusHist.dlivId,              // 배송ID (od_dliv.dliv_id)
                         odhDlivStatusHist.orderId,             // 주문ID (od_order.order_id)
                         odhDlivStatusHist.dlivStatusCdBefore,  // 변경 전 배송상태 — DLIV_STATUS {READY:준비중, SHIPPED:출고완료, IN_TRANSIT:배송중, DELIVERED:배송완료, FAILED:배송실패}
@@ -81,7 +79,6 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         JPAQuery<OdhDlivStatusHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhDlivStatusHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhDlivStatusHist.dlivStatusHistId, search.getDlivStatusHistId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -106,7 +103,6 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhDlivStatusHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhDlivStatusHist.dlivStatusHistId, search.getDlivStatusHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -177,7 +173,6 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         JPAUpdateClause update = queryFactory.update(odhDlivStatusHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(odhDlivStatusHist.siteId,             entity.getSiteId());             hasAny = true; }
         if (entity.getDlivId()             != null) { update.set(odhDlivStatusHist.dlivId,             entity.getDlivId());             hasAny = true; }
         if (entity.getOrderId()            != null) { update.set(odhDlivStatusHist.orderId,            entity.getOrderId());            hasAny = true; }
         if (entity.getDlivStatusCdBefore() != null) { update.set(odhDlivStatusHist.dlivStatusCdBefore, entity.getDlivStatusCdBefore()); hasAny = true; }

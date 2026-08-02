@@ -49,8 +49,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         Map.entry("categoryProdTypeCd", pdCategoryProd.categoryProdTypeCd),
         Map.entry("dispYn", pdCategoryProd.dispYn),
         Map.entry("emphasisCd", pdCategoryProd.emphasisCd),
-        Map.entry("prodId", pdCategoryProd.prodId),
-        Map.entry("siteId", pdCategoryProd.siteId)
+        Map.entry("prodId", pdCategoryProd.prodId)
     );
 
     /*
@@ -62,7 +61,6 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         return queryFactory
                 .select(Projections.bean(PdCategoryProdDto.Item.class,
                         pdCategoryProd.categoryProdId,        // 상품카테고리연결ID (PK, YYMMDDhhmmss+rand4)
-                        pdCategoryProd.siteId,                // 사이트ID (sy_site.site_id)
                         pdCategoryProd.categoryId,             // 카테고리ID (pd_category.category_id)
                         pdCategoryProd.prodId,                 // 상품ID (pd_prod.prod_id)
                         pdCategoryProd.categoryProdTypeCd,     // 진열유형 — {NORMAL: '일반', HIGHLIGHT: '강조', RECOMMEND: '추천', MAIN: '메인', BANNER: '배너', HOT_DEAL: '핫딜'}
@@ -72,12 +70,10 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                         pdCategoryProd.dispStartDate,           // 전시시작일 (NULL=즉시)
                         pdCategoryProd.dispEndDate,             // 전시종료일 (NULL=무기한)
                         pdCategoryProd.regBy, pdCategoryProd.regDate, pdCategoryProd.updBy, pdCategoryProd.updDate,
-                        sySite.siteNm.as("siteNm"),                    // 사이트명 (조인)
                         pdCategory.categoryNm.as("categoryNm"),        // 카테고리명 (조인)
                         pdProd.prodNm.as("prodNm")                     // 상품명 (조인)
                 ))
                 .from(pdCategoryProd)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdCategoryProd.siteId))
                 .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdCategoryProd.categoryId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pdCategoryProd.prodId));
     }
@@ -99,7 +95,6 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdCategoryProd.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdCategoryProd.categoryProdId, search.getCategoryProdId()),
                     QdslUtil.strEq(pdCategoryProd.categoryId, search.getCategoryId()),
                     andCategoryIdsCsvIn(search),
@@ -130,7 +125,6 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdCategoryProd.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdCategoryProd.categoryProdId, search.getCategoryProdId()),
                 QdslUtil.strEq(pdCategoryProd.categoryId, search.getCategoryId()),
                 andCategoryIdsCsvIn(search),
@@ -227,7 +221,6 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         JPAUpdateClause update = queryFactory.update(pdCategoryProd);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(pdCategoryProd.siteId,             entity.getSiteId());             hasAny = true; }
         if (entity.getCategoryId()         != null) { update.set(pdCategoryProd.categoryId,         entity.getCategoryId());         hasAny = true; }
         if (entity.getProdId()             != null) { update.set(pdCategoryProd.prodId,             entity.getProdId());             hasAny = true; }
         if (entity.getCategoryProdTypeCd() != null) { update.set(pdCategoryProd.categoryProdTypeCd, entity.getCategoryProdTypeCd()); hasAny = true; }

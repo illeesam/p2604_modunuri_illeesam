@@ -27,6 +27,7 @@ public class SyI18nMsgDto {
         private String i18nMsg;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

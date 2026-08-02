@@ -46,7 +46,6 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         Map.entry("bundleProdId", pdProdBundleItem.bundleProdId),
         Map.entry("itemProdId", pdProdBundleItem.itemProdId),
         Map.entry("itemSkuId", pdProdBundleItem.itemSkuId),
-        Map.entry("siteId", pdProdBundleItem.siteId),
         Map.entry("useYn", pdProdBundleItem.useYn)
     );
 
@@ -59,7 +58,6 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         return queryFactory
                 .select(Projections.bean(PdProdBundleItemDto.Item.class,
                         pdProdBundleItem.bundleItemId,   // 묶음구성ID (PK, YYMMDDhhmmss+rand4)
-                        pdProdBundleItem.siteId,          // 사이트ID (sy_site.site_id)
                         pdProdBundleItem.bundleProdId,     // 묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)
                         pdProdBundleItem.itemProdId,       // 구성품 상품ID (pd_prod.prod_id) — 독립 판매 상품
                         pdProdBundleItem.itemSkuId,        // 구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)
@@ -70,7 +68,6 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
                         pdProdBundleItem.regBy, pdProdBundleItem.regDate, pdProdBundleItem.updBy, pdProdBundleItem.updDate
                 ))
                 .from(pdProdBundleItem)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdProdBundleItem.siteId))
                 .leftJoin(prd).on(prd.prodId.eq(pdProdBundleItem.bundleProdId))
                 .leftJoin(prd2).on(prd2.prodId.eq(pdProdBundleItem.itemProdId));
     }
@@ -92,7 +89,6 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         JPAQuery<PdProdBundleItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdProdBundleItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProdBundleItem.bundleItemId, search.getBundleItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -118,7 +114,6 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdProdBundleItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProdBundleItem.bundleItemId, search.getBundleItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -196,7 +191,6 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         JPAUpdateClause update = queryFactory.update(pdProdBundleItem);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(pdProdBundleItem.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getBundleProdId() != null) { update.set(pdProdBundleItem.bundleProdId, entity.getBundleProdId()); hasAny = true; }
         if (entity.getItemProdId()   != null) { update.set(pdProdBundleItem.itemProdId,   entity.getItemProdId());   hasAny = true; }
         if (entity.getItemSkuId()    != null) { update.set(pdProdBundleItem.itemSkuId,    entity.getItemSkuId());    hasAny = true; }

@@ -23,7 +23,6 @@ public class CmChattDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String chattId;
-        private String siteId;
         private String subject;
         private String chattStatusCd;
         private String chattStatusCdBefore;
@@ -33,6 +32,7 @@ public class CmChattDto {
         private String closeReason;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private List<CmChattMemberDto.Item> members;

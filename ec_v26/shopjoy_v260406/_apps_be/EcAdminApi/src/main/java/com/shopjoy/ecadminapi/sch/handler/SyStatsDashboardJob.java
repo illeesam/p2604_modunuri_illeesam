@@ -476,7 +476,6 @@ public class SyStatsDashboardJob implements SchBatchJobHandler {
 
         CmDashboardItemData row = new CmDashboardItemData();
         row.setItemDataId(CmUtil.generateId("cm_dashboard_item_data"));
-        row.setSiteId(panel.getSiteId());
         row.setDashboardItemId(panel.getDashboardItemId());
         row.setUiNm(UI);
         row.setItemKey(panel.getItemKey());

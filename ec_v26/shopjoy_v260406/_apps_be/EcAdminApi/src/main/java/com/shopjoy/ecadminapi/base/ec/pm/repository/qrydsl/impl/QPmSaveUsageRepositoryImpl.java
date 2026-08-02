@@ -50,8 +50,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         Map.entry("orderId", pmSaveUsage.orderId),
         Map.entry("orderItemId", pmSaveUsage.orderItemId),
         Map.entry("prodId", pmSaveUsage.prodId),
-        Map.entry("saveUsageId", pmSaveUsage.saveUsageId),
-        Map.entry("siteId", pmSaveUsage.siteId)
+        Map.entry("saveUsageId", pmSaveUsage.saveUsageId)
     );
 
     /* 적립금 사용 이력 baseSelColumnQuery — 코드성 필드 없음 (주문 시 사용된 적립금 건별 기록) */
@@ -59,7 +58,6 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         return queryFactory
                 .select(Projections.bean(PmSaveUsageDto.Item.class,
                         pmSaveUsage.saveUsageId,    // 적립사용ID (PK, YYMMDDhhmmss+rand4)
-                        pmSaveUsage.siteId,         // 사이트ID (sy_site.site_id)
                         pmSaveUsage.memberId,       // 회원ID (mb_member.member_id)
                         pmSaveUsage.orderId,        // 주문ID (od_order.order_id)
                         pmSaveUsage.orderItemId,    // 주문상품ID (od_order_item.order_item_id, 상품별 사용 시)
@@ -70,7 +68,6 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
                         pmSaveUsage.regBy, pmSaveUsage.regDate
                 ))
                 .from(pmSaveUsage)
-                .leftJoin(sySite).on(sySite.siteId.eq(pmSaveUsage.siteId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(pmSaveUsage.memberId))
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveUsage.orderId))
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveUsage.orderItemId))
@@ -94,7 +91,6 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmSaveUsage.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmSaveUsage.saveUsageId, search.getSaveUsageId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -120,7 +116,6 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmSaveUsage.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmSaveUsage.saveUsageId, search.getSaveUsageId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -192,7 +187,6 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         JPAUpdateClause update = queryFactory.update(pmSaveUsage);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(pmSaveUsage.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getMemberId()    != null) { update.set(pmSaveUsage.memberId,    entity.getMemberId());    hasAny = true; }
         if (entity.getOrderId()     != null) { update.set(pmSaveUsage.orderId,     entity.getOrderId());     hasAny = true; }
         if (entity.getOrderItemId() != null) { update.set(pmSaveUsage.orderItemId, entity.getOrderItemId()); hasAny = true; }

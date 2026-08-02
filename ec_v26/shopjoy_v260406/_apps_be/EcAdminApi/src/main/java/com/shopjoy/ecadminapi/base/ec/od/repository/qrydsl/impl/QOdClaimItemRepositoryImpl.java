@@ -45,8 +45,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         Map.entry("orderItemId", odClaimItem.orderItemId),
         Map.entry("prodId", odClaimItem.prodId),
         Map.entry("prodNm", odClaimItem.prodNm),
-        Map.entry("prodOption", odClaimItem.prodOption),
-        Map.entry("siteId", odClaimItem.siteId)
+        Map.entry("prodOption", odClaimItem.prodOption)
     );
 
     /*
@@ -57,7 +56,6 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         return queryFactory
                 .select(Projections.bean(OdClaimItemDto.Item.class,
                         odClaimItem.claimItemId,             // 클레임항목ID (YYMMDDhhmmss+rand4)
-                        odClaimItem.siteId,                  // 사이트ID
                         odClaimItem.claimId,                 // 클레임ID (od_claim.)
                         odClaimItem.orderItemId,             // 주문상품ID (od_order_item.)
                         odClaimItem.prodId,                   // 상품ID
@@ -107,7 +105,6 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                 .where(
                     QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds()),
                     QdslUtil.strEq(odClaimItem.claimId, search.getClaimId()),
-                    QdslUtil.strEq(odClaimItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -135,7 +132,6 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds()),
                 QdslUtil.strEq(odClaimItem.claimId, search.getClaimId()),
-                QdslUtil.strEq(odClaimItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -211,7 +207,6 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         JPAUpdateClause update = queryFactory.update(odClaimItem);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                  != null) { update.set(odClaimItem.siteId,                  entity.getSiteId());                  hasAny = true; }
         if (entity.getClaimId()                 != null) { update.set(odClaimItem.claimId,                 entity.getClaimId());                 hasAny = true; }
         if (entity.getOrderItemId()             != null) { update.set(odClaimItem.orderItemId,             entity.getOrderItemId());             hasAny = true; }
         if (entity.getProdId()                  != null) { update.set(odClaimItem.prodId,                  entity.getProdId());                  hasAny = true; }

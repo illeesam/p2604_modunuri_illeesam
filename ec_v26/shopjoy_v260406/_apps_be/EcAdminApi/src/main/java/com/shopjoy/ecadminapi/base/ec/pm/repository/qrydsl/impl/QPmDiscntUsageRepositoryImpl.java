@@ -43,8 +43,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         Map.entry("memberId", pmDiscntUsage.memberId),
         Map.entry("orderId", pmDiscntUsage.orderId),
         Map.entry("orderItemId", pmDiscntUsage.orderItemId),
-        Map.entry("prodId", pmDiscntUsage.prodId),
-        Map.entry("siteId", pmDiscntUsage.siteId)
+        Map.entry("prodId", pmDiscntUsage.prodId)
     );
 
     /*
@@ -55,7 +54,6 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         return queryFactory
                 .select(Projections.bean(PmDiscntUsageDto.Item.class,
                         pmDiscntUsage.discntUsageId,   // 할인사용ID (PK, YYMMDDhhmmss+rand4)
-                        pmDiscntUsage.siteId,          // 사이트ID (sy_site.site_id)
                         pmDiscntUsage.discntId,        // 할인ID (pm_discnt.discnt_id)
                         pmDiscntUsage.discntNm,        // 할인명 스냅샷
                         pmDiscntUsage.memberId,        // 회원ID (mb_member.member_id)
@@ -88,7 +86,6 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmDiscntUsage.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmDiscntUsage.discntUsageId, search.getDiscntUsageId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -114,7 +111,6 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmDiscntUsage.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmDiscntUsage.discntUsageId, search.getDiscntUsageId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -190,7 +186,6 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         JPAUpdateClause update = queryFactory.update(pmDiscntUsage);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(pmDiscntUsage.siteId,        entity.getSiteId());        hasAny = true; }
         if (entity.getDiscntId()      != null) { update.set(pmDiscntUsage.discntId,      entity.getDiscntId());      hasAny = true; }
         if (entity.getDiscntNm()      != null) { update.set(pmDiscntUsage.discntNm,      entity.getDiscntNm());      hasAny = true; }
         if (entity.getMemberId()      != null) { update.set(pmDiscntUsage.memberId,      entity.getMemberId());      hasAny = true; }

@@ -26,7 +26,6 @@ public class SyVendorBrandDto {
 
         // ── sy_vendor_brand ──────────────────────────────────────────
         private String vendorBrandId;
-        private String siteId;
         private String vendorId;
         private String brandId;
         private String isMain;
@@ -39,6 +38,7 @@ public class SyVendorBrandDto {
         private String vendorBrandRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

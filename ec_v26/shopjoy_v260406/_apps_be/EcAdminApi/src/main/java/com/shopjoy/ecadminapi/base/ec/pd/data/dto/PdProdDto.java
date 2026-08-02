@@ -29,7 +29,6 @@ public class PdProdDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String prodId;
-        private String siteId;
         private String categoryId;
         private String brandId;
         private String vendorId;
@@ -70,6 +69,7 @@ public class PdProdDto {
         private LocalDateTime advrtEndDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String cateNm;

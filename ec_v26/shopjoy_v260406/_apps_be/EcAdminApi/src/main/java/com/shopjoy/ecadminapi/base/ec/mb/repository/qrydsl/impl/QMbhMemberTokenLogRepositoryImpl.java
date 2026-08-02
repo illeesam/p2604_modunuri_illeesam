@@ -55,7 +55,6 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         Map.entry("prevToken", mbhMemberTokenLog.prevToken),
         Map.entry("refreshToken", mbhMemberTokenLog.refreshToken),
         Map.entry("revokeReason", mbhMemberTokenLog.revokeReason),
-        Map.entry("siteId", mbhMemberTokenLog.siteId),
         Map.entry("tokenTypeCd", mbhMemberTokenLog.tokenTypeCd),
         Map.entry("uiNm", mbhMemberTokenLog.uiNm)
     );
@@ -69,7 +68,6 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         return queryFactory
                 .select(Projections.bean(MbhMemberTokenLogDto.Item.class,
                         mbhMemberTokenLog.logId,             // 로그ID (PK)
-                        mbhMemberTokenLog.siteId,            // 사이트ID (sy_site.site_id)
                         mbhMemberTokenLog.memberId,          // 회원ID (mb_member.member_id)
                         mbhMemberTokenLog.loginLogId,        // 최초 로그인 로그ID (mbh_member_login_log)
                         mbhMemberTokenLog.actionCd,          // 토큰 액션 — TOKEN_ACTION {ISSUE: '발급', REFRESH: '갱신', REVOKE: '강제폐기', EXPIRE: '만료'}
@@ -88,13 +86,11 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                         mbhMemberTokenLog.regDate,           // 등록일
                         mbhMemberTokenLog.updBy,             // 수정자 (sy_user.user_id, mb_member.member_id)
                         mbhMemberTokenLog.updDate,           // 수정일
-                        sySite.siteNm.as("siteNm"),                 // 사이트명 (sy_site 조인)
                         mbMember.memberNm.as("memberNm"),           // 회원명 (mb_member 조인)
                         cdTa.codeLabel.as("actionCdNm"),            // 토큰 액션 코드라벨 (sy_code TOKEN_ACTION 조인)
                         cdTt.codeLabel.as("tokenTypeCdNm")          // 토큰 유형 코드라벨 (sy_code TOKEN_TYPE 조인)
                 ))
                 .from(mbhMemberTokenLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(mbhMemberTokenLog.siteId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberTokenLog.memberId))
                 .leftJoin(cdTa).on(cdTa.codeGrp.eq("TOKEN_ACTION").and(cdTa.codeValue.eq(mbhMemberTokenLog.actionCd)))
                 .leftJoin(cdTt).on(cdTt.codeGrp.eq("TOKEN_TYPE").and(cdTt.codeValue.eq(mbhMemberTokenLog.tokenTypeCd)));
@@ -115,7 +111,6 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         JPAQuery<MbhMemberTokenLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(mbhMemberTokenLog.siteId, search.getSiteId()),
                     QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -140,7 +135,6 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(mbhMemberTokenLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -212,7 +206,6 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         if (entity.getLogId() == null) return 0;
         JPAUpdateClause update = queryFactory.update(mbhMemberTokenLog);
         boolean hasAny = false;
-        if (entity.getSiteId()         != null) { update.set(mbhMemberTokenLog.siteId,         entity.getSiteId());         hasAny = true; }
         if (entity.getAuthId()         != null) { update.set(mbhMemberTokenLog.authId,         entity.getAuthId());         hasAny = true; }
         if (entity.getMemberId()       != null) { update.set(mbhMemberTokenLog.memberId,       entity.getMemberId());       hasAny = true; }
         if (entity.getLoginLogId()     != null) { update.set(mbhMemberTokenLog.loginLogId,     entity.getLoginLogId());     hasAny = true; }

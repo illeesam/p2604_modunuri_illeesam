@@ -87,7 +87,6 @@ public class SySiteService {
     /** create — 생성 (JPA) */
     @Transactional
     public SySite create(SySite body) {
-        body.setSiteId(CmUtil.generateId("sy_site"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -161,7 +160,6 @@ public class SySiteService {
             sySiteRepository.deleteById(entity.getSiteId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setSiteId(CmUtil.generateId("sy_site"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             SySite saved = sySiteRepository.save(entity);
@@ -223,7 +221,6 @@ public class SySiteService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (SySite row : insertRows) {
-            row.setSiteId(CmUtil.generateId("sy_site"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             sySiteRepository.save(row);

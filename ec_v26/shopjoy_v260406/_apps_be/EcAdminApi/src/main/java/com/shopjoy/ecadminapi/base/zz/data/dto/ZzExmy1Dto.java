@@ -33,6 +33,7 @@ public class ZzExmy1Dto {
         private String col15;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         // ── 하위 계층 연관정보 ──

@@ -147,7 +147,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         ZdSimulLog log = new ZdSimulLog();
         log.setLogId(CmUtil.generateId("zd_simul_log"));
-        log.setSiteId(siteId);
         log.setDomain(str(body, "domain", "unknown"));
         log.setSimulMode(str(body, "mode", "생성"));
         log.setSimulStatus(str(body, "status", "SUCCESS"));
@@ -181,7 +180,6 @@ public class ZdSimulController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> prodDefaults() {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         PdDlivTmpltDto.Request req = new PdDlivTmpltDto.Request();
-        req.setSiteId(siteId);
         List<PdDlivTmpltDto.Item> list = pdDlivTmpltService.getList(req);
         String dlivTmpltId = list.isEmpty() || list.get(0).getDlivTmpltId() == null ? "" : list.get(0).getDlivTmpltId();
         String dlivTmpltNm = list.isEmpty() || list.get(0).getDlivTmpltNm() == null ? "" : list.get(0).getDlivTmpltNm();
@@ -193,7 +191,6 @@ public class ZdSimulController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> memberDefaults() {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         MbMemberGradeDto.Request req = new MbMemberGradeDto.Request();
-        req.setSiteId(siteId);
         List<MbMemberGradeDto.Item> grades = mbMemberGradeService.getList(req);
         String memberGradeId = grades.isEmpty() || grades.get(0).getMemberGradeId() == null ? "" : grades.get(0).getMemberGradeId();
         String gradeNm       = grades.isEmpty() || grades.get(0).getGradeNm()       == null ? "" : grades.get(0).getGradeNm();
@@ -216,7 +213,6 @@ public class ZdSimulController {
         if (body.get("prodNm") instanceof String nm) body.put("prodNm", sanitizeText(nm));
         PdProd prod = new PdProd();
         VoUtil.mapCopy(body, prod, "prodOpts", "prodImgs", "prodId");
-        prod.setSiteId(siteId);
         prod.setSimulYn("Y");
         /* 프론트 제공 prodId(tmp-prod-01 등) 우선 사용 — 없으면 서비스에서 자동생성 */
         String tmpProdId = str(body, "prodId");
@@ -268,7 +264,6 @@ public class ZdSimulController {
                 for (Map<String, Object> it : optItems) {
                     String tmpOptId = str(it, "prodOptId");
                     PdProdOpt optVal = new PdProdOpt();
-                    optVal.setSiteId(siteId);
                     optVal.setProdId(prodId);
                     optVal.setProdOptTypeLevel(level);
                     optVal.setProdOptNm(str(it, "prodOptNm"));
@@ -293,7 +288,6 @@ public class ZdSimulController {
                         PdProdSku sku = new PdProdSku();
                         String skuId = "tmp-sku-" + pad2(skuIdx++);
                         sku.setProdSkuId(skuId);
-                        sku.setSiteId(siteId);
                         sku.setProdId(prodId);
                         sku.setProdOptId1(grp1ItemIds.get(i));
                         sku.setAddPrice((long) (i * 1000));
@@ -307,7 +301,6 @@ public class ZdSimulController {
                             PdProdSku sku = new PdProdSku();
                             String skuId = "tmp-sku-" + pad2(skuIdx++);
                             sku.setProdSkuId(skuId);
-                            sku.setSiteId(siteId);
                             sku.setProdId(prodId);
                             sku.setProdOptId1(grp1ItemIds.get(i));
                             sku.setProdOptId2(grp2ItemIds.get(j));
@@ -332,7 +325,6 @@ public class ZdSimulController {
                     String tmpOpt1 = str(fim, "prodOptId1");
                     String realOpt1 = (tmpOpt1 != null) ? tmpToRealOptId.getOrDefault(tmpOpt1, tmpOpt1) : null;
                     PdProdImg img = new PdProdImg();
-                    img.setSiteId(siteId);
                     img.setProdId(prodId);
                     img.setProdOptId1(realOpt1);
                     img.setCdnImgUrl(url);
@@ -345,7 +337,6 @@ public class ZdSimulController {
                 for (int i = 0; i < grp1ItemIds.size(); i++) {
                     PdProdImg img = new PdProdImg();
                     img.setProdImgId("tmp-img-" + pad2(i));
-                    img.setSiteId(siteId);
                     img.setProdId(prodId);
                     img.setProdOptId1(grp1ItemIds.get(i));
                     img.setCdnImgUrl("https://picsum.photos/seed/" + (200 + i * 37) + "/400/400");
@@ -362,7 +353,6 @@ public class ZdSimulController {
             if (prodImgs != null && !prodImgs.isEmpty()) {
                 for (int i = 0; i < prodImgs.size(); i++) {
                     PdProdImg img = new PdProdImg();
-                    img.setSiteId(siteId);
                     img.setProdId(prodId);
                     img.setCdnImgUrl(str(prodImgs.get(i), "cdnImgUrl"));
                     img.setIsThumb(i == 0 ? "Y" : "N");
@@ -372,7 +362,6 @@ public class ZdSimulController {
             } else {
                 /* 이미지 미전송 시 기본 picsum 1장 */
                 PdProdImg img = new PdProdImg();
-                img.setSiteId(siteId);
                 img.setProdId(prodId);
                 img.setCdnImgUrl("https://picsum.photos/seed/" + Math.abs(prodId.hashCode() % 1000) + "/400/400");
                 img.setIsThumb("Y");
@@ -407,7 +396,6 @@ public class ZdSimulController {
         int count = body != null && body.get("count") instanceof Number
             ? ((Number) body.get("count")).intValue() : 3;
         PdProdDto.Request req = new PdProdDto.Request();
-        req.setSiteId(siteId);
         if (body != null && body.get("prodStatusCd") instanceof String s && !s.isBlank()) {
             req.setProdStatusCd(s);
         }
@@ -451,7 +439,6 @@ public class ZdSimulController {
         if (body.get("memberNm") instanceof String nm) body.put("memberNm", sanitizeText(nm));
         OdOrder order = new OdOrder();
         VoUtil.mapCopy(body, order, "orderItems", "promos");
-        order.setSiteId(siteId);
         order.setSimulYn("Y");
         OdOrder saved = odOrderService.create(order);
         String orderId = saved.getOrderId();
@@ -472,7 +459,6 @@ public class ZdSimulController {
             /* 쿠폰 할인 기록 */
             if (couponId != null && couponDiscnt > 0) {
                 OdOrderDiscnt d = new OdOrderDiscnt();
-                d.setSiteId(siteId);
                 d.setOrderId(orderId);
                 d.setDiscntTypeCd("ORDER_COUPON");
                 d.setCouponId(couponId);
@@ -482,7 +468,6 @@ public class ZdSimulController {
             /* 상품 할인 기록 */
             if (discntId != null && discntAmt > 0) {
                 OdOrderDiscnt d = new OdOrderDiscnt();
-                d.setSiteId(siteId);
                 d.setOrderId(orderId);
                 d.setDiscntTypeCd("PROMO_DISCNT");
                 d.setDiscntAmt(discntAmt);
@@ -491,7 +476,6 @@ public class ZdSimulController {
             /* 적립금 차감 기록 */
             if (saveDeductAmt > 0) {
                 OdOrderDiscnt d = new OdOrderDiscnt();
-                d.setSiteId(siteId);
                 d.setOrderId(orderId);
                 d.setDiscntTypeCd("SAVE_USE");
                 d.setDiscntAmt(saveDeductAmt);
@@ -500,7 +484,6 @@ public class ZdSimulController {
             /* 사은품 — od_order_item에 unit_price=0 행 추가 */
             if (giftProdId != null) {
                 OdOrderItem gift = new OdOrderItem();
-                gift.setSiteId(siteId);
                 gift.setOrderId(orderId);
                 gift.setProdId(giftProdId);
                 gift.setOrderQty(1);
@@ -587,7 +570,6 @@ public class ZdSimulController {
 
         long finalRefund = (long)(refundAmt * refundRate / 100.0);
         OdClaim claim = new OdClaim();
-        claim.setSiteId(siteId);
         claim.setOrderId(orderId);
         claim.setClaimTypeCd(typeCd);
         claim.setReasonCd(reasonCd);
@@ -630,7 +612,6 @@ public class ZdSimulController {
         if (body.get("memberNm") instanceof String nm) body.put("memberNm", sanitizeText(nm));
         MbMember member = new MbMember();
         VoUtil.mapCopy(body, member);
-        member.setSiteId(siteId);
         member.setSimulYn("Y");
         String rawPwd = body.get("loginPwd") instanceof String s && !s.isBlank() ? s : "1111";
         member.setLoginPwdHash(passwordEncoder.encode(rawPwd));
@@ -661,7 +642,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         PmEvent event = new PmEvent();
         VoUtil.mapCopy(body, event, "startDate", "endDate");
-        event.setSiteId(siteId);
         event.setSimulYn("Y");
         /* startDate / endDate: 프론트가 "YYYY-MM-DD HH:mm:ss" 형식으로 전송 → LocalDate 변환 */
         event.setStartDate(parseLocalDate(body.get("startDate")));
@@ -694,7 +674,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         PmPlan plan = new PmPlan();
         VoUtil.mapCopy(body, plan, "items", "addProdIds");
-        plan.setSiteId(siteId);
         plan.setSimulYn("Y");
         /* planTitle(노출용): 프론트 미전송 시 planNm으로 대체 */
         if (plan.getPlanTitle() == null)
@@ -725,7 +704,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         PmCoupon coupon = new PmCoupon();
         VoUtil.mapCopy(body, coupon);
-        coupon.setSiteId(siteId);
         coupon.setSimulYn("Y");
         if (coupon.getCouponTypeCd() == null) coupon.setCouponTypeCd("GENERAL");
         PmCoupon saved = pmCouponService.create(coupon);
@@ -739,7 +717,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         PmDiscnt discnt = new PmDiscnt();
         VoUtil.mapCopy(body, discnt);
-        discnt.setSiteId(siteId);
         discnt.setSimulYn("Y");
         PmDiscnt saved = pmDiscntService.create(discnt);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("discntId", saved.getDiscntId())));
@@ -752,7 +729,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         PmSave pmSave = new PmSave();
         VoUtil.mapCopy(body, pmSave);
-        pmSave.setSiteId(siteId);
         pmSave.setSimulYn("Y");
         PmSave saved = pmSaveService.create(pmSave);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("saveId", saved.getSaveId())));
@@ -791,7 +767,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         StSettle settle = new StSettle();
         VoUtil.mapCopy(body, settle, "settleYm");
-        settle.setSiteId(siteId);
         settle.setSimulYn("Y");
         /* settleYm: 프론트가 "YYYY-MM" 형식으로 전송 → DB는 "YYYYMM" 6자리 */
         String rawYm = body.get("settleYm") != null ? body.get("settleYm").toString() : null;
@@ -832,7 +807,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         SyUser user = new SyUser();
         VoUtil.mapCopy(body, user, "loginPwd");
-        user.setSiteId(siteId);
         String rawPwd = body.get("loginPwd") instanceof String s && !s.isBlank() ? s : "1111";
         user.setLoginPwdHash(passwordEncoder.encode(rawPwd));
         if (user.getUserStatusCd() == null) user.setUserStatusCd("ACTIVE");
@@ -865,7 +839,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         SyVendor vendor = new SyVendor();
         VoUtil.mapCopy(body, vendor);
-        vendor.setSiteId(siteId);
         if (vendor.getVendorStatusCd() == null) vendor.setVendorStatusCd("ACTIVE");
         if (vendor.getVendorNo() == null || vendor.getVendorNo().isBlank())
             vendor.setVendorNo("SIM" + System.currentTimeMillis() % 100000000L);
@@ -898,7 +871,6 @@ public class ZdSimulController {
         String siteId = SecurityUtil.getSiteIdOrDefault();
         StErpVoucher voucher = new StErpVoucher();
         VoUtil.mapCopy(body, voucher);
-        voucher.setSiteId(siteId);
         if (voucher.getErpVoucherStatusCd() == null) voucher.setErpVoucherStatusCd("DRAFT");
         if (voucher.getVoucherDate() == null) voucher.setVoucherDate(LocalDate.now());
         StErpVoucher saved = stErpVoucherService.create(voucher);
@@ -961,7 +933,6 @@ public class ZdSimulController {
         PdProdStock sc = new PdProdStock();
         sc.setProdStockId("PS" + now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + String.format("%06d", (int)(Math.random() * 1000000)));
         sc.setStockCode(prodSkuId);
-        sc.setSiteId(siteId);
         sc.setProdId(prodId);
         sc.setStockQty(stockQty);
         sc.setSaleCount(0);

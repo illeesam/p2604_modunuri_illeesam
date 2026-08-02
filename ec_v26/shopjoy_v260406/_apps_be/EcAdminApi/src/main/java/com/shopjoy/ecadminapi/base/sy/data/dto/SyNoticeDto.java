@@ -25,7 +25,6 @@ public class SyNoticeDto {
 
         // ── sy_notice ──────────────────────────────────────────
         private String noticeId;
-        private String siteId;
         private String noticeTitle;
         private String noticeTypeCd;
         private String isFixed;
@@ -37,6 +36,7 @@ public class SyNoticeDto {
         private Integer viewCount;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

@@ -73,7 +73,6 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         return queryFactory
                 .select(Projections.bean(SyVendorUserDto.Item.class,
                         syVendorUser.vendorUserId,                 // 판매/배송업체사용자ID (PK)
-                        syVendorUser.siteId,                       // 사이트ID
                         syVendorUser.vendorId,                     // 판매/배송업체ID (sy_vendor.vendor_id)
                         syVendorUser.userId,                       // 사용자ID (sy_user.user_id, NULL=비로그인)
                         syVendorUser.memberNm,                     // 이름

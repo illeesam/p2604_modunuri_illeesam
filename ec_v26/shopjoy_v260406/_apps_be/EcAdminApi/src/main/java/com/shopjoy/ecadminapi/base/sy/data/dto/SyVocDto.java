@@ -24,7 +24,6 @@ public class SyVocDto {
 
         // ── sy_voc ──────────────────────────────────────────
         private String vocId;
-        private String siteId;
         private String vocMasterCd;
         private String vocDetailCd;
         private String vocNm;
@@ -32,6 +31,7 @@ public class SyVocDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

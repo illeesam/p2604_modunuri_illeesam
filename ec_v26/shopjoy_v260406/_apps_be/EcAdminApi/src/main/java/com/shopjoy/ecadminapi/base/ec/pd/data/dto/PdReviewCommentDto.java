@@ -22,7 +22,6 @@ public class PdReviewCommentDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String reviewCommentId;
-        private String siteId;
         private String reviewId;
         private String parentReplyId;
         private String writerTypeCd;
@@ -32,6 +31,7 @@ public class PdReviewCommentDto {
         private String replyStatusCd;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

@@ -36,6 +36,7 @@ public class ZzExam2Dto {
         private String col25;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         // ── 계층 연관정보 (getById 시 채움) ──

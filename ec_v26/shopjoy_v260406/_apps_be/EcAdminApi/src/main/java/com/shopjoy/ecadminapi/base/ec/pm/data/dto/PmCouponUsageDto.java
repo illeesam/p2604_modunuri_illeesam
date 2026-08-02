@@ -19,7 +19,6 @@ public class PmCouponUsageDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String usageId;
-        private String siteId;
         private String couponId;
         private String couponCode;
         private String couponNm;
@@ -33,6 +32,7 @@ public class PmCouponUsageDto {
         private LocalDateTime usedDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

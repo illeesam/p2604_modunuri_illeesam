@@ -20,7 +20,6 @@ public class StSettleDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String settleId;
-        private String siteId;
         private String vendorId;
         private String settleYm;
         private LocalDateTime settleStartDate;
@@ -40,6 +39,7 @@ public class StSettleDto {
         private String settleMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

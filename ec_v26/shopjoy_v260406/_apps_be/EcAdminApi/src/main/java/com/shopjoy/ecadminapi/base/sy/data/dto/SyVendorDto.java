@@ -26,7 +26,6 @@ public class SyVendorDto {
 
         // ── sy_vendor ──────────────────────────────────────────
         private String vendorId;
-        private String siteId;
         private String vendorNo;
         private String corpNo;
         private String vendorNm;
@@ -53,6 +52,7 @@ public class SyVendorDto {
         private String vendorRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

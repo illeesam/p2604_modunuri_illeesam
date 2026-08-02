@@ -31,7 +31,6 @@ public class SyhUserTokenLogDto {
 
         // ── syh_user_token_log ──────────────────────────────────────────
         private String logId;
-        private String siteId;
         private String userId;
         private String loginLogId;
         private String actionCd;
@@ -48,6 +47,7 @@ public class SyhUserTokenLogDto {
         private String cmdNm;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

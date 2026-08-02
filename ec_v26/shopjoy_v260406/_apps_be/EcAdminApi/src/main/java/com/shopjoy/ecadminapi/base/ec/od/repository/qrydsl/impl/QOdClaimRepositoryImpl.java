@@ -114,8 +114,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         Map.entry("returnStatusCdBefore", odClaim.returnStatusCdBefore),
         Map.entry("returnTrackingNo", odClaim.returnTrackingNo),
         Map.entry("shippingFeeMemo", odClaim.shippingFeeMemo),
-        Map.entry("shippingFeePaidYn", odClaim.shippingFeePaidYn),
-        Map.entry("siteId", odClaim.siteId)
+        Map.entry("shippingFeePaidYn", odClaim.shippingFeePaidYn)
     );
 
     /*
@@ -129,7 +128,6 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         return queryFactory
                 .select(Projections.bean(OdClaimDto.Item.class,
                         odClaim.claimId,                    // 클레임ID (YYMMDDhhmmss+rand4)
-                        odClaim.siteId,                      // 사이트ID (sy_site.site_id)
                         odClaim.orderId,                     // 주문ID
                         odClaim.memberId,                    // 회원ID
                         odClaim.memberNm,                    // 회원명
@@ -239,7 +237,6 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .select(Projections.bean(OdClaimDto.Item.class,
                         // a.* equivalent (DTO Item 에 존재하는 모든 a. 필드)
                         odClaim.claimId,                      // 클레임ID (YYMMDDhhmmss+rand4)
-                        odClaim.siteId,                        // 사이트ID (sy_site.site_id)
                         odClaim.orderId,                       // 주문ID
                         odClaim.memberId,                      // 회원ID
                         odClaim.memberNm,                      // 회원명
@@ -357,7 +354,6 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         JPAQuery<OdClaimDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odClaim.siteId, search.getSiteId()),
                     QdslUtil.strEq(odClaim.claimId, search.getClaimId()),
                     QdslUtil.strEq(odClaim.orderId, search.getOrderId()),
                     QdslUtil.strEq(odClaim.memberId, search.getMemberId()),
@@ -387,7 +383,6 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odClaim.siteId, search.getSiteId()),
                 QdslUtil.strEq(odClaim.claimId, search.getClaimId()),
                 QdslUtil.strEq(odClaim.orderId, search.getOrderId()),
                 QdslUtil.strEq(odClaim.memberId, search.getMemberId()),

@@ -94,7 +94,6 @@ public class OdOrderAutoCompleteJob implements SchBatchJobHandler {
             // 이력 INSERT
             OdhOrderStatusHist hist = new OdhOrderStatusHist();
             hist.setOrderStatusHistId(CmUtil.generateId("odh_order_status_hist"));
-            hist.setSiteId(order.getSiteId());
             hist.setOrderId(orderId);
             hist.setOrderStatusCdBefore(currentStatus);
             hist.setOrderStatusCd("COMPLT");

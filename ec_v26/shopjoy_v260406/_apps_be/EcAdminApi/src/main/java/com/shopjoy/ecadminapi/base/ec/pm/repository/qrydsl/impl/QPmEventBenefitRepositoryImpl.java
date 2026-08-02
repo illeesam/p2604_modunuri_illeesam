@@ -43,8 +43,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         Map.entry("benefitValue", pmEventBenefit.benefitValue),
         Map.entry("conditionDesc", pmEventBenefit.conditionDesc),
         Map.entry("couponId", pmEventBenefit.couponId),
-        Map.entry("eventId", pmEventBenefit.eventId),
-        Map.entry("siteId", pmEventBenefit.siteId)
+        Map.entry("eventId", pmEventBenefit.eventId)
     );
 
     /*
@@ -55,7 +54,6 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         return queryFactory
                 .select(Projections.bean(PmEventBenefitDto.Item.class,
                         pmEventBenefit.benefitId,       // 혜택ID (PK)
-                        pmEventBenefit.siteId,          // 사이트ID
                         pmEventBenefit.eventId,         // 이벤트ID
                         pmEventBenefit.benefitNm,       // 혜택명
                         pmEventBenefit.benefitTypeCd,   // 혜택유형 — BENEFIT_TYPE {COUPON: '쿠폰', POINT: '적립금', DISCOUNT: '할인', GIFT: '사은품'}
@@ -87,7 +85,6 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                 .where(
                     QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()),
                     QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()),
-                    QdslUtil.strEq(pmEventBenefit.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmEventBenefit.benefitId, search.getBenefitId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -115,7 +112,6 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()),
                 QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()),
-                QdslUtil.strEq(pmEventBenefit.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmEventBenefit.benefitId, search.getBenefitId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -196,7 +192,6 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         JPAUpdateClause update = queryFactory.update(pmEventBenefit);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(pmEventBenefit.siteId,        entity.getSiteId());        hasAny = true; }
         if (entity.getEventId()       != null) { update.set(pmEventBenefit.eventId,       entity.getEventId());       hasAny = true; }
         if (entity.getBenefitNm()     != null) { update.set(pmEventBenefit.benefitNm,     entity.getBenefitNm());     hasAny = true; }
         if (entity.getBenefitTypeCd() != null) { update.set(pmEventBenefit.benefitTypeCd, entity.getBenefitTypeCd()); hasAny = true; }

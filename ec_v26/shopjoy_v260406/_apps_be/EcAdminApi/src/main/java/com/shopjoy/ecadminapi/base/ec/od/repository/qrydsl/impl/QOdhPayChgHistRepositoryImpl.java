@@ -42,8 +42,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         Map.entry("payStatusCdAfter", odhPayChgHist.payStatusCdAfter),
         Map.entry("payStatusCdBefore", odhPayChgHist.payStatusCdBefore),
         Map.entry("pgResponse", odhPayChgHist.pgResponse),
-        Map.entry("refundPgTid", odhPayChgHist.refundPgTid),
-        Map.entry("siteId", odhPayChgHist.siteId)
+        Map.entry("refundPgTid", odhPayChgHist.refundPgTid)
     );
 
     /*
@@ -55,7 +54,6 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         return queryFactory
                 .select(Projections.bean(OdhPayChgHistDto.Item.class,
                         odhPayChgHist.payChgHistId,        // 결제변경이력ID (YYMMDDhhmmss+rand4)
-                        odhPayChgHist.siteId,               // 사이트ID
                         odhPayChgHist.payId,                 // 결제ID (od_pay.)
                         odhPayChgHist.orderId,               // 주문ID (od_order.)
                         odhPayChgHist.payStatusCdBefore,     // 변경 전 결제상태 — PAY_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
@@ -89,7 +87,6 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         JPAQuery<OdhPayChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhPayChgHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhPayChgHist.payChgHistId, search.getPayChgHistId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -114,7 +111,6 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhPayChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhPayChgHist.payChgHistId, search.getPayChgHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -185,7 +181,6 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
         JPAUpdateClause update = queryFactory.update(odhPayChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()            != null) { update.set(odhPayChgHist.siteId,            entity.getSiteId());            hasAny = true; }
         if (entity.getPayId()             != null) { update.set(odhPayChgHist.payId,             entity.getPayId());             hasAny = true; }
         if (entity.getOrderId()           != null) { update.set(odhPayChgHist.orderId,           entity.getOrderId());           hasAny = true; }
         if (entity.getPayStatusCdBefore() != null) { update.set(odhPayChgHist.payStatusCdBefore, entity.getPayStatusCdBefore()); hasAny = true; }

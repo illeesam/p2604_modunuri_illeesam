@@ -24,7 +24,6 @@ public class PmGiftDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String giftId;
-        private String siteId;
         private String giftNm;
         private String giftTypeCd;
         private String prodId;
@@ -42,6 +41,7 @@ public class PmGiftDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

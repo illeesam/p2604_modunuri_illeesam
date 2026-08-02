@@ -28,7 +28,6 @@ public class SyBrandDto {
 
         // ── sy_brand ──────────────────────────────────────────
         private String brandId;
-        private String siteId;
         private String brandCode;
         private String brandNm;
         private String brandEnNm;
@@ -40,6 +39,7 @@ public class SyBrandDto {
         private String brandRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

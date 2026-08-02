@@ -62,7 +62,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         return queryFactory
                 .select(Projections.bean(CmFaqDto.Item.class,
                         cmFaq.faqId,             // FAQ ID (PK, YYMMDDhhmmss+rand4)
-                        cmFaq.siteId,            // 사이트ID (sy_site.site_id)
                         cmFaq.pathId,            // FAQ 분류 표시경로 (sy_path.path_id, biz_cd=cm_faq)
                         cmFaq.faqQuestion,       // 질문
                         cmFaq.faqAnswer,         // 답변(HTML)
@@ -74,11 +73,9 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
                         cmFaq.regDate,           // 등록일시
                         cmFaq.updBy,             // 수정자
                         cmFaq.updDate,           // 수정일시
-                        sySite.siteNm.as("siteNm"),      // 사이트명 (sy_site 조인)
                         syPath.pathLabel.as("pathLabel") // 표시경로 라벨 (sy_path 조인)
                 ))
                 .from(cmFaq)
-                .leftJoin(sySite).on(sySite.siteId.eq(cmFaq.siteId))
                 .leftJoin(syPath).on(syPath.pathId.eq(cmFaq.pathId));
     }
 
@@ -98,7 +95,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(cmFaq.siteId, search.getSiteId()),
                     QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
                     andPathTreeIn(search),
                     QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
@@ -123,7 +119,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmFaq.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
                 andPathTreeIn(search),
                 QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
@@ -197,7 +192,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         JPAUpdateClause update = queryFactory.update(cmFaq);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(cmFaq.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getPathId()      != null) { update.set(cmFaq.pathId,      entity.getPathId());      hasAny = true; }
         if (entity.getFaqQuestion() != null) { update.set(cmFaq.faqQuestion, entity.getFaqQuestion()); hasAny = true; }
         if (entity.getFaqAnswer()   != null) { update.set(cmFaq.faqAnswer,   entity.getFaqAnswer());   hasAny = true; }
@@ -243,8 +237,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
 
         /* 검색조건 — siteId/useYn/searchValue */
         if (search != null && StringUtils.hasText(search.getSiteId())) {
-            sql.append("      AND t.site_id = :siteId\n");
-            params.put("siteId", search.getSiteId());
         }
         if (search != null && StringUtils.hasText(search.getUseYn())) {
             sql.append("      AND t.use_yn = :useYn\n");

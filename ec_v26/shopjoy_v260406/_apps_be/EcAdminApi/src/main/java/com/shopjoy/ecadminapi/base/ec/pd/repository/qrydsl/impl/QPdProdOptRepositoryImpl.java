@@ -43,7 +43,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         Map.entry("prodOptNm", pdProdOpt.prodOptNm),
         Map.entry("prodOptVal", pdProdOpt.prodOptVal),
         Map.entry("parentProdOptId", pdProdOpt.parentProdOptId),
-        Map.entry("siteId", pdProdOpt.siteId),
         Map.entry("useYn", pdProdOpt.useYn)
     );
 
@@ -58,7 +57,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         return queryFactory
                 .select(Projections.bean(PdProdOptDto.Item.class,
                         pdProdOpt.prodOptId,           // 옵션ID (PK)
-                        pdProdOpt.siteId,               // 사이트ID (sy_site.site_id)
                         pdProdOpt.prodId,               // 상품ID (pd_prod.prod_id) — 조회 편의용 비정규화 컬럼
                         pdProdOpt.prodOptNm,             // 옵션명 (예: 빨강, M)
                         pdProdOpt.prodOptVal,            // 실제 저장값 — 직접입력 또는 프리셋 선택 시 자동 채움
@@ -97,7 +95,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                 .where(
                     QdslUtil.strIn(pdProdOpt.prodId, search.getProdIds()),
                     QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
-                    QdslUtil.strEq(pdProdOpt.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProdOpt.prodOptId, search.getProdOptId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -123,7 +120,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdProdOpt.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProdOpt.prodId, search.getProdId()),
-                QdslUtil.strEq(pdProdOpt.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProdOpt.prodOptId, search.getProdOptId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -192,7 +188,6 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
         JPAUpdateClause update = queryFactory.update(pdProdOpt);
         boolean hasAny = false;
 
-        if (entity.getSiteId()            != null) { update.set(pdProdOpt.siteId,            entity.getSiteId());            hasAny = true; }
         if (entity.getProdId()            != null) { update.set(pdProdOpt.prodId,            entity.getProdId());            hasAny = true; }
         if (entity.getProdOptNm()         != null) { update.set(pdProdOpt.prodOptNm,         entity.getProdOptNm());         hasAny = true; }
         if (entity.getProdOptVal()            != null) { update.set(pdProdOpt.prodOptVal,            entity.getProdOptVal());            hasAny = true; }

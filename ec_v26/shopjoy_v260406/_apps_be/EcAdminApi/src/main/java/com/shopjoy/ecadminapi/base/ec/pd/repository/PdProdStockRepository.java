@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface PdProdStockRepository extends JpaRepository<PdProdStock, String>, QPdProdStockRepository {
 
-    List<PdProdStock> findBySiteId(String siteId);
+    List<PdProdStock> findAllByOrderByStockCodeAsc();
 
     Optional<PdProdStock> findByStockCode(String stockCode);
 

@@ -9,11 +9,9 @@ import java.util.Optional;
 
 public interface CmPopupRepository extends JpaRepository<CmPopup, String>, QCmPopupRepository {
 
-    Optional<CmPopup> findBySiteIdAndPopupCodeAndUseYn(String siteId, String popupCode, String useYn);
 
     Optional<CmPopup> findByPopupCodeAndUseYn(String popupCode, String useYn);
 
-    List<CmPopup> findBySiteIdAndUseYnOrderBySortOrdAsc(String siteId, String useYn);
 
     List<CmPopup> findByUseYnOrderBySortOrdAsc(String useYn);
 }

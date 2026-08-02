@@ -21,7 +21,6 @@ public class StReconDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String reconId;
-        private String siteId;
         private String vendorId;
         private String reconTypeCd;
         private String reconStatusCd;
@@ -39,6 +38,7 @@ public class StReconDto {
         private LocalDateTime resolvedDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

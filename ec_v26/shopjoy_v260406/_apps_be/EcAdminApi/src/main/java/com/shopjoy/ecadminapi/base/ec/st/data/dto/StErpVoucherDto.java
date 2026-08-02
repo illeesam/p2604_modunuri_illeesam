@@ -22,7 +22,6 @@ public class StErpVoucherDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String erpVoucherId;
-        private String siteId;
         private String vendorId;
         private String settleId;
         private String settleYm;
@@ -38,6 +37,7 @@ public class StErpVoucherDto {
         private String erpResMsg;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

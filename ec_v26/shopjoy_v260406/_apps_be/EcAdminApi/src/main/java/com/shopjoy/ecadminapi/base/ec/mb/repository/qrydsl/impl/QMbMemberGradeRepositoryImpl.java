@@ -44,7 +44,6 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         Map.entry("gradeCd", mbMemberGrade.gradeCd),
         Map.entry("gradeNm", mbMemberGrade.gradeNm),
         Map.entry("memberGradeId", mbMemberGrade.memberGradeId),
-        Map.entry("siteId", mbMemberGrade.siteId),
         Map.entry("useYn", mbMemberGrade.useYn)
     );
 
@@ -57,7 +56,6 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         return queryFactory
                 .select(Projections.bean(MbMemberGradeDto.Item.class,
                         mbMemberGrade.memberGradeId,   // 등급ID (PK)
-                        mbMemberGrade.siteId,          // 사이트ID (sy_site.site_id)
                         mbMemberGrade.gradeCd,         // 등급코드 — MEMBER_GRADE {BASIC: '일반', GOLD: '우수', VIP: 'VIP'}
                         mbMemberGrade.gradeNm,         // 등급명
                         mbMemberGrade.gradeRank,       // 등급우선순위 (낮을수록 낮은 등급)
@@ -70,7 +68,6 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                         mbMemberGrade.updDate          // 수정일시
                 ))
                 .from(mbMemberGrade)
-                .leftJoin(sySite).on(sySite.siteId.eq(mbMemberGrade.siteId))
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(mbMemberGrade.gradeCd)));
     }
 
@@ -89,7 +86,6 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         JPAQuery<MbMemberGradeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(mbMemberGrade.siteId, search.getSiteId()),
                     QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId()),
                     QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -115,7 +111,6 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(mbMemberGrade.siteId, search.getSiteId()),
                 QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId()),
                 QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -190,7 +185,6 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         if (entity.getMemberGradeId() == null) return 0;
         JPAUpdateClause update = queryFactory.update(mbMemberGrade);
         boolean hasAny = false;
-        if (entity.getSiteId()         != null) { update.set(mbMemberGrade.siteId,         entity.getSiteId());         hasAny = true; }
         if (entity.getGradeCd()        != null) { update.set(mbMemberGrade.gradeCd,        entity.getGradeCd());        hasAny = true; }
         if (entity.getGradeNm()        != null) { update.set(mbMemberGrade.gradeNm,        entity.getGradeNm());        hasAny = true; }
         if (entity.getGradeRank()      != null) { update.set(mbMemberGrade.gradeRank,      entity.getGradeRank());      hasAny = true; }

@@ -20,7 +20,6 @@ public class PdProdSetItemDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String setItemId;
-        private String siteId;
         private String setProdId;
         private String itemProdId;
         private String itemSkuId;
@@ -31,6 +30,7 @@ public class PdProdSetItemDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

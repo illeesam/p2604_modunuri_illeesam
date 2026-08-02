@@ -38,7 +38,6 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("discntId", pmDiscntItem.discntId),
         Map.entry("discntItemId", pmDiscntItem.discntItemId),
-        Map.entry("siteId", pmDiscntItem.siteId),
         Map.entry("targetId", pmDiscntItem.targetId),
         Map.entry("targetTypeCd", pmDiscntItem.targetTypeCd)
     );
@@ -52,7 +51,6 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
                 .select(Projections.bean(PmDiscntItemDto.Item.class,
                         pmDiscntItem.discntItemId,   // 할인항목ID (PK)
                         pmDiscntItem.discntId,       // 할인ID (pm_discnt.discnt_id)
-                        pmDiscntItem.siteId,         // 사이트ID
                         pmDiscntItem.targetTypeCd,   // 대상유형 — DISCNT_ITEM_TARGET {CATEGORY, PRODUCT, MEMBER_GRADE}
                         pmDiscntItem.targetId,       // 대상ID (category_id/prod_id/grade_cd)
                         pmDiscntItem.regBy, pmDiscntItem.regDate
@@ -77,7 +75,6 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         JPAQuery<PmDiscntItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmDiscntItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmDiscntItem.discntItemId, search.getDiscntItemId()),
                     QdslUtil.strEq(pmDiscntItem.discntId, search.getDiscntId()),
                     QdslUtil.strEq(pmDiscntItem.targetId, search.getTargetId()),
@@ -106,7 +103,6 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmDiscntItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmDiscntItem.discntItemId, search.getDiscntItemId()),
                 QdslUtil.strEq(pmDiscntItem.discntId, search.getDiscntId()),
                 QdslUtil.strEq(pmDiscntItem.targetId, search.getTargetId()),
@@ -183,7 +179,6 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         boolean hasAny = false;
 
         if (entity.getDiscntId()    != null) { update.set(pmDiscntItem.discntId,    entity.getDiscntId());    hasAny = true; }
-        if (entity.getSiteId()      != null) { update.set(pmDiscntItem.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getTargetTypeCd()!= null) { update.set(pmDiscntItem.targetTypeCd,entity.getTargetTypeCd());hasAny = true; }
         if (entity.getTargetId()    != null) { update.set(pmDiscntItem.targetId,    entity.getTargetId());    hasAny = true; }
 

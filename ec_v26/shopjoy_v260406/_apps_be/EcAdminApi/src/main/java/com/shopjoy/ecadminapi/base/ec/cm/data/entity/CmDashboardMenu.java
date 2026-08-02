@@ -38,9 +38,6 @@ public class CmDashboardMenu extends BaseEntity {
     @Column(name = "menu_node_id", length = 21, nullable = false)
     private String menuNodeId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("메뉴범위 (USER:사용자별 트리 / SYS:사이트 공통 트리)")
     @Column(name = "menu_scope_cd", length = 10, nullable = false)

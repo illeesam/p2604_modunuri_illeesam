@@ -56,7 +56,6 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         return queryFactory
                 .select(Projections.bean(CmChattMsgDto.Item.class,
                         cmChattMsg.chattMsgId,    // 메시지ID (PK, YYMMDDhhmmss+rand4)
-                        cmChattMsg.siteId,        // 사이트ID (sy_site.site_id)
                         cmChattMsg.chattId,       // 채팅방ID (cm_chatt.chatt_id)
                         cmChattMsg.senderTypeCd,  // 발신자유형 — SENDER_TYPE_CD {MEMBER: '고객회원', ADMIN: '관리자', SYSTEM: '시스템'}
                         cmChattMsg.senderId,      // 발신자ID (memberId 또는 userId)
@@ -91,7 +90,6 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         JPAQuery<CmChattMsgDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                        QdslUtil.strEq(cmChattMsg.siteId, search.getSiteId()),
                         QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId()),
                         QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()),
                         QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()),
@@ -115,7 +113,6 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmChattMsg.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId()),
                 QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()),
                 QdslUtil.strEq(cmChattMsg.senderId, search.getSenderId()),
@@ -180,7 +177,6 @@ private BooleanExpression andSearchValue(CmChattMsgDto.Request s) {
         JPAUpdateClause update = queryFactory.update(cmChattMsg);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(cmChattMsg.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getChattId()      != null) { update.set(cmChattMsg.chattId,       entity.getChattId());      hasAny = true; }
         if (entity.getSenderTypeCd() != null) { update.set(cmChattMsg.senderTypeCd, entity.getSenderTypeCd()); hasAny = true; }
         if (entity.getSenderId()     != null) { update.set(cmChattMsg.senderId,      entity.getSenderId());     hasAny = true; }

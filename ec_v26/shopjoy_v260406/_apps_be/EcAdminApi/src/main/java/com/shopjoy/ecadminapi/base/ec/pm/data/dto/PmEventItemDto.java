@@ -23,12 +23,12 @@ public class PmEventItemDto {
     public static class Item {
         private String eventItemId;
         private String eventId;
-        private String siteId;
         private String targetTypeCd;
         private String targetId;
         private Integer sortNo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

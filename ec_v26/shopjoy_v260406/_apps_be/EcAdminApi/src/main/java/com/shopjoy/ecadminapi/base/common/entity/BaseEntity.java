@@ -84,6 +84,16 @@ public abstract class BaseEntity {
     private LocalDateTime regDate;
 
     /**
+     * 등록 사이트ID — 행을 최초 생성한 시점의 인증 사이트 식별자.
+     * INSERT 시 {@link EntitySaveListener}가 SecurityUtil.getSiteIdOrDefault() 로 채우며
+     * 이후 UPDATE 시에는 변경하지 않는다(등록 당시 사이트 추적 보존).
+     * nullable — 기존 데이터 호환성 및 배치/시스템 컨텍스트 허용.
+     */
+    @Comment("등록 사이트ID (reg_by와 동일 시점에 SecurityUtil에서 자동 주입)")
+    @Column(name = "reg_site_id", length = 21)
+    private String regSiteId;
+
+    /**
      * 수정자 — 행을 마지막으로 변경한 사용자 식별자. INSERT 시 등록자와 동일하게
      * 초기화되고, 매 UPDATE 마다 현재 사용자로 갱신된다.
      */

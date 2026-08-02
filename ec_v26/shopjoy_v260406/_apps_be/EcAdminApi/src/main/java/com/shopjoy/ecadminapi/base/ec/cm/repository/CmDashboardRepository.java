@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface CmDashboardRepository extends JpaRepository<CmDashboard, String> {
-    List<CmDashboard> findBySiteIdOrderBySortOrdAsc(String siteId);
-    List<CmDashboard> findBySiteIdAndUseYnOrderBySortOrdAsc(String siteId, String useYn);
-    Optional<CmDashboard> findBySiteIdAndUiCompNm(String siteId, String uiCompNm);
+    List<CmDashboard> findAllByOrderBySortOrdAsc();
+    List<CmDashboard> findByUseYnOrderBySortOrdAsc(String useYn);
+    Optional<CmDashboard> findByUiCompNm(String uiCompNm);
 }

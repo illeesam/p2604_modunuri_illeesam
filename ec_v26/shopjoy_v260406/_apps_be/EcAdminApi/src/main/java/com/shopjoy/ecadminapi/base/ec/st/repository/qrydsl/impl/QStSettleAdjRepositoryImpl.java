@@ -48,7 +48,6 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         Map.entry("settleAdjId", stSettleAdj.settleAdjId),
         Map.entry("settleAdjMemo", stSettleAdj.settleAdjMemo),
         Map.entry("settleId", stSettleAdj.settleId),
-        Map.entry("siteId", stSettleAdj.siteId),
         Map.entry("siteNm", sySite.siteNm)
     );
 
@@ -62,7 +61,6 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                 .select(Projections.bean(StSettleAdjDto.Item.class,
                         stSettleAdj.settleAdjId,          // 정산조정ID (PK)
                         stSettleAdj.settleId,              // 정산ID (st_settle.settle_id)
-                        stSettleAdj.siteId,                 // 사이트ID
                         stSettleAdj.adjTypeCd,              // 조정유형 — SETTLE_ADJ_TYPE {PENALTY: '패널티', BONUS: '보너스', ERROR_FIX: '오류수정', OTHER: '기타'}
                         stSettleAdj.adjAmt,                 // 조정금액 (양수, 유형에 따라 가산/차감)
                         stSettleAdj.adjReason,              // 조정 사유
@@ -72,11 +70,9 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                         stSettleAdj.regDate,                // 등록일시
                         stSettleAdj.updBy,                  // 수정자
                         stSettleAdj.updDate,                // 수정일시
-                        sySite.siteNm.as("siteNm"),                 // 사이트명 (조인)
                         cdSat.codeLabel.as("adjTypeCdNm")           // 조정유형명 (sy_code 조인)
                 ))
                 .from(stSettleAdj)
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettleAdj.siteId))
                 .leftJoin(cdSat).on(cdSat.codeGrp.eq("SETTLE_ADJ_TYPE").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd)));
     }
 
@@ -97,7 +93,6 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         JPAQuery<StSettleAdjDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stSettleAdj.siteId, search.getSiteId()),
                     QdslUtil.strEq(stSettleAdj.settleAdjId, search.getSettleAdjId()),
                     QdslUtil.strEq(stSettleAdj.adjTypeCd, search.getAdjTypeCd()),
                     QdslUtil.strEq(stSettleAdj.aprvStatusCd, search.getAprvStatusCd()),
@@ -125,7 +120,6 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stSettleAdj.siteId, search.getSiteId()),
                 QdslUtil.strEq(stSettleAdj.settleAdjId, search.getSettleAdjId()),
                 QdslUtil.strEq(stSettleAdj.adjTypeCd, search.getAdjTypeCd()),
                 QdslUtil.strEq(stSettleAdj.aprvStatusCd, search.getAprvStatusCd()),
@@ -200,7 +194,6 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         boolean hasAny = false;
 
         if (entity.getSettleId()      != null) { update.set(stSettleAdj.settleId,      entity.getSettleId());      hasAny = true; }
-        if (entity.getSiteId()        != null) { update.set(stSettleAdj.siteId,        entity.getSiteId());        hasAny = true; }
         if (entity.getAdjTypeCd()     != null) { update.set(stSettleAdj.adjTypeCd,     entity.getAdjTypeCd());     hasAny = true; }
         if (entity.getAdjAmt()        != null) { update.set(stSettleAdj.adjAmt,        entity.getAdjAmt());        hasAny = true; }
         if (entity.getAdjReason()     != null) { update.set(stSettleAdj.adjReason,     entity.getAdjReason());     hasAny = true; }

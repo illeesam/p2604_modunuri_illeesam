@@ -49,7 +49,6 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("deviceTypeCd", dpUi.deviceTypeCd),
         Map.entry("pathId", dpUi.pathId),
-        Map.entry("siteId", dpUi.siteId),
         Map.entry("uiCd", dpUi.uiCd),
         Map.entry("uiDesc", dpUi.uiDesc),
         Map.entry("uiId", dpUi.uiId),
@@ -66,7 +65,6 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         return queryFactory
                 .select(Projections.bean(DpUiDto.Item.class,
                         dpUi.uiId,          // UIID (PK, YYMMDDhhmmss+rand4)
-                        dpUi.siteId,        // 사이트ID (sy_site.site_id)
                         dpUi.uiCd,          // UI코드 (예: MOBILE_MAIN, PC_MAIN)
                         dpUi.uiNm,          // UI명
                         dpUi.uiDesc,        // UI설명
@@ -101,7 +99,6 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         JPAQuery<DpUiDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(dpUi.siteId, search.getSiteId()),
                     andPathIdIn(search),
                     QdslUtil.strEq(dpUi.uiId, search.getUiId()),
                     QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd()),
@@ -129,7 +126,6 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(dpUi.siteId, search.getSiteId()),
                 andPathIdIn(search),
                 QdslUtil.strEq(dpUi.uiId, search.getUiId()),
                 QdslUtil.strEq(dpUi.deviceTypeCd, search.getDeviceTypeCd()),
@@ -219,7 +215,6 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         JPAUpdateClause update = queryFactory.update(dpUi);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(dpUi.siteId,        entity.getSiteId());        hasAny = true; }
         if (entity.getUiCd()          != null) { update.set(dpUi.uiCd,          entity.getUiCd());          hasAny = true; }
         if (entity.getUiNm()          != null) { update.set(dpUi.uiNm,          entity.getUiNm());          hasAny = true; }
         if (entity.getUiDesc()        != null) { update.set(dpUi.uiDesc,        entity.getUiDesc());        hasAny = true; }

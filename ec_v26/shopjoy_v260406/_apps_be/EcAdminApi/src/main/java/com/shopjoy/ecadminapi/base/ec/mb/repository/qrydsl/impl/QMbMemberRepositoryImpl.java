@@ -56,8 +56,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         Map.entry("memberPhone", mbMember.memberPhone),
         Map.entry("memberStatusCd", mbMember.memberStatusCd),
         Map.entry("memberStatusCdBefore", mbMember.memberStatusCdBefore),
-        Map.entry("memberZipCode", mbMember.memberZipCode),
-        Map.entry("siteId", mbMember.siteId)
+        Map.entry("memberZipCode", mbMember.memberZipCode)
     );
 
     /*
@@ -70,7 +69,6 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         return queryFactory
                 .select(Projections.bean(MbMemberDto.Item.class,
                         mbMember.memberId,               // 회원ID (PK, YYMMDDhhmmss+rand4)
-                        mbMember.siteId,                 // 사이트ID (sy_site.site_id)
                         mbMember.loginId,                // 이메일 (로그인 ID)
                         mbMember.memberNm,                // 회원명
                         mbMember.memberPhone,             // 연락처
@@ -92,12 +90,10 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                         mbMember.regDate,                 // 등록일
                         mbMember.updBy,                   // 수정자 (sy_user.user_id, mb_member.member_id)
                         mbMember.updDate,                 // 수정일
-                        sySite.siteNm.as("siteNm"),                    // 사이트명 (sy_site 조인)
                         cdGr.codeLabel.as("gradeCdNm"),                // 등급 코드라벨 (sy_code MEMBER_GRADE 조인)
                         cdMs.codeLabel.as("memberStatusCdNm")          // 상태 코드라벨 (sy_code MEMBER_STATUS 조인)
                 ))
                 .from(mbMember)
-                .leftJoin(sySite).on(sySite.siteId.eq(mbMember.siteId))
                 .leftJoin(cdGr).on(cdGr.codeGrp.eq("MEMBER_GRADE").and(cdGr.codeValue.eq(mbMember.gradeCd)))
                 .leftJoin(cdMs).on(cdMs.codeGrp.eq("MEMBER_STATUS").and(cdMs.codeValue.eq(mbMember.memberStatusCd)));
     }
@@ -119,7 +115,6 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(mbMember.siteId, search.getSiteId()),
                     QdslUtil.strEq(mbMember.memberId, search.getMemberId()),
                     QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()),
                     QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()),
@@ -147,7 +142,6 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(mbMember.siteId, search.getSiteId()),
                 QdslUtil.strEq(mbMember.memberId, search.getMemberId()),
                 QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()),
                 QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()),

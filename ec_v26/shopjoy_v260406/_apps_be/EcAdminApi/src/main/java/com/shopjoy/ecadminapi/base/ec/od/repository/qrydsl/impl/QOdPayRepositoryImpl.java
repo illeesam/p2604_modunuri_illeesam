@@ -76,7 +76,6 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         Map.entry("refundReason", odPay.refundReason),
         Map.entry("refundStatusCd", odPay.refundStatusCd),
         Map.entry("refundStatusCdBefore", odPay.refundStatusCdBefore),
-        Map.entry("siteId", odPay.siteId),
         Map.entry("vbankAccount", odPay.vbankAccount),
         Map.entry("vbankBankCode", odPay.vbankBankCode),
         Map.entry("vbankBankNm", odPay.vbankBankNm),
@@ -95,7 +94,6 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         return queryFactory
                 .select(Projections.bean(OdPayDto.Item.class,
                         odPay.payId,                 // 결제ID (YYMMDDhhmmss+rand4)
-                        odPay.siteId,                 // 사이트ID (sy_site.site_id)
                         odPay.orderId,                // 주문ID (od_order.)
                         odPay.payStatusCd,            // 결제상태 — PAY_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
                         odPay.payStatusCdBefore,      // 변경 전 결제상태 — PAY_STATUS (동일 코드그룹)
@@ -143,7 +141,6 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         OdPayDto.Item dto = queryFactory
                 .select(Projections.bean(OdPayDto.Item.class,
                         odPay.payId,                  // 결제ID (YYMMDDhhmmss+rand4)
-                        odPay.siteId,                  // 사이트ID (sy_site.site_id)
                         odPay.orderId,                 // 주문ID (od_order.)
                         odPay.payStatusCd,             // 결제상태 — PAY_STATUS {PENDING:대기, COMPLT:완료, FAILED:실패, CANCELLED:취소, PARTIAL_REFUND:부분환불, REFUNDED:전액환불}
                         odPay.payStatusCdBefore,       // 변경 전 결제상태 — PAY_STATUS (동일 코드그룹)
@@ -202,7 +199,6 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .where(
                     QdslUtil.strIn(odPay.orderId, search.getOrderIds()),
                     QdslUtil.strEq(odPay.orderId, search.getOrderId()),
-                    QdslUtil.strEq(odPay.siteId, search.getSiteId()),
                     QdslUtil.strEq(odPay.payId, search.getPayId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -230,7 +226,6 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odPay.orderId, search.getOrderIds()),
                 QdslUtil.strEq(odPay.orderId, search.getOrderId()),
-                QdslUtil.strEq(odPay.siteId, search.getSiteId()),
                 QdslUtil.strEq(odPay.payId, search.getPayId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)

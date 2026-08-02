@@ -21,7 +21,6 @@ public class StSettleItemDto {
     public static class Item {
         private String settleItemId;
         private String settleId;
-        private String siteId;
         private String orderId;
         private String orderItemId;
         private String vendorId;
@@ -37,6 +36,7 @@ public class StSettleItemDto {
         private Long settleItemAmt;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

@@ -39,6 +39,7 @@ public class ZzExmy3Dto {
         private String col35;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

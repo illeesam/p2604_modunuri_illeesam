@@ -39,8 +39,7 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         Map.entry("chgTypeCd", odhClaimChgHist.chgTypeCd),
         Map.entry("chgUserId", odhClaimChgHist.chgUserId),
         Map.entry("claimChgHistId", odhClaimChgHist.claimChgHistId),
-        Map.entry("claimId", odhClaimChgHist.claimId),
-        Map.entry("siteId", odhClaimChgHist.siteId)
+        Map.entry("claimId", odhClaimChgHist.claimId)
     );
 
     /*
@@ -52,7 +51,6 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         return queryFactory
                 .select(Projections.bean(OdhClaimChgHistDto.Item.class,
                         odhClaimChgHist.claimChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
-                        odhClaimChgHist.siteId,         // 사이트ID
                         odhClaimChgHist.claimId,        // 클레임ID (od_claim.)
                         odhClaimChgHist.chgTypeCd,      // 변경유형코드 — CHG_TYPE {CLAIM_TYPE:클레임유형변경, REASON:사유변경, AMOUNT:금액변경, APPROVAL:결재변경, MEMO:메모변경, REFUND:환불변경}
                         odhClaimChgHist.chgField,       // 변경 필드명
@@ -82,7 +80,6 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         JPAQuery<OdhClaimChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhClaimChgHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhClaimChgHist.claimChgHistId, search.getClaimChgHistId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -107,7 +104,6 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhClaimChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhClaimChgHist.claimChgHistId, search.getClaimChgHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -178,7 +174,6 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         JPAUpdateClause update = queryFactory.update(odhClaimChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(odhClaimChgHist.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getClaimId()    != null) { update.set(odhClaimChgHist.claimId,    entity.getClaimId());    hasAny = true; }
         if (entity.getChgTypeCd()  != null) { update.set(odhClaimChgHist.chgTypeCd,  entity.getChgTypeCd());  hasAny = true; }
         if (entity.getChgField()   != null) { update.set(odhClaimChgHist.chgField,   entity.getChgField());   hasAny = true; }

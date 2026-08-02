@@ -25,9 +25,6 @@ public class PdReview extends BaseEntity {
     @Column(name = "review_id", length = 21, nullable = false)
     private String reviewId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)

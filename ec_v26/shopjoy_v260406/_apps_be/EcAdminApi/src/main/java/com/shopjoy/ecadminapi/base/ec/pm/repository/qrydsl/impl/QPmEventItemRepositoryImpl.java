@@ -38,7 +38,6 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("eventId", pmEventItem.eventId),
         Map.entry("eventItemId", pmEventItem.eventItemId),
-        Map.entry("siteId", pmEventItem.siteId),
         Map.entry("targetId", pmEventItem.targetId),
         Map.entry("targetTypeCd", pmEventItem.targetTypeCd)
     );
@@ -52,7 +51,6 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
                 .select(Projections.bean(PmEventItemDto.Item.class,
                         pmEventItem.eventItemId,   // 이벤트항목ID (PK, YYMMDDhhmmss+rand4)
                         pmEventItem.eventId,       // 이벤트ID (pm_event.event_id)
-                        pmEventItem.siteId,        // 사이트ID (sy_site.site_id)
                         pmEventItem.targetTypeCd,  // 대상유형 — EVENT_ITEM_TARGET {PRODUCT, CATEGORY, VENDOR, BRAND}
                         pmEventItem.targetId,      // 대상ID (prod_id / category_id / vendor_id / brand_id)
                         pmEventItem.sortNo,        // 이벤트 내 노출 순서
@@ -80,7 +78,6 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
                 .where(
                     QdslUtil.strIn(pmEventItem.eventId, search.getEventIds()),
                     QdslUtil.strEq(pmEventItem.eventId, search.getEventId()),
-                    QdslUtil.strEq(pmEventItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmEventItem.eventItemId, search.getEventItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -108,7 +105,6 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmEventItem.eventId, search.getEventIds()),
                 QdslUtil.strEq(pmEventItem.eventId, search.getEventId()),
-                QdslUtil.strEq(pmEventItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmEventItem.eventItemId, search.getEventItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -182,7 +178,6 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         boolean hasAny = false;
 
         if (entity.getEventId()     != null) { update.set(pmEventItem.eventId,     entity.getEventId());     hasAny = true; }
-        if (entity.getSiteId()      != null) { update.set(pmEventItem.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getTargetTypeCd()!= null) { update.set(pmEventItem.targetTypeCd,entity.getTargetTypeCd());hasAny = true; }
         if (entity.getTargetId()    != null) { update.set(pmEventItem.targetId,    entity.getTargetId());    hasAny = true; }
         if (entity.getSortNo()      != null) { update.set(pmEventItem.sortNo,      entity.getSortNo());      hasAny = true; }

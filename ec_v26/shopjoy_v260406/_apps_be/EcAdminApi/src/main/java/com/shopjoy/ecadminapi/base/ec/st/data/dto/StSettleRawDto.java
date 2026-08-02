@@ -35,7 +35,6 @@ public class StSettleRawDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String settleRawId;
-        private String siteId;
         private String rawTypeCd;
         private String rawStatusCd;
         private String rawStatusCdBefore;
@@ -100,6 +99,7 @@ public class StSettleRawDto {
         private LocalDateTime erpSendDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         // 연관 엔티티명 (조인 alias)

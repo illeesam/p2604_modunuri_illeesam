@@ -24,9 +24,6 @@ public class StRecon extends BaseEntity {
     @Column(name = "recon_id", length = 21, nullable = false)
     private String reconId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("업체ID")
     @Column(name = "vendor_id", length = 21)

@@ -25,7 +25,6 @@ public class SyhBatchHistDto {
 
         // ── syh_batch_hist ──────────────────────────────────────────
         private String batchHistId;
-        private String siteId;
         private String batchId;
         private String batchCode;
         private String batchNm;
@@ -39,6 +38,7 @@ public class SyhBatchHistDto {
         private String detail;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

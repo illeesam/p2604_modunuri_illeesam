@@ -40,7 +40,6 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         Map.entry("claimItemStatusHistId", odhClaimItemStatusHist.claimItemStatusHistId),
         Map.entry("memo", odhClaimItemStatusHist.memo),
         Map.entry("orderItemId", odhClaimItemStatusHist.orderItemId),
-        Map.entry("siteId", odhClaimItemStatusHist.siteId),
         Map.entry("statusReason", odhClaimItemStatusHist.statusReason)
     );
 
@@ -52,7 +51,6 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         return queryFactory
                 .select(Projections.bean(OdhClaimItemStatusHistDto.Item.class,
                         odhClaimItemStatusHist.claimItemStatusHistId,   // 클레임상품상태이력ID (YYMMDDhhmmss+rand4)
-                        odhClaimItemStatusHist.siteId,                  // 사이트ID
                         odhClaimItemStatusHist.claimItemId,             // 클레임상품ID (od_claim_item.claim_item_id)
                         odhClaimItemStatusHist.claimId,                 // 클레임ID (od_claim.claim_id)
                         odhClaimItemStatusHist.orderItemId,             // 주문상품ID (od_order_item.order_item_id)
@@ -83,7 +81,6 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         JPAQuery<OdhClaimItemStatusHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhClaimItemStatusHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhClaimItemStatusHist.claimItemStatusHistId, search.getClaimItemStatusHistId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -108,7 +105,6 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhClaimItemStatusHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhClaimItemStatusHist.claimItemStatusHistId, search.getClaimItemStatusHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -179,7 +175,6 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         JPAUpdateClause update = queryFactory.update(odhClaimItemStatusHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                  != null) { update.set(odhClaimItemStatusHist.siteId,                  entity.getSiteId());                  hasAny = true; }
         if (entity.getClaimItemId()             != null) { update.set(odhClaimItemStatusHist.claimItemId,             entity.getClaimItemId());             hasAny = true; }
         if (entity.getClaimId()                 != null) { update.set(odhClaimItemStatusHist.claimId,                 entity.getClaimId());                 hasAny = true; }
         if (entity.getOrderItemId()             != null) { update.set(odhClaimItemStatusHist.orderItemId,             entity.getOrderItemId());             hasAny = true; }

@@ -34,7 +34,6 @@ public class SyUserDto {
 
         // ── sy_user ──────────────────────────────────────────
         private String userId;
-        private String siteId;
         private String loginId;
         private String loginPwdHash;
         private String userNm;
@@ -48,6 +47,7 @@ public class SyUserDto {
         private String userMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String authMethodCd;

@@ -57,7 +57,6 @@ public class CoExtPushApnsSendController {
                     MbDeviceTokenDto.Item item = new MbDeviceTokenDto.Item();
                     item.setDeviceTokenId(t.getDeviceTokenId());
                     item.setDeviceToken(t.getDeviceToken());
-                    item.setSiteId(t.getSiteId());
                     item.setMemberId(t.getMemberId());
                     item.setOsType(t.getOsType());
                     item.setRegDate(t.getRegDate());

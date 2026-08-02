@@ -25,9 +25,6 @@ public class OdOrderDiscnt extends BaseEntity {
     @Column(name = "order_discnt_id", length = 21, nullable = false)
     private String orderDiscntId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("주문ID (od_order.order_id)")
     @Column(name = "order_id", length = 21, nullable = false)

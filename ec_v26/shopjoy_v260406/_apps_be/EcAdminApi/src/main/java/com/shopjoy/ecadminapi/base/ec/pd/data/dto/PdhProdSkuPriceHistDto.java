@@ -19,7 +19,6 @@ public class PdhProdSkuPriceHistDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String histId;
-        private String siteId;
         private String prodSkuId;
         private String prodId;
         private Long addPriceBefore;
@@ -29,6 +28,7 @@ public class PdhProdSkuPriceHistDto {
         private LocalDateTime chgDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

@@ -49,8 +49,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         Map.entry("refNm", pdhProdViewLog.refNm),
         Map.entry("referrer", pdhProdViewLog.referrer),
         Map.entry("searchKw", pdhProdViewLog.searchKw),
-        Map.entry("sessionKey", pdhProdViewLog.sessionKey),
-        Map.entry("siteId", pdhProdViewLog.siteId)
+        Map.entry("sessionKey", pdhProdViewLog.sessionKey)
     );
 
     /* 상품 조회 로그 baseSelColumnQuery — 코드성 필드 없음 (로그성 원본값 저장) */
@@ -58,7 +57,6 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         return queryFactory
                 .select(Projections.bean(PdhProdViewLogDto.Item.class,
                         pdhProdViewLog.logId,        // 로그ID (PK, YYMMDDhhmmss+rand4)
-                        pdhProdViewLog.siteId,        // 사이트ID
                         pdhProdViewLog.memberId,      // 회원ID (비회원 NULL)
                         pdhProdViewLog.sessionKey,    // 비회원 세션키
                         pdhProdViewLog.prodId,        // 상품ID (pd_prod.prod_id)
@@ -71,8 +69,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
                         pdhProdViewLog.viewDate,      // 조회일시
                         pdhProdViewLog.regBy, pdhProdViewLog.regDate, pdhProdViewLog.updBy, pdhProdViewLog.updDate
                 ))
-                .from(pdhProdViewLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdhProdViewLog.siteId));
+                .from(pdhProdViewLog);
     }
 
     /* 상품 조회 로그 키조회 */
@@ -92,7 +89,6 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
 
         JPAQuery<PdhProdViewLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(pdhProdViewLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -118,7 +114,6 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdhProdViewLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -194,7 +189,6 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         JPAUpdateClause update = queryFactory.update(pdhProdViewLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(pdhProdViewLog.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getMemberId()   != null) { update.set(pdhProdViewLog.memberId,   entity.getMemberId());   hasAny = true; }
         if (entity.getSessionKey() != null) { update.set(pdhProdViewLog.sessionKey, entity.getSessionKey()); hasAny = true; }
         if (entity.getProdId()     != null) { update.set(pdhProdViewLog.prodId,     entity.getProdId());     hasAny = true; }

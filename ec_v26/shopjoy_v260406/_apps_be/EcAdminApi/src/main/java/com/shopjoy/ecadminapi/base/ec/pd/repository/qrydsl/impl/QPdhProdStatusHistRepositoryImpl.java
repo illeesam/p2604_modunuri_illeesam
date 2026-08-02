@@ -49,8 +49,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         Map.entry("memo", pdhProdStatusHist.memo),
         Map.entry("procUserId", pdhProdStatusHist.procUserId),
         Map.entry("prodId", pdhProdStatusHist.prodId),
-        Map.entry("prodStatusHistId", pdhProdStatusHist.prodStatusHistId),
-        Map.entry("siteId", pdhProdStatusHist.siteId)
+        Map.entry("prodStatusHistId", pdhProdStatusHist.prodStatusHistId)
     );
 
     /*
@@ -62,7 +61,6 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         return queryFactory
                 .select(Projections.bean(PdhProdStatusHistDto.Item.class,
                         pdhProdStatusHist.prodStatusHistId,   // 이력ID (PK)
-                        pdhProdStatusHist.siteId,              // 사이트ID
                         pdhProdStatusHist.prodId,              // 상품ID
                         pdhProdStatusHist.beforeStatusCd,       // 이전상태 — {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
                         pdhProdStatusHist.afterStatusCd,        // 변경상태 — 동일 코드그룹
@@ -72,7 +70,6 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
                         pdhProdStatusHist.regBy, pdhProdStatusHist.regDate, pdhProdStatusHist.updBy, pdhProdStatusHist.updDate
                 ))
                 .from(pdhProdStatusHist)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdhProdStatusHist.siteId))
                 .leftJoin(syUser).on(syUser.userId.eq(pdhProdStatusHist.procUserId))
                 .leftJoin(cd_beforeStatusCd).on(cd_beforeStatusCd.codeGrp.eq("PRODUCT_STATUS").and(cd_beforeStatusCd.codeValue.eq(pdhProdStatusHist.beforeStatusCd)));
     }
@@ -94,7 +91,6 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
 
         JPAQuery<PdhProdStatusHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(pdhProdStatusHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdStatusHist.prodStatusHistId, search.getProdStatusHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -120,7 +116,6 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdhProdStatusHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdStatusHist.prodStatusHistId, search.getProdStatusHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -192,7 +187,6 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         JPAUpdateClause update = queryFactory.update(pdhProdStatusHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(pdhProdStatusHist.siteId,         entity.getSiteId());         hasAny = true; }
         if (entity.getProdId()         != null) { update.set(pdhProdStatusHist.prodId,         entity.getProdId());         hasAny = true; }
         if (entity.getBeforeStatusCd() != null) { update.set(pdhProdStatusHist.beforeStatusCd, entity.getBeforeStatusCd()); hasAny = true; }
         if (entity.getAfterStatusCd()  != null) { update.set(pdhProdStatusHist.afterStatusCd,  entity.getAfterStatusCd());  hasAny = true; }

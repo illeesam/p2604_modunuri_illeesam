@@ -148,7 +148,6 @@ public class BoPdProdTabController {
             PdProdSku sku = new PdProdSku();
             String skuId = "SK" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + idx;
             sku.setProdSkuId(skuId);
-            sku.setSiteId(siteId);
             sku.setProdId(prodId);
             sku.setProdOptId1(row.get("prodOptId1") != null ? String.valueOf(row.get("prodOptId1")) : null);
             sku.setProdOptId2(row.get("prodOptId2") != null ? String.valueOf(row.get("prodOptId2")) : null);
@@ -178,7 +177,6 @@ public class BoPdProdTabController {
                 PdProdStock newSc = new PdProdStock();
                 newSc.setProdStockId("PS" + now.format(ID_FMT) + String.format("%06d", idx));
                 newSc.setStockCode(stockCode);
-                newSc.setSiteId(siteId);
                 newSc.setProdId(prodId);
                 newSc.setStockQty(stockQty);
                 newSc.setSaleCount(0);
@@ -307,7 +305,6 @@ public class BoPdProdTabController {
                 PdProdOpt opt = new PdProdOpt();
                 opt.setProdOptId(optId);
                 opt.setProdId(prodId);
-                opt.setSiteId(siteId);
                 opt.setProdOptTypeLevel(level);
                 opt.setProdOptNm(CmUtil.nvlStr(it.getNm()));
                 opt.setProdOptVal(CmUtil.nvlStr(it.getVal()));

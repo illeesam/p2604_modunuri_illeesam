@@ -39,8 +39,7 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         Map.entry("chgTypeCd", odhOrderChgHist.chgTypeCd),
         Map.entry("chgUserId", odhOrderChgHist.chgUserId),
         Map.entry("orderChgHistId", odhOrderChgHist.orderChgHistId),
-        Map.entry("orderId", odhOrderChgHist.orderId),
-        Map.entry("siteId", odhOrderChgHist.siteId)
+        Map.entry("orderId", odhOrderChgHist.orderId)
     );
 
     /*
@@ -52,7 +51,6 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         return queryFactory
                 .select(Projections.bean(OdhOrderChgHistDto.Item.class,
                         odhOrderChgHist.orderChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
-                        odhOrderChgHist.siteId,         // 사이트ID
                         odhOrderChgHist.orderId,        // 주문ID (od_order.)
                         odhOrderChgHist.chgTypeCd,      // 변경유형코드 — CHG_TYPE {PAY_METHOD:결제수단변경, RECV_INFO:수령정보변경, AMOUNT:금액변경, MEMO:메모변경, COUPON:쿠폰변경, CACHE:적립금변경, APPROVAL:결재변경}
                         odhOrderChgHist.chgField,       // 변경 필드명
@@ -82,7 +80,6 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         JPAQuery<OdhOrderChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhOrderChgHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhOrderChgHist.orderChgHistId, search.getOrderChgHistId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -107,7 +104,6 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhOrderChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhOrderChgHist.orderChgHistId, search.getOrderChgHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -178,7 +174,6 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         JPAUpdateClause update = queryFactory.update(odhOrderChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(odhOrderChgHist.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getOrderId()    != null) { update.set(odhOrderChgHist.orderId,    entity.getOrderId());    hasAny = true; }
         if (entity.getChgTypeCd()  != null) { update.set(odhOrderChgHist.chgTypeCd,  entity.getChgTypeCd());  hasAny = true; }
         if (entity.getChgField()   != null) { update.set(odhOrderChgHist.chgField,   entity.getChgField());   hasAny = true; }

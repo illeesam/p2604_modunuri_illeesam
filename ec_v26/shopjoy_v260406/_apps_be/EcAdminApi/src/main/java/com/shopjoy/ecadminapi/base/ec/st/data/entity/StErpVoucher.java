@@ -25,9 +25,6 @@ public class StErpVoucher extends BaseEntity {
     @Column(name = "erp_voucher_id", length = 21, nullable = false)
     private String erpVoucherId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("업체ID")
     @Column(name = "vendor_id", length = 21)

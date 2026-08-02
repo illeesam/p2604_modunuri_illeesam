@@ -27,7 +27,6 @@ public class SyDeptDto {
 
         // ── sy_dept ──────────────────────────────────────────
         private String deptId;
-        private String siteId;
         private String deptCode;
         private String deptNm;
         private String parentDeptId;
@@ -38,6 +37,7 @@ public class SyDeptDto {
         private String deptRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

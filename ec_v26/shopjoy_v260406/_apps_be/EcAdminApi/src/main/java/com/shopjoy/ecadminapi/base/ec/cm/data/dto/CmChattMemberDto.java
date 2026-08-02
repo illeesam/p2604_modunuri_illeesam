@@ -22,7 +22,6 @@ public class CmChattMemberDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String chattMemberId;
-        private String siteId;
         private String chattId;
         private String memberTypeCd;
         private String refId;
@@ -32,6 +31,7 @@ public class CmChattMemberDto {
         private LocalDateTime leaveDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

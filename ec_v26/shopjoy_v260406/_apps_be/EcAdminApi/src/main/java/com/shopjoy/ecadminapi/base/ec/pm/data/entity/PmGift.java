@@ -25,9 +25,6 @@ public class PmGift extends BaseEntity {
     @Column(name = "gift_id", length = 21, nullable = false)
     private String giftId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("사은품명")
     @Column(name = "gift_nm", length = 100, nullable = false)

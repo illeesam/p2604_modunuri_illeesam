@@ -91,7 +91,6 @@ public class FoMbLikeService {
         } else {
             MbLike like = new MbLike();
             like.setLikeId(CmUtil.generateId("mb_like"));
-            like.setSiteId(siteId);
             like.setMemberId(authId);
             like.setTargetTypeCd(targetTypeCd);
             like.setTargetId(targetId);

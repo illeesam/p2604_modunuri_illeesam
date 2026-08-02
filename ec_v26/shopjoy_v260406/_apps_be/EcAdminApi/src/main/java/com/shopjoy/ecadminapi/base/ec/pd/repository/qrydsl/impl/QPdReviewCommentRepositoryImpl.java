@@ -43,7 +43,6 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         Map.entry("reviewCommentId", pdReviewComment.reviewCommentId),
         Map.entry("reviewId", pdReviewComment.reviewId),
         Map.entry("reviewReplyContent", pdReviewComment.reviewReplyContent),
-        Map.entry("siteId", pdReviewComment.siteId),
         Map.entry("writerId", pdReviewComment.writerId),
         Map.entry("writerNm", pdReviewComment.writerNm),
         Map.entry("writerTypeCd", pdReviewComment.writerTypeCd)
@@ -59,7 +58,6 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         return queryFactory
                 .select(Projections.bean(PdReviewCommentDto.Item.class,
                         pdReviewComment.reviewCommentId,   // 댓글ID (PK)
-                        pdReviewComment.siteId,              // 사이트ID
                         pdReviewComment.reviewId,            // 리뷰ID (pd_review.review_id)
                         pdReviewComment.parentReplyId,        // 상위댓글ID (대댓글)
                         pdReviewComment.writerTypeCd,          // 작성자유형 — {MEMBER: '회원', SELLER: '판매자', ADMIN: '관리자'}
@@ -90,7 +88,6 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                 .where(
                     QdslUtil.strIn(pdReviewComment.reviewId, search.getReviewIds()),
                     QdslUtil.strEq(pdReviewComment.reviewId, search.getReviewId()),
-                    QdslUtil.strEq(pdReviewComment.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdReviewComment.reviewCommentId, search.getReviewCommentId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -118,7 +115,6 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdReviewComment.reviewId, search.getReviewIds()),
                 QdslUtil.strEq(pdReviewComment.reviewId, search.getReviewId()),
-                QdslUtil.strEq(pdReviewComment.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdReviewComment.reviewCommentId, search.getReviewCommentId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -197,7 +193,6 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         JPAUpdateClause update = queryFactory.update(pdReviewComment);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(pdReviewComment.siteId,             entity.getSiteId());             hasAny = true; }
         if (entity.getReviewId()           != null) { update.set(pdReviewComment.reviewId,           entity.getReviewId());           hasAny = true; }
         if (entity.getParentReplyId()      != null) { update.set(pdReviewComment.parentReplyId,      entity.getParentReplyId());      hasAny = true; }
         if (entity.getWriterTypeCd()       != null) { update.set(pdReviewComment.writerTypeCd,       entity.getWriterTypeCd());       hasAny = true; }

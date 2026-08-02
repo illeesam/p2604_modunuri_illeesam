@@ -23,7 +23,6 @@ public class PmCacheDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String cacheId;
-        private String siteId;
         private String memberId;
         private String memberNm;
         private String cacheTypeCd;
@@ -36,6 +35,7 @@ public class PmCacheDto {
         private LocalDate expireDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

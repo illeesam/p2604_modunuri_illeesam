@@ -55,7 +55,6 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         Map.entry("os", mbhMemberLoginLog.os),
         Map.entry("refreshToken", mbhMemberLoginLog.refreshToken),
         Map.entry("resultCd", mbhMemberLoginLog.resultCd),
-        Map.entry("siteId", mbhMemberLoginLog.siteId),
         Map.entry("uiNm", mbhMemberLoginLog.uiNm)
     );
 
@@ -69,7 +68,6 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         return queryFactory
                 .select(Projections.bean(MbhMemberLoginLogDto.Item.class,
                         mbhMemberLoginLog.logId,             // 로그ID (PK)
-                        mbhMemberLoginLog.siteId,            // 사이트ID (sy_site.site_id)
                         mbhMemberLoginLog.memberId,          // 회원ID (로그인 실패 시 NULL)
                         mbhMemberLoginLog.loginId,           // 입력한 로그인ID (이메일)
                         mbhMemberLoginLog.loginDate,         // 로그인 시도일시
@@ -90,12 +88,10 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                         mbhMemberLoginLog.regDate,           // 등록일
                         mbhMemberLoginLog.updBy,             // 수정자 (sy_user.user_id, mb_member.member_id)
                         mbhMemberLoginLog.updDate,           // 수정일
-                        sySite.siteNm.as("siteNm"),                 // 사이트명 (sy_site 조인)
                         mbMember.memberNm.as("memberNm"),           // 회원명 (mb_member 조인)
                         cdLr.codeLabel.as("resultCdNm")             // 결과 코드라벨 (sy_code LOGIN_RESULT 조인)
                 ))
                 .from(mbhMemberLoginLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(mbhMemberLoginLog.siteId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberLoginLog.memberId))
                 .leftJoin(cdLr).on(cdLr.codeGrp.eq("LOGIN_RESULT").and(cdLr.codeValue.eq(mbhMemberLoginLog.resultCd)));
     }
@@ -115,7 +111,6 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         JPAQuery<MbhMemberLoginLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(mbhMemberLoginLog.siteId, search.getSiteId()),
                     QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -140,7 +135,6 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(mbhMemberLoginLog.siteId, search.getSiteId()),
                 QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -212,7 +206,6 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         if (entity.getLogId() == null) return 0;
         JPAUpdateClause update = queryFactory.update(mbhMemberLoginLog);
         boolean hasAny = false;
-        if (entity.getSiteId()          != null) { update.set(mbhMemberLoginLog.siteId,          entity.getSiteId());          hasAny = true; }
         if (entity.getAuthId()          != null) { update.set(mbhMemberLoginLog.authId,          entity.getAuthId());          hasAny = true; }
         if (entity.getMemberId()        != null) { update.set(mbhMemberLoginLog.memberId,        entity.getMemberId());        hasAny = true; }
         if (entity.getLoginId()         != null) { update.set(mbhMemberLoginLog.loginId,         entity.getLoginId());         hasAny = true; }

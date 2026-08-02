@@ -23,9 +23,6 @@ public class CmBlogReply extends BaseEntity {
     @Column(name = "comment_id", length = 21, nullable = false)
     private String commentId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("블로그ID")
     @Column(name = "blog_id", length = 21, nullable = false)

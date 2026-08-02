@@ -49,7 +49,6 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("memberId", pmVoucherIssue.memberId),
         Map.entry("orderId", pmVoucherIssue.orderId),
-        Map.entry("siteId", pmVoucherIssue.siteId),
         Map.entry("voucherCode", pmVoucherIssue.voucherCode),
         Map.entry("voucherId", pmVoucherIssue.voucherId),
         Map.entry("voucherIssueId", pmVoucherIssue.voucherIssueId),
@@ -66,7 +65,6 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                 .select(Projections.bean(PmVoucherIssueDto.Item.class,
                         pmVoucherIssue.voucherIssueId,               // 상품권발급ID (PK)
                         pmVoucherIssue.voucherId,                    // 상품권ID (pm_voucher.voucher_id)
-                        pmVoucherIssue.siteId,                       // 사이트ID
                         pmVoucherIssue.memberId,                     // 회원ID (mb_member.member_id)
                         pmVoucherIssue.voucherCode,                  // 발급 고유코드 (UNIQUE)
                         pmVoucherIssue.issueDate,                    // 발급일시
@@ -81,7 +79,6 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                 .from(pmVoucherIssue)
                 .leftJoin(pmVoucher).on(pmVoucher.voucherId.eq(pmVoucherIssue.voucherId))
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmVoucherIssue.orderId))
-                .leftJoin(sySite).on(sySite.siteId.eq(pmVoucherIssue.siteId))
                 .leftJoin(cdVis).on(cdVis.codeGrp.eq("VOUCHER_ISSUE_STATUS").and(cdVis.codeValue.eq(pmVoucherIssue.voucherIssueStatusCd)));
     }
 
@@ -102,7 +99,6 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmVoucherIssue.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -128,7 +124,6 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmVoucherIssue.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -201,7 +196,6 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         boolean hasAny = false;
 
         if (entity.getVoucherId()                  != null) { update.set(pmVoucherIssue.voucherId,                  entity.getVoucherId());                  hasAny = true; }
-        if (entity.getSiteId()                     != null) { update.set(pmVoucherIssue.siteId,                     entity.getSiteId());                     hasAny = true; }
         if (entity.getMemberId()                   != null) { update.set(pmVoucherIssue.memberId,                   entity.getMemberId());                   hasAny = true; }
         if (entity.getVoucherCode()                != null) { update.set(pmVoucherIssue.voucherCode,                entity.getVoucherCode());                hasAny = true; }
         if (entity.getIssueDate()                  != null) { update.set(pmVoucherIssue.issueDate,                  entity.getIssueDate());                  hasAny = true; }

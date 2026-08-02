@@ -43,7 +43,6 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         Map.entry("histId", pdhProdSkuStockHist.histId),
         Map.entry("orderItemId", pdhProdSkuStockHist.orderItemId),
         Map.entry("prodId", pdhProdSkuStockHist.prodId),
-        Map.entry("siteId", pdhProdSkuStockHist.siteId),
         Map.entry("skuId", pdhProdSkuStockHist.prodSkuId)
     );
 
@@ -56,7 +55,6 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         return queryFactory
                 .select(Projections.bean(PdhProdSkuStockHistDto.Item.class,
                         pdhProdSkuStockHist.histId,          // 이력ID (PK, YYMMDDhhmmss+rand4)
-                        pdhProdSkuStockHist.siteId,           // 사이트ID (sy_site.site_id)
                         pdhProdSkuStockHist.prodSkuId,        // SKU ID (pd_prod_sku.prod_sku_id)
                         pdhProdSkuStockHist.prodId,           // 상품ID (pd_prod.prod_id)
                         pdhProdSkuStockHist.stockBefore,     // 변경 전 재고수량
@@ -71,7 +69,6 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
                         pdhProdSkuStockHist.regDate
                 ))
                 .from(pdhProdSkuStockHist)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdhProdSkuStockHist.siteId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuStockHist.prodId))
                 .leftJoin(cd_ssc).on(cd_ssc.codeGrp.eq("SKU_STOCK_CHG").and(cd_ssc.codeValue.eq(pdhProdSkuStockHist.chgReasonCd)));
     }
@@ -93,7 +90,6 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
 
         JPAQuery<PdhProdSkuStockHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(pdhProdSkuStockHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdSkuStockHist.histId, search.getHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
@@ -118,7 +114,6 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdhProdSkuStockHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdSkuStockHist.histId, search.getHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -189,7 +184,6 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         JPAUpdateClause update = queryFactory.update(pdhProdSkuStockHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(pdhProdSkuStockHist.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getProdSkuId()   != null) { update.set(pdhProdSkuStockHist.prodSkuId,   entity.getProdSkuId());   hasAny = true; }
         if (entity.getProdId()      != null) { update.set(pdhProdSkuStockHist.prodId,      entity.getProdId());      hasAny = true; }
         if (entity.getStockBefore() != null) { update.set(pdhProdSkuStockHist.stockBefore, entity.getStockBefore()); hasAny = true; }

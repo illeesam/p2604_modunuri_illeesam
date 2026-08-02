@@ -26,6 +26,7 @@ public class ZzSample0Dto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String col01;

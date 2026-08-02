@@ -56,8 +56,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         Map.entry("refundReason", odRefund.refundReason),
         Map.entry("refundStatusCd", odRefund.refundStatusCd),
         Map.entry("refundStatusCdBefore", odRefund.refundStatusCdBefore),
-        Map.entry("refundTypeCd", odRefund.refundTypeCd),
-        Map.entry("siteId", odRefund.siteId)
+        Map.entry("refundTypeCd", odRefund.refundTypeCd)
     );
 
     /*
@@ -71,7 +70,6 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         return queryFactory
                 .select(Projections.bean(OdRefundDto.Item.class,
                         odRefund.refundId,           // 환불ID (YYMMDDhhmmss+rand4)
-                        odRefund.siteId,              // 사이트ID (sy_site.site_id)
                         odRefund.orderId,             // 주문ID (od_order.order_id)
                         odRefund.claimId,             // 클레임ID (od_claim.claim_id)
                         odRefund.refundTypeCd,        // 환불유형코드 — REFUND_TYPE {CANCEL:취소환불, RETURN:반품환불, PARTIAL:부분환불, EXTRA:추가결제환불}
@@ -91,7 +89,6 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                         odRefund.regBy, odRefund.regDate, odRefund.updBy, odRefund.updDate
                 ))
                 .from(odRefund)
-                .leftJoin(ste).on(ste.siteId.eq(odRefund.siteId))
                 .leftJoin(ord).on(ord.orderId.eq(odRefund.orderId))
                 .leftJoin(cla).on(cla.claimId.eq(odRefund.claimId))
                 .leftJoin(cdRt).on(cdRt.codeGrp.eq("REFUND_TYPE").and(cdRt.codeValue.eq(odRefund.refundTypeCd)))
@@ -116,7 +113,6 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         JPAQuery<OdRefundDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odRefund.siteId, search.getSiteId()),
                     QdslUtil.strEq(odRefund.refundId, search.getRefundId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -142,7 +138,6 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odRefund.siteId, search.getSiteId()),
                 QdslUtil.strEq(odRefund.refundId, search.getRefundId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -214,7 +209,6 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         JPAUpdateClause update = queryFactory.update(odRefund);
         boolean hasAny = false;
 
-        if (entity.getSiteId()               != null) { update.set(odRefund.siteId,               entity.getSiteId());               hasAny = true; }
         if (entity.getOrderId()              != null) { update.set(odRefund.orderId,              entity.getOrderId());              hasAny = true; }
         if (entity.getClaimId()              != null) { update.set(odRefund.claimId,              entity.getClaimId());              hasAny = true; }
         if (entity.getRefundTypeCd()         != null) { update.set(odRefund.refundTypeCd,         entity.getRefundTypeCd());         hasAny = true; }

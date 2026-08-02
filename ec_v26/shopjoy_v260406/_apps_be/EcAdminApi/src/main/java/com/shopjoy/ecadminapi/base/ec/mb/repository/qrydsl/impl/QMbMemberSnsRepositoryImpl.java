@@ -42,7 +42,6 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("memberId", mbMemberSns.memberId),
         Map.entry("memberSnsId", mbMemberSns.memberSnsId),
-        Map.entry("siteId", mbMemberSns.siteId),
         Map.entry("snsChannelCd", mbMemberSns.snsChannelCd),
         Map.entry("snsUserId", mbMemberSns.snsUserId)
     );

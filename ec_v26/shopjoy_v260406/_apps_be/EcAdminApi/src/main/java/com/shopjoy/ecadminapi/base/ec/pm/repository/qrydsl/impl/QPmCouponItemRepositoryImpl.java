@@ -38,7 +38,6 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("couponId", pmCouponItem.couponId),
         Map.entry("couponItemId", pmCouponItem.couponItemId),
-        Map.entry("siteId", pmCouponItem.siteId),
         Map.entry("targetId", pmCouponItem.targetId),
         Map.entry("targetTypeCd", pmCouponItem.targetTypeCd)
     );
@@ -52,7 +51,6 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
                 .select(Projections.bean(PmCouponItemDto.Item.class,
                         pmCouponItem.couponItemId,   // 쿠폰항목ID (PK, YYMMDDhhmmss+rand4)
                         pmCouponItem.couponId,       // 쿠폰ID (pm_coupon.coupon_id)
-                        pmCouponItem.siteId,         // 사이트ID (sy_site.site_id)
                         pmCouponItem.targetTypeCd,   // 대상유형 — COUPON_ITEM_TARGET {PRODUCT: '상품', CATEGORY: '카테고리', VENDOR: '판매자', BRAND: '브랜드'}
                         pmCouponItem.targetId,       // 대상ID (prod_id / category_id / vendor_id / brand_id)
                         pmCouponItem.regBy, pmCouponItem.regDate
@@ -77,7 +75,6 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         JPAQuery<PmCouponItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmCouponItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmCouponItem.couponItemId, search.getCouponItemId()),
                     QdslUtil.strEq(pmCouponItem.couponId, search.getCouponId()),
                     QdslUtil.strEq(pmCouponItem.targetId, search.getTargetId()),
@@ -106,7 +103,6 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmCouponItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmCouponItem.couponItemId, search.getCouponItemId()),
                 QdslUtil.strEq(pmCouponItem.couponId, search.getCouponId()),
                 QdslUtil.strEq(pmCouponItem.targetId, search.getTargetId()),
@@ -183,7 +179,6 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         boolean hasAny = false;
 
         if (entity.getCouponId()    != null) { update.set(pmCouponItem.couponId,    entity.getCouponId());    hasAny = true; }
-        if (entity.getSiteId()      != null) { update.set(pmCouponItem.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getTargetTypeCd()!= null) { update.set(pmCouponItem.targetTypeCd,entity.getTargetTypeCd());hasAny = true; }
         if (entity.getTargetId()    != null) { update.set(pmCouponItem.targetId,    entity.getTargetId());    hasAny = true; }
 

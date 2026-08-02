@@ -13,10 +13,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorContentDto;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAttachGrp;
-
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendorContent;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorContent;
@@ -37,9 +34,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorContentRepositoryImpl";
     private static final QSyVendorContent syVendorContent = QSyVendorContent.syVendorContent;
-    private static final QSySite sySite = QSySite.sySite;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
-    private static final QSyAttachGrp syAttachGrp = QSyAttachGrp.syAttachGrp;
     private static final QVwSyCode cdVct = new QVwSyCode("cd_vct");
     private static final QVwSyCode cdVcs = new QVwSyCode("cd_vcs");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
@@ -99,9 +94,8 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                         syVendor.vendorNm.as("vendorNm")              // 업체명 (조인: sy_vendor)
                 ))
                 .from(syVendorContent)
-                .leftJoin(sySite).on(sySite.siteId.eq(syVendorContent.siteId))
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorContent.vendorId))
-                .leftJoin(syAttachGrp).on(syAttachGrp.attachGrpId.eq(syVendorContent.attachGrpId))
+                // sySite·syAttachGrp 은 SELECT 대상 없는 dead JOIN → 제거됨
                 .leftJoin(cdVct).on(cdVct.codeGrp.eq("VENDOR_CONTENT_TYPE").and(cdVct.codeValue.eq(syVendorContent.contentTypeCd)))
                 .leftJoin(cdVcs).on(cdVcs.codeGrp.eq("VENDOR_CONTENT_STATUS").and(cdVcs.codeValue.eq(syVendorContent.vendorContentStatusCd)));
     }

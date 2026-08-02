@@ -26,7 +26,6 @@ public class SyRoleDto {
 
         // ── sy_role ──────────────────────────────────────────
         private String roleId;
-        private String siteId;
         private String roleCode;
         private String roleNm;
         private String parentRoleId;
@@ -37,6 +36,7 @@ public class SyRoleDto {
         private String roleRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String pathId;

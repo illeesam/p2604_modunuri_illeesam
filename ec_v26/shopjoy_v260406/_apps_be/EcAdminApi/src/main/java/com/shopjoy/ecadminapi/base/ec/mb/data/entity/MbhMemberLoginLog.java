@@ -24,9 +24,6 @@ public class MbhMemberLoginLog extends BaseEntity {
     @Column(name = "log_id", length = 21, nullable = false)
     private String logId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("인증ID")
     @Column(name = "auth_id", length = 21)

@@ -42,7 +42,6 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("prodId", pdProdTag.prodId),
         Map.entry("prodTagId", pdProdTag.prodTagId),
-        Map.entry("siteId", pdProdTag.siteId),
         Map.entry("tagId", pdProdTag.tagId)
     );
 
@@ -51,14 +50,12 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         return queryFactory
                 .select(Projections.bean(PdProdTagDto.Item.class,
                         pdProdTag.prodTagId,   // 상품태그ID (PK)
-                        pdProdTag.siteId,       // 사이트ID
                         pdProdTag.prodId,       // 상품ID (pd_prod.prod_id)
                         pdProdTag.tagId,        // 태그ID (pd_tag.tag_id)
                         pdProdTag.regBy, pdProdTag.regDate
                 ))
                 .from(pdProdTag)
-                .leftJoin(pdProd).on(pdProd.prodId.eq(pdProdTag.prodId))
-                .leftJoin(sySite).on(sySite.siteId.eq(pdProdTag.siteId));
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pdProdTag.prodId));
     }
 
     /* 상품 태그 키조회 */
@@ -78,7 +75,6 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         JPAQuery<PdProdTagDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdProdTag.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -104,7 +100,6 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdProdTag.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -177,7 +172,6 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         JPAUpdateClause update = queryFactory.update(pdProdTag);
         boolean hasAny = false;
 
-        if (entity.getSiteId() != null) { update.set(pdProdTag.siteId, entity.getSiteId()); hasAny = true; }
         if (entity.getProdId() != null) { update.set(pdProdTag.prodId, entity.getProdId()); hasAny = true; }
         if (entity.getTagId()  != null) { update.set(pdProdTag.tagId,  entity.getTagId());  hasAny = true; }
 

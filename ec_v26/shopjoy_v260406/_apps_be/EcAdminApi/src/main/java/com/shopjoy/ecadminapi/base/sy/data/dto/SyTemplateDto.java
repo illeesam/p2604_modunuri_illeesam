@@ -25,7 +25,6 @@ public class SyTemplateDto {
 
         // ── sy_template ──────────────────────────────────────────
         private String templateId;
-        private String siteId;
         private String templateTypeCd;
         private String templateCode;
         private String templateNm;
@@ -35,6 +34,7 @@ public class SyTemplateDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String pathId;

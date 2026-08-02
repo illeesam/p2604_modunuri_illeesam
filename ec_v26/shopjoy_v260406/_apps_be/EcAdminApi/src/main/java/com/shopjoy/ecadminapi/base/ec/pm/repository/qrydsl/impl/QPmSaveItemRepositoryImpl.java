@@ -45,7 +45,6 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("saveId", pmSaveItem.saveId),
         Map.entry("saveItemId", pmSaveItem.saveItemId),
-        Map.entry("siteId", pmSaveItem.siteId),
         Map.entry("targetId", pmSaveItem.targetId),
         Map.entry("targetTypeCd", pmSaveItem.targetTypeCd)
     );
@@ -59,16 +58,13 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                 .select(Projections.bean(PmSaveItemDto.Item.class,
                         pmSaveItem.saveItemId,     // PK: SAI+yyMMddHHmmss+rand4
                         pmSaveItem.saveId,         // FK: pm_save.save_id (적립금 ID)
-                        pmSaveItem.siteId,         // FK: sy_site.site_id (NULL=전사 공통)
                         pmSaveItem.targetTypeCd,   // 대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)
                         pmSaveItem.targetId,       // 대상 ID (상품·카테고리·브랜드 등)
                         pmSaveItem.regBy, pmSaveItem.regDate,
-                        sySite.siteNm.as("siteNm"),                 // 사이트명 (조인)
                         cdSit.codeLabel.as("targetTypeCdNm")        // 대상유형 코드라벨 (조인)
                 ))
                 .from(pmSaveItem)
                 .leftJoin(pmSave).on(pmSave.saveId.eq(pmSaveItem.saveId))
-                .leftJoin(sySite).on(sySite.siteId.eq(pmSaveItem.siteId))
                 .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ITEM_TARGET").and(cdSit.codeValue.eq(pmSaveItem.targetTypeCd)));
     }
 
@@ -89,7 +85,6 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         JPAQuery<PmSaveItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmSaveItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmSaveItem.saveItemId, search.getSaveItemId()),
                     QdslUtil.strEq(pmSaveItem.saveId, search.getSaveId()),
                     QdslUtil.strEq(pmSaveItem.targetId, search.getTargetId()),
@@ -118,7 +113,6 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmSaveItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmSaveItem.saveItemId, search.getSaveItemId()),
                 QdslUtil.strEq(pmSaveItem.saveId, search.getSaveId()),
                 QdslUtil.strEq(pmSaveItem.targetId, search.getTargetId()),
@@ -194,7 +188,6 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
         boolean hasAny = false;
 
         if (entity.getSaveId()       != null) { update.set(pmSaveItem.saveId,       entity.getSaveId());       hasAny = true; }
-        if (entity.getSiteId()       != null) { update.set(pmSaveItem.siteId,       entity.getSiteId());       hasAny = true; }
         if (entity.getTargetTypeCd() != null) { update.set(pmSaveItem.targetTypeCd, entity.getTargetTypeCd()); hasAny = true; }
         if (entity.getTargetId()     != null) { update.set(pmSaveItem.targetId,     entity.getTargetId());     hasAny = true; }
 

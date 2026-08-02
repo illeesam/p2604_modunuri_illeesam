@@ -24,7 +24,6 @@ public class OdClaimDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String claimId;
-        private String siteId;
         private String orderId;
         private String memberId;
         private String memberNm;
@@ -96,6 +95,7 @@ public class OdClaimDto {
         private LocalDateTime apprAprvDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private LocalDateTime orderDate;

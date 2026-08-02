@@ -50,8 +50,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         Map.entry("contentTypeCd", pdhProdContentChgHist.contentTypeCd),
         Map.entry("histId", pdhProdContentChgHist.histId),
         Map.entry("prodContentId", pdhProdContentChgHist.prodContentId),
-        Map.entry("prodId", pdhProdContentChgHist.prodId),
-        Map.entry("siteId", pdhProdContentChgHist.siteId)
+        Map.entry("prodId", pdhProdContentChgHist.prodId)
     );
 
     /*
@@ -63,7 +62,6 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         return queryFactory
                 .select(Projections.bean(PdhProdContentChgHistDto.Item.class,
                         pdhProdContentChgHist.histId,           // 이력ID (PK, YYMMDDhhmmss+rand4)
-                        pdhProdContentChgHist.siteId,            // 사이트ID (sy_site.site_id)
                         pdhProdContentChgHist.prodId,            // 상품ID (pd_prod.prod_id)
                         pdhProdContentChgHist.prodContentId,      // 상품컨텐츠ID (pd_prod_content.)
                         pdhProdContentChgHist.contentTypeCd,       // 컨텐츠유형코드 — {DETAIL: '상세설명', NOTICE: '상품공지', GUIDE: '이용안내', SIZE_GUIDE: '사이즈안내'}
@@ -75,7 +73,6 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
                         pdhProdContentChgHist.regBy, pdhProdContentChgHist.regDate, pdhProdContentChgHist.updBy, pdhProdContentChgHist.updDate
                 ))
                 .from(pdhProdContentChgHist)
-                .leftJoin(sySite).on(sySite.siteId.eq(pdhProdContentChgHist.siteId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdContentChgHist.prodId))
                 .leftJoin(syUser).on(syUser.userId.eq(pdhProdContentChgHist.chgUserId));
     }
@@ -97,7 +94,6 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
 
         JPAQuery<PdhProdContentChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(pdhProdContentChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdContentChgHist.histId, search.getHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -123,7 +119,6 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdhProdContentChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdhProdContentChgHist.histId, search.getHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -195,7 +190,6 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
         JPAUpdateClause update = queryFactory.update(pdhProdContentChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(pdhProdContentChgHist.siteId,        entity.getSiteId());        hasAny = true; }
         if (entity.getProdId()        != null) { update.set(pdhProdContentChgHist.prodId,        entity.getProdId());        hasAny = true; }
         if (entity.getProdContentId() != null) { update.set(pdhProdContentChgHist.prodContentId, entity.getProdContentId()); hasAny = true; }
         if (entity.getContentTypeCd() != null) { update.set(pdhProdContentChgHist.contentTypeCd, entity.getContentTypeCd()); hasAny = true; }

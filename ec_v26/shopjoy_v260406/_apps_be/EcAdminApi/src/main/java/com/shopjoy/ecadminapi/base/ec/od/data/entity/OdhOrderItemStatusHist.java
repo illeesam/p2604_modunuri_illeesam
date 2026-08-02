@@ -24,9 +24,6 @@ public class OdhOrderItemStatusHist extends BaseEntity {
     @Column(name = "order_item_status_hist_id", length = 21, nullable = false)
     private String orderItemStatusHistId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("주문상품ID (od_order_item.order_item_id)")
     @Column(name = "order_item_id", length = 21, nullable = false)

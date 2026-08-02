@@ -46,8 +46,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         Map.entry("memberId", mbMemberRole.memberId),
         Map.entry("memberRoleId", mbMemberRole.memberRoleId),
         Map.entry("memberRoleRemark", mbMemberRole.memberRoleRemark),
-        Map.entry("roleId", mbMemberRole.roleId),
-        Map.entry("siteId", mbMemberRole.siteId)
+        Map.entry("roleId", mbMemberRole.roleId)
     );
 
     /* 회원 역할 연결 baseSelColumnQuery — 코드성 필드 없음 (역할/일자 위주) */

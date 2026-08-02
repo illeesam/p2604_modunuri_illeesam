@@ -28,7 +28,6 @@ public class SyhSendMsgLogDto {
 
         // ── syh_send_msg_log ──────────────────────────────────────────
         private String logId;
-        private String siteId;
         private String channelCd;
         private String templateId;
         private String templateCode;
@@ -49,6 +48,7 @@ public class SyhSendMsgLogDto {
         private String refId;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

@@ -28,9 +28,6 @@ public class DpArea extends BaseEntity {
     @Column(name = "ui_id", length = 21, nullable = false)
     private String uiId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("영역코드 (예: MAIN_TOP, SIDEBAR_MID)")
     @Column(name = "area_cd", length = 50, nullable = false)

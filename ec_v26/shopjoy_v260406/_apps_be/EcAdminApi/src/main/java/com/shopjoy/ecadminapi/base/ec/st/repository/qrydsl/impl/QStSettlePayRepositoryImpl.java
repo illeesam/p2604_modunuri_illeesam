@@ -56,7 +56,6 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         Map.entry("settleId", stSettlePay.settleId),
         Map.entry("settlePayId", stSettlePay.settlePayId),
         Map.entry("settlePayMemo", stSettlePay.settlePayMemo),
-        Map.entry("siteId", stSettlePay.siteId),
         Map.entry("vendorId", stSettlePay.vendorId)
     );
 
@@ -71,7 +70,6 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 .select(Projections.bean(StSettlePayDto.Item.class,
                         stSettlePay.settlePayId,         // 정산지급ID (PK, YYMMDDhhmmss+rand4)
                         stSettlePay.settleId,             // 정산ID (st_settle.settle_id)
-                        stSettlePay.siteId,                // 사이트ID
                         stSettlePay.vendorId,              // 업체ID (sy_vendor.vendor_id)
                         stSettlePay.payAmt,                // 지급금액
                         stSettlePay.payMethodCd,           // 지급수단 — PAY_METHOD_CD (sy_code 실 데이터 없음, 참고: PAY_METHOD 그룹 BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)
@@ -88,13 +86,11 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                         stSettlePay.updBy,                 // 수정자
                         stSettlePay.updDate,               // 수정일시
                         syVendor.vendorNm.as("vendorNm"),               // 업체명 (조인)
-                        sySite.siteNm.as("siteNm"),                     // 사이트명 (조인)
                         cdPmc.codeLabel.as("payMethodCdNm"),            // 지급수단명 (sy_code 조인)
                         cdSps.codeLabel.as("payStatusCdNm")             // 지급상태명 (sy_code 조인)
                 ))
                 .from(stSettlePay)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId))
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettlePay.siteId))
                 .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd)))
                 .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(stSettlePay.payStatusCd)));
     }
@@ -116,7 +112,6 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         JPAQuery<StSettlePayDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stSettlePay.siteId, search.getSiteId()),
                     QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId()),
                     QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -143,7 +138,6 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stSettlePay.siteId, search.getSiteId()),
                 QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId()),
                 QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -221,7 +215,6 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         boolean hasAny = false;
 
         if (entity.getSettleId()         != null) { update.set(stSettlePay.settleId,         entity.getSettleId());         hasAny = true; }
-        if (entity.getSiteId()           != null) { update.set(stSettlePay.siteId,           entity.getSiteId());           hasAny = true; }
         if (entity.getVendorId()         != null) { update.set(stSettlePay.vendorId,         entity.getVendorId());         hasAny = true; }
         if (entity.getPayAmt()           != null) { update.set(stSettlePay.payAmt,           entity.getPayAmt());           hasAny = true; }
         if (entity.getPayMethodCd()      != null) { update.set(stSettlePay.payMethodCd,      entity.getPayMethodCd());      hasAny = true; }

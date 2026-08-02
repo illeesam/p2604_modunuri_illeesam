@@ -40,7 +40,6 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
         Map.entry("blogId", cmBlogTag.blogId),
         Map.entry("blogTagId", cmBlogTag.blogTagId),
-        Map.entry("siteId", cmBlogTag.siteId),
         Map.entry("tagNm", cmBlogTag.tagNm)
     );
 
@@ -51,7 +50,6 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         return queryFactory
                 .select(Projections.bean(CmBlogTagDto.Item.class,
                         cmBlogTag.blogTagId,  // 태그ID (PK)
-                        cmBlogTag.siteId,     // 사이트ID
                         cmBlogTag.blogId,     // 블로그ID (cm_blog.blog_id)
                         cmBlogTag.tagNm,      // 태그명
                         cmBlogTag.sortOrd,    // 정렬순서
@@ -81,7 +79,6 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogTag.blogId, search.getBlogId()),
-                QdslUtil.strEq(cmBlogTag.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmBlogTag.blogTagId, search.getBlogTagId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -109,7 +106,6 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogTag.blogId, search.getBlogId()),
-                QdslUtil.strEq(cmBlogTag.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmBlogTag.blogTagId, search.getBlogTagId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -191,7 +187,6 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         JPAUpdateClause update = queryFactory.update(cmBlogTag);
         boolean hasAny = false;
 
-        if (entity.getSiteId()  != null) { update.set(cmBlogTag.siteId,  entity.getSiteId());  hasAny = true; }
         if (entity.getBlogId()  != null) { update.set(cmBlogTag.blogId,  entity.getBlogId());  hasAny = true; }
         if (entity.getTagNm()   != null) { update.set(cmBlogTag.tagNm,   entity.getTagNm());   hasAny = true; }
         if (entity.getSortOrd() != null) { update.set(cmBlogTag.sortOrd, entity.getSortOrd()); hasAny = true; }

@@ -58,7 +58,6 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         Map.entry("settleId", stRecon.settleId),
         Map.entry("settlePeriod", stRecon.settlePeriod),
         Map.entry("settleRawId", stRecon.settleRawId),
-        Map.entry("siteId", stRecon.siteId),
         Map.entry("vendorId", stRecon.vendorId)
     );
 
@@ -72,7 +71,6 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         return queryFactory
                 .select(Projections.bean(StReconDto.Item.class,
                         stRecon.reconId,                 // 대사ID (PK, YYMMDDhhmmss+rand4)
-                        stRecon.siteId,                  // 사이트ID
                         stRecon.vendorId,                 // 업체ID
                         stRecon.reconTypeCd,               // 대사유형 — RECON_TYPE {ORDER: '주문대사', SETTLE: '정산대사'}
                         stRecon.reconStatusCd,             // 대사상태 — RECON_STATUS {MATCHED: '일치', DIFF: '차이', MANUAL: '수동처리'}
@@ -92,14 +90,12 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                         stRecon.regDate,                    // 등록일시
                         stRecon.updBy,                      // 수정자
                         stRecon.updDate,                    // 수정일시
-                        sySite.siteNm.as("siteNm"),                   // 사이트명 (조인)
                         syVendor.vendorNm.as("vendorNm"),             // 업체명 (조인)
                         stSettleRaw.prodNm.as("settleRawNm"),         // 수집원장 상품명 스냅샷 (조인)
                         cdRt.codeLabel.as("reconTypeCdNm"),           // 대사유형명 (sy_code 조인)
                         cdRs.codeLabel.as("reconStatusCdNm")         // 대사상태명 (sy_code 조인)
                 ))
                 .from(stRecon)
-                .leftJoin(sySite).on(sySite.siteId.eq(stRecon.siteId))
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stRecon.vendorId))
                 .leftJoin(stSettleRaw).on(stSettleRaw.settleRawId.eq(stRecon.settleRawId))
                 .leftJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE").and(cdRt.codeValue.eq(stRecon.reconTypeCd)))
@@ -123,7 +119,6 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         JPAQuery<StReconDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stRecon.siteId, search.getSiteId()),
                     QdslUtil.strEq(stRecon.reconId, search.getReconId()),
                     QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()),
                     QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()),
@@ -151,7 +146,6 @@ public class QStReconRepositoryImpl implements QStReconRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stRecon.siteId, search.getSiteId()),
                 QdslUtil.strEq(stRecon.reconId, search.getReconId()),
                 QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()),
                 QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()),
@@ -225,7 +219,6 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         JPAUpdateClause update = queryFactory.update(stRecon);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(stRecon.siteId,              entity.getSiteId());              hasAny = true; }
         if (entity.getVendorId()            != null) { update.set(stRecon.vendorId,            entity.getVendorId());            hasAny = true; }
         if (entity.getReconTypeCd()         != null) { update.set(stRecon.reconTypeCd,         entity.getReconTypeCd());         hasAny = true; }
         if (entity.getReconStatusCd()       != null) { update.set(stRecon.reconStatusCd,       entity.getReconStatusCd());       hasAny = true; }

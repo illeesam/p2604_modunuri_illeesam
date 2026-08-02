@@ -51,7 +51,6 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         Map.entry("planStatusCdBefore", pmPlan.planStatusCdBefore),
         Map.entry("planTitle", pmPlan.planTitle),
         Map.entry("planTypeCd", pmPlan.planTypeCd),
-        Map.entry("siteId", pmPlan.siteId),
         Map.entry("thumbnailUrl", pmPlan.thumbnailUrl),
         Map.entry("useYn", pmPlan.useYn)
     );
@@ -65,7 +64,6 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         return queryFactory
                 .select(Projections.bean(PmPlanDto.Item.class,
                         pmPlan.planId,               // 기획전ID (PK, YYMMDDhhmmss+rand4)
-                        pmPlan.siteId,               // 사이트ID
                         pmPlan.planNm,               // 기획전명 (내부용)
                         pmPlan.planTitle,            // 기획전 타이틀 (노출용)
                         pmPlan.planTypeCd,           // 유형 — PLAN_TYPE {SEASON: '시즌', BRAND: '브랜드', THEME: '테마', COLLAB: '협업'}
@@ -80,7 +78,6 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                         pmPlan.useYn, pmPlan.regBy, pmPlan.regDate, pmPlan.updBy, pmPlan.updDate
                 ))
                 .from(pmPlan)
-                .leftJoin(sySite).on(sySite.siteId.eq(pmPlan.siteId))
                 .leftJoin(cdPt).on(cdPt.codeGrp.eq("PLAN_TYPE").and(cdPt.codeValue.eq(pmPlan.planTypeCd)))
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PLAN_STATUS").and(cdPs.codeValue.eq(pmPlan.planStatusCd)));
     }
@@ -102,7 +99,6 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmPlan.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmPlan.planId, search.getPlanId()),
                     QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
@@ -130,7 +126,6 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmPlan.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmPlan.planId, search.getPlanId()),
                 QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
@@ -213,7 +208,6 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         JPAUpdateClause update = queryFactory.update(pmPlan);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(pmPlan.siteId,             entity.getSiteId());             hasAny = true; }
         if (entity.getPlanNm()             != null) { update.set(pmPlan.planNm,             entity.getPlanNm());             hasAny = true; }
         if (entity.getPlanTitle()          != null) { update.set(pmPlan.planTitle,          entity.getPlanTitle());          hasAny = true; }
         if (entity.getPlanTypeCd()         != null) { update.set(pmPlan.planTypeCd,         entity.getPlanTypeCd());         hasAny = true; }

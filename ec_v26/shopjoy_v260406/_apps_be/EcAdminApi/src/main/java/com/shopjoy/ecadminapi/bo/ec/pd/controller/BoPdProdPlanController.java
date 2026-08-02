@@ -73,7 +73,6 @@ public class BoPdProdPlanController {
 
             PdProdPlan plan = new PdProdPlan();
             plan.setPlanId("PP" + now.format(ID_FMT) + String.format("%05d", (int)(Math.random() * 100000)));
-            plan.setSiteId(siteId);
             plan.setProdId(prodId);
             plan.setStartDatetime(startDt);
             plan.setEndDatetime(endDt);

@@ -23,11 +23,11 @@ public class PmSaveItemDto {
     public static class Item {
         private String saveItemId;
         private String saveId;
-        private String siteId;
         private String targetTypeCd;
         private String targetId;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String siteNm;
         private String targetTypeCdNm;
     }

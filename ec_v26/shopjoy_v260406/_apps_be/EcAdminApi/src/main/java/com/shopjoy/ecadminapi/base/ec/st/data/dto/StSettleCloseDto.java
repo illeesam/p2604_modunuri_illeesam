@@ -20,7 +20,6 @@ public class StSettleCloseDto {
     public static class Item {
         private String settleCloseId;
         private String settleId;
-        private String siteId;
         private String closeStatusCd;
         private String closeReason;
         private Long finalSettleAmt;
@@ -28,6 +27,7 @@ public class StSettleCloseDto {
         private LocalDateTime closeDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

@@ -22,7 +22,6 @@ public class OdPayDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String payId;
-        private String siteId;
         private String orderId;
         private String memberId;
         private String payStatusCd;
@@ -49,6 +48,7 @@ public class OdPayDto {
         private String memo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String memberNm;

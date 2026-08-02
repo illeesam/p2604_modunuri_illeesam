@@ -43,7 +43,6 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         Map.entry("mediaTypeCd", pdReviewAttach.mediaTypeCd),
         Map.entry("reviewAttachId", pdReviewAttach.reviewAttachId),
         Map.entry("reviewId", pdReviewAttach.reviewId),
-        Map.entry("siteId", pdReviewAttach.siteId),
         Map.entry("thumbUrl", pdReviewAttach.thumbUrl)
     );
 
@@ -56,7 +55,6 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         return queryFactory
                 .select(Projections.bean(PdReviewAttachDto.Item.class,
                         pdReviewAttach.reviewAttachId,   // 미디어ID (PK)
-                        pdReviewAttach.siteId,             // 사이트ID
                         pdReviewAttach.reviewId,           // 리뷰ID (pd_review.review_id)
                         pdReviewAttach.attachId,           // 첨부파일ID (sy_attach.attach_id) — url·파일명 여기서 조회
                         pdReviewAttach.mediaTypeCd,         // 미디어유형 — {IMAGE: '이미지', VIDEO: '동영상', DOCUMENT: '문서'}
@@ -84,7 +82,6 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(
                 QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()),
                 QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()),
-                QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()),
                 QdslUtil.strEq(pdReview.prodId, search.getProdId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -113,7 +110,6 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdReviewAttach.reviewId, search.getReviewIds()),
                 QdslUtil.strEq(pdReviewAttach.reviewId, search.getReviewId()),
-                QdslUtil.strEq(pdReviewAttach.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdReviewAttach.reviewAttachId, search.getReviewAttachId()),
                 QdslUtil.strEq(pdReview.prodId, search.getProdId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -147,7 +143,6 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         return queryFactory
                 .select(Projections.bean(PdReviewAttachDto.Item.class,
                         pdReviewAttach.reviewAttachId,   // 미디어ID (PK)
-                        pdReviewAttach.siteId,             // 사이트ID
                         pdReviewAttach.reviewId,           // 리뷰ID (pd_review.review_id)
                         pdReviewAttach.attachId,           // 첨부파일ID (sy_attach.attach_id)
                         pdReviewAttach.mediaTypeCd,         // 미디어유형 — {IMAGE: '이미지', VIDEO: '동영상', DOCUMENT: '문서'}
@@ -214,7 +209,6 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         JPAUpdateClause update = queryFactory.update(pdReviewAttach);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(pdReviewAttach.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getReviewId()    != null) { update.set(pdReviewAttach.reviewId,    entity.getReviewId());    hasAny = true; }
         if (entity.getAttachId()    != null) { update.set(pdReviewAttach.attachId,    entity.getAttachId());    hasAny = true; }
         if (entity.getMediaTypeCd() != null) { update.set(pdReviewAttach.mediaTypeCd, entity.getMediaTypeCd()); hasAny = true; }

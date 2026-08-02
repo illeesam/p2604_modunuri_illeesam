@@ -10,15 +10,15 @@ import java.util.List;
 public interface CmDashboardMenuRepository extends JpaRepository<CmDashboardMenu, String> {
 
     /** 내 메뉴 트리 (같은 부모 안에서는 sort_ord 순) */
-    List<CmDashboardMenu> findBySiteIdAndMenuScopeCdAndOwnerUserIdOrderBySortOrdAsc(
-            String siteId, String menuScopeCd, String ownerUserId);
+    List<CmDashboardMenu> findByMenuScopeCdAndOwnerUserIdOrderBySortOrdAsc(
+            String menuScopeCd, String ownerUserId);
 
     /** 사이트 공통(SYS) 메뉴 트리 — 주인이 없으므로 소유자 조건이 없다 */
-    List<CmDashboardMenu> findBySiteIdAndMenuScopeCdOrderBySortOrdAsc(String siteId, String menuScopeCd);
+    List<CmDashboardMenu> findByMenuScopeCdOrderBySortOrdAsc(String menuScopeCd);
 
     /** 저장 시 내 노드만 전부 지운다 — 다른 사용자 트리는 건드리지 않는다 */
-    void deleteBySiteIdAndMenuScopeCdAndOwnerUserId(String siteId, String menuScopeCd, String ownerUserId);
+    void deleteByMenuScopeCdAndOwnerUserId(String menuScopeCd, String ownerUserId);
 
     /** 저장 시 사이트 공통 노드를 전부 지운다 */
-    void deleteBySiteIdAndMenuScopeCd(String siteId, String menuScopeCd);
+    void deleteByMenuScopeCd(String menuScopeCd);
 }

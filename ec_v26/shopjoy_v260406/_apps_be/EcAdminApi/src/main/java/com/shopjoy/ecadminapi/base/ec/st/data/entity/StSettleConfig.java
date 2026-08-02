@@ -24,9 +24,6 @@ public class StSettleConfig extends BaseEntity {
     @Column(name = "settle_config_id", length = 21, nullable = false)
     private String settleConfigId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("업체ID (NULL=전체 기준)")
     @Column(name = "vendor_id", length = 21)

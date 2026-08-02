@@ -20,7 +20,6 @@ public class PdTagDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String tagId;
-        private String siteId;
         private String tagNm;
         private String tagDesc;
         private Integer useCount;
@@ -28,6 +27,7 @@ public class PdTagDto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

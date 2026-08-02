@@ -23,9 +23,6 @@ public class OdDlivItem extends BaseEntity {
     @Column(name = "dliv_item_id", length = 21, nullable = false)
     private String dlivItemId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("배송ID (od_dliv.)")
     @Column(name = "dliv_id", length = 21, nullable = false)

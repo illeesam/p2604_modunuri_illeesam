@@ -22,7 +22,6 @@ public class StSettleAdjDto {
     public static class Item {
         private String settleAdjId;
         private String settleId;
-        private String siteId;
         private String adjTypeCd;
         private Long adjAmt;
         private String adjReason;
@@ -30,6 +29,7 @@ public class StSettleAdjDto {
         private String aprvStatusCd;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

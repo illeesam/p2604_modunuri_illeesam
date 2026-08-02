@@ -23,7 +23,6 @@ public class DpWidgetDto {
     public static class Item {
         private String widgetId;
         private String widgetLibId;
-        private String siteId;
         private String widgetNm;
         private String widgetTypeCd;
         private String widgetDesc;
@@ -38,6 +37,7 @@ public class DpWidgetDto {
         private String dispEnv;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

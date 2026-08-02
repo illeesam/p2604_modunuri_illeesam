@@ -25,9 +25,6 @@ public class StSettleRaw extends BaseEntity {
     @Column(name = "settle_raw_id", length = 21, nullable = false)
     private String settleRawId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("수집유형 (코드: RAW_TYPE — ORDER/CLAIM)")
     @Column(name = "raw_type_cd", length = 20, nullable = false)

@@ -45,8 +45,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         Map.entry("lineMemo", stErpVoucherLine.lineMemo),
         Map.entry("profitCenterCd", stErpVoucherLine.profitCenterCd),
         Map.entry("refId", stErpVoucherLine.refId),
-        Map.entry("refTypeCd", stErpVoucherLine.refTypeCd),
-        Map.entry("siteId", stErpVoucherLine.siteId)
+        Map.entry("refTypeCd", stErpVoucherLine.refTypeCd)
     );
 
     /*

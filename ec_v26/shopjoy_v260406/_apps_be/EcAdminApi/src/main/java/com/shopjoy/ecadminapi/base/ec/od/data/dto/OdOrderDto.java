@@ -22,7 +22,6 @@ public class OdOrderDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String orderId;
-        private String siteId;
         private String memberId;
         private String memberNm;
         private String ordererEmail;
@@ -61,6 +60,7 @@ public class OdOrderDto {
         private LocalDateTime orderDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String memberEmail;
@@ -97,7 +97,6 @@ public class OdOrderDto {
     @Getter @Setter @NoArgsConstructor
     public static class ProxyOrderRequest {
         private String orderId;        // 신규 시 null (서버 생성)
-        private String siteId;
         private String memberId;
         private String memberNm;
         private String ordererEmail;

@@ -24,9 +24,6 @@ public class PmEvent extends BaseEntity {
     @Column(name = "event_id", length = 21, nullable = false)
     private String eventId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("이벤트명")
     @Column(name = "event_nm", length = 100, nullable = false)

@@ -31,6 +31,7 @@ public class StErpVoucherLineDto {
         private String lineMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

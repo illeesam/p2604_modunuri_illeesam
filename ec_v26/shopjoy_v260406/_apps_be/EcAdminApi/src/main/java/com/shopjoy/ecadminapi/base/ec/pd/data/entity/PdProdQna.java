@@ -24,9 +24,6 @@ public class PdProdQna extends BaseEntity {
     @Column(name = "prod_qna_id", length = 21, nullable = false)
     private String prodQnaId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)

@@ -31,6 +31,7 @@ public class MbMemberAddrDto {
         private String defaultYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

@@ -24,9 +24,6 @@ public class OdhClaimStatusHist extends BaseEntity {
     @Column(name = "claim_status_hist_id", length = 21, nullable = false)
     private String claimStatusHistId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("클레임ID (od_claim.claim_id)")
     @Column(name = "claim_id", length = 21, nullable = false)

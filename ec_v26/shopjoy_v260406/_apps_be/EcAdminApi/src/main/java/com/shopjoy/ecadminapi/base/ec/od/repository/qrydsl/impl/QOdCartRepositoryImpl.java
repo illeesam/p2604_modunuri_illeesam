@@ -54,7 +54,6 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         Map.entry("prodOptId2", odCart.prodOptId2),
         Map.entry("prodId", odCart.prodId),
         Map.entry("sessionKey", odCart.sessionKey),
-        Map.entry("siteId", odCart.siteId),
         Map.entry("prodSkuId", odCart.prodSkuId)
     );
 
@@ -66,7 +65,6 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         return queryFactory
                 .select(Projections.bean(OdCartDto.Item.class,
                         odCart.cartId,      // 장바구니ID (YYMMDDhhmmss+rand4)
-                        odCart.siteId,      // 사이트ID
                         odCart.memberId,    // 회원ID (비회원 NULL)
                         odCart.sessionKey,  // 비회원 세션키
                         odCart.prodId,      // 상품ID (pd_prod.prod_id)
@@ -78,14 +76,12 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                         odCart.itemPrice,   // 소계 (단가 × 수량)
                         odCart.isChecked,   // 주문선택여부 Y/N
                         odCart.regBy, odCart.regDate, odCart.updBy, odCart.updDate,
-                        sySite.siteNm.as("siteNm"),
                         mbMember.memberNm.as("memberNm"),
                         pdProd.prodNm.as("prodNm"),
                         oi1.prodOptNm.as("prodOptNm1"),
                         oi2.prodOptNm.as("prodOptNm2")
                 ))
                 .from(odCart)
-                .leftJoin(sySite).on(sySite.siteId.eq(odCart.siteId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId))
                 .leftJoin(oi1).on(oi1.prodOptId.eq(odCart.prodOptId1))
@@ -109,7 +105,6 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         JPAQuery<OdCartDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odCart.siteId, search.getSiteId()),
                     QdslUtil.strEq(odCart.cartId, search.getCartId()),
                     QdslUtil.strEq(odCart.memberId, search.getMemberId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -136,7 +131,6 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odCart.siteId, search.getSiteId()),
                 QdslUtil.strEq(odCart.cartId, search.getCartId()),
                 QdslUtil.strEq(odCart.memberId, search.getMemberId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -211,7 +205,6 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         JPAUpdateClause update = queryFactory.update(odCart);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(odCart.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getMemberId()    != null) { update.set(odCart.memberId,    entity.getMemberId());    hasAny = true; }
         if (entity.getSessionKey()  != null) { update.set(odCart.sessionKey,  entity.getSessionKey());  hasAny = true; }
         if (entity.getProdId()      != null) { update.set(odCart.prodId,      entity.getProdId());      hasAny = true; }

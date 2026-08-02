@@ -50,7 +50,6 @@ public class SySiteController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SySite>> save(
             @PathVariable("id") String id, @RequestBody SySite entity) {
-        entity.setSiteId(id);
         SySite result = service.saveOneBase(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
@@ -59,7 +58,6 @@ public class SySiteController {
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<SySite>> updateSelective(
             @PathVariable("id") String id, @RequestBody SySite entity) {
-        entity.setSiteId(id);
         SySite result = service.updateSelective(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }

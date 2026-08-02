@@ -20,7 +20,6 @@ public class PmGiftIssueDto {
     public static class Item {
         private String giftIssueId;
         private String giftId;
-        private String siteId;
         private String memberId;
         private String orderId;
         private LocalDateTime issueDate;
@@ -29,6 +28,7 @@ public class PmGiftIssueDto {
         private String giftIssueMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

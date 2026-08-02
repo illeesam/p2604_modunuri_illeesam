@@ -23,9 +23,6 @@ public class MbLike extends BaseEntity {
     @Column(name = "like_id", length = 21, nullable = false)
     private String likeId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)

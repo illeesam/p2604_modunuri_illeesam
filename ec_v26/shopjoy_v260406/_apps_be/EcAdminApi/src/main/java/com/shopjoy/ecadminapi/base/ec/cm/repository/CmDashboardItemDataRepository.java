@@ -10,15 +10,15 @@ import java.util.Optional;
 @Repository
 public interface CmDashboardItemDataRepository extends JpaRepository<CmDashboardItemData, String> {
 
-    Optional<CmDashboardItemData> findBySiteIdAndDashboardItemIdAndYyyymmdd(
-            String siteId, String dashboardItemId, String yyyymmdd);
+    Optional<CmDashboardItemData> findByDashboardItemIdAndYyyymmdd(
+            String dashboardItemId, String yyyymmdd);
 
-    void deleteBySiteIdAndDashboardItemIdAndYyyymmdd(
-            String siteId, String dashboardItemId, String yyyymmdd);
+    void deleteByDashboardItemIdAndYyyymmdd(
+            String dashboardItemId, String yyyymmdd);
 
-    List<CmDashboardItemData> findBySiteIdAndDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
-            String siteId, String dashboardItemId, String yyyymmddStart, String yyyymmddEnd);
+    List<CmDashboardItemData> findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
+            String dashboardItemId, String yyyymmddStart, String yyyymmddEnd);
 
-    List<CmDashboardItemData> findBySiteIdAndDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(
-            String siteId, String dashboardItemId);
+    List<CmDashboardItemData> findByDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(
+            String dashboardItemId);
 }

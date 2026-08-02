@@ -45,8 +45,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         Map.entry("prodOptId1", odDlivItem.prodOptId1),
         Map.entry("prodOptId2", odDlivItem.prodOptId2),
         Map.entry("orderItemId", odDlivItem.orderItemId),
-        Map.entry("prodId", odDlivItem.prodId),
-        Map.entry("siteId", odDlivItem.siteId)
+        Map.entry("prodId", odDlivItem.prodId)
     );
 
     /*
@@ -58,7 +57,6 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         return queryFactory
                 .select(Projections.bean(OdDlivItemDto.Item.class,
                         odDlivItem.dlivItemId,               // 배송항목ID (YYMMDDhhmmss+rand4)
-                        odDlivItem.siteId,                    // 사이트ID
                         odDlivItem.dlivId,                    // 배송ID (od_dliv.)
                         odDlivItem.orderItemId,               // 주문상품ID (od_order_item.)
                         odDlivItem.prodId,                     // 상품ID
@@ -93,7 +91,6 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                 .where(
                     QdslUtil.strIn(odDlivItem.dlivId, search.getDlivIds()),
                     QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId()),
-                    QdslUtil.strEq(odDlivItem.siteId, search.getSiteId()),
                     QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -121,7 +118,6 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odDlivItem.dlivId, search.getDlivIds()),
                 QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId()),
-                QdslUtil.strEq(odDlivItem.siteId, search.getSiteId()),
                 QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -194,7 +190,6 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         JPAUpdateClause update = queryFactory.update(odDlivItem);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                 != null) { update.set(odDlivItem.siteId,                 entity.getSiteId());                 hasAny = true; }
         if (entity.getDlivId()                 != null) { update.set(odDlivItem.dlivId,                 entity.getDlivId());                 hasAny = true; }
         if (entity.getOrderItemId()            != null) { update.set(odDlivItem.orderItemId,            entity.getOrderItemId());            hasAny = true; }
         if (entity.getProdId()                 != null) { update.set(odDlivItem.prodId,                 entity.getProdId());                 hasAny = true; }

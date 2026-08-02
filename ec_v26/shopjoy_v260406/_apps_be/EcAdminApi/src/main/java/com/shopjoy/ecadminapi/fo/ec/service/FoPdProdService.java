@@ -74,7 +74,6 @@ public class FoPdProdService {
 
     /* 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
-        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         List<PdProdDto.Item> list = pdProdRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -82,7 +81,6 @@ public class FoPdProdService {
 
     /** getPageData — 조회 */
     public BasePage<PdProdDto.Item> getPageData(PdProdDto.Request req) {
-        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         BasePage<PdProdDto.Item> res = pdProdService.getPageData(req);
         _listFillRelations(res.getPageList());
         return res;
@@ -237,7 +235,7 @@ public class FoPdProdService {
      */
     public Map<String, Object> getPromotions(String prodId) {
         PdProdDto.Item prod = pdProdRepository.selectById(prodId).orElse(null);
-        String siteId = prod != null ? prod.getSiteId() : DEFAULT_SITE_ID;
+        String siteId = DEFAULT_SITE_ID;
 
         // pm_*_prod 테이블에서 이 상품에 적용 가능한 ID 목록 조회
         List<String> couponIds = pmCouponProdRepository.findCouponIdsByProdId(prodId, siteId);
@@ -249,7 +247,6 @@ public class FoPdProdService {
 
         if (!couponIds.isEmpty()) {
             PmCouponDto.Request req = new PmCouponDto.Request();
-            req.setSiteId(siteId); req.setCouponIds(couponIds);
             result.put("coupons", pmCouponService.getList(req));
         } else {
             result.put("coupons", List.of());
@@ -257,7 +254,6 @@ public class FoPdProdService {
 
         if (!discntIds.isEmpty()) {
             PmDiscntDto.Request req = new PmDiscntDto.Request();
-            req.setSiteId(siteId); req.setDiscntIds(discntIds);
             result.put("discnts", pmDiscntService.getList(req));
         } else {
             result.put("discnts", List.of());
@@ -265,12 +261,10 @@ public class FoPdProdService {
 
         // 사은품(gift)은 *_prod 테이블 미운용 — useYn 전체 조회 유지
         PmGiftDto.Request giftReq = new PmGiftDto.Request();
-        giftReq.setSiteId(siteId); giftReq.setUseYn("Y");
         result.put("gifts", pmGiftService.getList(giftReq));
 
         if (!eventIds.isEmpty()) {
             PmEventDto.Request req = new PmEventDto.Request();
-            req.setSiteId(siteId); req.setEventIds(eventIds);
             result.put("events", pmEventService.getList(req));
         } else {
             result.put("events", List.of());
@@ -278,7 +272,6 @@ public class FoPdProdService {
 
         if (!saveIds.isEmpty()) {
             PmSaveDto.Request req = new PmSaveDto.Request();
-            req.setSiteId(siteId); req.setSaveIds(saveIds);
             result.put("saves", pmSaveService.getList(req));
         } else {
             result.put("saves", List.of());

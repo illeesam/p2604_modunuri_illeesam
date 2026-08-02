@@ -24,9 +24,6 @@ public class DpPanelItem extends BaseEntity {
     @Column(name = "panel_item_id", length = 21, nullable = false)
     private String panelItemId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("패널ID (dp_panel.panel_id)")
     @Column(name = "panel_id", length = 21, nullable = false)

@@ -46,8 +46,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         Map.entry("prodOptId1", pdProdImg.prodOptId1),
         Map.entry("prodOptId2", pdProdImg.prodOptId2),
         Map.entry("prodId", pdProdImg.prodId),
-        Map.entry("prodImgId", pdProdImg.prodImgId),
-        Map.entry("siteId", pdProdImg.siteId)
+        Map.entry("prodImgId", pdProdImg.prodImgId)
     );
 
     /*
@@ -58,7 +57,6 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         return queryFactory
                 .select(Projections.bean(PdProdImgDto.Item.class,
                         pdProdImg.prodImgId,     // 상품이미지ID (PK)
-                        pdProdImg.siteId,         // 사이트ID (sy_site.site_id)
                         pdProdImg.prodId,         // 상품ID (pd_prod.prod_id)
                         pdProdImg.prodOptId1,     // 옵션1 값ID (색상 등, NULL이면 공통 이미지)
                         pdProdImg.prodOptId2,     // 옵션2 값ID (사이즈 등, NULL이면 색상 공통)
@@ -96,7 +94,6 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                 .where(
                     QdslUtil.strIn(pdProdImg.prodId, search.getProdIds()),
                     QdslUtil.strEq(pdProdImg.prodId, search.getProdId()),
-                    QdslUtil.strEq(pdProdImg.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -124,7 +121,6 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdProdImg.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProdImg.prodId, search.getProdId()),
-                QdslUtil.strEq(pdProdImg.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -202,7 +198,6 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         JPAUpdateClause update = queryFactory.update(pdProdImg);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(pdProdImg.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getProdId()      != null) { update.set(pdProdImg.prodId,      entity.getProdId());      hasAny = true; }
         if (entity.getProdOptId1()  != null) { update.set(pdProdImg.prodOptId1,  entity.getProdOptId1());  hasAny = true; }
         if (entity.getProdOptId2()  != null) { update.set(pdProdImg.prodOptId2,  entity.getProdOptId2());  hasAny = true; }

@@ -20,7 +20,6 @@ public class PmSaveIssueDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String saveIssueId;
-        private String siteId;
         private String memberId;
         private String saveIssueTypeCd;
         private Long saveAmt;
@@ -36,6 +35,7 @@ public class PmSaveIssueDto {
         private String saveMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

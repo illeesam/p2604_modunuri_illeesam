@@ -45,20 +45,20 @@ public class CmDashboardItemDataService {
             if (!live.isEmpty()) return live;
         }
 
-        if (siteId != null && dashboardItemId != null && yyyymmdd != null) {
+        if (dashboardItemId != null && yyyymmdd != null) {
             return List.of(cmDashboardItemDataRepository
-                .findBySiteIdAndDashboardItemIdAndYyyymmdd(siteId, dashboardItemId, yyyymmdd)
+                .findByDashboardItemIdAndYyyymmdd(dashboardItemId, yyyymmdd)
                 .orElse(null));
         }
         /* 기간 서버 필터 — startYmd/endYmd (YYYYMMDD) BETWEEN */
-        if (siteId != null && dashboardItemId != null && startYmd != null && endYmd != null) {
+        if (dashboardItemId != null && startYmd != null && endYmd != null) {
             return cmDashboardItemDataRepository
-                .findBySiteIdAndDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
-                    siteId, dashboardItemId, startYmd, endYmd);
+                .findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
+                    dashboardItemId, startYmd, endYmd);
         }
-        if (siteId != null && dashboardItemId != null) {
+        if (dashboardItemId != null) {
             return cmDashboardItemDataRepository
-                .findBySiteIdAndDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(siteId, dashboardItemId);
+                .findByDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(dashboardItemId);
         }
         return cmDashboardItemDataRepository.findAll();
     }
@@ -67,8 +67,7 @@ public class CmDashboardItemDataService {
     private List<CmDashboardItemData> runDataSource(String dashboardItemId, String siteId) {
         CmDashboardItem item = cmDashboardItemRepository.findById(dashboardItemId).orElse(null);
         if (item == null || !cmDashboardDataSourceRegistry.has(item.getDataSourceCd())) return List.of();
-        return cmDashboardDataSourceRegistry.run(item.getDataSourceCd(),
-            siteId != null ? siteId : item.getSiteId());
+        return cmDashboardDataSourceRegistry.run(item.getDataSourceCd(), siteId);
     }
 
     @Transactional
@@ -89,9 +88,9 @@ public class CmDashboardItemDataService {
         }
 
         // composite key lookup
-        if (body.getSiteId() != null && body.getDashboardItemId() != null && body.getYyyymmdd() != null) {
+        if (body.getDashboardItemId() != null && body.getYyyymmdd() != null) {
             Optional<CmDashboardItemData> existing = cmDashboardItemDataRepository
-                .findBySiteIdAndDashboardItemIdAndYyyymmdd(body.getSiteId(), body.getDashboardItemId(), body.getYyyymmdd());
+                .findByDashboardItemIdAndYyyymmdd(body.getDashboardItemId(), body.getYyyymmdd());
             if (existing.isPresent()) {
                 CmDashboardItemData entity = existing.get();
                 copyFields(body, entity);
@@ -112,8 +111,8 @@ public class CmDashboardItemDataService {
     }
 
     @Transactional
-    public void deleteByItemAndDate(String siteId, String dashboardItemId, String yyyymmdd) {
-        cmDashboardItemDataRepository.deleteBySiteIdAndDashboardItemIdAndYyyymmdd(siteId, dashboardItemId, yyyymmdd);
+    public void deleteByItemAndDate(String dashboardItemId, String yyyymmdd) {
+        cmDashboardItemDataRepository.deleteByDashboardItemIdAndYyyymmdd(dashboardItemId, yyyymmdd);
         em.flush();
     }
 

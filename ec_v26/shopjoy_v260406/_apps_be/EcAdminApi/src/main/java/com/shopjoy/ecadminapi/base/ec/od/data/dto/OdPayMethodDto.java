@@ -26,6 +26,7 @@ public class OdPayMethodDto {
         private String mainMethodYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

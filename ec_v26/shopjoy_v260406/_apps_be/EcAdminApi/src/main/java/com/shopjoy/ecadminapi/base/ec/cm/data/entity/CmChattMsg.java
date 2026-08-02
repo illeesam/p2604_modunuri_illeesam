@@ -23,9 +23,6 @@ public class CmChattMsg extends BaseEntity {
     @Column(name = "chatt_msg_id", length = 21, nullable = false)
     private String chattMsgId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("채팅방ID (cm_chatt.chatt_id)")
     @Column(name = "chatt_id", length = 21, nullable = false)

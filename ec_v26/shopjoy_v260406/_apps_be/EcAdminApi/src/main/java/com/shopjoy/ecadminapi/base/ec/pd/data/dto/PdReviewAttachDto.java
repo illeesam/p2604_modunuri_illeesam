@@ -23,7 +23,6 @@ public class PdReviewAttachDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String reviewAttachId;
-        private String siteId;
         private String reviewId;
         private String attachId;
         private String mediaTypeCd;
@@ -31,6 +30,7 @@ public class PdReviewAttachDto {
         private Integer sortOrd;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

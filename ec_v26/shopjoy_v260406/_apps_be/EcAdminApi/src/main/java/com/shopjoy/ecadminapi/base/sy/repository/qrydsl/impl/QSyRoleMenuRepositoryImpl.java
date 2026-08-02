@@ -14,7 +14,7 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRoleMenu;
-import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyRoleMenu;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyRoleMenuRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,38 +32,40 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleMenuRepositoryImpl";
-    private static final QSyRoleMenu syRoleMenu = QSyRoleMenu.syRoleMenu;
-    private static final QSySite sySite = QSySite.sySite;
+    private static final QVwSyRoleMenu vwRoleMenu = QVwSyRoleMenu.vwSyRoleMenu; // SELECT 전용 — sy_role JOIN 내장
+    private static final QSyRoleMenu syRoleMenu = QSyRoleMenu.syRoleMenu;       // UPDATE 전용 (updateSelective)
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syRoleMenu.regDate,
-        "upd_date", syRoleMenu.updDate
+        "reg_date", vwRoleMenu.regDate,
+        "upd_date", vwRoleMenu.updDate
     );
     private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("menuId", syRoleMenu.menuId),
-        Map.entry("roleId", syRoleMenu.roleId),
-        Map.entry("roleMenuId", syRoleMenu.roleMenuId),
-        Map.entry("siteId", syRoleMenu.siteId)
+        Map.entry("menuId", vwRoleMenu.menuId),
+        Map.entry("roleId", vwRoleMenu.roleId),
+        Map.entry("roleMenuId", vwRoleMenu.roleMenuId),
+        Map.entry("siteId", vwRoleMenu.siteId)
     );
 
     /*
-     * baseSelColumnQuery — 코드성 필드 예시 코드값
+     * baseSelColumnQuery — vw_sy_role_menu 뷰 사용 (sy_role_menu INNER JOIN sy_role)
+     * roleNm / roleCode 등 sy_role 컬럼을 추가 JOIN 없이 직접 조회
      * PERM_LEVEL (sy_code 미등록, 숫자 코드 — DDL 주석 기준) {1: '조회', 2: '수정', 3: '삭제'}
      */
     private JPAQuery<SyRoleMenuDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyRoleMenuDto.Item.class,
-                        syRoleMenu.roleMenuId,   // 역할메뉴ID
-                        syRoleMenu.siteId,       // 사이트ID (sy_site.site_id)
-                        syRoleMenu.roleId,       // 역할ID
-                        syRoleMenu.menuId,       // 메뉴ID
-                        syRoleMenu.permLevel,    // 권한레벨 — PERM_LEVEL {1: '조회', 2: '수정', 3: '삭제'}
-                        syRoleMenu.regBy,        // 등록자
-                        syRoleMenu.regDate,      // 등록일시
-                        syRoleMenu.updBy,        // 수정자
-                        syRoleMenu.updDate       // 수정일시
+                        vwRoleMenu.roleMenuId,   // 역할메뉴ID
+                        vwRoleMenu.siteId,       // 사이트ID (sy_site.site_id)
+                        vwRoleMenu.roleId,       // 역할ID
+                        vwRoleMenu.menuId,       // 메뉴ID
+                        vwRoleMenu.permLevel,    // 권한레벨 — PERM_LEVEL {1: '조회', 2: '수정', 3: '삭제'}
+                        vwRoleMenu.regBy,        // 등록자
+                        vwRoleMenu.regDate,      // 등록일시
+                        vwRoleMenu.updBy,        // 수정자
+                        vwRoleMenu.updDate,      // 수정일시
+                        vwRoleMenu.roleNm        // 역할명 (vw_sy_role_menu에 sy_role JOIN 내장)
                 ))
-                .from(syRoleMenu)
-                .leftJoin(sySite).on(sySite.siteId.eq(syRoleMenu.siteId));
+                .from(vwRoleMenu);
+        // JOIN 불필요 — vw_sy_role_menu 뷰에 sy_role 정보가 내장됨
     }
 
     /* 역할별 메뉴 권한 키조회 */
@@ -71,7 +73,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     public Optional<SyRoleMenuDto.Item> selectById(String roleMenuId) {
         SyRoleMenuDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(syRoleMenu.roleMenuId.eq(roleMenuId))
+                .where(vwRoleMenu.roleMenuId.eq(roleMenuId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -82,10 +84,10 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syRoleMenu.siteId, search.getSiteId()),
-                QdslUtil.strEq(syRoleMenu.roleMenuId, search.getRoleMenuId()),
-                QdslUtil.strEq(syRoleMenu.roleId, search.getRoleId()),
-                QdslUtil.strEq(syRoleMenu.menuId, search.getMenuId()),
+                QdslUtil.strEq(vwRoleMenu.siteId, search.getSiteId()),
+                QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()),
+                QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()),
+                QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         )
@@ -110,15 +112,15 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(syRoleMenu.siteId, search.getSiteId()),
-                QdslUtil.strEq(syRoleMenu.roleMenuId, search.getRoleMenuId()),
-                QdslUtil.strEq(syRoleMenu.roleId, search.getRoleId()),
-                QdslUtil.strEq(syRoleMenu.menuId, search.getMenuId()),
+                QdslUtil.strEq(vwRoleMenu.siteId, search.getSiteId()),
+                QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()),
+                QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()),
+                QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
+        // 공용 base: 뷰 기반 (list/count 가 동일한 from 공유)
         JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery();
 
         // list: base 복제 + where + 정렬 + 페이징
@@ -132,7 +134,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
-                .select(syRoleMenu.count())
+                .select(vwRoleMenu.count())
                 .where(wheres)
                 .fetchOne();
 
@@ -149,8 +151,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = QdslUtil.sortOf(s);
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syRoleMenu.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syRoleMenu.roleMenuId));
+            orders.add(new OrderSpecifier(Order.DESC, vwRoleMenu.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, vwRoleMenu.roleMenuId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -161,22 +163,22 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("roleMenuId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syRoleMenu.roleMenuId));
+                    orders.add(new OrderSpecifier(order, vwRoleMenu.roleMenuId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syRoleMenu.regDate));
+                    orders.add(new OrderSpecifier(order, vwRoleMenu.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syRoleMenu.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syRoleMenu.roleMenuId));
+            orders.add(new OrderSpecifier<>(Order.DESC, vwRoleMenu.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, vwRoleMenu.roleMenuId));
         }
         return orders;
     }
 
-    /* 역할별 메뉴 권한 수정 */
+    /* 역할별 메뉴 권한 수정 — 원본 QSyRoleMenu 엔티티 사용 (뷰는 READ-ONLY) */
     @Override
     public int updateSelective(SyRoleMenu entity) {
         if (entity.getRoleMenuId() == null) return 0;

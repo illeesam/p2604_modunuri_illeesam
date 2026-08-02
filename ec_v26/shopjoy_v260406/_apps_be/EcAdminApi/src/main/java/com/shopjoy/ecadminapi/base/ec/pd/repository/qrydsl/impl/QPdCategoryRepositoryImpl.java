@@ -49,8 +49,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         Map.entry("categoryStatusCd", pdCategory.categoryStatusCd),
         Map.entry("categoryStatusCdBefore", pdCategory.categoryStatusCdBefore),
         Map.entry("imgUrl", pdCategory.imgUrl),
-        Map.entry("parentCategoryId", pdCategory.parentCategoryId),
-        Map.entry("siteId", pdCategory.siteId)
+        Map.entry("parentCategoryId", pdCategory.parentCategoryId)
     );
 
     /*
@@ -62,7 +61,6 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         return queryFactory
                 .select(Projections.bean(PdCategoryDto.Item.class,
                         pdCategory.categoryId,                 // 카테고리ID (PK, YYMMDDhhmmss+rand4)
-                        pdCategory.siteId,                     // 사이트ID (sy_site.site_id)
                         pdCategory.parentCategoryId,           // 상위 카테고리ID
                         pdCategory.categoryNm,                 // 카테고리명
                         pdCategory.categoryDepth,               // 깊이 — {1: '대분류', 2: '중분류', 3: '소분류'}
@@ -99,7 +97,6 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdCategory.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
                     andParentCategoryIdIn(search),
                     QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),
@@ -126,7 +123,6 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdCategory.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
                 andParentCategoryIdIn(search),
                 QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),

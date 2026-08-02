@@ -24,9 +24,6 @@ public class OdhDlivStatusHist extends BaseEntity {
     @Column(name = "dliv_status_hist_id", length = 21, nullable = false)
     private String dlivStatusHistId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("배송ID (od_dliv.dliv_id)")
     @Column(name = "dliv_id", length = 21, nullable = false)

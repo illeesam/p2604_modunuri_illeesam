@@ -67,7 +67,6 @@ public class CmMailSendService {
             SyhSendEmailLog logRow = new SyhSendEmailLog();
             logId = CmUtil.generateId("syh_send_email_log");
             logRow.setLogId(logId);
-            logRow.setSiteId(siteId);
             logRow.setTemplateId(templateId);
             logRow.setTemplateCode(templateCode);
             logRow.setFromAddr(cfg.from);

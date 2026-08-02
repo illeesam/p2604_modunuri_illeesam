@@ -42,7 +42,6 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         Map.entry("blogCateId", cmBlogCate.blogCateId),
         Map.entry("blogCateNm", cmBlogCate.blogCateNm),
         Map.entry("parentBlogCateId", cmBlogCate.parentBlogCateId),
-        Map.entry("siteId", cmBlogCate.siteId),
         Map.entry("useYn", cmBlogCate.useYn)
     );
 
@@ -54,7 +53,6 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         return queryFactory
                 .select(Projections.bean(CmBlogCateDto.Item.class,
                         cmBlogCate.blogCateId,       // 블로그카테고리ID (PK)
-                        cmBlogCate.siteId,           // 사이트ID (sy_site.site_id)
                         cmBlogCate.blogCateNm,       // 카테고리명
                         cmBlogCate.parentBlogCateId, // 상위 카테고리ID (NULL이면 최상위)
                         cmBlogCate.sortOrd,          // 정렬순서
@@ -62,11 +60,9 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
                         cmBlogCate.regBy,            // 등록자
                         cmBlogCate.regDate,          // 등록일시
                         cmBlogCate.updBy,            // 수정자
-                        cmBlogCate.updDate,          // 수정일시
-                        sySite.siteNm.as("siteNm")   // 사이트명 (sy_site 조인)
+                        cmBlogCate.updDate          // 수정일시
                 ))
-                .from(cmBlogCate)
-                .leftJoin(sySite).on(sySite.siteId.eq(cmBlogCate.siteId));
+                .from(cmBlogCate);
     }
 
     /* 게시판 카테고리 키조회 */
@@ -85,7 +81,6 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmBlogCateDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(cmBlogCate.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmBlogCate.blogCateId, search.getBlogCateId()),
                 QdslUtil.strEq(cmBlogCate.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -112,7 +107,6 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmBlogCate.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmBlogCate.blogCateId, search.getBlogCateId()),
                 QdslUtil.strEq(cmBlogCate.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -194,7 +188,6 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         JPAUpdateClause update = queryFactory.update(cmBlogCate);
         boolean hasAny = false;
 
-        if (entity.getSiteId()           != null) { update.set(cmBlogCate.siteId,           entity.getSiteId());           hasAny = true; }
         if (entity.getBlogCateNm()       != null) { update.set(cmBlogCate.blogCateNm,       entity.getBlogCateNm());       hasAny = true; }
         if (entity.getParentBlogCateId() != null) { update.set(cmBlogCate.parentBlogCateId, entity.getParentBlogCateId()); hasAny = true; }
         if (entity.getSortOrd()          != null) { update.set(cmBlogCate.sortOrd,          entity.getSortOrd());          hasAny = true; }

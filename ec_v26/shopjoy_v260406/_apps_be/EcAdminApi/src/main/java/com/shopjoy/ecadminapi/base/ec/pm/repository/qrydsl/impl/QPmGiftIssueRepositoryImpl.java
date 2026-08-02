@@ -55,8 +55,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         Map.entry("giftIssueStatusCd", pmGiftIssue.giftIssueStatusCd),
         Map.entry("giftIssueStatusCdBefore", pmGiftIssue.giftIssueStatusCdBefore),
         Map.entry("memberId", pmGiftIssue.memberId),
-        Map.entry("orderId", pmGiftIssue.orderId),
-        Map.entry("siteId", pmGiftIssue.siteId)
+        Map.entry("orderId", pmGiftIssue.orderId)
     );
 
     /*
@@ -68,7 +67,6 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                 .select(Projections.bean(PmGiftIssueDto.Item.class,
                         pmGiftIssue.giftIssueId,               // 사은품발급ID (PK)
                         pmGiftIssue.giftId,                    // 사은품ID (pm_gift.gift_id)
-                        pmGiftIssue.siteId,                    // 사이트ID
                         pmGiftIssue.memberId,                  // 회원ID
                         pmGiftIssue.orderId,                   // 기준주문ID (od_order.order_id)
                         pmGiftIssue.issueDate,                 // 발급일시
@@ -81,7 +79,6 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                 .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftIssue.giftId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(pmGiftIssue.memberId))
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmGiftIssue.orderId))
-                .leftJoin(sySite).on(sySite.siteId.eq(pmGiftIssue.siteId))
                 .leftJoin(cdGis).on(cdGis.codeGrp.eq("GIFT_ISSUE_STATUS").and(cdGis.codeValue.eq(pmGiftIssue.giftIssueStatusCd)));
     }
 
@@ -102,7 +99,6 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmGiftIssue.siteId, search.getSiteId()),
                     QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -128,7 +124,6 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmGiftIssue.siteId, search.getSiteId()),
                 QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -201,7 +196,6 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         boolean hasAny = false;
 
         if (entity.getGiftId()                 != null) { update.set(pmGiftIssue.giftId,                 entity.getGiftId());                 hasAny = true; }
-        if (entity.getSiteId()                 != null) { update.set(pmGiftIssue.siteId,                 entity.getSiteId());                 hasAny = true; }
         if (entity.getMemberId()               != null) { update.set(pmGiftIssue.memberId,               entity.getMemberId());               hasAny = true; }
         if (entity.getOrderId()                != null) { update.set(pmGiftIssue.orderId,                entity.getOrderId());                hasAny = true; }
         if (entity.getIssueDate()              != null) { update.set(pmGiftIssue.issueDate,              entity.getIssueDate());              hasAny = true; }

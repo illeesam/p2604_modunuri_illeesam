@@ -71,7 +71,6 @@ public class CmKakaoSendService {
             SyhSendMsgLog logRow = new SyhSendMsgLog();
             logId = CmUtil.generateId("syh_send_msg_log");
             logRow.setLogId(logId);
-            logRow.setSiteId(siteId);
             logRow.setChannelCd(CHANNEL_KAKAO);
             logRow.setTemplateId(templateId);
             logRow.setTemplateCode(templateCode);

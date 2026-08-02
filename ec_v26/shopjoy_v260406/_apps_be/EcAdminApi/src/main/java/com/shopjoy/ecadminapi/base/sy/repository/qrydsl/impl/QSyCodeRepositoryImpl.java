@@ -62,7 +62,6 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         return queryFactory
                 .select(Projections.bean(SyCodeDto.Item.class,
                         syCode.codeId,                        // 코드ID
-                        syCode.siteId,                        // 사이트ID
                         syCode.codeGrpId,                     // 코드그룹ID (FK)
                         syCodeGrp.codeGrp.as("codeGrp"),      // 코드그룹명 (sy_code_grp 조인)
                         syCodeGrp.grpNm.as("grpNm"),          // 그룹명 (sy_code_grp 조인)

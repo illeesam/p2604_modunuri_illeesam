@@ -19,7 +19,6 @@ public class OdRefundMethodDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String refundMethodId;
-        private String siteId;
         private String refundId;
         private String orderId;
         private String payMethodCd;
@@ -34,6 +33,7 @@ public class OdRefundMethodDto {
         private String pgResponse;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

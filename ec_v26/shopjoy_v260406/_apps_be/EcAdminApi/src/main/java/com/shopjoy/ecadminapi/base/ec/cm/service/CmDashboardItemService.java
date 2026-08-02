@@ -59,10 +59,7 @@ public class CmDashboardItemService {
         if (dashboardId != null) {
             return cmDashboardItemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
         }
-        if (siteId != null) {
-            return cmDashboardItemRepository.findBySiteIdOrderBySortOrdAsc(siteId);
-        }
-        return cmDashboardItemRepository.findAll();
+        return cmDashboardItemRepository.findAllByOrderBySortOrdAsc();
     }
 
     /* ── 변경 ──────────────────────────────────────────────────── */

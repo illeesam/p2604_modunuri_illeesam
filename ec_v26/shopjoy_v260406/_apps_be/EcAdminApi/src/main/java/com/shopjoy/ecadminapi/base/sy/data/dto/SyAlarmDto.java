@@ -26,7 +26,6 @@ public class SyAlarmDto {
 
         // ── sy_alarm ──────────────────────────────────────────────────
         private String alarmId;
-        private String siteId;
         private String alarmTitle;
         private String alarmTypeCd;
         private String channelCd;
@@ -40,6 +39,7 @@ public class SyAlarmDto {
         private Integer alarmFailCount;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String pathId;

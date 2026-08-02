@@ -38,6 +38,7 @@ public class ZzSample3Dto {
         private String useYn;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String groupCd;

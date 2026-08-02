@@ -20,12 +20,12 @@ public class PmPlanItemDto {
     public static class Item {
         private String planItemId;
         private String planId;
-        private String siteId;
         private String prodId;
         private Integer sortOrd;
         private String planItemMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

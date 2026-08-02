@@ -19,7 +19,6 @@ public class OdhOrderItemChgHistDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String orderItemChgHistId;
-        private String siteId;
         private String orderId;
         private String orderItemId;
         private String chgTypeCd;
@@ -31,6 +30,7 @@ public class OdhOrderItemChgHistDto {
         private LocalDateTime chgDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

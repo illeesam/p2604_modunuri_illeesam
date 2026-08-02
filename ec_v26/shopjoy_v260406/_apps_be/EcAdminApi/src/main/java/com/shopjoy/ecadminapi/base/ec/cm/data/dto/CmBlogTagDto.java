@@ -22,12 +22,12 @@ public class CmBlogTagDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String blogTagId;
-        private String siteId;
         private String blogId;
         private String tagNm;
         private Integer sortOrd;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

@@ -91,8 +91,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         Map.entry("recvZip", odOrder.recvZip),
         Map.entry("refundAccountNm", odOrder.refundAccountNm),
         Map.entry("refundAccountNo", odOrder.refundAccountNo),
-        Map.entry("refundBankCd", odOrder.refundBankCd),
-        Map.entry("siteId", odOrder.siteId)
+        Map.entry("refundBankCd", odOrder.refundBankCd)
     );
 
     /*
@@ -107,7 +106,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         return queryFactory
                 .select(Projections.bean(OdOrderDto.Item.class,
                         odOrder.orderId,               // 주문ID (YYMMDDhhmmss+rand4)
-                        odOrder.siteId,                // 사이트ID (sy_site.site_id)
                         odOrder.memberId,              // 회원ID
                         odOrder.memberNm,              // 주문자명
                         odOrder.ordererEmail,          // 주문자 이메일 (주문 시점 스냅샷)
@@ -142,7 +140,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         odOrder.orderDate,             // 주문일시
                         odOrder.regBy, odOrder.regDate, odOrder.updBy, odOrder.updDate,
                         mbMember.loginId.as("memberEmail"),
-                        sySite.siteNm.as("siteNm"),
                         pmCoupon.couponNm.as("couponNm"),
                         cdOs.codeLabel.as("orderStatusCdNm"),
                         cdPm.codeLabel.as("payMethodCdNm"),
@@ -159,7 +156,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 ))
                 .from(odOrder)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .leftJoin(sySite).on(sySite.siteId.eq(odOrder.siteId))
                 .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId))
                 .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
@@ -181,7 +177,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .select(Projections.bean(OdOrderDto.Item.class,
                         // a.* equivalent (DTO Item 에 존재하는 필드만)
                         odOrder.orderId,               // 주문ID (YYMMDDhhmmss+rand4)
-                        odOrder.siteId,                // 사이트ID (sy_site.site_id)
                         odOrder.memberId,              // 회원ID
                         odOrder.memberNm,              // 주문자명
                         odOrder.ordererEmail,          // 주문자 이메일 (주문 시점 스냅샷)
@@ -220,7 +215,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         mbMember.memberPhone.as("memberPhoneOrigin"),
                         mbMember.gradeCd.as("gradeCd"),
                         mbMember.totalPurchaseAmt.as("totalPurchaseAmt"),
-                        sySite.siteNm.as("siteNm"),
                         pmCoupon.couponNm.as("couponNm"),
                         pmCoupon.couponTypeCd.as("couponTypeCd"),
                         cdOs.codeLabel.as("orderStatusCdNm"),
@@ -232,7 +226,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odOrder)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .leftJoin(sySite).on(sySite.siteId.eq(odOrder.siteId))
                 .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId))
                 .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
@@ -253,7 +246,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         JPAQuery<OdOrderDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odOrder.siteId, search.getSiteId()),
                     QdslUtil.strEq(odOrder.orderId, search.getOrderId()),
                     QdslUtil.strEq(odOrder.memberId, search.getMemberId()),
                     QdslUtil.strEq(odOrder.orderStatusCd, search.getOrderStatusCd()),
@@ -281,7 +273,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odOrder.siteId, search.getSiteId()),
                 QdslUtil.strEq(odOrder.orderId, search.getOrderId()),
                 QdslUtil.strEq(odOrder.memberId, search.getMemberId()),
                 QdslUtil.strEq(odOrder.orderStatusCd, search.getOrderStatusCd()),

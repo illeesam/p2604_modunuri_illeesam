@@ -20,7 +20,6 @@ public class PmDiscntUsageDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String discntUsageId;
-        private String siteId;
         private String discntId;
         private String discntNm;
         private String memberId;
@@ -33,6 +32,7 @@ public class PmDiscntUsageDto {
         private LocalDateTime usedDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
     }
 
 }

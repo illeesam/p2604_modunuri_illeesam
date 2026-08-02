@@ -52,7 +52,6 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
         return queryFactory
                 .select(Projections.bean(CmChattDto.Item.class,
                         cmChatt.chattId,              // 채팅방ID (PK, YYMMDDhhmmss+rand4)
-                        cmChatt.siteId,               // 사이트ID (sy_site.site_id)
                         cmChatt.subject,              // 채팅주제
                         cmChatt.chattStatusCd,        // 상태 — CHATT_STATUS {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
                         cmChatt.chattStatusCdBefore,  // 변경 전 상태 — CHATT_STATUS {WAITING: '대기', ACTIVE: '진행중', DONE: '완료'}
@@ -83,7 +82,6 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
         JPAQuery<CmChattDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                        QdslUtil.strEq(cmChatt.siteId, search.getSiteId()),
                         QdslUtil.strEq(cmChatt.chattId, search.getChattId()),
                         QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd()),
                         QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -105,7 +103,6 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmChatt.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmChatt.chattId, search.getChattId()),
                 QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -167,7 +164,6 @@ private BooleanExpression andSearchValue(CmChattDto.Request s) {
         JPAUpdateClause update = queryFactory.update(cmChatt);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(cmChatt.siteId,              entity.getSiteId());              hasAny = true; }
         if (entity.getSubject()             != null) { update.set(cmChatt.subject,             entity.getSubject());             hasAny = true; }
         if (entity.getChattStatusCd()       != null) { update.set(cmChatt.chattStatusCd,       entity.getChattStatusCd());       hasAny = true; }
         if (entity.getChattStatusCdBefore() != null) { update.set(cmChatt.chattStatusCdBefore, entity.getChattStatusCdBefore()); hasAny = true; }

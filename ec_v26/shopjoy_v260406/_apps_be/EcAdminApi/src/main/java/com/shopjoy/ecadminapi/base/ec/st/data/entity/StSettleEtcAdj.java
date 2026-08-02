@@ -27,9 +27,6 @@ public class StSettleEtcAdj extends BaseEntity {
     @Column(name = "settle_id", length = 21, nullable = false)
     private String settleId;
 
-    @Comment("사이트ID")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("기타조정유형 (코드: SETTLE_ETC_ADJ_TYPE — SHIP/RETURN_SHIP/PENALTY/OTHER)")
     @Column(name = "etc_adj_type_cd", length = 20, nullable = false)

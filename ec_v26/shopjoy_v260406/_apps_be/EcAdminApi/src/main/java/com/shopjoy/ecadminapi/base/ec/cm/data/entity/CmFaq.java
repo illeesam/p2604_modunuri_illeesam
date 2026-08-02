@@ -21,9 +21,6 @@ public class CmFaq extends BaseEntity {
     @Column(name = "faq_id", length = 21, nullable = false)
     private String faqId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("FAQ 분류 표시경로 (sy_path.path_id, biz_cd=cm_faq)")
     @Column(name = "path_id", length = 21)

@@ -42,8 +42,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         Map.entry("deviceToken", mbDeviceToken.deviceToken),
         Map.entry("deviceTokenId", mbDeviceToken.deviceTokenId),
         Map.entry("memberId", mbDeviceToken.memberId),
-        Map.entry("osType", mbDeviceToken.osType),
-        Map.entry("siteId", mbDeviceToken.siteId)
+        Map.entry("osType", mbDeviceToken.osType)
     );
 
     /*
@@ -56,7 +55,6 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
                 .select(Projections.bean(MbDeviceTokenDto.Item.class,
                         mbDeviceToken.deviceTokenId,   // 디바이스 토큰ID (PK)
                         mbDeviceToken.deviceToken,     // 디바이스 토큰 키
-                        mbDeviceToken.siteId,          // 사이트ID (sy_site.site_id)
                         mbDeviceToken.memberId,        // 회원ID (mb_member.member_id, 비회원 가능)
                         mbDeviceToken.osType,          // OS유형 — ANDROID/IOS
                         mbDeviceToken.benefitNotiYn,   // 혜택알림수신여부 — BENEFIT_NOTI_YN {Y: '수신', N: '미수신'}
@@ -86,7 +84,6 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()),
                     QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -111,7 +108,6 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(mbDeviceToken.siteId, search.getSiteId()),
                 QdslUtil.strEq(mbDeviceToken.deviceTokenId, search.getDeviceTokenId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)

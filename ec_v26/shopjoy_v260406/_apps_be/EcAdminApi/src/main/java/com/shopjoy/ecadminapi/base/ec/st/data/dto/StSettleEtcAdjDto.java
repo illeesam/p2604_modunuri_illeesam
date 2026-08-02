@@ -21,7 +21,6 @@ public class StSettleEtcAdjDto {
     public static class Item {
         private String settleEtcAdjId;
         private String settleId;
-        private String siteId;
         private String etcAdjTypeCd;
         private String etcAdjDirCd;
         private Long etcAdjAmt;
@@ -29,6 +28,7 @@ public class StSettleEtcAdjDto {
         private String settleEtcAdjMemo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

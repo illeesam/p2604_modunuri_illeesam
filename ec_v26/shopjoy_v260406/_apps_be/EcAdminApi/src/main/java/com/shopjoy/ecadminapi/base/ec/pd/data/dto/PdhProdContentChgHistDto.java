@@ -19,7 +19,6 @@ public class PdhProdContentChgHistDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String histId;
-        private String siteId;
         private String prodId;
         private String prodContentId;
         private String contentTypeCd;
@@ -30,6 +29,7 @@ public class PdhProdContentChgHistDto {
         private LocalDateTime chgDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

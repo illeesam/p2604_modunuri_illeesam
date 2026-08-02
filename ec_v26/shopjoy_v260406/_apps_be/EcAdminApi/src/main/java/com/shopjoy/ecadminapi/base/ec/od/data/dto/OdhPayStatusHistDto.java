@@ -19,7 +19,6 @@ public class OdhPayStatusHistDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String payStatusHistId;
-        private String siteId;
         private String payId;
         private String orderId;
         private String payStatusCdBefore;
@@ -30,6 +29,7 @@ public class OdhPayStatusHistDto {
         private String memo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

@@ -23,9 +23,6 @@ public class OdCart extends BaseEntity {
     @Column(name = "cart_id", length = 21, nullable = false)
     private String cartId;
 
-    @Comment("사이트ID (sy_site.site_id)")
-    @Column(name = "site_id", length = 21, nullable = false)
-    private String siteId;
 
     @Comment("회원ID (비회원 NULL)")
     @Column(name = "member_id", length = 21)

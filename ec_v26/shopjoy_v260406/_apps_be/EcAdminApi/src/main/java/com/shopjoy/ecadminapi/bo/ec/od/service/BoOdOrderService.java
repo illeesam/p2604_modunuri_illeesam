@@ -184,7 +184,6 @@ public class BoOdOrderService {
         OdOrder order;
         if (isNew) {
             order = new OdOrder();
-            order.setSiteId(req.getSiteId() != null ? req.getSiteId() : SecurityUtil.getSiteId());
             order.setMemberId(req.getMemberId());
             order.setMemberNm(req.getMemberNm());
             order.setOrdererEmail(req.getOrdererEmail());
@@ -218,12 +217,10 @@ public class BoOdOrderService {
 
         /* 주문항목 저장 */
         final String orderId = order.getOrderId();
-        final String siteId  = order.getSiteId();
         if (req.getOrderItems() != null) {
             for (OdOrderItemDto.SaveItem si : req.getOrderItems()) {
                 if (si == null || si.getProdId() == null) continue;
                 OdOrderItem item = new OdOrderItem();
-                item.setSiteId(siteId);
                 item.setOrderId(orderId);
                 item.setProdId(si.getProdId());
                 item.setProdSkuId(si.getProdSkuId());

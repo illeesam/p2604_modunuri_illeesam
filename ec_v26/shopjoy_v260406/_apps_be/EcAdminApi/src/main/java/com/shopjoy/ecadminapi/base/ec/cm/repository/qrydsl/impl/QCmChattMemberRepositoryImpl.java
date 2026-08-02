@@ -38,7 +38,6 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
         return queryFactory
                 .select(Projections.bean(CmChattMemberDto.Item.class,
                         cmChattMember.chattMemberId, // 참여자ID (PK, YYMMDDhhmmss+rand4)
-                        cmChattMember.siteId,        // 사이트ID (sy_site.site_id)
                         cmChattMember.chattId,       // 채팅방ID (cm_chatt.chatt_id)
                         cmChattMember.memberTypeCd,  // 참여자유형 — MEMBER_TYPE_CD {MEMBER: '고객회원', ADMIN: '관리자'}
                         cmChattMember.refId,         // 참조ID (mb_member.member_id 또는 sy_user.user_id)
@@ -69,7 +68,6 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
         JPAQuery<CmChattMemberDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                        QdslUtil.strEq(cmChattMember.siteId, search.getSiteId()),
                         QdslUtil.strEq(cmChattMember.chattId, search.getChattId()),
                         QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()),
                         QdslUtil.strEq(cmChattMember.refId, search.getRefId())
@@ -90,7 +88,6 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmChattMember.siteId, search.getSiteId()),
                 QdslUtil.strEq(cmChattMember.chattId, search.getChattId()),
                 QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()),
                 QdslUtil.strEq(cmChattMember.refId, search.getRefId())

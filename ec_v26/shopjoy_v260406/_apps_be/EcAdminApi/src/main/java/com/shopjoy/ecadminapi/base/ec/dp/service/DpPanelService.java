@@ -134,7 +134,6 @@ public class DpPanelService {
                 DpPanelItem it = new DpPanelItem();
                 it.setPanelItemId(CmUtil.generateId("dp_panel_item"));
                 it.setPanelId(saved.getPanelId());
-                it.setSiteId(saved.getSiteId());
                 it.setWidgetTypeCd(r.path("widgetType").asText(null));
                 it.setWidgetTitle(r.path("title").asText(null));
                 it.setTitleShowYn(r.path("titleYn").asText("N"));

@@ -27,7 +27,6 @@ public class FoCmFaqService {
     public List<CmFaqDto.Item> getFaqs(CmFaqDto.Request req) {
         if (req == null) req = new CmFaqDto.Request();
         // siteId: 요청값 → 인증 사용자 siteId → 대표 사이트(비회원 공개)
-        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         req.setUseYn("Y");   // 공개(노출중)만
         return cmFaqService.getList(req);
     }
@@ -35,7 +34,6 @@ public class FoCmFaqService {
     /** getFaqsPage — 공개 FAQ 페이지 조회 (노출중·사이트별, pathId 자손 포함). 페이징 버튼 클릭마다 호출 */
     public BasePage<CmFaqDto.Item> getFaqsPage(CmFaqDto.Request req) {
         if (req == null) req = new CmFaqDto.Request();
-        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         req.setUseYn("Y");   // 공개(노출중)만
         return cmFaqService.getPageData(req);
     }

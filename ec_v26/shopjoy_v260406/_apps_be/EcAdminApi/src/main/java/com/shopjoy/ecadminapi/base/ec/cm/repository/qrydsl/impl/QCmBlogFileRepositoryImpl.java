@@ -40,7 +40,6 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         Map.entry("blogImgId", cmBlogFile.blogImgId),
         Map.entry("imgAltText", cmBlogFile.imgAltText),
         Map.entry("imgUrl", cmBlogFile.imgUrl),
-        Map.entry("siteId", cmBlogFile.siteId),
         Map.entry("thumbUrl", cmBlogFile.thumbUrl)
     );
 

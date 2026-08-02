@@ -24,7 +24,6 @@ public class SyBbmDto {
 
         // ── sy_bbm ──────────────────────────────────────────
         private String bbmId;
-        private String siteId;
         private String bbmCode;
         private String bbmNm;
         private String pathId;
@@ -39,6 +38,7 @@ public class SyBbmDto {
         private String bbmRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

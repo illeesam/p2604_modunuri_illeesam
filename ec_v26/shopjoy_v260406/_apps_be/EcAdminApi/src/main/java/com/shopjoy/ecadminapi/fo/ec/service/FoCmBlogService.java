@@ -54,7 +54,6 @@ public class FoCmBlogService {
     /** getCateList — 블로그 카테고리 목록 (좌측 사이드바용, 사용중 use_yn=Y 만, 현재 사이트)
      *   각 카테고리에 공개 블로그 건수(blogCnt) 채워 반환 */
     public List<CmBlogCateDto.Item> getCateList(CmBlogCateDto.Request req) {
-        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         req.setUseYn("Y");
         List<CmBlogCateDto.Item> list = cmBlogCateService.getList(req);
 
@@ -72,7 +71,6 @@ public class FoCmBlogService {
 
     /** getList — 조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {
-        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         List<CmBlogDto.Item> list = cmBlogRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -80,7 +78,6 @@ public class FoCmBlogService {
 
     /** getPageData — 조회 */
     public BasePage<CmBlogDto.Item> getPageData(CmBlogDto.Request req) {
-        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         PageHelper.addPaging(req);
         BasePage<CmBlogDto.Item> res = cmBlogRepository.selectPageData(req);
         _listFillRelations(res.getPageList());

@@ -39,7 +39,6 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         Map.entry("claimStatusHistId", odhClaimStatusHist.claimStatusHistId),
         Map.entry("memo", odhClaimStatusHist.memo),
         Map.entry("orderId", odhClaimStatusHist.orderId),
-        Map.entry("siteId", odhClaimStatusHist.siteId),
         Map.entry("statusReason", odhClaimStatusHist.statusReason)
     );
 
@@ -51,7 +50,6 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         return queryFactory
                 .select(Projections.bean(OdhClaimStatusHistDto.Item.class,
                         odhClaimStatusHist.claimStatusHistId,   // 클레임상태이력ID (YYMMDDhhmmss+rand4)
-                        odhClaimStatusHist.siteId,               // 사이트ID
                         odhClaimStatusHist.claimId,              // 클레임ID (od_claim.claim_id)
                         odhClaimStatusHist.orderId,              // 주문ID (od_order.order_id)
                         odhClaimStatusHist.claimStatusCdBefore,  // 변경 전 클레임상태 — CLAIM_STATUS {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, REFUND_WAIT:환불대기, COMPLT:완료, REJECTED:거부, CANCELLED:철회}
@@ -81,7 +79,6 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         JPAQuery<OdhClaimStatusHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhClaimStatusHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhClaimStatusHist.claimStatusHistId, search.getClaimStatusHistId()),
                     QdslUtil.strEq(odhClaimStatusHist.claimId, search.getClaimId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -107,7 +104,6 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhClaimStatusHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhClaimStatusHist.claimStatusHistId, search.getClaimStatusHistId()),
                 QdslUtil.strEq(odhClaimStatusHist.claimId, search.getClaimId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
@@ -179,7 +175,6 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         JPAUpdateClause update = queryFactory.update(odhClaimStatusHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(odhClaimStatusHist.siteId,              entity.getSiteId());              hasAny = true; }
         if (entity.getClaimId()             != null) { update.set(odhClaimStatusHist.claimId,             entity.getClaimId());             hasAny = true; }
         if (entity.getOrderId()             != null) { update.set(odhClaimStatusHist.orderId,             entity.getOrderId());             hasAny = true; }
         if (entity.getClaimStatusCdBefore() != null) { update.set(odhClaimStatusHist.claimStatusCdBefore, entity.getClaimStatusCdBefore()); hasAny = true; }

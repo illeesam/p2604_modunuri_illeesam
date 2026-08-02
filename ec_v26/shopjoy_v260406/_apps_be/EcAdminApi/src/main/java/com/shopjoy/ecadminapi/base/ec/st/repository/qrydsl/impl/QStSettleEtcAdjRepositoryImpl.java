@@ -48,8 +48,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         Map.entry("etcAdjTypeCd", stSettleEtcAdj.etcAdjTypeCd),
         Map.entry("settleEtcAdjId", stSettleEtcAdj.settleEtcAdjId),
         Map.entry("settleEtcAdjMemo", stSettleEtcAdj.settleEtcAdjMemo),
-        Map.entry("settleId", stSettleEtcAdj.settleId),
-        Map.entry("siteId", stSettleEtcAdj.siteId)
+        Map.entry("settleId", stSettleEtcAdj.settleId)
     );
 
     /*
@@ -62,7 +61,6 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                 .select(Projections.bean(StSettleEtcAdjDto.Item.class,
                         stSettleEtcAdj.settleEtcAdjId,       // 기타조정ID (PK)
                         stSettleEtcAdj.settleId,              // 정산ID (st_settle.settle_id)
-                        stSettleEtcAdj.siteId,                // 사이트ID
                         stSettleEtcAdj.etcAdjTypeCd,          // 기타조정유형 — SETTLE_ETC_ADJ_TYPE {위약금, 인센티브, 세금조정, 기타}
                         stSettleEtcAdj.etcAdjDirCd,           // 가산/차감 — ADJ_DIR {ADD: '가산', SUB: '차감'}
                         stSettleEtcAdj.etcAdjAmt,             // 기타조정 금액
@@ -72,12 +70,10 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                         stSettleEtcAdj.regDate,               // 등록일시
                         stSettleEtcAdj.updBy,                 // 수정자
                         stSettleEtcAdj.updDate,               // 수정일시
-                        sySite.siteNm.as("siteNm"),                   // 사이트명 (조인)
                         cdSeat.codeLabel.as("etcAdjTypeCdNm"),        // 기타조정유형명 (sy_code 조인)
                         cdAd.codeLabel.as("etcAdjDirCdNm")            // 가산/차감명 (sy_code 조인)
                 ))
                 .from(stSettleEtcAdj)
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettleEtcAdj.siteId))
                 .leftJoin(cdSeat).on(cdSeat.codeGrp.eq("SETTLE_ETC_ADJ_TYPE").and(cdSeat.codeValue.eq(stSettleEtcAdj.etcAdjTypeCd)))
                 .leftJoin(cdAd).on(cdAd.codeGrp.eq("ADJ_DIR").and(cdAd.codeValue.eq(stSettleEtcAdj.etcAdjDirCd)));
     }
@@ -99,7 +95,6 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(stSettleEtcAdj.siteId, search.getSiteId()),
                     QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()),
                     QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -126,7 +121,6 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(stSettleEtcAdj.siteId, search.getSiteId()),
                 QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()),
                 QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -200,7 +194,6 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         boolean hasAny = false;
 
         if (entity.getSettleId()         != null) { update.set(stSettleEtcAdj.settleId,         entity.getSettleId());         hasAny = true; }
-        if (entity.getSiteId()           != null) { update.set(stSettleEtcAdj.siteId,           entity.getSiteId());           hasAny = true; }
         if (entity.getEtcAdjTypeCd()     != null) { update.set(stSettleEtcAdj.etcAdjTypeCd,     entity.getEtcAdjTypeCd());     hasAny = true; }
         if (entity.getEtcAdjDirCd()      != null) { update.set(stSettleEtcAdj.etcAdjDirCd,      entity.getEtcAdjDirCd());      hasAny = true; }
         if (entity.getEtcAdjAmt()        != null) { update.set(stSettleEtcAdj.etcAdjAmt,        entity.getEtcAdjAmt());        hasAny = true; }

@@ -49,8 +49,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         Map.entry("payMethodAlias", odPayMethod.payMethodAlias),
         Map.entry("payMethodId", odPayMethod.payMethodId),
         Map.entry("payMethodNm", odPayMethod.payMethodNm),
-        Map.entry("payMethodTypeCd", odPayMethod.payMethodTypeCd),
-        Map.entry("siteId", odPayMethod.siteId)
+        Map.entry("payMethodTypeCd", odPayMethod.payMethodTypeCd)
     );
 
     /*

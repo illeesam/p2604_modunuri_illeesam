@@ -27,7 +27,6 @@ public class DpPanelDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String panelId;
-        private String siteId;
         private String areaId;
         private String panelNm;
         private String panelTypeCd;
@@ -41,6 +40,7 @@ public class DpPanelDto {
         private String contentJson;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         // ── 연관정보 (getById / 목록 시 채움) ──

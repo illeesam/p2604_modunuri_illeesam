@@ -20,13 +20,13 @@ public class MbDeviceTokenDto {
     public static class Item {
         private String deviceTokenId;
         private String deviceToken;
-        private String siteId;
         private String memberId;
         private String osType;
         private String benefitNotiYn;
         private LocalDateTime alimReadDate;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String memberNm;

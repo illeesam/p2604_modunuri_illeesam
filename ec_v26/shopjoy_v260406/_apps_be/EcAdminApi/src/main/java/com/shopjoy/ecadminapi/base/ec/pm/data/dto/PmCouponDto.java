@@ -26,7 +26,6 @@ public class PmCouponDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String couponId;
-        private String siteId;
         private String couponCd;
         private String couponNm;
         private String couponTypeCd;
@@ -56,6 +55,7 @@ public class PmCouponDto {
         private String memo;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
         private String couponTypeCdNm;

@@ -45,8 +45,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         Map.entry("reviewId", pdReview.reviewId),
         Map.entry("reviewStatusCd", pdReview.reviewStatusCd),
         Map.entry("reviewStatusCdBefore", pdReview.reviewStatusCdBefore),
-        Map.entry("reviewTitle", pdReview.reviewTitle),
-        Map.entry("siteId", pdReview.siteId)
+        Map.entry("reviewTitle", pdReview.reviewTitle)
     );
 
     /*
@@ -58,7 +57,6 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         return queryFactory
                 .select(Projections.bean(PdReviewDto.Item.class,
                         pdReview.reviewId,       // 리뷰ID (PK, YYMMDDhhmmss+rand4)
-                        pdReview.siteId,          // 사이트ID (sy_site.site_id)
                         pdReview.prodId,          // 상품ID (pd_prod.prod_id)
                         pdReview.memberId,        // 회원ID (mb_member.member_id)
                         pdReview.reviewTitle,     // 리뷰 제목
@@ -90,7 +88,6 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         JPAQuery<PdReviewDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdReview.siteId, search.getSiteId()),
                     QdslUtil.strEq(pdReview.reviewId, search.getReviewId()),
                     QdslUtil.strEq(pdReview.prodId, search.getProdId()),
                     QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()),
@@ -119,7 +116,6 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdReview.siteId, search.getSiteId()),
                 QdslUtil.strEq(pdReview.reviewId, search.getReviewId()),
                 QdslUtil.strEq(pdReview.prodId, search.getProdId()),
                 QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()),
@@ -215,7 +211,6 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         JPAUpdateClause update = queryFactory.update(pdReview);
         boolean hasAny = false;
 
-        if (entity.getSiteId()               != null) { update.set(pdReview.siteId,               entity.getSiteId());               hasAny = true; }
         if (entity.getProdId()               != null) { update.set(pdReview.prodId,               entity.getProdId());               hasAny = true; }
         if (entity.getMemberId()             != null) { update.set(pdReview.memberId,             entity.getMemberId());             hasAny = true; }
         if (entity.getReviewTitle()          != null) { update.set(pdReview.reviewTitle,          entity.getReviewTitle());          hasAny = true; }

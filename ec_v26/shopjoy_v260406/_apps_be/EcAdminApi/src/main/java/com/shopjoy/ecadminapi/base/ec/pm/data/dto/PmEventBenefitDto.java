@@ -22,7 +22,6 @@ public class PmEventBenefitDto {
     @Getter @Setter @NoArgsConstructor
     public static class Item {
         private String benefitId;
-        private String siteId;
         private String eventId;
         private String benefitNm;
         private String benefitTypeCd;
@@ -32,6 +31,7 @@ public class PmEventBenefitDto {
         private Integer sortOrd;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
     }

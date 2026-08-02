@@ -26,7 +26,6 @@ public class SyVendorUserDto {
 
         // ── sy_vendor_user ──────────────────────────────────────────
         private String vendorUserId;
-        private String siteId;
         private String vendorId;
         private String userId;
         private String memberNm;
@@ -44,6 +43,7 @@ public class SyVendorUserDto {
         private String vendorUserRemark;
         private String regBy;
         private LocalDateTime regDate;
+        private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
 

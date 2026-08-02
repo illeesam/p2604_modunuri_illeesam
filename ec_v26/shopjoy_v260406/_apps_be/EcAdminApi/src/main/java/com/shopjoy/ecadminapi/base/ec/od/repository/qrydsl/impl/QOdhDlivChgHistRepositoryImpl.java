@@ -39,8 +39,7 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         Map.entry("chgTypeCd", odhDlivChgHist.chgTypeCd),
         Map.entry("chgUserId", odhDlivChgHist.chgUserId),
         Map.entry("dlivChgHistId", odhDlivChgHist.dlivChgHistId),
-        Map.entry("dlivId", odhDlivChgHist.dlivId),
-        Map.entry("siteId", odhDlivChgHist.siteId)
+        Map.entry("dlivId", odhDlivChgHist.dlivId)
     );
 
     /*
@@ -52,7 +51,6 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         return queryFactory
                 .select(Projections.bean(OdhDlivChgHistDto.Item.class,
                         odhDlivChgHist.dlivChgHistId, // 이력ID (YYMMDDhhmmss+rand4)
-                        odhDlivChgHist.siteId,        // 사이트ID
                         odhDlivChgHist.dlivId,        // 배송ID
                         odhDlivChgHist.chgTypeCd,     // 변경유형코드 — CHG_TYPE {COURIER:택배사변경, TRACKING:송장번호변경, RECV_INFO:수령정보변경, MEMO:메모변경, SPLIT:분할, MERGE:병합}
                         odhDlivChgHist.chgField,      // 변경 필드명
@@ -82,7 +80,6 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         JPAQuery<OdhDlivChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odhDlivChgHist.siteId, search.getSiteId()),
                     QdslUtil.strEq(odhDlivChgHist.dlivChgHistId, search.getDlivChgHistId()),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -107,7 +104,6 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odhDlivChgHist.siteId, search.getSiteId()),
                 QdslUtil.strEq(odhDlivChgHist.dlivChgHistId, search.getDlivChgHistId()),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };
@@ -178,7 +174,6 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
         JPAUpdateClause update = queryFactory.update(odhDlivChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(odhDlivChgHist.siteId,     entity.getSiteId());     hasAny = true; }
         if (entity.getDlivId()     != null) { update.set(odhDlivChgHist.dlivId,     entity.getDlivId());     hasAny = true; }
         if (entity.getChgTypeCd()  != null) { update.set(odhDlivChgHist.chgTypeCd,  entity.getChgTypeCd());  hasAny = true; }
         if (entity.getChgField()   != null) { update.set(odhDlivChgHist.chgField,   entity.getChgField());   hasAny = true; }
