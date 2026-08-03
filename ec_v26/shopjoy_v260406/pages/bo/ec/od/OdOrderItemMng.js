@@ -195,7 +195,9 @@ window.OdOrderItemMng = {
     ];
 
     columns.listGrid = [
-      { key: 'orderId',            label: '주문ID',   style: 'width:170px;',
+      { key: 'orderItemId',        label: '주문항목ID', style: 'width:110px;',
+        mono: true, cellStyle: 'font-size:11px;', fmt: (v) => v || '-' },
+      { key: 'orderId',            label: '주문ID',   style: 'width:130px;',
         link: true, mono: true, cellStyle: 'font-size:11px;cursor:pointer;',
         fmt: (v, row) => v || '-',
         cellInnerStyle: (v) => detailPanel.selectedOrderId === v ? 'color:#e8587a;font-weight:700;' : '' },
