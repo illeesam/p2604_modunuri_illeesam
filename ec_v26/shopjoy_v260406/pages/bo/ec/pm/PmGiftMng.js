@@ -47,6 +47,14 @@ window.PmGiftMng = {
       // 페이지 번호 클릭
       } else if (cmd === 'gifts-pager-setPage') {
         return setPage(param);
+      } else if (cmd === 'memberModal-open') { modals.isMemberPick = true;
+      } else if (cmd === 'searchParam-memberClear') { searchParam.memberId = ''; searchParam.memberNm = '';
+      } else if (cmd === 'mdModal-open') { modals.isMdPick = true;
+      } else if (cmd === 'searchParam-mdClear') { searchParam.mdUserId = ''; searchParam.mdUserNm = '';
+      } else if (cmd === 'prodModal-open') { modals.isProdPick = true;
+      } else if (cmd === 'searchParam-prodClear') { searchParam.prodId = ''; searchParam.prodNm = '';
+      } else if (cmd === 'vendorModal-open') { modals.isVendorPick = true;
+      } else if (cmd === 'searchParam-vendorClear') { searchParam.vendorId = ''; searchParam.vendorNm = '';
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -83,6 +91,23 @@ window.PmGiftMng = {
       }
     };
 
+    /* fnCallbackModal — 모달 callback dispatch */
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (popCmd === 'cmPopup-member-pick') {
+        searchParam.memberId = result ? result.memberId || '' : ''; searchParam.memberNm = result ? result.memberNm || '' : '';
+        modals.isMemberPick = false;
+      } else if (popCmd === 'cmPopup-userMd-pick') {
+        searchParam.mdUserId = result ? result.userId || '' : ''; searchParam.mdUserNm = result ? result.userNm || '' : '';
+        modals.isMdPick = false;
+      } else if (popCmd === 'cmPopup-prod-pick') {
+        searchParam.prodId = result ? result.prodId || '' : ''; searchParam.prodNm = result ? result.prodNm || '' : '';
+        modals.isProdPick = false;
+      } else if (popCmd === 'cmPopup-vendor-pick') {
+        searchParam.vendorId = result ? result.vendorId || '' : ''; searchParam.vendorNm = result ? result.vendorNm || '' : '';
+        modals.isVendorPick = false;
+      }
+    };
+
     // ===== Vue Composition API / boApp 전역 의존 ===========================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -103,11 +128,13 @@ window.PmGiftMng = {
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 상세영역 항상 표시 (진입 시 빈 신규 폼, active=false → 버튼 숨김)
 
-    const searchParam = reactive({ searchType: '', searchValue: '', dateRangeType: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '', giftTypeCd: '', giftStatusCd: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', dateRangeType: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '', giftTypeCd: '', giftStatusCd: '',
+      memberId: '', memberNm: '', mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
        기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
     const searchParamInit = {};
+    const modals = reactive({ isMemberPick: false, isMdPick: false, isProdPick: false, isVendorPick: false });
     // ===== 공통코드 로딩 ===================================================
     /* 사은품 fnLoadCodes */
 
@@ -293,6 +320,14 @@ window.PmGiftMng = {
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'giftTypeCd', type: 'select', label: '유형', options: () => codes.gift_cond_types, nullLabel: '유형 전체' },
       { key: 'giftStatusCd', type: 'select', label: '상태', options: () => codes.gift_statuses, nullLabel: '상태 전체' },
+      { key: 'memberId', label: '회원', type: 'pick', display: (p) => p.memberNm, placeholder: '회원 선택',
+        onOpen: () => handleBtnAction('memberModal-open'), onClear: () => handleBtnAction('searchParam-memberClear') },
+      { key: 'mdUserId', label: '담당MD', type: 'pick', display: (p) => p.mdUserNm, placeholder: 'MD 선택',
+        onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('searchParam-mdClear') },
+      { key: 'prodId', label: '상품', type: 'pick', display: (p) => p.prodNm, placeholder: '상품 선택',
+        onOpen: () => handleBtnAction('prodModal-open'), onClear: () => handleBtnAction('searchParam-prodClear') },
+      { key: 'vendorId', label: '업체', type: 'pick', display: (p) => p.vendorNm, placeholder: '업체 선택',
+        onOpen: () => handleBtnAction('vendorModal-open'), onClear: () => handleBtnAction('searchParam-vendorClear') },
       { key: 'dateRange', type: 'dateRange', label: '시작일',
         typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => codes.gift_date_types,
@@ -325,6 +360,7 @@ window.PmGiftMng = {
       tabMode, // toRef
       fnTypeBadge, fnStatusBadge,          // 헬퍼
       inlineNavigate,                                      // 콜백 / 전역
+      modals, fnCallbackModal,
     };
   },
   // ===== 템플릿 ===========================================================
@@ -441,6 +477,10 @@ window.PmGiftMng = {
     :active="detailPanel.active"
     :reload-trigger="detailPanel.reloadTrigger"
     />
+  <bo-cm-popup-modal v-if="modals.isMemberPick" popup-cmd="cmPopup-member-pick" popup-code="member" :on-callback="fnCallbackModal" @close="modals.isMemberPick = false" />
+  <bo-cm-popup-modal v-if="modals.isMdPick" popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :on-callback="fnCallbackModal" @close="modals.isMdPick = false" />
+  <bo-cm-popup-modal v-if="modals.isProdPick" popup-cmd="cmPopup-prod-pick" popup-code="prod" :on-callback="fnCallbackModal" @close="modals.isProdPick = false" />
+  <bo-cm-popup-modal v-if="modals.isVendorPick" popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :on-callback="fnCallbackModal" @close="modals.isVendorPick = false" />
 </bo-page>
 `
 };

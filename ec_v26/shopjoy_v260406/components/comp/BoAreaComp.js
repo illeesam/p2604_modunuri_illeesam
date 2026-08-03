@@ -1721,7 +1721,7 @@ window.BoModal = {
     <div class="modal-box" :style="cfBoxStyle">
       <div v-if="title" class="modal-header" style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
         <span style="font-weight:800;font-size:15px;color:#9f2946;letter-spacing:-0.2px;">
-          {{ title }}
+          <slot name="title">{{ title }}</slot>
         </span>
         <span style="display:flex;align-items:center;gap:8px;">
           <slot name="header-extra">
@@ -2239,6 +2239,10 @@ window.BoFormArea = {
         return emit('close');
       } else if (cmd === 'form-pathPick-clear') {
         props.form[param.col.key] = null;
+      } else if (cmd === 'form-pick-clear') {
+        props.form[param.col.key] = '';
+        if (param.col.nameKey) props.form[param.col.nameKey] = '';
+        if (param.col.onClear) param.col.onClear(props.form);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -2254,6 +2258,8 @@ window.BoFormArea = {
           ? (col.checkedValue != null ? col.checkedValue : 'Y')
           : (col.uncheckedValue != null ? col.uncheckedValue : 'N');
       } else if (cmd === 'field-pathPick-open') {
+        if (param.col.onOpen) return param.col.onOpen(props.form);
+      } else if (cmd === 'field-pick-open') {
         if (param.col.onOpen) return param.col.onOpen(props.form);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -2374,6 +2380,20 @@ window.BoFormArea = {
     <button v-if="form[col.key] != null" type="button" title="선택 해제" @click="handleBtnAction('form-pathPick-clear', { col })" style="background:none;border:none;padding:0 2px 2px;color:#999;cursor:pointer;font-size:13px;line-height:1;">
       x
     </button>
+  </span>
+</div>
+<!-- pick (팝업 선택 박스) — col.onOpen(form) 으로 팝업 열기, col.nameKey 로 표시명 키 지정 -->
+<div v-else-if="col.type === 'pick'" style="display:flex;align-items:center;gap:6px;">
+  <input :value="col.display ? col.display(form) : (col.nameKey ? (form[col.nameKey] || '') : (form[col.key] || ''))"
+    readonly :placeholder="col.placeholder || '선택'"
+    class="form-control" :style="'background:#f9f9f9;' + (col.width ? ('width:' + col.width) : '')" />
+  <span style="display:inline-flex;align-items:center;gap:2px;flex-shrink:0;">
+    <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" title="선택"
+      style="padding:0;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"
+      @click="handleSelectAction('field-pick-open', { col })">🔍</button>
+    <button v-if="form[col.key]" type="button" title="선택 해제"
+      style="background:none;border:none;padding:0 2px 2px;color:#aaa;cursor:pointer;font-size:13px;line-height:1;"
+      @click="handleBtnAction('form-pick-clear', { col })">✕</button>
   </span>
 </div>
 <!-- slot 탈출구 -->

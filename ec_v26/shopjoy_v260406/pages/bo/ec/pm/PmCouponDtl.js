@@ -18,7 +18,7 @@ window.PmCouponDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
+    const uiState = reactive({ loading: false, showVendorModal: false, showMdModal: false, showTargetPicker: false, error: null, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({
@@ -36,7 +36,7 @@ window.PmCouponDtl = {
       issueMethods: '', issueCondition: '', memGradeCd: '', issueGrades: [],
       useScope: '', useExclude: '', useRemark: '',
       memo: '',
-      vendorId: '', chargeStaff: '',
+      vendorId: '', chargeStaff: '', mdUserId: '', mdUserNm: '',
     });
     /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 (미선택/초기화 시엔 빈 폼 유지) */
     const _applyNewDefaults = () => {
@@ -123,6 +123,15 @@ window.PmCouponDtl = {
         form.vendorId = '';
         form.chargeStaff = '';
         return;
+      // 담당MD 모달 열기
+      } else if (cmd === 'mdModal-open') {
+        uiState.showMdModal = true;
+        return;
+      // 담당MD 초기화
+      } else if (cmd === 'form-mdClear') {
+        form.mdUserId = '';
+        form.mdUserNm = '';
+        return;
       // 발급대상 추가 (상품피커 모달 오픈)
       } else if (cmd === 'target-add') {
         uiState.showTargetPicker = true;
@@ -173,6 +182,12 @@ window.PmCouponDtl = {
       if (popCmd === 'cmPopup-vendor-pick') {
         if (result == null) { uiState.showVendorModal = false; return; }
         return selectVendor(result.vendorId, result.vendorNm);
+      } else if (popCmd === 'cmPopup-userMd-pick') {
+        if (result == null) { uiState.showMdModal = false; return; }
+        form.mdUserId = result.userId || '';
+        form.mdUserNm = result.userNm || '';
+        uiState.showMdModal = false;
+        return;
       } else if (popCmd === 'cmPopup-target-prod-pick') {
         return _addTarget(result, 'prodId', 'prodNm');
       } else if (popCmd === 'cmPopup-target-brand-pick') {
@@ -429,6 +444,7 @@ window.PmCouponDtl = {
     const previewTab = Vue.toRef(uiState, 'previewTab');
     const qrcodeContainer = Vue.toRef(uiState, 'qrcodeContainer');
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
+    const showMdModal = Vue.toRef(uiState, 'showMdModal');
     const showTargetPicker = Vue.toRef(uiState, 'showTargetPicker');
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
@@ -479,6 +495,8 @@ window.PmCouponDtl = {
       { key: 'memo',           label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
       { key: 'vendorId',       label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff',    label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+      { key: 'mdUserId', label: '담당MD', type: 'pick', display: (f) => f.mdUserNm, placeholder: 'MD 선택', nameKey: 'mdUserNm',
+        onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('form-mdClear') },
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 일부 =================
@@ -510,7 +528,7 @@ window.PmCouponDtl = {
       codes, form, errors, vendors,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, cfIssueTargetsColumns, tabs, // computed / reactive(tabs)
-      tab, tabMode2, barcodeContainer, qrcodeContainer, showVendorModal, showTargetPicker, // toRef
+      tab, tabMode2, barcodeContainer, qrcodeContainer, showVendorModal, showMdModal, showTargetPicker, // toRef
       showTab, coUtil, // 헬퍼 / 전역
     };
   },
@@ -553,6 +571,7 @@ window.PmCouponDtl = {
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
+      <bo-cm-popup-modal popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :show="showMdModal" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 미리보기 ================================================== -->

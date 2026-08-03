@@ -105,7 +105,8 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 /* 그리드 내부 스크롤 시 헤더 고정 */
 .bo-table thead th { position: sticky; top: 0; z-index: 2; }
 .bo-table td { padding: 3px 8px; font-size: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
-.bo-table tr:hover td { background: #fafbff; }
+.bo-table tbody tr:nth-child(even) td { background: #f7f8fc; }
+.bo-table tr:hover td { background: #e8effe; }
 /* 선택 행 강조 — 파란 외곽선 (tr 단일 outline. 셀별 box-shadow 이중겹침 제거) */
 .bo-table tr.bo-row-selected td { background:#eff6ff; }
 .bo-table tr.bo-row-selected { outline: 2px solid #2563eb; outline-offset: -2px; }
@@ -297,20 +298,20 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .bo-top-nav { background: #1a1a2e; color: #fff; padding: 0 0 0 8px; display: flex; align-items: center; height: 50px; gap: 2px; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
 .bo-top-nav .brand { font-size: 16px; font-weight: 700; color: #e8587a; cursor: pointer; flex-shrink: 0; padding: 0 10px 0 4px; }
 .top-nav-menus { display: flex; gap: 2px; flex: 1; overflow-x: auto; justify-content: center; }
-.top-nav-item { padding: 6px 12px; border-radius: 6px; font-size: 13px; color: #ccc; cursor: pointer; white-space: nowrap; transition: background .15s, color .15s; }
-.top-nav-item:hover { background: rgba(255,255,255,.12); color: #fff; }
-.top-nav-item.active { background: #e8587a; color: #fff; font-weight: 600; }
+.top-nav-item { padding: 6px 14px; border-radius: 6px; font-size: 13.5px; font-weight: 600; color: #d0d0e8; cursor: pointer; white-space: nowrap; letter-spacing: .3px; border-bottom: 2px solid transparent; transition: background .15s, color .15s, border-color .15s, transform .12s; }
+.top-nav-item:hover { background: rgba(232,88,122,.22); color: #fff; border-bottom-color: #e8587a; transform: translateY(-1px); text-shadow: 0 0 10px rgba(255,140,160,.45); }
+.top-nav-item.active { background: linear-gradient(135deg,#e8587a,#c73f62); color: #fff; font-weight: 700; border-bottom-color: #ff8fab; box-shadow: 0 2px 10px rgba(232,88,122,.55); }
 /* ── 대메뉴 hover 드롭다운 ── */
-.top-nav-mega-dd { position: fixed; top: 50px; left: 0; right: 0; background: #1e1e38; border-bottom: 1px solid rgba(255,255,255,.1); box-shadow: 0 14px 36px rgba(0,0,0,.55); z-index: 199; padding: 10px 24px 16px; display: flex; flex-wrap: nowrap; gap: 0; overflow-y: auto; max-height: calc(100vh - 55px); }
-.mega-dd-col { display: flex; flex-direction: column; flex: 1 1 0; min-width: 80px; padding: 8px 10px 8px 6px; border-radius: 7px; outline: 1px solid transparent; outline-offset: 0px; transition: outline-color .15s, background .15s; }
-.mega-dd-col:hover { outline-color: rgba(232,88,122,.38); background: rgba(255,255,255,.04); }
-.mega-dd-col.highlighted { outline-color: rgba(232,88,122,.55); background: rgba(232,88,122,.05); }
-.mega-dd-top-lbl { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.9); padding: 0 0 5px; border-bottom: 1px solid rgba(255,255,255,.12); margin-bottom: 4px; cursor: pointer; white-space: nowrap; transition: color .12s; }
-.mega-dd-top-lbl:hover { color: #e8587a; }
-.mega-dd-col.highlighted .mega-dd-top-lbl { color: #e8587a; }
+.top-nav-mega-dd { position: fixed; top: 50px; left: 0; right: 0; background: #1e1e38; border-top: 3px solid #e8587a; border-bottom: 1px solid rgba(255,255,255,.1); box-shadow: 0 16px 40px rgba(0,0,0,.65); z-index: 199; padding: 10px 24px 16px; display: flex; flex-wrap: nowrap; gap: 0; overflow-y: auto; max-height: calc(100vh - 55px); }
+.mega-dd-col { display: flex; flex-direction: column; flex: 1 1 0; min-width: 80px; padding: 8px 10px 8px 6px; border-radius: 7px; outline: 2px solid transparent; outline-offset: 0px; transition: outline-color .15s, background .15s; }
+.mega-dd-col:hover { outline-color: rgba(232,88,122,.65); background: rgba(232,88,122,.1); }
+.mega-dd-col.highlighted { outline-color: rgba(232,88,122,.7); background: rgba(232,88,122,.08); }
+.mega-dd-top-lbl { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.9); padding: 0 0 5px; border-bottom: 1px solid rgba(255,255,255,.12); margin-bottom: 4px; cursor: pointer; white-space: nowrap; transition: color .12s, text-shadow .12s; }
+.mega-dd-top-lbl:hover { color: #ff8fab; text-shadow: 0 0 10px rgba(255,140,160,.5); }
+.mega-dd-col.highlighted .mega-dd-top-lbl { color: #ff8fab; }
 .mega-dd-group { font-size: 10px; font-weight: 700; color: rgba(255,255,255,.35); letter-spacing: .6px; text-transform: uppercase; padding: 8px 0 3px; white-space: nowrap; }
-.mega-dd-item { font-size: 13px; color: rgba(255,255,255,.8); padding: 3px 8px 3px 6px; border-radius: 4px; cursor: pointer; transition: background .12s, color .12s, padding-left .1s; white-space: nowrap; }
-.mega-dd-item:hover { background: rgba(232,88,122,.22); color: #fff; padding-left: 10px; }
+.mega-dd-item { font-size: 13px; color: rgba(255,255,255,.8); padding: 3px 8px 3px 6px; border-radius: 4px; cursor: pointer; border-left: 2px solid transparent; transition: background .12s, color .12s, padding-left .1s, border-color .12s; white-space: nowrap; }
+.mega-dd-item:hover { background: rgba(232,88,122,.38); color: #fff; padding-left: 10px; border-left-color: #e8587a; font-weight: 600; }
 .sidebar-toggle-btn { background: none; border: none; color: #fff; font-size: 20px; font-weight: 700; cursor: pointer; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; line-height: 1; transition: background .15s; }
 .sidebar-toggle-btn:hover { background: rgba(255,255,255,.12); }
 .tab-bar-toggle-btn { font-size: 13px; padding: 2px 7px; opacity: .75; }
@@ -441,13 +442,13 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 /* ── 사이트맵 패널 ── */
 .nav-sitemap-panel { position: fixed; top: 50px; left: 0; right: 0; background: #fff; border-top: 3px solid #e8587a; box-shadow: 0 8px 32px rgba(0,0,0,.18); z-index: 198; max-height: calc(100vh - 55px); overflow-y: auto; }
 .sitemap-body { display: flex; flex-wrap: wrap; padding: 12px 24px 24px; gap: 4px; }
-.sitemap-col { min-width: 160px; padding: 10px 14px 8px 8px; border-radius: 8px; outline: 1px solid transparent; transition: outline-color .15s, background .15s; }
-.sitemap-col:hover { outline-color: rgba(232,88,122,.35); background: rgba(232,88,122,.04); }
-.sitemap-top-lbl { font-size: 14px; font-weight: 700; color: #e8587a; cursor: pointer; padding-bottom: 7px; border-bottom: 2px solid #ffd5e1; margin-bottom: 6px; white-space: nowrap; transition: color .12s; }
-.sitemap-top-lbl:hover { color: #c44569; }
+.sitemap-col { min-width: 160px; padding: 10px 14px 8px 8px; border-radius: 8px; outline: 2px solid transparent; transition: outline-color .15s, background .15s; }
+.sitemap-col:hover { outline-color: rgba(232,88,122,.6); background: rgba(232,88,122,.07); }
+.sitemap-top-lbl { font-size: 14px; font-weight: 700; color: #e8587a; cursor: pointer; padding-bottom: 7px; border-bottom: 2px solid #ffd5e1; margin-bottom: 6px; white-space: nowrap; transition: color .12s, text-decoration .12s; }
+.sitemap-top-lbl:hover { color: #b5384f; text-decoration: underline; text-decoration-color: rgba(196,69,105,.4); text-underline-offset: 3px; }
 .sitemap-grp { font-size: 10px; font-weight: 700; color: #bbb; padding: 8px 0 3px; letter-spacing: .5px; text-transform: uppercase; white-space: nowrap; }
-.sitemap-lnk { font-size: 13px; color: #374151; padding: 3px 8px 3px 6px; cursor: pointer; border-radius: 4px; white-space: nowrap; transition: background .12s, color .12s, padding-left .1s; }
-.sitemap-lnk:hover { background: rgba(232,88,122,.12); color: #c44569; padding-left: 10px; }
+.sitemap-lnk { font-size: 13px; color: #374151; padding: 3px 8px 3px 6px; cursor: pointer; border-radius: 4px; white-space: nowrap; border-left: 2px solid transparent; transition: background .12s, color .12s, padding-left .1s, border-color .12s, font-weight .1s; }
+.sitemap-lnk:hover { background: rgba(232,88,122,.18); color: #b5384f; padding-left: 10px; border-left-color: #e8587a; font-weight: 600; }
 /* ── 즐겨찾기 패널 ── */
 .nav-fav-panel { position: fixed; top: 50px; right: 0; width: 320px; background: #fff; border-top: 3px solid #e8587a; box-shadow: -4px 8px 28px rgba(0,0,0,.16); z-index: 198; max-height: calc(100vh - 55px); overflow-y: auto; border-radius: 0 0 0 12px; }
 .nav-fav-body { padding: 6px 0 12px; }

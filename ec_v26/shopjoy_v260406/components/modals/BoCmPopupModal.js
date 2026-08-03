@@ -82,7 +82,7 @@ window.BoCmPopupModal = {
 
     const cfg = reactive({
       popupNm: '', popupPattern: 1, multiYn: 'N', pagingYn: 'Y', pageSize: 10, modalWidth: '900px',
-      idField: '', nmField: '', hasTree: false, searchCols: [], listCols: [],
+      idField: '', nmField: '', hasTree: false, searchCols: [], listCols: [], sysScope: '',
     });
     const uiState = reactive({ loading: false, ready: false, initing: false, errorMsg: '', needCond: false });
 
@@ -182,6 +182,16 @@ window.BoCmPopupModal = {
     /* 모달 헤더용 — 공통팝업임을 알리는 아이콘을 붙인다.
        cfTitle 은 트리 카드 라벨(📂 …)에도 쓰이므로 섞지 않고 따로 만든다. */
     const cfHeadTitle = computed(() => '🧩 ' + cfTitle.value);
+    /* 🧩 아이콘 tooltip — 팝업 코드·패턴·선택방식·검색항목·목록컬럼·범위 요약 */
+    const cfPopupTooltip = computed(() => {
+      const patternMap = { 1: '목록', 2: '트리+목록', 3: '트리전용' };
+      const pattern = patternMap[cfg.popupPattern] || String(cfg.popupPattern);
+      const multi = cfIsMulti.value ? '다중선택' : '단일선택';
+      const search = cfg.searchCols.map(c => c.label).join(', ') || '-';
+      const cols = cfg.listCols.map(c => c.label).join(', ') || '-';
+      const scope = (cfg.sysScope || '').split('^').filter(s => s.trim()).join(' / ') || 'BO';
+      return `코드: ${props.popupCode}\n패턴: ${pattern} / ${multi} / ${cfg.pageSize}건\n검색: ${search}\n목록: ${cols}\n범위: ${scope}`;
+    });
     /* 패턴 2·3 = 트리 있음 / 패턴 3 = 트리 전용(목록 없음) */
     const cfHasTree = computed(() => cfg.popupPattern >= 2 && cfg.hasTree);
     const cfTreeOnly = computed(() => cfg.popupPattern === 3);
@@ -369,6 +379,7 @@ window.BoCmPopupModal = {
           modalWidth: d.modalWidth || '900px', idField: d.idField || 'id',
           nmField: d.nmField || 'nm', hasTree: !!d.hasTree,
           searchCols: d.searchCols || [], listCols: d.listCols || [],
+          sysScope: d.sysScope || '',
         });
         gridPager.pageSize = cfg.pageSize;
         await handleSearchCodes();
@@ -572,15 +583,18 @@ window.BoCmPopupModal = {
 
     return {
       cfg, uiState, rows, picked, searchParam, gridPager, treeState, fnMissingRequired,
-      cfIsMulti, cfTitle, cfHeadTitle, cfHasTree, cfTreeOnly, cfHasList, cfHasPickList, cfHasPager, cfIsToggle, cfSelectedSet,
+      cfIsMulti, cfTitle, cfHeadTitle, cfPopupTooltip, cfHasTree, cfTreeOnly, cfHasList, cfHasPickList, cfHasPager, cfIsToggle, cfSelectedSet,
       cfGridColumns, cfSearchColumns, cfTreeVisible, cfTreeLayoutStyle, cfTreeCardStyle,
       cfPickedSet, cfIsCheckMode, fnIsPicked, fnRowStyle,
       fnTreeArrow, fnTreeNodeIcon, fnTreeNodeStyle, handleBtnAction, handleSelectAction, handleGridCellAction,
     };
   },
   template: /* html */`
-<bo-modal :show="show" :title="cfHeadTitle" :width="cfg.modalWidth" max-width="96vw"
+<bo-modal :show="show" :title="cfTitle" :width="cfg.modalWidth" max-width="96vw"
   @close="handleBtnAction('modal-close')">
+  <template #title>
+    <span :title="cfPopupTooltip" style="cursor:help;margin-right:4px;line-height:1;">🧩</span>{{ cfTitle }}
+  </template>
   <div v-if="uiState.errorMsg" style="padding:24px;text-align:center;color:#dc2626;">
     {{ uiState.errorMsg }}
   </div>

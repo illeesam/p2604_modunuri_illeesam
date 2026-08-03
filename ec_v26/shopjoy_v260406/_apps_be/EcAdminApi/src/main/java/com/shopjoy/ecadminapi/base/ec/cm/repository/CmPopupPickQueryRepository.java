@@ -129,13 +129,8 @@ public class CmPopupPickQueryRepository {
         String where;
 
         if (crossTree) {
-            /* 교차 트리는 항목 메타·base_where 가 목록 엔티티 기준이라 트리에 쓸 수 없다.
-               사이트 격리만 적용한다. */
+            /* 교차 트리는 항목 메타·base_where 가 목록 엔티티 기준이라 트리에 쓸 수 없다. */
             where = " WHERE 1=1 ";
-            if (pop.getSiteField() != null && !pop.getSiteField().isBlank() && str(p.get("siteId")) != null) {
-                where += " AND a." + ident(pop.getSiteField(), "site_field") + " = :siteId ";
-                binds.put("siteId", str(p.get("siteId")));
-            }
         } else {
             /* 같은 엔티티 트리는 목록과 조건이 같아야 한다.
                특히 호출부가 고정 필터를 주는 경우(표시경로의 bizCd 등) 트리도 같이 좁혀야
@@ -162,7 +157,7 @@ public class CmPopupPickQueryRepository {
      * WHERE / ORDER BY 조립
      * ============================================================ */
 
-    /** WHERE 절 생성 — base_where + 사이트격리 + 세션강제 + 통합검색 + 필드별검색 + 부모필터 + 제외ID */
+    /** WHERE 절 생성 — base_where + 세션강제 + 통합검색 + 필드별검색 + 부모필터 + 제외ID */
     private String buildWhere(CmPopup pop, List<CmPopupItem> items, Map<String, Object> p,
                               List<ForcedCond> forced, Map<String, Object> binds) {
         StringBuilder w = new StringBuilder(" WHERE 1=1 ");
@@ -172,10 +167,6 @@ public class CmPopupPickQueryRepository {
             if (!SAFE_CLAUSE.matcher(bw).matches())
                 throw new CmBizException("허용되지 않는 base_where 입니다: " + bw);
             w.append(" AND (").append(bw).append(") ");
-        }
-        if (pop.getSiteField() != null && !pop.getSiteField().isBlank() && str(p.get("siteId")) != null) {
-            w.append(" AND a.").append(ident(pop.getSiteField(), "site_field")).append(" = :siteId ");
-            binds.put("siteId", str(p.get("siteId")));
         }
         /* 세션 강제조건 — Service 가 로그인 정보에서 만들어 넘긴다.
            ★ 클라이언트가 같은 이름으로 파라미터를 보내도 여기서 덮으므로 조작할 수 없다. */

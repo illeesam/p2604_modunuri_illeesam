@@ -168,7 +168,7 @@
     if (!orderId) { return null; }
     let url = 'bo-od-order-kanban-pop.html?orderId=' + encodeURIComponent(orderId);
     if (claimId) { url += '&claimId=' + encodeURIComponent(claimId); }
-    const win = window.open(window.pageUrl(url), 'odKanban_' + orderId,
+    const win = window.open(window.pageUrl(url), 'odKanbanBoard',
       'width=1480,height=900,resizable=yes,scrollbars=yes');
     if (!win) {
       if (showToast) { showToast('팝업이 차단되었습니다. 브라우저의 팝업 차단을 해제해주세요.', 'error', 0); }

@@ -53,6 +53,14 @@ window.PmDiscntMng = {
       // 카드뷰 — 삭제
       } else if (cmd === 'discnts-card-delete') {
         return handleDelete(param);
+      } else if (cmd === 'memberModal-open') { modals.isMemberPick = true;
+      } else if (cmd === 'searchParam-memberClear') { searchParam.memberId = ''; searchParam.memberNm = '';
+      } else if (cmd === 'mdModal-open') { modals.isMdPick = true;
+      } else if (cmd === 'searchParam-mdClear') { searchParam.mdUserId = ''; searchParam.mdUserNm = '';
+      } else if (cmd === 'prodModal-open') { modals.isProdPick = true;
+      } else if (cmd === 'searchParam-prodClear') { searchParam.prodId = ''; searchParam.prodNm = '';
+      } else if (cmd === 'vendorModal-open') { modals.isVendorPick = true;
+      } else if (cmd === 'searchParam-vendorClear') { searchParam.vendorId = ''; searchParam.vendorNm = '';
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -86,6 +94,23 @@ window.PmDiscntMng = {
         }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* fnCallbackModal — 모달 callback dispatch */
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (popCmd === 'cmPopup-member-pick') {
+        searchParam.memberId = result ? result.memberId || '' : ''; searchParam.memberNm = result ? result.memberNm || '' : '';
+        modals.isMemberPick = false;
+      } else if (popCmd === 'cmPopup-userMd-pick') {
+        searchParam.mdUserId = result ? result.userId || '' : ''; searchParam.mdUserNm = result ? result.userNm || '' : '';
+        modals.isMdPick = false;
+      } else if (popCmd === 'cmPopup-prod-pick') {
+        searchParam.prodId = result ? result.prodId || '' : ''; searchParam.prodNm = result ? result.prodNm || '' : '';
+        modals.isProdPick = false;
+      } else if (popCmd === 'cmPopup-vendor-pick') {
+        searchParam.vendorId = result ? result.vendorId || '' : ''; searchParam.vendorNm = result ? result.vendorNm || '' : '';
+        modals.isVendorPick = false;
       }
     };
 
@@ -205,11 +230,13 @@ window.PmDiscntMng = {
      // 'list' | 'card'
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
-  const searchParam = reactive({ searchType: '', searchValue: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '', discntTypeCd: '', discntStatusCd: '' });
+  const searchParam = reactive({ searchType: '', searchValue: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '', discntTypeCd: '', discntStatusCd: '',
+    memberId: '', memberNm: '', mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
        기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
     const searchParamInit = {};
+    const modals = reactive({ isMemberPick: false, isMdPick: false, isProdPick: false, isVendorPick: false });
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
     /* loadView — 뷰 로드 */
@@ -316,6 +343,14 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'discntTypeCd', type: 'select', label: '유형', options: () => codes.discnt_types, nullLabel: '유형 전체' },
       { key: 'discntStatusCd', type: 'select', label: '상태', options: () => codes.promo_statuses, nullLabel: '상태 전체' },
+      { key: 'memberId', label: '회원', type: 'pick', display: (p) => p.memberNm, placeholder: '회원 선택',
+        onOpen: () => handleBtnAction('memberModal-open'), onClear: () => handleBtnAction('searchParam-memberClear') },
+      { key: 'mdUserId', label: '담당MD', type: 'pick', display: (p) => p.mdUserNm, placeholder: 'MD 선택',
+        onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('searchParam-mdClear') },
+      { key: 'prodId', label: '상품', type: 'pick', display: (p) => p.prodNm, placeholder: '상품 선택',
+        onOpen: () => handleBtnAction('prodModal-open'), onClear: () => handleBtnAction('searchParam-prodClear') },
+      { key: 'vendorId', label: '업체', type: 'pick', display: (p) => p.vendorNm, placeholder: '업체 선택',
+        onOpen: () => handleBtnAction('vendorModal-open'), onClear: () => handleBtnAction('searchParam-vendorClear') },
       { key: 'dateRange', type: 'dateRange', label: '시작일',
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -345,6 +380,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
 
     return {
       columns, uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, baseGridPager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, handleBtnAction, handleSelectAction, handleGridCellAction,
+      modals, fnCallbackModal,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
   // ===== 템플릿 ===========================================================
@@ -467,6 +503,10 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     :active="uiStateDetail.active"
     :reload-trigger="uiStateDetail.reloadTrigger"
     />
+  <bo-cm-popup-modal v-if="modals.isMemberPick" popup-cmd="cmPopup-member-pick" popup-code="member" :on-callback="fnCallbackModal" @close="modals.isMemberPick = false" />
+  <bo-cm-popup-modal v-if="modals.isMdPick" popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :on-callback="fnCallbackModal" @close="modals.isMdPick = false" />
+  <bo-cm-popup-modal v-if="modals.isProdPick" popup-cmd="cmPopup-prod-pick" popup-code="prod" :on-callback="fnCallbackModal" @close="modals.isProdPick = false" />
+  <bo-cm-popup-modal v-if="modals.isVendorPick" popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :on-callback="fnCallbackModal" @close="modals.isVendorPick = false" />
 </bo-page>
 <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
 `

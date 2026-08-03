@@ -61,6 +61,14 @@ window.PmCouponMng = {
       // 페이지 번호 클릭
       } else if (cmd === 'coupons-pager-setPage') {
         return setPage(param);
+      } else if (cmd === 'memberModal-open') { modals.isMemberPick = true;
+      } else if (cmd === 'searchParam-memberClear') { searchParam.memberId = ''; searchParam.memberNm = '';
+      } else if (cmd === 'mdModal-open') { modals.isMdPick = true;
+      } else if (cmd === 'searchParam-mdClear') { searchParam.mdUserId = ''; searchParam.mdUserNm = '';
+      } else if (cmd === 'prodModal-open') { modals.isProdPick = true;
+      } else if (cmd === 'searchParam-prodClear') { searchParam.prodId = ''; searchParam.prodNm = '';
+      } else if (cmd === 'vendorModal-open') { modals.isVendorPick = true;
+      } else if (cmd === 'searchParam-vendorClear') { searchParam.vendorId = ''; searchParam.vendorNm = '';
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -97,6 +105,23 @@ window.PmCouponMng = {
       }
     };
 
+    /* fnCallbackModal — 모달 callback dispatch */
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (popCmd === 'cmPopup-member-pick') {
+        searchParam.memberId = result ? result.memberId || '' : ''; searchParam.memberNm = result ? result.memberNm || '' : '';
+        modals.isMemberPick = false;
+      } else if (popCmd === 'cmPopup-userMd-pick') {
+        searchParam.mdUserId = result ? result.userId || '' : ''; searchParam.mdUserNm = result ? result.userNm || '' : '';
+        modals.isMdPick = false;
+      } else if (popCmd === 'cmPopup-prod-pick') {
+        searchParam.prodId = result ? result.prodId || '' : ''; searchParam.prodNm = result ? result.prodNm || '' : '';
+        modals.isProdPick = false;
+      } else if (popCmd === 'cmPopup-vendor-pick') {
+        searchParam.vendorId = result ? result.vendorId || '' : ''; searchParam.vendorNm = result ? result.vendorNm || '' : '';
+        modals.isVendorPick = false;
+      }
+    };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -118,11 +143,13 @@ window.PmCouponMng = {
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 진입 시 빈 신규 폼(비활성). 행 선택/신규 시 active=true
 
-    const searchParam = reactive({ searchType: '', searchValue: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '', couponStatusCd: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '', couponStatusCd: '',
+      memberId: '', memberNm: '', mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
        기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
     const searchParamInit = {};
+    const modals = reactive({ isMemberPick: false, isMdPick: false, isProdPick: false, isVendorPick: false });
     /* 쿠폰 handleDateRangeChange */
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
@@ -285,6 +312,14 @@ window.PmCouponMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'couponStatusCd', type: 'select', label: '상태', options: () => codes.coupon_statuses, nullLabel: '상태 전체' },
+      { key: 'memberId', label: '회원', type: 'pick', display: (p) => p.memberNm, placeholder: '회원 선택',
+        onOpen: () => handleBtnAction('memberModal-open'), onClear: () => handleBtnAction('searchParam-memberClear') },
+      { key: 'mdUserId', label: '담당MD', type: 'pick', display: (p) => p.mdUserNm, placeholder: 'MD 선택',
+        onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('searchParam-mdClear') },
+      { key: 'prodId', label: '상품', type: 'pick', display: (p) => p.prodNm, placeholder: '상품 선택',
+        onOpen: () => handleBtnAction('prodModal-open'), onClear: () => handleBtnAction('searchParam-prodClear') },
+      { key: 'vendorId', label: '업체', type: 'pick', display: (p) => p.vendorNm, placeholder: '업체 선택',
+        onOpen: () => handleBtnAction('vendorModal-open'), onClear: () => handleBtnAction('searchParam-vendorClear') },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -315,12 +350,13 @@ window.PmCouponMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      columns,
+      columns, modals,
       coupons, uiState, searchParam, baseGridPager, uiStateDetail,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                        // computed
       discountLabel, fnStatusBadge,          // 헬퍼
       inlineNavigate,                                      // 콜백 / 전역
+      fnCallbackModal,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
       get selectedId() { return uiStateDetail.selectedId; }
     };
@@ -424,6 +460,11 @@ window.PmCouponMng = {
     <bo-pager v-if="tabMode!=='list' ? (baseGridPager.pageTotalCount > 0) : false" :pager="baseGridPager" :on-set-page="n => handleBtnAction('coupons-pager-setPage', n)" :on-size-change="() => handleSelectAction('coupons-pager-sizeChange')" />
     <!-- ===== □.□. 카드 뷰 ================================================== -->
   </bo-container>
+  <!-- ===== ■. 선택 팝업 모달 ================================================== -->
+  <bo-cm-popup-modal v-if="modals.isMemberPick" popup-cmd="cmPopup-member-pick" popup-code="member" :on-callback="fnCallbackModal" @close="modals.isMemberPick = false" />
+  <bo-cm-popup-modal v-if="modals.isMdPick" popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :on-callback="fnCallbackModal" @close="modals.isMdPick = false" />
+  <bo-cm-popup-modal v-if="modals.isProdPick" popup-cmd="cmPopup-prod-pick" popup-code="prod" :on-callback="fnCallbackModal" @close="modals.isProdPick = false" />
+  <bo-cm-popup-modal v-if="modals.isVendorPick" popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :on-callback="fnCallbackModal" @close="modals.isVendorPick = false" />
   <!-- ===== ■. 하단 상세: CouponDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
   <pm-coupon-dtl
     :key="cfDetailKey"

@@ -66,6 +66,15 @@ window.PmCacheDtl = {
         form.vendorId = '';
         form.chargeStaff = '';
         return;
+      // 담당MD 모달 열기
+      } else if (cmd === 'mdModal-open') {
+        uiState.showMdModal = true;
+        return;
+      // 담당MD 초기화
+      } else if (cmd === 'form-mdClear') {
+        form.mdUserId = '';
+        form.mdUserNm = '';
+        return;
       // 회원ID 변경
       } else if (cmd === 'form-memberChange') {
         return onUserIdChange();
@@ -110,6 +119,12 @@ window.PmCacheDtl = {
       if (popCmd === 'cmPopup-vendor-pick') {
         if (result == null) { uiState.showVendorModal = false; return; }
         return selectVendor(result.vendorId, result.vendorNm);
+      } else if (popCmd === 'cmPopup-userMd-pick') {
+        if (result == null) { uiState.showMdModal = false; return; }
+        form.mdUserId = result.userId || '';
+        form.mdUserNm = result.userNm || '';
+        uiState.showMdModal = false;
+        return;
       } else if (popCmd === 'cmPopup-target-prod-pick') {
         return _addTarget(result, 'prodId', 'prodNm');
       } else if (popCmd === 'cmPopup-target-brand-pick') {
@@ -131,7 +146,7 @@ window.PmCacheDtl = {
 
     // ===== 상태(reactive) 선언 =============================================
     const vendors = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, showTargetPicker: false, error: null, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
+    const uiState = reactive({ loading: false, showVendorModal: false, showMdModal: false, showTargetPicker: false, error: null, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ cache_trans_types: [], pm_prod_targets: [], pm_issue_grades: [] });
@@ -297,6 +312,7 @@ window.PmCacheDtl = {
 
     // ===== 모달 토글 / 읽기전용 판정 =======================================
     const showVendorModal   = Vue.toRef(uiState, 'showVendorModal');
+    const showMdModal       = Vue.toRef(uiState, 'showMdModal');
     const showTargetPicker  = Vue.toRef(uiState, 'showTargetPicker');
 
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
@@ -339,6 +355,8 @@ window.PmCacheDtl = {
         placeholder: '내용 입력', colSpan: 2 },
       { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+      { key: 'mdUserId', label: '담당MD', type: 'pick', display: (f) => f.mdUserNm, placeholder: 'MD 선택', nameKey: 'mdUserNm',
+        onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('form-mdClear') },
     ];
     columns.targetForm = [
       { key: 'targetTypeCd', label: '발급대상 종류', type: 'select',
@@ -356,7 +374,7 @@ window.PmCacheDtl = {
       vendors, uiState, codes, form, errors,                                        // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, cfIssueTargetsColumns, // computed
-      tabs, tab, tabMode2, showVendorModal, showTargetPicker,                          // toRef
+      tabs, tab, tabMode2, showVendorModal, showMdModal, showTargetPicker,                          // toRef
       showTab, fnTypeBadge,                                                          // 헬퍼
       coUtil,                                                                        // 템플릿 내 cofAnd 사용
     };
@@ -485,6 +503,7 @@ window.PmCacheDtl = {
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
 <!-- ===== ■. 판매업체 선택 모달 (카드 밖) ====================================== -->
 <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :show="showMdModal" :on-callback="fnCallbackModal" />
 <!-- ===== ■. 발급대상 피커 모달들 ============================================== -->
 <bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='상품')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
 <bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='판매업체')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
