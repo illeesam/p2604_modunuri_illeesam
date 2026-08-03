@@ -85,7 +85,8 @@ public class PdProdDto {
         private String prodOptStdCd;     // 옵션 표준코드 (공통코드 그룹 기준)
         private String prodOptType1Cd;   // 옵션유형1 분류코드 (예: COLOR)
         private String prodOptType2Cd;   // 옵션유형2 분류코드 (예: SIZE)
-        // ── Tier 1 상세 연관정보 (getDetail 시 채움) ──
+        // ── Tier 1 상세 연관정보 (getDetail/_listFillRelations 시 채움) ──
+        private Integer prodStock;                            // SKU 재고 합산 (목록용)
         private List<PdProdImgDto.Item>         prodImgs;     // 상품 이미지 목록
         private List<PdProdOptDto.Item>         prodOpts;     // 옵션값 목록 (pd_prod_opt)
         private List<PdProdSkuDto.Item>         prodSkus;     // SKU 목록

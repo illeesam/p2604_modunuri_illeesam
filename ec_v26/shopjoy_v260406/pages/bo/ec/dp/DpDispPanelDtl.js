@@ -1690,6 +1690,9 @@ window.DpDispPanelDtl = {
                     @mouseout="$event.currentTarget.style.background='#fff'">
                     🔍
                   </button>
+                  <button v-if="!cfDtlMode &amp;&amp; form.pathId != null" type="button" title="선택 해제"
+                    style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;"
+                    @click="form.pathId = null">x</button>
                 </div>
               </template>
             </bo-form-area>

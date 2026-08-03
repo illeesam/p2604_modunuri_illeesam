@@ -215,7 +215,7 @@ window.SyPropMng = {
     const addRow = () => {
       propRows.push({
         propId: uiState._newId--,
-        siteId: cfSiteId.value || 1,
+        siteId: cfSiteId.value || null,
         pathId: uiState.selectedPath || 'new.prop',
         propProfile: '^all^',
         propKey: 'new_key',

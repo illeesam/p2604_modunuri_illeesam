@@ -9,7 +9,6 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -17,7 +16,6 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
-import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
 
@@ -77,11 +75,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         Map.entry("thumbnailUrl", pdProd.thumbnailUrl),
         Map.entry("vendorId", pdProd.vendorId)
     );
-
-    private static final QPdProdImg piThumb    = new QPdProdImg("pi_thumb");     // 썸네일 (is_thumb=Y, outer)
-    private static final QPdProdImg piThumbMin = new QPdProdImg("pi_thumb_min"); // 썸네일 MIN(sort_ord) 내부
-    private static final QPdProdImg piFirst    = new QPdProdImg("pi_first");     // 첫번째 이미지 (outer)
-    private static final QPdProdImg piFirstMin = new QPdProdImg("pi_first_min"); // 첫번째 이미지 MIN(sort_ord) 내부
 
     /*
      * baseListQuery / selectById — 코드성 필드 예시 코드값 (sy_code 등록 기준)
@@ -143,28 +136,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         syUser.userNm.as("mdUserNm"),               // 담당MD명 (조인)
                         cdPs.codeLabel.as("prodStatusCdNm"),        // 상품상태 코드라벨 (조인, sy_code.PRODUCT_STATUS)
                         cdPt.codeLabel.as("prodTypeCdNm"),          // 상품유형 코드라벨 (조인, sy_code.PRODUCT_TYPE)
-                        // thumbnail_url: prod 직접 값 → is_thumb='Y' 중 MIN(prod_img_id) 행 → 전체 중 MIN(prod_img_id) 행
-                        // Hibernate 6.x 는 스칼라 서브쿼리 .limit() 을 무시하므로
-                        // MIN(PK) 이중 서브쿼리로 단일 행을 보장함 (PK는 항상 유일)
-                        Expressions.stringTemplate("COALESCE({0}, {1}, {2})",
-                            pdProd.thumbnailUrl,
-                            JPAExpressions.select(piThumb.cdnImgUrl)
-                                .from(piThumb)
-                                .where(piThumb.prodId.eq(pdProd.prodId)
-                                    .and(piThumb.isThumb.eq("Y"))
-                                    .and(piThumb.prodImgId.eq(
-                                        JPAExpressions.select(piThumbMin.prodImgId.min())
-                                            .from(piThumbMin)
-                                            .where(piThumbMin.prodId.eq(pdProd.prodId)
-                                                .and(piThumbMin.isThumb.eq("Y")))))),
-                            JPAExpressions.select(piFirst.cdnImgUrl)
-                                .from(piFirst)
-                                .where(piFirst.prodId.eq(pdProd.prodId)
-                                    .and(piFirst.prodImgId.eq(
-                                        JPAExpressions.select(piFirstMin.prodImgId.min())
-                                            .from(piFirstMin)
-                                            .where(piFirstMin.prodId.eq(pdProd.prodId)))))
-                        ).as("thumbnailUrl")
+                        pdProd.thumbnailUrl                          // 썸네일URL (직접 컬럼값; 없으면 _listFillRelations에서 imgMap으로 보완)
                 ))
                 .from(pdProd)
                 .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId))

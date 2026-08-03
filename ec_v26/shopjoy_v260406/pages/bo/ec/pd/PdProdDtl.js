@@ -1901,11 +1901,10 @@ window.PdProdDtl = {
           <div style="display:flex;gap:6px;align-items:flex-end;">
             <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
               style="flex:1;background:#fafafa;" @click="handleBtnAction('mdModal-open')" />
-            <button class="btn btn-secondary btn-sm" type="button" @click="handleBtnAction('mdModal-open')" style="flex-shrink:0;padding:2px 7px;" title="선택">🔍</button>
-            <button v-if="form.mdUserId" type="button" title="선택 해제" @click="handleBtnAction('md-clear')"
-              style="padding:1px 5px;font-size:10px;line-height:1;color:#aaa;background:none;border:1px solid #e0e0e0;border-radius:3px;cursor:pointer;flex-shrink:0;">
-              ✕
-            </button>
+            <span style="display:inline-flex;align-items:center;flex-shrink:0;">
+              <button class="btn btn-secondary btn-sm" type="button" @click="handleBtnAction('mdModal-open')" style="padding:2px 7px;" title="선택">🔍</button>
+              <button v-if="form.mdUserId" type="button" title="선택 해제" @click="handleBtnAction('md-clear')" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;">x</button>
+            </span>
           </div>
         </template>
         <template #dlivTmplt>

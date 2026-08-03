@@ -309,7 +309,7 @@ window.DashboardBoEc01 = {
         const endYmd   = (filters.endDt   || '').replace(/-/g, '');
         /* siteId 필수 — 미전송 시 백엔드가 전체 항목에서 itemKey 첫 매칭을 잡아
          * 다른 대시보드(EC02/03 등)의 동일 키 항목(데이터 없음)로 잘못 연결될 수 있음 */
-        const siteId = window.boCommonFilter?.siteId || '2604010000000001';
+        const siteId = window.boCommonFilter?.siteId || '';
         const items = COMP_IDS.map(compId => ({ compId, uiNm: 'DashboardBoEc01', siteId, startYmd, endYmd }));
         const res = await boApiSvc.cmDashboard.getData(items, '대시보드', '조회');
         const d = res.data?.data || {};

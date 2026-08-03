@@ -606,10 +606,10 @@ window.OdClaimDtl = {
         <template #orderId>
           <div style="display:flex;gap:6px;align-items:center;">
             <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" style="flex:1;" />
-            <template v-if="!cfDtlMode">
+            <span v-if="!cfDtlMode" style="display:inline-flex;align-items:center;">
               <button class="btn btn-sm btn-secondary" style="padding:2px 7px;" @click="handleBtnAction('orderPickModal-open')" title="선택">🔍</button>
-              <button v-if="form.orderId" class="btn btn-sm" style="padding:1px 5px;font-size:10px;line-height:1;color:#aaa;background:none;border:1px solid #e0e0e0;" @click="handleBtnAction('orderId-clear')" title="초기화">✕</button>
-            </template>
+              <button v-if="form.orderId" type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleBtnAction('orderId-clear')" title="초기화">x</button>
+            </span>
             <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">보기</span>
           </div>
           <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
@@ -618,10 +618,10 @@ window.OdClaimDtl = {
         <template #memberId>
           <div style="display:flex;gap:6px;align-items:center;">
             <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" style="flex:1;" />
-            <template v-if="!cfDtlMode">
+            <span v-if="!cfDtlMode" style="display:inline-flex;align-items:center;">
               <button class="btn btn-sm btn-secondary" style="padding:2px 7px;" @click="handleBtnAction('memberPickModal-open')" title="선택">🔍</button>
-              <button v-if="form.memberId" class="btn btn-sm" style="padding:1px 5px;font-size:10px;line-height:1;color:#aaa;background:none;border:1px solid #e0e0e0;" @click="handleBtnAction('memberId-clear')" title="초기화">✕</button>
-            </template>
+              <button v-if="form.memberId" type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleBtnAction('memberId-clear')" title="초기화">x</button>
+            </span>
             <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">보기</span>
           </div>
         </template>

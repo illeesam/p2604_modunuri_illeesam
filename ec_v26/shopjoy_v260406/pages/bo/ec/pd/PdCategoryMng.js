@@ -687,11 +687,14 @@ window.PdCategoryMng = {
                   :style="row.parentCategoryId ? 'color:#444' : 'color:#bbb;font-style:italic'">
                 {{ row.parentCategoryId ? parentNm(row.parentCategoryId) : '최상위' }}
               </span>
-              <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                  style="flex-shrink:0;padding:1px 6px;font-size:11px;color:#e8587a"
-                  @click.stop="handleSelectAction('parentModal-open', row)" title="상위 선택">
-                🔍
-              </button>
+              <span style="display:inline-flex;align-items:center;flex-shrink:0;">
+                <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
+                    style="flex-shrink:0;padding:1px 6px;font-size:11px;color:#e8587a"
+                    @click.stop="handleSelectAction('parentModal-open', row)" title="상위 선택">🔍</button>
+                <span v-if="row.parentCategoryId != null &amp;&amp; row._row_status!=='D'" title="최상위로 초기화"
+                    style="cursor:pointer;color:#bbb;font-size:10px;flex-shrink:0;line-height:1;padding:0 3px;"
+                    @click.stop="row.parentCategoryId = null; handleSelectAction('categories-rowCellChange', row)">x</span>
+              </span>
             </div>
           </td>
           <!-- ===== ■.■.■.■.■.■. 순서 ============================================ -->

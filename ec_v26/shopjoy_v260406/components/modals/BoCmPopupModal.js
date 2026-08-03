@@ -620,14 +620,16 @@ window.BoCmPopupModal = {
         <div v-if="cfTreeOnly ? clearable : false"
           style="font-size:12px;padding:4px 6px;cursor:pointer;color:#1677ff;border-bottom:1px solid #eee;margin-bottom:4px;"
           @click="handleSelectAction('tree-clear')">📁 선택 안함 (최상위)</div>
-        <div v-for="n in cfTreeVisible" :key="n.id" :style="fnTreeNodeStyle(n)"
-          @click="handleSelectAction('tree-select', n.id)">
-          <span style="width:12px;flex-shrink:0;color:#94a3b8;font-size:10px;"
-            @click.stop="handleSelectAction('tree-toggle', String(n.id))">
+        <div v-for="n in cfTreeVisible" :key="n.id" :style="fnTreeNodeStyle(n)">
+          <span style="width:12px;flex-shrink:0;color:#94a3b8;font-size:10px;cursor:pointer;"
+            @click="handleSelectAction('tree-toggle', String(n.id))">
             {{ fnTreeArrow(n) }}
           </span>
-          <span style="width:16px;flex-shrink:0;">{{ fnTreeNodeIcon(n) }}</span>
-          <span>{{ n.nm }}</span>
+          <span :style="n._hasKids ? 'width:16px;flex-shrink:0;cursor:pointer;' : 'width:16px;flex-shrink:0;'"
+            @click="n._hasKids ? handleSelectAction('tree-toggle', String(n.id)) : null">
+            {{ fnTreeNodeIcon(n) }}
+          </span>
+          <span style="flex:1;cursor:pointer;" @click="handleSelectAction('tree-select', n.id)">{{ n.nm }}</span>
           <span v-if="fnIsPicked(n)" style="margin-left:auto;color:#2563eb;font-weight:700;">✓</span>
         </div>
         <div v-if="!cfTreeVisible.length" style="padding:12px;text-align:center;color:#aaa;font-size:12px;">

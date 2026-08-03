@@ -695,7 +695,7 @@ window.ZdInfDashboard = {
         }
 
         await boApi.post('/bo/sy/ext-test-log/save', {
-          siteId:       window.boApp?.siteId || 'SITE000001',
+          siteId:       window.boCommonFilter?.siteId || '',
           channelKey:   row.keyName,
           channelLabel: row.channel,
           testResult:   ok ? 'SUCCESS' : 'FAIL',

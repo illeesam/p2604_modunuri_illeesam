@@ -771,7 +771,10 @@ window.OdOrderDtl = {
         <template #memberId>
           <div style="display:flex;gap:6px;align-items:center;">
             <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" style="flex:1;min-width:0;" />
-            <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" style="flex-shrink:0;" @click="handleBtnAction('memberModal-open')">🔍 회원선택</button>
+            <span style="display:inline-flex;align-items:center;flex-shrink:0;">
+              <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('memberModal-open')">🔍 회원선택</button>
+              <button v-if="!cfDtlMode &amp;&amp; form.memberId" type="button" title="선택 해제" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="form.memberId = ''; form.memberNm = '';">x</button>
+            </span>
             <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">보기</span>
           </div>
           <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>

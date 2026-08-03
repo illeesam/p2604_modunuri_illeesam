@@ -660,25 +660,26 @@ window.BoCategoryTree = {
       </span>
     </div>
     <div v-for="cat in cfTreeFlat" :key="cat.categoryId"
-      style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
+      style="border-radius:4px;display:flex;align-items:center;gap:2px;padding:5px 6px"
       :style="{ paddingLeft:(cat._depth*14+6)+'px',
       background: selected===cat.categoryId ? '#eff6ff' : 'transparent',
       color:      selected===cat.categoryId ? '#1d4ed8' : '#333',
       fontWeight: selected===cat.categoryId ? 600 : 400,
       outline:       selected===cat.categoryId ? '2px solid #2563eb' : 'none',
       outlineOffset: selected===cat.categoryId ? '-2px' : '0',
-      position:'relative', zIndex: selected===cat.categoryId ? 1 : 'auto' }"
-      @click="handleSelectAction('tree-node-select', cat.categoryId)">
+      position:'relative', zIndex: selected===cat.categoryId ? 1 : 'auto' }">
       <span v-if="cat._hasChildren"
-        style="width:14px;text-align:center;font-size:9px;color:#bbb;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
-        @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
+        style="width:14px;text-align:center;font-size:9px;color:#bbb;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+        @click="handleSelectAction('tree-node-toggle', cat.categoryId)">
         {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
       </span>
       <span v-else style="width:14px;flex-shrink:0"></span>
-      <span style="font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;">
+      <span :style="cat._hasChildren ? 'font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;cursor:pointer;' : 'font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;'"
+        @click="cat._hasChildren ? handleSelectAction('tree-node-toggle', cat.categoryId) : null">
         {{ DEPTH_BULLET(cat._depth, cat._hasChildren, expandedSet.has(cat.categoryId)) }}
       </span>
-      <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+      <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;"
+        @click="handleSelectAction('tree-node-select', cat.categoryId)">
         {{ cat.categoryNm }}
       </span>
       <span v-if="showCount ? (showCount(cat.categoryId) > 0) : false" style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0;margin-left:4px;">
@@ -721,17 +722,19 @@ window.BoCategoryTree = {
                 ▶ 닫기
               </button>
             </div>
-            <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;transition:background .1s;" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds?.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds?.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat?.categoryId === cat.categoryId ? '#eff6ff' : '', outline: pickerTempCat?.categoryId === cat.categoryId ? '2px solid #2563eb' : 'none', outlineOffset: pickerTempCat?.categoryId === cat.categoryId ? '-2px' : '0', position:'relative', zIndex: pickerTempCat?.categoryId === cat.categoryId ? 1 : 'auto' }" @click="handleSelectAction('picker-select', cat)">
+            <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;display:flex;align-items:center;gap:2px;padding:5px 6px;transition:background .1s;" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds?.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds?.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat?.categoryId === cat.categoryId ? '#eff6ff' : '', outline: pickerTempCat?.categoryId === cat.categoryId ? '2px solid #2563eb' : 'none', outlineOffset: pickerTempCat?.categoryId === cat.categoryId ? '-2px' : '0', position:'relative', zIndex: pickerTempCat?.categoryId === cat.categoryId ? 1 : 'auto' }">
             <span v-if="cat._hasChildren"
-                style="width:14px;text-align:center;font-size:9px;color:#bbb;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
-                @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
+                style="width:14px;text-align:center;font-size:9px;color:#bbb;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+                @click="handleSelectAction('tree-node-toggle', cat.categoryId)">
               {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
             </span>
             <span v-else style="width:14px;flex-shrink:0"></span>
-            <span style="font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;">
+            <span :style="cat._hasChildren ? 'font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;cursor:pointer;' : 'font-size:13px;line-height:1;flex-shrink:0;margin-right:3px;'"
+              @click="cat._hasChildren ? handleSelectAction('tree-node-toggle', cat.categoryId) : null">
               {{ DEPTH_BULLET(cat._depth, cat._hasChildren, expandedSet.has(cat.categoryId)) }}
             </span>
-            <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;"
+              @click="handleSelectAction('picker-select', cat)">
               {{ cat.categoryNm }}
             </span>
             <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>

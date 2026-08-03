@@ -122,7 +122,7 @@ window.CmBlogMng = {
 
     /* ===== 상세 인라인 패널 ===== */
     /* _initBlogForm — 빈(신규) 블로그 폼 기본값 */
-    const _initBlogForm = () => ({ blogId: null, siteId: 1, blogCateId: null, blogTypeCd: 'BLOG', blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
+    const _initBlogForm = () => ({ blogId: null, siteId: null, blogCateId: null, blogTypeCd: 'BLOG', blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
     const detailPanel = reactive({ show: true, active: false, isNew: false, dtlId: null, form: _initBlogForm() }); // 인라인 Dtl 패널 상태 (항상 표시, active=false 면 버튼 숨김)
 
     /* ===== 첨부 이미지(cm_blog_file) 관리 그리드 상태 ===== */

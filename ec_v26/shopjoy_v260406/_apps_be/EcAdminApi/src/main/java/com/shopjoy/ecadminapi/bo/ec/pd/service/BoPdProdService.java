@@ -71,7 +71,12 @@ public class BoPdProdService {
         // SKU 목록
         PdProdSkuDto.Request skuReq = new PdProdSkuDto.Request();
         skuReq.setProdId(prodId);
-        prod.setProdSkus(pdProdSkuService.getList(skuReq));
+        List<PdProdSkuDto.Item> skus = pdProdSkuService.getList(skuReq);
+        prod.setProdSkus(skus);
+        prod.setProdStock(skus.stream()
+            .filter(s -> !"N".equals(s.getUseYn()))
+            .mapToInt(s -> s.getStock() != null ? s.getStock() : 0)
+            .sum());
     }
 
     /**
@@ -109,9 +114,24 @@ public class BoPdProdService {
         // 각 항목에 분배
         for (PdProdDto.Item prod : list) {
             String pid = prod.getProdId();
-            prod.setProdImgs(imgMap.getOrDefault(pid, List.of()));
+            List<PdProdImgDto.Item> imgs = imgMap.getOrDefault(pid, List.of());
+            prod.setProdImgs(imgs);
             prod.setProdOpts(optMap.getOrDefault(pid, List.of()));
-            prod.setProdSkus(skuMap.getOrDefault(pid, List.of()));
+            List<PdProdSkuDto.Item> skus = skuMap.getOrDefault(pid, List.of());
+            prod.setProdSkus(skus);
+            prod.setProdStock(skus.stream()
+                .filter(s -> !"N".equals(s.getUseYn()))
+                .mapToInt(s -> s.getStock() != null ? s.getStock() : 0)
+                .sum());
+            // thumbnailUrl: pd_prod.thumbnail_url 직접값 우선, 없으면 is_thumb='Y' 첫 이미지, 없으면 sortOrd 첫 이미지
+            if ((prod.getThumbnailUrl() == null || prod.getThumbnailUrl().isBlank()) && !imgs.isEmpty()) {
+                String thumbUrl = imgs.stream()
+                    .filter(i -> "Y".equals(i.getIsThumb()))
+                    .findFirst()
+                    .map(PdProdImgDto.Item::getCdnImgUrl)
+                    .orElseGet(() -> imgs.get(0).getCdnImgUrl());
+                prod.setThumbnailUrl(thumbUrl);
+            }
         }
     }
 

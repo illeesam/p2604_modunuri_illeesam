@@ -291,14 +291,10 @@ window.BoSearchArea = {
     <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
           readonly :placeholder="col.placeholder || '선택'"
           class="form-control" :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;'" />
-    <button class="btn btn-secondary btn-sm" style="padding:2px 7px;" @click="handleSelectAction('field-pick-open', { col, target: po(col) })" :title="col.openLabel || '검색'">
-      🔍
-    </button>
-    <button v-if="po(col)[col.key]" class="btn btn-sm"
-          style="padding:1px 5px;font-size:10px;line-height:1;color:#aaa;background:none;border:1px solid #e0e0e0;"
-          @click="handleSelectAction('field-pick-clear', { col, target: po(col) })" title="초기화">
-      ✕
-    </button>
+    <span style="display:inline-flex;align-items:center;">
+      <button class="btn btn-secondary btn-sm" style="padding:2px 7px;" @click="handleSelectAction('field-pick-open', { col, target: po(col) })" :title="col.openLabel || '검색'">🔍</button>
+      <button v-if="po(col)[col.key]" type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleSelectAction('field-pick-clear', { col, target: po(col) })" title="초기화">x</button>
+    </span>
   </template>
   <!-- 다중선택 (검색대상) -->
   <bo-multi-check-select v-else-if="col.type==='multiCheck'"
@@ -1310,14 +1306,12 @@ window.BoGridCrud = {
                 :title="(typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || ''">
                 {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
               </span>
-              <span v-if="fnRow(item)[col.key] != null" title="비우기"
-                style="cursor:pointer;color:#9ca3af;font-size:9px;flex-shrink:0;line-height:1;padding:0;margin-right:-1px;align-self:flex-end;margin-bottom:2px;"
-                @click.stop="col.pathLabelOpen.clear ? col.pathLabelOpen.clear(fnRow(item)) : (fnRow(item)[col.key] = null)">
-                ✕
+              <span style="display:inline-flex;align-items:center;flex-shrink:0;">
+                <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#2563eb;flex-shrink:0;padding:0;">🔍</button>
+                <span v-if="fnRow(item)[col.key] != null" title="비우기"
+                  style="cursor:pointer;color:#bbb;font-size:10px;flex-shrink:0;line-height:1;padding:0 3px;"
+                  @click.stop="col.pathLabelOpen.clear ? col.pathLabelOpen.clear(fnRow(item)) : (fnRow(item)[col.key] = null)">x</span>
               </span>
-              <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#2563eb;flex-shrink:0;padding:0;">
-                🔍
-              </button>
             </div>
             <div v-else-if="col.parentPick" style="display:flex;align-items:flex-end;gap:4px;">
               <span v-if="fnRow(item)[col.key]"
@@ -1328,16 +1322,14 @@ window.BoGridCrud = {
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">
                 {{ col.parentPick.placeholder || '최상위' }}
               </span>
-              <span v-if="fnRow(item)[col.key] != null" title="비우기"
-                    style="cursor:pointer;color:#9ca3af;font-size:9px;flex-shrink:0;line-height:1;padding:0;margin-right:-1px;align-self:flex-end;margin-bottom:2px;"
-                    @click.stop="col.parentPick.clear ? col.parentPick.clear(fnRow(item)) : (fnRow(item)[col.key] = null)">
-                ✕
+              <span style="display:inline-flex;align-items:center;flex-shrink:0;">
+                <button v-if="fnRow(item)._row_status!=='D'" class="btn btn-secondary btn-xs"
+                      style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" :title="col.parentPick.title || '상위 선택'"
+                      @click.stop="col.parentPick.open(fnRow(item))">🔍</button>
+                <span v-if="fnRow(item)[col.key] != null" title="비우기"
+                      style="cursor:pointer;color:#bbb;font-size:10px;flex-shrink:0;line-height:1;padding:0 3px;"
+                      @click.stop="col.parentPick.clear ? col.parentPick.clear(fnRow(item)) : (fnRow(item)[col.key] = null)">x</span>
               </span>
-              <button v-if="fnRow(item)._row_status!=='D'" class="btn btn-secondary btn-xs"
-                    style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" :title="col.parentPick.title || '상위 선택'"
-                    @click.stop="col.parentPick.open(fnRow(item))">
-                🔍
-              </button>
             </div>
             <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-cell-click', { row: fnRow(item), col, ci, idx })"
                   :style="U.cellInnerStyle(col, fnRow(item))" :class="U.cellInnerClass(col, fnRow(item))">
@@ -2373,13 +2365,9 @@ window.BoFormArea = {
   <div :style="{flex:1,padding:compact?'4px 10px':'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:readonly?'#f9fafb':'#fff',color:form[col.key]!=null?'#374151':'#9ca3af',minHeight:compact?'28px':'34px',display:'flex',alignItems:'center'}">
     {{ col.pathLabel ? col.pathLabel(form[col.key]) : (form[col.key] != null ? '#' + form[col.key] : '경로 선택...') }}
   </div>
-  <span v-if="!readonly" style="display:inline-flex;align-items:flex-end;gap:2px;flex-shrink:0;align-self:stretch;">
-    <button type="button" class="btn btn-secondary btn-sm" title="표시경로 선택" @click="handleSelectAction('field-pathPick-open', { col })" :style="{padding:'0',width:compact?'28px':'34px',height:compact?'28px':'34px',display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}">
-      🔍
-    </button>
-    <button v-if="form[col.key] != null" type="button" title="선택 해제" @click="handleBtnAction('form-pathPick-clear', { col })" style="background:none;border:none;padding:0 2px 2px;color:#999;cursor:pointer;font-size:13px;line-height:1;">
-      x
-    </button>
+  <span v-if="!readonly" style="display:inline-flex;align-items:center;flex-shrink:0;align-self:stretch;">
+    <button type="button" class="btn btn-secondary btn-sm" title="표시경로 선택" @click="handleSelectAction('field-pathPick-open', { col })" :style="{padding:'0',width:compact?'28px':'34px',height:compact?'28px':'34px',display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}">🔍</button>
+    <button v-if="form[col.key] != null" type="button" title="선택 해제" @click="handleBtnAction('form-pathPick-clear', { col })" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;">x</button>
   </span>
 </div>
 <!-- pick (팝업 선택 박스) — col.onOpen(form) 으로 팝업 열기, col.nameKey 로 표시명 키 지정 -->
@@ -2387,13 +2375,13 @@ window.BoFormArea = {
   <input :value="col.display ? col.display(form) : (col.nameKey ? (form[col.nameKey] || '') : (form[col.key] || ''))"
     readonly :placeholder="col.placeholder || '선택'"
     class="form-control" :style="'background:#f9f9f9;' + (col.width ? ('width:' + col.width) : '')" />
-  <span style="display:inline-flex;align-items:center;gap:2px;flex-shrink:0;">
+  <span style="display:inline-flex;align-items:center;flex-shrink:0;">
     <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" title="선택"
       style="padding:0;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"
       @click="handleSelectAction('field-pick-open', { col })">🔍</button>
     <button v-if="form[col.key]" type="button" title="선택 해제"
-      style="background:none;border:none;padding:0 2px 2px;color:#aaa;cursor:pointer;font-size:13px;line-height:1;"
-      @click="handleBtnAction('form-pick-clear', { col })">✕</button>
+      style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;"
+      @click="handleBtnAction('form-pick-clear', { col })">x</button>
   </span>
 </div>
 <!-- slot 탈출구 -->

@@ -35,7 +35,7 @@ window.PdTagMng = {
         return handleSearchList();
       // 태그 그리드 행 추가
       } else if (cmd === 'tags-add') {
-        gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: 1, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' });
+        gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: null, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' });
         return;
       // 태그 그리드 저장
       } else if (cmd === 'tags-save') {

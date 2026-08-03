@@ -15,7 +15,7 @@ window.PdOptCodeMng = {
     const { ref, reactive, computed, onMounted, nextTick } = Vue;
 
     const CODE_GRP = 'PROD_OPT_CATEGORY';
-    const SITE_ID  = window.sfGetBoAppStore?.()?.svBoSiteId || '2604010000000001';
+    const SITE_ID  = window.sfGetBoAppStore?.()?.svBoSiteId || '';
 
     // 선택된 트리 노드: null = root
     const sel = reactive({ node: null });

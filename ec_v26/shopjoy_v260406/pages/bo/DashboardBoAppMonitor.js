@@ -302,7 +302,7 @@ window.DashboardBoAppMonitor = {
         errorInfo: err ? _buildErrorInfo() : null,
         fileNm: src.fileNm, funcNm: src.funcNm, lineNo: 20 + Math.floor(Math.random() * 480),
         traceId: _buildTraceId(t),
-        siteId: '2604010000000001',
+        siteId: window.boCommonFilter?.siteId || '',
         buyerId: 'BUYER_' + String(1 + Math.floor(Math.random() * 50)).padStart(3, '0'),
         licenseCode: 'eyJzaXRl' + _hex(6) + '...' + _hex(6),
         userAgent: 'Mozilla/5.0...' + _hex(6),

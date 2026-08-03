@@ -115,7 +115,7 @@ window.StConfigMng = {
 
     /* openNew — 신규 열기 */
     const openNew = () => {
-      Object.assign(form, { settleConfigId: null, siteId: '01', siteNm: 'ShopJoy 01', settleCycleCd: 'MONTHLY', settleDay: 10, commissionRate: 10, minSettleAmt: 10000, useYn: 'Y', settleConfigRemark: '' });
+      Object.assign(form, { settleConfigId: null, siteId: null, siteNm: '', settleCycleCd: 'MONTHLY', settleDay: 10, commissionRate: 10, minSettleAmt: 10000, useYn: 'Y', settleConfigRemark: '' });
       uiState.selectedId = '__new__';
       uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
