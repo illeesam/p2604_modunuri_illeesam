@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 주문항목관리 목록 */
+/* ShopJoy Admin - 주문항목관리 목록 + 하단 OrderDtl 임베드 */
 window.OdOrderItemMng = {
   name: 'OdOrderItemMng',
   props: {
@@ -15,7 +15,7 @@ window.OdOrderItemMng = {
 
     /* ── 목록 상태 ── */
     const items = reactive([]);
-    const listGridPager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 30, 50, 100] });
+    const listGridPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 30, 50, 100] });
     const uiState = reactive({ loading: false });
     const codes = reactive({ order_item_statuses: [], od_date_types: [] });
 
@@ -32,6 +32,9 @@ window.OdOrderItemMng = {
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 스냅샷 저장. */
     const searchParamInit = {};
 
+    /* 하단 상세 (인라인 Dtl) — 항상 표시. 진입 시 빈 신규 폼(비활성) */
+    const detailPanel = reactive({ selectedOrderItemId: null, selectedOrderId: null, openMode: 'view', reloadTrigger: 0, active: false, resetSeq: 0 });
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     const handleBtnAction = (cmd, param = {}) => {
@@ -41,10 +44,13 @@ window.OdOrderItemMng = {
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, searchParamInit);
         listGridPager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList();
       } else if (cmd === 'items-pager-setPage') {
         if (param >= 1 && param <= listGridPager.pageTotalPage) { listGridPager.pageNo = param; handleSearchList(); }
         return;
+      } else if (cmd === 'detailPanel-close') {
+        return resetDetailToNew();
       } else {
         console.warn('[OdOrderItemMng] handleBtnAction unknown cmd:', cmd);
       }
@@ -54,13 +60,50 @@ window.OdOrderItemMng = {
       if (cmd === 'items-pager-sizeChange') {
         listGridPager.pageNo = 1;
         return handleSearchList();
-      } else if (cmd === 'items-navOrder') {
-        if (param) props.navigate('odOrderMng', { initSearchValue: param });
-        return;
       } else {
         console.warn('[OdOrderItemMng] handleSelectAction unknown cmd:', cmd);
       }
     };
+
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'items-cellClick') {
+        if (colKey === 'btn_row_edit') {
+          detailPanel.selectedOrderItemId = row.orderItemId;
+          detailPanel.selectedOrderId     = row.orderId;
+          detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
+          return;
+        }
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          detailPanel.selectedOrderItemId = row.orderItemId;
+          detailPanel.selectedOrderId     = row.orderId;
+          detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
+          return;
+        }
+      } else {
+        console.warn('[OdOrderItemMng] handleGridCellAction unknown cmd:', cmd);
+      }
+    };
+
+    /* ##### [03] 인라인 Dtl 헬퍼 #################################################### */
+
+    const resetDetailToNew = () => {
+      detailPanel.selectedOrderItemId = null;
+      detailPanel.selectedOrderId     = null;
+      detailPanel.openMode  = 'view';
+      detailPanel.active    = false;
+      detailPanel.resetSeq++;
+    };
+
+    /* inlineNavigate — 인라인 Dtl 내부에서 navigate 호출 시 가로채기 */
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'odOrderMng') { if (opts.reload) handleSearchList(); resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      props.navigate(pg, opts);
+    };
+
+    const cfDetailKey = computed(() => `${detailPanel.selectedOrderId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* ##### [04] 내장 사용 함수 #################################################### */
 
@@ -98,6 +141,11 @@ window.OdOrderItemMng = {
         const from = Math.max(1, cur - 4);
         const to   = Math.min(tp, from + 9);
         listGridPager.pageNums = Array.from({ length: to - from + 1 }, (_, i) => from + i);
+        /* 조회 후 선택한 항목이 목록에 없으면 상세 초기화 */
+        if (detailPanel.selectedOrderItemId) {
+          const still = items.some(r => r.orderItemId === detailPanel.selectedOrderItemId);
+          if (!still) resetDetailToNew();
+        }
       } catch (err) {
         showToast(err.response?.data?.message || '조회 중 오류가 발생했습니다.', 'error', 0);
       } finally {
@@ -149,7 +197,8 @@ window.OdOrderItemMng = {
     columns.listGrid = [
       { key: 'orderId',            label: '주문ID',   style: 'width:170px;',
         link: true, mono: true, cellStyle: 'font-size:11px;cursor:pointer;',
-        fmt: (v) => v || '-' },
+        fmt: (v, row) => v || '-',
+        cellInnerStyle: (v) => detailPanel.selectedOrderId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'prodNm',             label: '상품명',   style: 'min-width:180px;',
         fmt: (v, row) => {
           const opts = [row.prodOptNm1, row.prodOptNm2].filter(Boolean);
@@ -178,8 +227,9 @@ window.OdOrderItemMng = {
 
     return {
       columns,
-      items, listGridPager, searchParam, uiState, codes,
-      handleBtnAction, handleSelectAction,
+      items, listGridPager, searchParam, uiState, codes, detailPanel,
+      handleBtnAction, handleSelectAction, handleGridCellAction,
+      inlineNavigate, cfDetailKey,
     };
   },
   template: `
@@ -196,13 +246,29 @@ window.OdOrderItemMng = {
       <div style="font-size:28px;margin-bottom:8px;">⏳</div>
       조회 중...
     </div>
-    <bo-grid v-else bare :columns="columns.listGrid" :rows="items" row-key="orderItemId"
-      empty-text="조회 결과가 없습니다."
-      @cell-click="(cmd, colKey, row) => colKey === 'orderId' && handleSelectAction('items-navOrder', row.orderId)" />
+    <bo-grid v-else bare selectable :columns="columns.listGrid" :rows="items"
+      row-key="orderItemId" :selected-key="detailPanel.selectedOrderItemId"
+      empty-text="조회 결과가 없습니다." row-actions
+      grid-id="items-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      <template #row-actions="{ row, gridId }">
+        <div class="actions">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
+        </div>
+      </template>
+    </bo-grid>
     <bo-pager v-if="listGridPager.pageTotalCount > 0" :pager="listGridPager"
       :on-set-page="n => handleBtnAction('items-pager-setPage', n)"
       :on-size-change="() => handleSelectAction('items-pager-sizeChange')" />
   </bo-container>
+  <!-- ===== ■. 하단 상세: OrderDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ===================== -->
+  <od-order-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="detailPanel.selectedOrderId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (detailPanel.selectedOrderId ? 'edit' : 'new') : 'view'"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    />
 </bo-page>
 `
 };
