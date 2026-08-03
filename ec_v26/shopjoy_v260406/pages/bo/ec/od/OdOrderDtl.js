@@ -427,6 +427,13 @@ window.OdOrderDtl = {
 
     /* fmt — 포맷 */
     const fmt = (n) => NumbercoUtil.cofWon(n);
+    const fnAmtShort = (v) => {
+      const n = Number(v) || 0;
+      if (!n) return '-';
+      if (n >= 100000000) return (n / 100000000).toFixed(1).replace(/\.0$/, '') + '억원';
+      if (n >= 10000)     return Math.round(n / 10000) + '만원';
+      return n.toLocaleString() + '원';
+    };
 
     /* 판매업체 */
     const cfRelatedVendor = computed(() => {
@@ -504,6 +511,48 @@ window.OdOrderDtl = {
     const fnItemExpanded = (row, i) => isExpanded(i) && !!cfRelatedClaim.value && cfRelatedClaim.value.type === '교환';
     const cfAllExpanded = computed(() => orderItems.length > 0 && window.safeArrayUtils.safeEvery(orderItems, (_,i) => expandedItems.has(i)));
 
+    const STS_PROGRESS  = ['ORDERED', 'PAID', 'PREPARING', 'SHIPPING', 'WAIT_DEPOSIT'];
+    const STS_DELIVERED = ['DELIVERED', 'DLIV_COMPLT'];
+    const STS_CONFIRMED = ['CONFIRMED', 'COMPLT', 'BUY_CONFIRMED'];
+    const STS_CLM_DONE  = ['COMPLT', 'DONE', 'COMPLETE', 'REJECTED'];
+    const STS_CLM_TYPE  = { CANCEL: '취소', RETURN: '반품', EXCHANGE: '교환' };
+
+    const cfOrderItemSummary = computed(() => {
+      const IN_PROGRESS  = STS_PROGRESS;
+      const IN_DELIVERED = STS_DELIVERED;
+      const IN_CONFIRMED = STS_CONFIRMED;
+      const CLM_DONE     = STS_CLM_DONE;
+      const orderSt = form.orderStatusCd || '';
+      let inProgress = 0, delivered = 0, confirmed = 0, refund = 0;
+      let caTotal = 0, caCancel = 0, caReturn = 0, caExchange = 0;
+      let cdTotal = 0, cdCancel = 0, cdReturn = 0, cdExchange = 0;
+      let amtProgress = 0, amtDelivered = 0, amtConfirmed = 0;
+      let amtClaimActive = 0, amtClaimDone = 0, amtRefund = 0;
+      for (const r of orderItems) {
+        const st           = r.orderItemStatusCd || orderSt;
+        const orderAmt     = Number(r.itemOrderAmt)     || Number(r.price)    || 0;
+        const cancelAmt    = Number(r.itemCancelAmt)    || 0;
+        const completedAmt = Number(r.itemCompletedAmt) || 0;
+        if (IN_PROGRESS.includes(st))       { inProgress++; amtProgress  += orderAmt; }
+        else if (IN_DELIVERED.includes(st)) { delivered++;  amtDelivered += orderAmt; }
+        else if (IN_CONFIRMED.includes(st)) { confirmed++;  amtConfirmed += completedAmt || orderAmt; }
+        if (r.claimYn === 'Y') {
+          const done = CLM_DONE.includes(r.claimStatusCd || '');
+          const t = r.claimTypeCd || '';
+          if (done) { cdTotal++; amtClaimDone   += cancelAmt; if (t === 'CANCEL') cdCancel++; else if (t === 'RETURN') cdReturn++; else if (t === 'EXCHANGE') cdExchange++; }
+          else      { caTotal++; amtClaimActive += orderAmt;  if (t === 'CANCEL') caCancel++; else if (t === 'RETURN') caReturn++; else if (t === 'EXCHANGE') caExchange++; }
+        }
+        if (r.refundCompltYn === 'Y') { refund++; amtRefund += cancelAmt; }
+      }
+      return {
+        inProgress, delivered, confirmed, refund,
+        amtProgress, amtDelivered, amtConfirmed,
+        amtClaimActive, amtClaimDone, amtRefund,
+        claimActive: { total: caTotal, cancel: caCancel, return: caReturn, exchange: caExchange },
+        claimDone:   { total: cdTotal, cancel: cdCancel, return: cdReturn, exchange: cdExchange },
+      };
+    });
+
     watch(orderItems, (list) => { expandedItems.clear(); list.forEach((_, i) => expandedItems.add(i)); });
 
     /* getExchangedItem — 조회 */
@@ -566,6 +615,30 @@ window.OdOrderDtl = {
       { key: 'size',        label: '사이즈',     style: 'width:50px;',                fmt: v => v || '-' },
       { key: 'qty',         label: '수량',       style: 'width:44px;text-align:center;',
         align: 'center', fmt: (v) => v || 1, cellStyle: 'font-weight:600;' },
+      { key: '_sProg', label: '주문중',   style: 'width:44px;', align: 'center',
+        fmt: (v, row) => STS_PROGRESS.includes(row.orderItemStatusCd || form.orderStatusCd) ? '1' : '',
+        cellStyle: (v, row) => STS_PROGRESS.includes(row.orderItemStatusCd || form.orderStatusCd) ? 'color:#3a6ecf;font-weight:700;' : '' },
+      { key: '_sDliv', label: '배송완료', style: 'width:52px;', align: 'center',
+        fmt: (v, row) => STS_DELIVERED.includes(row.orderItemStatusCd || form.orderStatusCd) ? '1' : '',
+        cellStyle: (v, row) => STS_DELIVERED.includes(row.orderItemStatusCd || form.orderStatusCd) ? 'color:#5a8080;font-weight:700;' : '' },
+      { key: '_sConf', label: '주문완료', style: 'width:52px;', align: 'center',
+        fmt: (v, row) => STS_CONFIRMED.includes(row.orderItemStatusCd || form.orderStatusCd) ? '1' : '',
+        cellStyle: (v, row) => STS_CONFIRMED.includes(row.orderItemStatusCd || form.orderStatusCd) ? 'color:#2a7d52;font-weight:700;' : '' },
+      { key: '_sCa', label: '클레임중', style: 'width:54px;', align: 'center',
+        fmt: (v, row) => row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '') ? (STS_CLM_TYPE[row.claimTypeCd] || '진행') : '',
+        cellStyle: (v, row) => row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '') ? 'color:#c07030;font-size:11px;font-weight:700;' : '' },
+      { key: '_sCd', label: '클레임완료', style: 'width:58px;', align: 'center',
+        fmt: (v, row) => row.claimYn === 'Y' && STS_CLM_DONE.includes(row.claimStatusCd || '') ? (STS_CLM_TYPE[row.claimTypeCd] || '완료') : '',
+        cellStyle: (v, row) => row.claimYn === 'Y' && STS_CLM_DONE.includes(row.claimStatusCd || '') ? 'color:#888;font-size:11px;' : '' },
+      { key: '_sRef', label: '환불완료', style: 'width:52px;', align: 'center',
+        fmt: (v, row) => row.refundCompltYn === 'Y' ? '1' : '',
+        cellStyle: (v, row) => row.refundCompltYn === 'Y' ? 'color:#d95050;font-weight:700;' : '' },
+      { key: 'itemCancelAmt',    label: '환불금액', style: 'width:82px;', align: 'right',
+        fmt: (v) => v ? fmt(v) : '-',
+        cellStyle: (v) => v ? 'color:#d95050;' : 'color:#d0d0d0;' },
+      { key: 'itemCompletedAmt', label: '확정금액', style: 'width:82px;', align: 'right',
+        fmt: (v) => v ? fmt(v) : '-',
+        cellStyle: (v) => v ? 'color:#2a7d52;font-weight:600;' : 'color:#d0d0d0;' },
       { key: 'salePrice',   label: '판매금액',   style: 'width:90px;text-align:right;',
         align: 'right', fmt: (v, row) => fmt(row.salePrice || row.price), cellStyle: 'color:#666;' },
       { key: 'discInfo',    label: '할인정보',   style: 'width:80px;', cellStyle: 'font-size:12px;',
@@ -637,9 +710,9 @@ window.OdOrderDtl = {
       odModal, payState,                                                                                   // MD 대리주문: 모달/결제 상태
       handleBtnAction, handleSelectAction, fnCallbackModal, onProdToggled,                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfCurrentStepIdx, cfIsCanceled, cfRelatedVendor, cfRelatedDelivery, // computed
-      cfRelatedClaim, tabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfAllExpanded, // computed
+      cfRelatedClaim, tabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfAllExpanded, cfOrderItemSummary, // computed
       ORDER_STEPS, CLAIM_FLOWS, CLAIM_TYPE_COLOR, // 상수
-      fmt, showTab, isExpanded, fnItemExpanded, getExchangedItem,                  // 헬퍼
+      fmt, fnAmtShort, showTab, isExpanded, fnItemExpanded, getExchangedItem,        // 헬퍼
       showRefModal, showToast, showConfirm,                                                                // 모달/알림 (template + 공통 컴포넌트 prop 전달)
     };
   },
@@ -792,6 +865,41 @@ window.OdOrderDtl = {
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('orderItems-toggleExpandAll')">
           {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
         </button>
+      </div>
+      <!-- ===== ■.■.■. 상태 요약 열 ============================================ -->
+      <div v-if="orderItems.length" style="display:grid;grid-template-columns:repeat(6,1fr);border:1px solid #ede6e6;border-radius:8px;overflow:hidden;margin-bottom:10px;">
+        <div style="padding:9px 12px;text-align:center;background:#f4f8ff;border-right:1px solid #ede6e6;">
+          <div style="font-size:10px;color:#8a9bbf;font-weight:600;margin-bottom:4px;">주문중</div>
+          <div style="font-size:16px;font-weight:700;color:#3a6ecf;">{{ cfOrderItemSummary.inProgress }}<span style="font-size:11px;font-weight:400;">건</span></div>
+          <div style="font-size:11px;color:#8ab0e0;margin-top:2px;">{{ fnAmtShort(cfOrderItemSummary.amtProgress) }}</div>
+        </div>
+        <div style="padding:9px 12px;text-align:center;background:#f4f8f7;border-right:1px solid #ede6e6;">
+          <div style="font-size:10px;color:#7a9595;font-weight:600;margin-bottom:4px;">배송완료</div>
+          <div style="font-size:16px;font-weight:700;color:#5a8080;">{{ cfOrderItemSummary.delivered }}<span style="font-size:11px;font-weight:400;">건</span></div>
+          <div style="font-size:11px;color:#7aa0a0;margin-top:2px;">{{ fnAmtShort(cfOrderItemSummary.amtDelivered) }}</div>
+        </div>
+        <div style="padding:9px 12px;text-align:center;background:#f4fbf7;border-right:1px solid #ede6e6;">
+          <div style="font-size:10px;color:#6a9580;font-weight:600;margin-bottom:4px;">주문완료</div>
+          <div style="font-size:16px;font-weight:700;color:#2a7d52;">{{ cfOrderItemSummary.confirmed }}<span style="font-size:11px;font-weight:400;">건</span></div>
+          <div style="font-size:11px;color:#6aaa80;margin-top:2px;">{{ fnAmtShort(cfOrderItemSummary.amtConfirmed) }}</div>
+        </div>
+        <div style="padding:9px 12px;text-align:center;background:#fff8f0;border-right:1px solid #ede6e6;">
+          <div style="font-size:10px;color:#b08050;font-weight:600;margin-bottom:4px;">클레임진행중</div>
+          <div style="font-size:16px;font-weight:700;color:#c07030;">{{ cfOrderItemSummary.claimActive.total }}<span style="font-size:11px;font-weight:400;">건</span></div>
+          <div style="font-size:11px;color:#c0905a;margin-top:2px;">{{ fnAmtShort(cfOrderItemSummary.amtClaimActive) }}</div>
+          <div style="font-size:10px;color:#c0a080;margin-top:2px;">취소:{{ cfOrderItemSummary.claimActive.cancel }} 반품:{{ cfOrderItemSummary.claimActive.return }} 교환:{{ cfOrderItemSummary.claimActive.exchange }}</div>
+        </div>
+        <div style="padding:9px 12px;text-align:center;background:#f9f9f9;border-right:1px solid #ede6e6;">
+          <div style="font-size:10px;color:#909090;font-weight:600;margin-bottom:4px;">클레임완료</div>
+          <div style="font-size:16px;font-weight:700;color:#808080;">{{ cfOrderItemSummary.claimDone.total }}<span style="font-size:11px;font-weight:400;">건</span></div>
+          <div style="font-size:11px;color:#a0a0a0;margin-top:2px;">{{ fnAmtShort(cfOrderItemSummary.amtClaimDone) }}</div>
+          <div style="font-size:10px;color:#b0b0b0;margin-top:2px;">취소:{{ cfOrderItemSummary.claimDone.cancel }} 반품:{{ cfOrderItemSummary.claimDone.return }} 교환:{{ cfOrderItemSummary.claimDone.exchange }}</div>
+        </div>
+        <div style="padding:9px 12px;text-align:center;background:#fff5f5;">
+          <div style="font-size:10px;color:#c08080;font-weight:600;margin-bottom:4px;">환불완료</div>
+          <div style="font-size:16px;font-weight:700;color:#d95050;">{{ cfOrderItemSummary.refund }}<span style="font-size:11px;font-weight:400;">건</span></div>
+          <div style="font-size:11px;color:#e07070;margin-top:2px;">{{ fnAmtShort(cfOrderItemSummary.amtRefund) }}</div>
+        </div>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.orderItemGrid" :rows="orderItems"

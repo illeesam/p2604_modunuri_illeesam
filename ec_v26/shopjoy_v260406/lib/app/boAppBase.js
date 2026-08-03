@@ -2213,7 +2213,7 @@
     <nav class="bo-left-nav" v-if="!cfEmbed" :class="{closed: !leftMenuOpen}">
       <div class="left-nav-top">
         <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
-        <template v-for="item in (LEFT_MENUS[activeTop] || [])" :key="item?.group || item?.id">
+        <template v-for="item in (activeTop === 'home' ? [] : (LEFT_MENUS[activeTop] || []))" :key="item?.group || item?.id">
           <div v-if="item.group" class="left-nav-group-header">{{ item.group }}</div>
           <div v-else class="left-nav-item left-nav-sub-item" :class="{active: cfActiveTabId===item.id}"
             @click="$event.ctrlKey ? openNewWindow(item.id) : navigate(item.id)"

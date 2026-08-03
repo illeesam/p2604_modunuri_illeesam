@@ -47,6 +47,7 @@ window.boRegisterComponents = function (app) {
     /* ── pages/bo/ec/ — 주문 ── */
     .component('OdOrderMng', window.OdOrderMng)
     .component('OdOrderItemMng', window.OdOrderItemMng)
+    .component('OdOrderItemDtl', window.OdOrderItemDtl)
     .component('OdOrderDtl', window.OdOrderDtl)
     .component('OdOrderHist', window.OdOrderHist)
     /* ── pages/bo/ec/ — 클레임 ── */

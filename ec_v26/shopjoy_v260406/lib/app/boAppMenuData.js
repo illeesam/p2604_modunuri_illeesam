@@ -46,7 +46,7 @@
       { id: 'cmDashboardItemMng', label: '대시보드 항목관리' },
       { id: 'cmDashboardLayoutMng', label: '대시보드 항목배치' },
       { id: 'cmDashboardSysMenuMng', label: '대시보드 메뉴관리' },
-      { group: '사용자 대시보드' },
+      { group: '사용자 대시보드 관리' },
       { id: 'cmDashboardMyMng', label: '사용자 대시보드 관리' },
       { id: 'cmDashboardMenuMng', label: '사용자 대시보드 메뉴관리' },
     ],
@@ -81,9 +81,9 @@
     order: [
       { id: 'odOrderMng', label: '주문관리' },
       { id: 'odOrderItemMng', label: '주문항목관리' },
-      { id: 'odOrderKanban', label: '주문 칸반보드' },
       { id: 'odClaimMng', label: '클레임관리' },
       { id: 'odDlivMng', label: '배송관리' },
+      { id: 'odOrderKanban', label: '주문 칸반보드' },
       { id: 'odCartMng', label: '장바구니관리' },
     ],
     promotion: [
