@@ -158,6 +158,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                     QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()),
                     QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()),
                     QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()),
+                    QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
+                    QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
                 )
@@ -185,6 +187,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()),
                 QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()),
                 QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()),
+                QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
+                QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
         };

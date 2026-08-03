@@ -41,7 +41,6 @@ window.OdOrderDtl = {
       extraReqAmt: 0, extraReqReason: '',          // 추가결제 요청 금액/사유
     });
     /* ── MD 대리주문: 모달 상태 ── */
-    const products = reactive([]);                 // 상품 선택 모달용 상품 목록
     const odModal = reactive({ member: false, orderCopy: false, prod: false }); // 회원/주문복사/상품 모달 표시
     const payState = reactive({ processing: false }); // 브랜드페이 결제 진행 플래그 (위젯은 공통 컴포넌트가 자체 관리)
     /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (미선택 시 빈 폼 유지) */
@@ -181,19 +180,18 @@ window.OdOrderDtl = {
       showToast(`주문 ${o.orderId} 를 복사했습니다.`, 'success');
     };
 
-    /* onProdToggled — 상품 선택 모달 토글: 주문항목에 추가/제거 */
-    const onProdToggled = (productId) => {
+    /* onProdToggled — 상품 선택 모달 토글: 주문항목에 추가/제거
+     * result-type="row" 로 받으므로 row.id=prodId, row.nm=prodNm, row.salePrice 직접 사용 */
+    const onProdToggled = (row) => {
+      const productId = row.id || row.prodId;
       const idx = orderItems.findIndex(it => it.productId === productId);
       if (idx !== -1) { orderItems.splice(idx, 1); }
       else {
-        const p = products.find(x => x.productId === productId);
-        if (p) {
-          orderItems.push({
-            productId: p.productId, prodNm: p.prodNm, qty: 1,
-            salePrice: Number(p.salePrice || p.price || 0),
-            discAmount: 0, price: Number(p.salePrice || p.price || 0),
-          });
-        }
+        const price = Number(row.salePrice || 0);
+        orderItems.push({
+          productId, prodNm: row.nm || row.prodNm, qty: 1,
+          salePrice: price, discAmount: 0, price,
+        });
       }
       recalcTotal();
     };
@@ -417,21 +415,8 @@ window.OdOrderDtl = {
       await fnLoadCodes();
       await handleSearchDetail();
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
-      fnLoadProducts();
     };
     onMounted(initPage);
-
-    /* fnLoadProducts — 상품 선택 모달용 상품 목록 로드 (MD 대리주문) */
-    const fnLoadProducts = async () => {
-      try {
-        const res = await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 200 }, '주문관리', '상품목록');
-        const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        products.splice(0, products.length, ...list.map(p => ({
-          productId: p.prodId || p.productId, prodNm: p.prodNm,
-          salePrice: Number(p.salePrice || p.price || 0),
-        })));
-      } catch (e) { console.warn('[fnLoadProducts]', e); }
-    };
 
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -649,7 +634,7 @@ window.OdOrderDtl = {
     return {
       columns,
       form, errors, orderItems, activeTab, tabMode2,                      // 상태 / 데이터
-      products, odModal, payState,                                                                         // MD 대리주문: 모달/결제 상태
+      odModal, payState,                                                                                   // MD 대리주문: 모달/결제 상태
       handleBtnAction, handleSelectAction, fnCallbackModal, onProdToggled,                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfCurrentStepIdx, cfIsCanceled, cfRelatedVendor, cfRelatedDelivery, // computed
       cfRelatedClaim, tabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfAllExpanded, // computed
@@ -924,7 +909,7 @@ window.OdOrderDtl = {
   <!-- v-if 미사용: :show false→true 전환을 모달 내부 watch 가 관찰해야 최초 목록 로드됨 -->
   <bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="odModal.member" :on-callback="fnCallbackModal" @close="handleBtnAction('memberModal-close')" />
   <bo-cm-popup-modal v-if="odModal.orderCopy" popup-cmd="cmPopup-order-copy" popup-code="order" :on-callback="fnCallbackModal" @close="handleBtnAction('orderCopyModal-close')" />
-  <bo-cm-popup-modal popup-code="prod" result-type="id" :show="odModal.prod" :selected-ids="orderItems.map(it => it.productId)" @toggle="onProdToggled" @close="handleBtnAction('prodModal-close')" />
+  <bo-cm-popup-modal popup-code="prod" result-type="row" :show="odModal.prod" :selected-ids="orderItems.map(it => it.productId)" @toggle="onProdToggled" @close="handleBtnAction('prodModal-close')" />
   <!-- ===== □. MD 대리주문 모달 ============================================== -->
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->

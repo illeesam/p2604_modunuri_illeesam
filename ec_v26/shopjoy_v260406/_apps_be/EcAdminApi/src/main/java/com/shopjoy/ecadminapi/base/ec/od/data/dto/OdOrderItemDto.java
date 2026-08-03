@@ -19,6 +19,8 @@ public class OdOrderItemDto {
         @Size(max = 21) private String orderItemId;
         @Size(max = 21) private String orderId;        // 상위 FK 필터
         private List<String> orderIds;                 // 상위 FK 다건 IN
+        @Size(max = 30) private String orderItemStatusCd; // 품목상태 직접 필터 (BO 목록 검색)
+        @Size(max = 1)  private String claimYn;            // 클레임여부 필터 Y/N
     }
 
     @Getter @Setter @NoArgsConstructor

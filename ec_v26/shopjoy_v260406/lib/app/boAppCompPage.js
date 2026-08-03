@@ -21,6 +21,7 @@
     pdTagMng: 'pd-tag-mng',
     odOrderKanban: 'od-order-kanban',
     odOrderMng: 'od-order-mng',
+    odOrderItemMng: 'od-order-item-mng',
     odOrderDtl: 'od-order-dtl',
     odClaimMng: 'od-claim-mng',
     odClaimDtl: 'od-claim-dtl',

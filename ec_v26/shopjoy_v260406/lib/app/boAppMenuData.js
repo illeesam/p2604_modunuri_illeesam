@@ -80,6 +80,7 @@
     ],
     order: [
       { id: 'odOrderMng', label: '주문관리' },
+      { id: 'odOrderItemMng', label: '주문항목관리' },
       { id: 'odOrderKanban', label: '주문 칸반보드' },
       { id: 'odClaimMng', label: '클레임관리' },
       { id: 'odDlivMng', label: '배송관리' },

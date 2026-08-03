@@ -2454,6 +2454,7 @@
             <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <od-order-kanban v-else-if="page==='odOrderKanban'" :key="'kanban_' + dtlId" :order-id="dtlId" :claim-id="kanbanClaimId" mode="bo" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
+            <od-order-item-mng  v-else-if="page==='odOrderItemMng'"  :navigate="navigate" />
             <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <od-claim-dtl  v-else-if="page==='odClaimDtl'"  :navigate="navigate" :dtl-id="dtlId" />
