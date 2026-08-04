@@ -1,109 +1,107 @@
-/* ShopJoy Admin - 주문항목관리 목록 + 하단 OrderDtl 임베드 */
+/* ShopJoy Admin - 주문항목관리 목록 + 하단 OdOrderItemDtl 임베드 */
 window.OdOrderItemMng = {
   name: 'OdOrderItemMng',
   props: {
-    navigate:     { type: Function, required: true },                       // 페이지 이동
-    showToast:    { type: Function, default: () => {} },                    // 토스트 알림
-    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    navigate:    { type: Function, required: true },
+    showToast:   { type: Function, default: () => {} },
+    showConfirm: { type: Function, default: () => Promise.resolve(true) },
   },
   setup(props) {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
     const { reactive, computed, onMounted } = Vue;
-    const showToast   = window.boApp?.showToast   || props.showToast;
+    const showToast = window.boApp?.showToast || props.showToast;
 
-    /* ── 목록 상태 ── */
     const items = reactive([]);
-    const listGridPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 30, 50, 100] });
+    const listGridPager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [20, 50, 100, 200] });
     const uiState = reactive({ loading: false });
-    const codes = reactive({ order_item_statuses: [], od_date_types: [] });
+    const codes = reactive({ order_item_statuses: [], od_date_types: [], couriers: [] });
 
     const searchParam = reactive({
-      orderId: '',
-      orderItemStatusCd: '',
-      claimYn: '',
-      searchType: '',
-      searchValue: '',
-      dateRangeType: 'reg_date',
-      dateRangeStart: '',
-      dateRangeEnd: '',
+      orderId: '', memberId: '', memberNm: '',
+      vendorId: '', vendorNm: '', brandId: '', brandNm: '',
+      mdUserId: '', mdUserNm: '', courierCd: '',
+      orderItemStatusCd: '', claimYn: '',
+      searchType: '', searchValue: '',
+      dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '',
     });
-    /* searchParamInit — [초기화] 기준값. initPage 끝에서 스냅샷 저장. */
+
+    const picks = reactive({ member: false, order: false, vendor: false, brand: false, md: false });
     const searchParamInit = {};
 
-    /* 하단 상세 (인라인 Dtl) — 항상 표시. 진입 시 빈 신규 폼(비활성) */
-    const detailPanel = reactive({ selectedOrderItemId: null, selectedOrderId: null, openMode: 'view', reloadTrigger: 0, active: false, resetSeq: 0 });
+    /* 하단 상세 — active 항상 true, 미선택 시 안내 메시지 표시 */
+    const detailPanel = reactive({ selectedOrderItemId: null, selectedOrderId: null, openMode: 'view', reloadTrigger: 0, active: true, resetSeq: 0 });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     const handleBtnAction = (cmd, param = {}) => {
-      if (cmd === 'searchParam-list') {
-        listGridPager.pageNo = 1;
-        return handleSearchList();
+      if (cmd === 'searchParam-list') { listGridPager.pageNo = 1; return handleSearchList();
       } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, searchParamInit);
-        listGridPager.pageNo = 1;
-        resetDetailToNew();
-        return handleSearchList();
+        Object.assign(searchParam, searchParamInit); listGridPager.pageNo = 1; resetDetailToNew(); return handleSearchList();
       } else if (cmd === 'items-pager-setPage') {
-        if (param >= 1 && param <= listGridPager.pageTotalPage) { listGridPager.pageNo = param; handleSearchList(); }
-        return;
-      } else if (cmd === 'detailPanel-close') {
-        return resetDetailToNew();
-      } else {
-        console.warn('[OdOrderItemMng] handleBtnAction unknown cmd:', cmd);
+        if (param >= 1 && param <= listGridPager.pageTotalPage) { listGridPager.pageNo = param; handleSearchList(); } return;
+      } else if (cmd === 'pick-member-open') { picks.member = true; return;
+      } else if (cmd === 'pick-order-open')  { picks.order  = true; return;
+      } else if (cmd === 'pick-vendor-open') { picks.vendor = true; return;
+      } else if (cmd === 'pick-brand-open')  { picks.brand  = true; return;
+      } else if (cmd === 'pick-md-open')     { picks.md     = true; return;
+      } else if (cmd === 'pick-member-clear') { searchParam.memberId = ''; searchParam.memberNm = ''; return;
+      } else if (cmd === 'pick-order-clear')  { searchParam.orderId  = ''; return;
+      } else if (cmd === 'pick-vendor-clear') { searchParam.vendorId = ''; searchParam.vendorNm = ''; return;
+      } else if (cmd === 'pick-brand-clear')  { searchParam.brandId  = ''; searchParam.brandNm  = ''; return;
+      } else if (cmd === 'pick-md-clear')     { searchParam.mdUserId = ''; searchParam.mdUserNm = ''; return;
+      } else { console.warn('[OdOrderItemMng] unknown cmd:', cmd); }
+    };
+
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (result == null) { picks.member = picks.order = picks.vendor = picks.brand = picks.md = false; return; }
+      if (popCmd === 'cmPopup-member-pick') {
+        searchParam.memberId = result.memberId || ''; searchParam.memberNm = result.memberNm || result.loginId || result.memberId || ''; picks.member = false;
+      } else if (popCmd === 'cmPopup-order-pick') {
+        searchParam.orderId = result.orderId || ''; picks.order = false;
+      } else if (popCmd === 'cmPopup-vendor-pick') {
+        searchParam.vendorId = result.vendorId || ''; searchParam.vendorNm = result.vendorNm || result.vendorId || ''; picks.vendor = false;
+      } else if (popCmd === 'cmPopup-brand-pick') {
+        searchParam.brandId = result.brandId || ''; searchParam.brandNm = result.brandNm || result.brandId || ''; picks.brand = false;
+      } else if (popCmd === 'cmPopup-md-pick') {
+        searchParam.mdUserId = result.userId || ''; searchParam.mdUserNm = result.userNm || result.loginId || result.userId || ''; picks.md = false;
       }
     };
 
-    const handleSelectAction = (cmd, param = {}) => {
-      if (cmd === 'items-pager-sizeChange') {
-        listGridPager.pageNo = 1;
-        return handleSearchList();
-      } else {
-        console.warn('[OdOrderItemMng] handleSelectAction unknown cmd:', cmd);
-      }
+    const handleSelectAction = (cmd) => {
+      if (cmd === 'items-pager-sizeChange') { listGridPager.pageNo = 1; return handleSearchList(); }
     };
 
-    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
-      if (cmd === 'items-cellClick') {
-        if (colKey === 'btn_row_edit') {
-          detailPanel.selectedOrderItemId = row.orderItemId;
-          detailPanel.selectedOrderId     = row.orderId;
-          detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
-          return;
-        }
-        const VIEW_COLS = ['__no__'];
-        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
-          detailPanel.selectedOrderItemId = row.orderItemId;
-          detailPanel.selectedOrderId     = row.orderId;
-          detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
-          return;
-        }
-      } else {
-        console.warn('[OdOrderItemMng] handleGridCellAction unknown cmd:', cmd);
-      }
+    const handleRowClick = (row) => {
+      detailPanel.selectedOrderItemId = row.orderItemId;
+      detailPanel.selectedOrderId     = row.orderId;
+      detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
+    };
+
+    const handleRowEdit = (row) => {
+      detailPanel.selectedOrderItemId = row.orderItemId;
+      detailPanel.selectedOrderId     = row.orderId;
+      detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
     };
 
     /* ##### [03] 인라인 Dtl 헬퍼 #################################################### */
 
     const resetDetailToNew = () => {
-      detailPanel.selectedOrderItemId = null;
-      detailPanel.selectedOrderId     = null;
-      detailPanel.openMode  = 'view';
-      detailPanel.active    = false;
-      detailPanel.resetSeq++;
+      detailPanel.selectedOrderItemId = null; detailPanel.selectedOrderId = null;
+      detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.resetSeq++;
     };
 
-    /* inlineNavigate — 인라인 Dtl 내부에서 navigate 호출 시 가로채기 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'odOrderMng') { if (opts.reload) handleSearchList(); resetDetailToNew(); return; }
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === 'odOrderMng')       { if (opts.reload) handleSearchList(); resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__')   { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
 
     const cfDetailKey = computed(() => `${detailPanel.selectedOrderItemId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
+
+    /* ##### [04] 상수 및 헬퍼 함수 ################################################## */
 
     const STS_PROGRESS  = ['ORDERED', 'PAID', 'PREPARING', 'SHIPPING', 'WAIT_DEPOSIT'];
     const STS_DELIVERED = ['DELIVERED', 'DLIV_COMPLT'];
@@ -111,73 +109,166 @@ window.OdOrderItemMng = {
     const STS_CLM_DONE  = ['COMPLT', 'DONE', 'COMPLETE', 'REJECTED'];
     const STS_CLM_TYPE  = { CANCEL: '취소', RETURN: '반품', EXCHANGE: '교환' };
 
-    const cfSummary = computed(() => {
-      const IN_PROGRESS  = STS_PROGRESS;
-      const IN_DELIVERED = STS_DELIVERED;
-      const IN_CONFIRMED = STS_CONFIRMED;
-      const CLM_DONE     = STS_CLM_DONE;
-      let inProgress = 0, delivered = 0, confirmed = 0, refund = 0;
-      let caTotal = 0, caCancel = 0, caReturn = 0, caExchange = 0;
-      let cdTotal = 0, cdCancel = 0, cdReturn = 0, cdExchange = 0;
-      let amtProgress = 0, amtDelivered = 0, amtConfirmed = 0;
-      let amtClaimActive = 0, amtClaimDone = 0, amtRefund = 0;
-      for (const r of items) {
-        const st          = r.orderItemStatusCd || '';
-        const orderAmt    = Number(r.itemOrderAmt)     || 0;
-        const cancelAmt   = Number(r.itemCancelAmt)    || 0;
-        const completedAmt = Number(r.itemCompletedAmt) || 0;
-        if (IN_PROGRESS.includes(st))       { inProgress++; amtProgress   += orderAmt; }
-        else if (IN_DELIVERED.includes(st)) { delivered++;  amtDelivered  += orderAmt; }
-        else if (IN_CONFIRMED.includes(st)) { confirmed++;  amtConfirmed  += completedAmt || orderAmt; }
-        if (r.claimYn === 'Y') {
-          const done = CLM_DONE.includes(r.claimStatusCd || '');
-          const t = r.claimTypeCd || '';
-          if (done) { cdTotal++; amtClaimDone   += cancelAmt; if (t === 'CANCEL') cdCancel++; else if (t === 'RETURN') cdReturn++; else if (t === 'EXCHANGE') cdExchange++; }
-          else      { caTotal++; amtClaimActive += orderAmt;  if (t === 'CANCEL') caCancel++; else if (t === 'RETURN') caReturn++; else if (t === 'EXCHANGE') caExchange++; }
-        }
-        if (r.refundCompltYn === 'Y') { refund++; amtRefund += cancelAmt; }
-      }
-      return {
-        inProgress, delivered, confirmed, refund,
-        amtProgress, amtDelivered, amtConfirmed,
-        amtClaimActive, amtClaimDone, amtRefund,
-        claimActive: { total: caTotal, cancel: caCancel, return: caReturn, exchange: caExchange },
-        claimDone:   { total: cdTotal, cancel: cdCancel, return: cdReturn, exchange: cdExchange },
-        isPartial:   listGridPager.pageTotalCount > items.length,
-      };
-    });
-
-    /* ##### [04] 내장 사용 함수 #################################################### */
-
     const fnStatusBadge = (cd) => {
-      const m = { ORDERED: 'badge-blue', PAID: 'badge-green', PREPARING: 'badge-orange', SHIPPING: 'badge-purple', DELIVERED: 'badge-blue', CONFIRMED: 'badge-green', CANCELLED: 'badge-red' };
+      const m = { ORDERED:'badge-blue', WAIT_DEPOSIT:'badge-blue', PAID:'badge-green', PREPARING:'badge-orange', SHIPPING:'badge-purple', DELIVERED:'badge-blue', DLIV_COMPLT:'badge-blue', CONFIRMED:'badge-green', COMPLT:'badge-green', BUY_CONFIRMED:'badge-green', CANCELLED:'badge-red' };
       return m[cd] || 'badge-gray';
     };
     const fnYnBadge  = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
-    const fnPrice    = (v) => v != null ? Number(v).toLocaleString() + '원' : '-';
-    const fnDate     = (v) => v ? String(v).substring(0, 16).replace('T', ' ') : '-';
     const fnAmtShort = (v) => {
-      const n = Number(v) || 0;
-      if (!n) return '-';
+      const n = Number(v) || 0; if (!n) return '-';
       if (n >= 100000000) return (n / 100000000).toFixed(1).replace(/\.0$/, '') + '억원';
       if (n >= 10000)     return Math.round(n / 10000) + '만원';
       return n.toLocaleString() + '원';
     };
 
+    /* ##### cfSummary — 3섹션 집계 ################################################# */
+
+    const cfSummary = computed(() => {
+      let qtyOrder = 0, qtyCancel = 0, qtyProgress = 0, qtyConfirmed = 0;
+      let cOrdered = 0, cPaid = 0, cPrep = 0, cShip = 0, cDliv = 0, cBuyConf = 0;
+      let caTotal = 0, caCancel = 0, caReturn = 0, caExchange = 0, caAmt = 0;
+      let cdTotal = 0, cdCancel = 0, cdReturn = 0, cdExchange = 0, cdAmt = 0;
+      let refCount = 0, refAmt = 0;
+      let amtProgress = 0, amtConfirmed = 0;
+
+      for (const r of items) {
+        const qty       = Number(r.orderQty)        || 1;
+        const st        = r.orderItemStatusCd        || '';
+        const orderAmt  = Number(r.itemOrderAmt)     || 0;
+        const cancelAmt = Number(r.itemCancelAmt)    || 0;
+        const compAmt   = Number(r.itemCompletedAmt) || 0;
+        qtyOrder += qty;
+        if (STS_PROGRESS.includes(st))  { qtyProgress  += qty; amtProgress  += orderAmt; }
+        if (STS_CONFIRMED.includes(st)) { qtyConfirmed += qty; amtConfirmed += compAmt || orderAmt; }
+        if      (st === 'ORDERED' || st === 'WAIT_DEPOSIT') cOrdered++;
+        else if (st === 'PAID')                              cPaid++;
+        else if (st === 'PREPARING')                         cPrep++;
+        else if (st === 'SHIPPING')                          cShip++;
+        else if (STS_DELIVERED.includes(st))                 cDliv++;
+        else if (STS_CONFIRMED.includes(st))                 cBuyConf++;
+        if (r.claimYn === 'Y') {
+          const done = STS_CLM_DONE.includes(r.claimStatusCd || '');
+          const t = r.claimTypeCd || '';
+          if (done) {
+            cdTotal++; cdAmt += cancelAmt; qtyCancel += qty;
+            if (t === 'CANCEL') cdCancel++; else if (t === 'RETURN') cdReturn++; else if (t === 'EXCHANGE') cdExchange++;
+          } else {
+            caTotal++; caAmt += orderAmt;
+            if (t === 'CANCEL') caCancel++; else if (t === 'RETURN') caReturn++; else if (t === 'EXCHANGE') caExchange++;
+          }
+        }
+        if (r.cancelQty) qtyCancel = Math.max(qtyCancel, Number(r.cancelQty));
+        if (r.refundCompltYn === 'Y') { refCount++; refAmt += cancelAmt; }
+      }
+      return {
+        qty: { order: qtyOrder, cancel: qtyCancel, progress: qtyProgress, confirmed: qtyConfirmed },
+        status: { ordered: cOrdered, paid: cPaid, prep: cPrep, ship: cShip, dliv: cDliv, buyConf: cBuyConf },
+        claimActive: { total: caTotal, cancel: caCancel, return: caReturn, exchange: caExchange, amt: caAmt },
+        claimDone:   { total: cdTotal, cancel: cdCancel, return: cdReturn, exchange: cdExchange, amt: cdAmt },
+        refund: { count: refCount, amt: refAmt },
+        amtProgress, amtConfirmed,
+        isPartial: listGridPager.pageTotalCount > items.length,
+      };
+    });
+
+    /* ##### cfSummaryRows — 집계 3섹션 데이터 정의 ################################## */
+
+    const cfSummaryRows = computed(() => {
+      const s = cfSummary.value;
+      return [
+        {
+          title: '수량', titleBg: '#e8f5e9', titleColor: '#2e7d32', borderColor: '#c8e6c9',
+          items: [
+            { label: '📦 주문수량', value: s.qty.order,     bg: '#f1f8e9', color: '#2e7d32' },
+            { label: '🔴 취소수량', value: s.qty.cancel,    bg: '#fce4ec', color: '#c62828' },
+            { label: '🟣 진행중',   value: s.qty.progress,  bg: '#f3e5f5', color: '#6a1b9a',
+              sub: fnAmtShort(s.amtProgress),  subColor: '#9c6aba' },
+            { label: '🔵 확정수량', value: s.qty.confirmed, bg: '#e3f2fd', color: '#1565c0',
+              sub: fnAmtShort(s.amtConfirmed), subColor: '#4a8ac0' },
+          ],
+        },
+        {
+          title: '진행상태', titleBg: '#fff8e1', titleColor: '#e65100', borderColor: '#ffe082',
+          items: [
+            { label: '🟡 주문/입금대기', value: s.status.ordered,  bg: '#fff9f0', color: '#bf6000' },
+            { label: '🟢 결제완료',      value: s.status.paid,     bg: '#e8f5e9', color: '#1b5e20' },
+            { label: '🟠 준비중',        value: s.status.prep,     bg: '#fff3e0', color: '#e65100' },
+            { label: '🚚 배송중',        value: s.status.ship,     bg: '#e8eaf6', color: '#283593' },
+            { label: '📬 배송완료',      value: s.status.dliv,     bg: '#e0f2f1', color: '#00695c' },
+            { label: '✅ 구매확정',      value: s.status.buyConf,  bg: '#e8f5e9', color: '#2e7d32' },
+          ],
+        },
+        {
+          title: '클레임', titleBg: '#fce4ec', titleColor: '#b71c1c', borderColor: '#f8bbd0',
+          items: [
+            { label: '⚠️ 클레임진행중', value: s.claimActive.total, bg: '#fff8f0', color: '#c07030',
+              sub: fnAmtShort(s.claimActive.amt), subColor: '#c0a080',
+              detail: '취소:' + s.claimActive.cancel + ' 반품:' + s.claimActive.return + ' 교환:' + s.claimActive.exchange },
+            { label: '✓ 클레임완료',   value: s.claimDone.total,   bg: '#f9f9f9', color: '#757575',
+              sub: fnAmtShort(s.claimDone.amt), subColor: '#a0a0a0',
+              detail: '취소:' + s.claimDone.cancel + ' 반품:' + s.claimDone.return + ' 교환:' + s.claimDone.exchange },
+            { label: '💸 환불완료',    value: s.refund.count,       bg: '#fff5f5', color: '#c62828',
+              sub: fnAmtShort(s.refund.amt), subColor: '#e07070' },
+          ],
+        },
+      ];
+    });
+
+    /* ##### cfSummaryGridRow — 그리드 하단 합계행 데이터 ############################# */
+
+    const cfSummaryGridRow = computed(() => {
+      if (!items.length) return null;
+      let amtOrder = 0, amtCancel = 0, amtComp = 0, amtDliv = 0, qtyOrder = 0, qtyCancel = 0;
+      for (const r of items) {
+        qtyOrder  += Number(r.orderQty)         || 0;
+        qtyCancel += Number(r.cancelQty)        || 0;
+        amtOrder  += Number(r.itemOrderAmt)     || 0;
+        amtCancel += Number(r.itemCancelAmt)    || 0;
+        amtComp   += Number(r.itemCompletedAmt) || 0;
+        amtDliv   += Number(r.dlivAmt)          || 0;
+      }
+      const s = cfSummary.value;
+      return {
+        orderQty:         qtyOrder,
+        cancelQty:        qtyCancel,
+        _progress:        s.qty.progress,
+        _qtyConf:         s.qty.confirmed,
+        _stPaid:          s.status.paid,
+        _stPrep:          s.status.prep,
+        _stShip:          s.status.ship,
+        _stDliv:          s.status.dliv,
+        _stBuyConf:       s.status.buyConf,
+        _claimActive:     s.claimActive.total,
+        _claimDone:       s.claimDone.total,
+        _refund:          s.refund.count,
+        itemOrderAmt:     amtOrder,
+        itemCancelAmt:    amtCancel,
+        itemCompletedAmt: amtComp,
+        dlivAmt:          amtDliv,
+        _settleDliv:      '',
+        _settleOrder:     '',
+      };
+    });
+
+    /* ##### [05] 조회 / 코드 로딩 ################################################## */
+
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
-        const params = {
-          pageNo:   listGridPager.pageNo,
-          pageSize: listGridPager.pageSize,
-          ...(searchParam.orderId             && { orderId:             searchParam.orderId }),
-          ...(searchParam.orderItemStatusCd   && { orderItemStatusCd:   searchParam.orderItemStatusCd }),
-          ...(searchParam.claimYn             && { claimYn:             searchParam.claimYn }),
-          ...(searchParam.searchType          && { searchType:          searchParam.searchType }),
-          ...(searchParam.searchValue         && { searchValue:         searchParam.searchValue }),
-          ...(searchParam.dateRangeType       && { dateRangeType:       searchParam.dateRangeType }),
-          ...(searchParam.dateRangeStart      && { dateRangeStart:      searchParam.dateRangeStart }),
-          ...(searchParam.dateRangeEnd        && { dateRangeEnd:        searchParam.dateRangeEnd }),
+        const params = { pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize,
+          ...(searchParam.memberId          && { memberId:          searchParam.memberId }),
+          ...(searchParam.orderId           && { orderId:           searchParam.orderId }),
+          ...(searchParam.vendorId          && { vendorId:          searchParam.vendorId }),
+          ...(searchParam.brandId           && { brandId:           searchParam.brandId }),
+          ...(searchParam.mdUserId          && { mdUserId:          searchParam.mdUserId }),
+          ...(searchParam.courierCd         && { courierCd:         searchParam.courierCd }),
+          ...(searchParam.orderItemStatusCd && { orderItemStatusCd: searchParam.orderItemStatusCd }),
+          ...(searchParam.claimYn           && { claimYn:           searchParam.claimYn }),
+          ...(searchParam.searchType        && { searchType:        searchParam.searchType }),
+          ...(searchParam.searchValue       && { searchValue:       searchParam.searchValue }),
+          ...(searchParam.dateRangeType     && { dateRangeType:     searchParam.dateRangeType }),
+          ...(searchParam.dateRangeStart    && { dateRangeStart:    searchParam.dateRangeStart }),
+          ...(searchParam.dateRangeEnd      && { dateRangeEnd:      searchParam.dateRangeEnd }),
         };
         if (params.searchValue && !params.searchType) params.searchType = 'prodNm,brandNm';
         const res = await boApiSvc.odOrderItem.getPage(params, '주문항목관리', '조회');
@@ -185,57 +276,205 @@ window.OdOrderItemMng = {
         items.splice(0, items.length, ...(d.pageList || []));
         listGridPager.pageTotalCount = d.pageTotalCount || 0;
         listGridPager.pageTotalPage  = d.pageTotalPage  || 1;
-        const tp = listGridPager.pageTotalPage;
-        const cur = listGridPager.pageNo;
-        const from = Math.max(1, cur - 4);
-        const to   = Math.min(tp, from + 9);
+        const tp = listGridPager.pageTotalPage, cur = listGridPager.pageNo;
+        const from = Math.max(1, cur - 4), to = Math.min(tp, from + 9);
         listGridPager.pageNums = Array.from({ length: to - from + 1 }, (_, i) => from + i);
-        /* 조회 후 선택한 항목이 목록에 없으면 상세 초기화 */
-        if (detailPanel.selectedOrderItemId) {
-          const still = items.some(r => r.orderItemId === detailPanel.selectedOrderItemId);
-          if (!still) resetDetailToNew();
-        }
+        if (detailPanel.selectedOrderItemId && !items.some(r => r.orderItemId === detailPanel.selectedOrderItemId)) resetDetailToNew();
       } catch (err) {
         showToast(err.response?.data?.message || '조회 중 오류가 발생했습니다.', 'error', 0);
-      } finally {
-        uiState.loading = false;
-      }
+      } finally { uiState.loading = false; }
     };
 
-    /* fnLoadCodes — 화면 단위 코드 지연 로딩 */
     const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
-        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS', 'OD_DATE_TYPE'], { compNm: 'OdOrderItemMng' });
+        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS', 'OD_DATE_TYPE', 'COURIER'], { compNm: 'OdOrderItemMng' });
         codes.order_item_statuses = codeStore.sgGetGrpCodes('ORDER_ITEM_STATUS');
         codes.od_date_types       = codeStore.sgGetGrpCodes('OD_DATE_TYPE');
+        codes.couriers            = codeStore.sgGetGrpCodes('COURIER');
       } catch (_) {}
     };
 
-    /* initPage — 코드 로딩 → 초기 조회 */
-    const initPage = async () => {
-      await fnLoadCodes();
-      Object.assign(searchParamInit, searchParam);
-      await handleSearchList();
-    };
-    onMounted(initPage);
+    const initPage = async () => { await fnLoadCodes(); Object.assign(searchParamInit, searchParam); await handleSearchList(); };
 
-    /* ##### [05] 컬럼 정의 ######################################################### */
+    onMounted(() => { initPage(); });
+
+    /* ##### [05-1] 템플릿 헬퍼 (&&를 속성값에서 제거) ################################# */
+
+    const fnClmActiveStyle = (row) => (row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '')) ? 'color:#c07030;font-weight:700;' : 'color:#e0e0e0;';
+    const fnClmDoneStyle   = (row) => (row.claimYn === 'Y' &&  STS_CLM_DONE.includes(row.claimStatusCd || '')) ? 'color:#757575;font-weight:700;' : 'color:#e0e0e0;';
+    const fnClmActiveText  = (row) => (row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '')) ? (STS_CLM_TYPE[row.claimTypeCd] || '진행') : '·';
+    const fnClmDoneText    = (row) => (row.claimYn === 'Y' &&  STS_CLM_DONE.includes(row.claimStatusCd || '')) ? (STS_CLM_TYPE[row.claimTypeCd] || '완료') : '·';
+
+    const fnSettleBadgeCls = (row) => row.settleYn === 'Y' ? 'badge-green' : row.settleYn === 'P' ? 'badge-blue' : 'badge-gray';
+    const fnSettleBadgeLbl = (row) => row.settleYn === 'Y' ? '완료' : row.settleYn === 'P' ? '부분완료' : '대기';
+    const fnVoucherBadge     = (v) => ({ ISSUED: 'badge-green', PENDING: 'badge-orange', CANCELLED: 'badge-red' })[v] || 'badge-gray';
+    const fnVoucherLbl       = (v) => ({ ISSUED: '발행완료', PENDING: '대기', CANCELLED: '취소' })[v] || (v || '-');
+    /* ERP 전표 상태 배지 (DRAFT/CONFIRMED/SENT/MATCHED/MISMATCH/ERROR) */
+    const fnErpVoucherBadge  = (v) => ({ DRAFT: 'badge-gray', CONFIRMED: 'badge-blue', SENT: 'badge-green', MATCHED: 'badge-green', MISMATCH: 'badge-orange', ERROR: 'badge-red' })[v] || 'badge-gray';
+    const fnErpVoucherLbl    = (v) => ({ DRAFT: '임시', CONFIRMED: '확정', SENT: '발송', MATCHED: '매칭', MISMATCH: '불일치', ERROR: '오류' })[v] || (v || '-');
+    /* ERP 전표 유형 한글 축약 (SETTLE/RETURN/ADJ/PAY) */
+    const fnErpVoucherTypeNm = (v) => ({ SETTLE: '정산', RETURN: '반품', ADJ: '조정', PAY: '결제' })[v] || v || '전표';
+
+    /* ##### [06] 컬럼 정의 ########################################################## */
 
     const columns = {};
 
+    /* listGrid — 2행 그룹 헤더 (BoGroupTable 전용) */
+    columns.listGrid = [
+      /* ── Fixed (헤더 전체 행 span) ─────────────────────────────────────── */
+      { key: '_rowNum',     label: '번호',   width: 34,  slot: true },
+      { key: 'orderItemId', label: '항목ID', width: 104,
+        titleFmt: (row) => row.orderItemId || '',
+        tdStyle:  ()    => 'text-align:center;font-family:monospace;font-size:10px;color:#777;',
+        fmt: (row) => row.orderItemId ? row.orderItemId.substring(0, 12) + '..' : '-' },
+      { key: 'orderId',     label: '주문ID', width: 90,
+        titleFmt: (row) => row.orderId || '',
+        tdStyle:  (row) => 'text-align:center;font-family:monospace;font-size:10px;' + (detailPanel.selectedOrderId === row.orderId ? 'color:#e8587a;font-weight:700;' : 'color:#555;'),
+        fmt: (row) => row.orderId ? row.orderId.substring(0, 12) + '..' : '-' },
+
+      /* ── 🧾 상품기본정보 ────────────────────────────────────────────────── */
+      { key: 'memberNm',   label: '회원명',   colGroup: '🧾 상품기본정보',
+        colGroupBg: '#e3f2fd', colGroupColor: '#1565c0', colGroupBorderColor: '#90caf9',
+        thBg: '#deeefb', width: 84,
+        tdStyle: () => 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 6px;text-align:left;',
+        fmt: (row) => row.memberNm   || '-' },
+      { key: 'categoryNm', label: '카테고리', colGroup: '🧾 상품기본정보',
+        thBg: '#deeefb', width: 84,
+        tdStyle: () => 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 6px;font-size:11px;color:#666;text-align:left;',
+        fmt: (row) => row.categoryNm || '-' },
+      { key: 'prodNm',     label: '상품명',   colGroup: '🧾 상품기본정보',
+        thBg: '#deeefb', width: 150, slot: true },
+      { key: 'brandNm',    label: '브랜드',   colGroup: '🧾 상품기본정보',
+        thBg: '#deeefb', width: 76,
+        tdStyle: () => 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 6px;font-size:11px;text-align:left;',
+        fmt: (row) => row.brandNm    || '-' },
+      { key: 'vendorNm',   label: '판매업체', colGroup: '🧾 상품기본정보',
+        thBg: '#deeefb', width: 84,
+        tdStyle: () => 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 6px;font-size:11px;text-align:left;',
+        fmt: (row) => row.vendorNm   || '-' },
+      { key: 'mdUserNm',   label: 'MD',       colGroup: '🧾 상품기본정보',
+        thBg: '#deeefb', width: 64, align: 'center',
+        fmt: (row) => row.mdUserNm   || '-' },
+
+      /* ── 📦 주문수량 ────────────────────────────────────────────────────── */
+      { key: 'orderQty',   label: '주문',   colGroup: '📦 주문수량',
+        colGroupBg: '#e8f5e9', colGroupColor: '#2e7d32', colGroupBorderColor: '#a5d6a7',
+        thBg: '#daf5da', thColor: '#2e7d32', width: 42,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => ({ bg: '#16a34a', color: '#fff', value: row.orderQty || 1 }) },
+      { key: 'cancelQty',  label: '취소',   colGroup: '📦 주문수량',
+        thBg: '#daf5da', thColor: '#c62828', width: 42,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => row.cancelQty ? { bg: '#dc2626', color: '#fff', value: row.cancelQty } : null },
+      { key: '_progress',  label: '진행중', colGroup: '📦 주문수량',
+        thBg: '#daf5da', thColor: '#6a1b9a', width: 42,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => STS_PROGRESS.includes(row.orderItemStatusCd) ? { bg: '#7c3aed', color: '#fff', value: row.orderQty || 1 } : null },
+      { key: '_qtyConf',   label: '확정',   colGroup: '📦 주문수량',
+        thBg: '#daf5da', thColor: '#1565c0', width: 42,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? { bg: '#1d4ed8', color: '#fff', value: row.orderQty || 1 } : null },
+
+      /* ── 📊 진행상태 ────────────────────────────────────────────────────── */
+      { key: '_stPaid',    label: '결제완료', colGroup: '📊 진행상태',
+        colGroupBg: '#fff8e1', colGroupColor: '#e65100', colGroupBorderColor: '#ffca28',
+        thBg: '#fffde7', width: 44,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => row.orderItemStatusCd === 'PAID'      ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null },
+      { key: '_stPrep',    label: '준비중',   colGroup: '📊 진행상태',
+        thBg: '#fffde7', width: 44,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => row.orderItemStatusCd === 'PREPARING' ? { bg: '#c2410c', color: '#fff', value: row.orderQty || 1 } : null },
+      { key: '_stShip',    label: '배송중',   colGroup: '📊 진행상태',
+        thBg: '#fffde7', width: 44,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => row.orderItemStatusCd === 'SHIPPING'  ? { bg: '#1d4ed8', color: '#fff', value: row.orderQty || 1 } : null },
+      { key: '_stDliv',    label: '배송완료', colGroup: '📊 진행상태',
+        thBg: '#fffde7', width: 50,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => STS_DELIVERED.includes(row.orderItemStatusCd) ? { bg: '#0f766e', color: '#fff', value: row.orderQty || 1 } : null },
+      { key: '_stBuyConf', label: '구매확정', colGroup: '📊 진행상태',
+        thBg: '#fffde7', width: 50,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null },
+
+      /* ── ⚠️ 클레임 ──────────────────────────────────────────────────────── */
+      { key: '_claimActive', label: '클레임중',  colGroup: '⚠️ 클레임',
+        colGroupBg: '#fce4ec', colGroupColor: '#c62828', colGroupBorderColor: '#f48fb1',
+        thBg: '#fce4ec', width: 54,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => (row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '')) ? { bg: '#c07030', color: '#fff', value: row.orderQty || 1 } : null },
+      { key: '_claimDone',   label: '클레임완료', colGroup: '⚠️ 클레임',
+        thBg: '#fce4ec', width: 54,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => (row.claimYn === 'Y' && STS_CLM_DONE.includes(row.claimStatusCd || '')) ? { bg: '#757575', color: '#fff', value: row.orderQty || 1 } : null },
+      { key: '_refund',      label: '환불완료',   colGroup: '⚠️ 클레임',
+        thBg: '#fce4ec', width: 44,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => row.refundCompltYn === 'Y' ? { bg: '#dc2626', color: '#fff', value: row.orderQty || 1 } : null },
+
+      /* ── 💰 금액 ────────────────────────────────────────────────────────── */
+      { key: 'itemOrderAmt',     label: '주문금액', colGroup: '💰 금액',
+        colGroupBg: '#e8f5e9', colGroupColor: '#1b5e20', colGroupBorderColor: '#a5d6a7',
+        thBg: '#daf5e9', thColor: '#1565c0', width: 80,
+        tdStyle: ()    => 'text-align:right;padding-right:6px;font-size:11px;color:#1565c0;font-weight:600;',
+        fmt: (row) => row.itemOrderAmt     ? Number(row.itemOrderAmt).toLocaleString()     : '-' },
+      { key: 'itemCancelAmt',    label: '환불금액', colGroup: '💰 금액',
+        thBg: '#daf5e9', thColor: '#dc2626', width: 75,
+        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.itemCancelAmt    ? 'color:#dc2626;font-weight:600;' : 'color:#d8d8d8;'),
+        fmt: (row) => row.itemCancelAmt    ? Number(row.itemCancelAmt).toLocaleString()    : '-' },
+      { key: 'itemCompletedAmt', label: '확정금액', colGroup: '💰 금액',
+        thBg: '#daf5e9', thColor: '#15803d', width: 75,
+        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.itemCompletedAmt ? 'color:#15803d;font-weight:600;' : 'color:#d8d8d8;'),
+        fmt: (row) => row.itemCompletedAmt ? Number(row.itemCompletedAmt).toLocaleString() : '-' },
+      { key: 'dlivAmt',          label: '배송비',   colGroup: '💰 금액',
+        thBg: '#daf5e9', thColor: '#dc2626', width: 68,
+        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.dlivAmt ? 'color:#dc2626;font-weight:600;' : 'color:#d8d8d8;'),
+        fmt: (row) => row.dlivAmt ? Number(row.dlivAmt).toLocaleString() : '-' },
+
+      /* ── 🧾 정산 ────────────────────────────────────────────────────────── */
+      { key: '_settleDliv',  label: '배송비정산', colGroup: '🧾 정산',
+        colGroupBg: '#f3e5f5', colGroupColor: '#6a1b9a', colGroupBorderColor: '#ce93d8',
+        thBg: '#ede7f6', thColor: '#6a1b9a', width: 64, slot: true },
+      { key: '_settleOrder', label: '주문정산',   colGroup: '🧾 정산',
+        thBg: '#ede7f6', thColor: '#6a1b9a', width: 64, slot: true },
+
+      /* ── 📋 전표 ────────────────────────────────────────────────────────── */
+      { key: '_vouchers', label: '발급 전표', colGroup: '📋 전표',
+        colGroupBg: '#e8eaf6', colGroupColor: '#283593', colGroupBorderColor: '#9fa8da',
+        thBg: '#e8eaf6', thColor: '#283593', width: 136,
+        tdStyle: () => 'text-align:left;padding:4px 6px;vertical-align:middle;',
+        slot: true },
+
+      /* ── Fixed action ────────────────────────────────────────────────── */
+      { key: '_actions', label: '작업', width: 56, align: 'center', slot: true },
+    ];
+
     columns.baseSearch = [
-      { key: 'orderId', type: 'text', label: '주문ID', placeholder: '주문ID 입력', width: '180px', mono: true },
+      { key: 'memberId',  type: 'pick', label: '회원', nameKey: 'memberNm',
+        display: (p) => p.memberNm || p.memberId, placeholder: '회원 선택',
+        onOpen: () => handleBtnAction('pick-member-open'), onClear: () => handleBtnAction('pick-member-clear') },
+      { key: 'orderId',   type: 'pick', label: '주문', nameKey: 'orderId',
+        display: (p) => p.orderId, placeholder: '주문 선택',
+        onOpen: () => handleBtnAction('pick-order-open'),  onClear: () => handleBtnAction('pick-order-clear') },
+      { key: 'vendorId',  type: 'pick', label: '판매업체', nameKey: 'vendorNm',
+        display: (p) => p.vendorNm || p.vendorId, placeholder: '업체 선택',
+        onOpen: () => handleBtnAction('pick-vendor-open'), onClear: () => handleBtnAction('pick-vendor-clear') },
+      { key: 'brandId',   type: 'pick', label: '브랜드', nameKey: 'brandNm',
+        display: (p) => p.brandNm || p.brandId, placeholder: '브랜드 선택',
+        onOpen: () => handleBtnAction('pick-brand-open'),  onClear: () => handleBtnAction('pick-brand-clear') },
+      { key: 'mdUserId',  type: 'pick', label: 'MD', nameKey: 'mdUserNm',
+        display: (p) => p.mdUserNm || p.mdUserId, placeholder: 'MD 선택',
+        onOpen: () => handleBtnAction('pick-md-open'),     onClear: () => handleBtnAction('pick-md-clear') },
+      { key: 'courierCd', type: 'select', label: '배송사',
+        options: () => codes.couriers, nullLabel: '배송사 전체' },
       { key: 'orderItemStatusCd', type: 'select', label: '품목상태',
         options: () => codes.order_item_statuses, nullLabel: '상태 전체' },
       { key: 'claimYn', type: 'select', label: '클레임',
-        options: [{ value: 'Y', label: '클레임 있음' }, { value: 'N', label: '클레임 없음' }],
-        nullLabel: '전체' },
+        options: [{ value: 'Y', label: '클레임 있음' }, { value: 'N', label: '클레임 없음' }], nullLabel: '전체' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
-        options: [
-          { value: 'prodNm',   label: '상품명' },
-          { value: 'brandNm',  label: '브랜드명' },
-        ],
+        options: [{ value: 'prodNm', label: '상품명' }, { value: 'brandNm', label: '브랜드명' }],
         placeholder: '검색대상 전체', allLabel: '전체 선택' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '180px' },
       { key: '_dateRange', type: 'dateRange', label: '기간',
@@ -243,136 +482,99 @@ window.OdOrderItemMng = {
         typeOptions: () => codes.od_date_types, dateWidth: '136px' },
     ];
 
-    columns.listGrid = [
-      { key: 'orderItemId',        label: '주문항목ID', style: 'width:110px;',
-        mono: true, cellStyle: 'font-size:11px;', fmt: (v) => v || '-' },
-      { key: 'orderId',            label: '주문ID',   style: 'width:130px;',
-        link: true, mono: true, cellStyle: 'font-size:11px;cursor:pointer;',
-        fmt: (v, row) => v || '-',
-        cellInnerStyle: (v) => detailPanel.selectedOrderId === v ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'prodNm',             label: '상품명',   style: 'min-width:180px;',
-        fmt: (v, row) => {
-          const opts = [row.prodOptNm1, row.prodOptNm2].filter(Boolean);
-          return opts.length ? v + ' [' + opts.join('/') + ']' : (v || '-');
-        } },
-      { key: 'brandNm',            label: '브랜드',   style: 'width:100px;', fmt: (v) => v || '-' },
-      { key: 'orderQty',           label: '수량',     style: 'width:50px;',  align: 'center', cellStyle: 'font-weight:600;' },
-      { key: '_sProg', label: '주문중',   style: 'width:44px;', align: 'center',
-        fmt: (v, row) => STS_PROGRESS.includes(row.orderItemStatusCd) ? '1' : '',
-        cellStyle: (v, row) => STS_PROGRESS.includes(row.orderItemStatusCd) ? 'color:#3a6ecf;font-weight:700;' : '' },
-      { key: '_sDliv', label: '배송완료', style: 'width:52px;', align: 'center',
-        fmt: (v, row) => STS_DELIVERED.includes(row.orderItemStatusCd) ? '1' : '',
-        cellStyle: (v, row) => STS_DELIVERED.includes(row.orderItemStatusCd) ? 'color:#5a8080;font-weight:700;' : '' },
-      { key: '_sConf', label: '주문완료', style: 'width:52px;', align: 'center',
-        fmt: (v, row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? '1' : '',
-        cellStyle: (v, row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? 'color:#2a7d52;font-weight:700;' : '' },
-      { key: '_sCa', label: '클레임중', style: 'width:54px;', align: 'center',
-        fmt: (v, row) => row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '') ? (STS_CLM_TYPE[row.claimTypeCd] || '진행') : '',
-        cellStyle: (v, row) => row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '') ? 'color:#c07030;font-size:11px;font-weight:700;' : '' },
-      { key: '_sCd', label: '클레임완료', style: 'width:58px;', align: 'center',
-        fmt: (v, row) => row.claimYn === 'Y' && STS_CLM_DONE.includes(row.claimStatusCd || '') ? (STS_CLM_TYPE[row.claimTypeCd] || '완료') : '',
-        cellStyle: (v, row) => row.claimYn === 'Y' && STS_CLM_DONE.includes(row.claimStatusCd || '') ? 'color:#888;font-size:11px;' : '' },
-      { key: '_sRef', label: '환불완료', style: 'width:52px;', align: 'center',
-        fmt: (v, row) => row.refundCompltYn === 'Y' ? '1' : '',
-        cellStyle: (v, row) => row.refundCompltYn === 'Y' ? 'color:#d95050;font-weight:700;' : '' },
-      { key: 'itemOrderAmt',    label: '주문금액', style: 'width:90px;',  align: 'right', fmt: (v) => fnPrice(v) },
-      { key: 'itemCancelAmt',   label: '환불금액', style: 'width:90px;',  align: 'right',
-        fmt: (v) => v ? fnPrice(v) : '-',
-        cellStyle: (v) => v ? 'color:#d95050;' : 'color:#d0d0d0;' },
-      { key: 'itemCompletedAmt', label: '확정금액', style: 'width:90px;', align: 'right',
-        fmt: (v) => v ? fnPrice(v) : '-',
-        cellStyle: (v) => v ? 'color:#2a7d52;font-weight:600;' : 'color:#d0d0d0;' },
-      { key: 'orderItemStatusCd',  label: '품목상태', style: 'width:80px;',  align: 'center',
-        fmt: (v, row) => row.orderItemStatusCdNm || v,
-        badge: (row) => fnStatusBadge(row.orderItemStatusCd) },
-      { key: 'claimYn',            label: '클레임',   style: 'width:66px;',  align: 'center',
-        fmt: (v) => v === 'Y' ? '클레임' : '정상',
-        badge: (row) => fnYnBadge(row.claimYn) },
-      { key: 'buyConfirmYn',       label: '구매확정', style: 'width:70px;',  align: 'center',
-        fmt: (v) => v === 'Y' ? '확정' : '미확정',
-        badge: (row) => fnYnBadge(row.buyConfirmYn) },
-      { key: 'settleYn',           label: '정산',     style: 'width:54px;',  align: 'center',
-        fmt: (v) => v === 'Y' ? '완료' : '미처리',
-        badge: (row) => fnYnBadge(row.settleYn) },
-      { key: 'regDate',            label: '등록일시', style: 'width:130px;',
-        fmt: (v) => fnDate(v), cellStyle: 'font-size:11px;color:#888;' },
-    ];
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
+    /* ##### [07] return ########################################################## */
 
     return {
-      columns,
-      items, listGridPager, searchParam, uiState, codes, detailPanel,
-      handleBtnAction, handleSelectAction, handleGridCellAction,
-      inlineNavigate, cfDetailKey, cfSummary, fnAmtShort,
+      columns, items, listGridPager, searchParam, uiState, codes, detailPanel, picks,
+      cfSummary, cfSummaryRows, cfSummaryGridRow, cfDetailKey,
+      handleBtnAction, handleSelectAction, handleRowClick, handleRowEdit,
+      fnSettleBadgeCls, fnSettleBadgeLbl, fnVoucherBadge, fnVoucherLbl,
+      fnErpVoucherBadge, fnErpVoucherLbl, fnErpVoucherTypeNm,
+      inlineNavigate, fnCallbackModal,
+      fnAmtShort,
     };
   },
   template: `
 <bo-page title="주문항목관리">
-  <!-- ===== ■. 검색 ====================================================== -->
+
+  <!-- ===== ■. 검색 ============================================================ -->
   <bo-container>
     <bo-search-area :loading="uiState.loading"
       :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </bo-container>
-  <!-- ===== ■. 목록 ====================================================== -->
+
+  <!-- ===== ■. 섬머리 3섹션 ==================================================== -->
+  <div v-if="items.length" style="margin:0 0 8px;">
+    <bo-stat-row v-for="sec in cfSummaryRows" :key="sec.title"
+      :title="sec.title" :title-bg="sec.titleBg" :title-color="sec.titleColor"
+      :border-color="sec.borderColor" :items="sec.items" />
+    <div v-if="cfSummary.isPartial" style="text-align:right;font-size:10px;color:#ccc;margin-top:2px;">* 현재 페이지 기준</div>
+  </div>
+
+  <!-- ===== ■. 목록 =========================================================== -->
   <bo-container title="주문항목 목록" :count-text="'총 ' + listGridPager.pageTotalCount.toLocaleString() + '건'">
-    <div v-if="uiState.loading" style="text-align:center;padding:48px;color:#bbb;">
-      <div style="font-size:28px;margin-bottom:8px;">⏳</div>
-      조회 중...
-    </div>
-    <template v-else>
-      <div v-if="items.length" style="display:grid;grid-template-columns:repeat(6,1fr);border:1px solid #ede6e6;border-radius:8px;overflow:hidden;margin-bottom:10px;">
-        <div style="padding:9px 12px;text-align:center;background:#f4f8ff;border-right:1px solid #ede6e6;">
-          <div style="font-size:10px;color:#8a9bbf;font-weight:600;margin-bottom:4px;">주문중</div>
-          <div style="font-size:16px;font-weight:700;color:#3a6ecf;">{{ cfSummary.inProgress }}<span style="font-size:11px;font-weight:400;">건</span></div>
-          <div style="font-size:11px;color:#8ab0e0;margin-top:2px;">{{ fnAmtShort(cfSummary.amtProgress) }}</div>
-        </div>
-        <div style="padding:9px 12px;text-align:center;background:#f4f8f7;border-right:1px solid #ede6e6;">
-          <div style="font-size:10px;color:#7a9595;font-weight:600;margin-bottom:4px;">배송완료</div>
-          <div style="font-size:16px;font-weight:700;color:#5a8080;">{{ cfSummary.delivered }}<span style="font-size:11px;font-weight:400;">건</span></div>
-          <div style="font-size:11px;color:#7aa0a0;margin-top:2px;">{{ fnAmtShort(cfSummary.amtDelivered) }}</div>
-        </div>
-        <div style="padding:9px 12px;text-align:center;background:#f4fbf7;border-right:1px solid #ede6e6;">
-          <div style="font-size:10px;color:#6a9580;font-weight:600;margin-bottom:4px;">주문완료</div>
-          <div style="font-size:16px;font-weight:700;color:#2a7d52;">{{ cfSummary.confirmed }}<span style="font-size:11px;font-weight:400;">건</span></div>
-          <div style="font-size:11px;color:#6aaa80;margin-top:2px;">{{ fnAmtShort(cfSummary.amtConfirmed) }}</div>
-        </div>
-        <div style="padding:9px 12px;text-align:center;background:#fff8f0;border-right:1px solid #ede6e6;">
-          <div style="font-size:10px;color:#b08050;font-weight:600;margin-bottom:4px;">클레임진행중</div>
-          <div style="font-size:16px;font-weight:700;color:#c07030;">{{ cfSummary.claimActive.total }}<span style="font-size:11px;font-weight:400;">건</span></div>
-          <div style="font-size:11px;color:#c0905a;margin-top:2px;">{{ fnAmtShort(cfSummary.amtClaimActive) }}</div>
-          <div style="font-size:10px;color:#c0a080;margin-top:2px;">취소:{{ cfSummary.claimActive.cancel }} 반품:{{ cfSummary.claimActive.return }} 교환:{{ cfSummary.claimActive.exchange }}</div>
-        </div>
-        <div style="padding:9px 12px;text-align:center;background:#f9f9f9;border-right:1px solid #ede6e6;">
-          <div style="font-size:10px;color:#909090;font-weight:600;margin-bottom:4px;">클레임완료</div>
-          <div style="font-size:16px;font-weight:700;color:#808080;">{{ cfSummary.claimDone.total }}<span style="font-size:11px;font-weight:400;">건</span></div>
-          <div style="font-size:11px;color:#a0a0a0;margin-top:2px;">{{ fnAmtShort(cfSummary.amtClaimDone) }}</div>
-          <div style="font-size:10px;color:#b0b0b0;margin-top:2px;">취소:{{ cfSummary.claimDone.cancel }} 반품:{{ cfSummary.claimDone.return }} 교환:{{ cfSummary.claimDone.exchange }}</div>
-        </div>
-        <div style="padding:9px 12px;text-align:center;background:#fff5f5;">
-          <div style="font-size:10px;color:#c08080;font-weight:600;margin-bottom:4px;">환불완료</div>
-          <div style="font-size:16px;font-weight:700;color:#d95050;">{{ cfSummary.refund }}<span style="font-size:11px;font-weight:400;">건</span></div>
-          <div style="font-size:11px;color:#e07070;margin-top:2px;">{{ fnAmtShort(cfSummary.amtRefund) }}</div>
-        </div>
-      </div>
-      <div v-if="cfSummary.isPartial" style="text-align:right;font-size:10px;color:#ccc;margin:-6px 0 6px;">* 현재 페이지 기준</div>
-      <bo-grid bare selectable :columns="columns.listGrid" :rows="items"
-        row-key="orderItemId" :selected-key="detailPanel.selectedOrderItemId"
-        empty-text="조회 결과가 없습니다." row-actions
-        grid-id="items-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-        <template #row-actions="{ row, gridId }">
-          <div class="actions">
-            <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
+    <bo-group-table
+      :columns="columns.listGrid"
+      :rows="items"
+      row-key="orderItemId"
+      :selected-key="detailPanel.selectedOrderItemId"
+      table-style="min-width:2100px;table-layout:fixed;width:100%;"
+      :loading="uiState.loading"
+      :summary-row="cfSummaryGridRow"
+      summary-pos="top"
+      summary-bg="#1e2f4a"
+      summary-border-color="#2563eb"
+      summary-text-color="#e8f4ff"
+      col-border="1px solid #e2e8f0"
+      @cell-click="e => handleRowClick(e.row)">
+
+      <template #cell-_rowNum="{ idx }">
+        <span style="color:#999;font-size:11px;">{{ (listGridPager.pageNo - 1) * listGridPager.pageSize + idx + 1 }}</span>
+      </template>
+
+      <template #cell-prodNm="{ row }">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;padding:0 6px;text-align:left;" :title="row.prodNm || ''">
+          {{ row.prodNm || '-' }}<span v-if="row.prodOptNm1" style="font-size:10px;color:#888;">[{{ row.prodOptNm1 }}{{ row.prodOptNm2 ? '/' + row.prodOptNm2 : '' }}]</span>
+        </span>
+      </template>
+
+      <template #cell-_settleDliv="{ row }">
+        <span v-if="row.dlivAmt" :class="'badge ' + fnSettleBadgeCls(row)" style="font-size:10px;display:block;">{{ fnSettleBadgeLbl(row) }}</span>
+        <span v-else style="color:#d8d8d8;font-size:13px;">·</span>
+      </template>
+
+      <template #cell-_settleOrder="{ row }">
+        <span :class="'badge ' + fnSettleBadgeCls(row)" style="font-size:10px;display:block;margin-bottom:1px;">{{ fnSettleBadgeLbl(row) }}</span>
+        <div v-if="row.settleAmt" style="font-size:10px;color:#6a1b9a;font-weight:600;">{{ Number(row.settleAmt).toLocaleString() }}</div>
+      </template>
+
+      <template #cell-_vouchers="{ row }">
+        <template v-if="row.erpVouchers ? row.erpVouchers.length : false">
+          <div v-for="v in row.erpVouchers" :key="v.typeCd"
+            style="display:flex;align-items:center;gap:3px;margin-bottom:2px;white-space:nowrap;">
+            <span style="font-size:9px;color:#555;font-family:monospace;min-width:20px;">{{ fnErpVoucherTypeNm(v.typeCd) }}</span>
+            <span :class="'badge ' + fnErpVoucherBadge(v.statusCd)" style="font-size:9px;padding:0 3px;">{{ fnErpVoucherLbl(v.statusCd) }}</span>
+            <span v-if="v.voucherNo" style="font-size:9px;color:#777;font-family:monospace;">{{ v.voucherNo.substring(0, 8) }}</span>
           </div>
         </template>
-      </bo-grid>
-    </template>
+        <span v-else-if="row.voucherStatusCd" :class="'badge ' + fnVoucherBadge(row.voucherStatusCd)" style="font-size:10px;">{{ fnVoucherLbl(row.voucherStatusCd) }}</span>
+        <span v-else style="color:#d8d8d8;font-size:13px;">·</span>
+      </template>
+
+      <template #cell-_actions="{ row }">
+        <div class="actions" @click.stop>
+          <button class="btn btn_row_edit" @click.stop="handleRowEdit(row)">수정</button>
+        </div>
+      </template>
+
+    </bo-group-table>
     <bo-pager v-if="listGridPager.pageTotalCount > 0" :pager="listGridPager"
       :on-set-page="n => handleBtnAction('items-pager-setPage', n)"
       :on-size-change="() => handleSelectAction('items-pager-sizeChange')" />
   </bo-container>
-  <!-- ===== ■. 하단 상세: OdOrderItemDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ===================== -->
+
+  <!-- ===== ■. 하단 상세 (항상 표시) =========================================== -->
   <od-order-item-dtl
     :key="cfDetailKey"
     :navigate="inlineNavigate"
@@ -381,6 +583,13 @@ window.OdOrderItemMng = {
     :active="detailPanel.active"
     :reload-trigger="detailPanel.reloadTrigger"
     />
+
+  <!-- ===== ■. 선택 팝업 ======================================================= -->
+  <bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="picks.member" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal popup-cmd="cmPopup-order-pick"  popup-code="order"  :show="picks.order"  :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="picks.vendor" :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal popup-cmd="cmPopup-brand-pick"  popup-code="brand"  :show="picks.brand"  :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal popup-cmd="cmPopup-md-pick"     popup-code="user"   :show="picks.md"     :on-callback="fnCallbackModal" />
 </bo-page>
 `
 };

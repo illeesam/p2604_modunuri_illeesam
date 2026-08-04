@@ -180,6 +180,8 @@ window.boRegisterComponents = function (app) {
     .component('BoFormArea', window.BoFormArea)
     .component('BoGrid', window.BoGrid)
     .component('BoGridCrud', window.BoGridCrud)
+    .component('BoGroupTable', window.BoGroupTable)
+    .component('BoStatRow', window.BoStatRow)
     .component('BoPathTreeCard', window.BoPathTreeCard)
     .component('BoMenuTree', window.BoMenuTree)
     .component('BoMenuTreeCard', window.BoMenuTreeCard)

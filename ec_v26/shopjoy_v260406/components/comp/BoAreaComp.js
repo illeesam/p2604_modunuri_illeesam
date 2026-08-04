@@ -2419,3 +2419,334 @@ window.BoFormArea = {
 </div>
 `,
 };
+
+/* ============================================================
+ * BoGroupTable — N행 그룹 헤더 테이블 컴포넌트
+ *
+ * 컬럼 정의 (모두 평탄한 1차원 배열):
+ *   Fixed (colGroup 없음):
+ *     { key, label, width, align, thStyle,
+ *       fmt(row,idx), tdStyle(row), titleFmt(row),
+ *       iconBadge(row), check(row), checkColor,
+ *       badge(row), badgeLabel(row), cellStyle(row), slot }
+ *   Group 소속 (colGroup 있음):
+ *     위 동일 필드 + colGroup(string), thBg, thColor
+ *     + 그룹 스타일(첫 컬럼에만): colGroupBg, colGroupColor, colGroupBorderColor
+ *       ^ 구분자로 레벨별 다른 스타일: colGroupBg: '#e3f2fd^#bbdefb'
+ *         → 1행 그룹헤더:#e3f2fd, 2행 그룹헤더:#bbdefb
+ *   colGroup ^ 구분자로 계층 표현:
+ *     "그룹A"          → 2행 헤더 (그룹A / 컬럼라벨)
+ *     "그룹A^소그룹B"  → 3행 헤더 (그룹A / 소그룹B / 컬럼라벨)
+ * ============================================================ */
+window.BoGroupTable = {
+  name: 'BoGroupTable',
+  props: {
+    columns:      { type: Array,            default: () => [] },
+    rows:         { type: Array,            default: () => [] },
+    rowKey:       { type: String,           default: 'id' },
+    selectedKey:  { type: [String, Number], default: null },
+    tableStyle:   { type: String,           default: '' },
+    loading:      { type: Boolean,          default: false },
+    emptyText:    { type: String,           default: '조회 결과 없음' },
+    summaryRow:        { type: Object,  default: null },
+    summaryPos:        { type: String,  default: 'bottom' },      // 'top' | 'bottom'
+    summaryLabel:      { type: String,  default: '합계' },
+    summaryBg:         { type: String,  default: '#1e2f4a' },     // 합계행 배경색
+    summaryBorderColor:{ type: String,  default: '#2563eb' },     // 합계행 테두리색
+    summaryTextColor:  { type: String,  default: '#e8f4ff' },     // 합계행 텍스트색
+    striped:           { type: Boolean, default: true },           // 홀짝 줄무늬
+    hoverBg:           { type: String,  default: '#dbeafe' },     // hover 배경색
+    stripeBg:          { type: String,  default: '#f4f7fb' },     // 홀수행 배경색
+    colBorder:         { type: String,  default: '' },             // 열 구분선 (예: '1px solid #e2e8f0')
+  },
+  emits: ['cell-click'],
+  setup(props, { emit }) {
+    const { computed, ref } = Vue;
+    const hoveredKey = ref(null);
+
+    /* 모든 컬럼이 leaf — colGroup 쉼표 계층으로 그룹 구분 */
+    const cfLeafCols = computed(() => props.columns);
+
+    /* 각 컬럼의 colGroup 경로 배열: "a^b"→["a","b"], 없음→[] */
+    const cfPaths = computed(() => props.columns.map(col =>
+      col.colGroup ? col.colGroup.split('^').map(s => s.trim()).filter(Boolean) : []
+    ));
+
+    /* 최대 그룹 깊이 (0=fixed만, 1=2행헤더, 2=3행헤더) */
+    const cfMaxDepth = computed(() => {
+      let max = 0;
+      for (const p of cfPaths.value) if (p.length > max) max = p.length;
+      return max;
+    });
+
+    /* colGroup 문자열 → 해당 그룹의 첫 번째 컬럼 (그룹 스타일 정의) */
+    const cfGroupFirstMap = computed(() => {
+      const m = {};
+      for (const col of props.columns) {
+        if (col.colGroup && !m[col.colGroup]) m[col.colGroup] = col;
+      }
+      return m;
+    });
+
+    /* ^ 구분 문자열에서 depth 인덱스 값 추출: "a^b"[0]="a", "a^b"[1]="b", "a"[1]="a" */
+    const fnLv = (val, depth) => {
+      if (!val) return '';
+      const parts = String(val).split('^');
+      return parts[Math.min(depth, parts.length - 1)];
+    };
+
+    /* 헤더 행 배열: [ [{key,label,rowspan,colspan,thStyle},...], [...] ] */
+    const cfHeaderRows = computed(() => {
+      const cols = props.columns;
+      const paths = cfPaths.value;
+      const maxDepth = cfMaxDepth.value;
+      const totalRows = maxDepth + 1;
+      const result = [];
+
+      for (let depth = 0; depth < totalRows; depth++) {
+        const row = [];
+        let i = 0;
+        while (i < cols.length) {
+          const col = cols[i];
+          const path = paths[i];
+
+          if (path.length === 0) {
+            /* Fixed — depth=0에서만 rowspan=totalRows로 한 번 추가 */
+            if (depth === 0) {
+              row.push({
+                key: col.key, label: col.label, rowspan: totalRows, colspan: 1,
+                thStyle: 'text-align:center;vertical-align:middle;'
+                  + (col.width ? 'width:' + col.width + 'px;' : '')
+                  + (col.thStyle || ''),
+              });
+            }
+            i++;
+          } else if (depth < path.length) {
+            /* 그룹 헤더: 같은 경로 prefix를 공유하는 연속 컬럼 colspan 병합 */
+            let count = 0;
+            while (i + count < cols.length) {
+              const np = paths[i + count];
+              if (!np || np.length === 0) break;
+              let same = np.length > depth;
+              if (same) {
+                for (let d = 0; d <= depth; d++) {
+                  if ((np[d] || '') !== (path[d] || '')) { same = false; break; }
+                }
+              }
+              if (!same) break;
+              count++;
+            }
+            const fc = cols[i];
+            const bg = fnLv(fc.colGroupBg, depth);
+            const cl = fnLv(fc.colGroupColor, depth);
+            const bc = fnLv(fc.colGroupBorderColor, depth);
+            const s = [
+              'text-align:center;vertical-align:middle;padding:4px;',
+              depth > 0 ? 'font-size:10px;' : '',
+              bg ? 'background:' + bg + ';' : '',
+              cl ? 'color:'       + cl + ';' : '',
+              bc ? 'border-left:2px solid ' + bc + ';border-right:2px solid ' + bc + ';' : '',
+            ].join('');
+            row.push({ key: '__g' + depth + '_' + i, label: path[depth], rowspan: 1, colspan: count, thStyle: s });
+            i += count;
+          } else if (depth === path.length) {
+            /* 컬럼 라벨: 남은 행 수만큼 rowspan */
+            const fc = cfGroupFirstMap.value[col.colGroup] || col;
+            const bc = fnLv(fc.colGroupBorderColor, depth - 1);
+            const isFirst = i === 0 || (paths[i - 1] || []).join('^') !== path.join('^');
+            const isLast  = i >= cols.length - 1 || (paths[i + 1] || []).join('^') !== path.join('^');
+            const fallbackBg = fnLv(fc.colGroupBg, depth - 1);
+            row.push({
+              key: col.key, label: col.label, rowspan: totalRows - depth, colspan: 1,
+              thStyle: [
+                'text-align:center;vertical-align:middle;',
+                col.thBg    ? 'background:' + col.thBg + ';' : (fallbackBg ? 'background:' + fallbackBg + ';' : ''),
+                col.thColor ? 'color:' + col.thColor + ';font-weight:700;' : '',
+                isFirst && bc ? 'border-left:2px solid '  + bc + ';' : '',
+                isLast  && bc ? 'border-right:2px solid ' + bc + ';' : '',
+                col.width   ? 'min-width:' + col.width + 'px;' : '',
+              ].join(''),
+            });
+            i++;
+          } else {
+            /* depth > path.length: 이미 위 행에서 rowspan 처리됨 — 스킵 */
+            i++;
+          }
+        }
+        result.push(row);
+      }
+      return result;
+    });
+
+    /* td 스타일: tdStyle(row) 우선, 없으면 align 기본 + colBorder */
+    const fnTdStyle = (col, row) => {
+      const base = col.tdStyle ? col.tdStyle(row) : ('text-align:' + (col.align || 'center') + ';');
+      return props.colBorder ? base + 'border-right:' + props.colBorder + ';' : base;
+    };
+
+    /* 선택 행 outline + hover 우선 + 줄무늬 */
+    const fnRowStyle = (row, idx) => {
+      const isSelected = props.selectedKey != null && row[props.rowKey] === props.selectedKey;
+      const isHovered  = hoveredKey.value === row[props.rowKey];
+      let st = 'cursor:pointer;font-size:12px;';
+      if (isSelected) st += 'outline:2px solid #2563eb;outline-offset:-1px;';
+      if      (isHovered)                               st += 'background:' + props.hoverBg  + ';';
+      else if (isSelected)                              st += 'background:#f0f5ff;';
+      else if (props.striped && idx % 2 !== 0)         st += 'background:' + props.stripeBg + ';';
+      return st;
+    };
+
+    const onCellClick      = (row, idx) => emit('cell-click', { row, idx });
+    const onRowMouseEnter  = (row)       => { hoveredKey.value = row[props.rowKey]; };
+    const onRowMouseLeave  = ()          => { hoveredKey.value = null; };
+
+    /* 첫 번째 fixed 컬럼 key (합계 레이블을 여기에 표시) */
+    const cfSumFirstFixedKey = computed(() => {
+      const paths = cfPaths.value;
+      for (let i = 0; i < props.columns.length; i++) {
+        if (paths[i].length === 0) return props.columns[i].key;
+      }
+      return null;
+    });
+
+    /* 합계행 TD 목록: type='label'|'blank'|'fmt'|'text' + 스타일/값 사전 계산 */
+    const cfSummaryTdList = computed(() => {
+      if (!props.summaryRow) return [];
+      const paths    = cfPaths.value;
+      const firstKey = cfSumFirstFixedKey.value;
+      return props.columns.map((col, i) => {
+        const tdSt = col.tdStyle ? col.tdStyle(props.summaryRow) : ('text-align:' + (col.align || 'center') + ';');
+        if (col.key === firstKey) return { tdSt, type: 'label' };
+        if (paths[i].length === 0) return { tdSt: 'text-align:center;', type: 'blank' };
+        if (col.fmt) {
+          const cs = col.cellStyle ? col.cellStyle(props.summaryRow) : '';
+          return { tdSt, type: 'fmt', val: col.fmt(props.summaryRow, -1), cs };
+        }
+        const v = props.summaryRow[col.key];
+        return { tdSt, type: 'text', val: v != null ? v : '' };
+      });
+    });
+
+    return { cfLeafCols, cfHeaderRows, fnTdStyle, fnRowStyle, onCellClick, cfSummaryTdList, hoveredKey, onRowMouseEnter, onRowMouseLeave };
+  },
+  template: `
+<div style="overflow-x:auto;">
+  <table class="bo-table" :style="tableStyle || 'table-layout:fixed;width:100%;'">
+    <colgroup>
+      <col v-for="col in cfLeafCols" :key="col.key"
+        :style="col.width ? 'width:' + col.width + 'px;min-width:' + col.width + 'px;' : ''">
+    </colgroup>
+    <thead>
+      <tr v-for="(hRow, rIdx) in cfHeaderRows" :key="rIdx"
+        :style="rIdx === 0 ? 'background:#f0f4f8;font-size:11px;color:#555;' : 'background:#f8faff;font-size:10px;color:#444;'">
+        <th v-for="th in hRow" :key="th.key"
+          :rowspan="th.rowspan" :colspan="th.colspan"
+          :style="th.thStyle">{{ th.label }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-if="loading">
+        <td :colspan="cfLeafCols.length"
+          style="text-align:center;padding:40px;color:#bbb;font-size:13px;">조회 중...</td>
+      </tr>
+      <tr v-else-if="!rows.length">
+        <td :colspan="cfLeafCols.length"
+          style="text-align:center;padding:40px;color:#bbb;font-size:13px;">{{ emptyText }}</td>
+      </tr>
+      <template v-else>
+        <!-- 합계행: top 위치 -->
+        <tr v-if="summaryRow ? summaryPos === 'top' : false"
+          :style="'background:' + summaryBg + ';border-bottom:2.5px solid ' + summaryBorderColor + ';'">
+          <td v-for="(sc, si) in cfSummaryTdList" :key="'st' + si"
+            :style="sc.tdSt + 'font-size:11px;font-weight:700;color:' + summaryTextColor + ';'">
+            <span v-if="sc.type === 'label'" :style="'font-weight:900;letter-spacing:1px;color:' + summaryTextColor + ';'">{{ summaryLabel }}</span>
+            <span v-else-if="sc.type === 'fmt'" :style="sc.cs ? sc.cs + ';color:' + summaryTextColor + ';' : 'color:' + summaryTextColor + ';'">{{ sc.val }}</span>
+            <span v-else-if="sc.type === 'text'">{{ sc.val }}</span>
+          </td>
+        </tr>
+        <!-- 데이터 행 -->
+        <tr v-for="(row, idx) in rows" :key="row[rowKey]"
+          :style="fnRowStyle(row, idx)"
+          @mouseenter="onRowMouseEnter(row)"
+          @mouseleave="onRowMouseLeave()"
+          @click="onCellClick(row, idx)">
+          <td v-for="col in cfLeafCols" :key="col.key"
+            :title="col.titleFmt ? col.titleFmt(row) : ''"
+            :style="fnTdStyle(col, row)">
+            <slot v-if="col.slot" :name="'cell-' + col.key" :row="row" :idx="idx" />
+            <template v-else-if="col.iconBadge">
+              <span v-if="col.iconBadge(row)"
+                :style="'display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:10px;padding:0 4px;font-size:11px;font-weight:700;background:' + col.iconBadge(row).bg + ';color:' + col.iconBadge(row).color + ';'">
+                {{ col.iconBadge(row).value }}
+              </span>
+              <span v-else style="color:#d8d8d8;">-</span>
+            </template>
+            <template v-else-if="col.check">
+              <span :style="col.check(row) ? 'color:' + (col.checkColor || '#16a34a') + ';font-weight:700;font-size:15px;' : 'color:#e8e8e8;font-size:15px;'">
+                {{ col.check(row) ? '✓' : '·' }}
+              </span>
+            </template>
+            <template v-else-if="col.badge">
+              <span :class="'badge ' + col.badge(row)" style="font-size:10px;">
+                {{ col.badgeLabel ? col.badgeLabel(row) : (col.fmt ? col.fmt(row, idx) : (row[col.key] || '-')) }}
+              </span>
+            </template>
+            <template v-else>
+              <span :style="col.cellStyle ? col.cellStyle(row) : ''">
+                {{ col.fmt ? col.fmt(row, idx) : (row[col.key] != null ? row[col.key] : '-') }}
+              </span>
+            </template>
+          </td>
+        </tr>
+        <!-- 합계행: bottom 위치 (default) -->
+        <tr v-if="summaryRow ? summaryPos !== 'top' : false"
+          :style="'background:' + summaryBg + ';border-top:2.5px solid ' + summaryBorderColor + ';'">
+          <td v-for="(sc, si) in cfSummaryTdList" :key="'sb' + si"
+            :style="sc.tdSt + 'font-size:11px;font-weight:700;color:' + summaryTextColor + ';'">
+            <span v-if="sc.type === 'label'" :style="'font-weight:900;letter-spacing:1px;color:' + summaryTextColor + ';'">{{ summaryLabel }}</span>
+            <span v-else-if="sc.type === 'fmt'" :style="sc.cs ? sc.cs + ';color:' + summaryTextColor + ';' : 'color:' + summaryTextColor + ';'">{{ sc.val }}</span>
+            <span v-else-if="sc.type === 'text'">{{ sc.val }}</span>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+</div>
+  `,
+};
+
+/* ============================================================
+ * BoStatRow — 수평 집계 카드 줄 컴포넌트
+ *
+ * Props:
+ *   title       — 좌측 세로 제목 (예: '수량', '진행상태')
+ *   titleBg     — 제목 배경색
+ *   titleColor  — 제목 텍스트 색
+ *   borderColor — 전체 테두리/구분선 색
+ *   items       — 카드 배열:
+ *                 { label, value, bg, color, sub, subColor, detail }
+ * ============================================================ */
+window.BoStatRow = {
+  name: 'BoStatRow',
+  props: {
+    title:       { type: String, default: '' },
+    titleBg:     { type: String, default: '#f5f5f5' },
+    titleColor:  { type: String, default: '#555' },
+    borderColor: { type: String, default: '#e0e0e0' },
+    items:       { type: Array,  default: () => [] },
+  },
+  template: `
+<div :style="'display:grid;grid-template-columns:auto repeat(' + items.length + ',1fr);gap:0;border:1px solid ' + borderColor + ';border-radius:8px;overflow:hidden;margin-bottom:5px;'">
+  <div :style="'display:flex;align-items:center;justify-content:center;padding:4px 10px;background:' + titleBg + ';border-right:1px solid ' + borderColor + ';writing-mode:vertical-rl;font-size:10px;font-weight:700;color:' + titleColor + ';letter-spacing:2px;'">{{ title }}</div>
+  <div v-for="(it, i) in items" :key="i"
+    :style="'padding:5px ' + (items.length > 4 ? '8' : '10') + 'px;text-align:center;background:' + (it.bg || '#fff') + ';' + (i < items.length - 1 ? 'border-right:1px solid ' + borderColor + ';' : '')">
+    <div :style="'font-size:10px;color:' + (it.color || '#555') + ';font-weight:600;margin-bottom:1px;'">{{ it.label }}</div>
+    <div :style="'font-size:' + (items.length > 4 ? '15' : '17') + 'px;font-weight:700;color:' + (it.color || '#555') + ';'">
+      {{ it.value }}<span style="font-size:10px;font-weight:400;">건</span>
+    </div>
+    <div v-if="it.sub" :style="'font-size:10px;color:' + (it.subColor || it.color || '#999') + ';opacity:0.8;'">{{ it.sub }}</div>
+    <div v-if="it.detail" style="font-size:10px;color:#b0b0b0;">{{ it.detail }}</div>
+  </div>
+</div>
+  `,
+};

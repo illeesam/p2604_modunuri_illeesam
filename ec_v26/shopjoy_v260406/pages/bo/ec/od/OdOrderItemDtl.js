@@ -22,11 +22,16 @@ window.OdOrderItemDtl = {
     const baseForm = reactive({
       orderItemId: '', orderId: '',
       prodId: '', prodNm: '', prodOptNm1: '', prodOptNm2: '',
-      brandNm: '',
-      orderQty: null, itemOrderAmt: null,
+      brandNm: '', vendorNm: '', mdUserNm: '', categoryNm: '',
+      memberNm: '', memberLoginId: '',
+      orderQty: null, cancelQty: null,
+      itemOrderAmt: null, itemCancelAmt: null, itemCompletedAmt: null,
+      salePrice: null, discntAmt: null,
       orderItemStatusCd: '', orderItemStatusCdNm: '',
-      claimYn: '', buyConfirmYn: '', settleYn: '',
-      regDate: '',
+      claimYn: '', claimTypeCd: '', claimStatusCd: '',
+      buyConfirmYn: '', settleYn: '', refundCompltYn: '',
+      courierCd: '', courierNm: '', invoiceNo: '',
+      regDate: '', updDate: '',
     });
 
     const uiState = reactive({
@@ -82,10 +87,18 @@ window.OdOrderItemDtl = {
         const res = await boApiSvc.odOrderItem.getById(props.dtlId, '주문항목상세', '조회');
         const d = res.data?.data || {};
         Object.assign(baseForm, {
-          orderItemId: '', orderId: '', prodId: '', prodNm: '', prodOptNm1: '', prodOptNm2: '',
-          brandNm: '', orderQty: null, itemOrderAmt: null,
+          orderItemId: '', orderId: '',
+          prodId: '', prodNm: '', prodOptNm1: '', prodOptNm2: '',
+          brandNm: '', vendorNm: '', mdUserNm: '', categoryNm: '',
+          memberNm: '', memberLoginId: '',
+          orderQty: null, cancelQty: null,
+          itemOrderAmt: null, itemCancelAmt: null, itemCompletedAmt: null,
+          salePrice: null, discntAmt: null,
           orderItemStatusCd: '', orderItemStatusCdNm: '',
-          claimYn: '', buyConfirmYn: '', settleYn: '', regDate: '',
+          claimYn: '', claimTypeCd: '', claimStatusCd: '',
+          buyConfirmYn: '', settleYn: '', refundCompltYn: '',
+          courierCd: '', courierNm: '', invoiceNo: '',
+          regDate: '', updDate: '',
         });
         Object.assign(baseForm, d);
         await Promise.all([fnLoadClaims(), fnLoadHistory()]);
@@ -147,24 +160,40 @@ window.OdOrderItemDtl = {
     ]);
 
     const baseFormColumns = [
-      { key: 'orderItemId',        label: '주문항목ID',  type: 'readonly', mono: true },
-      { key: 'orderId',            label: '주문ID',      type: 'readonly', mono: true },
-      { key: 'regDate',            label: '등록일시',    type: 'readonly', fmt: () => fnDate(baseForm.regDate) },
-      { key: 'prodNm',             label: '상품명',      type: 'readonly', colSpan: 2,
+      { key: 'orderItemId',       label: '주문항목ID',   type: 'readonly', mono: true },
+      { key: 'orderId',           label: '주문ID',       type: 'readonly', mono: true },
+      { key: 'regDate',           label: '등록일시',     type: 'readonly', fmt: () => fnDate(baseForm.regDate) },
+      { key: 'memberNm',          label: '주문회원',     type: 'readonly',
+        fmt: () => baseForm.memberNm ? baseForm.memberNm + (baseForm.memberLoginId ? ' (' + baseForm.memberLoginId + ')' : '') : '-' },
+      { key: 'categoryNm',        label: '카테고리',     type: 'readonly', fmt: () => baseForm.categoryNm || '-' },
+      { key: 'vendorNm',          label: '판매업체',     type: 'readonly', fmt: () => baseForm.vendorNm || '-' },
+      { key: 'prodNm',            label: '상품명',       type: 'readonly', colSpan: 2,
         fmt: () => {
           const opts = [baseForm.prodOptNm1, baseForm.prodOptNm2].filter(Boolean);
           return opts.length ? baseForm.prodNm + ' [' + opts.join('/') + ']' : (baseForm.prodNm || '-');
         } },
-      { key: 'brandNm',            label: '브랜드',      type: 'readonly' },
-      { key: 'orderQty',           label: '수량',        type: 'readonly' },
-      { key: 'itemOrderAmt',       label: '주문금액',    type: 'readonly', fmt: () => fnPrice(baseForm.itemOrderAmt) },
-      { key: 'orderItemStatusCd',  label: '품목상태',
+      { key: 'brandNm',           label: '브랜드',       type: 'readonly', fmt: () => baseForm.brandNm || '-' },
+      { key: 'mdUserNm',          label: 'MD',           type: 'readonly', fmt: () => baseForm.mdUserNm || '-' },
+      { key: 'orderQty',          label: '주문수량',     type: 'readonly' },
+      { key: 'cancelQty',         label: '취소수량',     type: 'readonly', fmt: () => baseForm.cancelQty || '-' },
+      { key: 'salePrice',         label: '판매단가',     type: 'readonly', fmt: () => fnPrice(baseForm.salePrice) },
+      { key: 'discntAmt',         label: '할인금액',     type: 'readonly', fmt: () => fnPrice(baseForm.discntAmt) },
+      { key: 'itemOrderAmt',      label: '주문금액',     type: 'readonly', fmt: () => fnPrice(baseForm.itemOrderAmt) },
+      { key: 'itemCancelAmt',     label: '환불금액',     type: 'readonly', fmt: () => fnPrice(baseForm.itemCancelAmt) },
+      { key: 'itemCompletedAmt',  label: '확정금액',     type: 'readonly', fmt: () => fnPrice(baseForm.itemCompletedAmt) },
+      { key: 'orderItemStatusCd', label: '품목상태',
         type: cfReadonly.value ? 'readonly' : 'select',
         options: () => codes.order_item_statuses,
         fmt: () => baseForm.orderItemStatusCdNm || baseForm.orderItemStatusCd || '-' },
-      { key: 'claimYn',            label: '클레임여부',  type: 'readonly', fmt: () => fnYn(baseForm.claimYn) },
-      { key: 'buyConfirmYn',       label: '구매확정',    type: 'readonly', fmt: () => fnYn(baseForm.buyConfirmYn) },
-      { key: 'settleYn',           label: '정산여부',    type: 'readonly', fmt: () => fnYn(baseForm.settleYn) },
+      { key: 'claimYn',           label: '클레임여부',   type: 'readonly', fmt: () => fnYn(baseForm.claimYn) },
+      { key: 'claimTypeCd',       label: '클레임유형',   type: 'readonly',
+        fmt: () => ({ CANCEL: '취소', RETURN: '반품', EXCHANGE: '교환' })[baseForm.claimTypeCd] || (baseForm.claimTypeCd || '-') },
+      { key: 'buyConfirmYn',      label: '구매확정',     type: 'readonly', fmt: () => fnYn(baseForm.buyConfirmYn) },
+      { key: 'settleYn',          label: '정산여부',     type: 'readonly', fmt: () => fnYn(baseForm.settleYn) },
+      { key: 'refundCompltYn',    label: '환불완료',     type: 'readonly', fmt: () => fnYn(baseForm.refundCompltYn) },
+      { key: 'courierNm',         label: '택배사',       type: 'readonly', fmt: () => baseForm.courierNm || baseForm.courierCd || '-' },
+      { key: 'invoiceNo',         label: '운송장번호',   type: 'readonly', mono: true, fmt: () => baseForm.invoiceNo || '-' },
+      { key: 'updDate',           label: '수정일시',     type: 'readonly', fmt: () => fnDate(baseForm.updDate) },
     ];
 
     const claimGridColumns = [
