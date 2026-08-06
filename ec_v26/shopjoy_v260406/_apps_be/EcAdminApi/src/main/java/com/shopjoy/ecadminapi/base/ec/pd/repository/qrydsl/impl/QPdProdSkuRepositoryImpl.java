@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,14 +34,6 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProdSku.regDate,
         "upd_date", pdProdSku.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("prodOptId1", pdProdSku.prodOptId1),
-        Map.entry("prodOptId2", pdProdSku.prodOptId2),
-        Map.entry("prodId", pdProdSku.prodId),
-        Map.entry("prodSkuCode", pdProdSku.prodSkuCode),
-        Map.entry("prodSkuId", pdProdSku.prodSkuId),
-        Map.entry("useYn", pdProdSku.useYn)
     );
 
     /*
@@ -88,7 +79,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                     QdslUtil.strEq(pdProdSku.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -115,7 +106,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                 QdslUtil.strEq(pdProdSku.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdSku.prodSkuId, search.getProdSkuId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -138,6 +129,17 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
         BasePage<PdProdSkuDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("prodOptId1", pdProdSku.prodOptId1),
+            QdslUtil.FieldDef.like("prodOptId2", pdProdSku.prodOptId2),
+            QdslUtil.FieldDef.like("prodId", pdProdSku.prodId),
+            QdslUtil.FieldDef.like("prodSkuCode", pdProdSku.prodSkuCode),
+            QdslUtil.FieldDef.like("prodSkuId", pdProdSku.prodSkuId),
+            QdslUtil.FieldDef.like("useYn", pdProdSku.useYn)
+        ));
     }
 
     /**

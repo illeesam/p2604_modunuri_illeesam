@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -45,14 +44,6 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odOrderItemDiscnt.regDate,
         "upd_date", odOrderItemDiscnt.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("couponId", odOrderItemDiscnt.couponId),
-        Map.entry("couponIssueId", odOrderItemDiscnt.couponIssueId),
-        Map.entry("discntTypeCd", odOrderItemDiscnt.discntTypeCd),
-        Map.entry("itemDiscntId", odOrderItemDiscnt.itemDiscntId),
-        Map.entry("orderId", odOrderItemDiscnt.orderId),
-        Map.entry("orderItemId", odOrderItemDiscnt.orderItemId)
     );
 
     /*
@@ -101,7 +92,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
                 .where(
                     QdslUtil.strEq(odOrderItemDiscnt.itemDiscntId, search.getItemDiscntId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -126,7 +117,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odOrderItemDiscnt.itemDiscntId, search.getItemDiscntId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -149,6 +140,17 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
 
         BasePage<OdOrderItemDiscntDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("couponId", odOrderItemDiscnt.couponId),
+            QdslUtil.FieldDef.like("couponIssueId", odOrderItemDiscnt.couponIssueId),
+            QdslUtil.FieldDef.like("discntTypeCd", odOrderItemDiscnt.discntTypeCd),
+            QdslUtil.FieldDef.like("itemDiscntId", odOrderItemDiscnt.itemDiscntId),
+            QdslUtil.FieldDef.like("orderId", odOrderItemDiscnt.orderId),
+            QdslUtil.FieldDef.like("orderItemId", odOrderItemDiscnt.orderItemId)
+        ));
     }
 
     /**

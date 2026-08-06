@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -49,38 +48,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         "dliv_date", odDliv.dlivDate,
         "reg_date", odDliv.regDate,
         "upd_date", odDliv.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("apprAprvUserId", odDliv.apprAprvUserId),
-        Map.entry("apprReason", odDliv.apprReason),
-        Map.entry("apprReqUserId", odDliv.apprReqUserId),
-        Map.entry("apprStatusCd", odDliv.apprStatusCd),
-        Map.entry("apprStatusCdBefore", odDliv.apprStatusCdBefore),
-        Map.entry("apprTargetCd", odDliv.apprTargetCd),
-        Map.entry("apprTargetNm", odDliv.apprTargetNm),
-        Map.entry("claimId", odDliv.claimId),
-        Map.entry("dlivDivCd", odDliv.dlivDivCd),
-        Map.entry("dlivId", odDliv.dlivId),
-        Map.entry("dlivMemo", odDliv.dlivMemo),
-        Map.entry("dlivPayTypeCd", odDliv.dlivPayTypeCd),
-        Map.entry("dlivStatusCd", odDliv.dlivStatusCd),
-        Map.entry("dlivStatusCdBefore", odDliv.dlivStatusCdBefore),
-        Map.entry("dlivTypeCd", odDliv.dlivTypeCd),
-        Map.entry("inboundCourierCd", odDliv.inboundCourierCd),
-        Map.entry("inboundTrackingNo", odDliv.inboundTrackingNo),
-        Map.entry("memberId", odDliv.memberId),
-        Map.entry("memberNm", odDliv.memberNm),
-        Map.entry("orderId", odDliv.orderId),
-        Map.entry("outboundCourierCd", odDliv.outboundCourierCd),
-        Map.entry("outboundTrackingNo", odDliv.outboundTrackingNo),
-        Map.entry("parentDlivId", odDliv.parentDlivId),
-        Map.entry("recvAddr", odDliv.recvAddr),
-        Map.entry("recvAddrDetail", odDliv.recvAddrDetail),
-        Map.entry("recvNm", odDliv.recvNm),
-        Map.entry("recvPhone", odDliv.recvPhone),
-        Map.entry("recvZip", odDliv.recvZip),
-        Map.entry("shippingFeeTypeCd", odDliv.shippingFeeTypeCd),
-        Map.entry("vendorId", odDliv.vendorId)
     );
 
     /*
@@ -158,7 +125,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                     QdslUtil.strEq(odDliv.memberId, search.getMemberId()),
                     QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -187,7 +154,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 QdslUtil.strEq(odDliv.memberId, search.getMemberId()),
                 QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -212,6 +179,41 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("apprAprvUserId", odDliv.apprAprvUserId),
+            QdslUtil.FieldDef.like("apprReason", odDliv.apprReason),
+            QdslUtil.FieldDef.like("apprReqUserId", odDliv.apprReqUserId),
+            QdslUtil.FieldDef.like("apprStatusCd", odDliv.apprStatusCd),
+            QdslUtil.FieldDef.like("apprStatusCdBefore", odDliv.apprStatusCdBefore),
+            QdslUtil.FieldDef.like("apprTargetCd", odDliv.apprTargetCd),
+            QdslUtil.FieldDef.like("apprTargetNm", odDliv.apprTargetNm),
+            QdslUtil.FieldDef.like("claimId", odDliv.claimId),
+            QdslUtil.FieldDef.like("dlivDivCd", odDliv.dlivDivCd),
+            QdslUtil.FieldDef.like("dlivId", odDliv.dlivId),
+            QdslUtil.FieldDef.like("dlivMemo", odDliv.dlivMemo),
+            QdslUtil.FieldDef.like("dlivPayTypeCd", odDliv.dlivPayTypeCd),
+            QdslUtil.FieldDef.like("dlivStatusCd", odDliv.dlivStatusCd),
+            QdslUtil.FieldDef.like("dlivStatusCdBefore", odDliv.dlivStatusCdBefore),
+            QdslUtil.FieldDef.like("dlivTypeCd", odDliv.dlivTypeCd),
+            QdslUtil.FieldDef.like("inboundCourierCd", odDliv.inboundCourierCd),
+            QdslUtil.FieldDef.like("inboundTrackingNo", odDliv.inboundTrackingNo),
+            QdslUtil.FieldDef.like("memberId", odDliv.memberId),
+            QdslUtil.FieldDef.like("memberNm", odDliv.memberNm),
+            QdslUtil.FieldDef.like("orderId", odDliv.orderId),
+            QdslUtil.FieldDef.like("outboundCourierCd", odDliv.outboundCourierCd),
+            QdslUtil.FieldDef.like("outboundTrackingNo", odDliv.outboundTrackingNo),
+            QdslUtil.FieldDef.like("parentDlivId", odDliv.parentDlivId),
+            QdslUtil.FieldDef.like("recvAddr", odDliv.recvAddr),
+            QdslUtil.FieldDef.like("recvAddrDetail", odDliv.recvAddrDetail),
+            QdslUtil.FieldDef.like("recvNm", odDliv.recvNm),
+            QdslUtil.FieldDef.like("recvPhone", odDliv.recvPhone),
+            QdslUtil.FieldDef.like("recvZip", odDliv.recvZip),
+            QdslUtil.FieldDef.like("shippingFeeTypeCd", odDliv.shippingFeeTypeCd),
+            QdslUtil.FieldDef.like("vendorId", odDliv.vendorId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

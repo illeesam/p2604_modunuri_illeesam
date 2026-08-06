@@ -8,7 +8,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -60,61 +59,6 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         "collect_schd_date", odClaim.collectSchdDate,
         "reg_date", odClaim.regDate,
         "upd_date", odClaim.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("addShippingFeeChargeCd", odClaim.addShippingFeeChargeCd),
-        Map.entry("addShippingFeeReason", odClaim.addShippingFeeReason),
-        Map.entry("apprAprvUserId", odClaim.apprAprvUserId),
-        Map.entry("apprReason", odClaim.apprReason),
-        Map.entry("apprReqUserId", odClaim.apprReqUserId),
-        Map.entry("apprStatusCd", odClaim.apprStatusCd),
-        Map.entry("apprStatusCdBefore", odClaim.apprStatusCdBefore),
-        Map.entry("apprTargetCd", odClaim.apprTargetCd),
-        Map.entry("apprTargetNm", odClaim.apprTargetNm),
-        Map.entry("claimCancelReasonCd", odClaim.claimCancelReasonCd),
-        Map.entry("claimCancelReasonDetail", odClaim.claimCancelReasonDetail),
-        Map.entry("claimCancelYn", odClaim.claimCancelYn),
-        Map.entry("claimId", odClaim.claimId),
-        Map.entry("claimStatusCd", odClaim.claimStatusCd),
-        Map.entry("claimStatusCdBefore", odClaim.claimStatusCdBefore),
-        Map.entry("claimTypeCd", odClaim.claimTypeCd),
-        Map.entry("collectAddr", odClaim.collectAddr),
-        Map.entry("collectAddrDetail", odClaim.collectAddrDetail),
-        Map.entry("collectNm", odClaim.collectNm),
-        Map.entry("collectPhone", odClaim.collectPhone),
-        Map.entry("collectReqMemo", odClaim.collectReqMemo),
-        Map.entry("collectZip", odClaim.collectZip),
-        Map.entry("customerFaultYn", odClaim.customerFaultYn),
-        Map.entry("exchRecvAddr", odClaim.exchRecvAddr),
-        Map.entry("exchRecvAddrDetail", odClaim.exchRecvAddrDetail),
-        Map.entry("exchRecvNm", odClaim.exchRecvNm),
-        Map.entry("exchRecvPhone", odClaim.exchRecvPhone),
-        Map.entry("exchRecvReqMemo", odClaim.exchRecvReqMemo),
-        Map.entry("exchRecvZip", odClaim.exchRecvZip),
-        Map.entry("exchangeCourierCd", odClaim.exchangeCourierCd),
-        Map.entry("exchangeTrackingNo", odClaim.exchangeTrackingNo),
-        Map.entry("inboundCourierCd", odClaim.inboundCourierCd),
-        Map.entry("inboundDlivId", odClaim.inboundDlivId),
-        Map.entry("inboundTrackingNo", odClaim.inboundTrackingNo),
-        Map.entry("memberId", odClaim.memberId),
-        Map.entry("memberNm", odClaim.memberNm),
-        Map.entry("memo", odClaim.memo),
-        Map.entry("orderId", odClaim.orderId),
-        Map.entry("outboundDlivId", odClaim.outboundDlivId),
-        Map.entry("procUserId", odClaim.procUserId),
-        Map.entry("prodNm", odClaim.prodNm),
-        Map.entry("reasonCd", odClaim.reasonCd),
-        Map.entry("reasonDetail", odClaim.reasonDetail),
-        Map.entry("refundAccountNm", odClaim.refundAccountNm),
-        Map.entry("refundAccountNo", odClaim.refundAccountNo),
-        Map.entry("refundBankCd", odClaim.refundBankCd),
-        Map.entry("refundMethodCd", odClaim.refundMethodCd),
-        Map.entry("returnCourierCd", odClaim.returnCourierCd),
-        Map.entry("returnStatusCd", odClaim.returnStatusCd),
-        Map.entry("returnStatusCdBefore", odClaim.returnStatusCdBefore),
-        Map.entry("returnTrackingNo", odClaim.returnTrackingNo),
-        Map.entry("shippingFeeMemo", odClaim.shippingFeeMemo),
-        Map.entry("shippingFeePaidYn", odClaim.shippingFeePaidYn)
     );
 
     /*
@@ -360,7 +304,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                     QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
                     QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -389,7 +333,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
                 QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -415,6 +359,64 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("addShippingFeeChargeCd", odClaim.addShippingFeeChargeCd),
+            QdslUtil.FieldDef.like("addShippingFeeReason", odClaim.addShippingFeeReason),
+            QdslUtil.FieldDef.like("apprAprvUserId", odClaim.apprAprvUserId),
+            QdslUtil.FieldDef.like("apprReason", odClaim.apprReason),
+            QdslUtil.FieldDef.like("apprReqUserId", odClaim.apprReqUserId),
+            QdslUtil.FieldDef.like("apprStatusCd", odClaim.apprStatusCd),
+            QdslUtil.FieldDef.like("apprStatusCdBefore", odClaim.apprStatusCdBefore),
+            QdslUtil.FieldDef.like("apprTargetCd", odClaim.apprTargetCd),
+            QdslUtil.FieldDef.like("apprTargetNm", odClaim.apprTargetNm),
+            QdslUtil.FieldDef.like("claimCancelReasonCd", odClaim.claimCancelReasonCd),
+            QdslUtil.FieldDef.like("claimCancelReasonDetail", odClaim.claimCancelReasonDetail),
+            QdslUtil.FieldDef.like("claimCancelYn", odClaim.claimCancelYn),
+            QdslUtil.FieldDef.like("claimId", odClaim.claimId),
+            QdslUtil.FieldDef.like("claimStatusCd", odClaim.claimStatusCd),
+            QdslUtil.FieldDef.like("claimStatusCdBefore", odClaim.claimStatusCdBefore),
+            QdslUtil.FieldDef.like("claimTypeCd", odClaim.claimTypeCd),
+            QdslUtil.FieldDef.like("collectAddr", odClaim.collectAddr),
+            QdslUtil.FieldDef.like("collectAddrDetail", odClaim.collectAddrDetail),
+            QdslUtil.FieldDef.like("collectNm", odClaim.collectNm),
+            QdslUtil.FieldDef.like("collectPhone", odClaim.collectPhone),
+            QdslUtil.FieldDef.like("collectReqMemo", odClaim.collectReqMemo),
+            QdslUtil.FieldDef.like("collectZip", odClaim.collectZip),
+            QdslUtil.FieldDef.like("customerFaultYn", odClaim.customerFaultYn),
+            QdslUtil.FieldDef.like("exchRecvAddr", odClaim.exchRecvAddr),
+            QdslUtil.FieldDef.like("exchRecvAddrDetail", odClaim.exchRecvAddrDetail),
+            QdslUtil.FieldDef.like("exchRecvNm", odClaim.exchRecvNm),
+            QdslUtil.FieldDef.like("exchRecvPhone", odClaim.exchRecvPhone),
+            QdslUtil.FieldDef.like("exchRecvReqMemo", odClaim.exchRecvReqMemo),
+            QdslUtil.FieldDef.like("exchRecvZip", odClaim.exchRecvZip),
+            QdslUtil.FieldDef.like("exchangeCourierCd", odClaim.exchangeCourierCd),
+            QdslUtil.FieldDef.like("exchangeTrackingNo", odClaim.exchangeTrackingNo),
+            QdslUtil.FieldDef.like("inboundCourierCd", odClaim.inboundCourierCd),
+            QdslUtil.FieldDef.like("inboundDlivId", odClaim.inboundDlivId),
+            QdslUtil.FieldDef.like("inboundTrackingNo", odClaim.inboundTrackingNo),
+            QdslUtil.FieldDef.like("memberId", odClaim.memberId),
+            QdslUtil.FieldDef.like("memberNm", odClaim.memberNm),
+            QdslUtil.FieldDef.like("memo", odClaim.memo),
+            QdslUtil.FieldDef.like("orderId", odClaim.orderId),
+            QdslUtil.FieldDef.like("outboundDlivId", odClaim.outboundDlivId),
+            QdslUtil.FieldDef.like("procUserId", odClaim.procUserId),
+            QdslUtil.FieldDef.like("prodNm", odClaim.prodNm),
+            QdslUtil.FieldDef.like("reasonCd", odClaim.reasonCd),
+            QdslUtil.FieldDef.like("reasonDetail", odClaim.reasonDetail),
+            QdslUtil.FieldDef.like("refundAccountNm", odClaim.refundAccountNm),
+            QdslUtil.FieldDef.like("refundAccountNo", odClaim.refundAccountNo),
+            QdslUtil.FieldDef.like("refundBankCd", odClaim.refundBankCd),
+            QdslUtil.FieldDef.like("refundMethodCd", odClaim.refundMethodCd),
+            QdslUtil.FieldDef.like("returnCourierCd", odClaim.returnCourierCd),
+            QdslUtil.FieldDef.like("returnStatusCd", odClaim.returnStatusCd),
+            QdslUtil.FieldDef.like("returnStatusCdBefore", odClaim.returnStatusCdBefore),
+            QdslUtil.FieldDef.like("returnTrackingNo", odClaim.returnTrackingNo),
+            QdslUtil.FieldDef.like("shippingFeeMemo", odClaim.shippingFeeMemo),
+            QdslUtil.FieldDef.like("shippingFeePaidYn", odClaim.shippingFeePaidYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

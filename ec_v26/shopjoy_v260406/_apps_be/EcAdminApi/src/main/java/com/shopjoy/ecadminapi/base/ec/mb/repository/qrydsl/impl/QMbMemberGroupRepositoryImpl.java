@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -36,12 +35,6 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", mbMemberGroup.regDate,
         "upd_date", mbMemberGroup.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("groupMemo", mbMemberGroup.groupMemo),
-        Map.entry("groupNm", mbMemberGroup.groupNm),
-        Map.entry("memberGroupId", mbMemberGroup.memberGroupId),
-        Map.entry("useYn", mbMemberGroup.useYn)
     );
 
     /*
@@ -81,7 +74,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
                     QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()),
                     QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -106,7 +99,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
                 QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()),
                 QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -131,6 +124,15 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "groupNm" (Entity 필드명) */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("groupMemo", mbMemberGroup.groupMemo),
+            QdslUtil.FieldDef.like("groupNm", mbMemberGroup.groupNm),
+            QdslUtil.FieldDef.like("memberGroupId", mbMemberGroup.memberGroupId),
+            QdslUtil.FieldDef.like("useYn", mbMemberGroup.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

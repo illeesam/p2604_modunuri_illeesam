@@ -39,16 +39,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyPropRepositoryImpl";
     private static final QSyProp syProp = QSyProp.syProp;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("pathId", syProp.pathId),
-        Map.entry("propId", syProp.propId),
-        Map.entry("propKey", syProp.propKey),
-        Map.entry("propLabel", syProp.propLabel),
-        Map.entry("propRemark", syProp.propRemark),
-        Map.entry("propTypeCd", syProp.propTypeCd),
-        Map.entry("propValue", syProp.propValue),
-        Map.entry("useYn", syProp.useYn)
-    );
 
     /*
      * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
@@ -99,7 +89,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                     QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()),
                     QdslUtil.strEq(syProp.useYn, search.getUseYn()),
                     andPropProfileLike(search),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -129,7 +119,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()),
                 QdslUtil.strEq(syProp.useYn, search.getUseYn()),
                 andPropProfileLike(search),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -198,6 +188,19 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         // all 행: 빈값이거나 ^all^ 을 포함하는 행
         BooleanExpression isAll = col.isNull().or(col.eq("")).or(col.like("%^all^%"));
         return hasProfile.or(isAll);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("pathId", syProp.pathId),
+            QdslUtil.FieldDef.like("propId", syProp.propId),
+            QdslUtil.FieldDef.like("propKey", syProp.propKey),
+            QdslUtil.FieldDef.like("propLabel", syProp.propLabel),
+            QdslUtil.FieldDef.like("propRemark", syProp.propRemark),
+            QdslUtil.FieldDef.like("propTypeCd", syProp.propTypeCd),
+            QdslUtil.FieldDef.like("propValue", syProp.propValue),
+            QdslUtil.FieldDef.like("useYn", syProp.useYn)
+        ));
     }
 
     /**

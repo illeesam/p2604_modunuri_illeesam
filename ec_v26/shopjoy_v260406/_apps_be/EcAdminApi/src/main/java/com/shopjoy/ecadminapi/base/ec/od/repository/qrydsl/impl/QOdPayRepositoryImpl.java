@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -50,37 +49,6 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         "pay_date", odPay.payDate,
         "reg_date", odPay.regDate,
         "upd_date", odPay.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("cardIssuerCd", odPay.cardIssuerCd),
-        Map.entry("cardIssuerNm", odPay.cardIssuerNm),
-        Map.entry("cardNo", odPay.cardNo),
-        Map.entry("cardTypeCd", odPay.cardTypeCd),
-        Map.entry("claimId", odPay.claimId),
-        Map.entry("failureCode", odPay.failureCode),
-        Map.entry("failureReason", odPay.failureReason),
-        Map.entry("memo", odPay.memo),
-        Map.entry("orderId", odPay.orderId),
-        Map.entry("payChannelCd", odPay.payChannelCd),
-        Map.entry("payDirCd", odPay.payDirCd),
-        Map.entry("payDivCd", odPay.payDivCd),
-        Map.entry("payId", odPay.payId),
-        Map.entry("payMethodCd", odPay.payMethodCd),
-        Map.entry("payOccurTypeCd", odPay.payOccurTypeCd),
-        Map.entry("payStatusCd", odPay.payStatusCd),
-        Map.entry("payStatusCdBefore", odPay.payStatusCdBefore),
-        Map.entry("pgApprovalNo", odPay.pgApprovalNo),
-        Map.entry("pgCompanyCd", odPay.pgCompanyCd),
-        Map.entry("pgResponse", odPay.pgResponse),
-        Map.entry("pgTransactionId", odPay.pgTransactionId),
-        Map.entry("refundReason", odPay.refundReason),
-        Map.entry("refundStatusCd", odPay.refundStatusCd),
-        Map.entry("refundStatusCdBefore", odPay.refundStatusCdBefore),
-        Map.entry("vbankAccount", odPay.vbankAccount),
-        Map.entry("vbankBankCode", odPay.vbankBankCode),
-        Map.entry("vbankBankNm", odPay.vbankBankNm),
-        Map.entry("vbankDepositNm", odPay.vbankDepositNm),
-        Map.entry("vbankHolderNm", odPay.vbankHolderNm)
     );
 
     /*
@@ -201,7 +169,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                     QdslUtil.strEq(odPay.orderId, search.getOrderId()),
                     QdslUtil.strEq(odPay.payId, search.getPayId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -228,7 +196,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 QdslUtil.strEq(odPay.orderId, search.getOrderId()),
                 QdslUtil.strEq(odPay.payId, search.getPayId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -254,6 +222,40 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("cardIssuerCd", odPay.cardIssuerCd),
+            QdslUtil.FieldDef.like("cardIssuerNm", odPay.cardIssuerNm),
+            QdslUtil.FieldDef.like("cardNo", odPay.cardNo),
+            QdslUtil.FieldDef.like("cardTypeCd", odPay.cardTypeCd),
+            QdslUtil.FieldDef.like("claimId", odPay.claimId),
+            QdslUtil.FieldDef.like("failureCode", odPay.failureCode),
+            QdslUtil.FieldDef.like("failureReason", odPay.failureReason),
+            QdslUtil.FieldDef.like("memo", odPay.memo),
+            QdslUtil.FieldDef.like("orderId", odPay.orderId),
+            QdslUtil.FieldDef.like("payChannelCd", odPay.payChannelCd),
+            QdslUtil.FieldDef.like("payDirCd", odPay.payDirCd),
+            QdslUtil.FieldDef.like("payDivCd", odPay.payDivCd),
+            QdslUtil.FieldDef.like("payId", odPay.payId),
+            QdslUtil.FieldDef.like("payMethodCd", odPay.payMethodCd),
+            QdslUtil.FieldDef.like("payOccurTypeCd", odPay.payOccurTypeCd),
+            QdslUtil.FieldDef.like("payStatusCd", odPay.payStatusCd),
+            QdslUtil.FieldDef.like("payStatusCdBefore", odPay.payStatusCdBefore),
+            QdslUtil.FieldDef.like("pgApprovalNo", odPay.pgApprovalNo),
+            QdslUtil.FieldDef.like("pgCompanyCd", odPay.pgCompanyCd),
+            QdslUtil.FieldDef.like("pgResponse", odPay.pgResponse),
+            QdslUtil.FieldDef.like("pgTransactionId", odPay.pgTransactionId),
+            QdslUtil.FieldDef.like("refundReason", odPay.refundReason),
+            QdslUtil.FieldDef.like("refundStatusCd", odPay.refundStatusCd),
+            QdslUtil.FieldDef.like("refundStatusCdBefore", odPay.refundStatusCdBefore),
+            QdslUtil.FieldDef.like("vbankAccount", odPay.vbankAccount),
+            QdslUtil.FieldDef.like("vbankBankCode", odPay.vbankBankCode),
+            QdslUtil.FieldDef.like("vbankBankNm", odPay.vbankBankNm),
+            QdslUtil.FieldDef.like("vbankDepositNm", odPay.vbankDepositNm),
+            QdslUtil.FieldDef.like("vbankHolderNm", odPay.vbankHolderNm)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,14 +40,6 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stSettleEtcAdj.regDate,
         "upd_date", stSettleEtcAdj.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("etcAdjDirCd", stSettleEtcAdj.etcAdjDirCd),
-        Map.entry("etcAdjReason", stSettleEtcAdj.etcAdjReason),
-        Map.entry("etcAdjTypeCd", stSettleEtcAdj.etcAdjTypeCd),
-        Map.entry("settleEtcAdjId", stSettleEtcAdj.settleEtcAdjId),
-        Map.entry("settleEtcAdjMemo", stSettleEtcAdj.settleEtcAdjMemo),
-        Map.entry("settleId", stSettleEtcAdj.settleId)
     );
 
     /*
@@ -98,7 +89,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                     QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()),
                     QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -124,7 +115,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                 QdslUtil.strEq(stSettleEtcAdj.settleEtcAdjId, search.getSettleEtcAdjId()),
                 QdslUtil.strEq(stSettleEtcAdj.etcAdjTypeCd, search.getEtcAdjTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -147,6 +138,17 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
 
         BasePage<StSettleEtcAdjDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("etcAdjDirCd", stSettleEtcAdj.etcAdjDirCd),
+            QdslUtil.FieldDef.like("etcAdjReason", stSettleEtcAdj.etcAdjReason),
+            QdslUtil.FieldDef.like("etcAdjTypeCd", stSettleEtcAdj.etcAdjTypeCd),
+            QdslUtil.FieldDef.like("settleEtcAdjId", stSettleEtcAdj.settleEtcAdjId),
+            QdslUtil.FieldDef.like("settleEtcAdjMemo", stSettleEtcAdj.settleEtcAdjMemo),
+            QdslUtil.FieldDef.like("settleId", stSettleEtcAdj.settleId)
+        ));
     }
 
     /**

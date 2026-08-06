@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -37,15 +36,6 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdhProdChgHist.regDate,
         "upd_date", pdhProdChgHist.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("afterVal", pdhProdChgHist.afterVal),
-        Map.entry("beforeVal", pdhProdChgHist.beforeVal),
-        Map.entry("chgReason", pdhProdChgHist.chgReason),
-        Map.entry("chgTypeCd", pdhProdChgHist.chgTypeCd),
-        Map.entry("chgUserId", pdhProdChgHist.chgUserId),
-        Map.entry("prodChgHistId", pdhProdChgHist.prodChgHistId),
-        Map.entry("prodId", pdhProdChgHist.prodId)
     );
 
     /*
@@ -88,7 +78,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(pdhProdChgHist.prodChgHistId, search.getProdChgHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -113,7 +103,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdhProdChgHist.prodChgHistId, search.getProdChgHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -139,6 +129,18 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     }
 
     /** 검색조건 빌드 — Mapper XML pdhProdChgHistCond 와 동일 동작 */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("afterVal", pdhProdChgHist.afterVal),
+            QdslUtil.FieldDef.like("beforeVal", pdhProdChgHist.beforeVal),
+            QdslUtil.FieldDef.like("chgReason", pdhProdChgHist.chgReason),
+            QdslUtil.FieldDef.like("chgTypeCd", pdhProdChgHist.chgTypeCd),
+            QdslUtil.FieldDef.like("chgUserId", pdhProdChgHist.chgUserId),
+            QdslUtil.FieldDef.like("prodChgHistId", pdhProdChgHist.prodChgHistId),
+            QdslUtil.FieldDef.like("prodId", pdhProdChgHist.prodId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

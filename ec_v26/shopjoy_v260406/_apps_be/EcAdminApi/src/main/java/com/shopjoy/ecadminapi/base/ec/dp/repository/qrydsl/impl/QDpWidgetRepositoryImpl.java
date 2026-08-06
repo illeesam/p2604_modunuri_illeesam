@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -34,21 +33,6 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     private final EntityManager em;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetRepositoryImpl";
     private static final QDpWidget dpWidget = QDpWidget.dpWidget;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("dispEnv", dpWidget.dispEnv),
-        Map.entry("thumbnailUrl", dpWidget.thumbnailUrl),
-        Map.entry("titleShowYn", dpWidget.titleShowYn),
-        Map.entry("useYn", dpWidget.useYn),
-        Map.entry("widgetConfigJson", dpWidget.widgetConfigJson),
-        Map.entry("widgetContent", dpWidget.widgetContent),
-        Map.entry("widgetDesc", dpWidget.widgetDesc),
-        Map.entry("widgetId", dpWidget.widgetId),
-        Map.entry("widgetLibId", dpWidget.widgetLibId),
-        Map.entry("widgetLibRefYn", dpWidget.widgetLibRefYn),
-        Map.entry("widgetNm", dpWidget.widgetNm),
-        Map.entry("widgetTitle", dpWidget.widgetTitle),
-        Map.entry("widgetTypeCd", dpWidget.widgetTypeCd)
-    );
 
     /*
      * baseQuery — 코드성 필드 예시 코드값
@@ -103,7 +87,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
                 .where(
                     QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()),
                     QdslUtil.strEq(dpWidget.useYn, search.getUseYn()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -127,7 +111,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()),
                 QdslUtil.strEq(dpWidget.useYn, search.getUseYn()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpWidgetDto.Item> query = baseQuery();
@@ -150,6 +134,24 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("dispEnv", dpWidget.dispEnv),
+            QdslUtil.FieldDef.like("thumbnailUrl", dpWidget.thumbnailUrl),
+            QdslUtil.FieldDef.like("titleShowYn", dpWidget.titleShowYn),
+            QdslUtil.FieldDef.like("useYn", dpWidget.useYn),
+            QdslUtil.FieldDef.like("widgetConfigJson", dpWidget.widgetConfigJson),
+            QdslUtil.FieldDef.like("widgetContent", dpWidget.widgetContent),
+            QdslUtil.FieldDef.like("widgetDesc", dpWidget.widgetDesc),
+            QdslUtil.FieldDef.like("widgetId", dpWidget.widgetId),
+            QdslUtil.FieldDef.like("widgetLibId", dpWidget.widgetLibId),
+            QdslUtil.FieldDef.like("widgetLibRefYn", dpWidget.widgetLibRefYn),
+            QdslUtil.FieldDef.like("widgetNm", dpWidget.widgetNm),
+            QdslUtil.FieldDef.like("widgetTitle", dpWidget.widgetTitle),
+            QdslUtil.FieldDef.like("widgetTypeCd", dpWidget.widgetTypeCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

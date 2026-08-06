@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,13 +40,6 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdRestockNoti.regDate,
         "upd_date", pdRestockNoti.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("memberId", pdRestockNoti.memberId),
-        Map.entry("notiYn", pdRestockNoti.notiYn),
-        Map.entry("prodId", pdRestockNoti.prodId),
-        Map.entry("restockNotiId", pdRestockNoti.restockNotiId),
-        Map.entry("skuId", pdRestockNoti.prodSkuId)
     );
 
     /*
@@ -92,7 +84,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                     QdslUtil.strEq(pdRestockNoti.prodId, search.getProdId()),
                     QdslUtil.strEq(pdRestockNoti.notiYn, search.getNotiYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -119,7 +111,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                 QdslUtil.strEq(pdRestockNoti.prodId, search.getProdId()),
                 QdslUtil.strEq(pdRestockNoti.notiYn, search.getNotiYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -142,6 +134,16 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
 
         BasePage<PdRestockNotiDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("memberId", pdRestockNoti.memberId),
+            QdslUtil.FieldDef.like("notiYn", pdRestockNoti.notiYn),
+            QdslUtil.FieldDef.like("prodId", pdRestockNoti.prodId),
+            QdslUtil.FieldDef.like("restockNotiId", pdRestockNoti.restockNotiId),
+            QdslUtil.FieldDef.like("skuId", pdRestockNoti.prodSkuId)
+        ));
     }
 
     /**

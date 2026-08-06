@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -31,14 +30,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVocRepositoryImpl";
     private static final QSyVoc syVoc = QSyVoc.syVoc;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("useYn", syVoc.useYn),
-        Map.entry("vocContent", syVoc.vocContent),
-        Map.entry("vocDetailCd", syVoc.vocDetailCd),
-        Map.entry("vocId", syVoc.vocId),
-        Map.entry("vocMasterCd", syVoc.vocMasterCd),
-        Map.entry("vocNm", syVoc.vocNm)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -83,7 +74,7 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
                     QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()),
                     QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()),
                     QdslUtil.strEq(syVoc.useYn, search.getUseYn()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -110,7 +101,7 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
                 QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()),
                 QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()),
                 QdslUtil.strEq(syVoc.useYn, search.getUseYn()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -135,6 +126,17 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("useYn", syVoc.useYn),
+            QdslUtil.FieldDef.like("vocContent", syVoc.vocContent),
+            QdslUtil.FieldDef.like("vocDetailCd", syVoc.vocDetailCd),
+            QdslUtil.FieldDef.like("vocId", syVoc.vocId),
+            QdslUtil.FieldDef.like("vocMasterCd", syVoc.vocMasterCd),
+            QdslUtil.FieldDef.like("vocNm", syVoc.vocNm)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

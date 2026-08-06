@@ -8,7 +8,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -58,40 +57,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         "upd_date", odOrder.updDate,
         "pay_date", odOrder.payDate,
         "dliv_ship_date", odOrder.dlivShipDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("accessChannelCd", odOrder.accessChannelCd),
-        Map.entry("apprAprvUserId", odOrder.apprAprvUserId),
-        Map.entry("apprReason", odOrder.apprReason),
-        Map.entry("apprReqUserId", odOrder.apprReqUserId),
-        Map.entry("apprStatusCd", odOrder.apprStatusCd),
-        Map.entry("apprStatusCdBefore", odOrder.apprStatusCdBefore),
-        Map.entry("apprTargetCd", odOrder.apprTargetCd),
-        Map.entry("apprTargetNm", odOrder.apprTargetNm),
-        Map.entry("couponId", odOrder.couponId),
-        Map.entry("dlivCourierCd", odOrder.dlivCourierCd),
-        Map.entry("dlivStatusCd", odOrder.dlivStatusCd),
-        Map.entry("dlivStatusCdBefore", odOrder.dlivStatusCdBefore),
-        Map.entry("dlivTrackingNo", odOrder.dlivTrackingNo),
-        Map.entry("entrancePwd", odOrder.entrancePwd),
-        Map.entry("memberId", odOrder.memberId),
-        Map.entry("memberNm", odOrder.memberNm),
-        Map.entry("memo", odOrder.memo),
-        Map.entry("orderGradeCd", odOrder.orderGradeCd),
-        Map.entry("orderId", odOrder.orderId),
-        Map.entry("orderStatusCd", odOrder.orderStatusCd),
-        Map.entry("orderStatusCdBefore", odOrder.orderStatusCdBefore),
-        Map.entry("ordererEmail", odOrder.ordererEmail),
-        Map.entry("payMethodCd", odOrder.payMethodCd),
-        Map.entry("recvAddr", odOrder.recvAddr),
-        Map.entry("recvAddrDetail", odOrder.recvAddrDetail),
-        Map.entry("recvMemo", odOrder.recvMemo),
-        Map.entry("recvNm", odOrder.recvNm),
-        Map.entry("recvPhone", odOrder.recvPhone),
-        Map.entry("recvZip", odOrder.recvZip),
-        Map.entry("refundAccountNm", odOrder.refundAccountNm),
-        Map.entry("refundAccountNo", odOrder.refundAccountNo),
-        Map.entry("refundBankCd", odOrder.refundBankCd)
     );
 
     /*
@@ -250,7 +215,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                     QdslUtil.strEq(odOrder.memberId, search.getMemberId()),
                     QdslUtil.strEq(odOrder.orderStatusCd, search.getOrderStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -277,7 +242,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 QdslUtil.strEq(odOrder.memberId, search.getMemberId()),
                 QdslUtil.strEq(odOrder.orderStatusCd, search.getOrderStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -303,6 +268,43 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("accessChannelCd", odOrder.accessChannelCd),
+            QdslUtil.FieldDef.like("apprAprvUserId", odOrder.apprAprvUserId),
+            QdslUtil.FieldDef.like("apprReason", odOrder.apprReason),
+            QdslUtil.FieldDef.like("apprReqUserId", odOrder.apprReqUserId),
+            QdslUtil.FieldDef.like("apprStatusCd", odOrder.apprStatusCd),
+            QdslUtil.FieldDef.like("apprStatusCdBefore", odOrder.apprStatusCdBefore),
+            QdslUtil.FieldDef.like("apprTargetCd", odOrder.apprTargetCd),
+            QdslUtil.FieldDef.like("apprTargetNm", odOrder.apprTargetNm),
+            QdslUtil.FieldDef.like("couponId", odOrder.couponId),
+            QdslUtil.FieldDef.like("dlivCourierCd", odOrder.dlivCourierCd),
+            QdslUtil.FieldDef.like("dlivStatusCd", odOrder.dlivStatusCd),
+            QdslUtil.FieldDef.like("dlivStatusCdBefore", odOrder.dlivStatusCdBefore),
+            QdslUtil.FieldDef.like("dlivTrackingNo", odOrder.dlivTrackingNo),
+            QdslUtil.FieldDef.like("entrancePwd", odOrder.entrancePwd),
+            QdslUtil.FieldDef.like("memberId", odOrder.memberId),
+            QdslUtil.FieldDef.like("memberNm", odOrder.memberNm),
+            QdslUtil.FieldDef.like("memo", odOrder.memo),
+            QdslUtil.FieldDef.like("orderGradeCd", odOrder.orderGradeCd),
+            QdslUtil.FieldDef.like("orderId", odOrder.orderId),
+            QdslUtil.FieldDef.like("orderStatusCd", odOrder.orderStatusCd),
+            QdslUtil.FieldDef.like("orderStatusCdBefore", odOrder.orderStatusCdBefore),
+            QdslUtil.FieldDef.like("ordererEmail", odOrder.ordererEmail),
+            QdslUtil.FieldDef.like("payMethodCd", odOrder.payMethodCd),
+            QdslUtil.FieldDef.like("recvAddr", odOrder.recvAddr),
+            QdslUtil.FieldDef.like("recvAddrDetail", odOrder.recvAddrDetail),
+            QdslUtil.FieldDef.like("recvMemo", odOrder.recvMemo),
+            QdslUtil.FieldDef.like("recvNm", odOrder.recvNm),
+            QdslUtil.FieldDef.like("recvPhone", odOrder.recvPhone),
+            QdslUtil.FieldDef.like("recvZip", odOrder.recvZip),
+            QdslUtil.FieldDef.like("refundAccountNm", odOrder.refundAccountNm),
+            QdslUtil.FieldDef.like("refundAccountNo", odOrder.refundAccountNo),
+            QdslUtil.FieldDef.like("refundBankCd", odOrder.refundBankCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

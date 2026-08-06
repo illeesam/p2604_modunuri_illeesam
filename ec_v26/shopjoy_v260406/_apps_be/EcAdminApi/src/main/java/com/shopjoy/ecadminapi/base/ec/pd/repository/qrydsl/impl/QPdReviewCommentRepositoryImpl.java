@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -36,16 +35,6 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdReviewComment.regDate,
         "upd_date", pdReviewComment.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("parentReplyId", pdReviewComment.parentReplyId),
-        Map.entry("replyStatusCd", pdReviewComment.replyStatusCd),
-        Map.entry("reviewCommentId", pdReviewComment.reviewCommentId),
-        Map.entry("reviewId", pdReviewComment.reviewId),
-        Map.entry("reviewReplyContent", pdReviewComment.reviewReplyContent),
-        Map.entry("writerId", pdReviewComment.writerId),
-        Map.entry("writerNm", pdReviewComment.writerNm),
-        Map.entry("writerTypeCd", pdReviewComment.writerTypeCd)
     );
 
     /*
@@ -90,7 +79,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                     QdslUtil.strEq(pdReviewComment.reviewId, search.getReviewId()),
                     QdslUtil.strEq(pdReviewComment.reviewCommentId, search.getReviewCommentId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -117,7 +106,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                 QdslUtil.strEq(pdReviewComment.reviewId, search.getReviewId()),
                 QdslUtil.strEq(pdReviewComment.reviewCommentId, search.getReviewCommentId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -145,6 +134,19 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     /** 단건/목록/페이지 공용 base query */
     /** 검색조건 빌드 — Mapper XML pdReviewCommentCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("parentReplyId", pdReviewComment.parentReplyId),
+            QdslUtil.FieldDef.like("replyStatusCd", pdReviewComment.replyStatusCd),
+            QdslUtil.FieldDef.like("reviewCommentId", pdReviewComment.reviewCommentId),
+            QdslUtil.FieldDef.like("reviewId", pdReviewComment.reviewId),
+            QdslUtil.FieldDef.like("reviewReplyContent", pdReviewComment.reviewReplyContent),
+            QdslUtil.FieldDef.like("writerId", pdReviewComment.writerId),
+            QdslUtil.FieldDef.like("writerNm", pdReviewComment.writerNm),
+            QdslUtil.FieldDef.like("writerTypeCd", pdReviewComment.writerTypeCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

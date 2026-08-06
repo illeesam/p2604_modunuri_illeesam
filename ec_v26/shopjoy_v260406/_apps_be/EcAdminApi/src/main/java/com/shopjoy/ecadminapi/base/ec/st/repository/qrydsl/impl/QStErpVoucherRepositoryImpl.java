@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -43,18 +42,6 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stErpVoucher.regDate,
         "upd_date", stErpVoucher.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("erpResMsg", stErpVoucher.erpResMsg),
-        Map.entry("erpVoucherDesc", stErpVoucher.erpVoucherDesc),
-        Map.entry("erpVoucherId", stErpVoucher.erpVoucherId),
-        Map.entry("erpVoucherNo", stErpVoucher.erpVoucherNo),
-        Map.entry("erpVoucherStatusCd", stErpVoucher.erpVoucherStatusCd),
-        Map.entry("erpVoucherStatusCdBefore", stErpVoucher.erpVoucherStatusCdBefore),
-        Map.entry("erpVoucherTypeCd", stErpVoucher.erpVoucherTypeCd),
-        Map.entry("settleId", stErpVoucher.settleId),
-        Map.entry("settleYm", stErpVoucher.settleYm),
-        Map.entry("vendorId", stErpVoucher.vendorId)
     );
 
     /*
@@ -115,7 +102,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                     QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()),
                     QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -142,7 +129,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                 QdslUtil.strEq(stErpVoucher.erpVoucherTypeCd, search.getErpVoucherTypeCd()),
                 QdslUtil.strEq(stErpVoucher.erpVoucherStatusCd, search.getErpVoucherStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -165,6 +152,21 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
 
         BasePage<StErpVoucherDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("erpResMsg", stErpVoucher.erpResMsg),
+            QdslUtil.FieldDef.like("erpVoucherDesc", stErpVoucher.erpVoucherDesc),
+            QdslUtil.FieldDef.like("erpVoucherId", stErpVoucher.erpVoucherId),
+            QdslUtil.FieldDef.like("erpVoucherNo", stErpVoucher.erpVoucherNo),
+            QdslUtil.FieldDef.like("erpVoucherStatusCd", stErpVoucher.erpVoucherStatusCd),
+            QdslUtil.FieldDef.like("erpVoucherStatusCdBefore", stErpVoucher.erpVoucherStatusCdBefore),
+            QdslUtil.FieldDef.like("erpVoucherTypeCd", stErpVoucher.erpVoucherTypeCd),
+            QdslUtil.FieldDef.like("settleId", stErpVoucher.settleId),
+            QdslUtil.FieldDef.like("settleYm", stErpVoucher.settleYm),
+            QdslUtil.FieldDef.like("vendorId", stErpVoucher.vendorId)
+        ));
     }
 
     /**

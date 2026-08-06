@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -37,20 +36,6 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBbmRepositoryImpl";
     private static final QSyBbm syBbm = QSyBbm.syBbm;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("allowAttach", syBbm.allowAttach),
-        Map.entry("allowComment", syBbm.allowComment),
-        Map.entry("allowLike", syBbm.allowLike),
-        Map.entry("bbmCode", syBbm.bbmCode),
-        Map.entry("bbmId", syBbm.bbmId),
-        Map.entry("bbmNm", syBbm.bbmNm),
-        Map.entry("bbmRemark", syBbm.bbmRemark),
-        Map.entry("bbmTypeCd", syBbm.bbmTypeCd),
-        Map.entry("contentTypeCd", syBbm.contentTypeCd),
-        Map.entry("pathId", syBbm.pathId),
-        Map.entry("scopeTypeCd", syBbm.scopeTypeCd),
-        Map.entry("useYn", syBbm.useYn)
-    );
 
     /*
      * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
@@ -103,7 +88,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                     andPathIdIn(search),
                     QdslUtil.strEq(syBbm.bbmTypeCd, search.getTypeCd()),
                     QdslUtil.strEq(syBbm.useYn, search.getUseYn()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -130,7 +115,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 andPathIdIn(search),
                 QdslUtil.strEq(syBbm.bbmTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syBbm.useYn, search.getUseYn()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -162,6 +147,23 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syBbm.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_bbm"))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("allowAttach", syBbm.allowAttach),
+            QdslUtil.FieldDef.like("allowComment", syBbm.allowComment),
+            QdslUtil.FieldDef.like("allowLike", syBbm.allowLike),
+            QdslUtil.FieldDef.like("bbmCode", syBbm.bbmCode),
+            QdslUtil.FieldDef.like("bbmId", syBbm.bbmId),
+            QdslUtil.FieldDef.like("bbmNm", syBbm.bbmNm),
+            QdslUtil.FieldDef.like("bbmRemark", syBbm.bbmRemark),
+            QdslUtil.FieldDef.like("bbmTypeCd", syBbm.bbmTypeCd),
+            QdslUtil.FieldDef.like("contentTypeCd", syBbm.contentTypeCd),
+            QdslUtil.FieldDef.like("pathId", syBbm.pathId),
+            QdslUtil.FieldDef.like("scopeTypeCd", syBbm.scopeTypeCd),
+            QdslUtil.FieldDef.like("useYn", syBbm.useYn)
+        ));
     }
 
     /**

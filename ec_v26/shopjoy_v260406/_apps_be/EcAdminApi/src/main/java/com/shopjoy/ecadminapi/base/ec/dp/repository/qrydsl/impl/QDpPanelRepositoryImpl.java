@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -44,17 +43,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", dpPanel.regDate,
         "upd_date", dpPanel.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("contentJson", dpPanel.contentJson),
-        Map.entry("dispPanelStatusCd", dpPanel.dispPanelStatusCd),
-        Map.entry("dispPanelStatusCdBefore", dpPanel.dispPanelStatusCdBefore),
-        Map.entry("panelId", dpPanel.panelId),
-        Map.entry("panelNm", dpPanel.panelNm),
-        Map.entry("panelTypeCd", dpPanel.panelTypeCd),
-        Map.entry("pathId", dpPanel.pathId),
-        Map.entry("useYn", dpPanel.useYn),
-        Map.entry("visibilityTargets", dpPanel.visibilityTargets)
     );
 
     /*
@@ -108,7 +96,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                     QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()),
                     QdslUtil.strEq(dpPanel.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -138,7 +126,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 QdslUtil.strEq(dpPanel.panelTypeCd, search.getPanelTypeCd()),
                 QdslUtil.strEq(dpPanel.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery();
@@ -166,6 +154,20 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? dpPanel.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_panel"))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("contentJson", dpPanel.contentJson),
+            QdslUtil.FieldDef.like("dispPanelStatusCd", dpPanel.dispPanelStatusCd),
+            QdslUtil.FieldDef.like("dispPanelStatusCdBefore", dpPanel.dispPanelStatusCdBefore),
+            QdslUtil.FieldDef.like("panelId", dpPanel.panelId),
+            QdslUtil.FieldDef.like("panelNm", dpPanel.panelNm),
+            QdslUtil.FieldDef.like("panelTypeCd", dpPanel.panelTypeCd),
+            QdslUtil.FieldDef.like("pathId", dpPanel.pathId),
+            QdslUtil.FieldDef.like("useYn", dpPanel.useYn),
+            QdslUtil.FieldDef.like("visibilityTargets", dpPanel.visibilityTargets)
+        ));
     }
 
     /**

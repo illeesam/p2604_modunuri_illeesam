@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -43,21 +42,6 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdDlivTmplt.regDate,
         "upd_date", pdDlivTmplt.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("baseDlivYn", pdDlivTmplt.baseDlivYn),
-        Map.entry("dlivCourierCd", pdDlivTmplt.dlivCourierCd),
-        Map.entry("dlivMethodCd", pdDlivTmplt.dlivMethodCd),
-        Map.entry("dlivPayTypeCd", pdDlivTmplt.dlivPayTypeCd),
-        Map.entry("dlivTmpltId", pdDlivTmplt.dlivTmpltId),
-        Map.entry("dlivTmpltNm", pdDlivTmplt.dlivTmpltNm),
-        Map.entry("returnAddr", pdDlivTmplt.returnAddr),
-        Map.entry("returnAddrDetail", pdDlivTmplt.returnAddrDetail),
-        Map.entry("returnAddrZip", pdDlivTmplt.returnAddrZip),
-        Map.entry("returnCourierCd", pdDlivTmplt.returnCourierCd),
-        Map.entry("returnTelNo", pdDlivTmplt.returnTelNo),
-        Map.entry("useYn", pdDlivTmplt.useYn),
-        Map.entry("vendorId", pdDlivTmplt.vendorId)
     );
 
     /*
@@ -117,7 +101,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                     QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()),
                     QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -144,7 +128,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 QdslUtil.strEq(pdDlivTmplt.dlivMethodCd, search.getDlivMethodCd()),
                 QdslUtil.strEq(pdDlivTmplt.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -169,6 +153,24 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("baseDlivYn", pdDlivTmplt.baseDlivYn),
+            QdslUtil.FieldDef.like("dlivCourierCd", pdDlivTmplt.dlivCourierCd),
+            QdslUtil.FieldDef.like("dlivMethodCd", pdDlivTmplt.dlivMethodCd),
+            QdslUtil.FieldDef.like("dlivPayTypeCd", pdDlivTmplt.dlivPayTypeCd),
+            QdslUtil.FieldDef.like("dlivTmpltId", pdDlivTmplt.dlivTmpltId),
+            QdslUtil.FieldDef.like("dlivTmpltNm", pdDlivTmplt.dlivTmpltNm),
+            QdslUtil.FieldDef.like("returnAddr", pdDlivTmplt.returnAddr),
+            QdslUtil.FieldDef.like("returnAddrDetail", pdDlivTmplt.returnAddrDetail),
+            QdslUtil.FieldDef.like("returnAddrZip", pdDlivTmplt.returnAddrZip),
+            QdslUtil.FieldDef.like("returnCourierCd", pdDlivTmplt.returnCourierCd),
+            QdslUtil.FieldDef.like("returnTelNo", pdDlivTmplt.returnTelNo),
+            QdslUtil.FieldDef.like("useYn", pdDlivTmplt.useYn),
+            QdslUtil.FieldDef.like("vendorId", pdDlivTmplt.vendorId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

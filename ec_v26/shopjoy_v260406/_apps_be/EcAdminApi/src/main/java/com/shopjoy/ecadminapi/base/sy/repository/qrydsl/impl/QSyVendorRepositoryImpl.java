@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -45,31 +44,6 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syVendor.regDate,
         "upd_date", syVendor.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("ceoNm", syVendor.ceoNm),
-        Map.entry("corpNo", syVendor.corpNo),
-        Map.entry("pathId", syVendor.pathId),
-        Map.entry("vendorAddr", syVendor.vendorAddr),
-        Map.entry("vendorAddrDetail", syVendor.vendorAddrDetail),
-        Map.entry("vendorBankAccount", syVendor.vendorBankAccount),
-        Map.entry("vendorBankHolder", syVendor.vendorBankHolder),
-        Map.entry("vendorBankNm", syVendor.vendorBankNm),
-        Map.entry("vendorClassCd", syVendor.vendorClassCd),
-        Map.entry("vendorEmail", syVendor.vendorEmail),
-        Map.entry("vendorFax", syVendor.vendorFax),
-        Map.entry("vendorHomepage", syVendor.vendorHomepage),
-        Map.entry("vendorId", syVendor.vendorId),
-        Map.entry("vendorItem", syVendor.vendorItem),
-        Map.entry("vendorNm", syVendor.vendorNm),
-        Map.entry("vendorNmEn", syVendor.vendorNmEn),
-        Map.entry("vendorNo", syVendor.vendorNo),
-        Map.entry("vendorPhone", syVendor.vendorPhone),
-        Map.entry("vendorRegUrl", syVendor.vendorRegUrl),
-        Map.entry("vendorRemark", syVendor.vendorRemark),
-        Map.entry("vendorStatusCd", syVendor.vendorStatusCd),
-        Map.entry("vendorType", syVendor.vendorType),
-        Map.entry("vendorZipCode", syVendor.vendorZipCode)
     );
 
     /*
@@ -138,7 +112,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()),
                 QdslUtil.strEq(syVendor.vendorType, search.getVendorType()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -167,7 +141,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()),
                 QdslUtil.strEq(syVendor.vendorType, search.getVendorType()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -199,6 +173,34 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syVendor.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_vendor"))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("ceoNm", syVendor.ceoNm),
+            QdslUtil.FieldDef.like("corpNo", syVendor.corpNo),
+            QdslUtil.FieldDef.like("pathId", syVendor.pathId),
+            QdslUtil.FieldDef.like("vendorAddr", syVendor.vendorAddr),
+            QdslUtil.FieldDef.like("vendorAddrDetail", syVendor.vendorAddrDetail),
+            QdslUtil.FieldDef.like("vendorBankAccount", syVendor.vendorBankAccount),
+            QdslUtil.FieldDef.like("vendorBankHolder", syVendor.vendorBankHolder),
+            QdslUtil.FieldDef.like("vendorBankNm", syVendor.vendorBankNm),
+            QdslUtil.FieldDef.like("vendorClassCd", syVendor.vendorClassCd),
+            QdslUtil.FieldDef.like("vendorEmail", syVendor.vendorEmail),
+            QdslUtil.FieldDef.like("vendorFax", syVendor.vendorFax),
+            QdslUtil.FieldDef.like("vendorHomepage", syVendor.vendorHomepage),
+            QdslUtil.FieldDef.like("vendorId", syVendor.vendorId),
+            QdslUtil.FieldDef.like("vendorItem", syVendor.vendorItem),
+            QdslUtil.FieldDef.like("vendorNm", syVendor.vendorNm),
+            QdslUtil.FieldDef.like("vendorNmEn", syVendor.vendorNmEn),
+            QdslUtil.FieldDef.like("vendorNo", syVendor.vendorNo),
+            QdslUtil.FieldDef.like("vendorPhone", syVendor.vendorPhone),
+            QdslUtil.FieldDef.like("vendorRegUrl", syVendor.vendorRegUrl),
+            QdslUtil.FieldDef.like("vendorRemark", syVendor.vendorRemark),
+            QdslUtil.FieldDef.like("vendorStatusCd", syVendor.vendorStatusCd),
+            QdslUtil.FieldDef.like("vendorType", syVendor.vendorType),
+            QdslUtil.FieldDef.like("vendorZipCode", syVendor.vendorZipCode)
+        ));
     }
 
     /**

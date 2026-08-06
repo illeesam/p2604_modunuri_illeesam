@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -42,15 +41,6 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syVendorBrand.regDate,
         "upd_date", syVendorBrand.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("brandId", syVendorBrand.brandId),
-        Map.entry("contractCd", syVendorBrand.contractCd),
-        Map.entry("isMain", syVendorBrand.isMain),
-        Map.entry("useYn", syVendorBrand.useYn),
-        Map.entry("vendorBrandId", syVendorBrand.vendorBrandId),
-        Map.entry("vendorBrandRemark", syVendorBrand.vendorBrandRemark),
-        Map.entry("vendorId", syVendorBrand.vendorId)
     );
 
     /*
@@ -105,7 +95,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                 QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -132,7 +122,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                 QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()),
                 QdslUtil.strEq(syVendorBrand.vendorId, search.getVendorId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -155,6 +145,18 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
         BasePage<SyVendorBrandDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("brandId", syVendorBrand.brandId),
+            QdslUtil.FieldDef.like("contractCd", syVendorBrand.contractCd),
+            QdslUtil.FieldDef.like("isMain", syVendorBrand.isMain),
+            QdslUtil.FieldDef.like("useYn", syVendorBrand.useYn),
+            QdslUtil.FieldDef.like("vendorBrandId", syVendorBrand.vendorBrandId),
+            QdslUtil.FieldDef.like("vendorBrandRemark", syVendorBrand.vendorBrandRemark),
+            QdslUtil.FieldDef.like("vendorId", syVendorBrand.vendorId)
+        ));
     }
 
     /**

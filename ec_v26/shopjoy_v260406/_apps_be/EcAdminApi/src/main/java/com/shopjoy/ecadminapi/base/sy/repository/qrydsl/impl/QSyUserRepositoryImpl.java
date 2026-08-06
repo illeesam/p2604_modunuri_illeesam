@@ -8,7 +8,6 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -55,20 +54,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         "reg_date", syUser.regDate,
         "upd_date", syUser.updDate,
         "last_login_date", syUser.lastLoginDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("authMethodCd", syUser.authMethodCd),
-        Map.entry("deptId", syUser.deptId),
-        Map.entry("loginId", syUser.loginId),
-        Map.entry("loginPwdHash", syUser.loginPwdHash),
-        Map.entry("profileAttachId", syUser.profileAttachId),
-        Map.entry("roleId", syUser.roleId),
-        Map.entry("userEmail", syUser.userEmail),
-        Map.entry("userId", syUser.userId),
-        Map.entry("userMemo", syUser.userMemo),
-        Map.entry("userNm", syUser.userNm),
-        Map.entry("userPhone", syUser.userPhone),
-        Map.entry("userStatusCd", syUser.userStatusCd)
     );
 
     /* ============================================================
@@ -141,7 +126,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                     QdslUtil.strEq(syRole.roleNm, search.getRole()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -168,7 +153,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                 QdslUtil.strEq(syRole.roleNm, search.getRole()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -205,7 +190,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
                     QdslUtil.strEq(syRole.roleNm, search.getRole()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .fetchOne();
         return CmUtil.nvlLong(total);
@@ -221,6 +206,23 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /* ============================================================
      * 정렬조건 — sort 문자열 파싱 ("userId asc, regDate desc")
      * ============================================================ */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("authMethodCd", syUser.authMethodCd),
+            QdslUtil.FieldDef.like("deptId", syUser.deptId),
+            QdslUtil.FieldDef.like("loginId", syUser.loginId),
+            QdslUtil.FieldDef.like("loginPwdHash", syUser.loginPwdHash),
+            QdslUtil.FieldDef.like("profileAttachId", syUser.profileAttachId),
+            QdslUtil.FieldDef.like("roleId", syUser.roleId),
+            QdslUtil.FieldDef.like("userEmail", syUser.userEmail),
+            QdslUtil.FieldDef.like("userId", syUser.userId),
+            QdslUtil.FieldDef.like("userMemo", syUser.userMemo),
+            QdslUtil.FieldDef.like("userNm", syUser.userNm),
+            QdslUtil.FieldDef.like("userPhone", syUser.userPhone),
+            QdslUtil.FieldDef.like("userStatusCd", syUser.userStatusCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

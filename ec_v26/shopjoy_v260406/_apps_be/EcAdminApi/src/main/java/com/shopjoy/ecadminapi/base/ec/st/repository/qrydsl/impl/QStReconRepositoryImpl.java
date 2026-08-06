@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -45,20 +44,6 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stRecon.regDate,
         "upd_date", stRecon.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("reconId", stRecon.reconId),
-        Map.entry("reconNote", stRecon.reconNote),
-        Map.entry("reconStatusCd", stRecon.reconStatusCd),
-        Map.entry("reconStatusCdBefore", stRecon.reconStatusCdBefore),
-        Map.entry("reconTypeCd", stRecon.reconTypeCd),
-        Map.entry("refId", stRecon.refId),
-        Map.entry("refNo", stRecon.refNo),
-        Map.entry("resolvedBy", stRecon.resolvedBy),
-        Map.entry("settleId", stRecon.settleId),
-        Map.entry("settlePeriod", stRecon.settlePeriod),
-        Map.entry("settleRawId", stRecon.settleRawId),
-        Map.entry("vendorId", stRecon.vendorId)
     );
 
     /*
@@ -123,7 +108,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                     QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()),
                     QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -150,7 +135,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                 QdslUtil.strEq(stRecon.reconTypeCd, search.getReconTypeCd()),
                 QdslUtil.strEq(stRecon.reconStatusCd, search.getReconStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -173,6 +158,23 @@ public class QStReconRepositoryImpl implements QStReconRepository {
 
         BasePage<StReconDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("reconId", stRecon.reconId),
+            QdslUtil.FieldDef.like("reconNote", stRecon.reconNote),
+            QdslUtil.FieldDef.like("reconStatusCd", stRecon.reconStatusCd),
+            QdslUtil.FieldDef.like("reconStatusCdBefore", stRecon.reconStatusCdBefore),
+            QdslUtil.FieldDef.like("reconTypeCd", stRecon.reconTypeCd),
+            QdslUtil.FieldDef.like("refId", stRecon.refId),
+            QdslUtil.FieldDef.like("refNo", stRecon.refNo),
+            QdslUtil.FieldDef.like("resolvedBy", stRecon.resolvedBy),
+            QdslUtil.FieldDef.like("settleId", stRecon.settleId),
+            QdslUtil.FieldDef.like("settlePeriod", stRecon.settlePeriod),
+            QdslUtil.FieldDef.like("settleRawId", stRecon.settleRawId),
+            QdslUtil.FieldDef.like("vendorId", stRecon.vendorId)
+        ));
     }
 
     /**

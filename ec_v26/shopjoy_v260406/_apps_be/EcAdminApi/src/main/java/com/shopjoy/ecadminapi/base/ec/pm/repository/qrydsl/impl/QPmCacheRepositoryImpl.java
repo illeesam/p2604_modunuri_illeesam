@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -40,15 +39,6 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmCache.regDate,
         "upd_date", pmCache.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("cacheDesc", pmCache.cacheDesc),
-        Map.entry("cacheId", pmCache.cacheId),
-        Map.entry("cacheTypeCd", pmCache.cacheTypeCd),
-        Map.entry("memberId", pmCache.memberId),
-        Map.entry("memberNm", pmCache.memberNm),
-        Map.entry("procUserId", pmCache.procUserId),
-        Map.entry("refId", pmCache.refId)
     );
 
     /*
@@ -96,7 +86,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                     QdslUtil.strEq(pmCache.cacheId, search.getCacheId()),
                     QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -122,7 +112,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                 QdslUtil.strEq(pmCache.cacheId, search.getCacheId()),
                 QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -147,6 +137,18 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("cacheDesc", pmCache.cacheDesc),
+            QdslUtil.FieldDef.like("cacheId", pmCache.cacheId),
+            QdslUtil.FieldDef.like("cacheTypeCd", pmCache.cacheTypeCd),
+            QdslUtil.FieldDef.like("memberId", pmCache.memberId),
+            QdslUtil.FieldDef.like("memberNm", pmCache.memberNm),
+            QdslUtil.FieldDef.like("procUserId", pmCache.procUserId),
+            QdslUtil.FieldDef.like("refId", pmCache.refId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

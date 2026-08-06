@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,21 +34,6 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhApiLog.regDate,
         "upd_date", syhApiLog.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("apiNm", syhApiLog.apiNm),
-        Map.entry("apiTypeCd", syhApiLog.apiTypeCd),
-        Map.entry("cmdNm", syhApiLog.cmdNm),
-        Map.entry("endpoint", syhApiLog.endpoint),
-        Map.entry("errorMsg", syhApiLog.errorMsg),
-        Map.entry("logId", syhApiLog.logId),
-        Map.entry("methodCd", syhApiLog.methodCd),
-        Map.entry("refId", syhApiLog.refId),
-        Map.entry("refTypeCd", syhApiLog.refTypeCd),
-        Map.entry("reqBody", syhApiLog.reqBody),
-        Map.entry("resBody", syhApiLog.resBody),
-        Map.entry("resultCd", syhApiLog.resultCd),
-        Map.entry("uiNm", syhApiLog.uiNm)
     );
 
     /*
@@ -106,7 +90,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                 QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -132,7 +116,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                 QdslUtil.strEq(syhApiLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhApiLog.apiTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -158,6 +142,24 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("apiNm", syhApiLog.apiNm),
+            QdslUtil.FieldDef.like("apiTypeCd", syhApiLog.apiTypeCd),
+            QdslUtil.FieldDef.like("cmdNm", syhApiLog.cmdNm),
+            QdslUtil.FieldDef.like("endpoint", syhApiLog.endpoint),
+            QdslUtil.FieldDef.like("errorMsg", syhApiLog.errorMsg),
+            QdslUtil.FieldDef.like("logId", syhApiLog.logId),
+            QdslUtil.FieldDef.like("methodCd", syhApiLog.methodCd),
+            QdslUtil.FieldDef.like("refId", syhApiLog.refId),
+            QdslUtil.FieldDef.like("refTypeCd", syhApiLog.refTypeCd),
+            QdslUtil.FieldDef.like("reqBody", syhApiLog.reqBody),
+            QdslUtil.FieldDef.like("resBody", syhApiLog.resBody),
+            QdslUtil.FieldDef.like("resultCd", syhApiLog.resultCd),
+            QdslUtil.FieldDef.like("uiNm", syhApiLog.uiNm)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

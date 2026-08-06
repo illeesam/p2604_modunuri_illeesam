@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -37,12 +36,6 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdTag.regDate,
         "upd_date", pdTag.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("tagDesc", pdTag.tagDesc),
-        Map.entry("tagId", pdTag.tagId),
-        Map.entry("tagNm", pdTag.tagNm),
-        Map.entry("useYn", pdTag.useYn)
     );
 
     /*
@@ -84,7 +77,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
                     QdslUtil.strEq(pdTag.tagId, search.getTagId()),
                     QdslUtil.strEq(pdTag.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -110,7 +103,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
                 QdslUtil.strEq(pdTag.tagId, search.getTagId()),
                 QdslUtil.strEq(pdTag.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -135,6 +128,15 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("tagDesc", pdTag.tagDesc),
+            QdslUtil.FieldDef.like("tagId", pdTag.tagId),
+            QdslUtil.FieldDef.like("tagNm", pdTag.tagNm),
+            QdslUtil.FieldDef.like("useYn", pdTag.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

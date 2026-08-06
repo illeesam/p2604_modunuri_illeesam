@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -45,24 +44,6 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         "send_date", syhSendEmailLog.sendDate,
         "reg_date", syhSendEmailLog.regDate,
         "upd_date", syhSendEmailLog.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("bccAddr", syhSendEmailLog.bccAddr),
-        Map.entry("ccAddr", syhSendEmailLog.ccAddr),
-        Map.entry("content", syhSendEmailLog.content),
-        Map.entry("failReason", syhSendEmailLog.failReason),
-        Map.entry("fromAddr", syhSendEmailLog.fromAddr),
-        Map.entry("logId", syhSendEmailLog.logId),
-        Map.entry("memberId", syhSendEmailLog.memberId),
-        Map.entry("params", syhSendEmailLog.params),
-        Map.entry("refId", syhSendEmailLog.refId),
-        Map.entry("refTypeCd", syhSendEmailLog.refTypeCd),
-        Map.entry("resultCd", syhSendEmailLog.resultCd),
-        Map.entry("subject", syhSendEmailLog.subject),
-        Map.entry("templateCode", syhSendEmailLog.templateCode),
-        Map.entry("templateId", syhSendEmailLog.templateId),
-        Map.entry("toAddr", syhSendEmailLog.toAddr),
-        Map.entry("userId", syhSendEmailLog.userId)
     );
 
     /*
@@ -126,7 +107,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                 QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -154,7 +135,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                 QdslUtil.strEq(syhSendEmailLog.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syhSendEmailLog.refTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -177,6 +158,27 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
         BasePage<SyhSendEmailLogDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("bccAddr", syhSendEmailLog.bccAddr),
+            QdslUtil.FieldDef.like("ccAddr", syhSendEmailLog.ccAddr),
+            QdslUtil.FieldDef.like("content", syhSendEmailLog.content),
+            QdslUtil.FieldDef.like("failReason", syhSendEmailLog.failReason),
+            QdslUtil.FieldDef.like("fromAddr", syhSendEmailLog.fromAddr),
+            QdslUtil.FieldDef.like("logId", syhSendEmailLog.logId),
+            QdslUtil.FieldDef.like("memberId", syhSendEmailLog.memberId),
+            QdslUtil.FieldDef.like("params", syhSendEmailLog.params),
+            QdslUtil.FieldDef.like("refId", syhSendEmailLog.refId),
+            QdslUtil.FieldDef.like("refTypeCd", syhSendEmailLog.refTypeCd),
+            QdslUtil.FieldDef.like("resultCd", syhSendEmailLog.resultCd),
+            QdslUtil.FieldDef.like("subject", syhSendEmailLog.subject),
+            QdslUtil.FieldDef.like("templateCode", syhSendEmailLog.templateCode),
+            QdslUtil.FieldDef.like("templateId", syhSendEmailLog.templateId),
+            QdslUtil.FieldDef.like("toAddr", syhSendEmailLog.toAddr),
+            QdslUtil.FieldDef.like("userId", syhSendEmailLog.userId)
+        ));
     }
 
     /**

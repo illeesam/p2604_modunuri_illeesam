@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -43,14 +42,6 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syVendorUserRole.regDate,
         "upd_date", syVendorUserRole.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("grantUserId", syVendorUserRole.grantUserId),
-        Map.entry("roleId", syVendorUserRole.roleId),
-        Map.entry("userId", syVendorUserRole.userId),
-        Map.entry("vendorId", syVendorUserRole.vendorId),
-        Map.entry("vendorUserRoleId", syVendorUserRole.vendorUserRoleId),
-        Map.entry("vendorUserRoleRemark", syVendorUserRole.vendorUserRoleRemark)
     );
 
     /* 업체 사용자 역할 연결 baseSelColumnQuery — 코드성 필드 없음 (역할명은 조인으로 획득) */
@@ -102,7 +93,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
                 QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendorUserRole.userId, search.getUserId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -129,7 +120,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
                 QdslUtil.strEq(syVendorUserRole.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendorUserRole.userId, search.getUserId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -152,6 +143,17 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
 
         BasePage<SyVendorUserRoleDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("grantUserId", syVendorUserRole.grantUserId),
+            QdslUtil.FieldDef.like("roleId", syVendorUserRole.roleId),
+            QdslUtil.FieldDef.like("userId", syVendorUserRole.userId),
+            QdslUtil.FieldDef.like("vendorId", syVendorUserRole.vendorId),
+            QdslUtil.FieldDef.like("vendorUserRoleId", syVendorUserRole.vendorUserRoleId),
+            QdslUtil.FieldDef.like("vendorUserRoleRemark", syVendorUserRole.vendorUserRoleRemark)
+        ));
     }
 
     /**

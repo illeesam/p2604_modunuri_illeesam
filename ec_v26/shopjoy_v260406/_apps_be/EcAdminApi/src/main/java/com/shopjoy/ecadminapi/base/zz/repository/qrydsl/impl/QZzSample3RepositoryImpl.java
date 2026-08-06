@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -29,36 +28,6 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzSample3RepositoryImpl";
     private static final QZzSample3 zzSample3 = QZzSample3.zzSample3;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("attrNm1", zzSample3.attrNm1),
-        Map.entry("attrNm2", zzSample3.attrNm2),
-        Map.entry("attrNm3", zzSample3.attrNm3),
-        Map.entry("attrNm4", zzSample3.attrNm4),
-        Map.entry("cateCds", zzSample3.cateCds),
-        Map.entry("cdGrp", zzSample3.cdGrp),
-        Map.entry("cdInfwSeCd", zzSample3.cdInfwSeCd),
-        Map.entry("cdNm", zzSample3.cdNm),
-        Map.entry("cdVl", zzSample3.cdVl),
-        Map.entry("col01", zzSample3.col01),
-        Map.entry("col02", zzSample3.col02),
-        Map.entry("col03", zzSample3.col03),
-        Map.entry("col04", zzSample3.col04),
-        Map.entry("col05", zzSample3.col05),
-        Map.entry("col06", zzSample3.col06),
-        Map.entry("col07", zzSample3.col07),
-        Map.entry("col08", zzSample3.col08),
-        Map.entry("col09", zzSample3.col09),
-        Map.entry("divCd", zzSample3.divCd),
-        Map.entry("explnCn", zzSample3.explnCn),
-        Map.entry("groupCd", zzSample3.groupCd),
-        Map.entry("kindCd", zzSample3.kindCd),
-        Map.entry("sample1Id", zzSample3.sample1Id),
-        Map.entry("sample2Id", zzSample3.sample2Id),
-        Map.entry("sample3Id", zzSample3.sample3Id),
-        Map.entry("statusCd", zzSample3.statusCd),
-        Map.entry("typeCd", zzSample3.typeCd),
-        Map.entry("useYn", zzSample3.useYn)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (zz_sample3 는 다목적 샘플 테이블이라 sy_code 미등록.
@@ -132,7 +101,7 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
                 QdslUtil.strEq(zzSample3.sample1Id, search.getSample1Id()),
                 QdslUtil.strEq(zzSample3.sample2Id, search.getSample2Id()),
                 QdslUtil.strEq(zzSample3.useYn, search.getUseYn()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -161,7 +130,7 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
                 QdslUtil.strEq(zzSample3.sample1Id, search.getSample1Id()),
                 QdslUtil.strEq(zzSample3.sample2Id, search.getSample2Id()),
                 QdslUtil.strEq(zzSample3.useYn, search.getUseYn()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -184,6 +153,39 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
 
         BasePage<ZzSample3Dto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("attrNm1", zzSample3.attrNm1),
+            QdslUtil.FieldDef.like("attrNm2", zzSample3.attrNm2),
+            QdslUtil.FieldDef.like("attrNm3", zzSample3.attrNm3),
+            QdslUtil.FieldDef.like("attrNm4", zzSample3.attrNm4),
+            QdslUtil.FieldDef.like("cateCds", zzSample3.cateCds),
+            QdslUtil.FieldDef.like("cdGrp", zzSample3.cdGrp),
+            QdslUtil.FieldDef.like("cdInfwSeCd", zzSample3.cdInfwSeCd),
+            QdslUtil.FieldDef.like("cdNm", zzSample3.cdNm),
+            QdslUtil.FieldDef.like("cdVl", zzSample3.cdVl),
+            QdslUtil.FieldDef.like("col01", zzSample3.col01),
+            QdslUtil.FieldDef.like("col02", zzSample3.col02),
+            QdslUtil.FieldDef.like("col03", zzSample3.col03),
+            QdslUtil.FieldDef.like("col04", zzSample3.col04),
+            QdslUtil.FieldDef.like("col05", zzSample3.col05),
+            QdslUtil.FieldDef.like("col06", zzSample3.col06),
+            QdslUtil.FieldDef.like("col07", zzSample3.col07),
+            QdslUtil.FieldDef.like("col08", zzSample3.col08),
+            QdslUtil.FieldDef.like("col09", zzSample3.col09),
+            QdslUtil.FieldDef.like("divCd", zzSample3.divCd),
+            QdslUtil.FieldDef.like("explnCn", zzSample3.explnCn),
+            QdslUtil.FieldDef.like("groupCd", zzSample3.groupCd),
+            QdslUtil.FieldDef.like("kindCd", zzSample3.kindCd),
+            QdslUtil.FieldDef.like("sample1Id", zzSample3.sample1Id),
+            QdslUtil.FieldDef.like("sample2Id", zzSample3.sample2Id),
+            QdslUtil.FieldDef.like("sample3Id", zzSample3.sample3Id),
+            QdslUtil.FieldDef.like("statusCd", zzSample3.statusCd),
+            QdslUtil.FieldDef.like("typeCd", zzSample3.typeCd),
+            QdslUtil.FieldDef.like("useYn", zzSample3.useYn)
+        ));
     }
 
     /**

@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -31,14 +30,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyI18nRepositoryImpl";
     private static final QSyI18n syI18n = QSyI18n.syI18n;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("i18nCategory", syI18n.i18nCategory),
-        Map.entry("i18nDesc", syI18n.i18nDesc),
-        Map.entry("i18nId", syI18n.i18nId),
-        Map.entry("i18nKey", syI18n.i18nKey),
-        Map.entry("i18nScopeCd", syI18n.i18nScopeCd),
-        Map.entry("useYn", syI18n.useYn)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -82,7 +73,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                     QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
                     QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
                     QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -108,7 +99,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                 QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
                 QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
                 QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -131,6 +122,17 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
 
         BasePage<SyI18nDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("i18nCategory", syI18n.i18nCategory),
+            QdslUtil.FieldDef.like("i18nDesc", syI18n.i18nDesc),
+            QdslUtil.FieldDef.like("i18nId", syI18n.i18nId),
+            QdslUtil.FieldDef.like("i18nKey", syI18n.i18nKey),
+            QdslUtil.FieldDef.like("i18nScopeCd", syI18n.i18nScopeCd),
+            QdslUtil.FieldDef.like("useYn", syI18n.useYn)
+        ));
     }
 
     /**

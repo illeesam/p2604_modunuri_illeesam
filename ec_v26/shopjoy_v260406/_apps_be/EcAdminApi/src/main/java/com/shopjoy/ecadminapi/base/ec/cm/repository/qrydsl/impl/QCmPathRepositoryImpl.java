@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,12 +34,6 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", cmPath.regDate,
         "upd_date", cmPath.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("bizCd", cmPath.bizCd),
-        Map.entry("pathLabel", cmPath.pathLabel),
-        Map.entry("pathRemark", cmPath.pathRemark),
-        Map.entry("useYn", cmPath.useYn)
     );
 
     /*
@@ -83,7 +76,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
                 QdslUtil.strEq(cmPath.useYn, search.getUseYn()),
                 QdslUtil.strEq(cmPath.bizCd, search.getBizCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -109,7 +102,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
                 QdslUtil.strEq(cmPath.useYn, search.getUseYn()),
                 QdslUtil.strEq(cmPath.bizCd, search.getBizCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -135,6 +128,15 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     }
 
     /** 검색조건 빌드 */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("bizCd", cmPath.bizCd),
+            QdslUtil.FieldDef.like("pathLabel", cmPath.pathLabel),
+            QdslUtil.FieldDef.like("pathRemark", cmPath.pathRemark),
+            QdslUtil.FieldDef.like("useYn", cmPath.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

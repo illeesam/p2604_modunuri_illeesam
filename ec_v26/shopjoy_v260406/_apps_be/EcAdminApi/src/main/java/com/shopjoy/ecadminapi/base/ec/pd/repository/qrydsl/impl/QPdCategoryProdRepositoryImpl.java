@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -42,14 +41,6 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdCategoryProd.regDate,
         "upd_date", pdCategoryProd.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("categoryId", pdCategoryProd.categoryId),
-        Map.entry("categoryProdId", pdCategoryProd.categoryProdId),
-        Map.entry("categoryProdTypeCd", pdCategoryProd.categoryProdTypeCd),
-        Map.entry("dispYn", pdCategoryProd.dispYn),
-        Map.entry("emphasisCd", pdCategoryProd.emphasisCd),
-        Map.entry("prodId", pdCategoryProd.prodId)
     );
 
     /*
@@ -102,7 +93,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                     andProdNmLike(search),
                     QdslUtil.strEq(pdCategoryProd.categoryProdTypeCd, search.getTypeCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -132,7 +123,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                 andProdNmLike(search),
                 QdslUtil.strEq(pdCategoryProd.categoryProdTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -169,6 +160,17 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         List<String> ids = Arrays.stream(search.getCategoryIdsCsv().split(","))
                 .map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
         return ids.isEmpty() ? null : pdCategoryProd.categoryId.in(ids);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("categoryId", pdCategoryProd.categoryId),
+            QdslUtil.FieldDef.like("categoryProdId", pdCategoryProd.categoryProdId),
+            QdslUtil.FieldDef.like("categoryProdTypeCd", pdCategoryProd.categoryProdTypeCd),
+            QdslUtil.FieldDef.like("dispYn", pdCategoryProd.dispYn),
+            QdslUtil.FieldDef.like("emphasisCd", pdCategoryProd.emphasisCd),
+            QdslUtil.FieldDef.like("prodId", pdCategoryProd.prodId)
+        ));
     }
 
     /**

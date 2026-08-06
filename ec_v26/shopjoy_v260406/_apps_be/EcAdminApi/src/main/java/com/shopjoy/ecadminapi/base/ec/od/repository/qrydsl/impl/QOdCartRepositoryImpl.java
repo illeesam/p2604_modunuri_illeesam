@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -45,16 +44,6 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odCart.regDate,
         "upd_date", odCart.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("cartId", odCart.cartId),
-        Map.entry("isChecked", odCart.isChecked),
-        Map.entry("memberId", odCart.memberId),
-        Map.entry("prodOptId1", odCart.prodOptId1),
-        Map.entry("prodOptId2", odCart.prodOptId2),
-        Map.entry("prodId", odCart.prodId),
-        Map.entry("sessionKey", odCart.sessionKey),
-        Map.entry("prodSkuId", odCart.prodSkuId)
     );
 
     /*
@@ -108,7 +97,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                     QdslUtil.strEq(odCart.cartId, search.getCartId()),
                     QdslUtil.strEq(odCart.memberId, search.getMemberId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -134,7 +123,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 QdslUtil.strEq(odCart.cartId, search.getCartId()),
                 QdslUtil.strEq(odCart.memberId, search.getMemberId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -160,6 +149,19 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("cartId", odCart.cartId),
+            QdslUtil.FieldDef.like("isChecked", odCart.isChecked),
+            QdslUtil.FieldDef.like("memberId", odCart.memberId),
+            QdslUtil.FieldDef.like("prodOptId1", odCart.prodOptId1),
+            QdslUtil.FieldDef.like("prodOptId2", odCart.prodOptId2),
+            QdslUtil.FieldDef.like("prodId", odCart.prodId),
+            QdslUtil.FieldDef.like("sessionKey", odCart.sessionKey),
+            QdslUtil.FieldDef.like("prodSkuId", odCart.prodSkuId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

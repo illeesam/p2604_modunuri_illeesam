@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,18 +40,6 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmPlan.regDate,
         "upd_date", pmPlan.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("bannerUrl", pmPlan.bannerUrl),
-        Map.entry("planDesc", pmPlan.planDesc),
-        Map.entry("planId", pmPlan.planId),
-        Map.entry("planNm", pmPlan.planNm),
-        Map.entry("planStatusCd", pmPlan.planStatusCd),
-        Map.entry("planStatusCdBefore", pmPlan.planStatusCdBefore),
-        Map.entry("planTitle", pmPlan.planTitle),
-        Map.entry("planTypeCd", pmPlan.planTypeCd),
-        Map.entry("thumbnailUrl", pmPlan.thumbnailUrl),
-        Map.entry("useYn", pmPlan.useYn)
     );
 
     /*
@@ -103,7 +90,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                     QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -130,7 +117,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                 QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -156,6 +143,21 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("bannerUrl", pmPlan.bannerUrl),
+            QdslUtil.FieldDef.like("planDesc", pmPlan.planDesc),
+            QdslUtil.FieldDef.like("planId", pmPlan.planId),
+            QdslUtil.FieldDef.like("planNm", pmPlan.planNm),
+            QdslUtil.FieldDef.like("planStatusCd", pmPlan.planStatusCd),
+            QdslUtil.FieldDef.like("planStatusCdBefore", pmPlan.planStatusCdBefore),
+            QdslUtil.FieldDef.like("planTitle", pmPlan.planTitle),
+            QdslUtil.FieldDef.like("planTypeCd", pmPlan.planTypeCd),
+            QdslUtil.FieldDef.like("thumbnailUrl", pmPlan.thumbnailUrl),
+            QdslUtil.FieldDef.like("useYn", pmPlan.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

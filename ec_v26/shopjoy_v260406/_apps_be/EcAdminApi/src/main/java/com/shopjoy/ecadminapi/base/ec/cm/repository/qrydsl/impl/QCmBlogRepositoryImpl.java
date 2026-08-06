@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -36,17 +35,6 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", cmBlog.regDate,
         "upd_date", cmBlog.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("blogAuthor", cmBlog.blogAuthor),
-        Map.entry("blogCateId", cmBlog.blogCateId),
-        Map.entry("blogContent", cmBlog.blogContent),
-        Map.entry("blogId", cmBlog.blogId),
-        Map.entry("blogSummary", cmBlog.blogSummary),
-        Map.entry("blogTitle", cmBlog.blogTitle),
-        Map.entry("isNotice", cmBlog.isNotice),
-        Map.entry("prodId", cmBlog.prodId),
-        Map.entry("useYn", cmBlog.useYn)
     );
 
     /*
@@ -99,7 +87,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
                 QdslUtil.strEq(cmBlog.useYn, search.getUseYn()),
                 QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -128,7 +116,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
                 QdslUtil.strEq(cmBlog.useYn, search.getUseYn()),
                 QdslUtil.strEq(cmBlog.isNotice, search.getIsNotice()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -155,6 +143,20 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
 
     /** 검색조건 빌드 */
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("blogAuthor", cmBlog.blogAuthor),
+            QdslUtil.FieldDef.like("blogCateId", cmBlog.blogCateId),
+            QdslUtil.FieldDef.like("blogContent", cmBlog.blogContent),
+            QdslUtil.FieldDef.like("blogId", cmBlog.blogId),
+            QdslUtil.FieldDef.like("blogSummary", cmBlog.blogSummary),
+            QdslUtil.FieldDef.like("blogTitle", cmBlog.blogTitle),
+            QdslUtil.FieldDef.like("isNotice", cmBlog.isNotice),
+            QdslUtil.FieldDef.like("prodId", cmBlog.prodId),
+            QdslUtil.FieldDef.like("useYn", cmBlog.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,15 +40,6 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmVoucher.regDate,
         "upd_date", pmVoucher.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("useYn", pmVoucher.useYn),
-        Map.entry("voucherDesc", pmVoucher.voucherDesc),
-        Map.entry("voucherId", pmVoucher.voucherId),
-        Map.entry("voucherNm", pmVoucher.voucherNm),
-        Map.entry("voucherStatusCd", pmVoucher.voucherStatusCd),
-        Map.entry("voucherStatusCdBefore", pmVoucher.voucherStatusCdBefore),
-        Map.entry("voucherTypeCd", pmVoucher.voucherTypeCd)
     );
 
     /*
@@ -98,7 +88,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                     QdslUtil.strEq(pmVoucher.voucherStatusCd, search.getVoucherStatusCd()),
                     QdslUtil.strEq(pmVoucher.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -125,7 +115,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                 QdslUtil.strEq(pmVoucher.voucherStatusCd, search.getVoucherStatusCd()),
                 QdslUtil.strEq(pmVoucher.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -151,6 +141,18 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("useYn", pmVoucher.useYn),
+            QdslUtil.FieldDef.like("voucherDesc", pmVoucher.voucherDesc),
+            QdslUtil.FieldDef.like("voucherId", pmVoucher.voucherId),
+            QdslUtil.FieldDef.like("voucherNm", pmVoucher.voucherNm),
+            QdslUtil.FieldDef.like("voucherStatusCd", pmVoucher.voucherStatusCd),
+            QdslUtil.FieldDef.like("voucherStatusCdBefore", pmVoucher.voucherStatusCdBefore),
+            QdslUtil.FieldDef.like("voucherTypeCd", pmVoucher.voucherTypeCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

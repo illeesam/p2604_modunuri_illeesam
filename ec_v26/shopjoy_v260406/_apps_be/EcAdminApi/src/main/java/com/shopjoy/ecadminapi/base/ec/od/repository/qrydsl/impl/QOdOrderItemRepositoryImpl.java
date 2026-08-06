@@ -7,7 +7,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -19,6 +19,7 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderItemRepositor
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdSku;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -42,32 +43,15 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QPdProdSku     pdProdSku   = QPdProdSku.pdProdSku;
     private static final QPdProdOpt oi1  = new QPdProdOpt("oi1");
     private static final QPdProdOpt oi2  = new QPdProdOpt("oi2");
-    private static final QVwSyCode        cdIs = new QVwSyCode("cd_is");
-    private static final QVwSyCode        cdDc = new QVwSyCode("cd_dc");
+    private static final QVwSyCode        cdIs      = new QVwSyCode("cd_is");
+    private static final QVwSyCode        cdDc      = new QVwSyCode("cd_dc");
+    // EXISTS 서브쿼리용 별칭 (baseSelColumnQuery 의 pdProd 와 충돌 방지)
+    private static final QPdProd          pNmEx     = new QPdProd("p_nm_ex");
+    private static final QPdProd          pBrandEx  = new QPdProd("p_brand_ex");
+    private static final QSyBrand         sBrandEx  = new QSyBrand("s_brand_ex");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odOrderItem.regDate,
         "upd_date", odOrderItem.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("brandNm", odOrderItem.brandNm),
-        Map.entry("bundleGroupId", odOrderItem.bundleGroupId),
-        Map.entry("buyConfirmYn", odOrderItem.buyConfirmYn),
-        Map.entry("claimYn", odOrderItem.claimYn),
-        Map.entry("dlivCourierCd", odOrderItem.dlivCourierCd),
-        Map.entry("dlivTmpltId", odOrderItem.dlivTmpltId),
-        Map.entry("dlivTrackingNo", odOrderItem.dlivTrackingNo),
-        Map.entry("giftId", odOrderItem.giftId),
-        Map.entry("prodOptId1", odOrderItem.prodOptId1),
-        Map.entry("prodOptId2", odOrderItem.prodOptId2),
-        Map.entry("orderId", odOrderItem.orderId),
-        Map.entry("orderItemId", odOrderItem.orderItemId),
-        Map.entry("orderItemStatusCd", odOrderItem.orderItemStatusCd),
-        Map.entry("orderItemStatusCdBefore", odOrderItem.orderItemStatusCdBefore),
-        Map.entry("prodId", odOrderItem.prodId),
-        Map.entry("prodNm", odOrderItem.prodNm),
-        Map.entry("reserveSaleYn", odOrderItem.reserveSaleYn),
-        Map.entry("settleYn", odOrderItem.settleYn),
-        Map.entry("prodSkuId", odOrderItem.prodSkuId)
     );
 
     /*
@@ -161,7 +145,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                     QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
                     QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -190,7 +174,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
                 QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -215,6 +199,42 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    /** *Nm 필드는 원장 테이블 EXISTS, 나머지는 스냅샷 LIKE. 필드별 모드는 FieldDef 로 개별 지정. */
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("bundleGroupId",           odOrderItem.bundleGroupId),
+            QdslUtil.FieldDef.like("buyConfirmYn",            odOrderItem.buyConfirmYn),
+            QdslUtil.FieldDef.like("claimYn",                 odOrderItem.claimYn),
+            QdslUtil.FieldDef.like("dlivCourierCd",           odOrderItem.dlivCourierCd),
+            QdslUtil.FieldDef.like("dlivTmpltId",             odOrderItem.dlivTmpltId),
+            QdslUtil.FieldDef.like("dlivTrackingNo",          odOrderItem.dlivTrackingNo),
+            QdslUtil.FieldDef.like("giftId",                  odOrderItem.giftId),
+            QdslUtil.FieldDef.like("prodOptId1",              odOrderItem.prodOptId1),
+            QdslUtil.FieldDef.like("prodOptId2",              odOrderItem.prodOptId2),
+            QdslUtil.FieldDef.like("orderId",                 odOrderItem.orderId),
+            QdslUtil.FieldDef.like("orderItemId",             odOrderItem.orderItemId),
+            QdslUtil.FieldDef.like("orderItemStatusCd",       odOrderItem.orderItemStatusCd),
+            QdslUtil.FieldDef.like("orderItemStatusCdBefore", odOrderItem.orderItemStatusCdBefore),
+            QdslUtil.FieldDef.like("prodId",                  odOrderItem.prodId),
+            QdslUtil.FieldDef.like("reserveSaleYn",           odOrderItem.reserveSaleYn),
+            QdslUtil.FieldDef.like("settleYn",                odOrderItem.settleYn),
+            QdslUtil.FieldDef.like("prodSkuId",               odOrderItem.prodSkuId),
+            // prodNm: pd_prod 실 상품명 EXISTS
+            QdslUtil.FieldDef.exists("prodNm", sv -> JPAExpressions.selectOne()
+                    .from(pNmEx)
+                    .where(pNmEx.prodId.eq(odOrderItem.prodId),
+                           QdslUtil.strLike(pNmEx.prodNm, sv))
+                    .exists()),
+            // brandNm: pd_prod → sy_brand 원장 브랜드명 EXISTS
+            QdslUtil.FieldDef.exists("brandNm", sv -> JPAExpressions.selectOne()
+                    .from(pBrandEx)
+                    .join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
+                    .where(pBrandEx.prodId.eq(odOrderItem.prodId),
+                           QdslUtil.strLike(sBrandEx.brandNm, sv))
+                    .exists())
+        ));
+    }
 
     /**
      * 정렬조건 빌드

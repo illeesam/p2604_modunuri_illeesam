@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -43,21 +42,6 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syVendorUser.regDate,
         "upd_date", syVendorUser.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("authYn", syVendorUser.authYn),
-        Map.entry("isMain", syVendorUser.isMain),
-        Map.entry("memberNm", syVendorUser.memberNm),
-        Map.entry("positionCd", syVendorUser.positionCd),
-        Map.entry("userId", syVendorUser.userId),
-        Map.entry("vendorId", syVendorUser.vendorId),
-        Map.entry("vendorUserDeptNm", syVendorUser.vendorUserDeptNm),
-        Map.entry("vendorUserEmail", syVendorUser.vendorUserEmail),
-        Map.entry("vendorUserId", syVendorUser.vendorUserId),
-        Map.entry("vendorUserMobile", syVendorUser.vendorUserMobile),
-        Map.entry("vendorUserPhone", syVendorUser.vendorUserPhone),
-        Map.entry("vendorUserRemark", syVendorUser.vendorUserRemark),
-        Map.entry("vendorUserStatusCd", syVendorUser.vendorUserStatusCd)
     );
 
     /*
@@ -119,7 +103,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                 QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendorUser.vendorUserStatusCd, search.getStatus()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -147,7 +131,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                 QdslUtil.strEq(syVendorUser.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendorUser.vendorUserStatusCd, search.getStatus()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -173,6 +157,24 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("authYn", syVendorUser.authYn),
+            QdslUtil.FieldDef.like("isMain", syVendorUser.isMain),
+            QdslUtil.FieldDef.like("memberNm", syVendorUser.memberNm),
+            QdslUtil.FieldDef.like("positionCd", syVendorUser.positionCd),
+            QdslUtil.FieldDef.like("userId", syVendorUser.userId),
+            QdslUtil.FieldDef.like("vendorId", syVendorUser.vendorId),
+            QdslUtil.FieldDef.like("vendorUserDeptNm", syVendorUser.vendorUserDeptNm),
+            QdslUtil.FieldDef.like("vendorUserEmail", syVendorUser.vendorUserEmail),
+            QdslUtil.FieldDef.like("vendorUserId", syVendorUser.vendorUserId),
+            QdslUtil.FieldDef.like("vendorUserMobile", syVendorUser.vendorUserMobile),
+            QdslUtil.FieldDef.like("vendorUserPhone", syVendorUser.vendorUserPhone),
+            QdslUtil.FieldDef.like("vendorUserRemark", syVendorUser.vendorUserRemark),
+            QdslUtil.FieldDef.like("vendorUserStatusCd", syVendorUser.vendorUserStatusCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

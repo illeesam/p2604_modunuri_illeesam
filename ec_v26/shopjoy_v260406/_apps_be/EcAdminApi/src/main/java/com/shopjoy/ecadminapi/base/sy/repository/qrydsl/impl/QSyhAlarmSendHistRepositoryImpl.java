@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -36,16 +35,6 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         "send_date", syhAlarmSendHist.sendDate,
         "reg_date", syhAlarmSendHist.regDate,
         "upd_date", syhAlarmSendHist.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("alarmId", syhAlarmSendHist.alarmId),
-        Map.entry("channel", syhAlarmSendHist.channel),
-        Map.entry("errorMsg", syhAlarmSendHist.errorMsg),
-        Map.entry("memberId", syhAlarmSendHist.memberId),
-        Map.entry("userId", syhAlarmSendHist.userId),
-        Map.entry("sendHistId", syhAlarmSendHist.sendHistId),
-        Map.entry("sendHistStatusCd", syhAlarmSendHist.sendHistStatusCd),
-        Map.entry("sendTo", syhAlarmSendHist.sendTo)
     );
 
     /*
@@ -93,7 +82,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                 QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()),
                 QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -119,7 +108,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                 QdslUtil.strEq(syhAlarmSendHist.sendHistId, search.getSendHistId()),
                 QdslUtil.strEq(syhAlarmSendHist.sendHistStatusCd, search.getStatus()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -142,6 +131,19 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
         BasePage<SyhAlarmSendHistDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("alarmId", syhAlarmSendHist.alarmId),
+            QdslUtil.FieldDef.like("channel", syhAlarmSendHist.channel),
+            QdslUtil.FieldDef.like("errorMsg", syhAlarmSendHist.errorMsg),
+            QdslUtil.FieldDef.like("memberId", syhAlarmSendHist.memberId),
+            QdslUtil.FieldDef.like("userId", syhAlarmSendHist.userId),
+            QdslUtil.FieldDef.like("sendHistId", syhAlarmSendHist.sendHistId),
+            QdslUtil.FieldDef.like("sendHistStatusCd", syhAlarmSendHist.sendHistStatusCd),
+            QdslUtil.FieldDef.like("sendTo", syhAlarmSendHist.sendTo)
+        ));
     }
 
     /**

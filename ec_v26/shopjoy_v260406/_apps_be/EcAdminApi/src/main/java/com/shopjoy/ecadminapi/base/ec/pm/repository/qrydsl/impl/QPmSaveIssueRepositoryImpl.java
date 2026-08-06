@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -49,19 +48,6 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmSaveIssue.regDate,
         "upd_date", pmSaveIssue.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("issueStatusCd", pmSaveIssue.issueStatusCd),
-        Map.entry("issueStatusCdBefore", pmSaveIssue.issueStatusCdBefore),
-        Map.entry("memberId", pmSaveIssue.memberId),
-        Map.entry("orderId", pmSaveIssue.orderId),
-        Map.entry("orderItemId", pmSaveIssue.orderItemId),
-        Map.entry("prodId", pmSaveIssue.prodId),
-        Map.entry("refId", pmSaveIssue.refId),
-        Map.entry("refTypeCd", pmSaveIssue.refTypeCd),
-        Map.entry("saveIssueId", pmSaveIssue.saveIssueId),
-        Map.entry("saveIssueTypeCd", pmSaveIssue.saveIssueTypeCd),
-        Map.entry("saveMemo", pmSaveIssue.saveMemo)
     );
 
     /*
@@ -117,7 +103,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                 .where(
                     QdslUtil.strEq(pmSaveIssue.saveIssueId, search.getSaveIssueId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -142,7 +128,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmSaveIssue.saveIssueId, search.getSaveIssueId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -165,6 +151,22 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
 
         BasePage<PmSaveIssueDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("issueStatusCd", pmSaveIssue.issueStatusCd),
+            QdslUtil.FieldDef.like("issueStatusCdBefore", pmSaveIssue.issueStatusCdBefore),
+            QdslUtil.FieldDef.like("memberId", pmSaveIssue.memberId),
+            QdslUtil.FieldDef.like("orderId", pmSaveIssue.orderId),
+            QdslUtil.FieldDef.like("orderItemId", pmSaveIssue.orderItemId),
+            QdslUtil.FieldDef.like("prodId", pmSaveIssue.prodId),
+            QdslUtil.FieldDef.like("refId", pmSaveIssue.refId),
+            QdslUtil.FieldDef.like("refTypeCd", pmSaveIssue.refTypeCd),
+            QdslUtil.FieldDef.like("saveIssueId", pmSaveIssue.saveIssueId),
+            QdslUtil.FieldDef.like("saveIssueTypeCd", pmSaveIssue.saveIssueTypeCd),
+            QdslUtil.FieldDef.like("saveMemo", pmSaveIssue.saveMemo)
+        ));
     }
 
     /**

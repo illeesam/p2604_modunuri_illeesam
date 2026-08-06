@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -74,49 +73,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         "order_date", stSettleRaw.orderDate,
         "reg_date", stSettleRaw.regDate,
         "upd_date", stSettleRaw.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("brandId", stSettleRaw.brandId),
-        Map.entry("brandNm", stSettleRaw.brandNm),
-        Map.entry("buyConfirmYn", stSettleRaw.buyConfirmYn),
-        Map.entry("categoryId1", stSettleRaw.categoryId1),
-        Map.entry("categoryId2", stSettleRaw.categoryId2),
-        Map.entry("categoryId3", stSettleRaw.categoryId3),
-        Map.entry("categoryId4", stSettleRaw.categoryId4),
-        Map.entry("categoryId5", stSettleRaw.categoryId5),
-        Map.entry("claimId", stSettleRaw.claimId),
-        Map.entry("claimItemId", stSettleRaw.claimItemId),
-        Map.entry("closeYn", stSettleRaw.closeYn),
-        Map.entry("couponId", stSettleRaw.couponId),
-        Map.entry("couponIssueId", stSettleRaw.couponIssueId),
-        Map.entry("discntId", stSettleRaw.discntId),
-        Map.entry("erpSendYn", stSettleRaw.erpSendYn),
-        Map.entry("erpVoucherId", stSettleRaw.erpVoucherId),
-        Map.entry("giftId", stSettleRaw.giftId),
-        Map.entry("mdUserId", stSettleRaw.mdUserId),
-        Map.entry("memberId", stSettleRaw.memberId),
-        Map.entry("prodOptId1", stSettleRaw.prodOptId1),
-        Map.entry("prodOptId2", stSettleRaw.prodOptId2),
-        Map.entry("orderId", stSettleRaw.orderId),
-        Map.entry("orderItemId", stSettleRaw.orderItemId),
-        Map.entry("orderItemStatusCd", stSettleRaw.orderItemStatusCd),
-        Map.entry("orderNo", stSettleRaw.orderNo),
-        Map.entry("payMethodCd", stSettleRaw.payMethodCd),
-        Map.entry("prodId", stSettleRaw.prodId),
-        Map.entry("prodNm", stSettleRaw.prodNm),
-        Map.entry("promoId", stSettleRaw.promoId),
-        Map.entry("rawStatusCd", stSettleRaw.rawStatusCd),
-        Map.entry("rawStatusCdBefore", stSettleRaw.rawStatusCdBefore),
-        Map.entry("rawTypeCd", stSettleRaw.rawTypeCd),
-        Map.entry("settleCloseId", stSettleRaw.settleCloseId),
-        Map.entry("settleId", stSettleRaw.settleId),
-        Map.entry("settlePeriod", stSettleRaw.settlePeriod),
-        Map.entry("settleRawId", stSettleRaw.settleRawId),
-        Map.entry("prodSkuId", stSettleRaw.prodSkuId),
-        Map.entry("vendorId", stSettleRaw.vendorId),
-        Map.entry("vendorTypeCd", stSettleRaw.vendorTypeCd),
-        Map.entry("voucherId", stSettleRaw.voucherId),
-        Map.entry("voucherIssueId", stSettleRaw.voucherIssueId)
     );
 
     /*
@@ -274,7 +230,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                     QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()),
                     QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -314,7 +270,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 QdslUtil.numGoe(stSettleRaw.settleTargetAmt, search.getAmtFrom()),
                 QdslUtil.numLoe(stSettleRaw.settleTargetAmt, search.getAmtTo()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -340,6 +296,52 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("brandId", stSettleRaw.brandId),
+            QdslUtil.FieldDef.like("brandNm", stSettleRaw.brandNm),
+            QdslUtil.FieldDef.like("buyConfirmYn", stSettleRaw.buyConfirmYn),
+            QdslUtil.FieldDef.like("categoryId1", stSettleRaw.categoryId1),
+            QdslUtil.FieldDef.like("categoryId2", stSettleRaw.categoryId2),
+            QdslUtil.FieldDef.like("categoryId3", stSettleRaw.categoryId3),
+            QdslUtil.FieldDef.like("categoryId4", stSettleRaw.categoryId4),
+            QdslUtil.FieldDef.like("categoryId5", stSettleRaw.categoryId5),
+            QdslUtil.FieldDef.like("claimId", stSettleRaw.claimId),
+            QdslUtil.FieldDef.like("claimItemId", stSettleRaw.claimItemId),
+            QdslUtil.FieldDef.like("closeYn", stSettleRaw.closeYn),
+            QdslUtil.FieldDef.like("couponId", stSettleRaw.couponId),
+            QdslUtil.FieldDef.like("couponIssueId", stSettleRaw.couponIssueId),
+            QdslUtil.FieldDef.like("discntId", stSettleRaw.discntId),
+            QdslUtil.FieldDef.like("erpSendYn", stSettleRaw.erpSendYn),
+            QdslUtil.FieldDef.like("erpVoucherId", stSettleRaw.erpVoucherId),
+            QdslUtil.FieldDef.like("giftId", stSettleRaw.giftId),
+            QdslUtil.FieldDef.like("mdUserId", stSettleRaw.mdUserId),
+            QdslUtil.FieldDef.like("memberId", stSettleRaw.memberId),
+            QdslUtil.FieldDef.like("prodOptId1", stSettleRaw.prodOptId1),
+            QdslUtil.FieldDef.like("prodOptId2", stSettleRaw.prodOptId2),
+            QdslUtil.FieldDef.like("orderId", stSettleRaw.orderId),
+            QdslUtil.FieldDef.like("orderItemId", stSettleRaw.orderItemId),
+            QdslUtil.FieldDef.like("orderItemStatusCd", stSettleRaw.orderItemStatusCd),
+            QdslUtil.FieldDef.like("orderNo", stSettleRaw.orderNo),
+            QdslUtil.FieldDef.like("payMethodCd", stSettleRaw.payMethodCd),
+            QdslUtil.FieldDef.like("prodId", stSettleRaw.prodId),
+            QdslUtil.FieldDef.like("prodNm", stSettleRaw.prodNm),
+            QdslUtil.FieldDef.like("promoId", stSettleRaw.promoId),
+            QdslUtil.FieldDef.like("rawStatusCd", stSettleRaw.rawStatusCd),
+            QdslUtil.FieldDef.like("rawStatusCdBefore", stSettleRaw.rawStatusCdBefore),
+            QdslUtil.FieldDef.like("rawTypeCd", stSettleRaw.rawTypeCd),
+            QdslUtil.FieldDef.like("settleCloseId", stSettleRaw.settleCloseId),
+            QdslUtil.FieldDef.like("settleId", stSettleRaw.settleId),
+            QdslUtil.FieldDef.like("settlePeriod", stSettleRaw.settlePeriod),
+            QdslUtil.FieldDef.like("settleRawId", stSettleRaw.settleRawId),
+            QdslUtil.FieldDef.like("prodSkuId", stSettleRaw.prodSkuId),
+            QdslUtil.FieldDef.like("vendorId", stSettleRaw.vendorId),
+            QdslUtil.FieldDef.like("vendorTypeCd", stSettleRaw.vendorTypeCd),
+            QdslUtil.FieldDef.like("voucherId", stSettleRaw.voucherId),
+            QdslUtil.FieldDef.like("voucherIssueId", stSettleRaw.voucherIssueId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

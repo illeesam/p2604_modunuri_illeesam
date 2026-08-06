@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -49,31 +48,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProd.regDate,
         "upd_date", pdProd.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("adltYn", pdProd.adltYn),
-        Map.entry("advrtStmt", pdProd.advrtStmt),
-        Map.entry("brandId", pdProd.brandId),
-        Map.entry("categoryId", pdProd.categoryId),
-        Map.entry("contentHtml", pdProd.contentHtml),
-        Map.entry("couponUseYn", pdProd.couponUseYn),
-        Map.entry("discntUseYn", pdProd.discntUseYn),
-        Map.entry("dlivTmpltId", pdProd.dlivTmpltId),
-        Map.entry("isBest", pdProd.isBest),
-        Map.entry("isNew", pdProd.isNew),
-        Map.entry("mdUserId", pdProd.mdUserId),
-        Map.entry("prodCode", pdProd.prodCode),
-        Map.entry("prodId", pdProd.prodId),
-        Map.entry("prodNm", pdProd.prodNm),
-        Map.entry("prodStatusCd", pdProd.prodStatusCd),
-        Map.entry("prodStatusCdBefore", pdProd.prodStatusCdBefore),
-        Map.entry("prodTypeCd", pdProd.prodTypeCd),
-        Map.entry("sameDayDlivYn", pdProd.sameDayDlivYn),
-        Map.entry("saveUseYn", pdProd.saveUseYn),
-        Map.entry("sizeInfoCd", pdProd.sizeInfoCd),
-        Map.entry("soldOutYn", pdProd.soldOutYn),
-        Map.entry("thumbnailUrl", pdProd.thumbnailUrl),
-        Map.entry("vendorId", pdProd.vendorId)
     );
 
     /*
@@ -243,7 +217,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                     QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
                     QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -274,7 +248,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
                 QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -301,6 +275,34 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("adltYn", pdProd.adltYn),
+            QdslUtil.FieldDef.like("advrtStmt", pdProd.advrtStmt),
+            QdslUtil.FieldDef.like("brandId", pdProd.brandId),
+            QdslUtil.FieldDef.like("categoryId", pdProd.categoryId),
+            QdslUtil.FieldDef.like("contentHtml", pdProd.contentHtml),
+            QdslUtil.FieldDef.like("couponUseYn", pdProd.couponUseYn),
+            QdslUtil.FieldDef.like("discntUseYn", pdProd.discntUseYn),
+            QdslUtil.FieldDef.like("dlivTmpltId", pdProd.dlivTmpltId),
+            QdslUtil.FieldDef.like("isBest", pdProd.isBest),
+            QdslUtil.FieldDef.like("isNew", pdProd.isNew),
+            QdslUtil.FieldDef.like("mdUserId", pdProd.mdUserId),
+            QdslUtil.FieldDef.like("prodCode", pdProd.prodCode),
+            QdslUtil.FieldDef.like("prodId", pdProd.prodId),
+            QdslUtil.FieldDef.like("prodNm", pdProd.prodNm),
+            QdslUtil.FieldDef.like("prodStatusCd", pdProd.prodStatusCd),
+            QdslUtil.FieldDef.like("prodStatusCdBefore", pdProd.prodStatusCdBefore),
+            QdslUtil.FieldDef.like("prodTypeCd", pdProd.prodTypeCd),
+            QdslUtil.FieldDef.like("sameDayDlivYn", pdProd.sameDayDlivYn),
+            QdslUtil.FieldDef.like("saveUseYn", pdProd.saveUseYn),
+            QdslUtil.FieldDef.like("sizeInfoCd", pdProd.sizeInfoCd),
+            QdslUtil.FieldDef.like("soldOutYn", pdProd.soldOutYn),
+            QdslUtil.FieldDef.like("thumbnailUrl", pdProd.thumbnailUrl),
+            QdslUtil.FieldDef.like("vendorId", pdProd.vendorId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

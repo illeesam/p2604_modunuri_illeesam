@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -46,26 +45,6 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         "send_date", syhSendMsgLog.sendDate,
         "reg_date", syhSendMsgLog.regDate,
         "upd_date", syhSendMsgLog.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("channelCd", syhSendMsgLog.channelCd),
-        Map.entry("content", syhSendMsgLog.content),
-        Map.entry("deviceToken", syhSendMsgLog.deviceToken),
-        Map.entry("failReason", syhSendMsgLog.failReason),
-        Map.entry("kakaoTplCode", syhSendMsgLog.kakaoTplCode),
-        Map.entry("logId", syhSendMsgLog.logId),
-        Map.entry("memberId", syhSendMsgLog.memberId),
-        Map.entry("params", syhSendMsgLog.params),
-        Map.entry("recvPhone", syhSendMsgLog.recvPhone),
-        Map.entry("refId", syhSendMsgLog.refId),
-        Map.entry("refTypeCd", syhSendMsgLog.refTypeCd),
-        Map.entry("resultCd", syhSendMsgLog.resultCd),
-        Map.entry("resultMsg", syhSendMsgLog.resultMsg),
-        Map.entry("senderPhone", syhSendMsgLog.senderPhone),
-        Map.entry("templateCode", syhSendMsgLog.templateCode),
-        Map.entry("templateId", syhSendMsgLog.templateId),
-        Map.entry("title", syhSendMsgLog.title),
-        Map.entry("userId", syhSendMsgLog.userId)
     );
 
     /*
@@ -134,7 +113,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                 QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -162,7 +141,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                 QdslUtil.strEq(syhSendMsgLog.templateId, search.getTemplateId()),
                 QdslUtil.strEq(syhSendMsgLog.refTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -185,6 +164,29 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
         BasePage<SyhSendMsgLogDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("channelCd", syhSendMsgLog.channelCd),
+            QdslUtil.FieldDef.like("content", syhSendMsgLog.content),
+            QdslUtil.FieldDef.like("deviceToken", syhSendMsgLog.deviceToken),
+            QdslUtil.FieldDef.like("failReason", syhSendMsgLog.failReason),
+            QdslUtil.FieldDef.like("kakaoTplCode", syhSendMsgLog.kakaoTplCode),
+            QdslUtil.FieldDef.like("logId", syhSendMsgLog.logId),
+            QdslUtil.FieldDef.like("memberId", syhSendMsgLog.memberId),
+            QdslUtil.FieldDef.like("params", syhSendMsgLog.params),
+            QdslUtil.FieldDef.like("recvPhone", syhSendMsgLog.recvPhone),
+            QdslUtil.FieldDef.like("refId", syhSendMsgLog.refId),
+            QdslUtil.FieldDef.like("refTypeCd", syhSendMsgLog.refTypeCd),
+            QdslUtil.FieldDef.like("resultCd", syhSendMsgLog.resultCd),
+            QdslUtil.FieldDef.like("resultMsg", syhSendMsgLog.resultMsg),
+            QdslUtil.FieldDef.like("senderPhone", syhSendMsgLog.senderPhone),
+            QdslUtil.FieldDef.like("templateCode", syhSendMsgLog.templateCode),
+            QdslUtil.FieldDef.like("templateId", syhSendMsgLog.templateId),
+            QdslUtil.FieldDef.like("title", syhSendMsgLog.title),
+            QdslUtil.FieldDef.like("userId", syhSendMsgLog.userId)
+        ));
     }
 
     /**

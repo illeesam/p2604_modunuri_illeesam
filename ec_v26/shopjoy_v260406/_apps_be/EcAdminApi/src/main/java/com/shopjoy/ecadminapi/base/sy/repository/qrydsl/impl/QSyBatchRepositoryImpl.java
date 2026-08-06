@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -37,18 +36,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBatchRepositoryImpl";
     private static final QSyBatch syBatch = QSyBatch.syBatch;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("batchCode", syBatch.batchCode),
-        Map.entry("batchCycleCd", syBatch.batchCycleCd),
-        Map.entry("batchDesc", syBatch.batchDesc),
-        Map.entry("batchId", syBatch.batchId),
-        Map.entry("batchMemo", syBatch.batchMemo),
-        Map.entry("batchNm", syBatch.batchNm),
-        Map.entry("batchRunStatus", syBatch.batchRunStatus),
-        Map.entry("batchStatusCd", syBatch.batchStatusCd),
-        Map.entry("cronExpr", syBatch.cronExpr),
-        Map.entry("pathId", syBatch.pathId)
-    );
 
     /*
      * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
@@ -101,7 +88,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                     QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
                     QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
                     QdslUtil.strEq(syBatch.batchRunStatus, search.getRunStatus()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -128,7 +115,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
                 QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
                 QdslUtil.strEq(syBatch.batchRunStatus, search.getRunStatus()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -160,6 +147,21 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syBatch.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_batch"))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("batchCode", syBatch.batchCode),
+            QdslUtil.FieldDef.like("batchCycleCd", syBatch.batchCycleCd),
+            QdslUtil.FieldDef.like("batchDesc", syBatch.batchDesc),
+            QdslUtil.FieldDef.like("batchId", syBatch.batchId),
+            QdslUtil.FieldDef.like("batchMemo", syBatch.batchMemo),
+            QdslUtil.FieldDef.like("batchNm", syBatch.batchNm),
+            QdslUtil.FieldDef.like("batchRunStatus", syBatch.batchRunStatus),
+            QdslUtil.FieldDef.like("batchStatusCd", syBatch.batchStatusCd),
+            QdslUtil.FieldDef.like("cronExpr", syBatch.cronExpr),
+            QdslUtil.FieldDef.like("pathId", syBatch.pathId)
+        ));
     }
 
     /**

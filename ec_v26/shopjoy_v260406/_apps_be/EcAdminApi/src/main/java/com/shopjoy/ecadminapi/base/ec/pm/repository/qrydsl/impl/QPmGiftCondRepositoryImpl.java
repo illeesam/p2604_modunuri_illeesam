@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,13 +40,6 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmGiftCond.regDate,
         "upd_date", pmGiftCond.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("condTypeCd", pmGiftCond.condTypeCd),
-        Map.entry("giftCondId", pmGiftCond.giftCondId),
-        Map.entry("giftId", pmGiftCond.giftId),
-        Map.entry("targetId", pmGiftCond.targetId),
-        Map.entry("targetTypeCd", pmGiftCond.targetTypeCd)
     );
 
     /*
@@ -93,7 +85,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                     QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()),
                     QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -121,7 +113,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 QdslUtil.strEq(pmGiftCond.targetTypeCd, search.getTargetTypeCd()),
                 QdslUtil.strEq(pmGiftCond.targetId, search.getTargetId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -144,6 +136,16 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
 
         BasePage<PmGiftCondDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("condTypeCd", pmGiftCond.condTypeCd),
+            QdslUtil.FieldDef.like("giftCondId", pmGiftCond.giftCondId),
+            QdslUtil.FieldDef.like("giftId", pmGiftCond.giftId),
+            QdslUtil.FieldDef.like("targetId", pmGiftCond.targetId),
+            QdslUtil.FieldDef.like("targetTypeCd", pmGiftCond.targetTypeCd)
+        ));
     }
 
     /**

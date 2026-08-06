@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -45,17 +44,6 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odRefundMethod.regDate,
         "upd_date", odRefundMethod.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("orderId", odRefundMethod.orderId),
-        Map.entry("payId", odRefundMethod.payId),
-        Map.entry("payMethodCd", odRefundMethod.payMethodCd),
-        Map.entry("pgRefundId", odRefundMethod.pgRefundId),
-        Map.entry("pgResponse", odRefundMethod.pgResponse),
-        Map.entry("refundId", odRefundMethod.refundId),
-        Map.entry("refundMethodId", odRefundMethod.refundMethodId),
-        Map.entry("refundStatusCd", odRefundMethod.refundStatusCd),
-        Map.entry("refundStatusCdBefore", odRefundMethod.refundStatusCdBefore)
     );
 
     /*
@@ -107,7 +95,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                 .where(
                     QdslUtil.strEq(odRefundMethod.refundMethodId, search.getRefundMethodId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -132,7 +120,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odRefundMethod.refundMethodId, search.getRefundMethodId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -155,6 +143,20 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
 
         BasePage<OdRefundMethodDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("orderId", odRefundMethod.orderId),
+            QdslUtil.FieldDef.like("payId", odRefundMethod.payId),
+            QdslUtil.FieldDef.like("payMethodCd", odRefundMethod.payMethodCd),
+            QdslUtil.FieldDef.like("pgRefundId", odRefundMethod.pgRefundId),
+            QdslUtil.FieldDef.like("pgResponse", odRefundMethod.pgResponse),
+            QdslUtil.FieldDef.like("refundId", odRefundMethod.refundId),
+            QdslUtil.FieldDef.like("refundMethodId", odRefundMethod.refundMethodId),
+            QdslUtil.FieldDef.like("refundStatusCd", odRefundMethod.refundStatusCd),
+            QdslUtil.FieldDef.like("refundStatusCdBefore", odRefundMethod.refundStatusCdBefore)
+        ));
     }
 
     /**

@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -37,15 +36,6 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdReview.regDate,
         "upd_date", pdReview.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("memberId", pdReview.memberId),
-        Map.entry("prodId", pdReview.prodId),
-        Map.entry("reviewContent", pdReview.reviewContent),
-        Map.entry("reviewId", pdReview.reviewId),
-        Map.entry("reviewStatusCd", pdReview.reviewStatusCd),
-        Map.entry("reviewStatusCdBefore", pdReview.reviewStatusCdBefore),
-        Map.entry("reviewTitle", pdReview.reviewTitle)
     );
 
     /*
@@ -93,7 +83,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                     QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()),
                     andRatingGoe(search),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -121,7 +111,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                 QdslUtil.strEq(pdReview.reviewStatusCd, search.getReviewStatusCd()),
                 andRatingGoe(search),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -162,6 +152,18 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         BigDecimal lo = BigDecimal.valueOf(floor);
         BigDecimal hi = BigDecimal.valueOf(floor + 1L);
         return pdReview.rating.goe(lo).and(pdReview.rating.lt(hi));
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("memberId", pdReview.memberId),
+            QdslUtil.FieldDef.like("prodId", pdReview.prodId),
+            QdslUtil.FieldDef.like("reviewContent", pdReview.reviewContent),
+            QdslUtil.FieldDef.like("reviewId", pdReview.reviewId),
+            QdslUtil.FieldDef.like("reviewStatusCd", pdReview.reviewStatusCd),
+            QdslUtil.FieldDef.like("reviewStatusCdBefore", pdReview.reviewStatusCdBefore),
+            QdslUtil.FieldDef.like("reviewTitle", pdReview.reviewTitle)
+        ));
     }
 
     /**

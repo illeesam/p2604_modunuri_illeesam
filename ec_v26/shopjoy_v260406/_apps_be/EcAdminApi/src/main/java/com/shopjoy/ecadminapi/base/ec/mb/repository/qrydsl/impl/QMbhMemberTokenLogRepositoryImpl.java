@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,22 +40,6 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     private static final QVwSyCode            cdTt = new QVwSyCode("cd_tt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", mbhMemberTokenLog.regDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("accessToken", mbhMemberTokenLog.accessToken),
-        Map.entry("actionCd", mbhMemberTokenLog.actionCd),
-        Map.entry("authId", mbhMemberTokenLog.authId),
-        Map.entry("cmdNm", mbhMemberTokenLog.cmdNm),
-        Map.entry("deviceInfo", mbhMemberTokenLog.deviceInfo),
-        Map.entry("ip", mbhMemberTokenLog.ip),
-        Map.entry("logId", mbhMemberTokenLog.logId),
-        Map.entry("loginLogId", mbhMemberTokenLog.loginLogId),
-        Map.entry("memberId", mbhMemberTokenLog.memberId),
-        Map.entry("prevToken", mbhMemberTokenLog.prevToken),
-        Map.entry("refreshToken", mbhMemberTokenLog.refreshToken),
-        Map.entry("revokeReason", mbhMemberTokenLog.revokeReason),
-        Map.entry("tokenTypeCd", mbhMemberTokenLog.tokenTypeCd),
-        Map.entry("uiNm", mbhMemberTokenLog.uiNm)
     );
 
     /*
@@ -113,7 +96,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                 .where(
                     QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -137,7 +120,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbhMemberTokenLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -162,6 +145,25 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "memberId" (Entity 필드명) */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("accessToken", mbhMemberTokenLog.accessToken),
+            QdslUtil.FieldDef.like("actionCd", mbhMemberTokenLog.actionCd),
+            QdslUtil.FieldDef.like("authId", mbhMemberTokenLog.authId),
+            QdslUtil.FieldDef.like("cmdNm", mbhMemberTokenLog.cmdNm),
+            QdslUtil.FieldDef.like("deviceInfo", mbhMemberTokenLog.deviceInfo),
+            QdslUtil.FieldDef.like("ip", mbhMemberTokenLog.ip),
+            QdslUtil.FieldDef.like("logId", mbhMemberTokenLog.logId),
+            QdslUtil.FieldDef.like("loginLogId", mbhMemberTokenLog.loginLogId),
+            QdslUtil.FieldDef.like("memberId", mbhMemberTokenLog.memberId),
+            QdslUtil.FieldDef.like("prevToken", mbhMemberTokenLog.prevToken),
+            QdslUtil.FieldDef.like("refreshToken", mbhMemberTokenLog.refreshToken),
+            QdslUtil.FieldDef.like("revokeReason", mbhMemberTokenLog.revokeReason),
+            QdslUtil.FieldDef.like("tokenTypeCd", mbhMemberTokenLog.tokenTypeCd),
+            QdslUtil.FieldDef.like("uiNm", mbhMemberTokenLog.uiNm)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -31,16 +30,6 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhDlivStatusHistRepositoryImpl";
     private static final QOdhDlivStatusHist odhDlivStatusHist = QOdhDlivStatusHist.odhDlivStatusHist;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("chgUserId", odhDlivStatusHist.chgUserId),
-        Map.entry("dlivId", odhDlivStatusHist.dlivId),
-        Map.entry("dlivStatusCd", odhDlivStatusHist.dlivStatusCd),
-        Map.entry("dlivStatusCdBefore", odhDlivStatusHist.dlivStatusCdBefore),
-        Map.entry("dlivStatusHistId", odhDlivStatusHist.dlivStatusHistId),
-        Map.entry("memo", odhDlivStatusHist.memo),
-        Map.entry("orderId", odhDlivStatusHist.orderId),
-        Map.entry("statusReason", odhDlivStatusHist.statusReason)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -80,7 +69,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(odhDlivStatusHist.dlivStatusHistId, search.getDlivStatusHistId()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -104,7 +93,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odhDlivStatusHist.dlivStatusHistId, search.getDlivStatusHistId()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -127,6 +116,19 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
 
         BasePage<OdhDlivStatusHistDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("chgUserId", odhDlivStatusHist.chgUserId),
+            QdslUtil.FieldDef.like("dlivId", odhDlivStatusHist.dlivId),
+            QdslUtil.FieldDef.like("dlivStatusCd", odhDlivStatusHist.dlivStatusCd),
+            QdslUtil.FieldDef.like("dlivStatusCdBefore", odhDlivStatusHist.dlivStatusCdBefore),
+            QdslUtil.FieldDef.like("dlivStatusHistId", odhDlivStatusHist.dlivStatusHistId),
+            QdslUtil.FieldDef.like("memo", odhDlivStatusHist.memo),
+            QdslUtil.FieldDef.like("orderId", odhDlivStatusHist.orderId),
+            QdslUtil.FieldDef.like("statusReason", odhDlivStatusHist.statusReason)
+        ));
     }
 
     /**

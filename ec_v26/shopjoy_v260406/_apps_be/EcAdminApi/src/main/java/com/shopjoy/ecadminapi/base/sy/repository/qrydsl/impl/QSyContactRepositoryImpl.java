@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -33,19 +32,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyContactRepositoryImpl";
     private static final QSyContact syContact = QSyContact.syContact;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("answerUserId", syContact.answerUserId),
-        Map.entry("contentAttachGrpId", syContact.contentAttachGrpId),
-        Map.entry("answerAttachGrpId", syContact.answerAttachGrpId),
-        Map.entry("categoryCd", syContact.categoryCd),
-        Map.entry("contactAnswer", syContact.contactAnswer),
-        Map.entry("contactContent", syContact.contactContent),
-        Map.entry("contactId", syContact.contactId),
-        Map.entry("contactStatusCd", syContact.contactStatusCd),
-        Map.entry("contactTitle", syContact.contactTitle),
-        Map.entry("memberId", syContact.memberId),
-        Map.entry("memberNm", syContact.memberNm)
-    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /*
@@ -97,7 +83,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                     QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()),
                     QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()),
                     andDateRangeBetween(search),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -125,7 +111,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                 QdslUtil.strEq(syContact.categoryCd, search.getCategoryCd()),
                 QdslUtil.strEq(syContact.contactStatusCd, search.getStatus()),
                 andDateRangeBetween(search),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -165,6 +151,22 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
             expr = expr == null ? toExpr : expr.and(toExpr);
         }
         return expr;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("answerUserId", syContact.answerUserId),
+            QdslUtil.FieldDef.like("contentAttachGrpId", syContact.contentAttachGrpId),
+            QdslUtil.FieldDef.like("answerAttachGrpId", syContact.answerAttachGrpId),
+            QdslUtil.FieldDef.like("categoryCd", syContact.categoryCd),
+            QdslUtil.FieldDef.like("contactAnswer", syContact.contactAnswer),
+            QdslUtil.FieldDef.like("contactContent", syContact.contactContent),
+            QdslUtil.FieldDef.like("contactId", syContact.contactId),
+            QdslUtil.FieldDef.like("contactStatusCd", syContact.contactStatusCd),
+            QdslUtil.FieldDef.like("contactTitle", syContact.contactTitle),
+            QdslUtil.FieldDef.like("memberId", syContact.memberId),
+            QdslUtil.FieldDef.like("memberNm", syContact.memberNm)
+        ));
     }
 
     /**

@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,21 +40,6 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     private static final QVwSyCode          cd_lr = new QVwSyCode("cd_lr");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhUserLoginLog.regDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("accessToken", syhUserLoginLog.accessToken),
-        Map.entry("authId", syhUserLoginLog.authId),
-        Map.entry("browser", syhUserLoginLog.browser),
-        Map.entry("cmdNm", syhUserLoginLog.cmdNm),
-        Map.entry("device", syhUserLoginLog.device),
-        Map.entry("ip", syhUserLoginLog.ip),
-        Map.entry("logId", syhUserLoginLog.logId),
-        Map.entry("loginId", syhUserLoginLog.loginId),
-        Map.entry("os", syhUserLoginLog.os),
-        Map.entry("refreshToken", syhUserLoginLog.refreshToken),
-        Map.entry("resultCd", syhUserLoginLog.resultCd),
-        Map.entry("uiNm", syhUserLoginLog.uiNm),
-        Map.entry("userId", syhUserLoginLog.userId)
     );
 
     /*
@@ -115,7 +99,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                 QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -142,7 +126,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                 QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId()),
                 QdslUtil.strEq(syhUserLoginLog.resultCd, search.getResultCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -168,6 +152,24 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("accessToken", syhUserLoginLog.accessToken),
+            QdslUtil.FieldDef.like("authId", syhUserLoginLog.authId),
+            QdslUtil.FieldDef.like("browser", syhUserLoginLog.browser),
+            QdslUtil.FieldDef.like("cmdNm", syhUserLoginLog.cmdNm),
+            QdslUtil.FieldDef.like("device", syhUserLoginLog.device),
+            QdslUtil.FieldDef.like("ip", syhUserLoginLog.ip),
+            QdslUtil.FieldDef.like("logId", syhUserLoginLog.logId),
+            QdslUtil.FieldDef.like("loginId", syhUserLoginLog.loginId),
+            QdslUtil.FieldDef.like("os", syhUserLoginLog.os),
+            QdslUtil.FieldDef.like("refreshToken", syhUserLoginLog.refreshToken),
+            QdslUtil.FieldDef.like("resultCd", syhUserLoginLog.resultCd),
+            QdslUtil.FieldDef.like("uiNm", syhUserLoginLog.uiNm),
+            QdslUtil.FieldDef.like("userId", syhUserLoginLog.userId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

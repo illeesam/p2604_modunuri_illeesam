@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -36,16 +35,6 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", cmBlogReply.regDate,
         "upd_date", cmBlogReply.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("blogCommentContent", cmBlogReply.blogCommentContent),
-        Map.entry("blogId", cmBlogReply.blogId),
-        Map.entry("commentId", cmBlogReply.commentId),
-        Map.entry("commentStatusCd", cmBlogReply.commentStatusCd),
-        Map.entry("commentStatusCdBefore", cmBlogReply.commentStatusCdBefore),
-        Map.entry("parentCommentId", cmBlogReply.parentCommentId),
-        Map.entry("writerId", cmBlogReply.writerId),
-        Map.entry("writerNm", cmBlogReply.writerNm)
     );
 
     /*
@@ -91,7 +80,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
                 QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlogReply.commentId, search.getCommentId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -118,7 +107,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
                 QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()),
                 QdslUtil.strEq(cmBlogReply.commentId, search.getCommentId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -145,6 +134,19 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
     /** 검색조건 빌드 */
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("blogCommentContent", cmBlogReply.blogCommentContent),
+            QdslUtil.FieldDef.like("blogId", cmBlogReply.blogId),
+            QdslUtil.FieldDef.like("commentId", cmBlogReply.commentId),
+            QdslUtil.FieldDef.like("commentStatusCd", cmBlogReply.commentStatusCd),
+            QdslUtil.FieldDef.like("commentStatusCdBefore", cmBlogReply.commentStatusCdBefore),
+            QdslUtil.FieldDef.like("parentCommentId", cmBlogReply.parentCommentId),
+            QdslUtil.FieldDef.like("writerId", cmBlogReply.writerId),
+            QdslUtil.FieldDef.like("writerNm", cmBlogReply.writerNm)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

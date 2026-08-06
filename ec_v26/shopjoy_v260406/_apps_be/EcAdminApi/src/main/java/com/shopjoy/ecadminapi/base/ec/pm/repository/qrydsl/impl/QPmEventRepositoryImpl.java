@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,19 +34,6 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmEvent.regDate,
         "upd_date", pmEvent.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("eventContent", pmEvent.eventContent),
-        Map.entry("eventDesc", pmEvent.eventDesc),
-        Map.entry("eventId", pmEvent.eventId),
-        Map.entry("eventNm", pmEvent.eventNm),
-        Map.entry("eventStatusCd", pmEvent.eventStatusCd),
-        Map.entry("eventStatusCdBefore", pmEvent.eventStatusCdBefore),
-        Map.entry("eventTitle", pmEvent.eventTitle),
-        Map.entry("eventTypeCd", pmEvent.eventTypeCd),
-        Map.entry("imgUrl", pmEvent.imgUrl),
-        Map.entry("targetTypeCd", pmEvent.targetTypeCd),
-        Map.entry("useYn", pmEvent.useYn)
     );
 
     /*
@@ -103,7 +89,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                     QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -131,7 +117,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -156,6 +142,22 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("eventContent", pmEvent.eventContent),
+            QdslUtil.FieldDef.like("eventDesc", pmEvent.eventDesc),
+            QdslUtil.FieldDef.like("eventId", pmEvent.eventId),
+            QdslUtil.FieldDef.like("eventNm", pmEvent.eventNm),
+            QdslUtil.FieldDef.like("eventStatusCd", pmEvent.eventStatusCd),
+            QdslUtil.FieldDef.like("eventStatusCdBefore", pmEvent.eventStatusCdBefore),
+            QdslUtil.FieldDef.like("eventTitle", pmEvent.eventTitle),
+            QdslUtil.FieldDef.like("eventTypeCd", pmEvent.eventTypeCd),
+            QdslUtil.FieldDef.like("imgUrl", pmEvent.imgUrl),
+            QdslUtil.FieldDef.like("targetTypeCd", pmEvent.targetTypeCd),
+            QdslUtil.FieldDef.like("useYn", pmEvent.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

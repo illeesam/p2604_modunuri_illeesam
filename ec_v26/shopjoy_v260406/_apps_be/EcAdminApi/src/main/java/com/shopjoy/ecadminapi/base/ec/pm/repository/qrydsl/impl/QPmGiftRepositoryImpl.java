@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -45,17 +44,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmGift.regDate,
         "upd_date", pmGift.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("giftDesc", pmGift.giftDesc),
-        Map.entry("giftId", pmGift.giftId),
-        Map.entry("giftNm", pmGift.giftNm),
-        Map.entry("giftStatusCd", pmGift.giftStatusCd),
-        Map.entry("giftStatusCdBefore", pmGift.giftStatusCdBefore),
-        Map.entry("giftTypeCd", pmGift.giftTypeCd),
-        Map.entry("memGradeCd", pmGift.memGradeCd),
-        Map.entry("prodId", pmGift.prodId),
-        Map.entry("useYn", pmGift.useYn)
     );
 
     /**
@@ -114,7 +102,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                     QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
                     QdslUtil.strEq(pmGift.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -142,7 +130,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
                 QdslUtil.strEq(pmGift.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -169,6 +157,20 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
     /** 검색조건 빌드 — Mapper XML pmGiftCond 와 동일 */
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("giftDesc", pmGift.giftDesc),
+            QdslUtil.FieldDef.like("giftId", pmGift.giftId),
+            QdslUtil.FieldDef.like("giftNm", pmGift.giftNm),
+            QdslUtil.FieldDef.like("giftStatusCd", pmGift.giftStatusCd),
+            QdslUtil.FieldDef.like("giftStatusCdBefore", pmGift.giftStatusCdBefore),
+            QdslUtil.FieldDef.like("giftTypeCd", pmGift.giftTypeCd),
+            QdslUtil.FieldDef.like("memGradeCd", pmGift.memGradeCd),
+            QdslUtil.FieldDef.like("prodId", pmGift.prodId),
+            QdslUtil.FieldDef.like("useYn", pmGift.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

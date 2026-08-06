@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -31,17 +30,6 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhClaimItemStatusHistRepositoryImpl";
     private static final QOdhClaimItemStatusHist odhClaimItemStatusHist = QOdhClaimItemStatusHist.odhClaimItemStatusHist;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("chgUserId", odhClaimItemStatusHist.chgUserId),
-        Map.entry("claimId", odhClaimItemStatusHist.claimId),
-        Map.entry("claimItemId", odhClaimItemStatusHist.claimItemId),
-        Map.entry("claimItemStatusCd", odhClaimItemStatusHist.claimItemStatusCd),
-        Map.entry("claimItemStatusCdBefore", odhClaimItemStatusHist.claimItemStatusCdBefore),
-        Map.entry("claimItemStatusHistId", odhClaimItemStatusHist.claimItemStatusHistId),
-        Map.entry("memo", odhClaimItemStatusHist.memo),
-        Map.entry("orderItemId", odhClaimItemStatusHist.orderItemId),
-        Map.entry("statusReason", odhClaimItemStatusHist.statusReason)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -82,7 +70,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(odhClaimItemStatusHist.claimItemStatusHistId, search.getClaimItemStatusHistId()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -106,7 +94,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odhClaimItemStatusHist.claimItemStatusHistId, search.getClaimItemStatusHistId()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -129,6 +117,20 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
 
         BasePage<OdhClaimItemStatusHistDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("chgUserId", odhClaimItemStatusHist.chgUserId),
+            QdslUtil.FieldDef.like("claimId", odhClaimItemStatusHist.claimId),
+            QdslUtil.FieldDef.like("claimItemId", odhClaimItemStatusHist.claimItemId),
+            QdslUtil.FieldDef.like("claimItemStatusCd", odhClaimItemStatusHist.claimItemStatusCd),
+            QdslUtil.FieldDef.like("claimItemStatusCdBefore", odhClaimItemStatusHist.claimItemStatusCdBefore),
+            QdslUtil.FieldDef.like("claimItemStatusHistId", odhClaimItemStatusHist.claimItemStatusHistId),
+            QdslUtil.FieldDef.like("memo", odhClaimItemStatusHist.memo),
+            QdslUtil.FieldDef.like("orderItemId", odhClaimItemStatusHist.orderItemId),
+            QdslUtil.FieldDef.like("statusReason", odhClaimItemStatusHist.statusReason)
+        ));
     }
 
     /**

@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,17 +34,6 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odDlivItem.regDate,
         "upd_date", odDlivItem.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("dlivId", odDlivItem.dlivId),
-        Map.entry("dlivItemId", odDlivItem.dlivItemId),
-        Map.entry("dlivItemStatusCd", odDlivItem.dlivItemStatusCd),
-        Map.entry("dlivItemStatusCdBefore", odDlivItem.dlivItemStatusCdBefore),
-        Map.entry("dlivTypeCd", odDlivItem.dlivTypeCd),
-        Map.entry("prodOptId1", odDlivItem.prodOptId1),
-        Map.entry("prodOptId2", odDlivItem.prodOptId2),
-        Map.entry("orderItemId", odDlivItem.orderItemId),
-        Map.entry("prodId", odDlivItem.prodId)
     );
 
     /*
@@ -93,7 +81,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                     QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId()),
                     QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -120,7 +108,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                 QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId()),
                 QdslUtil.strEq(odDlivItem.dlivItemId, search.getDlivItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -143,6 +131,20 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
         BasePage<OdDlivItemDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("dlivId", odDlivItem.dlivId),
+            QdslUtil.FieldDef.like("dlivItemId", odDlivItem.dlivItemId),
+            QdslUtil.FieldDef.like("dlivItemStatusCd", odDlivItem.dlivItemStatusCd),
+            QdslUtil.FieldDef.like("dlivItemStatusCdBefore", odDlivItem.dlivItemStatusCdBefore),
+            QdslUtil.FieldDef.like("dlivTypeCd", odDlivItem.dlivTypeCd),
+            QdslUtil.FieldDef.like("prodOptId1", odDlivItem.prodOptId1),
+            QdslUtil.FieldDef.like("prodOptId2", odDlivItem.prodOptId2),
+            QdslUtil.FieldDef.like("orderItemId", odDlivItem.orderItemId),
+            QdslUtil.FieldDef.like("prodId", odDlivItem.prodId)
+        ));
     }
 
     /**

@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -46,17 +45,6 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odRefund.regDate,
         "upd_date", odRefund.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("claimId", odRefund.claimId),
-        Map.entry("faultTypeCd", odRefund.faultTypeCd),
-        Map.entry("memo", odRefund.memo),
-        Map.entry("orderId", odRefund.orderId),
-        Map.entry("refundId", odRefund.refundId),
-        Map.entry("refundReason", odRefund.refundReason),
-        Map.entry("refundStatusCd", odRefund.refundStatusCd),
-        Map.entry("refundStatusCdBefore", odRefund.refundStatusCdBefore),
-        Map.entry("refundTypeCd", odRefund.refundTypeCd)
     );
 
     /*
@@ -115,7 +103,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                 .where(
                     QdslUtil.strEq(odRefund.refundId, search.getRefundId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -140,7 +128,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odRefund.refundId, search.getRefundId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -163,6 +151,20 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
 
         BasePage<OdRefundDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("claimId", odRefund.claimId),
+            QdslUtil.FieldDef.like("faultTypeCd", odRefund.faultTypeCd),
+            QdslUtil.FieldDef.like("memo", odRefund.memo),
+            QdslUtil.FieldDef.like("orderId", odRefund.orderId),
+            QdslUtil.FieldDef.like("refundId", odRefund.refundId),
+            QdslUtil.FieldDef.like("refundReason", odRefund.refundReason),
+            QdslUtil.FieldDef.like("refundStatusCd", odRefund.refundStatusCd),
+            QdslUtil.FieldDef.like("refundStatusCdBefore", odRefund.refundStatusCdBefore),
+            QdslUtil.FieldDef.like("refundTypeCd", odRefund.refundTypeCd)
+        ));
     }
 
     /**

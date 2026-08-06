@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,24 +40,6 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmCoupon.regDate,
         "upd_date", pmCoupon.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("couponCd", pmCoupon.couponCd),
-        Map.entry("couponDesc", pmCoupon.couponDesc),
-        Map.entry("couponId", pmCoupon.couponId),
-        Map.entry("couponNm", pmCoupon.couponNm),
-        Map.entry("couponStatusCd", pmCoupon.couponStatusCd),
-        Map.entry("couponStatusCdBefore", pmCoupon.couponStatusCdBefore),
-        Map.entry("couponTypeCd", pmCoupon.couponTypeCd),
-        Map.entry("dvcMappYn", pmCoupon.dvcMappYn),
-        Map.entry("dvcMwebYn", pmCoupon.dvcMwebYn),
-        Map.entry("dvcPcYn", pmCoupon.dvcPcYn),
-        Map.entry("memGradeCd", pmCoupon.memGradeCd),
-        Map.entry("memo", pmCoupon.memo),
-        Map.entry("sellerCdivRemark", pmCoupon.sellerCdivRemark),
-        Map.entry("targetTypeCd", pmCoupon.targetTypeCd),
-        Map.entry("targetValue", pmCoupon.targetValue),
-        Map.entry("useYn", pmCoupon.useYn)
     );
 
     /*
@@ -134,7 +115,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                     QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -162,7 +143,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -187,6 +168,27 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("couponCd", pmCoupon.couponCd),
+            QdslUtil.FieldDef.like("couponDesc", pmCoupon.couponDesc),
+            QdslUtil.FieldDef.like("couponId", pmCoupon.couponId),
+            QdslUtil.FieldDef.like("couponNm", pmCoupon.couponNm),
+            QdslUtil.FieldDef.like("couponStatusCd", pmCoupon.couponStatusCd),
+            QdslUtil.FieldDef.like("couponStatusCdBefore", pmCoupon.couponStatusCdBefore),
+            QdslUtil.FieldDef.like("couponTypeCd", pmCoupon.couponTypeCd),
+            QdslUtil.FieldDef.like("dvcMappYn", pmCoupon.dvcMappYn),
+            QdslUtil.FieldDef.like("dvcMwebYn", pmCoupon.dvcMwebYn),
+            QdslUtil.FieldDef.like("dvcPcYn", pmCoupon.dvcPcYn),
+            QdslUtil.FieldDef.like("memGradeCd", pmCoupon.memGradeCd),
+            QdslUtil.FieldDef.like("memo", pmCoupon.memo),
+            QdslUtil.FieldDef.like("sellerCdivRemark", pmCoupon.sellerCdivRemark),
+            QdslUtil.FieldDef.like("targetTypeCd", pmCoupon.targetTypeCd),
+            QdslUtil.FieldDef.like("targetValue", pmCoupon.targetValue),
+            QdslUtil.FieldDef.like("useYn", pmCoupon.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

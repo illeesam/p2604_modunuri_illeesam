@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -29,22 +28,6 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzSample0RepositoryImpl";
     private static final QZzSample0 zzSample0 = QZzSample0.zzSample0;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("col01", zzSample0.col01),
-        Map.entry("col02", zzSample0.col02),
-        Map.entry("col03", zzSample0.col03),
-        Map.entry("col04", zzSample0.col04),
-        Map.entry("col05", zzSample0.col05),
-        Map.entry("col06", zzSample0.col06),
-        Map.entry("col07", zzSample0.col07),
-        Map.entry("col08", zzSample0.col08),
-        Map.entry("col09", zzSample0.col09),
-        Map.entry("sample0Id", zzSample0.sample0Id),
-        Map.entry("sampleDesc", zzSample0.sampleDesc),
-        Map.entry("sampleName", zzSample0.sampleName),
-        Map.entry("sampleValue", zzSample0.sampleValue),
-        Map.entry("useYn", zzSample0.useYn)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (zz_sample0 는 다목적 샘플 테이블이라 sy_code 미등록.
@@ -96,7 +79,7 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(zzSample0.sample0Id, search.getSample0Id()),
                 QdslUtil.strEq(zzSample0.useYn, search.getUseYn()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -121,7 +104,7 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(zzSample0.sample0Id, search.getSample0Id()),
                 QdslUtil.strEq(zzSample0.useYn, search.getUseYn()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -144,6 +127,25 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         BasePage<ZzSample0Dto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("col01", zzSample0.col01),
+            QdslUtil.FieldDef.like("col02", zzSample0.col02),
+            QdslUtil.FieldDef.like("col03", zzSample0.col03),
+            QdslUtil.FieldDef.like("col04", zzSample0.col04),
+            QdslUtil.FieldDef.like("col05", zzSample0.col05),
+            QdslUtil.FieldDef.like("col06", zzSample0.col06),
+            QdslUtil.FieldDef.like("col07", zzSample0.col07),
+            QdslUtil.FieldDef.like("col08", zzSample0.col08),
+            QdslUtil.FieldDef.like("col09", zzSample0.col09),
+            QdslUtil.FieldDef.like("sample0Id", zzSample0.sample0Id),
+            QdslUtil.FieldDef.like("sampleDesc", zzSample0.sampleDesc),
+            QdslUtil.FieldDef.like("sampleName", zzSample0.sampleName),
+            QdslUtil.FieldDef.like("sampleValue", zzSample0.sampleValue),
+            QdslUtil.FieldDef.like("useYn", zzSample0.useYn)
+        ));
     }
 
     /**

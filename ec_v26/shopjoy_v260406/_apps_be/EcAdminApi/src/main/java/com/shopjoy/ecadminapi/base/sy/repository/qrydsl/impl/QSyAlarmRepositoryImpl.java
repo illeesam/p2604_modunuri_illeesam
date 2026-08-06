@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -42,18 +41,6 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     private static final QVwSyCode cdAt = new QVwSyCode("cd_at");
     private static final QVwSyCode cdAc = new QVwSyCode("cd_ac");
     private static final QVwSyCode cdAtt = new QVwSyCode("cd_att");
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("alarmId", syAlarm.alarmId),
-        Map.entry("alarmMsg", syAlarm.alarmMsg),
-        Map.entry("alarmStatusCd", syAlarm.alarmStatusCd),
-        Map.entry("alarmTitle", syAlarm.alarmTitle),
-        Map.entry("alarmTypeCd", syAlarm.alarmTypeCd),
-        Map.entry("channelCd", syAlarm.channelCd),
-        Map.entry("pathId", syAlarm.pathId),
-        Map.entry("targetId", syAlarm.targetId),
-        Map.entry("targetTypeCd", syAlarm.targetTypeCd),
-        Map.entry("templateId", syAlarm.templateId)
-    );
 
     /*
      * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
@@ -112,7 +99,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                     QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()),
                     QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()),
                     QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -139,7 +126,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()),
                 QdslUtil.strEq(syAlarm.alarmStatusCd, search.getStatus()),
                 QdslUtil.strEq(syAlarm.alarmTypeCd, search.getTypeCd()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -171,6 +158,21 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syAlarm.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_alarm"))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("alarmId", syAlarm.alarmId),
+            QdslUtil.FieldDef.like("alarmMsg", syAlarm.alarmMsg),
+            QdslUtil.FieldDef.like("alarmStatusCd", syAlarm.alarmStatusCd),
+            QdslUtil.FieldDef.like("alarmTitle", syAlarm.alarmTitle),
+            QdslUtil.FieldDef.like("alarmTypeCd", syAlarm.alarmTypeCd),
+            QdslUtil.FieldDef.like("channelCd", syAlarm.channelCd),
+            QdslUtil.FieldDef.like("pathId", syAlarm.pathId),
+            QdslUtil.FieldDef.like("targetId", syAlarm.targetId),
+            QdslUtil.FieldDef.like("targetTypeCd", syAlarm.targetTypeCd),
+            QdslUtil.FieldDef.like("templateId", syAlarm.templateId)
+        ));
     }
 
     /**

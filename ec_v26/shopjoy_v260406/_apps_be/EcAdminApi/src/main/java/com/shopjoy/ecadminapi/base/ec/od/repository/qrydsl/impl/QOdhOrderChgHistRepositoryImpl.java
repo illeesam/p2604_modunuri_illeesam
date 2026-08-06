@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -31,16 +30,6 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhOrderChgHistRepositoryImpl";
     private static final QOdhOrderChgHist odhOrderChgHist = QOdhOrderChgHist.odhOrderChgHist;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("afterVal", odhOrderChgHist.afterVal),
-        Map.entry("beforeVal", odhOrderChgHist.beforeVal),
-        Map.entry("chgField", odhOrderChgHist.chgField),
-        Map.entry("chgReason", odhOrderChgHist.chgReason),
-        Map.entry("chgTypeCd", odhOrderChgHist.chgTypeCd),
-        Map.entry("chgUserId", odhOrderChgHist.chgUserId),
-        Map.entry("orderChgHistId", odhOrderChgHist.orderChgHistId),
-        Map.entry("orderId", odhOrderChgHist.orderId)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -81,7 +70,7 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(odhOrderChgHist.orderChgHistId, search.getOrderChgHistId()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -105,7 +94,7 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odhOrderChgHist.orderChgHistId, search.getOrderChgHistId()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -128,6 +117,19 @@ public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepositor
 
         BasePage<OdhOrderChgHistDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("afterVal", odhOrderChgHist.afterVal),
+            QdslUtil.FieldDef.like("beforeVal", odhOrderChgHist.beforeVal),
+            QdslUtil.FieldDef.like("chgField", odhOrderChgHist.chgField),
+            QdslUtil.FieldDef.like("chgReason", odhOrderChgHist.chgReason),
+            QdslUtil.FieldDef.like("chgTypeCd", odhOrderChgHist.chgTypeCd),
+            QdslUtil.FieldDef.like("chgUserId", odhOrderChgHist.chgUserId),
+            QdslUtil.FieldDef.like("orderChgHistId", odhOrderChgHist.orderChgHistId),
+            QdslUtil.FieldDef.like("orderId", odhOrderChgHist.orderId)
+        ));
     }
 
     /**

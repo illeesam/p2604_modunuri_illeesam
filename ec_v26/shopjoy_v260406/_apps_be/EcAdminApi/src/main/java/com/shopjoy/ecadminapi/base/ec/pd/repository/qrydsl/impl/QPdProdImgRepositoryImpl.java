@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,18 +34,6 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProdImg.regDate,
         "upd_date", pdProdImg.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("attachId", pdProdImg.attachId),
-        Map.entry("cdnHost", pdProdImg.cdnHost),
-        Map.entry("cdnImgUrl", pdProdImg.cdnImgUrl),
-        Map.entry("cdnThumbUrl", pdProdImg.cdnThumbUrl),
-        Map.entry("imgAltText", pdProdImg.imgAltText),
-        Map.entry("isThumb", pdProdImg.isThumb),
-        Map.entry("prodOptId1", pdProdImg.prodOptId1),
-        Map.entry("prodOptId2", pdProdImg.prodOptId2),
-        Map.entry("prodId", pdProdImg.prodId),
-        Map.entry("prodImgId", pdProdImg.prodImgId)
     );
 
     /*
@@ -96,7 +83,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                     QdslUtil.strEq(pdProdImg.prodId, search.getProdId()),
                     QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -123,7 +110,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                 QdslUtil.strEq(pdProdImg.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdImg.prodImgId, search.getProdImgId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -146,6 +133,21 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
 
         BasePage<PdProdImgDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("attachId", pdProdImg.attachId),
+            QdslUtil.FieldDef.like("cdnHost", pdProdImg.cdnHost),
+            QdslUtil.FieldDef.like("cdnImgUrl", pdProdImg.cdnImgUrl),
+            QdslUtil.FieldDef.like("cdnThumbUrl", pdProdImg.cdnThumbUrl),
+            QdslUtil.FieldDef.like("imgAltText", pdProdImg.imgAltText),
+            QdslUtil.FieldDef.like("isThumb", pdProdImg.isThumb),
+            QdslUtil.FieldDef.like("prodOptId1", pdProdImg.prodOptId1),
+            QdslUtil.FieldDef.like("prodOptId2", pdProdImg.prodOptId2),
+            QdslUtil.FieldDef.like("prodId", pdProdImg.prodId),
+            QdslUtil.FieldDef.like("prodImgId", pdProdImg.prodImgId)
+        ));
     }
 
     /**

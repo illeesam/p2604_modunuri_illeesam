@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -42,14 +41,6 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdhProdStatusHist.regDate,
         "upd_date", pdhProdStatusHist.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("afterStatusCd", pdhProdStatusHist.afterStatusCd),
-        Map.entry("beforeStatusCd", pdhProdStatusHist.beforeStatusCd),
-        Map.entry("memo", pdhProdStatusHist.memo),
-        Map.entry("procUserId", pdhProdStatusHist.procUserId),
-        Map.entry("prodId", pdhProdStatusHist.prodId),
-        Map.entry("prodStatusHistId", pdhProdStatusHist.prodStatusHistId)
     );
 
     /*
@@ -93,7 +84,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(pdhProdStatusHist.prodStatusHistId, search.getProdStatusHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -118,7 +109,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdhProdStatusHist.prodStatusHistId, search.getProdStatusHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -141,6 +132,17 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
 
         BasePage<PdhProdStatusHistDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("afterStatusCd", pdhProdStatusHist.afterStatusCd),
+            QdslUtil.FieldDef.like("beforeStatusCd", pdhProdStatusHist.beforeStatusCd),
+            QdslUtil.FieldDef.like("memo", pdhProdStatusHist.memo),
+            QdslUtil.FieldDef.like("procUserId", pdhProdStatusHist.procUserId),
+            QdslUtil.FieldDef.like("prodId", pdhProdStatusHist.prodId),
+            QdslUtil.FieldDef.like("prodStatusHistId", pdhProdStatusHist.prodStatusHistId)
+        ));
     }
 
     /**

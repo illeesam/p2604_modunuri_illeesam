@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,17 +34,6 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stErpVoucherLine.regDate,
         "upd_date", stErpVoucherLine.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("accountCd", stErpVoucherLine.accountCd),
-        Map.entry("accountNm", stErpVoucherLine.accountNm),
-        Map.entry("costCenterCd", stErpVoucherLine.costCenterCd),
-        Map.entry("erpVoucherId", stErpVoucherLine.erpVoucherId),
-        Map.entry("erpVoucherLineId", stErpVoucherLine.erpVoucherLineId),
-        Map.entry("lineMemo", stErpVoucherLine.lineMemo),
-        Map.entry("profitCenterCd", stErpVoucherLine.profitCenterCd),
-        Map.entry("refId", stErpVoucherLine.refId),
-        Map.entry("refTypeCd", stErpVoucherLine.refTypeCd)
     );
 
     /*
@@ -92,7 +80,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
                 .where(
                     QdslUtil.strEq(stErpVoucherLine.erpVoucherLineId, search.getErpVoucherLineId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -117,7 +105,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stErpVoucherLine.erpVoucherLineId, search.getErpVoucherLineId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -143,6 +131,20 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("accountCd", stErpVoucherLine.accountCd),
+            QdslUtil.FieldDef.like("accountNm", stErpVoucherLine.accountNm),
+            QdslUtil.FieldDef.like("costCenterCd", stErpVoucherLine.costCenterCd),
+            QdslUtil.FieldDef.like("erpVoucherId", stErpVoucherLine.erpVoucherId),
+            QdslUtil.FieldDef.like("erpVoucherLineId", stErpVoucherLine.erpVoucherLineId),
+            QdslUtil.FieldDef.like("lineMemo", stErpVoucherLine.lineMemo),
+            QdslUtil.FieldDef.like("profitCenterCd", stErpVoucherLine.profitCenterCd),
+            QdslUtil.FieldDef.like("refId", stErpVoucherLine.refId),
+            QdslUtil.FieldDef.like("refTypeCd", stErpVoucherLine.refTypeCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

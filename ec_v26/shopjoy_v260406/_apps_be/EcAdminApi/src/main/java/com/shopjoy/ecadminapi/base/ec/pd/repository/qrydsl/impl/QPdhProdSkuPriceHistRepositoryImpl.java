@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -33,13 +32,6 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
     private static final QPdhProdSkuPriceHist pdhProdSkuPriceHist   = QPdhProdSkuPriceHist.pdhProdSkuPriceHist;
     private static final QSySite              sySite = QSySite.sySite;
     private static final QPdProd              pdProd = QPdProd.pdProd;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("chgBy", pdhProdSkuPriceHist.chgBy),
-        Map.entry("chgReason", pdhProdSkuPriceHist.chgReason),
-        Map.entry("histId", pdhProdSkuPriceHist.histId),
-        Map.entry("prodId", pdhProdSkuPriceHist.prodId),
-        Map.entry("skuId", pdhProdSkuPriceHist.prodSkuId)
-    );
 
     /* 상품 SKU 가격 이력 baseSelColumnQuery — 코드성 필드 없음 (금액 이력) */
     private JPAQuery<PdhProdSkuPriceHistDto.Item> baseSelColumnQuery() {
@@ -78,7 +70,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         JPAQuery<PdhProdSkuPriceHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(pdhProdSkuPriceHist.histId, search.getHistId()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -102,7 +94,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdhProdSkuPriceHist.histId, search.getHistId()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -125,6 +117,16 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
 
         BasePage<PdhProdSkuPriceHistDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("chgBy", pdhProdSkuPriceHist.chgBy),
+            QdslUtil.FieldDef.like("chgReason", pdhProdSkuPriceHist.chgReason),
+            QdslUtil.FieldDef.like("histId", pdhProdSkuPriceHist.histId),
+            QdslUtil.FieldDef.like("prodId", pdhProdSkuPriceHist.prodId),
+            QdslUtil.FieldDef.like("skuId", pdhProdSkuPriceHist.prodSkuId)
+        ));
     }
 
     /**

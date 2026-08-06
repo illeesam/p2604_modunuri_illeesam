@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -38,18 +37,6 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdhProdViewLog.regDate,
         "upd_date", pdhProdViewLog.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("device", pdhProdViewLog.device),
-        Map.entry("ip", pdhProdViewLog.ip),
-        Map.entry("logId", pdhProdViewLog.logId),
-        Map.entry("memberId", pdhProdViewLog.memberId),
-        Map.entry("prodId", pdhProdViewLog.prodId),
-        Map.entry("refId", pdhProdViewLog.refId),
-        Map.entry("refNm", pdhProdViewLog.refNm),
-        Map.entry("referrer", pdhProdViewLog.referrer),
-        Map.entry("searchKw", pdhProdViewLog.searchKw),
-        Map.entry("sessionKey", pdhProdViewLog.sessionKey)
     );
 
     /* 상품 조회 로그 baseSelColumnQuery — 코드성 필드 없음 (로그성 원본값 저장) */
@@ -91,7 +78,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -116,7 +103,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdhProdViewLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -142,6 +129,21 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("device", pdhProdViewLog.device),
+            QdslUtil.FieldDef.like("ip", pdhProdViewLog.ip),
+            QdslUtil.FieldDef.like("logId", pdhProdViewLog.logId),
+            QdslUtil.FieldDef.like("memberId", pdhProdViewLog.memberId),
+            QdslUtil.FieldDef.like("prodId", pdhProdViewLog.prodId),
+            QdslUtil.FieldDef.like("refId", pdhProdViewLog.refId),
+            QdslUtil.FieldDef.like("refNm", pdhProdViewLog.refNm),
+            QdslUtil.FieldDef.like("referrer", pdhProdViewLog.referrer),
+            QdslUtil.FieldDef.like("searchKw", pdhProdViewLog.searchKw),
+            QdslUtil.FieldDef.like("sessionKey", pdhProdViewLog.sessionKey)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

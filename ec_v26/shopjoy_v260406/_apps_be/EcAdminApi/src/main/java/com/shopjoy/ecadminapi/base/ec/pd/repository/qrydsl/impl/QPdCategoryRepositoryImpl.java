@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -42,15 +41,6 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     private static final QPdCategory p1  = new QPdCategory("p1");
     private static final QPdCategory p2  = new QPdCategory("p2");
     private static final QVwSyCode     cdCs = new QVwSyCode("cd_cs");
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("categoryDesc", pdCategory.categoryDesc),
-        Map.entry("categoryId", pdCategory.categoryId),
-        Map.entry("categoryNm", pdCategory.categoryNm),
-        Map.entry("categoryStatusCd", pdCategory.categoryStatusCd),
-        Map.entry("categoryStatusCdBefore", pdCategory.categoryStatusCdBefore),
-        Map.entry("imgUrl", pdCategory.imgUrl),
-        Map.entry("parentCategoryId", pdCategory.parentCategoryId)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -100,7 +90,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                     QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
                     andParentCategoryIdIn(search),
                     QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -126,7 +116,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
                 andParentCategoryIdIn(search),
                 QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -159,6 +149,18 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         return search != null && StringUtils.hasText(search.getParentCategoryId())
                 ? pdCategory.categoryId.in(pdCategoryRepository.findTreeCategoryIds(search.getParentCategoryId()))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("categoryDesc", pdCategory.categoryDesc),
+            QdslUtil.FieldDef.like("categoryId", pdCategory.categoryId),
+            QdslUtil.FieldDef.like("categoryNm", pdCategory.categoryNm),
+            QdslUtil.FieldDef.like("categoryStatusCd", pdCategory.categoryStatusCd),
+            QdslUtil.FieldDef.like("categoryStatusCdBefore", pdCategory.categoryStatusCdBefore),
+            QdslUtil.FieldDef.like("imgUrl", pdCategory.imgUrl),
+            QdslUtil.FieldDef.like("parentCategoryId", pdCategory.parentCategoryId)
+        ));
     }
 
     /**

@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -37,16 +36,6 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syCode.regDate,
         "upd_date", syCode.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("childCodeValues", syCode.childCodeValues),
-        Map.entry("codeId", syCode.codeId),
-        Map.entry("codeLabel", syCode.codeLabel),
-        Map.entry("codeOpt1", syCode.codeOpt1),
-        Map.entry("codeRemark", syCode.codeRemark),
-        Map.entry("codeValue", syCode.codeValue),
-        Map.entry("parentCodeValue", syCode.parentCodeValue),
-        Map.entry("useYn", syCode.useYn)
     );
 
     /*
@@ -103,7 +92,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()),
                 QdslUtil.strEq(syCode.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -133,7 +122,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 QdslUtil.strEq(syCode.parentCodeValue, search.getParentCodeValue()),
                 QdslUtil.strEq(syCode.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -159,6 +148,19 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("childCodeValues", syCode.childCodeValues),
+            QdslUtil.FieldDef.like("codeId", syCode.codeId),
+            QdslUtil.FieldDef.like("codeLabel", syCode.codeLabel),
+            QdslUtil.FieldDef.like("codeOpt1", syCode.codeOpt1),
+            QdslUtil.FieldDef.like("codeRemark", syCode.codeRemark),
+            QdslUtil.FieldDef.like("codeValue", syCode.codeValue),
+            QdslUtil.FieldDef.like("parentCodeValue", syCode.parentCodeValue),
+            QdslUtil.FieldDef.like("useYn", syCode.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

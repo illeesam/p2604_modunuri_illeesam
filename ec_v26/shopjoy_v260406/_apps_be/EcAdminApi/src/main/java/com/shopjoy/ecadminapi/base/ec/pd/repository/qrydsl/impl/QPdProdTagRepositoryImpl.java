@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -38,11 +37,6 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProdTag.regDate,
         "upd_date", pdProdTag.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("prodId", pdProdTag.prodId),
-        Map.entry("prodTagId", pdProdTag.prodTagId),
-        Map.entry("tagId", pdProdTag.tagId)
     );
 
     /* 상품 태그 baseSelColumnQuery — 코드성 필드 없음 (단순 매핑 테이블) */
@@ -77,7 +71,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
                 .where(
                     QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -102,7 +96,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdProdTag.prodTagId, search.getProdTagId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -125,6 +119,14 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
 
         BasePage<PdProdTagDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("prodId", pdProdTag.prodId),
+            QdslUtil.FieldDef.like("prodTagId", pdProdTag.prodTagId),
+            QdslUtil.FieldDef.like("tagId", pdProdTag.tagId)
+        ));
     }
 
     /**

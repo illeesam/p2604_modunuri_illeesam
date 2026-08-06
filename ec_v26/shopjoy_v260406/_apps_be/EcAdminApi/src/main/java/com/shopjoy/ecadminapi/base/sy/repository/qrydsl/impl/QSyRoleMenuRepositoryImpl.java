@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -37,11 +36,6 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", vwRoleMenu.regDate,
         "upd_date", vwRoleMenu.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("menuId", vwRoleMenu.menuId),
-        Map.entry("roleId", vwRoleMenu.roleId),
-        Map.entry("roleMenuId", vwRoleMenu.roleMenuId)
     );
 
     /*
@@ -86,7 +80,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                 QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()),
                 QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -113,7 +107,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                 QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()),
                 QdslUtil.strEq(vwRoleMenu.menuId, search.getMenuId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 뷰 기반 (list/count 가 동일한 from 공유)
@@ -136,6 +130,14 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
         BasePage<SyRoleMenuDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("menuId", vwRoleMenu.menuId),
+            QdslUtil.FieldDef.like("roleId", vwRoleMenu.roleId),
+            QdslUtil.FieldDef.like("roleMenuId", vwRoleMenu.roleMenuId)
+        ));
     }
 
     /**

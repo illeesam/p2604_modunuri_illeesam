@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,15 +40,6 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odPayMethod.regDate,
         "upd_date", odPayMethod.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("mainMethodYn", odPayMethod.mainMethodYn),
-        Map.entry("memberId", odPayMethod.memberId),
-        Map.entry("payKeyNo", odPayMethod.payKeyNo),
-        Map.entry("payMethodAlias", odPayMethod.payMethodAlias),
-        Map.entry("payMethodId", odPayMethod.payMethodId),
-        Map.entry("payMethodNm", odPayMethod.payMethodNm),
-        Map.entry("payMethodTypeCd", odPayMethod.payMethodTypeCd)
     );
 
     /*
@@ -92,7 +82,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                 .where(
                     QdslUtil.strEq(odPayMethod.payMethodId, search.getPayMethodId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -117,7 +107,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odPayMethod.payMethodId, search.getPayMethodId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -143,6 +133,18 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("mainMethodYn", odPayMethod.mainMethodYn),
+            QdslUtil.FieldDef.like("memberId", odPayMethod.memberId),
+            QdslUtil.FieldDef.like("payKeyNo", odPayMethod.payKeyNo),
+            QdslUtil.FieldDef.like("payMethodAlias", odPayMethod.payMethodAlias),
+            QdslUtil.FieldDef.like("payMethodId", odPayMethod.payMethodId),
+            QdslUtil.FieldDef.like("payMethodNm", odPayMethod.payMethodNm),
+            QdslUtil.FieldDef.like("payMethodTypeCd", odPayMethod.payMethodTypeCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

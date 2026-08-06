@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,12 +40,6 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmPlanItem.regDate,
         "upd_date", pmPlanItem.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("planId", pmPlanItem.planId),
-        Map.entry("planItemId", pmPlanItem.planItemId),
-        Map.entry("planItemMemo", pmPlanItem.planItemMemo),
-        Map.entry("prodId", pmPlanItem.prodId)
     );
 
     /* 프로모션 플랜 아이템 baseSelColumnQuery — 코드성 필드 없음 (상품 매핑·진열순서·메모만 보유) */
@@ -84,7 +77,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                 .where(
                     QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -109,7 +102,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmPlanItem.planItemId, search.getPlanItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -132,6 +125,15 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
         BasePage<PmPlanItemDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("planId", pmPlanItem.planId),
+            QdslUtil.FieldDef.like("planItemId", pmPlanItem.planItemId),
+            QdslUtil.FieldDef.like("planItemMemo", pmPlanItem.planItemMemo),
+            QdslUtil.FieldDef.like("prodId", pmPlanItem.prodId)
+        ));
     }
 
     /**

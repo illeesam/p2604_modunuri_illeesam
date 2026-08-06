@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -34,22 +33,6 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", dpPanelItem.regDate,
         "upd_date", dpPanelItem.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("contentTypeCd", dpPanelItem.contentTypeCd),
-        Map.entry("dispEnv", dpPanelItem.dispEnv),
-        Map.entry("dispYn", dpPanelItem.dispYn),
-        Map.entry("panelId", dpPanelItem.panelId),
-        Map.entry("panelItemId", dpPanelItem.panelItemId),
-        Map.entry("titleShowYn", dpPanelItem.titleShowYn),
-        Map.entry("useYn", dpPanelItem.useYn),
-        Map.entry("visibilityTargets", dpPanelItem.visibilityTargets),
-        Map.entry("widgetConfigJson", dpPanelItem.widgetConfigJson),
-        Map.entry("widgetContent", dpPanelItem.widgetContent),
-        Map.entry("widgetLibId", dpPanelItem.widgetLibId),
-        Map.entry("widgetLibRefYn", dpPanelItem.widgetLibRefYn),
-        Map.entry("widgetTitle", dpPanelItem.widgetTitle),
-        Map.entry("widgetTypeCd", dpPanelItem.widgetTypeCd)
     );
 
     /*
@@ -119,7 +102,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
                     QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId()),
                     QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -148,7 +131,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
                 QdslUtil.strEq(dpPanelItem.panelId, search.getPanelId()),
                 QdslUtil.strEq(dpPanelItem.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery();
@@ -172,6 +155,25 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("contentTypeCd", dpPanelItem.contentTypeCd),
+            QdslUtil.FieldDef.like("dispEnv", dpPanelItem.dispEnv),
+            QdslUtil.FieldDef.like("dispYn", dpPanelItem.dispYn),
+            QdslUtil.FieldDef.like("panelId", dpPanelItem.panelId),
+            QdslUtil.FieldDef.like("panelItemId", dpPanelItem.panelItemId),
+            QdslUtil.FieldDef.like("titleShowYn", dpPanelItem.titleShowYn),
+            QdslUtil.FieldDef.like("useYn", dpPanelItem.useYn),
+            QdslUtil.FieldDef.like("visibilityTargets", dpPanelItem.visibilityTargets),
+            QdslUtil.FieldDef.like("widgetConfigJson", dpPanelItem.widgetConfigJson),
+            QdslUtil.FieldDef.like("widgetContent", dpPanelItem.widgetContent),
+            QdslUtil.FieldDef.like("widgetLibId", dpPanelItem.widgetLibId),
+            QdslUtil.FieldDef.like("widgetLibRefYn", dpPanelItem.widgetLibRefYn),
+            QdslUtil.FieldDef.like("widgetTitle", dpPanelItem.widgetTitle),
+            QdslUtil.FieldDef.like("widgetTypeCd", dpPanelItem.widgetTypeCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

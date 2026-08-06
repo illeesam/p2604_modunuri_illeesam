@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -31,15 +30,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyNoticeRepositoryImpl";
     private static final QSyNotice syNotice = QSyNotice.syNotice;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("attachGrpId", syNotice.attachGrpId),
-        Map.entry("contentHtml", syNotice.contentHtml),
-        Map.entry("isFixed", syNotice.isFixed),
-        Map.entry("noticeId", syNotice.noticeId),
-        Map.entry("noticeStatusCd", syNotice.noticeStatusCd),
-        Map.entry("noticeTitle", syNotice.noticeTitle),
-        Map.entry("noticeTypeCd", syNotice.noticeTypeCd)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -88,7 +78,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                     QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()),
                     QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()),
                     QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -115,7 +105,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                 QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()),
                 QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()),
                 QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -140,6 +130,18 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("attachGrpId", syNotice.attachGrpId),
+            QdslUtil.FieldDef.like("contentHtml", syNotice.contentHtml),
+            QdslUtil.FieldDef.like("isFixed", syNotice.isFixed),
+            QdslUtil.FieldDef.like("noticeId", syNotice.noticeId),
+            QdslUtil.FieldDef.like("noticeStatusCd", syNotice.noticeStatusCd),
+            QdslUtil.FieldDef.like("noticeTitle", syNotice.noticeTitle),
+            QdslUtil.FieldDef.like("noticeTypeCd", syNotice.noticeTypeCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

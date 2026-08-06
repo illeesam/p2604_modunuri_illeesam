@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -51,17 +50,6 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syRole.regDate,
         "upd_date", syRole.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("parentRoleId", syRole.parentRoleId),
-        Map.entry("pathId", syRole.pathId),
-        Map.entry("restrictPerm", syRole.restrictPerm),
-        Map.entry("roleCode", syRole.roleCode),
-        Map.entry("roleId", syRole.roleId),
-        Map.entry("roleNm", syRole.roleNm),
-        Map.entry("roleRemark", syRole.roleRemark),
-        Map.entry("roleTypeCd", syRole.roleTypeCd),
-        Map.entry("useYn", syRole.useYn)
     );
 
     /*
@@ -113,7 +101,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
                 QdslUtil.strEq(syRole.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -141,7 +129,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
                 QdslUtil.strEq(syRole.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -175,7 +163,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 QdslUtil.strEq(syRole.roleTypeCd, search.getRoleTypeCd()),
                 QdslUtil.strEq(syRole.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         ).fetchOne();
         return CmUtil.nvlLong(total);
     }
@@ -183,6 +171,20 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
 
     /* parentRoleId 트리 — 선택 노드 + 모든 자손 역할 포함 (sy_role 자기참조 재귀 CTE 인라인) */
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("parentRoleId", syRole.parentRoleId),
+            QdslUtil.FieldDef.like("pathId", syRole.pathId),
+            QdslUtil.FieldDef.like("restrictPerm", syRole.restrictPerm),
+            QdslUtil.FieldDef.like("roleCode", syRole.roleCode),
+            QdslUtil.FieldDef.like("roleId", syRole.roleId),
+            QdslUtil.FieldDef.like("roleNm", syRole.roleNm),
+            QdslUtil.FieldDef.like("roleRemark", syRole.roleRemark),
+            QdslUtil.FieldDef.like("roleTypeCd", syRole.roleTypeCd),
+            QdslUtil.FieldDef.like("useYn", syRole.useYn)
+        ));
+    }
+
     @SuppressWarnings("unchecked")
     private BooleanExpression andParentRoleIdIn(SyRoleDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getParentRoleId())) return null;

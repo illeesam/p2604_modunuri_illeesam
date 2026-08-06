@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -45,24 +44,6 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", sySite.regDate,
         "upd_date", sySite.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("configJson", sySite.configJson),
-        Map.entry("faviconUrl", sySite.faviconUrl),
-        Map.entry("logoUrl", sySite.logoUrl),
-        Map.entry("pathId", sySite.pathId),
-        Map.entry("siteAddress", sySite.siteAddress),
-        Map.entry("siteBusinessNo", sySite.siteBusinessNo),
-        Map.entry("siteCeo", sySite.siteCeo),
-        Map.entry("siteCode", sySite.siteCode),
-        Map.entry("siteDesc", sySite.siteDesc),
-        Map.entry("siteDomain", sySite.siteDomain),
-        Map.entry("siteEmail", sySite.siteEmail),
-        Map.entry("siteNm", sySite.siteNm),
-        Map.entry("sitePhone", sySite.sitePhone),
-        Map.entry("siteStatusCd", sySite.siteStatusCd),
-        Map.entry("siteTypeCd", sySite.siteTypeCd),
-        Map.entry("siteZipCode", sySite.siteZipCode)
     );
 
     /*
@@ -123,7 +104,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                     QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
                     QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -150,7 +131,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 QdslUtil.strEq(sySite.siteStatusCd, search.getStatus()),
                 QdslUtil.strEq(sySite.siteTypeCd, search.getTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -182,6 +163,27 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? sySite.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_site"))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("configJson", sySite.configJson),
+            QdslUtil.FieldDef.like("faviconUrl", sySite.faviconUrl),
+            QdslUtil.FieldDef.like("logoUrl", sySite.logoUrl),
+            QdslUtil.FieldDef.like("pathId", sySite.pathId),
+            QdslUtil.FieldDef.like("siteAddress", sySite.siteAddress),
+            QdslUtil.FieldDef.like("siteBusinessNo", sySite.siteBusinessNo),
+            QdslUtil.FieldDef.like("siteCeo", sySite.siteCeo),
+            QdslUtil.FieldDef.like("siteCode", sySite.siteCode),
+            QdslUtil.FieldDef.like("siteDesc", sySite.siteDesc),
+            QdslUtil.FieldDef.like("siteDomain", sySite.siteDomain),
+            QdslUtil.FieldDef.like("siteEmail", sySite.siteEmail),
+            QdslUtil.FieldDef.like("siteNm", sySite.siteNm),
+            QdslUtil.FieldDef.like("sitePhone", sySite.sitePhone),
+            QdslUtil.FieldDef.like("siteStatusCd", sySite.siteStatusCd),
+            QdslUtil.FieldDef.like("siteTypeCd", sySite.siteTypeCd),
+            QdslUtil.FieldDef.like("siteZipCode", sySite.siteZipCode)
+        ));
     }
 
     /**

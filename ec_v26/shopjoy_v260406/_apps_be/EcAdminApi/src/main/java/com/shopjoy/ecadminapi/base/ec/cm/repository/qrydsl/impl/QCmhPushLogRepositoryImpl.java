@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -37,19 +36,6 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         "send_date", cmhPushLog.sendDate,
         "reg_date", cmhPushLog.regDate,
         "upd_date", cmhPushLog.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("channelCd", cmhPushLog.channelCd),
-        Map.entry("failReason", cmhPushLog.failReason),
-        Map.entry("logId", cmhPushLog.logId),
-        Map.entry("memberId", cmhPushLog.memberId),
-        Map.entry("pushLogContent", cmhPushLog.pushLogContent),
-        Map.entry("pushLogTitle", cmhPushLog.pushLogTitle),
-        Map.entry("recvAddr", cmhPushLog.recvAddr),
-        Map.entry("refId", cmhPushLog.refId),
-        Map.entry("refTypeCd", cmhPushLog.refTypeCd),
-        Map.entry("resultCd", cmhPushLog.resultCd),
-        Map.entry("templateId", cmhPushLog.templateId)
     );
 
     /*
@@ -99,7 +85,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(cmhPushLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -124,7 +110,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmhPushLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -151,6 +137,22 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
     /** 검색조건 빌드 */
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("channelCd", cmhPushLog.channelCd),
+            QdslUtil.FieldDef.like("failReason", cmhPushLog.failReason),
+            QdslUtil.FieldDef.like("logId", cmhPushLog.logId),
+            QdslUtil.FieldDef.like("memberId", cmhPushLog.memberId),
+            QdslUtil.FieldDef.like("pushLogContent", cmhPushLog.pushLogContent),
+            QdslUtil.FieldDef.like("pushLogTitle", cmhPushLog.pushLogTitle),
+            QdslUtil.FieldDef.like("recvAddr", cmhPushLog.recvAddr),
+            QdslUtil.FieldDef.like("refId", cmhPushLog.refId),
+            QdslUtil.FieldDef.like("refTypeCd", cmhPushLog.refTypeCd),
+            QdslUtil.FieldDef.like("resultCd", cmhPushLog.resultCd),
+            QdslUtil.FieldDef.like("templateId", cmhPushLog.templateId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

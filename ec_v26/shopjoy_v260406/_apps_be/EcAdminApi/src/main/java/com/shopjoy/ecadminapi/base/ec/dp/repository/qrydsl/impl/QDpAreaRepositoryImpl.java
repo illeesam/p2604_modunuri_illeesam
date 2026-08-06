@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -36,16 +35,6 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpAreaRepositoryImpl";
     private static final QDpArea dpArea = QDpArea.dpArea;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("areaCd", dpArea.areaCd),
-        Map.entry("areaDesc", dpArea.areaDesc),
-        Map.entry("areaId", dpArea.areaId),
-        Map.entry("areaNm", dpArea.areaNm),
-        Map.entry("areaTypeCd", dpArea.areaTypeCd),
-        Map.entry("pathId", dpArea.pathId),
-        Map.entry("uiId", dpArea.uiId),
-        Map.entry("useYn", dpArea.useYn)
-    );
 
     /*
      * baseQuery — 코드성 필드 예시 코드값
@@ -92,7 +81,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                     QdslUtil.strEq(dpArea.areaId, search.getAreaId()),
                     QdslUtil.strEq(dpArea.uiId, search.getUiId()),
                     QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -119,7 +108,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 QdslUtil.strEq(dpArea.areaId, search.getAreaId()),
                 QdslUtil.strEq(dpArea.uiId, search.getUiId()),
                 QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<DpAreaDto.Item> query = baseQuery();
@@ -148,6 +137,19 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? dpArea.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_area"))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("areaCd", dpArea.areaCd),
+            QdslUtil.FieldDef.like("areaDesc", dpArea.areaDesc),
+            QdslUtil.FieldDef.like("areaId", dpArea.areaId),
+            QdslUtil.FieldDef.like("areaNm", dpArea.areaNm),
+            QdslUtil.FieldDef.like("areaTypeCd", dpArea.areaTypeCd),
+            QdslUtil.FieldDef.like("pathId", dpArea.pathId),
+            QdslUtil.FieldDef.like("uiId", dpArea.uiId),
+            QdslUtil.FieldDef.like("useYn", dpArea.useYn)
+        ));
     }
 
     /**

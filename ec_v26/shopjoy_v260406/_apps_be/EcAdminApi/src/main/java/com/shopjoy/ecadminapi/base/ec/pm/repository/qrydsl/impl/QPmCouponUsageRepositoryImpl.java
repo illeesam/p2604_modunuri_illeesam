@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,17 +34,6 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmCouponUsage.regDate,
         "upd_date", pmCouponUsage.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("couponCode", pmCouponUsage.couponCode),
-        Map.entry("couponId", pmCouponUsage.couponId),
-        Map.entry("couponNm", pmCouponUsage.couponNm),
-        Map.entry("discountTypeCd", pmCouponUsage.discountTypeCd),
-        Map.entry("memberId", pmCouponUsage.memberId),
-        Map.entry("orderId", pmCouponUsage.orderId),
-        Map.entry("orderItemId", pmCouponUsage.orderItemId),
-        Map.entry("prodId", pmCouponUsage.prodId),
-        Map.entry("usageId", pmCouponUsage.usageId)
     );
 
     /*
@@ -91,7 +79,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
                 .where(
                     QdslUtil.strEq(pmCouponUsage.usageId, search.getUsageId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -116,7 +104,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmCouponUsage.usageId, search.getUsageId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -141,6 +129,20 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("couponCode", pmCouponUsage.couponCode),
+            QdslUtil.FieldDef.like("couponId", pmCouponUsage.couponId),
+            QdslUtil.FieldDef.like("couponNm", pmCouponUsage.couponNm),
+            QdslUtil.FieldDef.like("discountTypeCd", pmCouponUsage.discountTypeCd),
+            QdslUtil.FieldDef.like("memberId", pmCouponUsage.memberId),
+            QdslUtil.FieldDef.like("orderId", pmCouponUsage.orderId),
+            QdslUtil.FieldDef.like("orderItemId", pmCouponUsage.orderItemId),
+            QdslUtil.FieldDef.like("prodId", pmCouponUsage.prodId),
+            QdslUtil.FieldDef.like("usageId", pmCouponUsage.usageId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

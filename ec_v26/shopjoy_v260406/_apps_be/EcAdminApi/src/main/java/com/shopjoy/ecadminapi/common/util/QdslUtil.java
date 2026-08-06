@@ -13,7 +13,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * QueryDSL Q*RepositoryImpl 검색조건(andXxx) 메서드에서 반복되는
@@ -138,26 +140,109 @@ public class QdslUtil {
      * 만든다. searchType 이 blank 면 fields 전체 대상, 아니면 CSV(콤마 구분) 로 지정된 필드명만 대상.
      * searchValue 가 blank 면 조건 미적용(null 반환).
      *
+     * <p>mode 값:
+     * <ul>
+     *   <li>{@code "like"}  — %value% 양쪽 와일드카드 (기본값)</li>
+     *   <li>{@code "rlike"} — value% 전방 일치 (starts-with)</li>
+     *   <li>{@code "llike"} — %value 후방 일치 (ends-with)</li>
+     *   <li>{@code "eq"}    — 대소문자 무시 정확 일치</li>
+     * </ul>
+     *
      * <p>사용 예:
      * <pre>
-     * private static final Map&lt;String, StringPath&gt; SEARCH_FIELDS = Map.ofEntries(
-     *     Map.entry("prodNm", xxx.prodNm),
-     *     Map.entry("prodCode", xxx.prodCode)
-     * );
-     *     private BooleanExpression andSearchValueLike(XxxDto.Request s) {
-     *     return s == null ? null : QdslUtil.searchValueLike(s.getSearchValue(), s.getSearchType(), SEARCH_FIELDS);
+     * private BooleanExpression andSearchValue(String sv, String st) {
+     *     return andSearchValue(sv, st, "like");
+     * }
+     * private BooleanExpression andSearchValue(String sv, String st, String mode) {
+     *     Map&lt;String, StringPath&gt; fields = Map.ofEntries(...);
+     *     return QdslUtil.searchValueLike(sv, st, fields, mode);
      * }
      * </pre>
      */
     public static BooleanExpression searchValueLike(String searchValue, String searchType, Map<String, StringPath> fields) {
+        return searchValueLike(searchValue, searchType, fields, "like");
+    }
+
+    public static BooleanExpression searchValueLike(String searchValue, String searchType, Map<String, StringPath> fields, String mode) {
         if (!StringUtils.hasText(searchValue)) return null;
         boolean all = !StringUtils.hasText(searchType);
         String types = all ? "" : ("," + searchType.trim() + ",");
         BooleanExpression or = null;
         for (Map.Entry<String, StringPath> e : fields.entrySet()) {
             if (!(all || types.contains("," + e.getKey() + ","))) continue;
-            BooleanExpression expr = strLike(e.getValue(), searchValue);
+            BooleanExpression expr = switch (mode) {
+                case "eq"    -> e.getValue().toUpperCase().eq(searchValue.toUpperCase());
+                case "rlike" -> e.getValue().toUpperCase().startsWith(searchValue.toUpperCase());
+                case "llike" -> e.getValue().toUpperCase().endsWith(searchValue.toUpperCase());
+                default      -> strLike(e.getValue(), searchValue);
+            };
             or = or == null ? expr : or.or(expr);
+        }
+        return or;
+    }
+
+    // -------------------------------------------------------------------------
+    // FieldDef — 필드별 검색 방식(LIKE 계열 / EXISTS) 명세
+    // -------------------------------------------------------------------------
+
+    /**
+     * 필드 단위 검색 방식 명세. {@link #searchValueFields} 와 함께 사용한다.
+     *
+     * <pre>
+     * // 사용 예 (andSearchValue 내부)
+     * return QdslUtil.searchValueFields(sv, st, List.of(
+     *     QdslUtil.FieldDef.like("orderId",  xxx.orderId),
+     *     QdslUtil.FieldDef.rlike("code",    xxx.code),       // 전방 일치
+     *     QdslUtil.FieldDef.eq("statusCd",   xxx.statusCd),   // 정확 일치
+     *     QdslUtil.FieldDef.exists("prodNm", sv2 ->
+     *         JPAExpressions.selectOne().from(pEx)
+     *             .where(pEx.prodId.eq(xxx.prodId), QdslUtil.strLike(pEx.prodNm, sv2))
+     *             .exists())
+     * ));
+     * </pre>
+     */
+    public sealed interface FieldDef permits FieldDef.Like, FieldDef.Exists {
+        String key();
+
+        /** LIKE 계열 검색 (mode: "like" / "rlike" / "llike" / "eq"). */
+        record Like(String key, StringPath path, String mode) implements FieldDef {}
+
+        /** EXISTS 서브쿼리 검색. expr 은 searchValue → BooleanExpression 팩토리. */
+        record Exists(String key, Function<String, BooleanExpression> expr) implements FieldDef {}
+
+        static Like   like(String key, StringPath path)                          { return new Like(key, path, "like"); }
+        static Like   rlike(String key, StringPath path)                         { return new Like(key, path, "rlike"); }
+        static Like   llike(String key, StringPath path)                         { return new Like(key, path, "llike"); }
+        static Like   eq(String key, StringPath path)                            { return new Like(key, path, "eq"); }
+        static Exists exists(String key, Function<String, BooleanExpression> e)  { return new Exists(key, e); }
+    }
+
+    /**
+     * 필드별 mode/EXISTS 혼합 검색. 각 필드에 {@link FieldDef} 로 검색 방식을 개별 지정한다.
+     * searchType 이 blank 면 전체 필드, 아니면 해당 키 필드만 대상(OR 누적).
+     * searchValue 가 blank 면 조건 미적용(null 반환).
+     */
+    public static BooleanExpression searchValueFields(String sv, String st, List<FieldDef> fields) {
+        if (!StringUtils.hasText(sv)) return null;
+        boolean all = !StringUtils.hasText(st);
+        String types = all ? "" : ("," + st.trim() + ",");
+        BooleanExpression or = null;
+        for (FieldDef f : fields) {
+            if (!(all || types.contains("," + f.key() + ","))) continue;
+            BooleanExpression expr;
+            if (f instanceof FieldDef.Like lf) {
+                expr = switch (lf.mode()) {
+                    case "eq"    -> lf.path().toUpperCase().eq(sv.toUpperCase());
+                    case "rlike" -> lf.path().toUpperCase().startsWith(sv.toUpperCase());
+                    case "llike" -> lf.path().toUpperCase().endsWith(sv.toUpperCase());
+                    default      -> strLike(lf.path(), sv);
+                };
+            } else if (f instanceof FieldDef.Exists ef) {
+                expr = ef.expr().apply(sv);
+            } else {
+                continue;
+            }
+            or = (or == null) ? expr : or.or(expr);
         }
         return or;
     }

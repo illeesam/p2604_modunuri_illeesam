@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -40,15 +39,6 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhBatchLog.regDate,
         "upd_date", syhBatchLog.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("batchCode", syhBatchLog.batchCode),
-        Map.entry("batchId", syhBatchLog.batchId),
-        Map.entry("batchLogId", syhBatchLog.batchLogId),
-        Map.entry("batchNm", syhBatchLog.batchNm),
-        Map.entry("detail", syhBatchLog.detail),
-        Map.entry("message", syhBatchLog.message),
-        Map.entry("runStatus", syhBatchLog.runStatus)
     );
 
     /*
@@ -100,7 +90,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -125,7 +115,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syhBatchLog.batchLogId, search.getBatchLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -151,6 +141,18 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("batchCode", syhBatchLog.batchCode),
+            QdslUtil.FieldDef.like("batchId", syhBatchLog.batchId),
+            QdslUtil.FieldDef.like("batchLogId", syhBatchLog.batchLogId),
+            QdslUtil.FieldDef.like("batchNm", syhBatchLog.batchNm),
+            QdslUtil.FieldDef.like("detail", syhBatchLog.detail),
+            QdslUtil.FieldDef.like("message", syhBatchLog.message),
+            QdslUtil.FieldDef.like("runStatus", syhBatchLog.runStatus)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

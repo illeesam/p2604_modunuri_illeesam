@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -31,27 +30,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAttachRepositoryImpl";
     private static final QSyAttach syAttach = QSyAttach.syAttach;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("attachGrpId", syAttach.attachGrpId),
-        Map.entry("attachId", syAttach.attachId),
-        Map.entry("attachMemo", syAttach.attachMemo),
-        Map.entry("attachUrl", syAttach.attachUrl),
-        Map.entry("cdnHost", syAttach.cdnHost),
-        Map.entry("cdnImgUrl", syAttach.cdnImgUrl),
-        Map.entry("cdnThumbUrl", syAttach.cdnThumbUrl),
-        Map.entry("fileExt", syAttach.fileExt),
-        Map.entry("fileNm", syAttach.fileNm),
-        Map.entry("mimeTypeCd", syAttach.mimeTypeCd),
-        Map.entry("physicalPath", syAttach.physicalPath),
-        Map.entry("storagePath", syAttach.storagePath),
-        Map.entry("storageType", syAttach.storageType),
-        Map.entry("storedNm", syAttach.storedNm),
-        Map.entry("thumbCdnUrl", syAttach.thumbCdnUrl),
-        Map.entry("thumbFileNm", syAttach.thumbFileNm),
-        Map.entry("thumbGeneratedYn", syAttach.thumbGeneratedYn),
-        Map.entry("thumbStoredNm", syAttach.thumbStoredNm),
-        Map.entry("thumbUrl", syAttach.thumbUrl)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -109,7 +87,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                     QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
                     QdslUtil.strEq(syAttach.attachGrpId, search.getAttachGrpId()),
                     QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -135,7 +113,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
                 QdslUtil.strEq(syAttach.attachGrpId, search.getAttachGrpId()),
                 QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -160,6 +138,30 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("attachGrpId", syAttach.attachGrpId),
+            QdslUtil.FieldDef.like("attachId", syAttach.attachId),
+            QdslUtil.FieldDef.like("attachMemo", syAttach.attachMemo),
+            QdslUtil.FieldDef.like("attachUrl", syAttach.attachUrl),
+            QdslUtil.FieldDef.like("cdnHost", syAttach.cdnHost),
+            QdslUtil.FieldDef.like("cdnImgUrl", syAttach.cdnImgUrl),
+            QdslUtil.FieldDef.like("cdnThumbUrl", syAttach.cdnThumbUrl),
+            QdslUtil.FieldDef.like("fileExt", syAttach.fileExt),
+            QdslUtil.FieldDef.like("fileNm", syAttach.fileNm),
+            QdslUtil.FieldDef.like("mimeTypeCd", syAttach.mimeTypeCd),
+            QdslUtil.FieldDef.like("physicalPath", syAttach.physicalPath),
+            QdslUtil.FieldDef.like("storagePath", syAttach.storagePath),
+            QdslUtil.FieldDef.like("storageType", syAttach.storageType),
+            QdslUtil.FieldDef.like("storedNm", syAttach.storedNm),
+            QdslUtil.FieldDef.like("thumbCdnUrl", syAttach.thumbCdnUrl),
+            QdslUtil.FieldDef.like("thumbFileNm", syAttach.thumbFileNm),
+            QdslUtil.FieldDef.like("thumbGeneratedYn", syAttach.thumbGeneratedYn),
+            QdslUtil.FieldDef.like("thumbStoredNm", syAttach.thumbStoredNm),
+            QdslUtil.FieldDef.like("thumbUrl", syAttach.thumbUrl)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

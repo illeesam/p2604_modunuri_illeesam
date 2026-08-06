@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -38,17 +37,6 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", mbMemberAddr.regDate,
         "upd_date", mbMemberAddr.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("addr", mbMemberAddr.addr),
-        Map.entry("addrDetail", mbMemberAddr.addrDetail),
-        Map.entry("addrNm", mbMemberAddr.addrNm),
-        Map.entry("isDefault", mbMemberAddr.isDefault),
-        Map.entry("memberAddrId", mbMemberAddr.memberAddrId),
-        Map.entry("memberId", mbMemberAddr.memberId),
-        Map.entry("recvNm", mbMemberAddr.recvNm),
-        Map.entry("recvPhone", mbMemberAddr.recvPhone),
-        Map.entry("zipCd", mbMemberAddr.zipCd)
     );
 
     /*
@@ -95,7 +83,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
                     QdslUtil.strEq(mbMemberAddr.memberAddrId, search.getMemberAddrId()),
                     QdslUtil.strEq(mbMemberAddr.memberId, search.getMemberId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -121,7 +109,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
                 QdslUtil.strEq(mbMemberAddr.memberAddrId, search.getMemberAddrId()),
                 QdslUtil.strEq(mbMemberAddr.memberId, search.getMemberId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -146,6 +134,20 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "addrNm,recvNm" (Entity 필드명) */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("addr", mbMemberAddr.addr),
+            QdslUtil.FieldDef.like("addrDetail", mbMemberAddr.addrDetail),
+            QdslUtil.FieldDef.like("addrNm", mbMemberAddr.addrNm),
+            QdslUtil.FieldDef.like("isDefault", mbMemberAddr.isDefault),
+            QdslUtil.FieldDef.like("memberAddrId", mbMemberAddr.memberAddrId),
+            QdslUtil.FieldDef.like("memberId", mbMemberAddr.memberId),
+            QdslUtil.FieldDef.like("recvNm", mbMemberAddr.recvNm),
+            QdslUtil.FieldDef.like("recvPhone", mbMemberAddr.recvPhone),
+            QdslUtil.FieldDef.like("zipCd", mbMemberAddr.zipCd)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

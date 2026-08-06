@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -46,16 +45,6 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syDept.regDate,
         "upd_date", syDept.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("deptCode", syDept.deptCode),
-        Map.entry("deptId", syDept.deptId),
-        Map.entry("deptNm", syDept.deptNm),
-        Map.entry("deptRemark", syDept.deptRemark),
-        Map.entry("deptTypeCd", syDept.deptTypeCd),
-        Map.entry("managerId", syDept.managerId),
-        Map.entry("parentDeptId", syDept.parentDeptId),
-        Map.entry("useYn", syDept.useYn)
     );
 
     /*
@@ -105,7 +94,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syDept.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -132,7 +121,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()),
                 QdslUtil.strEq(syDept.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -164,6 +153,19 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         return search != null && StringUtils.hasText(search.getParentDeptId())
                 ? syDept.deptId.in(syDeptRepository.findTreeDeptIds(search.getParentDeptId()))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("deptCode", syDept.deptCode),
+            QdslUtil.FieldDef.like("deptId", syDept.deptId),
+            QdslUtil.FieldDef.like("deptNm", syDept.deptNm),
+            QdslUtil.FieldDef.like("deptRemark", syDept.deptRemark),
+            QdslUtil.FieldDef.like("deptTypeCd", syDept.deptTypeCd),
+            QdslUtil.FieldDef.like("managerId", syDept.managerId),
+            QdslUtil.FieldDef.like("parentDeptId", syDept.parentDeptId),
+            QdslUtil.FieldDef.like("useYn", syDept.useYn)
+        ));
     }
 
     /**

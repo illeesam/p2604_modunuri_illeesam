@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,14 +40,6 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syCodeGrp.regDate,
         "upd_date", syCodeGrp.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("codeGrp", syCodeGrp.codeGrp),
-        Map.entry("codeGrpDesc", syCodeGrp.codeGrpDesc),
-        Map.entry("codeGrpId", syCodeGrp.codeGrpId),
-        Map.entry("grpNm", syCodeGrp.grpNm),
-        Map.entry("pathId", syCodeGrp.pathId),
-        Map.entry("useYn", syCodeGrp.useYn)
     );
 
     /*
@@ -94,7 +85,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                 QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
                 QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -122,7 +113,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                 QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
                 QdslUtil.strEq(syCodeGrp.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -154,6 +145,17 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syCodeGrp.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_code_grp"))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("codeGrp", syCodeGrp.codeGrp),
+            QdslUtil.FieldDef.like("codeGrpDesc", syCodeGrp.codeGrpDesc),
+            QdslUtil.FieldDef.like("codeGrpId", syCodeGrp.codeGrpId),
+            QdslUtil.FieldDef.like("grpNm", syCodeGrp.grpNm),
+            QdslUtil.FieldDef.like("pathId", syCodeGrp.pathId),
+            QdslUtil.FieldDef.like("useYn", syCodeGrp.useYn)
+        ));
     }
 
     /**

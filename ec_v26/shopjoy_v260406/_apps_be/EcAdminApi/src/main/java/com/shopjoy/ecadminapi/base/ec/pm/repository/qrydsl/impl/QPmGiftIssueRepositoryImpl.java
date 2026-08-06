@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -47,15 +46,6 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         "issue_date", pmGiftIssue.issueDate,
         "reg_date", pmGiftIssue.regDate,
         "upd_date", pmGiftIssue.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("giftId", pmGiftIssue.giftId),
-        Map.entry("giftIssueId", pmGiftIssue.giftIssueId),
-        Map.entry("giftIssueMemo", pmGiftIssue.giftIssueMemo),
-        Map.entry("giftIssueStatusCd", pmGiftIssue.giftIssueStatusCd),
-        Map.entry("giftIssueStatusCdBefore", pmGiftIssue.giftIssueStatusCdBefore),
-        Map.entry("memberId", pmGiftIssue.memberId),
-        Map.entry("orderId", pmGiftIssue.orderId)
     );
 
     /*
@@ -101,7 +91,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                 .where(
                     QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -126,7 +116,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmGiftIssue.giftIssueId, search.getGiftIssueId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -149,6 +139,18 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
 
         BasePage<PmGiftIssueDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("giftId", pmGiftIssue.giftId),
+            QdslUtil.FieldDef.like("giftIssueId", pmGiftIssue.giftIssueId),
+            QdslUtil.FieldDef.like("giftIssueMemo", pmGiftIssue.giftIssueMemo),
+            QdslUtil.FieldDef.like("giftIssueStatusCd", pmGiftIssue.giftIssueStatusCd),
+            QdslUtil.FieldDef.like("giftIssueStatusCdBefore", pmGiftIssue.giftIssueStatusCdBefore),
+            QdslUtil.FieldDef.like("memberId", pmGiftIssue.memberId),
+            QdslUtil.FieldDef.like("orderId", pmGiftIssue.orderId)
+        ));
     }
 
     /**

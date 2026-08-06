@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -40,22 +39,6 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syVendorContent.regDate,
         "upd_date", syVendorContent.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("attachGrpId", syVendorContent.attachGrpId),
-        Map.entry("contentHtml", syVendorContent.contentHtml),
-        Map.entry("contentTypeCd", syVendorContent.contentTypeCd),
-        Map.entry("imageUrl", syVendorContent.imageUrl),
-        Map.entry("langCd", syVendorContent.langCd),
-        Map.entry("linkUrl", syVendorContent.linkUrl),
-        Map.entry("thumbUrl", syVendorContent.thumbUrl),
-        Map.entry("useYn", syVendorContent.useYn),
-        Map.entry("vendorContentId", syVendorContent.vendorContentId),
-        Map.entry("vendorContentRemark", syVendorContent.vendorContentRemark),
-        Map.entry("vendorContentStatusCd", syVendorContent.vendorContentStatusCd),
-        Map.entry("vendorContentSubtitle", syVendorContent.vendorContentSubtitle),
-        Map.entry("vendorContentTitle", syVendorContent.vendorContentTitle),
-        Map.entry("vendorId", syVendorContent.vendorId)
     );
 
     /*
@@ -119,7 +102,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                 QdslUtil.strEq(syVendorContent.vendorContentStatusCd, search.getStatus()),
                 QdslUtil.strEq(syVendorContent.contentTypeCd, search.getContentTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -147,7 +130,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                 QdslUtil.strEq(syVendorContent.vendorContentStatusCd, search.getStatus()),
                 QdslUtil.strEq(syVendorContent.contentTypeCd, search.getContentTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -173,6 +156,25 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("attachGrpId", syVendorContent.attachGrpId),
+            QdslUtil.FieldDef.like("contentHtml", syVendorContent.contentHtml),
+            QdslUtil.FieldDef.like("contentTypeCd", syVendorContent.contentTypeCd),
+            QdslUtil.FieldDef.like("imageUrl", syVendorContent.imageUrl),
+            QdslUtil.FieldDef.like("langCd", syVendorContent.langCd),
+            QdslUtil.FieldDef.like("linkUrl", syVendorContent.linkUrl),
+            QdslUtil.FieldDef.like("thumbUrl", syVendorContent.thumbUrl),
+            QdslUtil.FieldDef.like("useYn", syVendorContent.useYn),
+            QdslUtil.FieldDef.like("vendorContentId", syVendorContent.vendorContentId),
+            QdslUtil.FieldDef.like("vendorContentRemark", syVendorContent.vendorContentRemark),
+            QdslUtil.FieldDef.like("vendorContentStatusCd", syVendorContent.vendorContentStatusCd),
+            QdslUtil.FieldDef.like("vendorContentSubtitle", syVendorContent.vendorContentSubtitle),
+            QdslUtil.FieldDef.like("vendorContentTitle", syVendorContent.vendorContentTitle),
+            QdslUtil.FieldDef.like("vendorId", syVendorContent.vendorId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -34,12 +33,6 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmEventItem.regDate,
         "upd_date", pmEventItem.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("eventId", pmEventItem.eventId),
-        Map.entry("eventItemId", pmEventItem.eventItemId),
-        Map.entry("targetId", pmEventItem.targetId),
-        Map.entry("targetTypeCd", pmEventItem.targetTypeCd)
     );
 
     /*
@@ -80,7 +73,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
                     QdslUtil.strEq(pmEventItem.eventId, search.getEventId()),
                     QdslUtil.strEq(pmEventItem.eventItemId, search.getEventItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -107,7 +100,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
                 QdslUtil.strEq(pmEventItem.eventId, search.getEventId()),
                 QdslUtil.strEq(pmEventItem.eventItemId, search.getEventItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -130,6 +123,15 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
 
         BasePage<PmEventItemDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("eventId", pmEventItem.eventId),
+            QdslUtil.FieldDef.like("eventItemId", pmEventItem.eventItemId),
+            QdslUtil.FieldDef.like("targetId", pmEventItem.targetId),
+            QdslUtil.FieldDef.like("targetTypeCd", pmEventItem.targetTypeCd)
+        ));
     }
 
     /**

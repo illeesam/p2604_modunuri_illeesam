@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -31,16 +30,6 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhClaimStatusHistRepositoryImpl";
     private static final QOdhClaimStatusHist odhClaimStatusHist = QOdhClaimStatusHist.odhClaimStatusHist;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("chgUserId", odhClaimStatusHist.chgUserId),
-        Map.entry("claimId", odhClaimStatusHist.claimId),
-        Map.entry("claimStatusCd", odhClaimStatusHist.claimStatusCd),
-        Map.entry("claimStatusCdBefore", odhClaimStatusHist.claimStatusCdBefore),
-        Map.entry("claimStatusHistId", odhClaimStatusHist.claimStatusHistId),
-        Map.entry("memo", odhClaimStatusHist.memo),
-        Map.entry("orderId", odhClaimStatusHist.orderId),
-        Map.entry("statusReason", odhClaimStatusHist.statusReason)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -81,7 +70,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
                 .where(
                     QdslUtil.strEq(odhClaimStatusHist.claimStatusHistId, search.getClaimStatusHistId()),
                     QdslUtil.strEq(odhClaimStatusHist.claimId, search.getClaimId()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -106,7 +95,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odhClaimStatusHist.claimStatusHistId, search.getClaimStatusHistId()),
                 QdslUtil.strEq(odhClaimStatusHist.claimId, search.getClaimId()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -129,6 +118,19 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
 
         BasePage<OdhClaimStatusHistDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("chgUserId", odhClaimStatusHist.chgUserId),
+            QdslUtil.FieldDef.like("claimId", odhClaimStatusHist.claimId),
+            QdslUtil.FieldDef.like("claimStatusCd", odhClaimStatusHist.claimStatusCd),
+            QdslUtil.FieldDef.like("claimStatusCdBefore", odhClaimStatusHist.claimStatusCdBefore),
+            QdslUtil.FieldDef.like("claimStatusHistId", odhClaimStatusHist.claimStatusHistId),
+            QdslUtil.FieldDef.like("memo", odhClaimStatusHist.memo),
+            QdslUtil.FieldDef.like("orderId", odhClaimStatusHist.orderId),
+            QdslUtil.FieldDef.like("statusReason", odhClaimStatusHist.statusReason)
+        ));
     }
 
     /**

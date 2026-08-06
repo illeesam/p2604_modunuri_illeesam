@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -34,16 +33,6 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmDiscntUsage.regDate,
         "upd_date", pmDiscntUsage.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("discntId", pmDiscntUsage.discntId),
-        Map.entry("discntNm", pmDiscntUsage.discntNm),
-        Map.entry("discntTypeCd", pmDiscntUsage.discntTypeCd),
-        Map.entry("discntUsageId", pmDiscntUsage.discntUsageId),
-        Map.entry("memberId", pmDiscntUsage.memberId),
-        Map.entry("orderId", pmDiscntUsage.orderId),
-        Map.entry("orderItemId", pmDiscntUsage.orderItemId),
-        Map.entry("prodId", pmDiscntUsage.prodId)
     );
 
     /*
@@ -88,7 +77,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                 .where(
                     QdslUtil.strEq(pmDiscntUsage.discntUsageId, search.getDiscntUsageId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -113,7 +102,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmDiscntUsage.discntUsageId, search.getDiscntUsageId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -138,6 +127,19 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("discntId", pmDiscntUsage.discntId),
+            QdslUtil.FieldDef.like("discntNm", pmDiscntUsage.discntNm),
+            QdslUtil.FieldDef.like("discntTypeCd", pmDiscntUsage.discntTypeCd),
+            QdslUtil.FieldDef.like("discntUsageId", pmDiscntUsage.discntUsageId),
+            QdslUtil.FieldDef.like("memberId", pmDiscntUsage.memberId),
+            QdslUtil.FieldDef.like("orderId", pmDiscntUsage.orderId),
+            QdslUtil.FieldDef.like("orderItemId", pmDiscntUsage.orderItemId),
+            QdslUtil.FieldDef.like("prodId", pmDiscntUsage.prodId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

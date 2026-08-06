@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
@@ -44,32 +43,6 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private static final QVwSyCode   cd_at    = new QVwSyCode("cd_at");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhAccessLog.regDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("appTypeCd", syhAccessLog.appTypeCd),
-        Map.entry("cmdNm", syhAccessLog.cmdNm),
-        Map.entry("deptId", syhAccessLog.deptId),
-        Map.entry("fileNm", syhAccessLog.fileNm),
-        Map.entry("funcNm", syhAccessLog.funcNm),
-        Map.entry("lineNo", syhAccessLog.lineNo),
-        Map.entry("localeId", syhAccessLog.localeId),
-        Map.entry("logId", syhAccessLog.logId),
-        Map.entry("profile", syhAccessLog.profile),
-        Map.entry("reqBody", syhAccessLog.reqBody),
-        Map.entry("reqHost", syhAccessLog.reqHost),
-        Map.entry("reqIp", syhAccessLog.reqIp),
-        Map.entry("reqMethod", syhAccessLog.reqMethod),
-        Map.entry("reqPath", syhAccessLog.reqPath),
-        Map.entry("reqQuery", syhAccessLog.reqQuery),
-        Map.entry("reqUa", syhAccessLog.reqUa),
-        Map.entry("respBody", syhAccessLog.respBody),
-        Map.entry("roleId", syhAccessLog.roleId),
-        Map.entry("serverNm", syhAccessLog.serverNm),
-        Map.entry("threadNm", syhAccessLog.threadNm),
-        Map.entry("traceId", syhAccessLog.traceId),
-        Map.entry("uiNm", syhAccessLog.uiNm),
-        Map.entry("userId", syhAccessLog.userId),
-        Map.entry("vendorId", syhAccessLog.vendorId)
     );
 
     /*
@@ -149,7 +122,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()),
                 QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -196,6 +169,35 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private BooleanExpression andUiNmLike(SyhAccessLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUiNm())
                 ? syhAccessLog.uiNm.likeIgnoreCase("%" + search.getUiNm().trim() + "%") : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("appTypeCd", syhAccessLog.appTypeCd),
+            QdslUtil.FieldDef.like("cmdNm", syhAccessLog.cmdNm),
+            QdslUtil.FieldDef.like("deptId", syhAccessLog.deptId),
+            QdslUtil.FieldDef.like("fileNm", syhAccessLog.fileNm),
+            QdslUtil.FieldDef.like("funcNm", syhAccessLog.funcNm),
+            QdslUtil.FieldDef.like("lineNo", syhAccessLog.lineNo),
+            QdslUtil.FieldDef.like("localeId", syhAccessLog.localeId),
+            QdslUtil.FieldDef.like("logId", syhAccessLog.logId),
+            QdslUtil.FieldDef.like("profile", syhAccessLog.profile),
+            QdslUtil.FieldDef.like("reqBody", syhAccessLog.reqBody),
+            QdslUtil.FieldDef.like("reqHost", syhAccessLog.reqHost),
+            QdslUtil.FieldDef.like("reqIp", syhAccessLog.reqIp),
+            QdslUtil.FieldDef.like("reqMethod", syhAccessLog.reqMethod),
+            QdslUtil.FieldDef.like("reqPath", syhAccessLog.reqPath),
+            QdslUtil.FieldDef.like("reqQuery", syhAccessLog.reqQuery),
+            QdslUtil.FieldDef.like("reqUa", syhAccessLog.reqUa),
+            QdslUtil.FieldDef.like("respBody", syhAccessLog.respBody),
+            QdslUtil.FieldDef.like("roleId", syhAccessLog.roleId),
+            QdslUtil.FieldDef.like("serverNm", syhAccessLog.serverNm),
+            QdslUtil.FieldDef.like("threadNm", syhAccessLog.threadNm),
+            QdslUtil.FieldDef.like("traceId", syhAccessLog.traceId),
+            QdslUtil.FieldDef.like("uiNm", syhAccessLog.uiNm),
+            QdslUtil.FieldDef.like("userId", syhAccessLog.userId),
+            QdslUtil.FieldDef.like("vendorId", syhAccessLog.vendorId)
+        ));
     }
 
     /**

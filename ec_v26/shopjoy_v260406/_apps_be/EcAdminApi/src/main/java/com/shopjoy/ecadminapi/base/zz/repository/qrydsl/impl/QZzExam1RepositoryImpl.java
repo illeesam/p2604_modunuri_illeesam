@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -30,14 +29,6 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzExam1RepositoryImpl";
     private static final QZzExam1 zzExam1 = QZzExam1.zzExam1;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("col11", zzExam1.col11),
-        Map.entry("col12", zzExam1.col12),
-        Map.entry("col13", zzExam1.col13),
-        Map.entry("col14", zzExam1.col14),
-        Map.entry("col15", zzExam1.col15),
-        Map.entry("exam1Id", zzExam1.exam1Id)
-    );
 
     /* zz_exam1 baseSelColumnQuery — 코드성 필드 없음(범용 컬럼만 보유한 연습용 샘플 테이블) */
     private JPAQuery<ZzExam1Dto.Item> baseSelColumnQuery() {
@@ -76,7 +67,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(zzExam1.exam1Id, search.getExam1Ids()),
                 QdslUtil.strEq(zzExam1.exam1Id, search.getExam1Id()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -101,7 +92,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(zzExam1.exam1Id, search.getExam1Ids()),
                 QdslUtil.strEq(zzExam1.exam1Id, search.getExam1Id()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -129,6 +120,17 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     /* searchType 사용 예  searchType = "col11,col12" */
 
     /* zz_exam1 buildOrder */
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("col11", zzExam1.col11),
+            QdslUtil.FieldDef.like("col12", zzExam1.col12),
+            QdslUtil.FieldDef.like("col13", zzExam1.col13),
+            QdslUtil.FieldDef.like("col14", zzExam1.col14),
+            QdslUtil.FieldDef.like("col15", zzExam1.col15),
+            QdslUtil.FieldDef.like("exam1Id", zzExam1.exam1Id)
+        ));
+    }
+
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(ZzExam1Dto.Request search) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();

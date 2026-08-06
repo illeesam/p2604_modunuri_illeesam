@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -44,14 +43,6 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stSettleConfig.regDate,
         "upd_date", stSettleConfig.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("categoryId", stSettleConfig.categoryId),
-        Map.entry("settleConfigId", stSettleConfig.settleConfigId),
-        Map.entry("settleConfigRemark", stSettleConfig.settleConfigRemark),
-        Map.entry("settleCycleCd", stSettleConfig.settleCycleCd),
-        Map.entry("useYn", stSettleConfig.useYn),
-        Map.entry("vendorId", stSettleConfig.vendorId)
     );
 
     /*
@@ -104,7 +95,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                 .where(
                     QdslUtil.strEq(stSettleConfig.settleConfigId, search.getSettleConfigId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -129,7 +120,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettleConfig.settleConfigId, search.getSettleConfigId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -152,6 +143,17 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
 
         BasePage<StSettleConfigDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("categoryId", stSettleConfig.categoryId),
+            QdslUtil.FieldDef.like("settleConfigId", stSettleConfig.settleConfigId),
+            QdslUtil.FieldDef.like("settleConfigRemark", stSettleConfig.settleConfigRemark),
+            QdslUtil.FieldDef.like("settleCycleCd", stSettleConfig.settleCycleCd),
+            QdslUtil.FieldDef.like("useYn", stSettleConfig.useYn),
+            QdslUtil.FieldDef.like("vendorId", stSettleConfig.vendorId)
+        ));
     }
 
     /**

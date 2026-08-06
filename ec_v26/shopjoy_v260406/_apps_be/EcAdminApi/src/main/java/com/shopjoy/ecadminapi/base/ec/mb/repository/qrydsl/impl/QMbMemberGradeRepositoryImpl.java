@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -39,12 +38,6 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", mbMemberGrade.regDate,
         "upd_date", mbMemberGrade.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("gradeCd", mbMemberGrade.gradeCd),
-        Map.entry("gradeNm", mbMemberGrade.gradeNm),
-        Map.entry("memberGradeId", mbMemberGrade.memberGradeId),
-        Map.entry("useYn", mbMemberGrade.useYn)
     );
 
     /*
@@ -89,7 +82,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                     QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId()),
                     QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -114,7 +107,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                 QdslUtil.strEq(mbMemberGrade.memberGradeId, search.getMemberGradeId()),
                 QdslUtil.strEq(mbMemberGrade.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -139,6 +132,15 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "gradeNm,gradeCd" (Entity 필드명) */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("gradeCd", mbMemberGrade.gradeCd),
+            QdslUtil.FieldDef.like("gradeNm", mbMemberGrade.gradeNm),
+            QdslUtil.FieldDef.like("memberGradeId", mbMemberGrade.memberGradeId),
+            QdslUtil.FieldDef.like("useYn", mbMemberGrade.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

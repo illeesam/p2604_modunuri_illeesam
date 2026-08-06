@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -49,17 +48,6 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syMenu.regDate,
         "upd_date", syMenu.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("iconClass", syMenu.iconClass),
-        Map.entry("menuCode", syMenu.menuCode),
-        Map.entry("menuId", syMenu.menuId),
-        Map.entry("menuNm", syMenu.menuNm),
-        Map.entry("menuRemark", syMenu.menuRemark),
-        Map.entry("menuTypeCd", syMenu.menuTypeCd),
-        Map.entry("menuUrl", syMenu.menuUrl),
-        Map.entry("parentMenuId", syMenu.parentMenuId),
-        Map.entry("useYn", syMenu.useYn)
     );
 
     /*
@@ -109,7 +97,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                 QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd()),
                 QdslUtil.strEq(syMenu.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -136,7 +124,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                 QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd()),
                 QdslUtil.strEq(syMenu.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -164,6 +152,20 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
 
     /* menuId 트리 — 선택 노드 + 모든 자손 메뉴 포함 (sy_menu 자기참조 재귀 CTE 인라인) */
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("iconClass", syMenu.iconClass),
+            QdslUtil.FieldDef.like("menuCode", syMenu.menuCode),
+            QdslUtil.FieldDef.like("menuId", syMenu.menuId),
+            QdslUtil.FieldDef.like("menuNm", syMenu.menuNm),
+            QdslUtil.FieldDef.like("menuRemark", syMenu.menuRemark),
+            QdslUtil.FieldDef.like("menuTypeCd", syMenu.menuTypeCd),
+            QdslUtil.FieldDef.like("menuUrl", syMenu.menuUrl),
+            QdslUtil.FieldDef.like("parentMenuId", syMenu.parentMenuId),
+            QdslUtil.FieldDef.like("useYn", syMenu.useYn)
+        ));
+    }
+
     @SuppressWarnings("unchecked")
     private BooleanExpression andMenuIdIn(SyMenuDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getMenuId())) return null;

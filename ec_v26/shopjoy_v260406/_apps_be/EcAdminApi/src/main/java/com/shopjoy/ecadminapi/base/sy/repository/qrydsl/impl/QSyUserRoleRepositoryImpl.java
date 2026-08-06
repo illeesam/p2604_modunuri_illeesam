@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -40,13 +39,6 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syUserRole.regDate,
         "upd_date", syUserRole.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("grantUserId", syUserRole.grantUserId),
-        Map.entry("roleId", syUserRole.roleId),
-        Map.entry("userId", syUserRole.userId),
-        Map.entry("userRoleId", syUserRole.userRoleId),
-        Map.entry("userRoleRemark", syUserRole.userRoleRemark)
     );
 
     /* 사용자별 역할 baseSelColumnQuery — 코드성 필드 없음 (역할명/역할코드는 조인으로 획득) */
@@ -95,7 +87,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                 QdslUtil.strEq(syUserRole.userId, search.getUserId()),
                 QdslUtil.strEq(syUserRole.roleId, search.getRoleId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo();
@@ -122,7 +114,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                 QdslUtil.strEq(syUserRole.userId, search.getUserId()),
                 QdslUtil.strEq(syUserRole.roleId, search.getRoleId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -145,6 +137,16 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
         BasePage<SyUserRoleDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("grantUserId", syUserRole.grantUserId),
+            QdslUtil.FieldDef.like("roleId", syUserRole.roleId),
+            QdslUtil.FieldDef.like("userId", syUserRole.userId),
+            QdslUtil.FieldDef.like("userRoleId", syUserRole.userRoleId),
+            QdslUtil.FieldDef.like("userRoleRemark", syUserRole.userRoleRemark)
+        ));
     }
 
     /**

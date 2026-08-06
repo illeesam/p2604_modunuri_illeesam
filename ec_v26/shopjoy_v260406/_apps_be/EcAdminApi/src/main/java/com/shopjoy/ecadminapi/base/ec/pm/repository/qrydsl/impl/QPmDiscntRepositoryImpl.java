@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,20 +34,6 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmDiscnt.regDate,
         "upd_date", pmDiscnt.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("discntDesc", pmDiscnt.discntDesc),
-        Map.entry("discntId", pmDiscnt.discntId),
-        Map.entry("discntNm", pmDiscnt.discntNm),
-        Map.entry("discntStatusCd", pmDiscnt.discntStatusCd),
-        Map.entry("discntStatusCdBefore", pmDiscnt.discntStatusCdBefore),
-        Map.entry("discntTargetCd", pmDiscnt.discntTargetCd),
-        Map.entry("discntTypeCd", pmDiscnt.discntTypeCd),
-        Map.entry("dvcMappYn", pmDiscnt.dvcMappYn),
-        Map.entry("dvcMwebYn", pmDiscnt.dvcMwebYn),
-        Map.entry("dvcPcYn", pmDiscnt.dvcPcYn),
-        Map.entry("memGradeCd", pmDiscnt.memGradeCd),
-        Map.entry("useYn", pmDiscnt.useYn)
     );
 
     /*
@@ -107,7 +92,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                     QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()),
                     QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -136,7 +121,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                 QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()),
                 QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -161,6 +146,23 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("discntDesc", pmDiscnt.discntDesc),
+            QdslUtil.FieldDef.like("discntId", pmDiscnt.discntId),
+            QdslUtil.FieldDef.like("discntNm", pmDiscnt.discntNm),
+            QdslUtil.FieldDef.like("discntStatusCd", pmDiscnt.discntStatusCd),
+            QdslUtil.FieldDef.like("discntStatusCdBefore", pmDiscnt.discntStatusCdBefore),
+            QdslUtil.FieldDef.like("discntTargetCd", pmDiscnt.discntTargetCd),
+            QdslUtil.FieldDef.like("discntTypeCd", pmDiscnt.discntTypeCd),
+            QdslUtil.FieldDef.like("dvcMappYn", pmDiscnt.dvcMappYn),
+            QdslUtil.FieldDef.like("dvcMwebYn", pmDiscnt.dvcMwebYn),
+            QdslUtil.FieldDef.like("dvcPcYn", pmDiscnt.dvcPcYn),
+            QdslUtil.FieldDef.like("memGradeCd", pmDiscnt.memGradeCd),
+            QdslUtil.FieldDef.like("useYn", pmDiscnt.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

@@ -8,7 +8,6 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -40,13 +39,6 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stSettleClose.regDate,
         "upd_date", stSettleClose.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("closeBy", stSettleClose.closeBy),
-        Map.entry("closeReason", stSettleClose.closeReason),
-        Map.entry("closeStatusCd", stSettleClose.closeStatusCd),
-        Map.entry("settleCloseId", stSettleClose.settleCloseId),
-        Map.entry("settleId", stSettleClose.settleId)
     );
 
     /*
@@ -91,7 +83,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                 .where(
                     QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -116,7 +108,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -139,6 +131,16 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 
         BasePage<StSettleCloseDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("closeBy", stSettleClose.closeBy),
+            QdslUtil.FieldDef.like("closeReason", stSettleClose.closeReason),
+            QdslUtil.FieldDef.like("closeStatusCd", stSettleClose.closeStatusCd),
+            QdslUtil.FieldDef.like("settleCloseId", stSettleClose.settleCloseId),
+            QdslUtil.FieldDef.like("settleId", stSettleClose.settleId)
+        ));
     }
 
     /**

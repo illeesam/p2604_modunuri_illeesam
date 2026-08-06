@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -36,22 +35,6 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProdQna.regDate,
         "upd_date", pdProdQna.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("answContent", pdProdQna.answContent),
-        Map.entry("answUserId", pdProdQna.answUserId),
-        Map.entry("answYn", pdProdQna.answYn),
-        Map.entry("dispYn", pdProdQna.dispYn),
-        Map.entry("memberId", pdProdQna.memberId),
-        Map.entry("orderId", pdProdQna.orderId),
-        Map.entry("prodId", pdProdQna.prodId),
-        Map.entry("prodQnaContent", pdProdQna.prodQnaContent),
-        Map.entry("prodQnaId", pdProdQna.prodQnaId),
-        Map.entry("prodQnaTitle", pdProdQna.prodQnaTitle),
-        Map.entry("prodQnaTypeCd", pdProdQna.prodQnaTypeCd),
-        Map.entry("scrtYn", pdProdQna.scrtYn),
-        Map.entry("prodSkuId", pdProdQna.prodSkuId),
-        Map.entry("useYn", pdProdQna.useYn)
     );
 
     /*
@@ -103,7 +86,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                     QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()),
                     QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -131,7 +114,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                 QdslUtil.strEq(pdProdQna.answYn, search.getAnswYn()),
                 QdslUtil.strEq(pdProdQna.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -159,6 +142,25 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     /** 단건/목록/페이지 공용 base query */
     /** 검색조건 빌드 — Mapper XML pdProdQnaCond 와 동일 동작 (DTO Request 필드 한정) */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("answContent", pdProdQna.answContent),
+            QdslUtil.FieldDef.like("answUserId", pdProdQna.answUserId),
+            QdslUtil.FieldDef.like("answYn", pdProdQna.answYn),
+            QdslUtil.FieldDef.like("dispYn", pdProdQna.dispYn),
+            QdslUtil.FieldDef.like("memberId", pdProdQna.memberId),
+            QdslUtil.FieldDef.like("orderId", pdProdQna.orderId),
+            QdslUtil.FieldDef.like("prodId", pdProdQna.prodId),
+            QdslUtil.FieldDef.like("prodQnaContent", pdProdQna.prodQnaContent),
+            QdslUtil.FieldDef.like("prodQnaId", pdProdQna.prodQnaId),
+            QdslUtil.FieldDef.like("prodQnaTitle", pdProdQna.prodQnaTitle),
+            QdslUtil.FieldDef.like("prodQnaTypeCd", pdProdQna.prodQnaTypeCd),
+            QdslUtil.FieldDef.like("scrtYn", pdProdQna.scrtYn),
+            QdslUtil.FieldDef.like("prodSkuId", pdProdQna.prodSkuId),
+            QdslUtil.FieldDef.like("useYn", pdProdQna.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

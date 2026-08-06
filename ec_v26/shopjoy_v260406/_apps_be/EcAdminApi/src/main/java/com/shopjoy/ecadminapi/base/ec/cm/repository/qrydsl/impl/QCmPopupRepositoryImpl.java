@@ -4,7 +4,6 @@ import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmPopupDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPopup;
@@ -14,7 +13,6 @@ import com.shopjoy.ecadminapi.common.util.QdslUtil;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 
 /** CmPopup QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -30,11 +28,6 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
     private static final QCmPopup cmPopup  = QCmPopup.cmPopup;
 
     /** 통합검색 대상 — 팝업명 / 팝업코드 / 대상 엔티티명 */
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.of(
-        "popupNm",   cmPopup.popupNm,
-        "popupCode", cmPopup.popupCode,
-        "entityNm",  cmPopup.entityNm
-    );
 
     /* ============================================================
      * 조회 메서드 — selectPageData
@@ -51,7 +44,7 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
                 QdslUtil.strEq(cmPopup.useYn, search.getUseYn()),
                 andPopupPatternEq(search),
                 /* searchType 을 주지 않으면 SEARCH_FIELDS 전체 OR — 팝업명/코드/엔티티명 통합검색 */
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         List<CmPopup> content = queryFactory.selectFrom(cmPopup)
@@ -83,4 +76,13 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
     private OrderSpecifier<?>[] buildOrder() {
         return new OrderSpecifier<?>[] { cmPopup.sortOrd.asc(), cmPopup.popupCode.asc() };
     }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("popupNm",   cmPopup.popupNm),
+            QdslUtil.FieldDef.like("popupCode", cmPopup.popupCode),
+            QdslUtil.FieldDef.like("entityNm",  cmPopup.entityNm)
+        ));
+    }
+
 }

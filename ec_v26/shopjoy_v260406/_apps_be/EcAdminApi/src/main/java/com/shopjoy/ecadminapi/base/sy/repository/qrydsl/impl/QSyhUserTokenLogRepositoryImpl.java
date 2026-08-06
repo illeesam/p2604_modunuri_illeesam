@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -42,22 +41,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     private static final QVwSyCode          cd_tt = new QVwSyCode("cd_tt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syhUserTokenLog.regDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("accessToken", syhUserTokenLog.accessToken),
-        Map.entry("actionCd", syhUserTokenLog.actionCd),
-        Map.entry("authId", syhUserTokenLog.authId),
-        Map.entry("cmdNm", syhUserTokenLog.cmdNm),
-        Map.entry("deviceInfo", syhUserTokenLog.deviceInfo),
-        Map.entry("ip", syhUserTokenLog.ip),
-        Map.entry("logId", syhUserTokenLog.logId),
-        Map.entry("loginLogId", syhUserTokenLog.loginLogId),
-        Map.entry("prevToken", syhUserTokenLog.prevToken),
-        Map.entry("refreshToken", syhUserTokenLog.refreshToken),
-        Map.entry("revokeReason", syhUserTokenLog.revokeReason),
-        Map.entry("tokenTypeCd", syhUserTokenLog.tokenTypeCd),
-        Map.entry("uiNm", syhUserTokenLog.uiNm),
-        Map.entry("userId", syhUserTokenLog.userId)
     );
 
     /*
@@ -119,7 +102,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                 QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
                 QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         )
         .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -147,7 +130,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                 QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
                 QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -173,6 +156,25 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("accessToken", syhUserTokenLog.accessToken),
+            QdslUtil.FieldDef.like("actionCd", syhUserTokenLog.actionCd),
+            QdslUtil.FieldDef.like("authId", syhUserTokenLog.authId),
+            QdslUtil.FieldDef.like("cmdNm", syhUserTokenLog.cmdNm),
+            QdslUtil.FieldDef.like("deviceInfo", syhUserTokenLog.deviceInfo),
+            QdslUtil.FieldDef.like("ip", syhUserTokenLog.ip),
+            QdslUtil.FieldDef.like("logId", syhUserTokenLog.logId),
+            QdslUtil.FieldDef.like("loginLogId", syhUserTokenLog.loginLogId),
+            QdslUtil.FieldDef.like("prevToken", syhUserTokenLog.prevToken),
+            QdslUtil.FieldDef.like("refreshToken", syhUserTokenLog.refreshToken),
+            QdslUtil.FieldDef.like("revokeReason", syhUserTokenLog.revokeReason),
+            QdslUtil.FieldDef.like("tokenTypeCd", syhUserTokenLog.tokenTypeCd),
+            QdslUtil.FieldDef.like("uiNm", syhUserTokenLog.uiNm),
+            QdslUtil.FieldDef.like("userId", syhUserTokenLog.userId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

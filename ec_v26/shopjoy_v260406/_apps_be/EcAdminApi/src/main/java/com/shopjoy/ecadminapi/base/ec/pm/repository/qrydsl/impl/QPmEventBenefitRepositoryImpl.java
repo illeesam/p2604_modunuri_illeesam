@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -35,15 +34,6 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pmEventBenefit.regDate,
         "upd_date", pmEventBenefit.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("benefitId", pmEventBenefit.benefitId),
-        Map.entry("benefitNm", pmEventBenefit.benefitNm),
-        Map.entry("benefitTypeCd", pmEventBenefit.benefitTypeCd),
-        Map.entry("benefitValue", pmEventBenefit.benefitValue),
-        Map.entry("conditionDesc", pmEventBenefit.conditionDesc),
-        Map.entry("couponId", pmEventBenefit.couponId),
-        Map.entry("eventId", pmEventBenefit.eventId)
     );
 
     /*
@@ -87,7 +77,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                     QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()),
                     QdslUtil.strEq(pmEventBenefit.benefitId, search.getBenefitId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -114,7 +104,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                 QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()),
                 QdslUtil.strEq(pmEventBenefit.benefitId, search.getBenefitId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -139,6 +129,18 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("benefitId", pmEventBenefit.benefitId),
+            QdslUtil.FieldDef.like("benefitNm", pmEventBenefit.benefitNm),
+            QdslUtil.FieldDef.like("benefitTypeCd", pmEventBenefit.benefitTypeCd),
+            QdslUtil.FieldDef.like("benefitValue", pmEventBenefit.benefitValue),
+            QdslUtil.FieldDef.like("conditionDesc", pmEventBenefit.conditionDesc),
+            QdslUtil.FieldDef.like("couponId", pmEventBenefit.couponId),
+            QdslUtil.FieldDef.like("eventId", pmEventBenefit.eventId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

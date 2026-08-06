@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -41,17 +40,6 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", syTemplate.regDate,
         "upd_date", syTemplate.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("pathId", syTemplate.pathId),
-        Map.entry("sampleParams", syTemplate.sampleParams),
-        Map.entry("templateCode", syTemplate.templateCode),
-        Map.entry("templateContent", syTemplate.templateContent),
-        Map.entry("templateId", syTemplate.templateId),
-        Map.entry("templateNm", syTemplate.templateNm),
-        Map.entry("templateSubject", syTemplate.templateSubject),
-        Map.entry("templateTypeCd", syTemplate.templateTypeCd),
-        Map.entry("useYn", syTemplate.useYn)
     );
 
     /*
@@ -99,7 +87,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                     QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()),
                     QdslUtil.strEq(syTemplate.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -127,7 +115,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                 QdslUtil.strEq(syTemplate.templateTypeCd, search.getTemplateTypeCd()),
                 QdslUtil.strEq(syTemplate.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -159,6 +147,20 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syTemplate.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_template"))
                 : null;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("pathId", syTemplate.pathId),
+            QdslUtil.FieldDef.like("sampleParams", syTemplate.sampleParams),
+            QdslUtil.FieldDef.like("templateCode", syTemplate.templateCode),
+            QdslUtil.FieldDef.like("templateContent", syTemplate.templateContent),
+            QdslUtil.FieldDef.like("templateId", syTemplate.templateId),
+            QdslUtil.FieldDef.like("templateNm", syTemplate.templateNm),
+            QdslUtil.FieldDef.like("templateSubject", syTemplate.templateSubject),
+            QdslUtil.FieldDef.like("templateTypeCd", syTemplate.templateTypeCd),
+            QdslUtil.FieldDef.like("useYn", syTemplate.useYn)
+        ));
     }
 
     /**

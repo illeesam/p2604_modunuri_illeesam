@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -44,19 +43,6 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", stSettlePay.regDate,
         "upd_date", stSettlePay.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("bankAccount", stSettlePay.bankAccount),
-        Map.entry("bankHolder", stSettlePay.bankHolder),
-        Map.entry("bankNm", stSettlePay.bankNm),
-        Map.entry("payBy", stSettlePay.payBy),
-        Map.entry("payMethodCd", stSettlePay.payMethodCd),
-        Map.entry("payStatusCd", stSettlePay.payStatusCd),
-        Map.entry("payStatusCdBefore", stSettlePay.payStatusCdBefore),
-        Map.entry("settleId", stSettlePay.settleId),
-        Map.entry("settlePayId", stSettlePay.settlePayId),
-        Map.entry("settlePayMemo", stSettlePay.settlePayMemo),
-        Map.entry("vendorId", stSettlePay.vendorId)
     );
 
     /*
@@ -115,7 +101,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                     QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId()),
                     QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -141,7 +127,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 QdslUtil.strEq(stSettlePay.settlePayId, search.getSettlePayId()),
                 QdslUtil.strEq(stSettlePay.payStatusCd, search.getPayStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -167,6 +153,22 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("bankAccount", stSettlePay.bankAccount),
+            QdslUtil.FieldDef.like("bankHolder", stSettlePay.bankHolder),
+            QdslUtil.FieldDef.like("bankNm", stSettlePay.bankNm),
+            QdslUtil.FieldDef.like("payBy", stSettlePay.payBy),
+            QdslUtil.FieldDef.like("payMethodCd", stSettlePay.payMethodCd),
+            QdslUtil.FieldDef.like("payStatusCd", stSettlePay.payStatusCd),
+            QdslUtil.FieldDef.like("payStatusCdBefore", stSettlePay.payStatusCdBefore),
+            QdslUtil.FieldDef.like("settleId", stSettlePay.settleId),
+            QdslUtil.FieldDef.like("settlePayId", stSettlePay.settlePayId),
+            QdslUtil.FieldDef.like("settlePayMemo", stSettlePay.settlePayMemo),
+            QdslUtil.FieldDef.like("vendorId", stSettlePay.vendorId)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

@@ -8,7 +8,6 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -37,13 +36,6 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         "send_date", cmChattMsg.sendDate,
         "reg_date", cmChattMsg.regDate,
         "upd_date", cmChattMsg.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("chattId", cmChattMsg.chattId),
-        Map.entry("senderNm", cmChattMsg.senderNm),
-        Map.entry("msgText", cmChattMsg.msgText),
-        Map.entry("refId", cmChattMsg.refId),
-        Map.entry("refType", cmChattMsg.refType)
     );
 
     /*
@@ -141,9 +133,19 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     }
 
 private BooleanExpression andSearchValue(CmChattMsgDto.Request s) {
-        return s == null ? null : QdslUtil.searchValueLike(s.getSearchValue(), s.getSearchType(), SEARCH_FIELDS);
+        return s == null ? null : andSearchValue(s.getSearchValue(), s.getSearchType());
     }
 
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("chattId", cmChattMsg.chattId),
+            QdslUtil.FieldDef.like("senderNm", cmChattMsg.senderNm),
+            QdslUtil.FieldDef.like("msgText", cmChattMsg.msgText),
+            QdslUtil.FieldDef.like("refId", cmChattMsg.refId),
+            QdslUtil.FieldDef.like("refType", cmChattMsg.refType)
+        ));
+    }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private List<OrderSpecifier<?>> buildOrder(CmChattMsgDto.Request s) {

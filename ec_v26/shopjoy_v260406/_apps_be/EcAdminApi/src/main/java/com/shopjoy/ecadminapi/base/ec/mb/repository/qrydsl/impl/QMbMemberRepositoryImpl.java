@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -42,21 +41,6 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         "join_date", mbMember.joinDate,
         "reg_date", mbMember.regDate,
         "upd_date", mbMember.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("gradeCd", mbMember.gradeCd),
-        Map.entry("loginId", mbMember.loginId),
-        Map.entry("loginPwdHash", mbMember.loginPwdHash),
-        Map.entry("memberAddr", mbMember.memberAddr),
-        Map.entry("memberAddrDetail", mbMember.memberAddrDetail),
-        Map.entry("memberGender", mbMember.memberGender),
-        Map.entry("memberId", mbMember.memberId),
-        Map.entry("memberMemo", mbMember.memberMemo),
-        Map.entry("memberNm", mbMember.memberNm),
-        Map.entry("memberPhone", mbMember.memberPhone),
-        Map.entry("memberStatusCd", mbMember.memberStatusCd),
-        Map.entry("memberStatusCdBefore", mbMember.memberStatusCdBefore),
-        Map.entry("memberZipCode", mbMember.memberZipCode)
     );
 
     /*
@@ -119,7 +103,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                     QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()),
                     QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -146,7 +130,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                 QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()),
                 QdslUtil.strEq(mbMember.memberStatusCd, search.getMemberStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -173,6 +157,24 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
     /** 공용 base query */
     /* searchType 사용 예  searchType = "memberId,memberNm,loginId,memberPhone" (Entity 필드명) */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("gradeCd", mbMember.gradeCd),
+            QdslUtil.FieldDef.like("loginId", mbMember.loginId),
+            QdslUtil.FieldDef.like("loginPwdHash", mbMember.loginPwdHash),
+            QdslUtil.FieldDef.like("memberAddr", mbMember.memberAddr),
+            QdslUtil.FieldDef.like("memberAddrDetail", mbMember.memberAddrDetail),
+            QdslUtil.FieldDef.like("memberGender", mbMember.memberGender),
+            QdslUtil.FieldDef.like("memberId", mbMember.memberId),
+            QdslUtil.FieldDef.like("memberMemo", mbMember.memberMemo),
+            QdslUtil.FieldDef.like("memberNm", mbMember.memberNm),
+            QdslUtil.FieldDef.like("memberPhone", mbMember.memberPhone),
+            QdslUtil.FieldDef.like("memberStatusCd", mbMember.memberStatusCd),
+            QdslUtil.FieldDef.like("memberStatusCdBefore", mbMember.memberStatusCdBefore),
+            QdslUtil.FieldDef.like("memberZipCode", mbMember.memberZipCode)
+        ));
+    }
 
     /**
      * 정렬조건 빌드

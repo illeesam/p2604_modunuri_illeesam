@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -45,15 +44,6 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         "issue_date", pmVoucherIssue.issueDate,
         "reg_date", pmVoucherIssue.regDate,
         "upd_date", pmVoucherIssue.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("memberId", pmVoucherIssue.memberId),
-        Map.entry("orderId", pmVoucherIssue.orderId),
-        Map.entry("voucherCode", pmVoucherIssue.voucherCode),
-        Map.entry("voucherId", pmVoucherIssue.voucherId),
-        Map.entry("voucherIssueId", pmVoucherIssue.voucherIssueId),
-        Map.entry("voucherIssueStatusCd", pmVoucherIssue.voucherIssueStatusCd),
-        Map.entry("voucherIssueStatusCdBefore", pmVoucherIssue.voucherIssueStatusCdBefore)
     );
 
     /*
@@ -101,7 +91,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                 .where(
                     QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -126,7 +116,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -149,6 +139,18 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
 
         BasePage<PmVoucherIssueDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("memberId", pmVoucherIssue.memberId),
+            QdslUtil.FieldDef.like("orderId", pmVoucherIssue.orderId),
+            QdslUtil.FieldDef.like("voucherCode", pmVoucherIssue.voucherCode),
+            QdslUtil.FieldDef.like("voucherId", pmVoucherIssue.voucherId),
+            QdslUtil.FieldDef.like("voucherIssueId", pmVoucherIssue.voucherIssueId),
+            QdslUtil.FieldDef.like("voucherIssueStatusCd", pmVoucherIssue.voucherIssueStatusCd),
+            QdslUtil.FieldDef.like("voucherIssueStatusCdBefore", pmVoucherIssue.voucherIssueStatusCdBefore)
+        ));
     }
 
     /**

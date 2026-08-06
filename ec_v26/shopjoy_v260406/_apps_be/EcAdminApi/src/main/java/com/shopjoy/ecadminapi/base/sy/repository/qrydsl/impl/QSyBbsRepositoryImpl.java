@@ -6,7 +6,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -33,19 +32,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBbsRepositoryImpl";
     private static final QSyBbs syBbs = QSyBbs.syBbs;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("attachGrpId", syBbs.attachGrpId),
-        Map.entry("authorNm", syBbs.authorNm),
-        Map.entry("bbmId", syBbs.bbmId),
-        Map.entry("bbsId", syBbs.bbsId),
-        Map.entry("bbsStatusCd", syBbs.bbsStatusCd),
-        Map.entry("bbsTitle", syBbs.bbsTitle),
-        Map.entry("contentHtml", syBbs.contentHtml),
-        Map.entry("isFixed", syBbs.isFixed),
-        Map.entry("memberId", syBbs.memberId),
-        Map.entry("parentBbsId", syBbs.parentBbsId),
-        Map.entry("pathId", syBbs.pathId)
-    );
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /*
@@ -98,7 +84,7 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                     QdslUtil.strEq(syBbs.bbmId, search.getBbmId()),
                     QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()),
                     andDateRangeBetween(search),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -125,7 +111,7 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                 QdslUtil.strEq(syBbs.bbmId, search.getBbmId()),
                 QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()),
                 andDateRangeBetween(search),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -165,6 +151,22 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
             expr = expr == null ? toExpr : expr.and(toExpr);
         }
         return expr;
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("attachGrpId", syBbs.attachGrpId),
+            QdslUtil.FieldDef.like("authorNm", syBbs.authorNm),
+            QdslUtil.FieldDef.like("bbmId", syBbs.bbmId),
+            QdslUtil.FieldDef.like("bbsId", syBbs.bbsId),
+            QdslUtil.FieldDef.like("bbsStatusCd", syBbs.bbsStatusCd),
+            QdslUtil.FieldDef.like("bbsTitle", syBbs.bbsTitle),
+            QdslUtil.FieldDef.like("contentHtml", syBbs.contentHtml),
+            QdslUtil.FieldDef.like("isFixed", syBbs.isFixed),
+            QdslUtil.FieldDef.like("memberId", syBbs.memberId),
+            QdslUtil.FieldDef.like("parentBbsId", syBbs.parentBbsId),
+            QdslUtil.FieldDef.like("pathId", syBbs.pathId)
+        ));
     }
 
     /**

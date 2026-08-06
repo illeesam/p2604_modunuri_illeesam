@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -46,13 +45,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     private static final QCmFaq  cmFaq  = QCmFaq.cmFaq;
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyPath syPath = QSyPath.syPath;
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("faqId", cmFaq.faqId),
-        Map.entry("faqQuestion", cmFaq.faqQuestion),
-        Map.entry("faqAnswer", cmFaq.faqAnswer),
-        Map.entry("pathId", cmFaq.pathId),
-        Map.entry("useYn", cmFaq.useYn)
-    );
 
     /*
      * baseSelColumnQuery — 코드성 필드 실제 코드값
@@ -98,7 +90,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
                     QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
                     andPathTreeIn(search),
                     QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -122,7 +114,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
                 QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
                 andPathTreeIn(search),
                 QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery();
@@ -149,6 +141,16 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         if (search == null || !StringUtils.hasText(search.getPathId())) return null;
         List<String> ids = syPathRepository.findTreePathIds(search.getPathId(), "cm_faq");
         return (ids == null || ids.isEmpty()) ? cmFaq.pathId.eq(search.getPathId()) : cmFaq.pathId.in(ids);
+    }
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("faqId", cmFaq.faqId),
+            QdslUtil.FieldDef.like("faqQuestion", cmFaq.faqQuestion),
+            QdslUtil.FieldDef.like("faqAnswer", cmFaq.faqAnswer),
+            QdslUtil.FieldDef.like("pathId", cmFaq.pathId),
+            QdslUtil.FieldDef.like("useYn", cmFaq.useYn)
+        ));
     }
 
     /**

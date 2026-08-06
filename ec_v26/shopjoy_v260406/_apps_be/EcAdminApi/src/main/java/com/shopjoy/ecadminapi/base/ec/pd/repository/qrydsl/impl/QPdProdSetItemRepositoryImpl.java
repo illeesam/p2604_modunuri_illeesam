@@ -7,7 +7,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -40,15 +39,6 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", pdProdSetItem.regDate,
         "upd_date", pdProdSetItem.updDate
-    );
-    private static final Map<String, StringPath> SEARCH_FIELDS = Map.ofEntries(
-        Map.entry("itemDesc", pdProdSetItem.itemDesc),
-        Map.entry("itemNm", pdProdSetItem.itemNm),
-        Map.entry("itemProdId", pdProdSetItem.itemProdId),
-        Map.entry("itemSkuId", pdProdSetItem.itemSkuId),
-        Map.entry("setItemId", pdProdSetItem.setItemId),
-        Map.entry("setProdId", pdProdSetItem.setProdId),
-        Map.entry("useYn", pdProdSetItem.useYn)
     );
 
     /*
@@ -94,7 +84,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
                 .where(
                     QdslUtil.strEq(pdProdSetItem.setItemId, search.getSetItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                    QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                    andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -119,7 +109,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdProdSetItem.setItemId, search.getSetItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                QdslUtil.searchValueLike(search.getSearchValue(), search.getSearchType(), SEARCH_FIELDS)
+                andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -144,6 +134,18 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
+
+    private BooleanExpression andSearchValue(String searchValue, String searchType) {
+        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+            QdslUtil.FieldDef.like("itemDesc", pdProdSetItem.itemDesc),
+            QdslUtil.FieldDef.like("itemNm", pdProdSetItem.itemNm),
+            QdslUtil.FieldDef.like("itemProdId", pdProdSetItem.itemProdId),
+            QdslUtil.FieldDef.like("itemSkuId", pdProdSetItem.itemSkuId),
+            QdslUtil.FieldDef.like("setItemId", pdProdSetItem.setItemId),
+            QdslUtil.FieldDef.like("setProdId", pdProdSetItem.setProdId),
+            QdslUtil.FieldDef.like("useYn", pdProdSetItem.useYn)
+        ));
+    }
 
     /**
      * 정렬조건 빌드
