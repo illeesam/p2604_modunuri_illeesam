@@ -17,8 +17,11 @@ public class OdDlivDto {
         @Size(max = 21) private String dlivId;
         @Size(max = 21) private String orderId;        // 상위 FK 필터
         private List<String> orderIds;                 // 상위 FK 다건 IN
-        @Size(max = 21) private String memberId;       // 회원 필터
-        @Size(max = 20) private String dlivStatusCd;   // 배송상태 필터
+        @Size(max = 21)  private String memberId;       // 회원 ID 필터
+        @Size(max = 200) private String memberNm;      // 회원명 LIKE 필터 (직접 입력 시)
+        @Size(max = 21)  private String vendorId;      // 업체 ID 필터
+        @Size(max = 200) private String vendorNm;      // 업체명 LIKE 필터 (직접 입력 시)
+        @Size(max = 20)  private String dlivStatusCd;  // 배송상태 필터
     }
 
     @Getter @Setter @NoArgsConstructor

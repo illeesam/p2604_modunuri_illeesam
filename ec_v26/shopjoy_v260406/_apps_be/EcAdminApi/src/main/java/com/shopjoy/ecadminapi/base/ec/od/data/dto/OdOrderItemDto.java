@@ -19,8 +19,17 @@ public class OdOrderItemDto {
         @Size(max = 21) private String orderItemId;
         @Size(max = 21) private String orderId;        // 상위 FK 필터
         private List<String> orderIds;                 // 상위 FK 다건 IN
-        @Size(max = 30) private String orderItemStatusCd; // 품목상태 직접 필터 (BO 목록 검색)
+        @Size(max = 30) private String orderItemStatusCd;  // 품목상태 단건 필터 (strEq)
+        private List<String> orderItemStatusCds;           // 품목상태 다중 필터 (strIn, BO multiCheck)
         @Size(max = 1)  private String claimYn;            // 클레임여부 필터 Y/N
+        @Size(max = 21)  private String memberId;            // 회원 ID 필터 (EXISTS eq via od_order)
+        @Size(max = 200) private String memberNm;           // 회원명 필터 (EXISTS LIKE via mb_member)
+        @Size(max = 21)  private String vendorId;           // 판매업체 ID 필터 (EXISTS eq via pd_prod→sy_vendor)
+        @Size(max = 200) private String vendorNm;           // 판매업체명 필터 (EXISTS LIKE via sy_vendor)
+        @Size(max = 21)  private String mdUserId;           // 담당MD ID 필터 (EXISTS eq via pd_prod→sy_user)
+        @Size(max = 200) private String mdUserNm;           // 담당MD명 필터 (EXISTS LIKE via sy_user)
+        @Size(max = 21)  private String brandId;            // 브랜드 ID 필터 (EXISTS eq via pd_prod→sy_brand)
+        @Size(max = 200) private String brandNm;            // 브랜드명 필터 (EXISTS LIKE via sy_brand)
     }
 
     @Getter @Setter @NoArgsConstructor

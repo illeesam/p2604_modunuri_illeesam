@@ -214,6 +214,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                     QdslUtil.strEq(odOrder.orderId, search.getOrderId()),
                     QdslUtil.strEq(odOrder.memberId, search.getMemberId()),
                     QdslUtil.strEq(odOrder.orderStatusCd, search.getOrderStatusCd()),
+                    QdslUtil.strIn(odOrder.orderStatusCd, search.getOrderStatusCds()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -241,6 +242,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 QdslUtil.strEq(odOrder.orderId, search.getOrderId()),
                 QdslUtil.strEq(odOrder.memberId, search.getMemberId()),
                 QdslUtil.strEq(odOrder.orderStatusCd, search.getOrderStatusCd()),
+                QdslUtil.strIn(odOrder.orderStatusCd, search.getOrderStatusCds()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };

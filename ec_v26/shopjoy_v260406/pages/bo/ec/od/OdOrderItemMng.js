@@ -22,7 +22,7 @@ window.OdOrderItemMng = {
       orderId: '', memberId: '', memberNm: '',
       vendorId: '', vendorNm: '', brandId: '', brandNm: '',
       mdUserId: '', mdUserNm: '', courierCd: '',
-      orderItemStatusCd: '', claimYn: '',
+      orderItemStatusCds: '', claimYn: '',
       searchType: '', searchValue: '',
       dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '',
     });
@@ -257,12 +257,16 @@ window.OdOrderItemMng = {
       try {
         const params = { pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize,
           ...(searchParam.memberId          && { memberId:          searchParam.memberId }),
+          ...(searchParam.memberNm          && { memberNm:          searchParam.memberNm }),
           ...(searchParam.orderId           && { orderId:           searchParam.orderId }),
           ...(searchParam.vendorId          && { vendorId:          searchParam.vendorId }),
+          ...(searchParam.vendorNm          && { vendorNm:          searchParam.vendorNm }),
           ...(searchParam.brandId           && { brandId:           searchParam.brandId }),
+          ...(searchParam.brandNm           && { brandNm:           searchParam.brandNm }),
           ...(searchParam.mdUserId          && { mdUserId:          searchParam.mdUserId }),
+          ...(searchParam.mdUserNm          && { mdUserNm:          searchParam.mdUserNm }),
           ...(searchParam.courierCd         && { courierCd:         searchParam.courierCd }),
-          ...(searchParam.orderItemStatusCd && { orderItemStatusCd: searchParam.orderItemStatusCd }),
+          ...(() => { const s = searchParam.orderItemStatusCds ? searchParam.orderItemStatusCds.split(',').filter(Boolean) : []; return s.length ? { orderItemStatusCds: s } : {}; })(),
           ...(searchParam.claimYn           && { claimYn:           searchParam.claimYn }),
           ...(searchParam.searchType        && { searchType:        searchParam.searchType }),
           ...(searchParam.searchValue       && { searchValue:       searchParam.searchValue }),
@@ -461,16 +465,16 @@ window.OdOrderItemMng = {
       { key: 'vendorId',  type: 'pick', label: '판매업체', nameKey: 'vendorNm',
         display: (p) => p.vendorNm || p.vendorId, placeholder: '업체 선택',
         onOpen: () => handleBtnAction('pick-vendor-open'), onClear: () => handleBtnAction('pick-vendor-clear') },
-      { key: 'brandId',   type: 'pick', label: '브랜드', nameKey: 'brandNm',
-        display: (p) => p.brandNm || p.brandId, placeholder: '브랜드 선택',
-        onOpen: () => handleBtnAction('pick-brand-open'),  onClear: () => handleBtnAction('pick-brand-clear') },
+      { key: 'brandId', type: 'pick', label: '브랜드', nameKey: 'brandNm',
+        placeholder: '브랜드명 입력',
+        onOpen: () => handleBtnAction('pick-brand-open'), onClear: () => handleBtnAction('pick-brand-clear') },
       { key: 'mdUserId',  type: 'pick', label: 'MD', nameKey: 'mdUserNm',
         display: (p) => p.mdUserNm || p.mdUserId, placeholder: 'MD 선택',
         onOpen: () => handleBtnAction('pick-md-open'),     onClear: () => handleBtnAction('pick-md-clear') },
       { key: 'courierCd', type: 'select', label: '배송사',
         options: () => codes.couriers, nullLabel: '배송사 전체' },
-      { key: 'orderItemStatusCd', type: 'select', label: '품목상태',
-        options: () => codes.order_item_statuses, nullLabel: '상태 전체' },
+      { key: 'orderItemStatusCds', type: 'multiCheck', label: '품목상태',
+        options: () => codes.order_item_statuses, placeholder: '상태 전체', allLabel: '전체 선택' },
       { key: 'claimYn', type: 'select', label: '클레임',
         options: [{ value: 'Y', label: '클레임 있음' }, { value: 'N', label: '클레임 없음' }], nullLabel: '전체' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
@@ -501,7 +505,8 @@ window.OdOrderItemMng = {
   <bo-container>
     <bo-search-area :loading="uiState.loading"
       :columns="columns.baseSearch" :param="searchParam"
-      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
+    </bo-search-area>
   </bo-container>
 
   <!-- ===== ■. 섬머리 3섹션 ==================================================== -->

@@ -95,6 +95,8 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                     QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds()),
                     QdslUtil.strEq(odClaimItem.claimId, search.getClaimId()),
                     QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()),
+                    QdslUtil.strEq(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCd()),
+                    QdslUtil.strIn(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCds()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -122,6 +124,8 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                 QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds()),
                 QdslUtil.strEq(odClaimItem.claimId, search.getClaimId()),
                 QdslUtil.strEq(odClaimItem.claimItemId, search.getClaimItemId()),
+                QdslUtil.strEq(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCd()),
+                QdslUtil.strIn(odClaimItem.claimItemStatusCd, search.getClaimItemStatusCds()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };

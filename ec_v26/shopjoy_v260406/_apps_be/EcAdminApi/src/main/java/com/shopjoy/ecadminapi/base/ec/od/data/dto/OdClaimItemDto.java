@@ -17,6 +17,8 @@ public class OdClaimItemDto {
         @Size(max = 21) private String claimItemId;
         @Size(max = 21) private String claimId;        // 상위 FK 필터
         private List<String> claimIds;                 // 상위 FK 다건 IN
+        @Size(max = 50) private String claimItemStatusCd;  // 항목상태 단건 필터 (strEq)
+        private List<String> claimItemStatusCds;            // 항목상태 다중 필터 (strIn, BO multiCheck)
     }
 
     @Getter @Setter @NoArgsConstructor

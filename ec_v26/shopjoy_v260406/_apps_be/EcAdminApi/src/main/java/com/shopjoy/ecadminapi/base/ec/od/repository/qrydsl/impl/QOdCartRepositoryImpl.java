@@ -11,6 +11,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdCartDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdCart;
@@ -37,7 +38,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdCartRepositoryImpl";
     private static final QOdCart        odCart   = QOdCart.odCart;
     private static final QSySite        sySite = QSySite.sySite;
-    private static final QMbMember      mbMember = QMbMember.mbMember;
+    private static final QMbMember      mbMember   = QMbMember.mbMember;
+    private static final QMbMember      mbMemberEx = new QMbMember("mb_member_ex");
     private static final QPdProd        pdProd = QPdProd.pdProd;
     private static final QPdProdOpt oi1 = new QPdProdOpt("oi1");
     private static final QPdProdOpt oi2 = new QPdProdOpt("oi2");
@@ -95,7 +97,12 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(odCart.cartId, search.getCartId()),
-                    QdslUtil.strEq(odCart.memberId, search.getMemberId()),
+                    (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+                        ? JPAExpressions.selectOne().from(mbMemberEx)
+                              .where(mbMemberEx.memberId.eq(odCart.memberId),
+                                     QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
+                                     QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
+                        : null,
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -121,7 +128,12 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odCart.cartId, search.getCartId()),
-                QdslUtil.strEq(odCart.memberId, search.getMemberId()),
+                (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+                    ? JPAExpressions.selectOne().from(mbMemberEx)
+                          .where(mbMemberEx.memberId.eq(odCart.memberId),
+                                 QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
+                                 QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
+                    : null,
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };

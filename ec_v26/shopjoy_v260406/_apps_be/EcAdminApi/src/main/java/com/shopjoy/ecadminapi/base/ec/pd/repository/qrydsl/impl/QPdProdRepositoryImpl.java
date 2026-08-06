@@ -8,6 +8,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -39,9 +40,12 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdRepositoryImpl";
     private static final QPdProd     pdProd   = QPdProd.pdProd;
     private static final QPdCategory pdCategory = QPdCategory.pdCategory;
-    private static final QSyBrand    syBrand   = QSyBrand.syBrand;
+    private static final QSyBrand    syBrand    = QSyBrand.syBrand;
     private static final QSyVendor   syVendor   = QSyVendor.syVendor;
-    private static final QSyUser     syUser   = QSyUser.syUser;
+    private static final QSyUser     syUser     = QSyUser.syUser;
+    private static final QSyBrand    syBrandEx  = new QSyBrand("sy_brand_ex");
+    private static final QSyVendor   syVendorEx = new QSyVendor("sy_vendor_ex");
+    private static final QSyUser     syUserEx   = new QSyUser("sy_user_ex");
     private static final QVwSyCode     cdPs = new QVwSyCode("cd_ps");
     private static final QVwSyCode     cdPt = new QVwSyCode("cd_pt");
     private static final QVwSyCode     cdSz = new QVwSyCode("cd_sz");
@@ -211,11 +215,27 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .where(
                     QdslUtil.strIn(pdProd.prodId, search.getProdIds()),
                     QdslUtil.strEq(pdProd.prodId, search.getProdId()),
-                    QdslUtil.strEq(pdProd.brandId, search.getBrandId()),
-                    QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
+                    (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
+                        ? JPAExpressions.selectOne().from(syBrandEx)
+                              .where(syBrandEx.brandId.eq(pdProd.brandId),
+                                     QdslUtil.strEq(syBrandEx.brandId, search.getBrandId()),
+                                     QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm())).exists()
+                        : null,
+                    (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+                        ? JPAExpressions.selectOne().from(syVendorEx)
+                              .where(syVendorEx.vendorId.eq(pdProd.vendorId),
+                                     QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                                     QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
+                        : null,
+                    (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
+                        ? JPAExpressions.selectOne().from(syUserEx)
+                              .where(syUserEx.userId.eq(pdProd.mdUserId),
+                                     QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                                     QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm())).exists()
+                        : null,
                     QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
+                    QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()),
                     QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
-                    QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -242,11 +262,27 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdProd.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProd.prodId, search.getProdId()),
-                QdslUtil.strEq(pdProd.brandId, search.getBrandId()),
-                QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
+                (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
+                    ? JPAExpressions.selectOne().from(syBrandEx)
+                          .where(syBrandEx.brandId.eq(pdProd.brandId),
+                                 QdslUtil.strEq(syBrandEx.brandId, search.getBrandId()),
+                                 QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm())).exists()
+                    : null,
+                (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+                    ? JPAExpressions.selectOne().from(syVendorEx)
+                          .where(syVendorEx.vendorId.eq(pdProd.vendorId),
+                                 QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                                 QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
+                    : null,
+                (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
+                    ? JPAExpressions.selectOne().from(syUserEx)
+                          .where(syUserEx.userId.eq(pdProd.mdUserId),
+                                 QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                                 QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm())).exists()
+                    : null,
                 QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
+                QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()),
                 QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()),
-                QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };

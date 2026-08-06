@@ -285,20 +285,25 @@ window.BoSearchArea = {
     <label v-if="col.label" class="search-label">
     {{ col.label }}
   </label>
-  <!-- 회원/항목 picker 박스 (input readonly + 검색 버튼 + 클리어) — col.type==='pick' -->
+  <!-- 회원/항목 picker 박스 (직접 입력 + 팝업 + 클리어) — col.type==='pick' -->
   <template v-if="col.type==='pick'">
-    <!-- 값 표시 전용 — 팝업은 옆 🔍 버튼으로만 연다 (칸을 누르다 의도치 않게 뜨는 것 방지) -->
-    <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
-          readonly :placeholder="col.placeholder || '선택'"
-          class="form-control" :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;'" />
+    <!-- 이름 직접 입력 가능 — 팝업 선택 시 이름+ID 모두 채워짐, 직접 입력 시 ID 초기화 -->
+    <input :value="po(col)[col.nameKey || col.key] || ''"
+          @input="e => { po(col)[col.nameKey || col.key] = e.target.value; if (col.nameKey && col.nameKey !== col.key) po(col)[col.key] = ''; }"
+          :placeholder="col.placeholder || '선택'"
+          class="form-control" :style="col.width ? ('width:' + col.width) : 'width:140px;'" />
+    <!-- ID 표시 (팝업 선택 시만, nameKey != key) -->
+    <input v-if="col.nameKey ? (col.nameKey !== col.key ? po(col)[col.key] : false) : false"
+          disabled :value="po(col)[col.key]"
+          class="form-control" style="width:36px;min-width:0;font-size:10px;color:#aaa;background:#f5f5f5;" />
     <span style="display:inline-flex;align-items:center;">
       <button class="btn btn-secondary btn-sm" style="padding:2px 7px;" @click="handleSelectAction('field-pick-open', { col, target: po(col) })" :title="col.openLabel || '검색'">🔍</button>
-      <button v-if="po(col)[col.key]" type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleSelectAction('field-pick-clear', { col, target: po(col) })" title="초기화">x</button>
+      <button v-if="po(col)[col.key] || po(col)[col.nameKey]" type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleSelectAction('field-pick-clear', { col, target: po(col) })" title="초기화">x</button>
     </span>
   </template>
   <!-- 다중선택 (검색대상) -->
   <bo-multi-check-select v-else-if="col.type==='multiCheck'"
-        v-model="po(col)[col.key]" :options="col.options"
+        v-model="po(col)[col.key]" :options="typeof col.options==='function'?col.options():(col.options||[])"
         :placeholder="col.placeholder || '전체'" :all-label="col.allLabel || '전체 선택'"
         :min-width="col.minWidth || '160px'" />
   <!-- 텍스트 입력 -->

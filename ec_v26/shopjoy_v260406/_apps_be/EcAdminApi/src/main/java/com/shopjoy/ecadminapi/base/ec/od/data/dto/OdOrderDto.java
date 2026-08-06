@@ -16,7 +16,8 @@ public class OdOrderDto {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String orderId;
         @Size(max = 21) private String memberId;
-        @Size(max = 50) private String orderStatusCd;
+        @Size(max = 50) private String orderStatusCd;    // 주문상태 단건 필터 (strEq)
+        private List<String> orderStatusCds;              // 주문상태 다중 필터 (strIn, BO multiCheck)
     }
 
     @Getter @Setter @NoArgsConstructor

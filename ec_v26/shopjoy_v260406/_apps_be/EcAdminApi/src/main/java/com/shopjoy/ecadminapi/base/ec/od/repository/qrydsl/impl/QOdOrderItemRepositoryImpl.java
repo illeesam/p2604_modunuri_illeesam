@@ -14,12 +14,16 @@ import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItem;
+import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderItemRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdSku;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -46,9 +50,15 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QVwSyCode        cdIs      = new QVwSyCode("cd_is");
     private static final QVwSyCode        cdDc      = new QVwSyCode("cd_dc");
     // EXISTS 서브쿼리용 별칭 (baseSelColumnQuery 의 pdProd 와 충돌 방지)
-    private static final QPdProd          pNmEx     = new QPdProd("p_nm_ex");
-    private static final QPdProd          pBrandEx  = new QPdProd("p_brand_ex");
-    private static final QSyBrand         sBrandEx  = new QSyBrand("s_brand_ex");
+    private static final QPdProd          pNmEx      = new QPdProd("p_nm_ex");
+    private static final QPdProd          pBrandEx   = new QPdProd("p_brand_ex");
+    private static final QSyBrand         sBrandEx   = new QSyBrand("s_brand_ex");
+    private static final QOdOrder         odOrderEx  = new QOdOrder("od_order_ex");
+    private static final QMbMember        mbMemberEx = new QMbMember("mb_member_ex");
+    private static final QPdProd          pVendorEx  = new QPdProd("p_vendor_ex");
+    private static final QSyVendor        syVendorEx = new QSyVendor("sy_vendor_ex");
+    private static final QPdProd          pMdEx      = new QPdProd("p_md_ex");
+    private static final QSyUser          syUserEx   = new QSyUser("sy_user_ex");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
         "reg_date", odOrderItem.regDate,
         "upd_date", odOrderItem.updDate
@@ -143,8 +153,41 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                     QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()),
                     QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()),
                     QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
+                    QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()),
                     QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+                        ? JPAExpressions.selectOne()
+                              .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
+                              .where(odOrderEx.orderId.eq(odOrderItem.orderId),
+                                     QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
+                                     QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
+                              .exists()
+                        : null,
+                    (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+                        ? JPAExpressions.selectOne()
+                              .from(pVendorEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pVendorEx.vendorId))
+                              .where(pVendorEx.prodId.eq(odOrderItem.prodId),
+                                     QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                                     QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                              .exists()
+                        : null,
+                    (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
+                        ? JPAExpressions.selectOne()
+                              .from(pMdEx).join(syUserEx).on(syUserEx.userId.eq(pMdEx.mdUserId))
+                              .where(pMdEx.prodId.eq(odOrderItem.prodId),
+                                     QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                                     QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                              .exists()
+                        : null,
+                    (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
+                        ? JPAExpressions.selectOne()
+                              .from(pBrandEx).join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
+                              .where(pBrandEx.prodId.eq(odOrderItem.prodId),
+                                     QdslUtil.strEq(sBrandEx.brandId, search.getBrandId()),
+                                     QdslUtil.strLike(sBrandEx.brandNm, search.getBrandNm()))
+                              .exists()
+                        : null,
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -172,8 +215,41 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()),
                 QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()),
                 QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
+                QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()),
                 QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+                    ? JPAExpressions.selectOne()
+                          .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
+                          .where(odOrderEx.orderId.eq(odOrderItem.orderId),
+                                 QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
+                                 QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
+                          .exists()
+                    : null,
+                (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+                    ? JPAExpressions.selectOne()
+                          .from(pVendorEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pVendorEx.vendorId))
+                          .where(pVendorEx.prodId.eq(odOrderItem.prodId),
+                                 QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                                 QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                          .exists()
+                    : null,
+                (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
+                    ? JPAExpressions.selectOne()
+                          .from(pMdEx).join(syUserEx).on(syUserEx.userId.eq(pMdEx.mdUserId))
+                          .where(pMdEx.prodId.eq(odOrderItem.prodId),
+                                 QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                                 QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                          .exists()
+                    : null,
+                (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
+                    ? JPAExpressions.selectOne()
+                          .from(pBrandEx).join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
+                          .where(pBrandEx.prodId.eq(odOrderItem.prodId),
+                                 QdslUtil.strEq(sBrandEx.brandId, search.getBrandId()),
+                                 QdslUtil.strLike(sBrandEx.brandNm, search.getBrandNm()))
+                          .exists()
+                    : null,
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

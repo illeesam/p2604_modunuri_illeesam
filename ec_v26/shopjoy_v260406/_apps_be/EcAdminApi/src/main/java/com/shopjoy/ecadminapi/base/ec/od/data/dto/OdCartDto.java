@@ -16,7 +16,8 @@ public class OdCartDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String cartId;
-        @Size(max = 21) private String memberId;
+        @Size(max = 21)  private String memberId;
+        @Size(max = 200) private String memberNm;  // 회원명 LIKE 필터 (직접 입력 시)
     }
 
     @Getter @Setter @NoArgsConstructor

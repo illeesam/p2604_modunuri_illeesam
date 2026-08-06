@@ -17,7 +17,8 @@ public class OdClaimDto {
         @Size(max = 21) private String claimId;
         @Size(max = 21) private String orderId;
         @Size(max = 21) private String memberId;
-        @Size(max = 50) private String claimStatusCd;
+        @Size(max = 50) private String claimStatusCd;    // 클레임상태 단건 필터 (strEq)
+        private List<String> claimStatusCds;              // 클레임상태 다중 필터 (strIn, BO multiCheck)
         @Size(max = 50) private String claimTypeCd;
     }
 

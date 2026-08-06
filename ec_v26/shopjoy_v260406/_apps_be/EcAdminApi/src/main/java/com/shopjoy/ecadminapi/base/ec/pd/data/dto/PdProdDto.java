@@ -17,12 +17,16 @@ public class PdProdDto {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String prodId;
         private List<String> prodIds;                  // PK 다건 IN
-        @Size(max = 21) private String brandId;
-        @Size(max = 21) private String vendorId;
-        @Size(max = 21) private String categoryId;
-        @Size(max = 21) private String mdUserId;
+        @Size(max = 21)  private String brandId;
+        @Size(max = 200) private String brandNm;    // 브랜드명 LIKE 필터 (직접 입력 시)
+        @Size(max = 21)  private String vendorId;
+        @Size(max = 200) private String vendorNm;   // 업체명 LIKE 필터 (직접 입력 시)
+        @Size(max = 21)  private String categoryId;
+        @Size(max = 21)  private String mdUserId;
+        @Size(max = 200) private String mdUserNm;   // 담당MD명 LIKE 필터 (직접 입력 시)
         @Size(max = 30) private String prodTypeCd;
-        @Size(max = 30) private String prodStatusCd;
+        @Size(max = 30) private String prodStatusCd;      // 상품상태 단건 필터 (strEq)
+        private List<String> prodStatusCds;               // 상품상태 다중 필터 (strIn, BO multiCheck)
         @Size(max = 1) private String useYn;
     }
 

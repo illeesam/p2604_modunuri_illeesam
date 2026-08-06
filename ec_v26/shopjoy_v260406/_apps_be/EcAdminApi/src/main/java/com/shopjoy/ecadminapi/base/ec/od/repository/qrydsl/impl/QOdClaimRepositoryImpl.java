@@ -302,6 +302,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                     QdslUtil.strEq(odClaim.orderId, search.getOrderId()),
                     QdslUtil.strEq(odClaim.memberId, search.getMemberId()),
                     QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
+                    QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()),
                     QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
@@ -331,6 +332,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 QdslUtil.strEq(odClaim.orderId, search.getOrderId()),
                 QdslUtil.strEq(odClaim.memberId, search.getMemberId()),
                 QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()),
+                QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()),
                 QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
