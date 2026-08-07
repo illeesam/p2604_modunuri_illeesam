@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEventBenefit;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventBenefitRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -31,8 +29,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventBenefitRepositoryImpl";
     private static final QPmEventBenefit pmEventBenefit = QPmEventBenefit.pmEventBenefit;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pmEventBenefit.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmEventBenefit.regDate,
         "upd_date", pmEventBenefit.updDate
     );
 
@@ -68,7 +65,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     /* 이벤트 혜택 목록조회 */
     @Override
     public List<PmEventBenefitDto.Item> selectList(PmEventBenefitDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -98,7 +95,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()),
                 QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()),
@@ -146,43 +143,15 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmEventBenefitDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEventBenefit.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEventBenefit.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEventBenefit.benefitId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("benefitId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmEventBenefit.benefitId));
-                } else if ("benefitNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmEventBenefit.benefitNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmEventBenefit.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pmEventBenefit.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEventBenefit.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEventBenefit.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEventBenefit.benefitId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("benefitId", pmEventBenefit.benefitId,
+                   "benefitNm", pmEventBenefit.benefitNm,
+                   "regDate", pmEventBenefit.regDate,
+                   "sortOrd", pmEventBenefit.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pmEventBenefit.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pmEventBenefit.regDate),
+        new OrderSpecifier<>(Order.ASC, pmEventBenefit.benefitId));
     }
 
     /* 이벤트 혜택 수정 */

@@ -26,7 +26,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -47,8 +46,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     private static final QVwSyCode   cdDd = new QVwSyCode("cd_dd");
     private static final QVwSyCode   cdOc = new QVwSyCode("cd_oc");
     private static final QVwSyCode   cdIc = new QVwSyCode("cd_ic");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "dliv_ship_date", odDliv.dlivShipDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("dliv_ship_date", odDliv.dlivShipDate,
         "dliv_date", odDliv.dlivDate,
         "reg_date", odDliv.regDate,
         "upd_date", odDliv.updDate
@@ -118,7 +116,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     /* 배송 목록조회 */
     @Override
     public List<OdDlivDto.Item> selectList(OdDlivDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -161,7 +159,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odDliv.orderId, search.getOrderIds()),
                 QdslUtil.strEq(odDliv.orderId, search.getOrderId()),
@@ -245,38 +243,13 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdDlivDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            /* 기본 정렬: regDate DESC + PK ASC (안정 정렬 — 저장 시마다 동률 행 순서 흔들림 방지) */
-            orders.add(new OrderSpecifier(Order.DESC, odDliv.regDate));
-            orders.add(new OrderSpecifier(Order.ASC,  odDliv.dlivId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("dlivId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odDliv.dlivId));
-                } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odDliv.memberNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odDliv.regDate));
-                }
-            }
-        }
-        /* unknown sort fallback: regDate DESC + PK ASC */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odDliv.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC,  odDliv.dlivId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("dlivId", odDliv.dlivId,
+                   "memberNm", odDliv.memberNm,
+                   "regDate", odDliv.regDate),
+        new OrderSpecifier<>(Order.DESC, odDliv.regDate),
+        new OrderSpecifier<>(Order.ASC, odDliv.dlivId));
     }
 
     /* 배송 수정 */

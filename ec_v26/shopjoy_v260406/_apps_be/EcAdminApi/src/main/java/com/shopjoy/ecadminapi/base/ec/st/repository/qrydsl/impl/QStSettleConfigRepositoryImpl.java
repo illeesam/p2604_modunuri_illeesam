@@ -21,11 +21,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -40,8 +38,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     private static final QSyVendor      syVendor  = QSyVendor.syVendor;
     private static final QPdCategory    pdCategory  = QPdCategory.pdCategory;
     private static final QVwSyCode        cdSc = new QVwSyCode("cd_sc");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", stSettleConfig.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stSettleConfig.regDate,
         "upd_date", stSettleConfig.updDate
     );
 
@@ -88,7 +85,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     /* 정산 설정 목록조회 */
     @Override
     public List<StSettleConfigDto.Item> selectList(StSettleConfigDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StSettleConfigDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -116,7 +113,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettleConfig.settleConfigId, search.getSettleConfigId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -160,36 +157,12 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(StSettleConfigDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, stSettleConfig.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stSettleConfig.settleConfigId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("settleConfigId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stSettleConfig.settleConfigId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stSettleConfig.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, stSettleConfig.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stSettleConfig.settleConfigId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("settleConfigId", stSettleConfig.settleConfigId,
+                   "regDate", stSettleConfig.regDate),
+        new OrderSpecifier<>(Order.DESC, stSettleConfig.regDate),
+        new OrderSpecifier<>(Order.ASC, stSettleConfig.settleConfigId));
     }
 
     /* 정산 설정 수정 */

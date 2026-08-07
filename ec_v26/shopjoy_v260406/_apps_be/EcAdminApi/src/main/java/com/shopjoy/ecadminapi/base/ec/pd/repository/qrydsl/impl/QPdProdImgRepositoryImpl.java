@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdImgRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -31,8 +29,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdImgRepositoryImpl";
     private static final QPdProdImg pdProdImg = QPdProdImg.pdProdImg;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdProdImg.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdImg.regDate,
         "upd_date", pdProdImg.updDate
     );
 
@@ -74,7 +71,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     /* 상품 이미지 목록조회 */
     @Override
     public List<PdProdImgDto.Item> selectList(PdProdImgDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdImgDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -104,7 +101,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdProdImg.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProdImg.prodId, search.getProdId()),
@@ -154,41 +151,14 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdProdImgDto.Request req) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(req);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.prodImgId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("prodImgId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdImg.prodImgId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdImg.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdProdImg.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.prodImgId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("prodImgId", pdProdImg.prodImgId,
+                   "regDate", pdProdImg.regDate,
+                   "sortOrd", pdProdImg.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdProdImg.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdProdImg.regDate),
+        new OrderSpecifier<>(Order.ASC, pdProdImg.prodImgId));
     }
 
     /* 상품 이미지 수정 */

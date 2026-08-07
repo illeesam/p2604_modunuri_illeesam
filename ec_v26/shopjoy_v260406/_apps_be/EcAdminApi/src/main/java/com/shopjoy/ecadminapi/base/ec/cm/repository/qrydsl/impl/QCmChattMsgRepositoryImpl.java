@@ -16,10 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmChattMsgRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,7 +76,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
     @Override
     public List<CmChattMsgDto.Item> selectList(CmChattMsgDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmChattMsgDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -103,7 +101,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmChattMsg.chattMsgId, search.getChattMsgId()),
                 QdslUtil.strEq(cmChattMsg.chattId, search.getChattId()),
@@ -132,7 +130,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
-private BooleanExpression andSearchValue(CmChattMsgDto.Request s) {
+    private BooleanExpression andSearchValue(CmChattMsgDto.Request s) {
         return s == null ? null : andSearchValue(s.getSearchValue(), s.getSearchType());
     }
 
@@ -147,29 +145,13 @@ private BooleanExpression andSearchValue(CmChattMsgDto.Request s) {
         ));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(CmChattMsgDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC, cmChattMsg.sendDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmChattMsg.chattMsgId));
-            return orders;
-        }
-        for (String part : sort.split(",")) {
-            String[] fd = part.trim().split(" ");
-            if (fd.length == 2) {
-                Order ord = "desc".equalsIgnoreCase(fd[1]) ? Order.DESC : Order.ASC;
-                if      ("sendDate".equals(fd[0]))  orders.add(new OrderSpecifier(ord, cmChattMsg.sendDate));
-                else if ("regDate".equals(fd[0]))   orders.add(new OrderSpecifier(ord, cmChattMsg.regDate));
-                else if ("chattMsgId".equals(fd[0]))orders.add(new OrderSpecifier(ord, cmChattMsg.chattMsgId));
-            }
-        }
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, cmChattMsg.sendDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmChattMsg.chattMsgId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("sendDate",   cmChattMsg.sendDate,
+                   "regDate",    cmChattMsg.regDate,
+                   "chattMsgId", cmChattMsg.chattMsgId),
+            new OrderSpecifier<>(Order.ASC, cmChattMsg.sendDate),
+            new OrderSpecifier<>(Order.ASC, cmChattMsg.chattMsgId));
     }
 
     @Override

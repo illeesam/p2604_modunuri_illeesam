@@ -45,8 +45,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         this.em = em;
     }
     private static final QVwSyCode cdMt = new QVwSyCode("cd_mt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syMenu.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syMenu.regDate,
         "upd_date", syMenu.updDate
     );
 
@@ -90,7 +89,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     /* 메뉴 목록조회 */
     @Override
     public List<SyMenuDto.Item> selectList(SyMenuDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyMenuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andMenuIdIn(search),
@@ -118,7 +117,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 andMenuIdIn(search),
                 QdslUtil.strEq(syMenu.menuTypeCd, search.getMenuTypeCd()),
@@ -184,43 +183,15 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyMenuDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.menuId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("menuId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syMenu.menuId));
-                } else if ("menuNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syMenu.menuNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syMenu.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syMenu.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.menuId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("menuId", syMenu.menuId,
+                   "menuNm", syMenu.menuNm,
+                   "regDate", syMenu.regDate,
+                   "sortOrd", syMenu.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syMenu.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syMenu.regDate),
+        new OrderSpecifier<>(Order.ASC, syMenu.menuId));
     }
 
     /* 메뉴 수정 */

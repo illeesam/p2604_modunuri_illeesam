@@ -20,11 +20,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendorBrand;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorBrand;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyVendorBrandRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -38,8 +36,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QSyBrand syBrand = QSyBrand.syBrand;
     private static final QVwSyCode cdVbc = new QVwSyCode("cd_vbc");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syVendorBrand.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syVendorBrand.regDate,
         "upd_date", syVendorBrand.updDate
     );
 
@@ -88,7 +85,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     /* 업체별 브랜드 목록조회 */
     @Override
     public List<SyVendorBrandDto.Item> selectList(SyVendorBrandDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyVendorBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()),
@@ -116,7 +113,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syVendorBrand.vendorBrandId, search.getVendorBrandId()),
                 QdslUtil.strEq(syVendorBrand.brandId, search.getBrandId()),
@@ -163,41 +160,14 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyVendorBrandDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorBrand.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorBrand.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorBrand.vendorBrandId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("vendorBrandId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendorBrand.vendorBrandId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendorBrand.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syVendorBrand.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorBrand.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorBrand.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorBrand.vendorBrandId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("vendorBrandId", syVendorBrand.vendorBrandId,
+                   "regDate", syVendorBrand.regDate,
+                   "sortOrd", syVendorBrand.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syVendorBrand.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syVendorBrand.regDate),
+        new OrderSpecifier<>(Order.ASC, syVendorBrand.vendorBrandId));
     }
 
     /* 업체별 브랜드 수정 */

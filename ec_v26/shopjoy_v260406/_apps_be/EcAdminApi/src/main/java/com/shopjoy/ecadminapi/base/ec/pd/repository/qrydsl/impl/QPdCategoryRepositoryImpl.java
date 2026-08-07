@@ -22,7 +22,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -82,7 +81,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     /* 상품 카테고리 목록조회 */
     @Override
     public List<PdCategoryDto.Item> selectList(PdCategoryDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -111,7 +110,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
                 andParentCategoryIdIn(search),
@@ -167,43 +166,15 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdCategoryDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC, pdCategory.categoryDepth));
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.categoryId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("categoryId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdCategory.categoryId));
-                } else if ("categoryNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdCategory.categoryNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdCategory.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdCategory.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.categoryId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("categoryId", pdCategory.categoryId,
+                   "categoryNm", pdCategory.categoryNm,
+                   "regDate", pdCategory.regDate,
+                   "sortOrd", pdCategory.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdCategory.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdCategory.regDate),
+        new OrderSpecifier<>(Order.ASC, pdCategory.categoryId));
     }
 
     /* 상품 카테고리 수정 */

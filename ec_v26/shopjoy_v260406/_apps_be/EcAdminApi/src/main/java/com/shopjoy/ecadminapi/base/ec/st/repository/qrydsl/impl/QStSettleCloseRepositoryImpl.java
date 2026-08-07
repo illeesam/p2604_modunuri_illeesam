@@ -19,11 +19,9 @@ import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleCloseReposit
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -36,8 +34,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     private static final QStSettleClose stSettleClose   = QStSettleClose.stSettleClose;
     private static final QSySite        sySite = QSySite.sySite;
     private static final QVwSyCode        cdScs = new QVwSyCode("cd_scs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", stSettleClose.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stSettleClose.regDate,
         "upd_date", stSettleClose.updDate
     );
 
@@ -76,7 +73,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     /* 정산 마감 목록조회 */
     @Override
     public List<StSettleCloseDto.Item> selectList(StSettleCloseDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StSettleCloseDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -104,7 +101,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettleClose.settleCloseId, search.getSettleCloseId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -147,36 +144,12 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(StSettleCloseDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, stSettleClose.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stSettleClose.settleCloseId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("settleCloseId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stSettleClose.settleCloseId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stSettleClose.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, stSettleClose.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stSettleClose.settleCloseId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("settleCloseId", stSettleClose.settleCloseId,
+                   "regDate", stSettleClose.regDate),
+        new OrderSpecifier<>(Order.DESC, stSettleClose.regDate),
+        new OrderSpecifier<>(Order.ASC, stSettleClose.settleCloseId));
     }
 
     /* 정산 마감 수정 */

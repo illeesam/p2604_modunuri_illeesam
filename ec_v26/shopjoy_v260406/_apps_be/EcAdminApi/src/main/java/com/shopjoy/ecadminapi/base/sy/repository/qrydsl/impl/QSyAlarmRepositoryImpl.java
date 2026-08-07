@@ -91,7 +91,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     /* 알람 목록조회 */
     @Override
     public List<SyAlarmDto.Item> selectList(SyAlarmDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyAlarmDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -120,7 +120,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 andPathIdIn(search),
                 QdslUtil.strEq(syAlarm.alarmId, search.getAlarmId()),
@@ -179,38 +179,13 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyAlarmDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syAlarm.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syAlarm.alarmId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("alarmId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syAlarm.alarmId));
-                } else if ("alarmTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syAlarm.alarmTitle));
-                } else if ("alarmSendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syAlarm.alarmSendDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syAlarm.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syAlarm.alarmId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("alarmId", syAlarm.alarmId,
+                   "alarmTitle", syAlarm.alarmTitle,
+                   "alarmSendDate", syAlarm.alarmSendDate),
+        new OrderSpecifier<>(Order.DESC, syAlarm.regDate),
+        new OrderSpecifier<>(Order.ASC, syAlarm.alarmId));
     }
 
     /* 알람 수정 */

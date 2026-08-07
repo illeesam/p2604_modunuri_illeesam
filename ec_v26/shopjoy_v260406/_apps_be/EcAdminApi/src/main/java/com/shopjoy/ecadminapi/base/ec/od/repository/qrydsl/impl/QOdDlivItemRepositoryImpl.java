@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDlivItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdDlivItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdDlivItemRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -31,8 +29,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdDlivItemRepositoryImpl";
     private static final QOdDlivItem odDlivItem = QOdDlivItem.odDlivItem;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", odDlivItem.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odDlivItem.regDate,
         "upd_date", odDlivItem.updDate
     );
 
@@ -72,7 +69,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     /* 배송 아이템 목록조회 */
     @Override
     public List<OdDlivItemDto.Item> selectList(OdDlivItemDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -102,7 +99,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odDlivItem.dlivId, search.getDlivIds()),
                 QdslUtil.strEq(odDlivItem.dlivId, search.getDlivId()),
@@ -151,36 +148,12 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdDlivItemDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, odDlivItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odDlivItem.dlivItemId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("dlivItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odDlivItem.dlivItemId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odDlivItem.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odDlivItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odDlivItem.dlivItemId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("dlivItemId", odDlivItem.dlivItemId,
+                   "regDate", odDlivItem.regDate),
+        new OrderSpecifier<>(Order.DESC, odDlivItem.regDate),
+        new OrderSpecifier<>(Order.ASC, odDlivItem.dlivItemId));
     }
 
     /* 배송 아이템 수정 */

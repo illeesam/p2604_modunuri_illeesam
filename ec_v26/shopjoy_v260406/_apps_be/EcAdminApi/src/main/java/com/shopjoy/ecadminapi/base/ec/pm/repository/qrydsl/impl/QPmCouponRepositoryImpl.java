@@ -18,11 +18,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponRepository;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -37,8 +35,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     private static final QVwSyCode  cdCs = new QVwSyCode("cd_cs");
     private static final QVwSyCode  cdTt = new QVwSyCode("cd_tt");
     private static final QVwSyCode  cdMg = new QVwSyCode("cd_mg");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pmCoupon.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmCoupon.regDate,
         "upd_date", pmCoupon.updDate
     );
 
@@ -105,7 +102,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     /* 쿠폰 목록조회 */
     @Override
     public List<PmCouponDto.Item> selectList(PmCouponDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmCouponDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -136,7 +133,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()),
                 QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()),
@@ -194,38 +191,13 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmCouponDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pmCoupon.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmCoupon.couponId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("couponId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmCoupon.couponId));
-                } else if ("couponNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmCoupon.couponNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmCoupon.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pmCoupon.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmCoupon.couponId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("couponId", pmCoupon.couponId,
+                   "couponNm", pmCoupon.couponNm,
+                   "regDate", pmCoupon.regDate),
+        new OrderSpecifier<>(Order.DESC, pmCoupon.regDate),
+        new OrderSpecifier<>(Order.ASC, pmCoupon.couponId));
     }
 
     /* 쿠폰 수정 */

@@ -15,11 +15,9 @@ import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStErpVoucherLine;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucherLine;
 import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStErpVoucherLineRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -31,8 +29,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStErpVoucherLineRepositoryImpl";
     private static final QStErpVoucherLine stErpVoucherLine = QStErpVoucherLine.stErpVoucherLine;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", stErpVoucherLine.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", stErpVoucherLine.regDate,
         "upd_date", stErpVoucherLine.updDate
     );
 
@@ -73,7 +70,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     /* ERP 전표 상세 목록조회 */
     @Override
     public List<StErpVoucherLineDto.Item> selectList(StErpVoucherLineDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -101,7 +98,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stErpVoucherLine.erpVoucherLineId, search.getErpVoucherLineId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -150,38 +147,13 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(StErpVoucherLineDto.Request c) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(c);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, stErpVoucherLine.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stErpVoucherLine.erpVoucherLineId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("erpVoucherLineId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stErpVoucherLine.erpVoucherLineId));
-                } else if ("accountNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stErpVoucherLine.accountNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stErpVoucherLine.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, stErpVoucherLine.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stErpVoucherLine.erpVoucherLineId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("erpVoucherLineId", stErpVoucherLine.erpVoucherLineId,
+                   "accountNm", stErpVoucherLine.accountNm,
+                   "regDate", stErpVoucherLine.regDate),
+        new OrderSpecifier<>(Order.DESC, stErpVoucherLine.regDate),
+        new OrderSpecifier<>(Order.ASC, stErpVoucherLine.erpVoucherLineId));
     }
 
     /* ERP 전표 상세 수정 */

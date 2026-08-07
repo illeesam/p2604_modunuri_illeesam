@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaimItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdClaimItemRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -32,8 +30,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdClaimItemRepositoryImpl";
     private static final QOdClaimItem odClaimItem = QOdClaimItem.odClaimItem;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", odClaimItem.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odClaimItem.regDate,
         "upd_date", odClaimItem.updDate
     );
 
@@ -87,7 +84,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
     /* 클레임 아이템 목록조회 */
     @Override
     public List<OdClaimItemDto.Item> selectList(OdClaimItemDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdClaimItemDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -119,7 +116,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odClaimItem.claimId, search.getClaimIds()),
                 QdslUtil.strEq(odClaimItem.claimId, search.getClaimId()),
@@ -171,38 +168,13 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdClaimItemDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, odClaimItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odClaimItem.claimItemId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("claimItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odClaimItem.claimItemId));
-                } else if ("prodNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odClaimItem.prodNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odClaimItem.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odClaimItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odClaimItem.claimItemId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("claimItemId", odClaimItem.claimItemId,
+                   "prodNm", odClaimItem.prodNm,
+                   "regDate", odClaimItem.regDate),
+        new OrderSpecifier<>(Order.DESC, odClaimItem.regDate),
+        new OrderSpecifier<>(Order.ASC, odClaimItem.claimItemId));
     }
 
     /* 클레임 아이템 수정 */

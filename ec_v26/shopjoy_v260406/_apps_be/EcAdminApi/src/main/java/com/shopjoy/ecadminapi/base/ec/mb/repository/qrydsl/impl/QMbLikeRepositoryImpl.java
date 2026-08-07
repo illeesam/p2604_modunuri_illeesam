@@ -21,11 +21,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -39,8 +37,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     private static final QMbMember mbMember  = QMbMember.mbMember;
     private static final QPdProd   pdProd  = QPdProd.pdProd;
     private static final QVwSyCode   cdLt = new QVwSyCode("cd_ltt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", mbLike.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbLike.regDate,
         "upd_date", mbLike.updDate
     );
 
@@ -77,7 +74,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     /* 좋아요(찜) 목록조회 */
     @Override
     public List<MbLikeDto.Item> selectList(MbLikeDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -106,7 +103,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbLike.likeId, search.getLikeId()),
                 QdslUtil.strEq(mbLike.memberId, search.getMemberId()),
@@ -151,36 +148,12 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(MbLikeDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, mbLike.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbLike.likeId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("likeId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbLike.likeId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbLike.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, mbLike.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbLike.likeId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("likeId", mbLike.likeId,
+                   "regDate", mbLike.regDate),
+        new OrderSpecifier<>(Order.DESC, mbLike.regDate),
+        new OrderSpecifier<>(Order.ASC, mbLike.likeId));
     }
 
     /* 좋아요(찜) 수정 */

@@ -37,8 +37,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBrandRepositoryImpl";
     private static final QSyBrand syBrand = QSyBrand.syBrand;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syBrand.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syBrand.regDate,
         "upd_date", syBrand.updDate
     );
 
@@ -80,7 +79,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* 브랜드 목록조회 */
     @Override
     public List<SyBrandDto.Item> selectList(SyBrandDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andPathIdIn(search),
@@ -109,7 +108,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 andPathIdIn(search),
                 QdslUtil.strEq(syBrand.brandId, search.getBrandId()),
@@ -168,43 +167,15 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyBrandDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.brandId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("brandId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syBrand.brandId));
-                } else if ("brandNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syBrand.brandNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syBrand.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syBrand.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.brandId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("brandId", syBrand.brandId,
+                   "brandNm", syBrand.brandNm,
+                   "regDate", syBrand.regDate,
+                   "sortOrd", syBrand.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syBrand.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syBrand.regDate),
+        new OrderSpecifier<>(Order.ASC, syBrand.brandId));
     }
 
     /* 브랜드 수정 */

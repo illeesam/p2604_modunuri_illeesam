@@ -22,7 +22,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -38,8 +37,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     private static final QSySite         sySite = QSySite.sySite;
     private static final QPdCategory     pdCategory = QPdCategory.pdCategory;
     private static final QPdProd         pdProd = QPdProd.pdProd;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdCategoryProd.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdCategoryProd.regDate,
         "upd_date", pdCategoryProd.updDate
     );
 
@@ -81,7 +79,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     /* 카테고리-상품 매핑 목록조회 */
     @Override
     public List<PdCategoryProdDto.Item> selectList(PdCategoryProdDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -114,7 +112,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdCategoryProd.categoryProdId, search.getCategoryProdId()),
                 QdslUtil.strEq(pdCategoryProd.categoryId, search.getCategoryId()),
@@ -177,41 +175,14 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdCategoryProdDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategoryProd.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategoryProd.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategoryProd.categoryProdId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("categoryProdId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdCategoryProd.categoryProdId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdCategoryProd.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdCategoryProd.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategoryProd.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategoryProd.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdCategoryProd.categoryProdId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("categoryProdId", pdCategoryProd.categoryProdId,
+                   "regDate", pdCategoryProd.regDate,
+                   "sortOrd", pdCategoryProd.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdCategoryProd.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdCategoryProd.regDate),
+        new OrderSpecifier<>(Order.ASC, pdCategoryProd.categoryProdId));
     }
 
     /* 카테고리-상품 매핑 수정 */

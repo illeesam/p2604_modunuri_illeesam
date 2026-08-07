@@ -19,11 +19,9 @@ import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -37,8 +35,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     private static final QSySite   sySite     = QSySite.sySite;
     private static final QVwSyCode   cdGr  = new QVwSyCode("cd_gr");
     private static final QVwSyCode   cdMs  = new QVwSyCode("cd_ms");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "join_date", mbMember.joinDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("join_date", mbMember.joinDate,
         "reg_date", mbMember.regDate,
         "upd_date", mbMember.updDate
     );
@@ -94,7 +91,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     /* 회원 목록조회 */
     @Override
     public List<MbMemberDto.Item> selectList(MbMemberDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -124,7 +121,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbMember.memberId, search.getMemberId()),
                 QdslUtil.strEq(mbMember.gradeCd, search.getGradeCd()),
@@ -180,38 +177,13 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(MbMemberDto.Request sySite) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(sySite);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, mbMember.joinDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMember.memberId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("memberId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMember.memberId));
-                } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMember.memberNm));
-                } else if ("joinDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMember.joinDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, mbMember.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMember.memberId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("memberId", mbMember.memberId,
+                   "memberNm", mbMember.memberNm,
+                   "joinDate", mbMember.joinDate),
+        new OrderSpecifier<>(Order.DESC, mbMember.regDate),
+        new OrderSpecifier<>(Order.ASC, mbMember.memberId));
     }
 
     /* 회원 수정 */

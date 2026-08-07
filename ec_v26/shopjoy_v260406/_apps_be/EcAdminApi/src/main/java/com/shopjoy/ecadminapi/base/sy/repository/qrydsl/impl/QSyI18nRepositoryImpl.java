@@ -15,11 +15,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyI18n;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyI18nRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -66,7 +64,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     /* 다국어 목록조회 */
     @Override
     public List<SyI18nDto.Item> selectList(SyI18nDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -94,7 +92,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
                 QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
@@ -139,41 +137,14 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyI18nDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syI18n.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syI18n.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syI18n.i18nId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("i18nId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syI18n.i18nId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syI18n.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syI18n.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syI18n.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syI18n.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syI18n.i18nId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("i18nId", syI18n.i18nId,
+                   "regDate", syI18n.regDate,
+                   "sortOrd", syI18n.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syI18n.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syI18n.regDate),
+        new OrderSpecifier<>(Order.ASC, syI18n.i18nId));
     }
 
     /* 다국어 수정 */

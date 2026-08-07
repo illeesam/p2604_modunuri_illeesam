@@ -166,22 +166,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     private List<OrderSpecifier<?>> buildOrder(PdReviewAttachDto.Request s, boolean withSortOrd) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            if (withSortOrd) {
-                orders.add(new OrderSpecifier(Order.ASC, pdReviewAttach.sortOrd));
-                orders.add(new OrderSpecifier(Order.DESC, pdReviewAttach.regDate));
-            } else {
-                orders.add(new OrderSpecifier(Order.DESC, pdReviewAttach.regDate));
-            }
-            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-            /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-            if (orders.isEmpty()) {
-                orders.add(new OrderSpecifier<>(Order.DESC, pdReviewAttach.regDate));
-                orders.add(new OrderSpecifier<>(Order.ASC, pdReviewAttach.reviewAttachId));
-            }
-                orders.add(new OrderSpecifier<>(Order.ASC, pdReviewAttach.reviewAttachId));
-            return orders;
-        }
+        if (StringUtils.hasText(sort)) {
         if ("id_asc".equals(sort)) {
             orders.add(new OrderSpecifier(Order.ASC,  pdReviewAttach.reviewAttachId));
         } else if ("id_desc".equals(sort)) {
@@ -197,6 +182,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
             } else {
                 orders.add(new OrderSpecifier(Order.DESC, pdReviewAttach.regDate));
             }
+        }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, pdReviewAttach.regDate));

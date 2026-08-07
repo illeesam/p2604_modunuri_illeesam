@@ -15,11 +15,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAttachGrp;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttachGrp;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyAttachGrpRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -68,7 +66,7 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
     /* 첨부파일 그룹 목록조회 */
     @Override
     public List<SyAttachGrpDto.Item> selectList(SyAttachGrpDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyAttachGrpDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -94,7 +92,7 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syAttachGrp.attachGrpId, search.getAttachGrpId()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
@@ -139,43 +137,15 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyAttachGrpDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.attachGrpId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("attachGrpId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syAttachGrp.attachGrpId));
-                } else if ("attachGrpNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syAttachGrp.attachGrpNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syAttachGrp.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syAttachGrp.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.attachGrpId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("attachGrpId", syAttachGrp.attachGrpId,
+                   "attachGrpNm", syAttachGrp.attachGrpNm,
+                   "regDate", syAttachGrp.regDate,
+                   "sortOrd", syAttachGrp.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syAttachGrp.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syAttachGrp.regDate),
+        new OrderSpecifier<>(Order.ASC, syAttachGrp.attachGrpId));
     }
 
     /* 첨부파일 그룹 수정 */

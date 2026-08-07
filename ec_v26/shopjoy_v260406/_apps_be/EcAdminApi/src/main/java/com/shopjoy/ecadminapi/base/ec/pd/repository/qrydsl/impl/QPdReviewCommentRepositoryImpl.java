@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReviewComment;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReviewComment;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewCommentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -32,8 +30,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewCommentRepositoryImpl";
     private static final QPdReviewComment pdReviewComment = QPdReviewComment.pdReviewComment;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdReviewComment.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdReviewComment.regDate,
         "upd_date", pdReviewComment.updDate
     );
 
@@ -70,7 +67,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     /** 전체 목록 */
     @Override
     public List<PdReviewCommentDto.Item> selectList(PdReviewCommentDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -100,7 +97,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdReviewComment.reviewId, search.getReviewIds()),
                 QdslUtil.strEq(pdReviewComment.reviewId, search.getReviewId()),
@@ -152,38 +149,13 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdReviewCommentDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pdReviewComment.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdReviewComment.reviewCommentId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("reviewCommentId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdReviewComment.reviewCommentId));
-                } else if ("writerNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdReviewComment.writerNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdReviewComment.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pdReviewComment.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdReviewComment.reviewCommentId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("reviewCommentId", pdReviewComment.reviewCommentId,
+                   "writerNm", pdReviewComment.writerNm,
+                   "regDate", pdReviewComment.regDate),
+        new OrderSpecifier<>(Order.DESC, pdReviewComment.regDate),
+        new OrderSpecifier<>(Order.ASC, pdReviewComment.reviewCommentId));
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */

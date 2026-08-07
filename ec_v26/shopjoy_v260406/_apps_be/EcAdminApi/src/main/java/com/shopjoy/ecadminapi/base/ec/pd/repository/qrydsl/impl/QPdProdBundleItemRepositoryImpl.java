@@ -18,11 +18,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdBundleItem;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdBundleItemRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -36,8 +34,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     private static final QSySite           sySite  = QSySite.sySite;
     private static final QPdProd           prd  = new QPdProd("prd");
     private static final QPdProd           prd2 = new QPdProd("prd2");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdProdBundleItem.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdBundleItem.regDate,
         "upd_date", pdProdBundleItem.updDate
     );
 
@@ -76,7 +73,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     /* 묶음상품 구성 목록조회 */
     @Override
     public List<PdProdBundleItemDto.Item> selectList(PdProdBundleItemDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdBundleItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -104,7 +101,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdProdBundleItem.bundleItemId, search.getBundleItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -147,41 +144,14 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdProdBundleItemDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdBundleItem.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdBundleItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdBundleItem.bundleItemId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("bundleItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdBundleItem.bundleItemId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdBundleItem.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdProdBundleItem.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdBundleItem.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdBundleItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdBundleItem.bundleItemId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("bundleItemId", pdProdBundleItem.bundleItemId,
+                   "regDate", pdProdBundleItem.regDate,
+                   "sortOrd", pdProdBundleItem.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdProdBundleItem.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdProdBundleItem.regDate),
+        new OrderSpecifier<>(Order.ASC, pdProdBundleItem.bundleItemId));
     }
 
     /* 묶음상품 구성 수정 */

@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEvent;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -31,8 +29,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventRepositoryImpl";
     private static final QPmEvent pmEvent = QPmEvent.pmEvent;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pmEvent.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmEvent.regDate,
         "upd_date", pmEvent.updDate
     );
 
@@ -79,7 +76,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     /* 이벤트 목록조회 */
     @Override
     public List<PmEventDto.Item> selectList(PmEventDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmEventDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -110,7 +107,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmEvent.eventId, search.getEventIds()),
                 QdslUtil.strEq(pmEvent.eventId, search.getEventId()),
@@ -163,43 +160,15 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmEventDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.eventId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("eventId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmEvent.eventId));
-                } else if ("eventNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmEvent.eventNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmEvent.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pmEvent.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.eventId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("eventId", pmEvent.eventId,
+                   "eventNm", pmEvent.eventNm,
+                   "regDate", pmEvent.regDate,
+                   "sortOrd", pmEvent.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pmEvent.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pmEvent.regDate),
+        new OrderSpecifier<>(Order.ASC, pmEvent.eventId));
     }
 
     /* 이벤트 수정 */

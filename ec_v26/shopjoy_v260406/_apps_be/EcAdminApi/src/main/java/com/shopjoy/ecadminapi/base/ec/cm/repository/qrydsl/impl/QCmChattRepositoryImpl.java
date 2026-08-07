@@ -16,10 +16,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChatt;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmChatt;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmChattRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,7 +69,7 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
 
     @Override
     public List<CmChattDto.Item> selectList(CmChattDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmChattDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -94,7 +92,7 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmChatt.chattId, search.getChattId()),
                 QdslUtil.strEq(cmChatt.chattStatusCd, search.getChattStatusCd()),
@@ -121,13 +119,9 @@ public class QCmChattRepositoryImpl implements QCmChattRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
-private BooleanExpression andSearchValue(CmChattDto.Request s) {
-        return s == null ? null : andSearchValue(s.getSearchValue(), s.getSearchType());
-    }
-
-
-    private BooleanExpression andSearchValue(String searchValue, String searchType) {
-        return QdslUtil.searchValueFields(searchValue, searchType, List.of(
+    private BooleanExpression andSearchValue(CmChattDto.Request s) {
+        if (s == null) return null;
+        return QdslUtil.searchValueFields(s.getSearchValue(), s.getSearchType(), List.of(
             QdslUtil.FieldDef.like("chattId", cmChatt.chattId),
             QdslUtil.FieldDef.like("subject", cmChatt.subject),
             QdslUtil.FieldDef.like("chattMemo", cmChatt.chattMemo),
@@ -135,28 +129,12 @@ private BooleanExpression andSearchValue(CmChattDto.Request s) {
         ));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(CmChattDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, cmChatt.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmChatt.chattId));
-            return orders;
-        }
-        for (String part : sort.split(",")) {
-            String[] fd = part.trim().split(" ");
-            if (fd.length == 2) {
-                Order ord = "desc".equalsIgnoreCase(fd[1]) ? Order.DESC : Order.ASC;
-                if ("chattId".equals(fd[0]))  orders.add(new OrderSpecifier(ord, cmChatt.chattId));
-                else if ("regDate".equals(fd[0])) orders.add(new OrderSpecifier(ord, cmChatt.regDate));
-            }
-        }
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, cmChatt.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC,  cmChatt.chattId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("chattId", cmChatt.chattId,
+                   "regDate", cmChatt.regDate),
+            new OrderSpecifier<>(Order.DESC, cmChatt.regDate),
+            new OrderSpecifier<>(Order.ASC,  cmChatt.chattId));
     }
 
     @Override

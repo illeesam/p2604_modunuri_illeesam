@@ -14,10 +14,8 @@ import com.shopjoy.ecadminapi.base.zz.data.entity.QZzSample3;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzSample3;
 import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzSample3Repository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -91,7 +89,7 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
     /* 목록조회 */
     @Override
     public List<ZzSample3Dto.Item> selectList(ZzSample3Dto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<ZzSample3Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -122,7 +120,7 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(zzSample3.sample1Id, search.getSample1Ids()),
                 QdslUtil.strIn(zzSample3.sample2Id, search.getSample2Ids()),
@@ -192,36 +190,12 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(ZzSample3Dto.Request search) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(search);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, zzSample3.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, zzSample3.sample3Id));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("sample3Id".equals(field)) {
-                    orders.add(new OrderSpecifier(order, zzSample3.sample3Id));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, zzSample3.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, zzSample3.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, zzSample3.sample3Id));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("sample3Id", zzSample3.sample3Id,
+                   "regDate", zzSample3.regDate),
+        new OrderSpecifier<>(Order.DESC, zzSample3.regDate),
+        new OrderSpecifier<>(Order.ASC, zzSample3.sample3Id));
     }
 
     /* 수정 */

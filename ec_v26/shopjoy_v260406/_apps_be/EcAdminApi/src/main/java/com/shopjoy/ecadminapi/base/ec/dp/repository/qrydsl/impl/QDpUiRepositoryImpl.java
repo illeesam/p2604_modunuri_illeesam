@@ -41,8 +41,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiRepositoryImpl";
     private static final QDpUi dpUi = QDpUi.dpUi;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", dpUi.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", dpUi.regDate,
         "upd_date", dpUi.updDate
     );
 
@@ -84,7 +83,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     /* 전시 UI 목록조회 */
     @Override
     public List<DpUiDto.Item> selectList(DpUiDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<DpUiDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -114,7 +113,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 andPathIdIn(search),
                 QdslUtil.strEq(dpUi.uiId, search.getUiId()),
@@ -170,43 +169,15 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(DpUiDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, dpUi.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpUi.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpUi.uiId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("uiId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpUi.uiId));
-                } else if ("uiNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpUi.uiNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpUi.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, dpUi.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, dpUi.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpUi.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpUi.uiId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("uiId", dpUi.uiId,
+                   "uiNm", dpUi.uiNm,
+                   "regDate", dpUi.regDate,
+                   "sortOrd", dpUi.sortOrd),
+        new OrderSpecifier<>(Order.ASC, dpUi.sortOrd),
+        new OrderSpecifier<>(Order.ASC, dpUi.regDate),
+        new OrderSpecifier<>(Order.ASC, dpUi.uiId));
     }
 
     /* 전시 UI 수정 */

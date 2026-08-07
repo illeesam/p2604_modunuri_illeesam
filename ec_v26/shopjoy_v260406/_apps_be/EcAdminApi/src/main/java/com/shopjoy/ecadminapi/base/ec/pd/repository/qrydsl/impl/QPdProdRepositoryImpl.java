@@ -27,7 +27,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -49,8 +48,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final QVwSyCode     cdPs = new QVwSyCode("cd_ps");
     private static final QVwSyCode     cdPt = new QVwSyCode("cd_pt");
     private static final QVwSyCode     cdSz = new QVwSyCode("cd_sz");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdProd.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProd.regDate,
         "upd_date", pdProd.updDate
     );
 
@@ -208,7 +206,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     @Override
     public List<PdProdDto.Item> selectList(PdProdDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -258,7 +256,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdProd.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProd.prodId, search.getProdId()),
@@ -344,38 +342,13 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdProdDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pdProd.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProd.prodId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("prodId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProd.prodId));
-                } else if ("prodNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProd.prodNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProd.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pdProd.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProd.prodId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("prodId", pdProd.prodId,
+                   "prodNm", pdProd.prodNm,
+                   "regDate", pdProd.regDate),
+        new OrderSpecifier<>(Order.DESC, pdProd.regDate),
+        new OrderSpecifier<>(Order.ASC, pdProd.prodId));
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */

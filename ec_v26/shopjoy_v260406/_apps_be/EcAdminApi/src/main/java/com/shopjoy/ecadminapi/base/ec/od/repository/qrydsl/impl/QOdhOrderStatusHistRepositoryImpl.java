@@ -15,11 +15,9 @@ import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhOrderStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdhOrderStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdhOrderStatusHistRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -62,7 +60,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
     /* 주문 상태 이력 목록조회 */
     @Override
     public List<OdhOrderStatusHistDto.Item> selectList(OdhOrderStatusHistDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdhOrderStatusHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -89,7 +87,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odhOrderStatusHist.orderStatusHistId, search.getOrderStatusHistId()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
@@ -133,36 +131,12 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdhOrderStatusHistDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, odhOrderStatusHist.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odhOrderStatusHist.orderStatusHistId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("orderStatusHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odhOrderStatusHist.orderStatusHistId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odhOrderStatusHist.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odhOrderStatusHist.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odhOrderStatusHist.orderStatusHistId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("orderStatusHistId", odhOrderStatusHist.orderStatusHistId,
+                   "regDate", odhOrderStatusHist.regDate),
+        new OrderSpecifier<>(Order.DESC, odhOrderStatusHist.regDate),
+        new OrderSpecifier<>(Order.ASC, odhOrderStatusHist.orderStatusHistId));
     }
 
     /* 주문 상태 이력 수정 */

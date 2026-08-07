@@ -36,8 +36,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetLibRepositoryImpl";
     private static final QDpWidgetLib dpWidgetLib = QDpWidgetLib.dpWidgetLib;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", dpWidgetLib.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", dpWidgetLib.regDate,
         "upd_date", dpWidgetLib.updDate
     );
 
@@ -85,7 +84,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* 전시 위젯 라이브러리 목록조회 */
     @Override
     public List<DpWidgetLibDto.Item> selectList(DpWidgetLibDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -114,7 +113,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 andPathIdIn(search),
                 QdslUtil.strEq(dpWidgetLib.widgetLibId, search.getWidgetLibId()),
@@ -172,43 +171,15 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(DpWidgetLibDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.widgetLibId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("widgetLibId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpWidgetLib.widgetLibId));
-                } else if ("widgetNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpWidgetLib.widgetNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpWidgetLib.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, dpWidgetLib.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.widgetLibId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("widgetLibId", dpWidgetLib.widgetLibId,
+                   "widgetNm", dpWidgetLib.widgetNm,
+                   "regDate", dpWidgetLib.regDate,
+                   "sortOrd", dpWidgetLib.sortOrd),
+        new OrderSpecifier<>(Order.ASC, dpWidgetLib.sortOrd),
+        new OrderSpecifier<>(Order.ASC, dpWidgetLib.regDate),
+        new OrderSpecifier<>(Order.ASC, dpWidgetLib.widgetLibId));
     }
 
     /* 전시 위젯 라이브러리 수정 */

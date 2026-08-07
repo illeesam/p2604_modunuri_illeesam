@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhBatchHist;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchHist;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhBatchHistRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -31,8 +29,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchHistRepositoryImpl";
     private static final QSyhBatchHist syhBatchHist   = QSyhBatchHist.syhBatchHist;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syhBatchHist.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syhBatchHist.regDate,
         "upd_date", syhBatchHist.updDate
     );
 
@@ -77,7 +74,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     /* 배치 실행 이력 목록조회 */
     @Override
     public List<SyhBatchHistDto.Item> selectList(SyhBatchHistDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -104,7 +101,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syhBatchHist.batchHistId, search.getBatchHistId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -151,38 +148,13 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyhBatchHistDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syhBatchHist.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syhBatchHist.batchHistId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("batchHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syhBatchHist.batchHistId));
-                } else if ("batchNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syhBatchHist.batchNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syhBatchHist.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syhBatchHist.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syhBatchHist.batchHistId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("batchHistId", syhBatchHist.batchHistId,
+                   "batchNm", syhBatchHist.batchNm,
+                   "regDate", syhBatchHist.regDate),
+        new OrderSpecifier<>(Order.DESC, syhBatchHist.regDate),
+        new OrderSpecifier<>(Order.ASC, syhBatchHist.batchHistId));
     }
 
     /* 배치 실행 이력 수정 */

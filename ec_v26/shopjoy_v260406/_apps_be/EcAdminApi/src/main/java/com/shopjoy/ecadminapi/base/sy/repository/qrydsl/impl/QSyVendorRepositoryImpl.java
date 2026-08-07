@@ -41,8 +41,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QVwSyCode cdVc = new QVwSyCode("cd_vc");
     private static final QVwSyCode cdVs = new QVwSyCode("cd_vs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syVendor.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syVendor.regDate,
         "upd_date", syVendor.updDate
     );
 
@@ -103,7 +102,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* 업체(판매자) 목록조회 */
     @Override
     public List<SyVendorDto.Item> selectList(SyVendorDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andPathIdIn(search),
@@ -133,7 +132,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 andPathIdIn(search),
                 QdslUtil.strEq(syVendor.vendorId, search.getVendorId()),
@@ -207,38 +206,13 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyVendorDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syVendor.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendor.vendorId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("vendorId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendor.vendorId));
-                } else if ("vendorNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendor.vendorNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendor.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syVendor.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendor.vendorId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("vendorId", syVendor.vendorId,
+                   "vendorNm", syVendor.vendorNm,
+                   "regDate", syVendor.regDate),
+        new OrderSpecifier<>(Order.DESC, syVendor.regDate),
+        new OrderSpecifier<>(Order.ASC, syVendor.vendorId));
     }
 
     /* 업체(판매자) 수정 */

@@ -21,11 +21,9 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdRefundMethodReposi
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -41,8 +39,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     private static final QOdPay          pay = new QOdPay("pay");
     private static final QVwSyCode         cdPm = new QVwSyCode("cd_pm");
     private static final QVwSyCode         cdRs = new QVwSyCode("cd_rs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", odRefundMethod.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odRefundMethod.regDate,
         "upd_date", odRefundMethod.updDate
     );
 
@@ -88,7 +85,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     /* 환불수단 목록조회 */
     @Override
     public List<OdRefundMethodDto.Item> selectList(OdRefundMethodDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdRefundMethodDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -116,7 +113,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odRefundMethod.refundMethodId, search.getRefundMethodId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -163,36 +160,12 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdRefundMethodDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, odRefundMethod.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odRefundMethod.refundMethodId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("refundMethodId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odRefundMethod.refundMethodId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odRefundMethod.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odRefundMethod.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odRefundMethod.refundMethodId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("refundMethodId", odRefundMethod.refundMethodId,
+                   "regDate", odRefundMethod.regDate),
+        new OrderSpecifier<>(Order.DESC, odRefundMethod.regDate),
+        new OrderSpecifier<>(Order.ASC, odRefundMethod.refundMethodId));
     }
 
     /* 환불수단 수정 */

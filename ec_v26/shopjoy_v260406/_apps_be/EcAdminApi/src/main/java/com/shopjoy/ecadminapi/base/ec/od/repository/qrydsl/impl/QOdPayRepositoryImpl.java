@@ -20,11 +20,9 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdPayRepository;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -45,8 +43,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     private static final QVwSyCode   cdRs = new QVwSyCode("cd_rs");
     private static final QVwSyCode   cdVb = new QVwSyCode("cd_vb");
     private static final QVwSyCode   cdCt = new QVwSyCode("cd_ct");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "pay_date", odPay.payDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("pay_date", odPay.payDate,
         "reg_date", odPay.regDate,
         "upd_date", odPay.updDate
     );
@@ -160,7 +157,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     /* 결제 목록조회 */
     @Override
     public List<OdPayDto.Item> selectList(OdPayDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdPayDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -190,7 +187,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(odPay.orderId, search.getOrderIds()),
                 QdslUtil.strEq(odPay.orderId, search.getOrderId()),
@@ -261,38 +258,13 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdPayDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, odPay.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odPay.payId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("payId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odPay.payId));
-                } else if ("vbankBankNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odPay.vbankBankNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odPay.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odPay.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odPay.payId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("payId", odPay.payId,
+                   "vbankBankNm", odPay.vbankBankNm,
+                   "regDate", odPay.regDate),
+        new OrderSpecifier<>(Order.DESC, odPay.regDate),
+        new OrderSpecifier<>(Order.ASC, odPay.payId));
     }
 
     /* 결제 수정 */

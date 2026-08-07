@@ -21,11 +21,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendMsgLog;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhSendMsgLogRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -41,8 +39,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     private static final QSyUser        syUser = QSyUser.syUser;
     private static final QVwSyCode        cd_mc = new QVwSyCode("cd_mc");
     private static final QVwSyCode        cd_sr = new QVwSyCode("cd_sr");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "send_date", syhSendMsgLog.sendDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("send_date", syhSendMsgLog.sendDate,
         "reg_date", syhSendMsgLog.regDate,
         "upd_date", syhSendMsgLog.updDate
     );
@@ -104,7 +101,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     /* 메시지 발송 로그 목록조회 */
     @Override
     public List<SyhSendMsgLogDto.Item> selectList(SyhSendMsgLogDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -134,7 +131,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syhSendMsgLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhSendMsgLog.userId, search.getUserId()),
@@ -193,36 +190,12 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyhSendMsgLogDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syhSendMsgLog.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syhSendMsgLog.logId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syhSendMsgLog.logId));
-                } else if ("sendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syhSendMsgLog.sendDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syhSendMsgLog.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syhSendMsgLog.logId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("logId", syhSendMsgLog.logId,
+                   "sendDate", syhSendMsgLog.sendDate),
+        new OrderSpecifier<>(Order.DESC, syhSendMsgLog.regDate),
+        new OrderSpecifier<>(Order.ASC, syhSendMsgLog.logId));
     }
 
     /* 메시지 발송 로그 수정 */

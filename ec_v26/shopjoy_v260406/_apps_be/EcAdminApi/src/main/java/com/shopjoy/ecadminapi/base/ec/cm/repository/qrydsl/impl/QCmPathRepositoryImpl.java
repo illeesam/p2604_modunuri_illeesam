@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmPath;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmPath;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmPathRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -31,8 +29,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmPathRepositoryImpl";
     private static final QCmPath cmPath = QCmPath.cmPath;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", cmPath.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmPath.regDate,
         "upd_date", cmPath.updDate
     );
 
@@ -70,7 +67,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     /** 전체 목록 */
     @Override
     public List<CmPathDto.Item> selectList(CmPathDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmPathDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(cmPath.useYn, search.getUseYn()),
@@ -97,7 +94,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         int offset = (pageNo - 1) * pageSize;
         int limit = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmPath.useYn, search.getUseYn()),
                 QdslUtil.strEq(cmPath.bizCd, search.getBizCd()),
@@ -142,41 +139,14 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(CmPathDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, cmPath.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmPath.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmPath.bizCd));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("bizCd".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmPath.bizCd));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmPath.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, cmPath.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, cmPath.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmPath.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmPath.bizCd));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("bizCd", cmPath.bizCd,
+                   "regDate", cmPath.regDate,
+                   "sortOrd", cmPath.sortOrd),
+        new OrderSpecifier<>(Order.ASC, cmPath.sortOrd),
+        new OrderSpecifier<>(Order.ASC, cmPath.regDate),
+        new OrderSpecifier<>(Order.ASC, cmPath.bizCd));
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */

@@ -23,11 +23,9 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdClaimRepository;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -52,8 +50,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private static final QVwSyCode   cdEc = new QVwSyCode("cd_ec");
     private static final QVwSyCode   cdAp = new QVwSyCode("cd_ap");
     private static final QVwSyCode   cdAt = new QVwSyCode("cd_at");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "request_date", odClaim.requestDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("request_date", odClaim.requestDate,
         "proc_date", odClaim.procDate,
         "claim_cancel_date", odClaim.claimCancelDate,
         "collect_schd_date", odClaim.collectSchdDate,
@@ -293,7 +290,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     /* 클레임(취소/반품/교환) 목록조회 */
     @Override
     public List<OdClaimDto.Item> selectList(OdClaimDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdClaimDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -326,7 +323,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odClaim.claimId, search.getClaimId()),
                 QdslUtil.strEq(odClaim.orderId, search.getOrderId()),
@@ -424,38 +421,13 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdClaimDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, odClaim.requestDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odClaim.claimId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("claimId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odClaim.claimId));
-                } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odClaim.memberNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odClaim.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odClaim.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odClaim.claimId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("claimId", odClaim.claimId,
+                   "memberNm", odClaim.memberNm,
+                   "regDate", odClaim.regDate),
+        new OrderSpecifier<>(Order.DESC, odClaim.regDate),
+        new OrderSpecifier<>(Order.ASC, odClaim.claimId));
     }
 
     /* 클레임(취소/반품/교환) 수정 */

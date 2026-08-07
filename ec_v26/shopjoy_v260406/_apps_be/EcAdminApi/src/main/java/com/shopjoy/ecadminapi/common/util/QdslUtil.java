@@ -1,5 +1,7 @@
 package com.shopjoy.ecadminapi.common.util;
 
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -12,6 +14,8 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +38,57 @@ public class QdslUtil {
 
     /** 유틸 클래스 — 인스턴스화 금지. */
     private QdslUtil() {}
+
+    /**
+     * 정렬조건 빌드 — sort 문자열({@code "field dir[,field dir]"})을 파싱하여
+     * {@code fieldMap} 에서 Q-경로를 찾아 {@link OrderSpecifier} 목록을 구성한다.
+     * sort 미지정이거나 {@code fieldMap} 에 없는 필드만 있으면 {@code defaults} 를 그대로 반환한다.
+     *
+     * <pre>
+     * private List&lt;OrderSpecifier&lt;?&gt;&gt; buildOrder(XxxDto.Request s) {
+     *     return QdslUtil.buildOrder(s,
+     *         Map.of("regDate",   xxx.regDate,
+     *                "writerNm",  xxx.writerNm),
+     *         new OrderSpecifier&lt;&gt;(Order.DESC, xxx.regDate),
+     *         new OrderSpecifier&lt;&gt;(Order.ASC,  xxx.id));
+     * }
+     * </pre>
+     *
+     * @param search   검색조건 (null 허용)
+     * @param fieldMap 필드명 → Q-경로(Expression) 매핑
+     * @param defaults sort 미지정 또는 미매핑 시 적용할 기본 정렬 (순서 보장)
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static List<OrderSpecifier<?>> buildOrder(
+            String sort,
+            Map<String, ?> fieldMap,
+            OrderSpecifier<?>... defaults) {
+        List<OrderSpecifier<?>> orders = new ArrayList<>();
+        if (StringUtils.hasText(sort)) {
+            for (String part : sort.split(",")) {
+                String[] fd = part.trim().split(" ");
+                if (fd.length == 2) {
+                    com.querydsl.core.types.Expression path =
+                            (com.querydsl.core.types.Expression) fieldMap.get(fd[0]);
+                    if (path != null) {
+                        Order ord = "desc".equalsIgnoreCase(fd[1]) ? Order.DESC : Order.ASC;
+                        orders.add(new OrderSpecifier(ord, path));
+                    }
+                }
+            }
+        }
+        if (orders.isEmpty() && defaults != null && defaults.length > 0) {
+            orders.addAll(Arrays.asList(defaults));
+        }
+        return orders;
+    }
+
+    public static List<OrderSpecifier<?>> buildOrder(
+            com.shopjoy.ecadminapi.common.data.BaseRequest search,
+            Map<String, ?> fieldMap,
+            OrderSpecifier<?>... defaults) {
+        return buildOrder(sortOf(search), fieldMap, defaults);
+    }
 
     /** Long 값 정확 일치. l 이 null 이면 조건 미적용(null 반환). */
     /**

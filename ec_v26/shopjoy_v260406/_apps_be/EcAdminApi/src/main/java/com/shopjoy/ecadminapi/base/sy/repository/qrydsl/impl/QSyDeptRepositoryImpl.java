@@ -24,7 +24,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -42,8 +41,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     }
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QVwSyCode cdDt = new QVwSyCode("cd_dt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syDept.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syDept.regDate,
         "upd_date", syDept.updDate
     );
 
@@ -87,7 +85,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     /* 부서 목록조회 */
     @Override
     public List<SyDeptDto.Item> selectList(SyDeptDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyDeptDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andParentDeptIdIn(search),
@@ -115,7 +113,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 andParentDeptIdIn(search),
                 QdslUtil.strEq(syDept.deptTypeCd, search.getTypeCd()),
@@ -172,43 +170,15 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyDeptDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syDept.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syDept.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syDept.deptId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("deptId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syDept.deptId));
-                } else if ("deptNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syDept.deptNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syDept.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syDept.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syDept.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syDept.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syDept.deptId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("deptId", syDept.deptId,
+                   "deptNm", syDept.deptNm,
+                   "regDate", syDept.regDate,
+                   "sortOrd", syDept.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syDept.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syDept.regDate),
+        new OrderSpecifier<>(Order.ASC, syDept.deptId));
     }
 
     /* 부서 수정 */

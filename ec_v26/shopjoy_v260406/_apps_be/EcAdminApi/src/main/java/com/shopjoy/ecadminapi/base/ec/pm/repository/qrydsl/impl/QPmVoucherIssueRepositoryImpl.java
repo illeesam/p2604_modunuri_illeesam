@@ -21,11 +21,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmVoucherIssueReposi
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -40,8 +38,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     private static final QOdOrder        odOrder  = QOdOrder.odOrder;
     private static final QSySite         sySite  = QSySite.sySite;
     private static final QVwSyCode         cdVis = new QVwSyCode("cd_vis");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "issue_date", pmVoucherIssue.issueDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("issue_date", pmVoucherIssue.issueDate,
         "reg_date", pmVoucherIssue.regDate,
         "upd_date", pmVoucherIssue.updDate
     );
@@ -84,7 +81,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     /* 바우처(상품권) 발행 이력 목록조회 */
     @Override
     public List<PmVoucherIssueDto.Item> selectList(PmVoucherIssueDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -112,7 +109,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmVoucherIssue.voucherIssueId, search.getVoucherIssueId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -157,36 +154,12 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmVoucherIssueDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pmVoucherIssue.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmVoucherIssue.voucherIssueId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("voucherIssueId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmVoucherIssue.voucherIssueId));
-                } else if ("issueDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmVoucherIssue.issueDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pmVoucherIssue.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmVoucherIssue.voucherIssueId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("voucherIssueId", pmVoucherIssue.voucherIssueId,
+                   "issueDate", pmVoucherIssue.issueDate),
+        new OrderSpecifier<>(Order.DESC, pmVoucherIssue.regDate),
+        new OrderSpecifier<>(Order.ASC, pmVoucherIssue.voucherIssueId));
     }
 
     /* 바우처(상품권) 발행 이력 수정 */

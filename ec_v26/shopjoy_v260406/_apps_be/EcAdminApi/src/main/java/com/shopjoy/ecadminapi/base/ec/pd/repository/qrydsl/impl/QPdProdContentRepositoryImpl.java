@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdContent;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdContent;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdContentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -31,8 +29,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdContentRepositoryImpl";
     private static final QPdProdContent pdProdContent = QPdProdContent.pdProdContent;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdProdContent.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdContent.regDate,
         "upd_date", pdProdContent.updDate
     );
 
@@ -70,7 +67,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
     /* 상품 상세 콘텐츠 목록조회 */
     @Override
     public List<PdProdContentDto.Item> selectList(PdProdContentDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdContentDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -99,7 +96,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdProdContent.prodId, search.getProdId()),
                 QdslUtil.strEq(pdProdContent.prodContentId, search.getProdContentId()),
@@ -143,41 +140,14 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdProdContentDto.Request req) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(req);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdContent.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdContent.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdContent.prodContentId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("prodContentId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdContent.prodContentId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdContent.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdProdContent.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdContent.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdContent.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdContent.prodContentId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("prodContentId", pdProdContent.prodContentId,
+                   "regDate", pdProdContent.regDate,
+                   "sortOrd", pdProdContent.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdProdContent.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdProdContent.regDate),
+        new OrderSpecifier<>(Order.ASC, pdProdContent.prodContentId));
     }
 
     /* 상품 상세 콘텐츠 수정 */

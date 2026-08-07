@@ -18,11 +18,9 @@ import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberSnsRepositor
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -34,8 +32,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     private static final QMbMemberSns mbMemberSns    = QMbMemberSns.mbMemberSns;
     private static final QMbMember    mbMember  = QMbMember.mbMember;
     private static final QVwSyCode      cdSc = new QVwSyCode("cd_sc");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", mbMemberSns.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbMemberSns.regDate,
         "upd_date", mbMemberSns.updDate
     );
 
@@ -69,7 +66,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     /* SNS 연동 회원 목록조회 */
     @Override
     public List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbMemberSnsDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -97,7 +94,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(mbMemberSns.memberId, search.getMemberIds()),
                 QdslUtil.strEq(mbMemberSns.memberId, search.getMemberId()),
@@ -141,36 +138,12 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(MbMemberSnsDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, mbMemberSns.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberSns.memberSnsId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("memberSnsId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberSns.memberSnsId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberSns.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, mbMemberSns.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberSns.memberSnsId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("memberSnsId", mbMemberSns.memberSnsId,
+                   "regDate", mbMemberSns.regDate),
+        new OrderSpecifier<>(Order.DESC, mbMemberSns.regDate),
+        new OrderSpecifier<>(Order.ASC, mbMemberSns.memberSnsId));
     }
 
     /* SNS 연동 회원 수정 */

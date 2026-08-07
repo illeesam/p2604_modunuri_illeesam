@@ -20,11 +20,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendorUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorUser;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyVendorUserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -39,8 +37,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QVwSyCode cdP = new QVwSyCode("cd_p");
     private static final QVwSyCode cdVms = new QVwSyCode("cd_vms");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syVendorUser.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syVendorUser.regDate,
         "upd_date", syVendorUser.updDate
     );
 
@@ -95,7 +92,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     /* 업체 사용자 목록조회 */
     @Override
     public List<SyVendorUserDto.Item> selectList(SyVendorUserDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyVendorUserDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId()),
@@ -124,7 +121,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syVendorUser.vendorUserId, search.getVendorUserId()),
                 QdslUtil.strEq(syVendorUser.userId, search.getUserId()),
@@ -180,38 +177,13 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyVendorUserDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syVendorUser.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorUser.vendorUserId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("vendorUserId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendorUser.vendorUserId));
-                } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendorUser.memberNm));
-                } else if ("joinDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendorUser.joinDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syVendorUser.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorUser.vendorUserId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("vendorUserId", syVendorUser.vendorUserId,
+                   "memberNm", syVendorUser.memberNm,
+                   "joinDate", syVendorUser.joinDate),
+        new OrderSpecifier<>(Order.DESC, syVendorUser.regDate),
+        new OrderSpecifier<>(Order.ASC, syVendorUser.vendorUserId));
     }
 
     /* 업체 사용자 수정 */

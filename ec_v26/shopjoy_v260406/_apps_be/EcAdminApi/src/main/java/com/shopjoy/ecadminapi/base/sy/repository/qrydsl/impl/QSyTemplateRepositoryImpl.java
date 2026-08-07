@@ -37,8 +37,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyTemplateRepositoryImpl";
     private static final QSyTemplate syTemplate = QSyTemplate.syTemplate;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syTemplate.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syTemplate.regDate,
         "upd_date", syTemplate.updDate
     );
 
@@ -78,7 +77,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     /* 템플릿 목록조회 */
     @Override
     public List<SyTemplateDto.Item> selectList(SyTemplateDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyTemplateDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -108,7 +107,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 andPathIdIn(search),
                 QdslUtil.strEq(syTemplate.templateId, search.getTemplateId()),
@@ -167,38 +166,13 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyTemplateDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syTemplate.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syTemplate.templateId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("templateId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syTemplate.templateId));
-                } else if ("templateNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syTemplate.templateNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syTemplate.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syTemplate.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syTemplate.templateId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("templateId", syTemplate.templateId,
+                   "templateNm", syTemplate.templateNm,
+                   "regDate", syTemplate.regDate),
+        new OrderSpecifier<>(Order.DESC, syTemplate.regDate),
+        new OrderSpecifier<>(Order.ASC, syTemplate.templateId));
     }
 
     /* 템플릿 수정 */

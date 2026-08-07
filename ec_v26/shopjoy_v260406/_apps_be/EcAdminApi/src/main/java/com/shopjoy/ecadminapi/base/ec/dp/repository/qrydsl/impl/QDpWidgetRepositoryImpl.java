@@ -81,7 +81,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     /* 전시 위젯 목록조회 */
     @Override
     public List<DpWidgetDto.Item> selectList(DpWidgetDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<DpWidgetDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -107,7 +107,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(dpWidget.widgetTypeCd, search.getWidgetTypeCd()),
                 QdslUtil.strEq(dpWidget.useYn, search.getUseYn()),
@@ -157,43 +157,15 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(DpWidgetDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.widgetId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("widgetId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpWidget.widgetId));
-                } else if ("widgetNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpWidget.widgetNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpWidget.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, dpWidget.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.widgetId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("widgetId", dpWidget.widgetId,
+                   "widgetNm", dpWidget.widgetNm,
+                   "regDate", dpWidget.regDate,
+                   "sortOrd", dpWidget.sortOrd),
+        new OrderSpecifier<>(Order.ASC, dpWidget.sortOrd),
+        new OrderSpecifier<>(Order.ASC, dpWidget.regDate),
+        new OrderSpecifier<>(Order.ASC, dpWidget.widgetId));
     }
 
     /* 전시 위젯 수정 */

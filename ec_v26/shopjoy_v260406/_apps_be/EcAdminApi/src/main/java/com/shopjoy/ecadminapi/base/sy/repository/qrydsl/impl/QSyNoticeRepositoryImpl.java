@@ -15,11 +15,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyNotice;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyNoticeRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -70,7 +68,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     /* 공지사항 목록조회 */
     @Override
     public List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -99,7 +97,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()),
                 QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()),
@@ -147,38 +145,13 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyNoticeDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syNotice.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syNotice.noticeId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("noticeId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syNotice.noticeId));
-                } else if ("noticeTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syNotice.noticeTitle));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syNotice.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syNotice.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syNotice.noticeId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("noticeId", syNotice.noticeId,
+                   "noticeTitle", syNotice.noticeTitle,
+                   "regDate", syNotice.regDate),
+        new OrderSpecifier<>(Order.DESC, syNotice.regDate),
+        new OrderSpecifier<>(Order.ASC, syNotice.noticeId));
     }
 
     /* 공지사항 수정 */

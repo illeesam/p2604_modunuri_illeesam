@@ -14,10 +14,8 @@ import com.shopjoy.ecadminapi.base.zz.data.entity.QZzExam1;
 import com.shopjoy.ecadminapi.base.zz.data.entity.ZzExam1;
 import com.shopjoy.ecadminapi.base.zz.repository.qrydsl.QZzExam1Repository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -61,7 +59,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     /* zz_exam1 목록조회 */
     @Override
     public List<ZzExam1Dto.Item> selectList(ZzExam1Dto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<ZzExam1Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -88,7 +86,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(zzExam1.exam1Id, search.getExam1Ids()),
                 QdslUtil.strEq(zzExam1.exam1Id, search.getExam1Id()),
@@ -131,33 +129,11 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         ));
     }
 
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(ZzExam1Dto.Request search) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(search);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC, zzExam1.exam1Id));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("exam1Id".equals(field)) {
-                    orders.add(new OrderSpecifier(order, zzExam1.exam1Id));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, zzExam1.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, zzExam1.exam1Id));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("exam1Id", zzExam1.exam1Id),
+        new OrderSpecifier<>(Order.DESC, zzExam1.regDate),
+        new OrderSpecifier<>(Order.ASC, zzExam1.exam1Id));
     }
 
     /* zz_exam1 수정 */

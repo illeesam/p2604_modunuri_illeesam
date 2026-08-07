@@ -50,8 +50,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /* 같은 sy_code 테이블이 두 번 조인되므로 역할별 alias 부여 */
     private static final QVwSyCode syCode_userStatusCd = new QVwSyCode("code_userStatusCd");
     private static final QVwSyCode syCode_authMethodCd = new QVwSyCode("code_authMethodCd");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syUser.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syUser.regDate,
         "upd_date", syUser.updDate,
         "last_login_date", syUser.lastLoginDate
     );
@@ -118,7 +117,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용. null 안전) */
     @Override
     public List<SyUserDto.Item> selectList(SyUserDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -147,7 +146,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 andDeptIdIn(search),
                 QdslUtil.strEq(syUser.userStatusCd, search.getStatus()),
@@ -228,36 +227,14 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyUserDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (StringUtils.hasText(sort)) {
-            String[] sortParts = sort.split(",");
-            for (String part : sortParts) {
-                String trimmed = part.trim();
-                String[] fieldAndDir = trimmed.split(" ");
-                if (fieldAndDir.length == 2) {
-                    String field = fieldAndDir[0];
-                    String dir = fieldAndDir[1];
-                    Order order = "desc".equalsIgnoreCase(dir) ? Order.DESC : Order.ASC;
-                    if ("userId".equals(field)) {
-                        orders.add(new OrderSpecifier(order, syUser.userId));
-                    } else if ("userNm".equals(field)) {
-                        orders.add(new OrderSpecifier(order, syUser.userNm));
-                    } else if ("loginId".equals(field)) {
-                        orders.add(new OrderSpecifier(order, syUser.loginId));
-                    } else if ("regDate".equals(field)) {
-                        orders.add(new OrderSpecifier(order, syUser.regDate));
-                    } else if ("updDate".equals(field)) {
-                        orders.add(new OrderSpecifier(order, syUser.updDate));
-                    }
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, syUser.regDate));
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("userId", syUser.userId,
+                   "userNm", syUser.userNm,
+                   "loginId", syUser.loginId,
+                   "regDate", syUser.regDate,
+                   "updDate", syUser.updDate),
+        new OrderSpecifier<>(Order.DESC, syUser.regDate));
     }
 
     /* ============================================================

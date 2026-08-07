@@ -24,11 +24,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -51,8 +49,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     private static final QVwSyCode   cdAp = new QVwSyCode("cd_ap");
     private static final QVwSyCode   cdAt = new QVwSyCode("cd_at");
     private static final QVwSyCode   cdAc = new QVwSyCode("cd_ac");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "order_date", odOrder.orderDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("order_date", odOrder.orderDate,
         "reg_date", odOrder.regDate,
         "upd_date", odOrder.updDate,
         "pay_date", odOrder.payDate,
@@ -206,7 +203,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     /* 주문 목록조회 */
     @Override
     public List<OdOrderDto.Item> selectList(OdOrderDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdOrderDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -237,7 +234,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odOrder.orderId, search.getOrderId()),
                 QdslUtil.strEq(odOrder.memberId, search.getMemberId()),
@@ -312,38 +309,13 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdOrderDto.Request sySite) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(sySite);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, odOrder.orderDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odOrder.orderId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("orderId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odOrder.orderId));
-                } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odOrder.memberNm));
-                } else if ("orderDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odOrder.orderDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odOrder.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odOrder.orderId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("orderId", odOrder.orderId,
+                   "memberNm", odOrder.memberNm,
+                   "orderDate", odOrder.orderDate),
+        new OrderSpecifier<>(Order.DESC, odOrder.regDate),
+        new OrderSpecifier<>(Order.ASC, odOrder.orderId));
     }
 
     /* 주문 수정 */

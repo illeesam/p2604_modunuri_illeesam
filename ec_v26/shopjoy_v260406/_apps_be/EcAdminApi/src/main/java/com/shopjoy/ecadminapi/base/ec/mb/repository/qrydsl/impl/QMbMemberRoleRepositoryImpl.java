@@ -19,11 +19,9 @@ import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberRoleReposito
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -36,8 +34,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     private static final QMbMember     mbMember = QMbMember.mbMember;
     private static final QSyRole       syRole = QSyRole.syRole;
     private static final QSyUser       gu  = new QSyUser("gu");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", mbMemberRole.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbMemberRole.regDate,
         "upd_date", mbMemberRole.updDate
     );
 
@@ -78,7 +75,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     /* 회원 역할 연결 목록조회 */
     @Override
     public List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -104,7 +101,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbMemberRole.memberRoleId, search.getMemberRoleId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -147,36 +144,12 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(MbMemberRoleDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, mbMemberRole.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberRole.memberRoleId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("memberRoleId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberRole.memberRoleId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberRole.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, mbMemberRole.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberRole.memberRoleId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("memberRoleId", mbMemberRole.memberRoleId,
+                   "regDate", mbMemberRole.regDate),
+        new OrderSpecifier<>(Order.DESC, mbMemberRole.regDate),
+        new OrderSpecifier<>(Order.ASC, mbMemberRole.memberRoleId));
     }
 
     /* 회원 역할 연결 수정 */

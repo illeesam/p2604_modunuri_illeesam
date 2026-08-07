@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogTag;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogTag;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogTagRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -32,8 +30,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogTagRepositoryImpl";
     private static final QCmBlogTag cmBlogTag = QCmBlogTag.cmBlogTag;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", cmBlogTag.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmBlogTag.regDate,
         "upd_date", cmBlogTag.updDate
     );
 
@@ -68,7 +65,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     /** 전체 목록 */
     @Override
     public List<CmBlogTagDto.Item> selectList(CmBlogTagDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmBlogTagDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds()),
@@ -96,7 +93,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         int offset = (pageNo - 1) * pageSize;
         int limit = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(cmBlogTag.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogTag.blogId, search.getBlogId()),
@@ -142,43 +139,15 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(CmBlogTagDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogTag.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogTag.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogTag.blogTagId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("blogTagId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmBlogTag.blogTagId));
-                } else if ("tagNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmBlogTag.tagNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmBlogTag.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, cmBlogTag.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogTag.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogTag.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogTag.blogTagId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("blogTagId", cmBlogTag.blogTagId,
+                   "tagNm", cmBlogTag.tagNm,
+                   "regDate", cmBlogTag.regDate,
+                   "sortOrd", cmBlogTag.sortOrd),
+        new OrderSpecifier<>(Order.ASC, cmBlogTag.sortOrd),
+        new OrderSpecifier<>(Order.ASC, cmBlogTag.regDate),
+        new OrderSpecifier<>(Order.ASC, cmBlogTag.blogTagId));
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */

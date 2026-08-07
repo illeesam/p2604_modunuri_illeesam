@@ -19,11 +19,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdRestockNoti;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdRestockNotiRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -37,8 +35,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     private static final QSySite        sySite = QSySite.sySite;
     private static final QPdProd        pdProd = QPdProd.pdProd;
     private static final QMbMember      mbMember = QMbMember.mbMember;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdRestockNoti.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdRestockNoti.regDate,
         "upd_date", pdRestockNoti.updDate
     );
 
@@ -75,7 +72,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     /* 재입고 알림 목록조회 */
     @Override
     public List<PdRestockNotiDto.Item> selectList(PdRestockNotiDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -105,7 +102,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdRestockNoti.restockNotiId, search.getRestockNotiId()),
                 QdslUtil.strEq(pdRestockNoti.prodId, search.getProdId()),
@@ -150,36 +147,12 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdRestockNotiDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pdRestockNoti.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdRestockNoti.restockNotiId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("restockNotiId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdRestockNoti.restockNotiId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdRestockNoti.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pdRestockNoti.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdRestockNoti.restockNotiId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("restockNotiId", pdRestockNoti.restockNotiId,
+                   "regDate", pdRestockNoti.regDate),
+        new OrderSpecifier<>(Order.DESC, pdRestockNoti.regDate),
+        new OrderSpecifier<>(Order.ASC, pdRestockNoti.restockNotiId));
     }
 
     /* 재입고 알림 수정 */

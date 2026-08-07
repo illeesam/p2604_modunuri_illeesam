@@ -17,11 +17,9 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberGroup;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberGroupRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -32,8 +30,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGroupRepositoryImpl";
     private static final QMbMemberGroup mbMemberGroup   = QMbMemberGroup.mbMemberGroup;
     private static final QSySite        sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", mbMemberGroup.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbMemberGroup.regDate,
         "upd_date", mbMemberGroup.updDate
     );
 
@@ -67,7 +64,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     /* 회원 그룹 목록조회 */
     @Override
     public List<MbMemberGroupDto.Item> selectList(MbMemberGroupDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -94,7 +91,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(mbMemberGroup.memberGroupId, search.getMemberGroupId()),
                 QdslUtil.strEq(mbMemberGroup.useYn, search.getUseYn()),
@@ -138,38 +135,13 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(MbMemberGroupDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, mbMemberGroup.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberGroup.memberGroupId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("memberGroupId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberGroup.memberGroupId));
-                } else if ("groupNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberGroup.groupNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberGroup.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, mbMemberGroup.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberGroup.memberGroupId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("memberGroupId", mbMemberGroup.memberGroupId,
+                   "groupNm", mbMemberGroup.groupNm,
+                   "regDate", mbMemberGroup.regDate),
+        new OrderSpecifier<>(Order.DESC, mbMemberGroup.regDate),
+        new OrderSpecifier<>(Order.ASC, mbMemberGroup.memberGroupId));
     }
 
     /* 회원 그룹 수정 */

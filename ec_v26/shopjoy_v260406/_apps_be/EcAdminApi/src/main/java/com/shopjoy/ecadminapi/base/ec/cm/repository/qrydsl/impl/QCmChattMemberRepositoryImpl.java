@@ -17,8 +17,8 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmChattMemberReposit
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 
@@ -64,7 +64,7 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
 
     @Override
     public List<CmChattMemberDto.Item> selectList(CmChattMemberDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmChattMemberDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -86,7 +86,7 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmChattMember.chattId, search.getChattId()),
                 QdslUtil.strEq(cmChattMember.memberTypeCd, search.getMemberTypeCd()),
@@ -112,12 +112,10 @@ public class QCmChattMemberRepositoryImpl implements QCmChattMemberRepository {
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(CmChattMemberDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        orders.add(new OrderSpecifier(Order.ASC, cmChattMember.joinDate));
-        orders.add(new OrderSpecifier<>(Order.ASC, cmChattMember.chattMemberId));
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of(),
+        new OrderSpecifier<>(Order.ASC, cmChattMember.chattMemberId));
     }
 
     @Override

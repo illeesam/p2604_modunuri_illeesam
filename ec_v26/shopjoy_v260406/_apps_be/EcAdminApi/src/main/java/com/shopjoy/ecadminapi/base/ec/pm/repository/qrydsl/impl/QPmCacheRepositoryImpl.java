@@ -19,11 +19,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCacheRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -36,8 +34,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     private static final QPmCache pmCache    = QPmCache.pmCache;
     private static final QSySite  sySite  = QSySite.sySite;
     private static final QVwSyCode  cdCt = new QVwSyCode("cd_ct");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pmCache.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmCache.regDate,
         "upd_date", pmCache.updDate
     );
 
@@ -78,7 +75,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     /* 캐시(충전금) 목록조회 */
     @Override
     public List<PmCacheDto.Item> selectList(PmCacheDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -107,7 +104,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmCache.cacheId, search.getCacheId()),
                 QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()),
@@ -154,38 +151,13 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmCacheDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pmCache.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmCache.cacheId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("cacheId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmCache.cacheId));
-                } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmCache.memberNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmCache.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pmCache.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmCache.cacheId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("cacheId", pmCache.cacheId,
+                   "memberNm", pmCache.memberNm,
+                   "regDate", pmCache.regDate),
+        new OrderSpecifier<>(Order.DESC, pmCache.regDate),
+        new OrderSpecifier<>(Order.ASC, pmCache.cacheId));
     }
 
     /* 캐시(충전금) 수정 */

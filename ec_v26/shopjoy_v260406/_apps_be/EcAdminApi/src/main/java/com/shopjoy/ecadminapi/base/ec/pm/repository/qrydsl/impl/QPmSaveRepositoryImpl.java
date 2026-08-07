@@ -19,11 +19,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -37,8 +35,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     private static final QSySite   sySite  = QSySite.sySite;
     private static final QMbMember mbMember  = QMbMember.mbMember;
     private static final QVwSyCode   cdSt = new QVwSyCode("cd_st");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pmSave.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmSave.regDate,
         "upd_date", pmSave.updDate
     );
 
@@ -78,7 +75,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     /* 적립금 목록조회 */
     @Override
     public List<PmSaveDto.Item> selectList(PmSaveDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -108,7 +105,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmSave.saveId, search.getSaveIds()),
                 QdslUtil.strEq(pmSave.saveId, search.getSaveId()),
@@ -154,36 +151,12 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmSaveDto.Request search) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(search);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pmSave.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmSave.saveId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("saveId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmSave.saveId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmSave.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pmSave.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmSave.saveId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("saveId", pmSave.saveId,
+                   "regDate", pmSave.regDate),
+        new OrderSpecifier<>(Order.DESC, pmSave.regDate),
+        new OrderSpecifier<>(Order.ASC, pmSave.saveId));
     }
 
     /* 적립금 수정 */

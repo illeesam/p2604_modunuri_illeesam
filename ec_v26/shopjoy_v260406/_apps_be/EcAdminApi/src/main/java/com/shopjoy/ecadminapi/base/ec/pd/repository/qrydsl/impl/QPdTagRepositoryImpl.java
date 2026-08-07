@@ -17,11 +17,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdTag;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdTagRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -33,8 +31,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdTagRepositoryImpl";
     private static final QPdTag  pdTag   = QPdTag.pdTag;
     private static final QSySite sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdTag.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdTag.regDate,
         "upd_date", pdTag.updDate
     );
 
@@ -69,7 +66,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     /* 태그 목록조회 */
     @Override
     public List<PdTagDto.Item> selectList(PdTagDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdTagDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -98,7 +95,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdTag.tagId, search.getTagId()),
                 QdslUtil.strEq(pdTag.useYn, search.getUseYn()),
@@ -142,43 +139,15 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdTagDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.tagId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("tagId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdTag.tagId));
-                } else if ("tagNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdTag.tagNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdTag.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdTag.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.tagId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("tagId", pdTag.tagId,
+                   "tagNm", pdTag.tagNm,
+                   "regDate", pdTag.regDate,
+                   "sortOrd", pdTag.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdTag.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pdTag.regDate),
+        new OrderSpecifier<>(Order.ASC, pdTag.tagId));
     }
 
     /* 태그 수정 */

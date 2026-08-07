@@ -25,7 +25,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -43,8 +42,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     private static final QPdProd        pdProd = QPdProd.pdProd;
     private static final QPdProdOpt oi1 = new QPdProdOpt("oi1");
     private static final QPdProdOpt oi2 = new QPdProdOpt("oi2");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", odCart.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odCart.regDate,
         "upd_date", odCart.updDate
     );
 
@@ -91,7 +89,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     /* 장바구니 목록조회 */
     @Override
     public List<OdCartDto.Item> selectList(OdCartDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdCartDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -125,7 +123,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odCart.cartId, search.getCartId()),
                 (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
@@ -179,36 +177,12 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdCartDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, odCart.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odCart.cartId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("cartId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odCart.cartId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odCart.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odCart.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odCart.cartId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("cartId", odCart.cartId,
+                   "regDate", odCart.regDate),
+        new OrderSpecifier<>(Order.DESC, odCart.regDate),
+        new OrderSpecifier<>(Order.ASC, odCart.cartId));
     }
 
     /* 장바구니 수정 */

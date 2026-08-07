@@ -26,7 +26,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -47,8 +46,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         this.em = em;
     }
     private static final QVwSyCode cdRt = new QVwSyCode("cd_rt");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syRole.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syRole.regDate,
         "upd_date", syRole.updDate
     );
 
@@ -93,7 +91,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* 역할(권한) 목록조회 */
     @Override
     public List<SyRoleDto.Item> selectList(SyRoleDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syRole.roleId, search.getRoleId()),
@@ -122,7 +120,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syRole.roleId, search.getRoleId()),
                 andParentRoleIdIn(search),
@@ -203,43 +201,15 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyRoleDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syRole.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syRole.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syRole.roleId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("roleId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syRole.roleId));
-                } else if ("roleNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syRole.roleNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syRole.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syRole.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syRole.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syRole.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syRole.roleId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("roleId", syRole.roleId,
+                   "roleNm", syRole.roleNm,
+                   "regDate", syRole.regDate,
+                   "sortOrd", syRole.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syRole.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syRole.regDate),
+        new OrderSpecifier<>(Order.ASC, syRole.roleId));
     }
 
     /* 역할(권한) 수정 */

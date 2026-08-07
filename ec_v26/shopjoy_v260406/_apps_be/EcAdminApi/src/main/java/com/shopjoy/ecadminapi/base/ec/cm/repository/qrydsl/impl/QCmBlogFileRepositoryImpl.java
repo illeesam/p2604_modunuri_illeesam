@@ -15,11 +15,9 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogFile;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogFile;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogFileRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -30,8 +28,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogFileRepositoryImpl";
     private static final QCmBlogFile cmBlogFile = QCmBlogFile.cmBlogFile;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", cmBlogFile.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmBlogFile.regDate,
         "upd_date", cmBlogFile.updDate
     );
 
@@ -66,7 +63,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     /* 게시물 첨부파일 목록조회 */
     @Override
     public List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmBlogFileDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds()),
@@ -94,7 +91,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         int offset = (pageNo - 1) * pageSize;
         int limit = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogFile.blogId, search.getBlogId()),
@@ -139,41 +136,14 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(CmBlogFileDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogFile.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogFile.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogFile.blogImgId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("blogImgId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmBlogFile.blogImgId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmBlogFile.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, cmBlogFile.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogFile.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogFile.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogFile.blogImgId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("blogImgId", cmBlogFile.blogImgId,
+                   "regDate", cmBlogFile.regDate,
+                   "sortOrd", cmBlogFile.sortOrd),
+        new OrderSpecifier<>(Order.ASC, cmBlogFile.sortOrd),
+        new OrderSpecifier<>(Order.ASC, cmBlogFile.regDate),
+        new OrderSpecifier<>(Order.ASC, cmBlogFile.blogImgId));
     }
 
     /* 게시물 첨부파일 수정 */

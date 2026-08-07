@@ -21,7 +21,6 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -33,8 +32,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewRepositoryImpl";
     private static final QPdReview pdReview = QPdReview.pdReview;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdReview.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdReview.regDate,
         "upd_date", pdReview.updDate
     );
 
@@ -73,7 +71,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     @Override
     public List<PdReviewDto.Item> selectList(PdReviewDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdReviewDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -104,7 +102,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pdReview.reviewId, search.getReviewId()),
                 QdslUtil.strEq(pdReview.prodId, search.getProdId()),
@@ -170,38 +168,13 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdReviewDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pdReview.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdReview.reviewId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("reviewId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdReview.reviewId));
-                } else if ("reviewTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdReview.reviewTitle));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdReview.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pdReview.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdReview.reviewId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("reviewId", pdReview.reviewId,
+                   "reviewTitle", pdReview.reviewTitle,
+                   "regDate", pdReview.regDate),
+        new OrderSpecifier<>(Order.DESC, pdReview.regDate),
+        new OrderSpecifier<>(Order.ASC, pdReview.reviewId));
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */

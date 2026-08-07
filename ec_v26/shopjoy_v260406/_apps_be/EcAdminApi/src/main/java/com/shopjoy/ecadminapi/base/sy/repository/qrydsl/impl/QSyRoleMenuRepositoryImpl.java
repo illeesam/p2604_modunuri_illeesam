@@ -17,11 +17,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyRoleMenu;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyRoleMenuRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -33,8 +31,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleMenuRepositoryImpl";
     private static final QVwSyRoleMenu vwRoleMenu = QVwSyRoleMenu.vwSyRoleMenu; // SELECT 전용 — sy_role JOIN 내장
     private static final QSyRoleMenu syRoleMenu = QSyRoleMenu.syRoleMenu;       // UPDATE 전용 (updateSelective)
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", vwRoleMenu.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", vwRoleMenu.regDate,
         "upd_date", vwRoleMenu.updDate
     );
 
@@ -73,7 +70,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     /* 역할별 메뉴 권한 목록조회 */
     @Override
     public List<SyRoleMenuDto.Item> selectList(SyRoleMenuDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()),
@@ -101,7 +98,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(vwRoleMenu.roleMenuId, search.getRoleMenuId()),
                 QdslUtil.strEq(vwRoleMenu.roleId, search.getRoleId()),
@@ -144,36 +141,12 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyRoleMenuDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, vwRoleMenu.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, vwRoleMenu.roleMenuId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("roleMenuId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, vwRoleMenu.roleMenuId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, vwRoleMenu.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, vwRoleMenu.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, vwRoleMenu.roleMenuId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("roleMenuId", vwRoleMenu.roleMenuId,
+                   "regDate", vwRoleMenu.regDate),
+        new OrderSpecifier<>(Order.DESC, vwRoleMenu.regDate),
+        new OrderSpecifier<>(Order.ASC, vwRoleMenu.roleMenuId));
     }
 
     /* 역할별 메뉴 권한 수정 — 원본 QSyRoleMenu 엔티티 사용 (뷰는 READ-ONLY) */

@@ -18,11 +18,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUserRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserRole;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyUserRoleRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -36,8 +34,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     private static final QSyUser usr  = new QSyUser("usr");
     private static final QSyRole syRole  = QSyRole.syRole;
     private static final QSyUser usr2 = new QSyUser("usr2");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syUserRole.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syUserRole.regDate,
         "upd_date", syUserRole.updDate
     );
 
@@ -80,7 +77,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     /* 사용자별 역할 목록조회 */
     @Override
     public List<SyUserRoleDto.Item> selectList(SyUserRoleDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyUserRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syUserRole.userRoleId, search.getUserRoleId()),
@@ -108,7 +105,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syUserRole.userRoleId, search.getUserRoleId()),
                 QdslUtil.strEq(syUserRole.userId, search.getUserId()),
@@ -153,36 +150,12 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyUserRoleDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syUserRole.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syUserRole.userRoleId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("userRoleId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syUserRole.userRoleId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syUserRole.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syUserRole.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syUserRole.userRoleId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("userRoleId", syUserRole.userRoleId,
+                   "regDate", syUserRole.regDate),
+        new OrderSpecifier<>(Order.DESC, syUserRole.regDate),
+        new OrderSpecifier<>(Order.ASC, syUserRole.userRoleId));
     }
 
     /* 사용자별 역할 수정 */

@@ -21,7 +21,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -76,7 +75,7 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     /* 게시판 게시물 목록조회 */
     @Override
     public List<SyBbsDto.Item> selectList(SyBbsDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -105,7 +104,7 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syBbs.bbsId, search.getBbsId()),
                 QdslUtil.strEq(syBbs.bbmId, search.getBbmId()),
@@ -173,38 +172,13 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyBbsDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syBbs.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBbs.bbsId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("bbsId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syBbs.bbsId));
-                } else if ("authorNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syBbs.authorNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syBbs.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syBbs.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBbs.bbsId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("bbsId", syBbs.bbsId,
+                   "authorNm", syBbs.authorNm,
+                   "regDate", syBbs.regDate),
+        new OrderSpecifier<>(Order.DESC, syBbs.regDate),
+        new OrderSpecifier<>(Order.ASC, syBbs.bbsId));
     }
 
     /* 게시판 게시물 수정 */

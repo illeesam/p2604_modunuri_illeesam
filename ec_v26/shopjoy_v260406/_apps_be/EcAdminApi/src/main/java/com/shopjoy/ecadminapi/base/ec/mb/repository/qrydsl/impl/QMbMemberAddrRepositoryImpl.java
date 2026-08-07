@@ -18,11 +18,9 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberAddr;
 import com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.QMbMemberAddrRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -34,8 +32,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     private static final QMbMemberAddr mbMemberAddr   = QMbMemberAddr.mbMemberAddr;
     private static final QMbMember     mbMember = QMbMember.mbMember;
     private static final QSySite       sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", mbMemberAddr.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", mbMemberAddr.regDate,
         "upd_date", mbMemberAddr.updDate
     );
 
@@ -75,7 +72,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     /* 회원 주소 목록조회 */
     @Override
     public List<MbMemberAddrDto.Item> selectList(MbMemberAddrDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<MbMemberAddrDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -103,7 +100,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(mbMemberAddr.memberId, search.getMemberIds()),
                 QdslUtil.strEq(mbMemberAddr.memberAddrId, search.getMemberAddrId()),
@@ -153,38 +150,13 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(MbMemberAddrDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, mbMemberAddr.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberAddr.memberAddrId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("memberAddrId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberAddr.memberAddrId));
-                } else if ("addrNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberAddr.addrNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, mbMemberAddr.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, mbMemberAddr.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberAddr.memberAddrId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("memberAddrId", mbMemberAddr.memberAddrId,
+                   "addrNm", mbMemberAddr.addrNm,
+                   "regDate", mbMemberAddr.regDate),
+        new OrderSpecifier<>(Order.DESC, mbMemberAddr.regDate),
+        new OrderSpecifier<>(Order.ASC, mbMemberAddr.memberAddrId));
     }
 
     /* 회원 주소 수정 */

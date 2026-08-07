@@ -20,11 +20,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserLoginLog;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhUserLoginLogRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -38,8 +36,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     private static final QSySite          sySite = QSySite.sySite;
     private static final QSyUser          syUser = QSyUser.syUser;
     private static final QVwSyCode          cd_lr = new QVwSyCode("cd_lr");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syhUserLoginLog.regDate
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syhUserLoginLog.regDate
     );
 
     /*
@@ -91,7 +88,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     /* 사용자 로그인 로그 목록조회 */
     @Override
     public List<SyhUserLoginLogDto.Item> selectList(SyhUserLoginLogDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<SyhUserLoginLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
@@ -120,7 +117,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syhUserLoginLog.logId, search.getLogId()),
                 QdslUtil.strEq(syhUserLoginLog.userId, search.getUserId()),
@@ -175,36 +172,12 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyhUserLoginLogDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syhUserLoginLog.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syhUserLoginLog.logId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syhUserLoginLog.logId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syhUserLoginLog.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syhUserLoginLog.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syhUserLoginLog.logId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("logId", syhUserLoginLog.logId,
+                   "regDate", syhUserLoginLog.regDate),
+        new OrderSpecifier<>(Order.DESC, syhUserLoginLog.regDate),
+        new OrderSpecifier<>(Order.ASC, syhUserLoginLog.logId));
     }
 
     /* 사용자 로그인 로그 수정 */

@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmhPushLog;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmhPushLog;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmhPushLogRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -32,8 +30,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmhPushLogRepositoryImpl";
     private static final QCmhPushLog cmhPushLog = QCmhPushLog.cmhPushLog;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "send_date", cmhPushLog.sendDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("send_date", cmhPushLog.sendDate,
         "reg_date", cmhPushLog.regDate,
         "upd_date", cmhPushLog.updDate
     );
@@ -80,7 +77,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     /** 전체 목록 */
     @Override
     public List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(cmhPushLog.logId, search.getLogId()),
@@ -106,7 +103,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         int offset = (pageNo - 1) * pageSize;
         int limit = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmhPushLog.logId, search.getLogId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -158,38 +155,13 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(CmhPushLogDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, cmhPushLog.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmhPushLog.logId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmhPushLog.logId));
-                } else if ("pushLogTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmhPushLog.pushLogTitle));
-                } else if ("sendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmhPushLog.sendDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, cmhPushLog.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmhPushLog.logId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("logId", cmhPushLog.logId,
+                   "pushLogTitle", cmhPushLog.pushLogTitle,
+                   "sendDate", cmhPushLog.sendDate),
+        new OrderSpecifier<>(Order.DESC, cmhPushLog.regDate),
+        new OrderSpecifier<>(Order.ASC, cmhPushLog.logId));
     }
 
     /** updateSelective — Mapper XML 에 update 미정의이나 Mapper Java 에 선언되어 있어 Entity 모든 갱신 필드 대상으로 처리 */

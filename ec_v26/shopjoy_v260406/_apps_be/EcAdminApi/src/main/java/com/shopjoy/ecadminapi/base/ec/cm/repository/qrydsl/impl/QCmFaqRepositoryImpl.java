@@ -83,7 +83,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     /* FAQ 목록조회 */
     @Override
     public List<CmFaqDto.Item> selectList(CmFaqDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -109,7 +109,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
                 andPathTreeIn(search),
@@ -156,34 +156,13 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     /**
      * 정렬조건 빌드 — 기본: sortOrd ASC, regDate DESC, faqId ASC (안정 정렬)
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(CmFaqDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (StringUtils.hasText(sort)) {
-            String[] sortParts = sort.split(",");
-            for (String part : sortParts) {
-                String[] fieldAndDir = part.trim().split(" ");
-                if (fieldAndDir.length == 2) {
-                    String field = fieldAndDir[0];
-                    Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                    if ("faqId".equals(field)) {
-                        orders.add(new OrderSpecifier(order, cmFaq.faqId));
-                    } else if ("sortOrd".equals(field)) {
-                        orders.add(new OrderSpecifier(order, cmFaq.sortOrd));
-                    } else if ("regDate".equals(field)) {
-                        orders.add(new OrderSpecifier(order, cmFaq.regDate));
-                    }
-                }
-            }
-        }
-        /* 기본/fallback 정렬 — 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier(Order.ASC, cmFaq.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.DESC, cmFaq.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmFaq.faqId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("faqId", cmFaq.faqId,
+                   "sortOrd", cmFaq.sortOrd,
+                   "regDate", cmFaq.regDate),
+        new OrderSpecifier<>(Order.DESC, cmFaq.regDate),
+        new OrderSpecifier<>(Order.ASC, cmFaq.faqId));
     }
 
     /* FAQ 수정 (selective) */

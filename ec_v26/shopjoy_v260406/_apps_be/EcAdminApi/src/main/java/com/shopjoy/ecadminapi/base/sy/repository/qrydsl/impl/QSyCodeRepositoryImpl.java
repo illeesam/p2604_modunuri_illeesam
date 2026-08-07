@@ -17,11 +17,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCodeGrp;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCode;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyCodeRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -33,8 +31,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeRepositoryImpl";
     private static final QSyCode syCode = QSyCode.syCode;
     private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syCode.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syCode.regDate,
         "upd_date", syCode.updDate
     );
 
@@ -82,7 +79,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     /* 목록조회 */
     @Override
     public List<SyCodeDto.Item> selectList(SyCodeDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyCodeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syCode.codeId, search.getCodeId()),
@@ -113,7 +110,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syCode.codeId, search.getCodeId()),
                 QdslUtil.strEq(syCodeGrp.codeGrp, search.getCodeGrp()),
@@ -166,41 +163,14 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyCodeDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syCode.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syCode.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syCode.codeId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("codeId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syCode.codeId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syCode.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syCode.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syCode.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syCode.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syCode.codeId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("codeId", syCode.codeId,
+                   "regDate", syCode.regDate,
+                   "sortOrd", syCode.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syCode.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syCode.regDate),
+        new OrderSpecifier<>(Order.ASC, syCode.codeId));
     }
 
     /* 수정 */

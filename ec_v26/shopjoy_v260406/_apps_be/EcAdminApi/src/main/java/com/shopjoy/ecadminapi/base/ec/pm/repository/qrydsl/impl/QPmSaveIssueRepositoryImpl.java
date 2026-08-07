@@ -23,11 +23,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveIssueRepositor
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -45,8 +43,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
     private static final QPdProd      pdProd  = QPdProd.pdProd;
     private static final QVwSyCode      cdSit = new QVwSyCode("cd_sit");
     private static final QVwSyCode      cdSis = new QVwSyCode("cd_sis");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pmSaveIssue.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmSaveIssue.regDate,
         "upd_date", pmSaveIssue.updDate
     );
 
@@ -96,7 +93,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
     /* 적립금 지급 이력 목록조회 */
     @Override
     public List<PmSaveIssueDto.Item> selectList(PmSaveIssueDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmSaveIssueDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -124,7 +121,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmSaveIssue.saveIssueId, search.getSaveIssueId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -173,36 +170,12 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmSaveIssueDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pmSaveIssue.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmSaveIssue.saveIssueId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("saveIssueId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmSaveIssue.saveIssueId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmSaveIssue.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pmSaveIssue.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmSaveIssue.saveIssueId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("saveIssueId", pmSaveIssue.saveIssueId,
+                   "regDate", pmSaveIssue.regDate),
+        new OrderSpecifier<>(Order.DESC, pmSaveIssue.regDate),
+        new OrderSpecifier<>(Order.ASC, pmSaveIssue.saveIssueId));
     }
 
     /* 적립금 지급 이력 수정 */

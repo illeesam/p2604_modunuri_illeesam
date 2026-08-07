@@ -33,11 +33,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -69,8 +67,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private static final QVwSyCode      cdOis = new QVwSyCode("cd_ois");
     private static final QVwSyCode      cdVt  = new QVwSyCode("cd_vt");
     private static final QVwSyCode      cdPmc = new QVwSyCode("cd_pmc");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "order_date", stSettleRaw.orderDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("order_date", stSettleRaw.orderDate,
         "reg_date", stSettleRaw.regDate,
         "upd_date", stSettleRaw.updDate
     );
@@ -208,7 +205,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     /* 정산 원천 데이터 목록조회 */
     @Override
     public List<StSettleRawDto.Item> selectList(StSettleRawDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StSettleRawDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -251,7 +248,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettleRaw.settleRawId, search.getSettleRawId()),
                 QdslUtil.strEq(stSettleRaw.orderId, search.getOrderId()),
@@ -347,38 +344,13 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(StSettleRawDto.Request c) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(c);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, stSettleRaw.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stSettleRaw.settleRawId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("settleRawId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stSettleRaw.settleRawId));
-                } else if ("prodNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stSettleRaw.prodNm));
-                } else if ("orderDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stSettleRaw.orderDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, stSettleRaw.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stSettleRaw.settleRawId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("settleRawId", stSettleRaw.settleRawId,
+                   "prodNm", stSettleRaw.prodNm,
+                   "orderDate", stSettleRaw.orderDate),
+        new OrderSpecifier<>(Order.DESC, stSettleRaw.regDate),
+        new OrderSpecifier<>(Order.ASC, stSettleRaw.settleRawId));
     }
 
     /* 정산 원천 데이터 수정 */

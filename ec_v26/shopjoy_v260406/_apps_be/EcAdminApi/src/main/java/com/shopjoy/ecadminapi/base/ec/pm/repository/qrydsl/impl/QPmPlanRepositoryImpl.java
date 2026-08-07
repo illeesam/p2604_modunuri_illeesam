@@ -19,11 +19,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmPlanRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -37,8 +35,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     private static final QSySite sySite  = QSySite.sySite;
     private static final QVwSyCode cdPt = new QVwSyCode("cd_pt");
     private static final QVwSyCode cdPs = new QVwSyCode("cd_ps");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pmPlan.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmPlan.regDate,
         "upd_date", pmPlan.updDate
     );
 
@@ -81,7 +78,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     /* 프로모션 플랜 목록조회 */
     @Override
     public List<PmPlanDto.Item> selectList(PmPlanDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -111,7 +108,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmPlan.planId, search.getPlanId()),
                 QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
@@ -163,43 +160,15 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmPlanDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, pmPlan.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmPlan.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmPlan.planId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("planId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmPlan.planId));
-                } else if ("planNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmPlan.planNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmPlan.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pmPlan.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, pmPlan.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmPlan.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmPlan.planId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("planId", pmPlan.planId,
+                   "planNm", pmPlan.planNm,
+                   "regDate", pmPlan.regDate,
+                   "sortOrd", pmPlan.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pmPlan.sortOrd),
+        new OrderSpecifier<>(Order.ASC, pmPlan.regDate),
+        new OrderSpecifier<>(Order.ASC, pmPlan.planId));
     }
 
     /* 프로모션 플랜 수정 */

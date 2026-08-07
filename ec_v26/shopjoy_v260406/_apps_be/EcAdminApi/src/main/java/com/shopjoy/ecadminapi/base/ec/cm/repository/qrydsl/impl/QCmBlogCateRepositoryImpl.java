@@ -17,11 +17,9 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogCate;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmBlogCateRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -33,8 +31,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogCateRepositoryImpl";
     private static final QCmBlogCate cmBlogCate = QCmBlogCate.cmBlogCate;
     private static final QSySite sySite = QSySite.sySite;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", cmBlogCate.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", cmBlogCate.regDate,
         "upd_date", cmBlogCate.updDate
     );
 
@@ -71,7 +68,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     /* 게시판 카테고리 목록조회 */
     @Override
     public List<CmBlogCateDto.Item> selectList(CmBlogCateDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmBlogCateDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(cmBlogCate.blogCateId, search.getBlogCateId()),
@@ -98,7 +95,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         int offset = (pageNo - 1) * pageSize;
         int limit = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(cmBlogCate.blogCateId, search.getBlogCateId()),
                 QdslUtil.strEq(cmBlogCate.useYn, search.getUseYn()),
@@ -143,43 +140,15 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(CmBlogCateDto.Request sySite) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(sySite);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogCate.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogCate.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogCate.blogCateId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("blogCateId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmBlogCate.blogCateId));
-                } else if ("blogCateNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmBlogCate.blogCateNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, cmBlogCate.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, cmBlogCate.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogCate.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogCate.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, cmBlogCate.blogCateId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("blogCateId", cmBlogCate.blogCateId,
+                   "blogCateNm", cmBlogCate.blogCateNm,
+                   "regDate", cmBlogCate.regDate,
+                   "sortOrd", cmBlogCate.sortOrd),
+        new OrderSpecifier<>(Order.ASC, cmBlogCate.sortOrd),
+        new OrderSpecifier<>(Order.ASC, cmBlogCate.regDate),
+        new OrderSpecifier<>(Order.ASC, cmBlogCate.blogCateId));
     }
 
     /* 게시판 카테고리 수정 */

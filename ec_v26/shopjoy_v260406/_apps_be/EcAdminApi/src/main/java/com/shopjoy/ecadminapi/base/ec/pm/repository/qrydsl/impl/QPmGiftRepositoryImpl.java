@@ -20,11 +20,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmGiftRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -41,8 +39,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     private static final QVwSyCode  cdGt = new QVwSyCode("cd_gt");
     private static final QVwSyCode  cdGs = new QVwSyCode("cd_gs");
     private static final QVwSyCode  cdMg = new QVwSyCode("cd_mg");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pmGift.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmGift.regDate,
         "upd_date", pmGift.updDate
     );
 
@@ -92,7 +89,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     @Override
     public List<PmGiftDto.Item> selectList(PmGiftDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -123,7 +120,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmGift.giftId, search.getGiftId()),
                 QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()),
@@ -176,38 +173,13 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmGiftDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pmGift.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmGift.giftId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("giftId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmGift.giftId));
-                } else if ("giftNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmGift.giftNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmGift.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pmGift.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmGift.giftId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("giftId", pmGift.giftId,
+                   "giftNm", pmGift.giftNm,
+                   "regDate", pmGift.regDate),
+        new OrderSpecifier<>(Order.DESC, pmGift.regDate),
+        new OrderSpecifier<>(Order.ASC, pmGift.giftId));
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */

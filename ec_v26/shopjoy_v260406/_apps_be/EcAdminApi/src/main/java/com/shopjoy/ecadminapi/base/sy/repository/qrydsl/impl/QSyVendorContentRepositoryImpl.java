@@ -18,11 +18,9 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendorContent;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendorContent;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyVendorContentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -36,8 +34,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QVwSyCode cdVct = new QVwSyCode("cd_vct");
     private static final QVwSyCode cdVcs = new QVwSyCode("cd_vcs");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syVendorContent.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syVendorContent.regDate,
         "upd_date", syVendorContent.updDate
     );
 
@@ -94,7 +91,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     /* 업체 콘텐츠 목록조회 */
     @Override
     public List<SyVendorContentDto.Item> selectList(SyVendorContentDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyVendorContentDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strEq(syVendorContent.vendorContentId, search.getVendorContentId()),
@@ -123,7 +120,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syVendorContent.vendorContentId, search.getVendorContentId()),
                 QdslUtil.strEq(syVendorContent.vendorId, search.getVendorId()),
@@ -180,43 +177,15 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyVendorContentDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorContent.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorContent.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorContent.vendorContentId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("vendorContentId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendorContent.vendorContentId));
-                } else if ("vendorContentTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendorContent.vendorContentTitle));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syVendorContent.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syVendorContent.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorContent.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorContent.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syVendorContent.vendorContentId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("vendorContentId", syVendorContent.vendorContentId,
+                   "vendorContentTitle", syVendorContent.vendorContentTitle,
+                   "regDate", syVendorContent.regDate,
+                   "sortOrd", syVendorContent.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syVendorContent.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syVendorContent.regDate),
+        new OrderSpecifier<>(Order.ASC, syVendorContent.vendorContentId));
     }
 
     /* 업체 콘텐츠 수정 */

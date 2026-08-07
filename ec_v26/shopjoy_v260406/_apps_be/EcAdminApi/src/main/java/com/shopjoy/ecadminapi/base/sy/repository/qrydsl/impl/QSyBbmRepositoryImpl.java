@@ -80,7 +80,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     /* 게시판 마스터 목록조회 */
     @Override
     public List<SyBbmDto.Item> selectList(SyBbmDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<SyBbmDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -109,7 +109,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syBbm.bbmId, search.getBbmId()),
                 andPathIdIn(search),
@@ -170,43 +170,15 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyBbmDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, syBbm.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBbm.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBbm.bbmId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("bbmId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syBbm.bbmId));
-                } else if ("bbmNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syBbm.bbmNm));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syBbm.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syBbm.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, syBbm.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBbm.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syBbm.bbmId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("bbmId", syBbm.bbmId,
+                   "bbmNm", syBbm.bbmNm,
+                   "regDate", syBbm.regDate,
+                   "sortOrd", syBbm.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syBbm.sortOrd),
+        new OrderSpecifier<>(Order.ASC, syBbm.regDate),
+        new OrderSpecifier<>(Order.ASC, syBbm.bbmId));
     }
 
     /* 게시판 마스터 수정 */

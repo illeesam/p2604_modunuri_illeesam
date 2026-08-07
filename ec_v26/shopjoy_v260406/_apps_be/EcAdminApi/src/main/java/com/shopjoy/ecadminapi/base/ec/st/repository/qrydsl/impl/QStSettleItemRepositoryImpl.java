@@ -21,11 +21,9 @@ import com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.QStSettleItemReposito
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -40,8 +38,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     private static final QOdOrderItem  odOrderItem  = QOdOrderItem.odOrderItem;
     private static final QSySite       sySite  = QSySite.sySite;
     private static final QVwSyCode       cdSit = new QVwSyCode("cd_sit");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "order_date", stSettleItem.orderDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("order_date", stSettleItem.orderDate,
         "reg_date", stSettleItem.regDate,
         "upd_date", stSettleItem.updDate
     );
@@ -93,7 +90,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     /* 정산 항목 목록조회 */
     @Override
     public List<StSettleItemDto.Item> selectList(StSettleItemDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<StSettleItemDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -121,7 +118,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(stSettleItem.settleItemId, search.getSettleItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -166,36 +163,12 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(StSettleItemDto.Request c) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(c);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, stSettleItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stSettleItem.settleItemId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("settleItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stSettleItem.settleItemId));
-                } else if ("orderDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, stSettleItem.orderDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, stSettleItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, stSettleItem.settleItemId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("settleItemId", stSettleItem.settleItemId,
+                   "orderDate", stSettleItem.orderDate),
+        new OrderSpecifier<>(Order.DESC, stSettleItem.regDate),
+        new OrderSpecifier<>(Order.ASC, stSettleItem.settleItemId));
     }
 
     /* 정산 항목 수정 */

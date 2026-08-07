@@ -15,11 +15,9 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventItem;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEventItem;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventItemRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -30,8 +28,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventItemRepositoryImpl";
     private static final QPmEventItem pmEventItem = QPmEventItem.pmEventItem;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pmEventItem.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmEventItem.regDate,
         "upd_date", pmEventItem.updDate
     );
 
@@ -64,7 +61,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     /* 이벤트 대상 상품 목록조회 */
     @Override
     public List<PmEventItemDto.Item> selectList(PmEventItemDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -94,7 +91,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmEventItem.eventId, search.getEventIds()),
                 QdslUtil.strEq(pmEventItem.eventId, search.getEventId()),
@@ -138,36 +135,12 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PmEventItemDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pmEventItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEventItem.eventItemId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("eventItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmEventItem.eventItemId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pmEventItem.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pmEventItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pmEventItem.eventItemId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("eventItemId", pmEventItem.eventItemId,
+                   "regDate", pmEventItem.regDate),
+        new OrderSpecifier<>(Order.DESC, pmEventItem.regDate),
+        new OrderSpecifier<>(Order.ASC, pmEventItem.eventItemId));
     }
 
     /* 이벤트 대상 상품 수정 */

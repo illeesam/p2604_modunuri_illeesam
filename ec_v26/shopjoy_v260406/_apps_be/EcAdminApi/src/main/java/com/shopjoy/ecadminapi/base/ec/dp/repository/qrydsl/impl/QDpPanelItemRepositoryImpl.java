@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanelItem;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpPanelItem;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpPanelItemRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -30,8 +28,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpPanelItemRepositoryImpl";
     private static final QDpPanelItem dpPanelItem = QDpPanelItem.dpPanelItem;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", dpPanelItem.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", dpPanelItem.regDate,
         "upd_date", dpPanelItem.updDate
     );
 
@@ -91,7 +88,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
     /* 전시 패널 아이템 목록조회 */
     @Override
     public List<DpPanelItemDto.Item> selectList(DpPanelItemDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
@@ -122,7 +119,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(dpPanelItem.panelId, search.getPanelIds()),
                 QdslUtil.strEq(dpPanelItem.panelItemId, search.getPanelItemId()),
@@ -179,43 +176,15 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(DpPanelItemDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-
-            /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, dpPanelItem.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpPanelItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpPanelItem.panelItemId));
-
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("panelItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpPanelItem.panelItemId));
-                } else if ("widgetTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpPanelItem.widgetTitle));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, dpPanelItem.regDate));
-                }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, dpPanelItem.sortOrd)); }
-            }
-        }
-        /* unknown sort → sortOrd ASC + regDate ASC fallback */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, dpPanelItem.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpPanelItem.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, dpPanelItem.panelItemId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("panelItemId", dpPanelItem.panelItemId,
+                   "widgetTitle", dpPanelItem.widgetTitle,
+                   "regDate", dpPanelItem.regDate,
+                   "sortOrd", dpPanelItem.sortOrd),
+        new OrderSpecifier<>(Order.ASC, dpPanelItem.sortOrd),
+        new OrderSpecifier<>(Order.ASC, dpPanelItem.regDate),
+        new OrderSpecifier<>(Order.ASC, dpPanelItem.panelItemId));
     }
 
     /* 전시 패널 아이템 수정 */

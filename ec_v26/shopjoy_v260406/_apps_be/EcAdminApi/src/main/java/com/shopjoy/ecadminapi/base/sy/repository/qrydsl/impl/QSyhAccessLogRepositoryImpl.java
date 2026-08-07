@@ -24,7 +24,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -41,8 +40,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private static final QSyDept   syDept   = QSyDept.syDept;
     private static final QSyVendor syVendor = QSyVendor.syVendor;
     private static final QVwSyCode   cd_at    = new QVwSyCode("cd_at");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", syhAccessLog.regDate
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", syhAccessLog.regDate
     );
 
     /*
@@ -113,7 +111,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod()),
                 andStatusEq(search),
@@ -204,11 +202,9 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(SyhAccessLogDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        orders.add(new OrderSpecifier(Order.DESC, syhAccessLog.reqDt));
-        orders.add(new OrderSpecifier<>(Order.ASC, syhAccessLog.logId));
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of(),
+        new OrderSpecifier<>(Order.ASC, syhAccessLog.logId));
     }
 }

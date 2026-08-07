@@ -16,11 +16,9 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdProdSkuRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -31,8 +29,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdSkuRepositoryImpl";
     private static final QPdProdSku pdProdSku = QPdProdSku.pdProdSku;
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", pdProdSku.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pdProdSku.regDate,
         "upd_date", pdProdSku.updDate
     );
 
@@ -70,7 +67,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     /* 상품 SKU 목록조회 */
     @Override
     public List<PdProdSkuDto.Item> selectList(PdProdSkuDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<PdProdSkuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -100,7 +97,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pdProdSku.prodId, search.getProdIds()),
                 QdslUtil.strEq(pdProdSku.prodId, search.getProdId()),
@@ -146,36 +143,12 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(PdProdSkuDto.Request req) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(req);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, pdProdSku.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSku.prodSkuId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("prodSkuId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdSku.prodSkuId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, pdProdSku.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, pdProdSku.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSku.prodSkuId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("prodSkuId", pdProdSku.prodSkuId,
+                   "regDate", pdProdSku.regDate),
+        new OrderSpecifier<>(Order.DESC, pdProdSku.regDate),
+        new OrderSpecifier<>(Order.ASC, pdProdSku.prodSkuId));
     }
 
     /* 상품 SKU 수정 */

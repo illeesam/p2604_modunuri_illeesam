@@ -21,11 +21,9 @@ import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdRefundRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -42,8 +40,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     private static final QVwSyCode   cdRt = new QVwSyCode("cd_rt");
     private static final QVwSyCode   cdRs = new QVwSyCode("cd_rs");
     private static final QVwSyCode   cdCf = new QVwSyCode("cd_cf");
-    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of(
-        "reg_date", odRefund.regDate,
+    private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odRefund.regDate,
         "upd_date", odRefund.updDate
     );
 
@@ -96,7 +93,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     /* 환불 목록조회 */
     @Override
     public List<OdRefundDto.Item> selectList(OdRefundDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
         JPAQuery<OdRefundDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
@@ -124,7 +121,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(odRefund.refundId, search.getRefundId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -171,36 +168,12 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
      * 정렬조건 빌드
      * 예: "userId asc, userNm desc, regDate asc"
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(OdRefundDto.Request s) {
-        List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = QdslUtil.sortOf(s);
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, odRefund.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odRefund.refundId));
-            return orders;
-        }
-        String[] sortParts = sort.split(",");
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
-                if ("refundId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odRefund.refundId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, odRefund.regDate));
-                }
-            }
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, odRefund.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, odRefund.refundId));
-        }
-        return orders;
+    private List<OrderSpecifier<?>> buildOrder(String sort) {
+        return QdslUtil.buildOrder(sort,
+            Map.of("refundId", odRefund.refundId,
+                   "regDate", odRefund.regDate),
+        new OrderSpecifier<>(Order.DESC, odRefund.regDate),
+        new OrderSpecifier<>(Order.ASC, odRefund.refundId));
     }
 
     /* 환불 수정 */
