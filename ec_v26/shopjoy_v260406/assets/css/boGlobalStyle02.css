@@ -101,11 +101,14 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .bo-table thead th { position: sticky; top: 0; z-index: 2; }
 .bo-table td { padding: 3px 8px; font-size: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
 .bo-table tbody tr:nth-child(even) td { background: #f7f8fc; }
-.bo-table tr:hover td { background: #e8effe; }
+/* tbody 를 붙여 nth-child(even) 규칙과 명시도를 맞춤(0,2,3) — 안 붙이면(0,2,2) 짝수행에서 hover가 줄무늬색에 밀려 안 보임 */
+.bo-table tbody tr:hover td { background: #e8effe; }
 /* 선택 행 강조 — 파란 외곽선 (tr 단일 outline. 셀별 box-shadow 이중겹침 제거) */
-.bo-table tr.bo-row-selected td { background:#eff6ff; }
+.bo-table tbody tr.bo-row-selected td { background:#eff6ff; }
 .bo-table tr.bo-row-selected { outline: 2px solid #2563eb; outline-offset: -2px; }
 .bo-table tr.bo-row-selected:hover td { background:#e0ecff; }
+/* 합계행(BoGroupTable)은 hover 시 색 변하지 않게 — 일반 tr:hover 규칙 무효화 */
+.bo-table tr.bo-summary-row:hover td { background: transparent; }
 
 .bo-table .actions { display: inline-flex; flex-wrap: nowrap; gap: 4px; justify-content: center; white-space: nowrap; }
 .bo-table th:hover > div[style*="col-resize"] { background: rgba(0,0,0,0.12); border-radius: 2px; }

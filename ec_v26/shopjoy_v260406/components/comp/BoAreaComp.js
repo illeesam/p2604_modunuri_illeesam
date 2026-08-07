@@ -298,7 +298,7 @@ window.BoSearchArea = {
           class="form-control" style="width:36px;min-width:0;font-size:10px;color:#aaa;background:#f5f5f5;" />
     <span style="display:inline-flex;align-items:center;">
       <button class="btn btn-secondary btn-sm" style="padding:2px 7px;" @click="handleSelectAction('field-pick-open', { col, target: po(col) })" :title="col.openLabel || '검색'">🔍</button>
-      <button v-if="po(col)[col.key] || po(col)[col.nameKey]" type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleSelectAction('field-pick-clear', { col, target: po(col) })" title="초기화">x</button>
+      <button type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleSelectAction('field-pick-clear', { col, target: po(col) })" title="초기화">x</button>
     </span>
   </template>
   <!-- 다중선택 (검색대상) -->
@@ -2384,7 +2384,7 @@ window.BoFormArea = {
     <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" title="선택"
       style="padding:0;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"
       @click="handleSelectAction('field-pick-open', { col })">🔍</button>
-    <button v-if="form[col.key]" type="button" title="선택 해제"
+    <button type="button" title="선택 해제"
       style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;"
       @click="handleBtnAction('form-pick-clear', { col })">x</button>
   </span>
@@ -2461,7 +2461,7 @@ window.BoGroupTable = {
     summaryTextColor:  { type: String,  default: '#e8f4ff' },     // 합계행 텍스트색
     striped:           { type: Boolean, default: true },           // 홀짝 줄무늬
     hoverBg:           { type: String,  default: '#dbeafe' },     // hover 배경색
-    stripeBg:          { type: String,  default: '#f4f7fb' },     // 홀수행 배경색
+    stripeBg:          { type: String,  default: '#f7f8fc' },     // 홀수행 배경색 — 표준 그리드(.bo-table 짝수행) 색과 동일
     colBorder:         { type: String,  default: '' },             // 열 구분선 (예: '1px solid #e2e8f0')
   },
   emits: ['cell-click'],
@@ -2583,21 +2583,32 @@ window.BoGroupTable = {
       return result;
     });
 
-    /* td 스타일: tdStyle(row) 우선, 없으면 align 기본 + colBorder */
-    const fnTdStyle = (col, row) => {
-      const base = col.tdStyle ? col.tdStyle(row) : ('text-align:' + (col.align || 'center') + ';');
-      return props.colBorder ? base + 'border-right:' + props.colBorder + ';' : base;
-    };
-
-    /* 선택 행 outline + hover 우선 + 줄무늬 */
-    const fnRowStyle = (row, idx) => {
+    /* 행 배경색 결정 (hover > selected > 줄무늬 > 기본흰색) — tr/td 양쪽에 동일하게 씀.
+       td 에도 반드시 명시해야 한다 — 전역 CSS(.bo-table tbody tr:nth-child(even) td)가 td 를 직접
+       타겟팅해서 그 배경이 tr 배경 위에 그대로 덮여 그려지므로, tr 에만 주면 무시된다.
+       nth-child 기준 색은 summaryPos='top' 일 때 합계행이 tbody 첫 자식이 되어 홀짝이 한 칸 밀리므로
+       그 규칙에 기대지 않고 idx 기준으로 직접 확정한다(합계행 유무와 무관하게 항상 동일 패턴). */
+    const fnRowBg = (row, idx) => {
       const isSelected = props.selectedKey != null && row[props.rowKey] === props.selectedKey;
       const isHovered  = hoveredKey.value === row[props.rowKey];
-      let st = 'cursor:pointer;font-size:12px;';
+      if (isHovered)                           return props.hoverBg;
+      if (isSelected)                          return '#f0f5ff';
+      if (props.striped && idx % 2 !== 0)      return props.stripeBg;
+      return '#fff';
+    };
+
+    /* td 스타일: tdStyle(row) 우선, 없으면 align 기본 + colBorder + 행 배경 */
+    const fnTdStyle = (col, row, idx) => {
+      const base = col.tdStyle ? col.tdStyle(row) : ('text-align:' + (col.align || 'center') + ';');
+      const bordered = props.colBorder ? base + 'border-right:' + props.colBorder + ';' : base;
+      return bordered + 'background:' + fnRowBg(row, idx) + ';';
+    };
+
+    /* 선택 행 outline + hover 커서 (배경은 fnRowBg 로 tr/td 공통 결정) */
+    const fnRowStyle = (row, idx) => {
+      const isSelected = props.selectedKey != null && row[props.rowKey] === props.selectedKey;
+      let st = 'cursor:pointer;font-size:12px;background:' + fnRowBg(row, idx) + ';';
       if (isSelected) st += 'outline:2px solid #2563eb;outline-offset:-1px;';
-      if      (isHovered)                               st += 'background:' + props.hoverBg  + ';';
-      else if (isSelected)                              st += 'background:#f0f5ff;';
-      else if (props.striped && idx % 2 !== 0)         st += 'background:' + props.stripeBg + ';';
       return st;
     };
 
@@ -2659,9 +2670,10 @@ window.BoGroupTable = {
           style="text-align:center;padding:40px;color:#bbb;font-size:13px;">{{ emptyText }}</td>
       </tr>
       <template v-else>
-        <!-- 합계행: top 위치 -->
-        <tr v-if="summaryRow ? summaryPos === 'top' : false"
-          :style="'background:' + summaryBg + ';border-bottom:2.5px solid ' + summaryBorderColor + ';'">
+        <!-- 합계행: top 위치. border 대신 box-shadow 사용 — border-collapse 참여 시 두꺼운 border가
+             바로 아래 1번 데이터행 상단 hit영역을 침범해 hover 안 먹는 문제 방지 -->
+        <tr v-if="summaryRow ? summaryPos === 'top' : false" class="bo-summary-row"
+          :style="'background:' + summaryBg + ';box-shadow:inset 0 -2.5px 0 0 ' + summaryBorderColor + ';'">
           <td v-for="(sc, si) in cfSummaryTdList" :key="'st' + si"
             :style="sc.tdSt + 'font-size:11px;font-weight:700;color:' + summaryTextColor + ';'">
             <span v-if="sc.type === 'label'" :style="'font-weight:900;letter-spacing:1px;color:' + summaryTextColor + ';'">{{ summaryLabel }}</span>
@@ -2677,7 +2689,7 @@ window.BoGroupTable = {
           @click="onCellClick(row, idx)">
           <td v-for="col in cfLeafCols" :key="col.key"
             :title="col.titleFmt ? col.titleFmt(row) : ''"
-            :style="fnTdStyle(col, row)">
+            :style="fnTdStyle(col, row, idx)">
             <slot v-if="col.slot" :name="'cell-' + col.key" :row="row" :idx="idx" />
             <template v-else-if="col.iconBadge">
               <span v-if="col.iconBadge(row)"
@@ -2703,9 +2715,9 @@ window.BoGroupTable = {
             </template>
           </td>
         </tr>
-        <!-- 합계행: bottom 위치 (default) -->
-        <tr v-if="summaryRow ? summaryPos !== 'top' : false"
-          :style="'background:' + summaryBg + ';border-top:2.5px solid ' + summaryBorderColor + ';'">
+        <!-- 합계행: bottom 위치 (default). border 대신 box-shadow — 위 top 위치와 동일 사유 -->
+        <tr v-if="summaryRow ? summaryPos !== 'top' : false" class="bo-summary-row"
+          :style="'background:' + summaryBg + ';box-shadow:inset 0 2.5px 0 0 ' + summaryBorderColor + ';'">
           <td v-for="(sc, si) in cfSummaryTdList" :key="'sb' + si"
             :style="sc.tdSt + 'font-size:11px;font-weight:700;color:' + summaryTextColor + ';'">
             <span v-if="sc.type === 'label'" :style="'font-weight:900;letter-spacing:1px;color:' + summaryTextColor + ';'">{{ summaryLabel }}</span>

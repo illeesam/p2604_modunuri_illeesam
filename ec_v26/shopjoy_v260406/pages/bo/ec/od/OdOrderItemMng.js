@@ -114,12 +114,6 @@ window.OdOrderItemMng = {
       return m[cd] || 'badge-gray';
     };
     const fnYnBadge  = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
-    const fnAmtShort = (v) => {
-      const n = Number(v) || 0; if (!n) return '-';
-      if (n >= 100000000) return (n / 100000000).toFixed(1).replace(/\.0$/, '') + '억원';
-      if (n >= 10000)     return Math.round(n / 10000) + '만원';
-      return n.toLocaleString() + '원';
-    };
 
     /* ##### cfSummary — 3섹션 집계 ################################################# */
 
@@ -167,51 +161,7 @@ window.OdOrderItemMng = {
         claimDone:   { total: cdTotal, cancel: cdCancel, return: cdReturn, exchange: cdExchange, amt: cdAmt },
         refund: { count: refCount, amt: refAmt },
         amtProgress, amtConfirmed,
-        isPartial: listGridPager.pageTotalCount > items.length,
       };
-    });
-
-    /* ##### cfSummaryRows — 집계 3섹션 데이터 정의 ################################## */
-
-    const cfSummaryRows = computed(() => {
-      const s = cfSummary.value;
-      return [
-        {
-          title: '수량', titleBg: '#e8f5e9', titleColor: '#2e7d32', borderColor: '#c8e6c9',
-          items: [
-            { label: '📦 주문수량', value: s.qty.order,     bg: '#f1f8e9', color: '#2e7d32' },
-            { label: '🔴 취소수량', value: s.qty.cancel,    bg: '#fce4ec', color: '#c62828' },
-            { label: '🟣 진행중',   value: s.qty.progress,  bg: '#f3e5f5', color: '#6a1b9a',
-              sub: fnAmtShort(s.amtProgress),  subColor: '#9c6aba' },
-            { label: '🔵 확정수량', value: s.qty.confirmed, bg: '#e3f2fd', color: '#1565c0',
-              sub: fnAmtShort(s.amtConfirmed), subColor: '#4a8ac0' },
-          ],
-        },
-        {
-          title: '진행상태', titleBg: '#fff8e1', titleColor: '#e65100', borderColor: '#ffe082',
-          items: [
-            { label: '🟡 주문/입금대기', value: s.status.ordered,  bg: '#fff9f0', color: '#bf6000' },
-            { label: '🟢 결제완료',      value: s.status.paid,     bg: '#e8f5e9', color: '#1b5e20' },
-            { label: '🟠 준비중',        value: s.status.prep,     bg: '#fff3e0', color: '#e65100' },
-            { label: '🚚 배송중',        value: s.status.ship,     bg: '#e8eaf6', color: '#283593' },
-            { label: '📬 배송완료',      value: s.status.dliv,     bg: '#e0f2f1', color: '#00695c' },
-            { label: '✅ 구매확정',      value: s.status.buyConf,  bg: '#e8f5e9', color: '#2e7d32' },
-          ],
-        },
-        {
-          title: '클레임', titleBg: '#fce4ec', titleColor: '#b71c1c', borderColor: '#f8bbd0',
-          items: [
-            { label: '⚠️ 클레임진행중', value: s.claimActive.total, bg: '#fff8f0', color: '#c07030',
-              sub: fnAmtShort(s.claimActive.amt), subColor: '#c0a080',
-              detail: '취소:' + s.claimActive.cancel + ' 반품:' + s.claimActive.return + ' 교환:' + s.claimActive.exchange },
-            { label: '✓ 클레임완료',   value: s.claimDone.total,   bg: '#f9f9f9', color: '#757575',
-              sub: fnAmtShort(s.claimDone.amt), subColor: '#a0a0a0',
-              detail: '취소:' + s.claimDone.cancel + ' 반품:' + s.claimDone.return + ' 교환:' + s.claimDone.exchange },
-            { label: '💸 환불완료',    value: s.refund.count,       bg: '#fff5f5', color: '#c62828',
-              sub: fnAmtShort(s.refund.amt), subColor: '#e07070' },
-          ],
-        },
-      ];
     });
 
     /* ##### cfSummaryGridRow — 그리드 하단 합계행 데이터 ############################# */
@@ -490,12 +440,11 @@ window.OdOrderItemMng = {
 
     return {
       columns, items, listGridPager, searchParam, uiState, codes, detailPanel, picks,
-      cfSummary, cfSummaryRows, cfSummaryGridRow, cfDetailKey,
+      cfSummary, cfSummaryGridRow, cfDetailKey,
       handleBtnAction, handleSelectAction, handleRowClick, handleRowEdit,
       fnSettleBadgeCls, fnSettleBadgeLbl, fnVoucherBadge, fnVoucherLbl,
       fnErpVoucherBadge, fnErpVoucherLbl, fnErpVoucherTypeNm,
       inlineNavigate, fnCallbackModal,
-      fnAmtShort,
     };
   },
   template: `
@@ -509,14 +458,6 @@ window.OdOrderItemMng = {
     </bo-search-area>
   </bo-container>
 
-  <!-- ===== ■. 섬머리 3섹션 ==================================================== -->
-  <div v-if="items.length" style="margin:0 0 8px;">
-    <bo-stat-row v-for="sec in cfSummaryRows" :key="sec.title"
-      :title="sec.title" :title-bg="sec.titleBg" :title-color="sec.titleColor"
-      :border-color="sec.borderColor" :items="sec.items" />
-    <div v-if="cfSummary.isPartial" style="text-align:right;font-size:10px;color:#ccc;margin-top:2px;">* 현재 페이지 기준</div>
-  </div>
-
   <!-- ===== ■. 목록 =========================================================== -->
   <bo-container title="주문항목 목록" :count-text="'총 ' + listGridPager.pageTotalCount.toLocaleString() + '건'">
     <bo-group-table
@@ -528,6 +469,7 @@ window.OdOrderItemMng = {
       :loading="uiState.loading"
       :summary-row="cfSummaryGridRow"
       summary-pos="top"
+      summary-label="tot"
       summary-bg="#1e2f4a"
       summary-border-color="#2563eb"
       summary-text-color="#e8f4ff"
