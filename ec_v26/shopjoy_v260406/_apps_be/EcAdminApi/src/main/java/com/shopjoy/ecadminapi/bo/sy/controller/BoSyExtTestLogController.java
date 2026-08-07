@@ -4,7 +4,6 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyhExtTestLog;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhExtTestLogRepository;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,18 +64,17 @@ public class BoSyExtTestLogController {
     /** 테스트 이력 저장 */
     @PostMapping("/save")
     public ResponseEntity<ApiResponse<SyhExtTestLog>> save(@RequestBody Map<String, Object> body) {
-        String authId = SecurityUtil.getAuthUser().authId();
-        SyhExtTestLog entity = new SyhExtTestLog();
-        entity.setLogId(UUID.randomUUID().toString().replace("-", "")); // 32자 고정
-        entity.setChannelKey(str(body, "channelKey", "unknown"));
-        entity.setChannelLabel(str(body, "channelLabel", null));
-        entity.setTestResult(str(body, "testResult", "FAIL"));
-        entity.setTestMsg(str(body, "testMsg", null));
-        entity.setTestUrl(str(body, "testUrl", null));
-        entity.setTestReqBody(str(body, "testReqBody", null));
-        entity.setTestAccount(str(body, "testAccount", null));
-        entity.setRegBy(authId);
-        entity.setUpdBy(authId);
+        /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
+        SyhExtTestLog entity = SyhExtTestLog.builder()
+            .logId(UUID.randomUUID().toString().replace("-", ""))   // 32자 고정
+            .channelKey(str(body, "channelKey", "unknown"))
+            .channelLabel(str(body, "channelLabel", null))
+            .testResult(str(body, "testResult", "FAIL"))
+            .testMsg(str(body, "testMsg", null))
+            .testUrl(str(body, "testUrl", null))
+            .testReqBody(str(body, "testReqBody", null))
+            .testAccount(str(body, "testAccount", null))
+            .build();
         SyhExtTestLog saved = repository.save(entity);
         return ResponseEntity.ok(ApiResponse.ok(saved));
     }

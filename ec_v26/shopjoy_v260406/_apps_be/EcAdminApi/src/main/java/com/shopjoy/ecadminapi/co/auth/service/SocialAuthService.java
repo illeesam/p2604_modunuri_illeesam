@@ -223,19 +223,20 @@ public class SocialAuthService {
 
         String memberNm = CmUtil.nvlStr(info.getName(), CmUtil.nvlStr(request.getName(), "소셜회원"));
 
-        MbMember member = new MbMember();
-        member.setMemberId(memberId);
-        member.setLoginId(loginId);
-        // 소셜 회원: 비밀번호 직접 로그인 불가 → 추측 불가능한 랜덤값 bcrypt 저장
-        member.setLoginPwdHash(passwordEncoder.encode("SOCIAL$" + UUID.randomUUID()));
-        member.setMemberNm(memberNm);
-        member.setMemberPhone(CmUtil.nvlStr(info.getPhone(), CmUtil.nvlStr(request.getPhone())));
-        member.setMemberStatusCd("ACTIVE");
-        member.setJoinDate(LocalDateTime.now());
-        member.setRegBy(memberId);
-        member.setRegDate(LocalDateTime.now());
-        member.setUpdBy(memberId);
-        member.setUpdDate(LocalDateTime.now());
+        // regBy/updBy 는 수동 세팅 — 가입 시점엔 인증 컨텍스트가 없어 EntitySaveListener 가
+        // *_by 를 보존한다. 그래야 신규 회원 자신의 memberId 가 남는다. (reg/updDate 는 리스너가 채움)
+        MbMember member = MbMember.builder()
+            .memberId(memberId)
+            .loginId(loginId)
+            // 소셜 회원: 비밀번호 직접 로그인 불가 → 추측 불가능한 랜덤값 bcrypt 저장
+            .loginPwdHash(passwordEncoder.encode("SOCIAL$" + UUID.randomUUID()))
+            .memberNm(memberNm)
+            .memberPhone(CmUtil.nvlStr(info.getPhone(), CmUtil.nvlStr(request.getPhone())))
+            .memberStatusCd("ACTIVE")
+            .joinDate(LocalDateTime.now())
+            .regBy(memberId)
+            .updBy(memberId)
+            .build();
         memberRepository.save(member);
 
         // SNS 연동행 생성
@@ -246,15 +247,15 @@ public class SocialAuthService {
 
     /** mb_member_sns 연동행 생성. */
     private void createSnsLink(String memberSnsId, String siteId, String memberId, SocialUserInfo info) {
-        MbMemberSns sns = new MbMemberSns();
-        sns.setMemberSnsId(memberSnsId);
-        sns.setMemberId(memberId);
-        sns.setSnsChannelCd(info.getSnsChannelCd());
-        sns.setSnsUserId(info.getSnsUserId());
-        sns.setRegBy(memberId);
-        sns.setRegDate(LocalDateTime.now());
-        sns.setUpdBy(memberId);
-        sns.setUpdDate(LocalDateTime.now());
+        // regBy/updBy 수동 세팅 이유는 createMember() 주석 참조
+        MbMemberSns sns = MbMemberSns.builder()
+            .memberSnsId(memberSnsId)
+            .memberId(memberId)
+            .snsChannelCd(info.getSnsChannelCd())
+            .snsUserId(info.getSnsUserId())
+            .regBy(memberId)
+            .updBy(memberId)
+            .build();
         memberSnsRepository.save(sns);
     }
 

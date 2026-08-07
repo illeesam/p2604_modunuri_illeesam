@@ -624,8 +624,8 @@ public SyUser save(String cmd, SyUser entity) {
             return null;   // @Transactional 종료 시 자동 flush
         } else if ("I".equals(rowStatus)) {
             entity.setUserId(CmUtil.generateId("sy_user"));
-            entity.setRegBy(authId); entity.setRegDate(now);
-            entity.setUpdBy(authId); entity.setUpdDate(now);
+            /* 감사컬럼(regBy/regDate/updBy/updDate)은 세팅하지 않는다 —
+             * EntitySaveListener 가 @PrePersist 에서 주입한다 (§14.7.5) */
             SyUser saved = syUserRepository.save(entity);
             if (saved == null) throw new CmBizException("...");
             return saved;   // @Transactional 종료 시 자동 flush
@@ -682,11 +682,9 @@ public void saveList(String cmd, List<SyUser> rows) {
             if (affected == 0) throw new CmBizException("...");
         }
 
-        // 3단계: INSERT — userId 생성 + audit 채움 + JPA save
+        // 3단계: INSERT — userId 생성 + JPA save (감사컬럼은 EntitySaveListener 담당, §14.7.5)
         for (SyUser row : insertRows) {
             row.setUserId(CmUtil.generateId("sy_user"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
             syUserRepository.save(row);
         }
 
@@ -704,10 +702,12 @@ public void saveList(String cmd, List<SyUser> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         for (SyUser row : rows) {
             if (row.getSortOrd() == null) continue;  // sortOrd 없으면 skip
-            SyUser patch = new SyUser();
-            patch.setUserId(row.getUserId());
-            patch.setSortOrd(row.getSortOrd());
-            patch.setUpdBy(authId);
+            /* updBy 는 수동 세팅 — updateSelective 는 @PreUpdate 리스너를 타지 않는다 (§14.7.5) */
+            SyUser patch = SyUser.builder()
+                .userId(row.getUserId())
+                .sortOrd(row.getSortOrd())
+                .updBy(authId)
+                .build();
             int affected = syUserRepository.updateSelective(patch);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getUserId() + "::" + CmUtil.svcCallerInfo(this));
         }
@@ -735,6 +735,68 @@ public void saveList(String cmd, List<SyUser> rows) {
    update.set(syUser.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
    ```
 4. **존재 검증** — `affected == 0` 으로 검사 (UPDATE) / `existsById` (DELETE)
+
+### 14.7.5 엔티티 생성 표준 — builder + 감사컬럼 자동 주입 ⭐ (2026-08-07)
+
+#### 규칙 1 — 엔티티 생성은 `new X()` + setter 체인이 아니라 **builder**
+
+전 엔티티가 `@SuperBuilder` 를 보유한다(`BaseEntity` 포함 165개 전부). 필드 나열이
+선언과 한 덩어리로 묶여 "생성 중 미완성 객체" 구간이 사라진다.
+
+```java
+// ❌ 금지
+CmChattMember member = new CmChattMember();
+member.setChattMemberId(CmUtil.generateId("cm_chatt_member"));
+member.setChattId(chattId);
+member.setUnreadCnt(0);
+
+// ✅ 표준
+CmChattMember member = CmChattMember.builder()
+    .chattMemberId(CmUtil.generateId("cm_chatt_member"))
+    .chattId(chattId)
+    .unreadCnt(0)
+    .build();
+```
+
+**예외 (setter 유지)**: `VoUtil.mapCopy`/`voCopy` 로 채우는 객체, 루프에서 조건부로
+필드를 누적하는 mutable 객체 — 둘 다 변경 가능한 대상이 필요하다.
+
+#### 규칙 2 — JPA `save()` 경로의 감사컬럼은 **세팅하지 않는다**
+
+`BaseEntity` 에 `@EntityListeners(EntitySaveListener.class)` 가 붙어 있어
+`@PrePersist`/`@PreUpdate` 가 `regBy/regDate/updBy/updDate` 를 서버 권한으로 채운다.
+Service 에서 넣어도 **저장 직전에 덮어써지므로 실행되지 않는 죽은 코드**다.
+
+```java
+// ❌ 죽은 코드 — 리스너가 덮어쓴다
+entity.setRegBy(authId);  entity.setRegDate(LocalDateTime.now());
+entity.setUpdBy(authId);  entity.setUpdDate(LocalDateTime.now());
+repository.save(entity);
+```
+
+#### 규칙 3 — 다음 3가지는 **살아있는 코드**이므로 반드시 유지
+
+리스너는 `authId` 가 비어 있으면 `*_by` 를 **보존**하고, 날짜만 서버시각으로 채운다.
+따라서 인증 컨텍스트가 없는 경로에서는 수동 세팅이 유일한 기록 수단이다.
+
+| 상황 | 유지 대상 | 이유 |
+|---|---|---|
+| `updateSelective(patch)` | `updBy` | QueryDSL `JPAUpdateClause` 벌크 UPDATE — `@PreUpdate` 미발동. `updDate` 는 Repository 가 `CURRENT_TIMESTAMP` 로 채우므로 불필요 |
+| 배치 (`sch/handler/*`) | `regBy`/`updBy` = `"BATCH"` | 인증 컨텍스트 없음 → 리스너가 `*_by` 보존 |
+| 비회원·비동기 (`getAuthIdOrGuest()`, 소셜 가입, 메시지 발송) | `regBy`/`updBy` | 위와 동일. `"GUEST"` / 신규 회원 자신의 ID 를 남겨야 함 |
+
+세 경우 모두 **날짜(`regDate`/`updDate`)는 제거**한다 — 리스너가 컨텍스트와 무관하게 항상 채운다.
+
+#### 점검 명령
+
+```bash
+# builder 미전환 엔티티 생성 지점 (결과는 전부 VoUtil.mapCopy 동반이어야 정상)
+ENTS=$(grep -rlE 'extends BaseEntity' --include=*.java src/main/java | sed 's#.*/##; s#\.java$##' | sort -u)
+grep -rnE -A 1 "new ($(echo "$ENTS" | paste -sd'|'))\(\)" --include=*.java src/main/java | grep -v '/data/entity/'
+
+# JPA save 경로의 죽은 감사 setter 후보
+grep -rnB 6 'Repository\.save(' --include=*.java src/main/java | grep 'setRegDate\|setUpdDate'
+```
 5. **알 수 없는 rowStatus 는 예외** — 조용히 무시 금지 (정규화 빠짐을 즉시 감지)
 6. **flush/clear 최소화** — `@Transactional` 종료 시 JPA 자동 flush 에 의존
    - `save()` D/I 분기 — `em.flush()/clear()` 불필요 (return 직후 트랜잭션 종료)

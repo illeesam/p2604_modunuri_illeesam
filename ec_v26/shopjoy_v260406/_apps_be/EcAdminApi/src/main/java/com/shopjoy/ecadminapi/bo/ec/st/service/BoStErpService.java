@@ -41,10 +41,11 @@ public class BoStErpService {
     /** ERP 전표 생성 — PENDING 상태로 신규 발행 */
     @Transactional
     public StErpVoucher gen(String targetMon, String slipType) {
-        StErpVoucher entity = new StErpVoucher();
-        entity.setSettleYm(targetMon);
-        entity.setErpVoucherTypeCd(slipType);
-        entity.setErpVoucherStatusCd("PENDING");
+        StErpVoucher entity = StErpVoucher.builder()
+            .settleYm(targetMon)
+            .erpVoucherTypeCd(slipType)
+            .erpVoucherStatusCd("PENDING")
+            .build();
         StErpVoucher result = stErpVoucherService.create(entity);
         log.info("ERP 전표 생성 - id={}, targetMon={}", result.getErpVoucherId(), targetMon);
         return result;

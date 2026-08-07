@@ -68,9 +68,10 @@ public class FoCmChattService {
         }
 
         // 새 채팅방 생성
-        CmChatt body = new CmChatt();
-        body.setSubject(subject != null ? subject : "고객 문의");
-        body.setChattStatusCd("PENDING");
+        CmChatt body = CmChatt.builder()
+            .subject(subject != null ? subject : "고객 문의")
+            .chattStatusCd("PENDING")
+            .build();
 
         CmChatt saved = cmChattService.create(body);
 
@@ -100,18 +101,19 @@ public class FoCmChattService {
         }
 
         String memberId = SecurityUtil.getAuthUser().authId();
-        CmChattMsg msg = new CmChattMsg();
-        msg.setChattId(chattId);
-        msg.setSenderTypeCd("MEMBER");
-        msg.setSenderId(memberId);
-        msg.setSenderNm(memberId);
-        msg.setMsgText(body.getMsgText());
-        msg.setMsgTypeCd(body.getMsgTypeCd() != null ? body.getMsgTypeCd() : "TEXT");
-        msg.setAttachGrpId(body.getAttachGrpId());
-        msg.setRefType(body.getRefType());
-        msg.setRefId(body.getRefId());
-        msg.setReadYn("N");
-        msg.setSendDate(LocalDateTime.now());
+        CmChattMsg msg = CmChattMsg.builder()
+            .chattId(chattId)
+            .senderTypeCd("MEMBER")
+            .senderId(memberId)
+            .senderNm(memberId)
+            .msgText(body.getMsgText())
+            .msgTypeCd(body.getMsgTypeCd() != null ? body.getMsgTypeCd() : "TEXT")
+            .attachGrpId(body.getAttachGrpId())
+            .refType(body.getRefType())
+            .refId(body.getRefId())
+            .readYn("N")
+            .sendDate(LocalDateTime.now())
+            .build();
 
         CmChattMsg saved = cmChattMsgService.create(msg);
 

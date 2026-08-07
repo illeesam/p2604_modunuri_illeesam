@@ -94,26 +94,26 @@ public class BoSyRoleService {
 
         /* 2) 기존 매핑 → 모두 D(삭제) row 로 변환 */
         List<SyRoleMenu> rows = syRoleMenuService.getList(req).stream()
-                .map(ex -> {
-                    SyRoleMenu r = new SyRoleMenu();
-                    r.setRoleMenuId(ex.getRoleMenuId());
-                    r.setRowStatus("D");
-                    return r;
-                })
+                .map(ex -> SyRoleMenu.builder()
+                        .roleMenuId(ex.getRoleMenuId())
+                        .rowStatus("D")
+                        .build())
                 .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
 
         /* 3) 신규 매핑 → I(등록) row 로 추가 */
         if (menus != null) for (Map<String, Object> m : menus) {
             Object menuId = m.get("menuId");
             if (menuId == null || String.valueOf(menuId).isBlank()) continue;  /* menuId 없으면 skip */
-            SyRoleMenu r = new SyRoleMenu();
-            r.setRoleId(roleId);
-            r.setMenuId(String.valueOf(menuId));
-            r.setRowStatus("I");
-            /* permLevel 정수 변환 (실패하면 무시 — 기본값으로 INSERT) */
+            /* permLevel 정수 변환 (실패하면 null → 기본값으로 INSERT) */
+            Integer permLevel = null;
             Object perm = m.get("permLevel");
-            if (perm != null) try { r.setPermLevel(Integer.valueOf(String.valueOf(perm))); } catch (NumberFormatException ignore) {}
-            rows.add(r);
+            if (perm != null) try { permLevel = Integer.valueOf(String.valueOf(perm)); } catch (NumberFormatException ignore) {}
+            rows.add(SyRoleMenu.builder()
+                    .roleId(roleId)
+                    .menuId(String.valueOf(menuId))
+                    .rowStatus("I")
+                    .permLevel(permLevel)
+                    .build());
         }
 
         /* 4) D + I 한 번에 처리 (saveList 가 단계별 DELETE → INSERT 처리하여 unique 충돌 회피) */
@@ -130,23 +130,21 @@ public class BoSyRoleService {
 
         /* 2) 기존 매핑 → 모두 D(삭제) row 로 변환 */
         List<SyUserRole> rows = syUserRoleService.getList(req).stream()
-                .map(ex -> {
-                    SyUserRole r = new SyUserRole();
-                    r.setUserRoleId(ex.getUserRoleId());
-                    r.setRowStatus("D");
-                    return r;
-                })
+                .map(ex -> SyUserRole.builder()
+                        .userRoleId(ex.getUserRoleId())
+                        .rowStatus("D")
+                        .build())
                 .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
 
         /* 3) 신규 매핑 → I(등록) row 로 추가 (boUserId 우선, 없으면 userId) */
         if (users != null) for (Map<String, Object> u : users) {
             Object uid = u.getOrDefault("boUserId", u.get("userId"));
             if (uid == null || String.valueOf(uid).isBlank()) continue;  /* userId 없으면 skip */
-            SyUserRole r = new SyUserRole();
-            r.setRoleId(roleId);
-            r.setUserId(String.valueOf(uid));
-            r.setRowStatus("I");
-            rows.add(r);
+            rows.add(SyUserRole.builder()
+                    .roleId(roleId)
+                    .userId(String.valueOf(uid))
+                    .rowStatus("I")
+                    .build());
         }
 
         /* 4) D + I 한 번에 처리 (saveList 가 단계별 DELETE → INSERT 처리하여 unique(user_id, role_id) 충돌 회피) */

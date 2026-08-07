@@ -64,21 +64,22 @@ public class CmMailSendService {
 
         String logId = null;
         try {
-            SyhSendEmailLog logRow = new SyhSendEmailLog();
             logId = CmUtil.generateId("syh_send_email_log");
-            logRow.setLogId(logId);
-            logRow.setTemplateId(templateId);
-            logRow.setTemplateCode(templateCode);
-            logRow.setFromAddr(cfg.from);
-            logRow.setToAddr(toAddr);
-            logRow.setSubject(subject);
-            logRow.setContent(content);
-            logRow.setParams(CmUtil.toJsonParams(params));
-            logRow.setResultCd(resultCd);
-            logRow.setFailReason(failReason);
-            logRow.setSendDate(LocalDateTime.now());
-            logRow.setRefTypeCd(refTypeCd);
-            logRow.setRefId(refId);
+            SyhSendEmailLog logRow = SyhSendEmailLog.builder()
+                .logId(logId)
+                .templateId(templateId)
+                .templateCode(templateCode)
+                .fromAddr(cfg.from)
+                .toAddr(toAddr)
+                .subject(subject)
+                .content(content)
+                .params(CmUtil.toJsonParams(params))
+                .resultCd(resultCd)
+                .failReason(failReason)
+                .sendDate(LocalDateTime.now())
+                .refTypeCd(refTypeCd)
+                .refId(refId)
+                .build();
             stampReg(logRow);
             syhSendEmailLogRepository.save(logRow);
         } catch (Exception e) {

@@ -183,17 +183,18 @@ public class BoOdOrderService {
 
         OdOrder order;
         if (isNew) {
-            order = new OdOrder();
-            order.setMemberId(req.getMemberId());
-            order.setMemberNm(req.getMemberNm());
-            order.setOrdererEmail(req.getOrdererEmail());
-            order.setOrderDate(LocalDateTime.now());
-            order.setOrderStatusCd(req.getOrderStatusCd() != null ? req.getOrderStatusCd() : "PENDING");
-            order.setPayMethodCd(req.getPayMethodCd());
-            order.setTotalAmt(totalAmt);
-            order.setOutboundShippingFee(dlivFee);
-            order.setPayAmt(payAmt);
-            order.setMemo(req.getMemo());
+            order = OdOrder.builder()
+                .memberId(req.getMemberId())
+                .memberNm(req.getMemberNm())
+                .ordererEmail(req.getOrdererEmail())
+                .orderDate(LocalDateTime.now())
+                .orderStatusCd(req.getOrderStatusCd() != null ? req.getOrderStatusCd() : "PENDING")
+                .payMethodCd(req.getPayMethodCd())
+                .totalAmt(totalAmt)
+                .outboundShippingFee(dlivFee)
+                .payAmt(payAmt)
+                .memo(req.getMemo())
+                .build();
             order = odOrderService.create(order);   // orderId 생성 + flush
         } else {
             order = odOrderRepository.findById(req.getOrderId())
@@ -220,17 +221,18 @@ public class BoOdOrderService {
         if (req.getOrderItems() != null) {
             for (OdOrderItemDto.SaveItem si : req.getOrderItems()) {
                 if (si == null || si.getProdId() == null) continue;
-                OdOrderItem item = new OdOrderItem();
-                item.setOrderId(orderId);
-                item.setProdId(si.getProdId());
-                item.setProdSkuId(si.getProdSkuId());
-                item.setProdNm(si.getProdNm());
-                item.setUnitPrice(si.getUnitPrice());
-                item.setOrderQty(si.getOrderQty() != null ? si.getOrderQty() : 1);
                 long amt = si.getItemOrderAmt() != null ? si.getItemOrderAmt()
                     : (si.getUnitPrice() != null ? si.getUnitPrice() * (si.getOrderQty() != null ? si.getOrderQty() : 1) : 0L);
-                item.setItemOrderAmt(amt);
-                item.setOrderItemStatusCd("ORDERED");
+                OdOrderItem item = OdOrderItem.builder()
+                    .orderId(orderId)
+                    .prodId(si.getProdId())
+                    .prodSkuId(si.getProdSkuId())
+                    .prodNm(si.getProdNm())
+                    .unitPrice(si.getUnitPrice())
+                    .orderQty(si.getOrderQty() != null ? si.getOrderQty() : 1)
+                    .itemOrderAmt(amt)
+                    .orderItemStatusCd("ORDERED")
+                    .build();
                 odOrderItemService.create(item);   // orderItemId 생성 + 저장
             }
         }

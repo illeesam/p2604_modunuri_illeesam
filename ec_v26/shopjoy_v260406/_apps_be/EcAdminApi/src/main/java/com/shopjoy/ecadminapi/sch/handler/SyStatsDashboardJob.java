@@ -473,13 +473,13 @@ public class SyStatsDashboardJob implements SchBatchJobHandler {
             return existing.get();
         }
 
-        CmDashboardItemData row = new CmDashboardItemData();
-        row.setItemDataId(CmUtil.generateId("cm_dashboard_item_data"));
-        row.setDashboardItemId(panel.getDashboardItemId());
-        row.setUiNm(UI);
-        row.setItemKey(panel.getItemKey());
-        row.setYyyymmdd(yyyymmdd);
-        return row;
+        return CmDashboardItemData.builder()
+            .itemDataId(CmUtil.generateId("cm_dashboard_item_data"))
+            .dashboardItemId(panel.getDashboardItemId())
+            .uiNm(UI)
+            .itemKey(panel.getItemKey())
+            .yyyymmdd(yyyymmdd)
+            .build();
     }
 
     /** rows[i] = [name, count] 형태의 목록을 col1~col9 에 저장 (최대 9행). */

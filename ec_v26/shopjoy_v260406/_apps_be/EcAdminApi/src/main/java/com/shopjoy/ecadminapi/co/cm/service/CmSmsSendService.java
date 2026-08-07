@@ -71,23 +71,24 @@ public class CmSmsSendService {
 
         String logId = null;
         try {
-            SyhSendMsgLog logRow = new SyhSendMsgLog();
             logId = CmUtil.generateId("syh_send_msg_log");
-            logRow.setLogId(logId);
-            logRow.setChannelCd(CHANNEL);
-            logRow.setTemplateId(templateId);
-            logRow.setTemplateCode(templateCode);
-            logRow.setRecvPhone(recvPhone);
-            logRow.setSenderPhone(senderPhone);
-            logRow.setTitle(title);
-            logRow.setContent(content);
-            logRow.setParams(CmUtil.toJsonParams(params));
-            logRow.setResultCd(resultCd);
-            logRow.setResultMsg("미연동");
-            logRow.setFailReason(failReason);
-            logRow.setSendDate(LocalDateTime.now());
-            logRow.setRefTypeCd(refTypeCd);
-            logRow.setRefId(refId);
+            SyhSendMsgLog logRow = SyhSendMsgLog.builder()
+                .logId(logId)
+                .channelCd(CHANNEL)
+                .templateId(templateId)
+                .templateCode(templateCode)
+                .recvPhone(recvPhone)
+                .senderPhone(senderPhone)
+                .title(title)
+                .content(content)
+                .params(CmUtil.toJsonParams(params))
+                .resultCd(resultCd)
+                .resultMsg("미연동")
+                .failReason(failReason)
+                .sendDate(LocalDateTime.now())
+                .refTypeCd(refTypeCd)
+                .refId(refId)
+                .build();
             stampReg(logRow);
             syhSendMsgLogRepository.save(logRow);
         } catch (Exception e) {

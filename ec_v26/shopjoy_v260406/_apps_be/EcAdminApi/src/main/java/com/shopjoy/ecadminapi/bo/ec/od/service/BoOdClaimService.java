@@ -132,14 +132,15 @@ public class BoOdClaimService {
         em.flush();
 
         /* 상태 변경 이력 INSERT */
-        OdhClaimStatusHist hist = new OdhClaimStatusHist();
-        hist.setClaimId(entity.getClaimId());
-        hist.setOrderId(entity.getOrderId());
-        hist.setClaimStatusCdBefore(prevStatus);
-        hist.setClaimStatusCd(row.getClaimStatusCd());
-        hist.setMemo(row.getMemo());
-        hist.setChgUserId(authId);
-        hist.setChgDate(LocalDateTime.now());
+        OdhClaimStatusHist hist = OdhClaimStatusHist.builder()
+            .claimId(entity.getClaimId())
+            .orderId(entity.getOrderId())
+            .claimStatusCdBefore(prevStatus)
+            .claimStatusCd(row.getClaimStatusCd())
+            .memo(row.getMemo())
+            .chgUserId(authId)
+            .chgDate(LocalDateTime.now())
+            .build();
         odhClaimStatusHistService.create(hist);
 
         return odClaimService.getById(row.getClaimId());

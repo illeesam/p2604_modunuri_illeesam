@@ -128,7 +128,6 @@ public class BoPdProdTabController {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> skuRows = body != null && body.get("skus") instanceof List
             ? (List<Map<String, Object>>) body.get("skus") : List.of();
-        String authId = SecurityUtil.getAuthUser().authId();
         String siteId = SecurityUtil.getSiteIdOrDefault();
         LocalDateTime now = LocalDateTime.now();
 
@@ -145,22 +144,20 @@ public class BoPdProdTabController {
         // 2) 신규 INSERT
         int idx = 0;
         for (Map<String, Object> row : skuRows) {
-            PdProdSku sku = new PdProdSku();
             String skuId = "SK" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + idx;
-            sku.setProdSkuId(skuId);
-            sku.setProdId(prodId);
-            sku.setProdOptId1(row.get("prodOptId1") != null ? String.valueOf(row.get("prodOptId1")) : null);
-            sku.setProdOptId2(row.get("prodOptId2") != null ? String.valueOf(row.get("prodOptId2")) : null);
             String skuCode = row.get("prodSkuCode") != null ? String.valueOf(row.get("prodSkuCode")) : "";
-            sku.setProdSkuCode(skuCode.isBlank() ? prodId + "-" + String.format("%03d", idx + 1) : skuCode);
             Object addPriceObj = row.get("addPrice");
-            sku.setAddPrice(addPriceObj != null ? Long.parseLong(String.valueOf(addPriceObj)) : 0L);
             String useYn = row.get("useYn") != null ? String.valueOf(row.get("useYn")) : "Y";
-            sku.setUseYn(useYn.isBlank() ? "Y" : useYn);
-            sku.setRegBy(authId);
-            sku.setRegDate(now);
-            sku.setUpdBy(authId);
-            sku.setUpdDate(now);
+            /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
+            PdProdSku sku = PdProdSku.builder()
+                .prodSkuId(skuId)
+                .prodId(prodId)
+                .prodOptId1(row.get("prodOptId1") != null ? String.valueOf(row.get("prodOptId1")) : null)
+                .prodOptId2(row.get("prodOptId2") != null ? String.valueOf(row.get("prodOptId2")) : null)
+                .prodSkuCode(skuCode.isBlank() ? prodId + "-" + String.format("%03d", idx + 1) : skuCode)
+                .addPrice(addPriceObj != null ? Long.parseLong(String.valueOf(addPriceObj)) : 0L)
+                .useYn(useYn.isBlank() ? "Y" : useYn)
+                .build();
             pdProdSkuRepository.save(sku);
 
             // pd_prod_stock upsert — stockCode = prodSkuCode
@@ -170,20 +167,15 @@ public class BoPdProdTabController {
             PdProdStock sc = pdProdStockRepository.findByStockCode(stockCode).orElse(null);
             if (sc != null) {
                 sc.setStockQty(stockQty);
-                sc.setUpdBy(authId);
-                sc.setUpdDate(now);
                 pdProdStockRepository.save(sc);
             } else {
-                PdProdStock newSc = new PdProdStock();
-                newSc.setProdStockId("PS" + now.format(ID_FMT) + String.format("%06d", idx));
-                newSc.setStockCode(stockCode);
-                newSc.setProdId(prodId);
-                newSc.setStockQty(stockQty);
-                newSc.setSaleCount(0);
-                newSc.setRegBy(authId);
-                newSc.setRegDate(now);
-                newSc.setUpdBy(authId);
-                newSc.setUpdDate(now);
+                PdProdStock newSc = PdProdStock.builder()
+                    .prodStockId("PS" + now.format(ID_FMT) + String.format("%06d", idx))
+                    .stockCode(stockCode)
+                    .prodId(prodId)
+                    .stockQty(stockQty)
+                    .saleCount(0)
+                    .build();
                 pdProdStockRepository.save(newSc);
             }
 
@@ -211,7 +203,6 @@ public class BoPdProdTabController {
             @PathVariable("prodId") String prodId,
             @RequestBody PdProdImgUpdateDto.Request req) {
         List<PdProdImgUpdateDto.Row> rows = req != null && req.getImages() != null ? req.getImages() : List.of();
-        String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1) 기존 데이터 전체 삭제
@@ -223,22 +214,20 @@ public class BoPdProdTabController {
             String prodImgId = "PI" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + idx;
             if (prodImgId.length() > 21) prodImgId = prodImgId.substring(0, 21);
 
-            PdProdImg img = new PdProdImg();
-            img.setProdImgId(prodImgId);
-            img.setProdId(prodId);
-            img.setProdOptId1(r.getProdOptId1());
-            img.setProdOptId2(r.getProdOptId2());
             String imgUrl = r.getPreviewUrl();
             String thumbUrl = r.getCdnThumbUrl();
-            img.setCdnImgUrl(imgUrl);
-            img.setCdnThumbUrl(thumbUrl != null ? thumbUrl : imgUrl);
-            img.setImgAltText(r.getImgAltText());
-            img.setSortOrd(idx + 1);
-            img.setIsThumb(Boolean.TRUE.equals(r.getIsMain()) ? "Y" : "N");
-            img.setRegBy(authId);
-            img.setRegDate(now);
-            img.setUpdBy(authId);
-            img.setUpdDate(now);
+            /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
+            PdProdImg img = PdProdImg.builder()
+                .prodImgId(prodImgId)
+                .prodId(prodId)
+                .prodOptId1(r.getProdOptId1())
+                .prodOptId2(r.getProdOptId2())
+                .cdnImgUrl(imgUrl)
+                .cdnThumbUrl(thumbUrl != null ? thumbUrl : imgUrl)
+                .imgAltText(r.getImgAltText())
+                .sortOrd(idx + 1)
+                .isThumb(Boolean.TRUE.equals(r.getIsMain()) ? "Y" : "N")
+                .build();
             pdProdImgRepository.save(img);
             idx++;
         }
@@ -302,20 +291,18 @@ public class BoPdProdTabController {
                 if (optId.length() > 21) optId = optId.substring(0, 21);
                 clientOptIdToOptId.put(iClientId, optId);
 
-                PdProdOpt opt = new PdProdOpt();
-                opt.setProdOptId(optId);
-                opt.setProdId(prodId);
-                opt.setProdOptTypeLevel(level);
-                opt.setProdOptNm(CmUtil.nvlStr(it.getNm()));
-                opt.setProdOptVal(CmUtil.nvlStr(it.getVal()));
-                opt.setProdOptStdCd(nullIfEmpty(it.getStdCd()));
-                opt.setProdOptStyle(nullIfEmpty(it.getProdOptStyle()));
-                opt.setSortOrd(it.getSortOrd() != null ? it.getSortOrd() : (iIdx + 1));
-                opt.setUseYn(it.getUseYn() != null && !it.getUseYn().isEmpty() ? it.getUseYn() : "Y");
-                opt.setRegBy(authId);
-                opt.setRegDate(now);
-                opt.setUpdBy(authId);
-                opt.setUpdDate(now);
+                /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
+                PdProdOpt opt = PdProdOpt.builder()
+                    .prodOptId(optId)
+                    .prodId(prodId)
+                    .prodOptTypeLevel(level)
+                    .prodOptNm(CmUtil.nvlStr(it.getNm()))
+                    .prodOptVal(CmUtil.nvlStr(it.getVal()))
+                    .prodOptStdCd(nullIfEmpty(it.getStdCd()))
+                    .prodOptStyle(nullIfEmpty(it.getProdOptStyle()))
+                    .sortOrd(it.getSortOrd() != null ? it.getSortOrd() : (iIdx + 1))
+                    .useYn(it.getUseYn() != null && !it.getUseYn().isEmpty() ? it.getUseYn() : "Y")
+                    .build();
                 String parentClient = it.getParentOptId() != null ? String.valueOf(it.getParentOptId()) : null;
                 if (parentClient != null && parentClient.isEmpty()) parentClient = null;
                 optsToInsert.add(opt);
@@ -369,7 +356,6 @@ public class BoPdProdTabController {
             @PathVariable("prodId") String prodId,
             @RequestBody PdProdContentUpdateDto.Request req) {
         List<PdProdContentUpdateDto.Block> blocks = req != null && req.getContentBlocks() != null ? req.getContentBlocks() : List.of();
-        String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1) 기존 데이터 전체 삭제 (단순 전체 갱신 패턴)
@@ -381,17 +367,15 @@ public class BoPdProdTabController {
             String type = blk.getType() != null ? blk.getType() : "html";
             String content = CmUtil.nvlStr(blk.getContent());
 
-            PdProdContent entity = new PdProdContent();
-            entity.setProdContentId("PC" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)));
-            entity.setProdId(prodId);
-            entity.setContentTypeCd(type.toUpperCase()); // HTML / IMAGE / URL 등
-            entity.setContentHtml(content);
-            entity.setSortOrd(order++);
-            entity.setUseYn("Y");
-            entity.setRegBy(authId);
-            entity.setRegDate(now);
-            entity.setUpdBy(authId);
-            entity.setUpdDate(now);
+            /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
+            PdProdContent entity = PdProdContent.builder()
+                .prodContentId("PC" + now.format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000)))
+                .prodId(prodId)
+                .contentTypeCd(type.toUpperCase())   // HTML / IMAGE / URL 등
+                .contentHtml(content)
+                .sortOrd(order++)
+                .useYn("Y")
+                .build();
             pdProdContentRepository.save(entity);
         }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));

@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -88,15 +87,13 @@ public class FoMbLikeService {
             mbLikeRepository.delete(existing.get());
             return false;
         } else {
-            MbLike like = new MbLike();
-            like.setLikeId(CmUtil.generateId("mb_like"));
-            like.setMemberId(authId);
-            like.setTargetTypeCd(targetTypeCd);
-            like.setTargetId(targetId);
-            like.setRegBy(authId);
-            like.setRegDate(LocalDateTime.now());
-            like.setUpdBy(authId);
-            like.setUpdDate(LocalDateTime.now());
+            /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
+            MbLike like = MbLike.builder()
+                .likeId(CmUtil.generateId("mb_like"))
+                .memberId(authId)
+                .targetTypeCd(targetTypeCd)
+                .targetId(targetId)
+                .build();
             MbLike saved = mbLikeRepository.save(like);
             if (saved == null) throw new CmBizException("찜 추가에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return true;

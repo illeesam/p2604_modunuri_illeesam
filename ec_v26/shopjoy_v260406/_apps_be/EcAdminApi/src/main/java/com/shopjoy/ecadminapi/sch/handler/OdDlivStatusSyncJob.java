@@ -151,19 +151,20 @@ public class OdDlivStatusSyncJob implements SchBatchJobHandler {
             dlivItemRepository.save(item);
         }
 
-        OdhDlivStatusHist hist = new OdhDlivStatusHist();
-        hist.setDlivStatusHistId(CmUtil.generateId("odh_dliv_status_hist"));
-        hist.setDlivId(dliv.getDlivId());
-        hist.setOrderId(dliv.getOrderId());
-        hist.setDlivStatusCdBefore(prevStatus);
-        hist.setDlivStatusCd(newStatus);
-        hist.setStatusReason(reason);
-        hist.setChgUserId("BATCH");
-        hist.setChgDate(now);
-        hist.setRegBy("BATCH");
-        hist.setRegDate(now);
-        hist.setUpdBy("BATCH");
-        hist.setUpdDate(now);
+        // regBy/updBy 는 수동 세팅 — 배치는 인증 컨텍스트가 없어 EntitySaveListener 가
+        // *_by 를 건드리지 않고 보존한다. (reg/updDate 는 리스너가 서버시각으로 채움)
+        OdhDlivStatusHist hist = OdhDlivStatusHist.builder()
+            .dlivStatusHistId(CmUtil.generateId("odh_dliv_status_hist"))
+            .dlivId(dliv.getDlivId())
+            .orderId(dliv.getOrderId())
+            .dlivStatusCdBefore(prevStatus)
+            .dlivStatusCd(newStatus)
+            .statusReason(reason)
+            .chgUserId("BATCH")
+            .chgDate(now)
+            .regBy("BATCH")
+            .updBy("BATCH")
+            .build();
         histRepository.save(hist);
 
         log.debug("[{}] {} → {}: dlivId={} courier={} trackingNo={}",

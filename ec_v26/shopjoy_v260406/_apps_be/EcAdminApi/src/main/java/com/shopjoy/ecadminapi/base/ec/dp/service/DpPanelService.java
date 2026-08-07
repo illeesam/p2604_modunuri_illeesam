@@ -126,24 +126,22 @@ public class DpPanelService {
         try {
             JsonNode rows = OM.readTree(cj).path("rows");
             if (!rows.isArray()) return;
-            String authId = SecurityUtil.getAuthUser().authId();
-            LocalDateTime now = LocalDateTime.now();
             int ord = 0;
             for (JsonNode r : rows) {
                 ord++;
-                DpPanelItem it = new DpPanelItem();
-                it.setPanelItemId(CmUtil.generateId("dp_panel_item"));
-                it.setPanelId(saved.getPanelId());
-                it.setWidgetTypeCd(r.path("widgetType").asText(null));
-                it.setWidgetTitle(r.path("title").asText(null));
-                it.setTitleShowYn(r.path("titleYn").asText("N"));
-                it.setWidgetLibRefYn("N");
-                it.setSortOrd(r.path("sortOrder").asInt(ord));
-                it.setWidgetConfigJson(r.toString());
-                it.setDispYn(r.path("dispYn").asText("Y"));
-                it.setUseYn("Y");
-                it.setRegBy(authId); it.setRegDate(now);
-                it.setUpdBy(authId); it.setUpdDate(now);
+                /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
+                DpPanelItem it = DpPanelItem.builder()
+                    .panelItemId(CmUtil.generateId("dp_panel_item"))
+                    .panelId(saved.getPanelId())
+                    .widgetTypeCd(r.path("widgetType").asText(null))
+                    .widgetTitle(r.path("title").asText(null))
+                    .titleShowYn(r.path("titleYn").asText("N"))
+                    .widgetLibRefYn("N")
+                    .sortOrd(r.path("sortOrder").asInt(ord))
+                    .widgetConfigJson(r.toString())
+                    .dispYn(r.path("dispYn").asText("Y"))
+                    .useYn("Y")
+                    .build();
                 dpPanelItemRepository.save(it);
             }
         } catch (Exception e) {

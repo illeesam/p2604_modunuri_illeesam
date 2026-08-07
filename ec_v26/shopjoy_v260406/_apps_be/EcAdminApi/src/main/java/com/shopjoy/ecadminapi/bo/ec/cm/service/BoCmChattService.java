@@ -97,18 +97,19 @@ public class BoCmChattService {
         }
 
         String authId = SecurityUtil.getAuthUser().authId();
-        CmChattMsg msg = new CmChattMsg();
-        msg.setChattId(chattId);
-        msg.setSenderTypeCd(body.getSenderTypeCd() != null ? body.getSenderTypeCd() : "ADMIN");
-        msg.setSenderId(authId);
-        msg.setSenderNm(authId);
-        msg.setMsgText(body.getMsgText());
-        msg.setMsgTypeCd(body.getMsgTypeCd() != null ? body.getMsgTypeCd() : "TEXT");
-        msg.setAttachGrpId(body.getAttachGrpId());
-        msg.setRefType(body.getRefType());
-        msg.setRefId(body.getRefId());
-        msg.setReadYn("N");
-        msg.setSendDate(LocalDateTime.now());
+        CmChattMsg msg = CmChattMsg.builder()
+            .chattId(chattId)
+            .senderTypeCd(body.getSenderTypeCd() != null ? body.getSenderTypeCd() : "ADMIN")
+            .senderId(authId)
+            .senderNm(authId)
+            .msgText(body.getMsgText())
+            .msgTypeCd(body.getMsgTypeCd() != null ? body.getMsgTypeCd() : "TEXT")
+            .attachGrpId(body.getAttachGrpId())
+            .refType(body.getRefType())
+            .refId(body.getRefId())
+            .readYn("N")
+            .sendDate(LocalDateTime.now())
+            .build();
 
         CmChattMsg saved = cmChattMsgService.create(msg);
 

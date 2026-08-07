@@ -47,19 +47,16 @@ public class CmChattMemberService {
     /** 채팅방 참여자 추가 */
     @Transactional
     public CmChattMember addMember(String chattId, String siteId, String memberTypeCd, String refId, String refNm) {
-        CmChattMember member = new CmChattMember();
-        member.setChattMemberId(CmUtil.generateId("cm_chatt_member"));
-        member.setChattId(chattId);
-        member.setMemberTypeCd(memberTypeCd);
-        member.setRefId(refId);
-        member.setRefNm(refNm);
-        member.setUnreadCnt(0);
-        member.setJoinDate(LocalDateTime.now());
-        String authId = SecurityUtil.getAuthUser().authId();
-        member.setRegBy(authId);
-        member.setRegDate(LocalDateTime.now());
-        member.setUpdBy(authId);
-        member.setUpdDate(LocalDateTime.now());
+        /* 감사컬럼(regBy/regDate/updBy/updDate)은 EntitySaveListener 가 @PrePersist 에서 주입 */
+        CmChattMember member = CmChattMember.builder()
+            .chattMemberId(CmUtil.generateId("cm_chatt_member"))
+            .chattId(chattId)
+            .memberTypeCd(memberTypeCd)
+            .refId(refId)
+            .refNm(refNm)
+            .unreadCnt(0)
+            .joinDate(LocalDateTime.now())
+            .build();
         CmChattMember saved = cmChattMemberRepository.save(member);
         if (saved == null) throw new CmBizException("참여자 추가에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();

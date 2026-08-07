@@ -228,10 +228,12 @@ public class SyCodeService {
         String authId = SecurityUtil.getAuthUser().authId();
         for (SyCode row : rows) {
             if (row.getSortOrd() == null) continue;   // sortOrd 없으면 skip
-            SyCode patch = new SyCode();
-            patch.setCodeId(row.getCodeId());
-            patch.setSortOrd(row.getSortOrd());
-            patch.setUpdBy(authId);
+            /* updBy 는 수동 세팅 — updateSelective(JPAUpdateClause) 는 @PreUpdate 리스너를 타지 않는다 */
+            SyCode patch = SyCode.builder()
+                .codeId(row.getCodeId())
+                .sortOrd(row.getSortOrd())
+                .updBy(authId)
+                .build();
             int affected = syCodeRepository.updateSelective(patch);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCodeId() + "::" + CmUtil.svcCallerInfo(this));
         }

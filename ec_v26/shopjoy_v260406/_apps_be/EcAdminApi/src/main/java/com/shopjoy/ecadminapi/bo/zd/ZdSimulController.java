@@ -145,19 +145,20 @@ public class ZdSimulController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> logSave(
             @RequestBody Map<String, Object> body) {
         String siteId = SecurityUtil.getSiteIdOrDefault();
-        ZdSimulLog log = new ZdSimulLog();
-        log.setLogId(CmUtil.generateId("zd_simul_log"));
-        log.setDomain(str(body, "domain", "unknown"));
-        log.setSimulMode(str(body, "mode", "생성"));
-        log.setSimulStatus(str(body, "status", "SUCCESS"));
-        log.setDescTxt(sanitizeText(str(body, "desc", null)));
-        log.setReasonTxt(sanitizeText(str(body, "reason", null)));
-        log.setTargetId(str(body, "targetId", null));
-        log.setUserNm(sanitizeText(str(body, "userNm", null)));
-        log.setUiNm(str(body, "uiNm", null));
         /* paramsJson: 프론트가 전송한 실행 파라미터 JSON 문자열을 detail_json 에 그대로 저장 */
         String paramsJson = str(body, "paramsJson", null);
-        if (paramsJson != null && !paramsJson.isBlank()) log.setDetailJson(paramsJson);
+        ZdSimulLog log = ZdSimulLog.builder()
+            .logId(CmUtil.generateId("zd_simul_log"))
+            .domain(str(body, "domain", "unknown"))
+            .simulMode(str(body, "mode", "생성"))
+            .simulStatus(str(body, "status", "SUCCESS"))
+            .descTxt(sanitizeText(str(body, "desc", null)))
+            .reasonTxt(sanitizeText(str(body, "reason", null)))
+            .targetId(str(body, "targetId", null))
+            .userNm(sanitizeText(str(body, "userNm", null)))
+            .uiNm(str(body, "uiNm", null))
+            .detailJson(paramsJson != null && !paramsJson.isBlank() ? paramsJson : null)
+            .build();
         ZdSimulLog saved = zdSimulLogRepository.save(log);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("logId", saved.getLogId())));
     }
@@ -263,14 +264,15 @@ public class ZdSimulController {
 
                 for (Map<String, Object> it : optItems) {
                     String tmpOptId = str(it, "prodOptId");
-                    PdProdOpt optVal = new PdProdOpt();
-                    optVal.setProdId(prodId);
-                    optVal.setProdOptTypeLevel(level);
-                    optVal.setProdOptNm(str(it, "prodOptNm"));
-                    optVal.setProdOptVal(str(it, "prodOptVal"));
-                    optVal.setProdOptStyle(str(it, "prodOptStyle"));
-                    optVal.setSortOrd(intVal(it, "sortOrd", 1));
-                    optVal.setUseYn(str(it, "useYn", "Y"));
+                    PdProdOpt optVal = PdProdOpt.builder()
+                        .prodId(prodId)
+                        .prodOptTypeLevel(level)
+                        .prodOptNm(str(it, "prodOptNm"))
+                        .prodOptVal(str(it, "prodOptVal"))
+                        .prodOptStyle(str(it, "prodOptStyle"))
+                        .sortOrd(intVal(it, "sortOrd", 1))
+                        .useYn(str(it, "useYn", "Y"))
+                        .build();
                     PdProdOpt savedOptVal = pdProdOptService.create(optVal);
                     String realOptId = savedOptVal.getProdOptId();
                     if (tmpOptId != null && !tmpOptId.isBlank()) tmpToRealOptId.put(tmpOptId, realOptId);
@@ -285,27 +287,29 @@ public class ZdSimulController {
                 int skuIdx = 0;
                 if (grp2ItemIds.isEmpty()) {
                     for (int i = 0; i < grp1ItemIds.size(); i++) {
-                        PdProdSku sku = new PdProdSku();
                         String skuId = "tmp-sku-" + pad2(skuIdx++);
-                        sku.setProdSkuId(skuId);
-                        sku.setProdId(prodId);
-                        sku.setProdOptId1(grp1ItemIds.get(i));
-                        sku.setAddPrice((long) (i * 1000));
-                        sku.setUseYn("Y");
+                        PdProdSku sku = PdProdSku.builder()
+                            .prodSkuId(skuId)
+                            .prodId(prodId)
+                            .prodOptId1(grp1ItemIds.get(i))
+                            .addPrice((long) (i * 1000))
+                            .useYn("Y")
+                            .build();
                         pdProdSkuService.create(sku);
                         createSimulStockCode(skuId, prodId, siteId, 10);
                     }
                 } else {
                     for (int i = 0; i < grp1ItemIds.size(); i++) {
                         for (int j = 0; j < grp2ItemIds.size(); j++) {
-                            PdProdSku sku = new PdProdSku();
                             String skuId = "tmp-sku-" + pad2(skuIdx++);
-                            sku.setProdSkuId(skuId);
-                            sku.setProdId(prodId);
-                            sku.setProdOptId1(grp1ItemIds.get(i));
-                            sku.setProdOptId2(grp2ItemIds.get(j));
-                            sku.setAddPrice((long) (i * 1000));
-                            sku.setUseYn("Y");
+                            PdProdSku sku = PdProdSku.builder()
+                                .prodSkuId(skuId)
+                                .prodId(prodId)
+                                .prodOptId1(grp1ItemIds.get(i))
+                                .prodOptId2(grp2ItemIds.get(j))
+                                .addPrice((long) (i * 1000))
+                                .useYn("Y")
+                                .build();
                             pdProdSkuService.create(sku);
                             createSimulStockCode(skuId, prodId, siteId, 10);
                         }
@@ -324,24 +328,26 @@ public class ZdSimulController {
                     if (url == null || url.isBlank()) continue;
                     String tmpOpt1 = str(fim, "prodOptId1");
                     String realOpt1 = (tmpOpt1 != null) ? tmpToRealOptId.getOrDefault(tmpOpt1, tmpOpt1) : null;
-                    PdProdImg img = new PdProdImg();
-                    img.setProdId(prodId);
-                    img.setProdOptId1(realOpt1);
-                    img.setCdnImgUrl(url);
-                    img.setIsThumb(imgSortOrd == 1 ? "Y" : "N");
-                    img.setSortOrd(imgSortOrd++);
+                    PdProdImg img = PdProdImg.builder()
+                        .prodId(prodId)
+                        .prodOptId1(realOpt1)
+                        .cdnImgUrl(url)
+                        .isThumb(imgSortOrd == 1 ? "Y" : "N")
+                        .sortOrd(imgSortOrd++)
+                        .build();
                     pdProdImgService.create(img);
                 }
             } else {
                 /* 폴백: 색상별 picsum */
                 for (int i = 0; i < grp1ItemIds.size(); i++) {
-                    PdProdImg img = new PdProdImg();
-                    img.setProdImgId("tmp-img-" + pad2(i));
-                    img.setProdId(prodId);
-                    img.setProdOptId1(grp1ItemIds.get(i));
-                    img.setCdnImgUrl("https://picsum.photos/seed/" + (200 + i * 37) + "/400/400");
-                    img.setIsThumb(i == 0 ? "Y" : "N");
-                    img.setSortOrd(i + 1);
+                    PdProdImg img = PdProdImg.builder()
+                        .prodImgId("tmp-img-" + pad2(i))
+                        .prodId(prodId)
+                        .prodOptId1(grp1ItemIds.get(i))
+                        .cdnImgUrl("https://picsum.photos/seed/" + (200 + i * 37) + "/400/400")
+                        .isThumb(i == 0 ? "Y" : "N")
+                        .sortOrd(i + 1)
+                        .build();
                     pdProdImgService.create(img);
                 }
             }
@@ -352,20 +358,22 @@ public class ZdSimulController {
                 ? (List<Map<String, Object>>) body.get("prodImgs") : null;
             if (prodImgs != null && !prodImgs.isEmpty()) {
                 for (int i = 0; i < prodImgs.size(); i++) {
-                    PdProdImg img = new PdProdImg();
-                    img.setProdId(prodId);
-                    img.setCdnImgUrl(str(prodImgs.get(i), "cdnImgUrl"));
-                    img.setIsThumb(i == 0 ? "Y" : "N");
-                    img.setSortOrd(i + 1);
+                    PdProdImg img = PdProdImg.builder()
+                        .prodId(prodId)
+                        .cdnImgUrl(str(prodImgs.get(i), "cdnImgUrl"))
+                        .isThumb(i == 0 ? "Y" : "N")
+                        .sortOrd(i + 1)
+                        .build();
                     pdProdImgService.create(img);
                 }
             } else {
                 /* 이미지 미전송 시 기본 picsum 1장 */
-                PdProdImg img = new PdProdImg();
-                img.setProdId(prodId);
-                img.setCdnImgUrl("https://picsum.photos/seed/" + Math.abs(prodId.hashCode() % 1000) + "/400/400");
-                img.setIsThumb("Y");
-                img.setSortOrd(1);
+                PdProdImg img = PdProdImg.builder()
+                    .prodId(prodId)
+                    .cdnImgUrl("https://picsum.photos/seed/" + Math.abs(prodId.hashCode() % 1000) + "/400/400")
+                    .isThumb("Y")
+                    .sortOrd(1)
+                    .build();
                 pdProdImgService.create(img);
             }
         }
@@ -458,38 +466,38 @@ public class ZdSimulController {
 
             /* 쿠폰 할인 기록 */
             if (couponId != null && couponDiscnt > 0) {
-                OdOrderDiscnt d = new OdOrderDiscnt();
-                d.setOrderId(orderId);
-                d.setDiscntTypeCd("ORDER_COUPON");
-                d.setCouponId(couponId);
-                d.setDiscntAmt(couponDiscnt);
-                odOrderDiscntService.create(d);
+                odOrderDiscntService.create(OdOrderDiscnt.builder()
+                    .orderId(orderId)
+                    .discntTypeCd("ORDER_COUPON")
+                    .couponId(couponId)
+                    .discntAmt(couponDiscnt)
+                    .build());
             }
             /* 상품 할인 기록 */
             if (discntId != null && discntAmt > 0) {
-                OdOrderDiscnt d = new OdOrderDiscnt();
-                d.setOrderId(orderId);
-                d.setDiscntTypeCd("PROMO_DISCNT");
-                d.setDiscntAmt(discntAmt);
-                odOrderDiscntService.create(d);
+                odOrderDiscntService.create(OdOrderDiscnt.builder()
+                    .orderId(orderId)
+                    .discntTypeCd("PROMO_DISCNT")
+                    .discntAmt(discntAmt)
+                    .build());
             }
             /* 적립금 차감 기록 */
             if (saveDeductAmt > 0) {
-                OdOrderDiscnt d = new OdOrderDiscnt();
-                d.setOrderId(orderId);
-                d.setDiscntTypeCd("SAVE_USE");
-                d.setDiscntAmt(saveDeductAmt);
-                odOrderDiscntService.create(d);
+                odOrderDiscntService.create(OdOrderDiscnt.builder()
+                    .orderId(orderId)
+                    .discntTypeCd("SAVE_USE")
+                    .discntAmt(saveDeductAmt)
+                    .build());
             }
             /* 사은품 — od_order_item에 unit_price=0 행 추가 */
             if (giftProdId != null) {
-                OdOrderItem gift = new OdOrderItem();
-                gift.setOrderId(orderId);
-                gift.setProdId(giftProdId);
-                gift.setOrderQty(1);
-                gift.setUnitPrice(0L);
-                gift.setItemOrderAmt(0L);
-                odOrderItemService.create(gift);
+                odOrderItemService.create(OdOrderItem.builder()
+                    .orderId(orderId)
+                    .prodId(giftProdId)
+                    .orderQty(1)
+                    .unitPrice(0L)
+                    .itemOrderAmt(0L)
+                    .build());
             }
         }
 
@@ -569,13 +577,14 @@ public class ZdSimulController {
         }
 
         long finalRefund = (long)(refundAmt * refundRate / 100.0);
-        OdClaim claim = new OdClaim();
-        claim.setOrderId(orderId);
-        claim.setClaimTypeCd(typeCd);
-        claim.setReasonCd(reasonCd);
-        claim.setClaimStatusCd(statusCd);
-        claim.setRefundAmt(finalRefund);
-        claim.setSimulYn("Y");
+        OdClaim claim = OdClaim.builder()
+            .orderId(orderId)
+            .claimTypeCd(typeCd)
+            .reasonCd(reasonCd)
+            .claimStatusCd(statusCd)
+            .refundAmt(finalRefund)
+            .simulYn("Y")
+            .build();
         OdClaim saved = odClaimService.create(claim);
 
         return ResponseEntity.ok(ApiResponse.ok(Map.of(
@@ -930,16 +939,16 @@ public class ZdSimulController {
     private void createSimulStockCode(String prodSkuId, String prodId, String siteId, int stockQty) {
         if (pdProdStockRepository.findByStockCode(prodSkuId).isPresent()) return;
         LocalDateTime now = LocalDateTime.now();
-        PdProdStock sc = new PdProdStock();
-        sc.setProdStockId("PS" + now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + String.format("%06d", (int)(Math.random() * 1000000)));
-        sc.setStockCode(prodSkuId);
-        sc.setProdId(prodId);
-        sc.setStockQty(stockQty);
-        sc.setSaleCount(0);
-        sc.setRegBy("simul");
-        sc.setRegDate(now);
-        sc.setUpdBy("simul");
-        sc.setUpdDate(now);
+        /* reg/updDate 는 EntitySaveListener 가 서버시각으로 채운다 (여기서 넣어도 덮어씀) */
+        PdProdStock sc = PdProdStock.builder()
+            .prodStockId("PS" + now.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")) + String.format("%06d", (int)(Math.random() * 1000000)))
+            .stockCode(prodSkuId)
+            .prodId(prodId)
+            .stockQty(stockQty)
+            .saleCount(0)
+            .regBy("simul")
+            .updBy("simul")
+            .build();
         pdProdStockRepository.save(sc);
     }
 }

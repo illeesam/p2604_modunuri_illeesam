@@ -92,18 +92,19 @@ public class OdOrderAutoCompleteJob implements SchBatchJobHandler {
             orderRepository.save(order);
 
             // 이력 INSERT
-            OdhOrderStatusHist hist = new OdhOrderStatusHist();
-            hist.setOrderStatusHistId(CmUtil.generateId("odh_order_status_hist"));
-            hist.setOrderId(orderId);
-            hist.setOrderStatusCdBefore(currentStatus);
-            hist.setOrderStatusCd("COMPLT");
-            hist.setStatusReason("배송완료 후 " + COMPLETE_AFTER_DAYS + "일 경과 자동 완료 처리 (배송ID: " + dliv.getDlivId() + ")");
-            hist.setChgUserId("BATCH");
-            hist.setChgDate(now);
-            hist.setRegBy("BATCH");
-            hist.setRegDate(now);
-            hist.setUpdBy("BATCH");
-            hist.setUpdDate(now);
+            // regBy/updBy 는 수동 세팅 — 배치는 인증 컨텍스트가 없어 EntitySaveListener 가
+            // *_by 를 건드리지 않고 보존한다. (reg/updDate 는 리스너가 서버시각으로 채움)
+            OdhOrderStatusHist hist = OdhOrderStatusHist.builder()
+                .orderStatusHistId(CmUtil.generateId("odh_order_status_hist"))
+                .orderId(orderId)
+                .orderStatusCdBefore(currentStatus)
+                .orderStatusCd("COMPLT")
+                .statusReason("배송완료 후 " + COMPLETE_AFTER_DAYS + "일 경과 자동 완료 처리 (배송ID: " + dliv.getDlivId() + ")")
+                .chgUserId("BATCH")
+                .chgDate(now)
+                .regBy("BATCH")
+                .updBy("BATCH")
+                .build();
             histRepository.save(hist);
 
             completed++;

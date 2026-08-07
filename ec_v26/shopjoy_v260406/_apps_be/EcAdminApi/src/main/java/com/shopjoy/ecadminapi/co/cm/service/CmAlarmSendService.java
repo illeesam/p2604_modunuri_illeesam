@@ -63,20 +63,21 @@ public class CmAlarmSendService {
         // 1) sy_alarm 1건 생성 (실패 시 이력 생략 + 실패 VO 반환)
         String alarmId;
         try {
-            SyAlarm alarm = new SyAlarm();
             alarmId = CmUtil.generateId("sy_alarm");
-            alarm.setAlarmId(alarmId);
-            alarm.setAlarmTitle(title);
-            alarm.setAlarmTypeCd(typeCd);
-            alarm.setChannelCd(CHANNEL_SYSTEM);
-            alarm.setTargetTypeCd("ADMIN");
-            alarm.setTargetId(memberId);
-            alarm.setTemplateId(templateId);
-            alarm.setAlarmMsg(alarmMsg);
-            alarm.setAlarmSendDate(LocalDateTime.now());
-            alarm.setAlarmStatusCd(HIST_SENT);
-            alarm.setAlarmSendCount(1);
-            alarm.setAlarmFailCount(0);
+            SyAlarm alarm = SyAlarm.builder()
+                .alarmId(alarmId)
+                .alarmTitle(title)
+                .alarmTypeCd(typeCd)
+                .channelCd(CHANNEL_SYSTEM)
+                .targetTypeCd("ADMIN")
+                .targetId(memberId)
+                .templateId(templateId)
+                .alarmMsg(alarmMsg)
+                .alarmSendDate(LocalDateTime.now())
+                .alarmStatusCd(HIST_SENT)
+                .alarmSendCount(1)
+                .alarmFailCount(0)
+                .build();
             stampReg(alarm);
             syAlarmRepository.save(alarm);
             log.info("[CmAlarmSend] 시스템 알림 생성 (alarmId={}, refId={})", alarmId, refId);
@@ -94,15 +95,16 @@ public class CmAlarmSendService {
         // 2) syh_alarm_send_hist 1건 기록 (이력 저장 실패는 log.error 만)
         String sendHistId = null;
         try {
-            SyhAlarmSendHist hist = new SyhAlarmSendHist();
             sendHistId = CmUtil.generateId("syh_alarm_send_hist");
-            hist.setSendHistId(sendHistId);
-            hist.setAlarmId(alarmId);
-            hist.setMemberId(memberId);
-            hist.setChannel(CHANNEL_SYSTEM);
-            hist.setSendTo(sendTo);
-            hist.setSendDate(LocalDateTime.now());
-            hist.setSendHistStatusCd(HIST_SENT);
+            SyhAlarmSendHist hist = SyhAlarmSendHist.builder()
+                .sendHistId(sendHistId)
+                .alarmId(alarmId)
+                .memberId(memberId)
+                .channel(CHANNEL_SYSTEM)
+                .sendTo(sendTo)
+                .sendDate(LocalDateTime.now())
+                .sendHistStatusCd(HIST_SENT)
+                .build();
             stampReg(hist);
             syhAlarmSendHistRepository.save(hist);
         } catch (Exception e) {

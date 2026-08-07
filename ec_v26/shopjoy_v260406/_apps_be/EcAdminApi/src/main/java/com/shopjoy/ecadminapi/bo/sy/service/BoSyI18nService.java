@@ -9,12 +9,10 @@ import com.shopjoy.ecadminapi.base.sy.repository.SyI18nMsgRepository;
 import com.shopjoy.ecadminapi.base.sy.service.SyI18nService;
 import com.shopjoy.ecadminapi.cache.redisstore.SyI18nRedisStore;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -63,9 +61,6 @@ public class BoSyI18nService {
      */
     @Transactional
     public void saveMsgs(String i18nId, Map<String, String> msgs) {
-        String updBy = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
-
         msgs.forEach((langCd, msgText) -> {
             SyI18nMsgDto.Request req = new SyI18nMsgDto.Request();
             req.setI18nId(i18nId);
@@ -74,24 +69,21 @@ public class BoSyI18nService {
 
             if (!existing.isEmpty()) {
                 SyI18nMsgDto.Item dto = existing.get(0);
-                SyI18nMsg entity = new SyI18nMsg();
-                entity.setI18nMsgId(dto.getI18nMsgId());
-                entity.setI18nId(i18nId);
-                entity.setLangCd(langCd);
-                entity.setI18nMsg(msgText);
-                entity.setUpdBy(updBy);
-                entity.setUpdDate(now);
+                /* 감사컬럼은 EntitySaveListener 가 @PrePersist/@PreUpdate 에서 주입 */
+                SyI18nMsg entity = SyI18nMsg.builder()
+                    .i18nMsgId(dto.getI18nMsgId())
+                    .i18nId(i18nId)
+                    .langCd(langCd)
+                    .i18nMsg(msgText)
+                    .build();
                 syI18nMsgRepository.save(entity);
             } else {
-                SyI18nMsg entity = new SyI18nMsg();
-                entity.setI18nMsgId(CmUtil.generateId("sy_i18n_msg"));
-                entity.setI18nId(i18nId);
-                entity.setLangCd(langCd);
-                entity.setI18nMsg(msgText);
-                entity.setRegBy(updBy);
-                entity.setRegDate(now);
-                entity.setUpdBy(updBy);
-                entity.setUpdDate(now);
+                SyI18nMsg entity = SyI18nMsg.builder()
+                    .i18nMsgId(CmUtil.generateId("sy_i18n_msg"))
+                    .i18nId(i18nId)
+                    .langCd(langCd)
+                    .i18nMsg(msgText)
+                    .build();
                 syI18nMsgRepository.save(entity);
             }
         });

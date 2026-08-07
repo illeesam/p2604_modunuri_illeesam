@@ -61,25 +61,25 @@ public class FoCmContactService {
     public SyContact submit(CmContactSubmitDto.Request req) {
         if (req == null) throw new CmBizException("요청 데이터가 비어있습니다." + "::" + CmUtil.svcCallerInfo(this));
 
-        SyContact entity = new SyContact();
-        entity.setContactId(CmUtil.generateId("fo_contact"));
-        // 로그인 회원이면 memberId 세팅 → 마이페이지(memberId 필터) 조회에 노출. 비회원이면 null.
-        // ⚠️ FO 회원 식별자는 authId (= ec_member.member_id). userId() 는 BO 전용이라 FO 에선 "" 가 되어
-        //    마이페이지 조회(memberId=authId 필터)와 어긋남 — 반드시 authId() 사용.
-        if (SecurityUtil.isLogin()) entity.setMemberId(SecurityUtil.getAuthUser().authId());
-        entity.setMemberNm(req.getName());
-        entity.setCategoryCd(req.getInquiryType());
-        entity.setContactTitle("[문의] " + (req.getInquiryType() != null ? req.getInquiryType() : "일반"));
-        entity.setContactContent(buildContent(req));
-        entity.setContentAttachGrpId(req.getContentAttachGrpId());
-        entity.setContactStatusCd(CONTACT_STATUS_NEW);
-        entity.setContactDate(LocalDateTime.now());
-
+        // regBy/updBy 는 수동 세팅 — 비회원 문의는 인증 컨텍스트가 없어 EntitySaveListener 가
+        // *_by 를 건드리지 않고 보존한다. 그래야 "GUEST" 가 남는다. (reg/updDate 는 리스너가 항상 채움)
         String authId = SecurityUtil.getAuthIdOrGuest();
-        entity.setRegBy(authId);
-        entity.setRegDate(LocalDateTime.now());
-        entity.setUpdBy(authId);
-        entity.setUpdDate(LocalDateTime.now());
+        SyContact entity = SyContact.builder()
+            .contactId(CmUtil.generateId("fo_contact"))
+            // 로그인 회원이면 memberId 세팅 → 마이페이지(memberId 필터) 조회에 노출. 비회원이면 null.
+            // ⚠️ FO 회원 식별자는 authId (= ec_member.member_id). userId() 는 BO 전용이라 FO 에선 "" 가 되어
+            //    마이페이지 조회(memberId=authId 필터)와 어긋남 — 반드시 authId() 사용.
+            .memberId(SecurityUtil.isLogin() ? SecurityUtil.getAuthUser().authId() : null)
+            .memberNm(req.getName())
+            .categoryCd(req.getInquiryType())
+            .contactTitle("[문의] " + (req.getInquiryType() != null ? req.getInquiryType() : "일반"))
+            .contactContent(buildContent(req))
+            .contentAttachGrpId(req.getContentAttachGrpId())
+            .contactStatusCd(CONTACT_STATUS_NEW)
+            .contactDate(LocalDateTime.now())
+            .regBy(authId)
+            .updBy(authId)
+            .build();
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("문의 접수에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
 

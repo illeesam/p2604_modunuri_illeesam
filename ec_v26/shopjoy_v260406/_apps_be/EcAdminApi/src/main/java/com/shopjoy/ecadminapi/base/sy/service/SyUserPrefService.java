@@ -31,11 +31,7 @@ public class SyUserPrefService {
     public void upsert(String userId, String prefKey, String prefValue) {
         SyUserPref.SyUserPrefId pk = new SyUserPref.SyUserPrefId(userId, prefKey);
         SyUserPref entity = syUserPrefRepository.findById(pk)
-                .orElseGet(() -> {
-                    SyUserPref e = new SyUserPref();
-                    e.setId(pk);
-                    return e;
-                });
+                .orElseGet(() -> SyUserPref.builder().id(pk).build());
         entity.setPrefValue(prefValue);
         syUserPrefRepository.save(entity);
     }

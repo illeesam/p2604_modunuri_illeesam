@@ -140,15 +140,17 @@ public class StSettlementReportJob implements SchBatchJobHandler {
                 StSettle settle;
                 if (existing.isEmpty()) {
                     // 신규 INSERT
-                    settle = new StSettle();
-                    settle.setSettleId(CmUtil.generateId("st_settle"));
-                    settle.setVendorId(vendorId);
-                    settle.setSettleYm(ymCode);
-                    settle.setSettleStartDate(startDt);
-                    settle.setSettleEndDate(endDt);
-                    settle.setSettleStatusCd("DRAFT");
-                    settle.setRegBy("BATCH");
-                    settle.setRegDate(now);
+                    // regBy 는 수동 세팅 — 배치는 인증 컨텍스트가 없어 EntitySaveListener 가
+                    // *_by 를 건드리지 않고 보존한다. (regDate 는 리스너가 서버시각으로 채움)
+                    settle = StSettle.builder()
+                        .settleId(CmUtil.generateId("st_settle"))
+                        .vendorId(vendorId)
+                        .settleYm(ymCode)
+                        .settleStartDate(startDt)
+                        .settleEndDate(endDt)
+                        .settleStatusCd("DRAFT")
+                        .regBy("BATCH")
+                        .build();
                     inserted++;
                 } else {
                     settle = existing.get();

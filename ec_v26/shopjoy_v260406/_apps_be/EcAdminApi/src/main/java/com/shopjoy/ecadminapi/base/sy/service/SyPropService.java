@@ -234,10 +234,12 @@ public class SyPropService {
             search.setPropKey(row.getPropKey());
             List<SyPropDto.Item> existing = syPropRepository.selectList(search);
             if (!existing.isEmpty()) {
-                SyProp upd = new SyProp();
-                upd.setPropId(existing.get(0).getPropId());
-                upd.setPropValue(row.getPropValue());
-                upd.setUpdBy(authId);
+                /* updBy 는 수동 세팅 — updateSelective(JPAUpdateClause) 는 @PreUpdate 리스너를 타지 않는다 */
+                SyProp upd = SyProp.builder()
+                    .propId(existing.get(0).getPropId())
+                    .propValue(row.getPropValue())
+                    .updBy(authId)
+                    .build();
                 syPropRepository.updateSelective(upd);
             } else {
                 row.setPropId(CmUtil.generateId("sy_prop"));

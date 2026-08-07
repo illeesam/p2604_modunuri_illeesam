@@ -228,10 +228,12 @@ public class PdCategoryService {
         String authId = SecurityUtil.getAuthUser().authId();
         for (PdCategory row : rows) {
             if (row.getSortOrd() == null) continue;   // sortOrd 없으면 skip
-            PdCategory patch = new PdCategory();
-            patch.setCategoryId(row.getCategoryId());
-            patch.setSortOrd(row.getSortOrd());
-            patch.setUpdBy(authId);
+            /* updBy 는 수동 세팅 — updateSelective(JPAUpdateClause) 는 @PreUpdate 리스너를 타지 않는다 */
+            PdCategory patch = PdCategory.builder()
+                .categoryId(row.getCategoryId())
+                .sortOrd(row.getSortOrd())
+                .updBy(authId)
+                .build();
             int affected = pdCategoryRepository.updateSelective(patch);
             if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCategoryId() + "::" + CmUtil.svcCallerInfo(this));
         }

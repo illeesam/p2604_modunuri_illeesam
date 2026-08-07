@@ -3,7 +3,6 @@ package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdPlan;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdPlanRepository;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,9 +49,7 @@ public class BoPdProdPlanController {
         List<Map<String, Object>> rows = body != null && body.get("plans") instanceof List
             ? (List<Map<String, Object>>) body.get("plans") : List.of();
 
-        String authId  = SecurityUtil.getAuthUser().authId();
-        String siteId  = SecurityUtil.getSiteIdOrDefault();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();   // planId 생성용 (감사컬럼은 EntitySaveListener 담당)
 
         // 기존 전체 삭제
         planRepository.deleteByProdId(prodId);
@@ -71,20 +68,18 @@ public class BoPdProdPlanController {
             String statusCd = str(row.get("planStatus"));
             if (statusCd == null || statusCd.isBlank()) statusCd = "SCHEDULED";
 
-            PdProdPlan plan = new PdProdPlan();
-            plan.setPlanId("PP" + now.format(ID_FMT) + String.format("%05d", (int)(Math.random() * 100000)));
-            plan.setProdId(prodId);
-            plan.setStartDatetime(startDt);
-            plan.setEndDatetime(endDt);
-            plan.setPlanStatusCd(statusCd);
-            plan.setListPrice(toLong(row.get("listPrice")));
-            plan.setSalePrice(toLong(row.get("salePrice")));
-            plan.setPurchasePrice(toLong(row.get("purchasePrice")));
-            plan.setSortOrd(sortOrd++);
-            plan.setRegBy(authId);
-            plan.setRegDate(now);
-            plan.setUpdBy(authId);
-            plan.setUpdDate(now);
+            /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
+            PdProdPlan plan = PdProdPlan.builder()
+                .planId("PP" + now.format(ID_FMT) + String.format("%05d", (int)(Math.random() * 100000)))
+                .prodId(prodId)
+                .startDatetime(startDt)
+                .endDatetime(endDt)
+                .planStatusCd(statusCd)
+                .listPrice(toLong(row.get("listPrice")))
+                .salePrice(toLong(row.get("salePrice")))
+                .purchasePrice(toLong(row.get("purchasePrice")))
+                .sortOrd(sortOrd++)
+                .build();
             planRepository.save(plan);
         }
 

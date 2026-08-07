@@ -68,22 +68,23 @@ public class CmKakaoSendService {
 
         String logId = null;
         try {
-            SyhSendMsgLog logRow = new SyhSendMsgLog();
             logId = CmUtil.generateId("syh_send_msg_log");
-            logRow.setLogId(logId);
-            logRow.setChannelCd(CHANNEL_KAKAO);
-            logRow.setTemplateId(templateId);
-            logRow.setTemplateCode(templateCode);
-            logRow.setRecvPhone(recvPhone);
-            logRow.setContent(content);
-            logRow.setParams(CmUtil.toJsonParams(params));
-            logRow.setKakaoTplCode(kakaoTplCode);
-            logRow.setResultCd(resultCd);
-            logRow.setResultMsg("미연동");
-            logRow.setFailReason(failReason);
-            logRow.setSendDate(LocalDateTime.now());
-            logRow.setRefTypeCd(refTypeCd);
-            logRow.setRefId(refId);
+            SyhSendMsgLog logRow = SyhSendMsgLog.builder()
+                .logId(logId)
+                .channelCd(CHANNEL_KAKAO)
+                .templateId(templateId)
+                .templateCode(templateCode)
+                .recvPhone(recvPhone)
+                .content(content)
+                .params(CmUtil.toJsonParams(params))
+                .kakaoTplCode(kakaoTplCode)
+                .resultCd(resultCd)
+                .resultMsg("미연동")
+                .failReason(failReason)
+                .sendDate(LocalDateTime.now())
+                .refTypeCd(refTypeCd)
+                .refId(refId)
+                .build();
             stampReg(logRow);
             syhSendMsgLogRepository.save(logRow);
         } catch (Exception e) {

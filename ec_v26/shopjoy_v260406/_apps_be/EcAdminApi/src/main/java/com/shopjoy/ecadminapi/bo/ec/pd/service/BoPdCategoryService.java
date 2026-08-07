@@ -7,7 +7,6 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategoryProd;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.PdCategoryService;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -50,26 +49,23 @@ public class BoPdCategoryService {
     @Transactional
     public void updateProds(String categoryId, String activeTypeCd, PdCategoryUpdateProdsDto.Request req) {
         if (req == null || req.getProds() == null) return;
-        String updBy = SecurityUtil.getAuthUser().authId();
         categoryProdRepository.deleteByCategoryIdAndCategoryProdTypeCd(categoryId, activeTypeCd);
         em.flush();
         int seq = 1;
         for (PdCategoryUpdateProdsDto.Row row : req.getProds()) {
-            PdCategoryProd cp = new PdCategoryProd();
             String cpId = row.getCategoryProdId();
             if (cpId == null || cpId.startsWith("CP_")) {
                 cpId = "CP" + LocalDateTime.now().format(ID_FMT) + String.format("%04d", (int)(Math.random()*10000));
             }
-            cp.setCategoryProdId(cpId);
-            cp.setCategoryId(categoryId);
-            cp.setProdId(row.getProdId());
-            cp.setCategoryProdTypeCd(activeTypeCd);
-            cp.setSortOrd(row.getSortOrd() != null ? row.getSortOrd() : seq);
-            cp.setDispYn(row.getDispYn() != null ? row.getDispYn() : "Y");
-            cp.setRegBy(updBy);
-            cp.setRegDate(LocalDateTime.now());
-            cp.setUpdBy(updBy);
-            cp.setUpdDate(LocalDateTime.now());
+            /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
+            PdCategoryProd cp = PdCategoryProd.builder()
+                .categoryProdId(cpId)
+                .categoryId(categoryId)
+                .prodId(row.getProdId())
+                .categoryProdTypeCd(activeTypeCd)
+                .sortOrd(row.getSortOrd() != null ? row.getSortOrd() : seq)
+                .dispYn(row.getDispYn() != null ? row.getDispYn() : "Y")
+                .build();
             categoryProdRepository.save(cp);
             seq++;
         }

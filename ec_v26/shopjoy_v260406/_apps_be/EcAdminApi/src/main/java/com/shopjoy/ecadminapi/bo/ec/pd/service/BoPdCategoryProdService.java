@@ -8,14 +8,12 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryProdRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
-import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -40,8 +38,6 @@ public class BoPdCategoryProdService {
         if (req == null || req.getCategoryProds() == null || req.getCategoryProds().isEmpty()) return;
 
         List<PdCategoryProdSaveDto.Row> rows = req.getCategoryProds();
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
 
         for (PdCategoryProdSaveDto.Row row : rows) {
             String rowStatus = row.getRowStatus() != null ? row.getRowStatus() : "U";
@@ -63,10 +59,10 @@ public class BoPdCategoryProdService {
 
             PdCategoryProd entity;
             if ("I".equals(rowStatus) || id == null || id.startsWith("CP_")) {
-                entity = new PdCategoryProd();
-                entity.setCategoryProdId(CmUtil.generateId("pd_category_prod"));
-                entity.setRegBy(authId);
-                entity.setRegDate(now);
+                /* 감사컬럼은 EntitySaveListener 가 @PrePersist/@PreUpdate 에서 주입 */
+                entity = PdCategoryProd.builder()
+                    .categoryProdId(CmUtil.generateId("pd_category_prod"))
+                    .build();
             } else {
                 entity = pdCategoryProdRepository.findById(id)
                         .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
@@ -78,9 +74,6 @@ public class BoPdCategoryProdService {
             entity.setDispYn(row.getDispYn() != null ? row.getDispYn() : "Y");
             entity.setEmphasisCd(row.getEmphasisCd());
             if (row.getSortOrd() != null) entity.setSortOrd(row.getSortOrd());
-
-            entity.setUpdBy(authId);
-            entity.setUpdDate(now);
 
             pdCategoryProdRepository.save(entity);
         }
