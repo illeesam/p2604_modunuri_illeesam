@@ -105,6 +105,9 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 /* 그리드 내부 스크롤 시 헤더 고정 */
 .bo-table thead th { position: sticky; top: 0; z-index: 2; }
 .bo-table td { padding: 3px 8px; font-size: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+/* 좌/우 고정(sticky) 셀 배경은 여기서 일괄 처리하지 않는다 — 화면별 :row-style 커스텀 배경(35개 파일,
+   예: 선택행 강조색)이 tr 에 있어 td 를 일괄 불투명화하면 그 색이 가려진다.
+   대신 BoGrid/BoGridCrud 가 고정(pin) 셀에만 fnPinBg() 로 인라인 배경을 계산해 붙인다. */
 .bo-table tbody tr:nth-child(even) td { background: #f7f8fc; }
 /* tbody 를 붙여 nth-child(even) 규칙과 명시도를 맞춤(0,2,3) — 안 붙이면(0,2,2) 짝수행에서 hover가 줄무늬색에 밀려 안 보임 */
 .bo-table tbody tr:hover td { background: #e8effe; }

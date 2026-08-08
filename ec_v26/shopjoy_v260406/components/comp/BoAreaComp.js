@@ -729,6 +729,25 @@ window.BoGrid = {
     };
     const fnIsExpanded = (row, idx) => (typeof props.isExpanded === 'function' ? !!props.isExpanded(row, idx) : false);
 
+    /* 좌/우 고정(pin) 셀 배경 — hover/줄무늬/선택 은 기존 CSS 가 td 에 직접 칠해 문제없지만(자식 배경이 있음),
+       :row-style 로 화면이 직접 주는 커스텀 tr 배경(선택행 강조색 등, 35개 화면에서 사용)은 tr 에만 있어
+       고정 td 는 물려받지 못한다. 기존 CSS 우선순위(hover+선택 > hover > 선택 > 줄무늬 > 커스텀rowStyle > 기본흰색)를
+       그대로 인라인 재현해 고정 셀에만 붙인다. */
+    const hoveredKey = Vue.ref(null);
+    const onRowMouseEnter = (row) => { if (props.rowKey) hoveredKey.value = row[props.rowKey]; };
+    const onRowMouseLeave = () => { hoveredKey.value = null; };
+    const fnPinBg = (row, idx) => {
+      const isHovered  = props.rowKey && hoveredKey.value != null && row[props.rowKey] === hoveredKey.value;
+      const isSelected = props.selectedKey != null && props.rowKey && row[props.rowKey] === props.selectedKey;
+      if (isHovered && isSelected) return '#e0ecff';
+      if (isHovered)  return '#e8effe';
+      if (isSelected) return '#eff6ff';
+      if (idx % 2 === 1) return '#f7f8fc';
+      const rs = fnRowStyle(row, idx) || '';
+      const m = rs.match(/background:\s*([^;]+)/);
+      return m ? m[1].trim() : '#fff';
+    };
+
     /* 체크박스 — 부모 Set 기반. checkedKey(없으면 rowKey) 필드값을 식별자로 */
     const fnRowChkVal = (row) => row[props.checkedKey || props.rowKey];
     const fnRowChecked = (row) => (typeof props.isChecked === 'function' ? !!props.isChecked(fnRowChkVal(row)) : false);
@@ -859,7 +878,7 @@ window.BoGrid = {
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
              handleBtnAction, handleSelectAction,
              colWidths, onResizeStart, thResizeStyle,
-             cfPinNoLeft, cfPinFirstLeft, pinLeftStyle, pinRightStyle,
+             cfPinNoLeft, cfPinFirstLeft, pinLeftStyle, pinRightStyle, fnPinBg, onRowMouseEnter, onRowMouseLeave,
              columns: cfEffectiveCols };
   },
   template: /* html */`
@@ -930,23 +949,24 @@ window.BoGrid = {
         <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
           <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
           :draggable="draggable"
+          @mouseenter="onRowMouseEnter(row)" @mouseleave="onRowMouseLeave()"
           @dblclick="handleSelectAction('grid-row-dblclick', { row })"
           @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
           @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
           @dragend="handleSelectAction('grid-row-drag-end')">
-            <td v-if="selectable" :style="'text-align:center;' + pinLeftStyle(0, 4)" @click.stop>
+            <td v-if="selectable" :style="'text-align:center;' + pinLeftStyle(0, 4) + 'background:' + fnPinBg(row, idx) + ';'" @click.stop>
               <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
             </td>
-            <td v-if="draggable" :style="'text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none;' + pinLeftStyle(selectable ? 36 : 0, 4)">
+            <td v-if="draggable" :style="'text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none;' + pinLeftStyle(selectable ? 36 : 0, 4) + 'background:' + fnPinBg(row, idx) + ';'">
               ≡
             </td>
-            <td :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfPinNoLeft, 4)" title="보기"
+            <td :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfPinNoLeft, 4) + 'background:' + fnPinBg(row, idx) + ';'" title="보기"
             @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__', link: true }, ci: -1, idx })">
               {{ rowNo(idx) }}
             </td>
             <template v-for="(col, ci) in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-                <td :style="U.tdStyle(col, row) + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 4, true) : '')" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
+                <td :style="U.tdStyle(col, row) + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 4, true) + 'background:' + fnPinBg(row, idx) + ';' : '')" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
                 @click="rowClickable ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null">
                   <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
                   <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
@@ -1049,7 +1069,7 @@ window.BoGrid = {
                 </td>
               </slot>
             </template>
-            <td v-if="rowActions" :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true)">
+            <td v-if="rowActions" :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true) + 'background:' + fnPinBg(row, idx) + ';'">
               <slot name="row-actions" :row="row" :idx="idx" :grid-id="gridId">
                 <button class="btn btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
@@ -1256,6 +1276,20 @@ window.BoGridCrud = {
       return cls;
     };
 
+    /* 좌/우 고정(pin) 셀 배경 — crud-row 는 상태색/포커스/선택을 tr 배경(!important 포함)으로 칠하므로
+       그 자식인 고정 td 는 배경을 물려받지 못한다(자식 자신의 배경이 없으면 가로스크롤 시 뒤 컬럼이 비쳐 보임).
+       기존 CSS 규칙과 동일한 우선순위(focused/selected > 상태색 > 기본흰색)로 그대로 인라인 재현. */
+    const fnPinBg = (item, idx) => {
+      const row = fnRow(item);
+      const isFocused  = !cfTreeMode.value && props.focusedIdx === idx;
+      const isSelected = props.selectedKey != null && row[props.rowKey] === props.selectedKey;
+      if (isFocused || isSelected) return '#eff6ff';
+      if (row._row_status === 'I') return '#d9f7be';
+      if (row._row_status === 'U') return '#fff1b8';
+      if (row._row_status === 'D') return '#ffccc7';
+      return '#fff';
+    };
+
     const sortIcon = (col) => {
       const st = props.sortState;
       if (!col.sortKey || !st) return '';
@@ -1306,7 +1340,7 @@ window.BoGridCrud = {
     const pinRightStyle = (z, edge) => 'position:sticky;right:0;z-index:' + z + ';' + (edge ? 'box-shadow:-2px 0 4px rgba(0,0,0,.08);' : '');
 
     return { U, cfVisibleCount, cfCountText, cfScrollMaxHeight, onScroll, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
-             sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey, fnRowCls,
+             sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey, fnRowCls, fnPinBg,
              cfShowDrag, cfShowNo, cfShowId, cfPinIdLeft, pinLeftStyle, pinRightStyle, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
@@ -1381,13 +1415,13 @@ window.BoGridCrud = {
           </td>
         </tr>
         <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)" class="crud-row" :class="fnRowCls(item, idx)" :draggable="cfShowDrag" @click="handleSelectAction('grid-row-focus', { idx, row: fnRow(item) })" @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })" @dragstart="handleSelectAction('grid-row-drag-start', { idx })" @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })" @dragend="handleSelectAction('grid-row-drag-end')">
-        <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4)">
+        <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4) + 'background:' + fnPinBg(item, idx) + ';'">
           ⠿
         </td>
-        <td v-if="cfShowNo" :style="'text-align:center;font-size:11px;color:#999;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4)">
+        <td v-if="cfShowNo" :style="'text-align:center;font-size:11px;color:#999;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4) + 'background:' + fnPinBg(item, idx) + ';'">
           {{ idx + 1 }}
         </td>
-        <td v-if="cfShowId" class="col-id-val" :style="pinLeftStyle(cfPinIdLeft, 4, true)">
+        <td v-if="cfShowId" class="col-id-val" :style="pinLeftStyle(cfPinIdLeft, 4, true) + 'background:' + fnPinBg(item, idx) + ';'">
           {{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}
         </td>
         <td v-if="showRowStatus" class="col-status-val">
@@ -1474,7 +1508,7 @@ window.BoGridCrud = {
           </td>
         </slot>
       </template>
-      <td class="col-act-val" :style="pinRightStyle(4, true)">
+      <td class="col-act-val" :style="pinRightStyle(4, true) + 'background:' + fnPinBg(item, idx) + ';'">
         <div class="col-act-box">
           <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item" :grid-id="gridId">
           </slot>
