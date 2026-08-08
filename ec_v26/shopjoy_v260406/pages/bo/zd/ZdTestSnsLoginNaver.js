@@ -221,10 +221,10 @@ window.ZdTestSnsLoginNaver = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="display:flex;gap:6px;margin-top:8px">
-        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
-        <button class="btn btn_apply" @click="handleBtnAction('sdk-load')">SDK 로드</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_apply btn-sm" @click="handleBtnAction('sdk-load')">SDK 로드</button>
       </div>
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;margin-top:8px;line-height:2">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
@@ -238,7 +238,7 @@ window.ZdTestSnsLoginNaver = {
     <div class="toolbar">
       <span class="list-title">로그인 테스트</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn_apply" :disabled="uiState.loading" @click="handleBtnAction('login')">🟢 네이버 로그인 팝업</button>
+        <button class="btn btn_apply btn-sm" :disabled="uiState.loading" @click="handleBtnAction('login')">🟢 네이버 로그인 팝업</button>
         <button v-if="uiState.loggedIn" class="btn btn_cancel" @click="handleBtnAction('logout')">로그아웃</button>
       </div>
     </div>
@@ -247,7 +247,7 @@ window.ZdTestSnsLoginNaver = {
       <div style="font-size:12px;color:#666;margin-bottom:8px;padding:8px;background:#f0f4ff;border-radius:4px;line-height:1.6">
         ⓘ 네이버 로그인은 팝업 → 리다이렉트 구조입니다. 팝업 로그인 완료 후 발급된 <b>Access Token</b>을 아래에 붙여넣고 [프로필 조회] 하세요.
       </div>
-      <bo-form-area :columns="tokenFormColumns" :form="result" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+      <bo-form-area :columns="tokenFormColumns" :form="result" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #tokenRawSlot>
           <div style="display:flex;gap:8px;align-items:flex-end">
             <input class="form-control" v-model="result.tokenRaw" placeholder="AAAAxxxxx…" style="font-family:monospace;font-size:12px;flex:1" />

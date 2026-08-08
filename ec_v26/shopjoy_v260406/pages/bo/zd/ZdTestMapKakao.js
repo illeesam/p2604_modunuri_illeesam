@@ -262,12 +262,12 @@ window.ZdTestMapKakao = {
     <div class="toolbar">
       <span class="list-title">API 키 설정</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
-        <button class="btn btn_apply" @click="handleBtnAction('sdk-load')">SDK 로드 + 지도 렌더링</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_apply btn-sm" @click="handleBtnAction('sdk-load')">SDK 로드 + 지도 렌더링</button>
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
         <div>초기화 상태: <strong>{{ result.initDetail || (uiState.sdkLoaded ? '초기화 완료' : '미초기화') }}</strong></div>
@@ -280,12 +280,12 @@ window.ZdTestMapKakao = {
     <div class="toolbar">
       <span class="list-title">지도 미리보기</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn_apply" @click="handleBtnAction('map-render')">지도 다시 렌더링</button>
-        <button class="btn btn_confirm" @click="handleBtnAction('map-move')">좌표 이동</button>
+        <button class="btn btn_apply btn-sm" @click="handleBtnAction('map-render')">지도 다시 렌더링</button>
+        <button class="btn btn_confirm btn-sm" @click="handleBtnAction('map-move')">좌표 이동</button>
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="mapFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="mapFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="position:relative;width:100%;height:360px;">
         <div id="zd-kakao-map" style="width:100%;height:100%;border:1px solid #ddd;border-radius:6px;background:#f0f0f0;"></div>
         <div v-if="!uiState.mapLoaded" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
@@ -306,7 +306,7 @@ window.ZdTestMapKakao = {
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="geocodeFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="geocodeFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c">{{ result.error }}</div>
       <div v-if="result.geocodeResult" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin-top:8px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 주소 검색 결과</div>

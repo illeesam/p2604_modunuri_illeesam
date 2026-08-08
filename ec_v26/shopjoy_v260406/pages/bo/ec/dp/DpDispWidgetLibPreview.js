@@ -758,8 +758,9 @@ window.DpDispWidgetLibPreview = {
         min-width="130px" />
       <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-list')" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
-      <button @click="handleBtnAction('searchParam-list')" class="btn btn_search" style="height:30px;padding:0 14px;">검색</button>
-      <button @click="handleBtnAction('searchParam-reset')" class="btn btn_reset" style="height:30px;padding:0 12px;">초기화</button>
+      <button @click="handleBtnAction('searchParam-reset')" class="btn btn_reset"
+        style="padding:0;width:26px;height:26px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;" title="초기화">🔄</button>
+      <button @click="handleBtnAction('searchParam-list')" class="btn btn_search">검색</button>
     </div>
   </div>
   <!-- ===== □. 조회 조건 =================================================== -->

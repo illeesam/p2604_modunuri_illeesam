@@ -181,9 +181,10 @@
       { id: 'syUserLoginHist', label: '사용자로그인이력' },
       { id: 'syApiLogMng', label: 'API로그조회' },
       { id: 'sySendMsgLog', label: '메시지발송이력' },
-      { id: 'syPostman', label: 'postman' },
     ],
     devtools: [
+      { group: 'api' },
+      { id: 'syPostman', label: 'postman' },
       { group: '스토어' },
       { id: 'zdInfDashboard', label: '연동설정대시보드' },
       { id: 'zdStore', label: 'store정보관리' },

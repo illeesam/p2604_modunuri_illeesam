@@ -506,13 +506,13 @@ window.CmBlogMng = {
         <span v-else style="color:#ccc;font-size:11px;">없음</span>
       </template>
       <template #row-actions="{ row }">
-        <button class="btn btn_row_edit" @click.stop="handleGridCellAction('blogs-cellClick', 'btn_row_edit', row)">
+        <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('blogs-cellClick', 'btn_row_edit', row)">
           수정
         </button>
-        <button class="btn btn_row_delete" @click.stop="handleSelectAction('blogs-rowDelete', row)">
+        <button class="btn btn_row_delete btn-sm" @click.stop="handleSelectAction('blogs-rowDelete', row)">
           삭제
         </button>
-        <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="handleSelectAction('blogs-rowToggleUse', row)">
+        <button :class="['btn','btn-sm',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="handleSelectAction('blogs-rowToggleUse', row)">
           {{ row.useYn==='Y'?'비공개':'공개' }}
         </button>
       </template>

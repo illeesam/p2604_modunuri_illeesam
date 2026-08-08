@@ -797,6 +797,8 @@ window.BoPager = {
     onSetPage:    { type: Function, default: () => {} },
     onSizeChange: { type: Function, default: () => {} },
     pageWindow:   { type: Number,   default: 10 },   // 한 번에 보일 페이지 번호 칸 수
+    showPages:    { type: Boolean,  default: true }, // false=페이지 번호·사이즈 선택 숨김(무한스크롤 등 페이지 개념 없는 목록) — 하단 건수 바만 표시
+    loadedCount:  { type: Number,   default: null }, // showPages=false 일 때 '현재 조회 N건' 표시용
   },
   setup(props) {
     /* cfPageNums — 현재 페이지 기준 최대 pageWindow(기본 10)칸 페이지 번호 윈도우.
@@ -815,9 +817,11 @@ window.BoPager = {
   template: /* html */`
 <div v-if="pager" class="pagination">
   <div class="pager-left">
-    <span v-if="pager.pageTotalCount != null" class="list-count">총 {{ pager.pageTotalCount }}건</span>
+    <span v-if="pager.pageTotalCount != null" class="list-count">
+      총 {{ pager.pageTotalCount }}건<template v-if="!showPages && loadedCount != null"> · 조회 {{ loadedCount }}건</template>
+    </span>
   </div>
-  <div class="pager">
+  <div v-if="showPages" class="pager">
     <button :disabled="pager.pageNo===1" @click="onSetPage(1)" title="처음">
       1
     </button>
@@ -834,7 +838,7 @@ window.BoPager = {
       {{ pager.pageTotalPage }}
     </button>
   </div>
-  <div class="pager-right">
+  <div v-if="showPages" class="pager-right">
     <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
       <option v-for="s in (pager.pageSizes||[])" :key="s" :value="s">
         {{ s }}개
@@ -1565,24 +1569,26 @@ window.BoTabBar = {
   ? 'display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;flex-direction:column;width:max-content;'
   : 'display:flex;gap:8px;margin-bottom:10px;align-items:stretch;'">
   <div :style="orientation==='vertical'
-    ? 'display:flex;flex-direction:column;gap:4px;background:#fff;padding:4px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);min-width:160px;'
-    : 'flex:1;display:flex;gap:4px;background:#fff;padding:4px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);'">
+    ? 'display:flex;flex-direction:column;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #f2a8bb;box-shadow:0 2px 6px rgba(232,88,122,.1);min-width:160px;'
+    : 'flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #f2a8bb;box-shadow:0 2px 6px rgba(232,88,122,.1);'">
     <template v-for="t in tabs" :key="t?.id">
-      <button v-if="t.visible===undefined || t.visible" @click="onTab(t.id)" :disabled="!isTabMode()"
+      <button v-if="t.visible===undefined || t.visible" class="bo-tabbar-btn" :class="{ 'is-active': isTabMode() && tab===t.id }" @click="onTab(t.id)" :disabled="!isTabMode()"
         :style="{
           flex: orientation==='vertical' ? 'none' : 1,
           width: orientation==='vertical' ? '100%' : 'auto',
-          padding:'5px 12px', border:'none', cursor: isTabMode() ? 'pointer' : 'default',
-          fontSize:'12.5px', borderRadius:'9px', transition:'all .18s',
+          padding:'5px 12px',
+          border: (isTabMode() && tab===t.id) ? '1.5px solid transparent' : '1.5px solid #b7bec9',
+          cursor: isTabMode() ? 'pointer' : 'default',
+          fontSize:'12.5px', borderRadius:'9px', transition:'transform .15s, box-shadow .15s, border-color .15s, background .15s, color .15s',
           display:'inline-flex', alignItems:'center',
           justifyContent: orientation==='vertical' ? 'flex-start' : 'center',
           gap:'6px',
           opacity: isTabMode() ? 1 : 0.55,
-          fontWeight: tab===t.id ? 800 : 600,
-          background: (isTabMode() && tab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
-          color:      (isTabMode() && tab===t.id) ? '#e8587a' : '#666',
+          fontWeight: tab===t.id ? 800 : 700,
+          background: (isTabMode() && tab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : '#eef0f3',
+          color:      (isTabMode() && tab===t.id) ? '#e8587a' : '#5f6773',
           boxShadow:  (isTabMode() && tab===t.id) ? '0 2px 8px rgba(232,88,122,0.18)' : 'none',
-          borderBottom: (isTabMode() && tab===t.id) ? '2px solid #e8587a' : '2px solid transparent'
+          borderBottom: (isTabMode() && tab===t.id) ? '2px solid #e8587a' : '3px solid #b7bec9'
         }">
         <span v-if="t.icon" style="font-size:14px;">{{ t.icon }}</span>
         <span>{{ t.label }}</span>
@@ -1596,13 +1602,16 @@ window.BoTabBar = {
       </button>
     </template>
   </div>
-  <div v-if="showModes" style="display:flex;gap:2px;background:#fff;padding:4px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);flex-shrink:0;">
-    <button v-for="v in VIEW_MODES" :key="v?.id" @click="onMode(v.id)" :title="v.label+'로 보기'"
+  <div v-if="showModes" style="display:flex;gap:2px;background:#fff;padding:5px;border-radius:12px;border:1px solid #f2a8bb;box-shadow:0 2px 6px rgba(232,88,122,.1);flex-shrink:0;">
+    <button v-for="v in VIEW_MODES" :key="v?.id" class="bo-tabbar-btn" :class="{ 'is-active': tabMode===v.id }" @click="onMode(v.id)" :title="v.label+'로 보기'"
       :style="{
-        padding:'3px 6px', border:'none', cursor:'pointer', fontSize:'11px', borderRadius:'7px', lineHeight:'1',
-        fontWeight:  tabMode===v.id ? 800 : 600,
-        background:  tabMode===v.id ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
-        color:       tabMode===v.id ? '#e8587a' : '#888',
+        padding:'3px 6px',
+        border: tabMode===v.id ? '1.5px solid transparent' : '1.5px solid #b7bec9',
+        cursor:'pointer', fontSize:'11px', borderRadius:'7px', lineHeight:'1',
+        transition:'transform .15s, box-shadow .15s, border-color .15s, background .15s, color .15s',
+        fontWeight:  tabMode===v.id ? 800 : 700,
+        background:  tabMode===v.id ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : '#eef0f3',
+        color:       tabMode===v.id ? '#e8587a' : '#5f6773',
         boxShadow:   tabMode===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none'
       }">
       <span style="font-size:12px;">{{ v.icon }}</span>
@@ -1790,16 +1799,16 @@ window.BoZdSyPropGrid = {
     <span class="list-title">{{ title }}</span>
     <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
       <label style="font-size:12px;color:#6b7280;white-space:nowrap;">propProfile(local,dev,prod)</label>
-      <input type="text" class="form-control" style="width:120px;height:30px;font-size:12px;padding:2px 8px;font-family:monospace;"
+      <input type="text" class="form-control" style="width:120px;font-size:12px;padding:2px 8px;font-family:monospace;"
         :value="syPropProfile" placeholder="local"
         @input="syPropProfile = $event.target.value"
         @keyup.enter="onSearch" />
       <label style="font-size:12px;color:#6b7280;white-space:nowrap;margin-left:4px;">propKey</label>
-      <input type="text" class="form-control" style="width:200px;height:30px;font-size:12px;padding:2px 8px;font-family:monospace;"
+      <input type="text" class="form-control" style="width:200px;font-size:12px;padding:2px 8px;font-family:monospace;"
         :value="syPropKeyFilter" placeholder="키워드 입력 (contains, ; OR)"
         @input="syPropKeyFilter = $event.target.value"
         @keyup.enter="onSearch" />
-      <button class="btn btn_search" style="height:30px;font-size:12px;padding:0 10px;" :disabled="loading" @click="onSearch">
+      <button class="btn btn_search" :disabled="loading" @click="onSearch">
         {{ loading ? '조회중…' : '조회' }}
       </button>
     </div>

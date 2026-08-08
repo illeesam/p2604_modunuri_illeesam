@@ -290,7 +290,7 @@ window.SyBatchHist = {
         {{ c.codeLabel }}
       </option>
     </select>
-    <button class="btn btn_search" @click="handleBtnAction('searchParam-list')" style="height:30px;font-size:12px;padding:2px 12px;">
+    <button class="btn btn_search" @click="handleBtnAction('searchParam-list')">
       조회
     </button>
   </template>
@@ -331,6 +331,8 @@ window.SyBatchHist = {
     </td>
     </template>
   </bo-grid>
+  <bo-pager :pager="{ pageTotalCount: histGridPager.pageTotalCount }"
+    :show-pages="false" :loaded-count="batchLogs.length" />
 </bo-container>
 <!-- ===== □. 목록 영역 =================================================== -->
 `,

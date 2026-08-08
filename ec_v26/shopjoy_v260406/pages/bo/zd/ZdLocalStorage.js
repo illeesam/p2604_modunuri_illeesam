@@ -214,13 +214,13 @@ window.ZdLocalStorage = {
           v-model="uiState.filterKey"
           type="text"
           placeholder="키로 검색..."
-          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+          class="form-control">
       </div>
       <div style="flex: 0 0 auto; display: flex; gap: 8px; align-items: flex-end;">
-        <button @click="handleBtnAction('lsItems-reload')" class="btn btn-blue" style="padding: 8px 16px;">
+        <button @click="handleBtnAction('lsItems-reload')" class="btn btn-blue btn-sm">
           새로고침
         </button>
-        <button @click="handleBtnAction('lsItems-clearAll')" class="btn btn-danger" style="padding: 8px 16px;">
+        <button @click="handleBtnAction('lsItems-clearAll')" class="btn btn-danger btn-sm">
           전체 삭제
         </button>
       </div>

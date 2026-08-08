@@ -121,7 +121,7 @@ window.OdOrderItemMng = {
 
     const cfSummary = computed(() => {
       let qtyOrder = 0, qtyCancel = 0, qtyProgress = 0, qtyConfirmed = 0;
-      let cOrdered = 0, cPaid = 0, cPrep = 0, cShip = 0, cDliv = 0, cBuyConf = 0;
+      let cOrdered = 0, cPaid = 0, cPrep = 0, cShip = 0, cDliv = 0, cBuyConf = 0, cCancelled = 0;
       let caTotal = 0, caCancel = 0, caReturn = 0, caExchange = 0, caAmt = 0;
       let cdTotal = 0, cdCancel = 0, cdReturn = 0, cdExchange = 0, cdAmt = 0;
       let refCount = 0, refAmt = 0;
@@ -142,6 +142,7 @@ window.OdOrderItemMng = {
         else if (st === 'SHIPPING')                          cShip++;
         else if (STS_DELIVERED.includes(st))                 cDliv++;
         else if (STS_CONFIRMED.includes(st))                 cBuyConf++;
+        else if (st === 'CANCELLED')                         cCancelled++;
         if (r.claimYn === 'Y') {
           const done = STS_CLM_DONE.includes(r.claimStatusCd || '');
           const t = r.claimTypeCd || '';
@@ -158,7 +159,7 @@ window.OdOrderItemMng = {
       }
       return {
         qty: { order: qtyOrder, cancel: qtyCancel, progress: qtyProgress, confirmed: qtyConfirmed },
-        status: { ordered: cOrdered, paid: cPaid, prep: cPrep, ship: cShip, dliv: cDliv, buyConf: cBuyConf },
+        status: { ordered: cOrdered, paid: cPaid, prep: cPrep, ship: cShip, dliv: cDliv, buyConf: cBuyConf, cancelled: cCancelled },
         claimActive: { total: caTotal, cancel: caCancel, return: caReturn, exchange: caExchange, amt: caAmt },
         claimDone:   { total: cdTotal, cancel: cdCancel, return: cdReturn, exchange: cdExchange, amt: cdAmt },
         refund: { count: refCount, amt: refAmt },
@@ -185,11 +186,13 @@ window.OdOrderItemMng = {
         cancelQty:        qtyCancel,
         _progress:        s.qty.progress,
         _qtyConf:         s.qty.confirmed,
+        _stOrdered:       s.status.ordered,
         _stPaid:          s.status.paid,
         _stPrep:          s.status.prep,
         _stShip:          s.status.ship,
         _stDliv:          s.status.dliv,
         _stBuyConf:       s.status.buyConf,
+        _stCancelled:     s.status.cancelled,
         _claimActive:     s.claimActive.total,
         _claimDone:       s.claimDone.total,
         _refund:          s.refund.count,
@@ -332,9 +335,13 @@ window.OdOrderItemMng = {
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? { bg: '#1d4ed8', color: '#fff', value: row.orderQty || 1 } : null },
 
-      /* ── 📊 진행상태 ────────────────────────────────────────────────────── */
-      { key: '_stPaid',    label: '결제완료', colGroup: '📊 진행상태',
+      /* ── 📊 진행상태 (od.01 상태표 order_item_status_cd 흐름: ORDERED→PAID→PREPARING→SHIPPING→DELIVERED→CONFIRMED, 종결 CANCELLED) ── */
+      { key: '_stOrdered', label: '주문완료', colGroup: '📊 진행상태',
         colGroupBg: '#fff8e1', colGroupColor: '#e65100', colGroupBorderColor: '#ffca28',
+        thBg: '#fffde7', width: 50,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => (row.orderItemStatusCd === 'ORDERED' || row.orderItemStatusCd === 'WAIT_DEPOSIT') ? { bg: '#2563eb', color: '#fff', value: row.orderQty || 1 } : null },
+      { key: '_stPaid',    label: '결제완료', colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => row.orderItemStatusCd === 'PAID'      ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null },
@@ -354,6 +361,10 @@ window.OdOrderItemMng = {
         thBg: '#fffde7', width: 50,
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null },
+      { key: '_stCancelled', label: '취소',   colGroup: '📊 진행상태',
+        thBg: '#fffde7', width: 44,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => row.orderItemStatusCd === 'CANCELLED' ? { bg: '#dc2626', color: '#fff', value: row.orderQty || 1 } : null },
 
       /* ── ⚠️ 클레임 ──────────────────────────────────────────────────────── */
       { key: '_claimActive', label: '클레임중',  colGroup: '⚠️ 클레임',
@@ -469,7 +480,7 @@ window.OdOrderItemMng = {
       :rows="items"
       row-key="orderItemId"
       :selected-key="detailPanel.selectedOrderItemId"
-      table-style="min-width:2100px;table-layout:fixed;width:100%;"
+      table-style="min-width:2200px;table-layout:fixed;width:100%;"
       :loading="uiState.loading"
       :summary-row="cfSummaryGridRow"
       summary-pos="top"

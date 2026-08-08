@@ -720,8 +720,8 @@ window.DashboardBoEc01 = {
       <input type="date" v-model="filters.startDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
       <span style="color:#999;">~</span>
       <input type="date" v-model="filters.endDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
-      <button class="btn_filter_toggle" @click="handleBtnAction('filters-toggleExpand')" style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#fafbfc;color:#555;">
-        {{ uiState.filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
+      <button class="btn_filter_toggle" @click="handleBtnAction('filters-toggleExpand')" style="padding:0 8px;" :title="uiState.filterExpand?'상세필터 접기':'상세필터 펼치기'">
+        {{ uiState.filterExpand ? '▲' : '▼' }}
       </button>
       <span style="flex:1;"></span>
       <button class="btn btn_search"  @click="handleBtnAction('filters-search')" style="font-size:11px;">🔍 검색</button>

@@ -561,10 +561,9 @@ window.ZdTestAppMsgSendReceiv = {
   <div class="page-title">Android / iOS 앱 메시지 발송 &amp; 수신 확인</div>
 
   <!-- 탭 바 -->
-  <div style="display:flex;gap:4px;margin-bottom:12px">
+  <div class="tab-nav">
     <button v-for="t in [{id:'send',label:'✉️ 메시지 발송'},{id:'devices',label:'📱 디바이스 목록'},{id:'history',label:'📋 발송 이력'},{id:'receive',label:'📡 실시간 수신'}]"
-      :key="t.id" class="btn"
-      :style="tab===t.id?'background:#2563eb;color:#fff;border-color:#2563eb':'background:#fff;color:#444;border:1px solid #d1d5db'"
+      :key="t.id" class="tab-btn" :class="{active: tab===t.id}"
       @click="handleBtnAction('tab', t.id)">
       {{ t.label }}
     </button>
@@ -579,7 +578,7 @@ window.ZdTestAppMsgSendReceiv = {
     <div class="card" style="margin-bottom:12px">
       <div class="toolbar"><span class="list-title">발송 대상</span></div>
       <div style="padding:12px">
-        <bo-form-area :columns="targetFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+        <bo-form-area :columns="targetFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
         <div v-if="baseForm.targetMode==='broadcast'" style="padding:8px;background:#fef9c3;border:1px solid #fde68a;border-radius:4px;font-size:12px;color:#92400e;margin-top:8px">
           ⚠ 전체 브로드캐스트: 등록된 모든 디바이스에 발송됩니다. 주의하여 사용하세요.
         </div>
@@ -628,7 +627,7 @@ window.ZdTestAppMsgSendReceiv = {
       <div class="toolbar">
         <span class="list-title">메시지 내용</span>
         <div style="margin-left:auto">
-          <button class="btn btn_send" :disabled="result.loading || !cfActiveChannels.length" @click="handleBtnAction('send')">
+          <button class="btn btn_send btn-sm" :disabled="result.loading || !cfActiveChannels.length" @click="handleBtnAction('send')">
             {{ result.loading ? '⏳ 발송 중…' : '🚀 발송' }}
           </button>
         </div>
@@ -637,12 +636,12 @@ window.ZdTestAppMsgSendReceiv = {
         <!-- 공통 Push/InApp 내용 -->
         <div v-if="baseForm.chFcm || baseForm.chApns || baseForm.chInapp">
           <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;text-transform:uppercase">Push / 인앱 메시지</div>
-          <bo-form-area :columns="pushFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+          <bo-form-area :columns="pushFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
         </div>
         <!-- 카카오 알림톡 -->
         <div v-if="baseForm.chKakao" style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0">
           <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;text-transform:uppercase">카카오 알림톡 / 친구톡</div>
-          <bo-form-area :columns="kakaoFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+          <bo-form-area :columns="kakaoFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
         </div>
         <!-- SMS -->
         <div v-if="baseForm.chSms" style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0">
@@ -692,7 +691,7 @@ window.ZdTestAppMsgSendReceiv = {
       <div class="toolbar">
         <span class="list-title">등록 디바이스 (mb_device_token)</span>
         <div style="margin-left:auto;display:flex;gap:6px">
-          <button v-if="devices.selected.length" class="btn btn_send" @click="handleBtnAction('send-to-selected')" :disabled="result.loading">
+          <button v-if="devices.selected.length" class="btn btn_send btn-sm" @click="handleBtnAction('send-to-selected')" :disabled="result.loading">
             {{ result.loading ? '⏳' : ('✉️ 선택 ' + devices.selected.length + '건 발송') }}
           </button>
           <button class="btn btn_search" :disabled="result.loadingDev" @click="handleBtnAction('devices-load')">
@@ -702,7 +701,7 @@ window.ZdTestAppMsgSendReceiv = {
       </div>
       <!-- 필터 -->
       <div style="padding:12px;border-bottom:1px solid #f0f0f0">
-        <bo-form-area :columns="deviceFilterFormColumns" :form="devices.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+        <bo-form-area :columns="deviceFilterFormColumns" :form="devices.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       </div>
       <div style="padding:12px">
         <div v-if="!devices.rows.length" style="color:#999;font-size:12px;text-align:center;padding:24px">
@@ -743,7 +742,7 @@ window.ZdTestAppMsgSendReceiv = {
       </div>
       <!-- 필터 -->
       <div style="padding:12px;border-bottom:1px solid #f0f0f0">
-        <bo-form-area :columns="histFilterFormColumns" :form="hist.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+        <bo-form-area :columns="histFilterFormColumns" :form="hist.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       </div>
       <div style="padding:12px">
         <div v-if="!hist.rows.length" style="color:#999;font-size:12px;text-align:center;padding:24px">
@@ -768,7 +767,7 @@ window.ZdTestAppMsgSendReceiv = {
           <span class="badge" :class="recvLog.connected?'badge-green':'badge-gray'">
             {{ recvLog.connected ? '● 연결됨' : '○ 미연결' }}
           </span>
-          <button v-if="!recvLog.connected" class="btn btn_apply" @click="handleBtnAction('ws-connect')">🔌 연결</button>
+          <button v-if="!recvLog.connected" class="btn btn_apply btn-sm" @click="handleBtnAction('ws-connect')">🔌 연결</button>
           <button v-else class="btn btn_cancel" @click="handleBtnAction('ws-disconnect')">연결 해제</button>
           <button class="btn btn_reset" @click="handleBtnAction('recv-clear')">로그 지우기</button>
         </div>

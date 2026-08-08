@@ -366,12 +366,12 @@ window.SyVendorMng = {
         @sort="key => handleBtnAction('vendors-sort', key)"
         grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
         <template #head-actions>
-          <th style="text-align:right">
+          <th style="text-align:right;position:sticky;right:0;z-index:6;">
             관리
           </th>
         </template>
-        <template #row-actions="{ row, gridId }">
-          <td style="white-space:nowrap;">
+        <template #row-actions="{ row, gridId, pinStyle }">
+          <td :style="'white-space:nowrap;' + pinStyle">
             <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
               <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">
                 수정

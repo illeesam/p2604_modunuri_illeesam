@@ -603,8 +603,8 @@ window.PdCategoryProdMng = {
           </div>
         </td>
       </template>
-      <template #row-actions="{ row }">
-        <td style="text-align:center;white-space:nowrap;">
+      <template #row-actions="{ row, pinStyle }">
+        <td :style="'text-align:center;white-space:nowrap;' + pinStyle">
           <button class="btn btn-danger btn-xs" @click="handleSelectAction('categoryProds-rowRemove', row)">
             ✕
           </button>

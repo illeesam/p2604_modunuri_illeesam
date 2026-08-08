@@ -570,9 +570,8 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
       :columns="cfTopSearchColumns" :param="uiState"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
-        <button class="btn btn-secondary" @click="handleBtnAction('statuses-export')">
-          📥 Excel
-        </button>
+        <button class="btn btn_excel" @click="handleBtnAction('statuses-export')"
+          style="padding:0;width:26px;height:26px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;" title="Excel 다운로드">📥</button>
       </template>
     </bo-search-area>
   </bo-container>

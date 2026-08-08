@@ -62,7 +62,7 @@ public class PdProdHistQueryRepository {
                 .where(orderItem.prodId.eq(req.getProdId()),
                        dateBetween(req, "order_date", order.orderDate))
                 .orderBy(order.orderDate.desc());
-        applyLimit(query, req);
+        applyPaging(query, req);
         return query.fetch();
     }
 
@@ -86,8 +86,18 @@ public class PdProdHistQueryRepository {
                 .where(stockHist.prodId.eq(req.getProdId()),
                        dateBetween(req, "chg_date", stockHist.chgDate))
                 .orderBy(stockHist.chgDate.desc());
-        applyLimit(query, req);
+        applyPaging(query, req);
         return query.fetch();
+    }
+
+    /** ── 재고 이력 총건수 ── */
+    public long countStockHist(PdProdHistDto.Request req) {
+        Long cnt = queryFactory.select(stockHist.count())
+                .from(stockHist)
+                .where(stockHist.prodId.eq(req.getProdId()),
+                       dateBetween(req, "chg_date", stockHist.chgDate))
+                .fetchOne();
+        return cnt != null ? cnt : 0L;
     }
 
     /** ── 가격 이력 (pdh_prod_sku_price_hist) ── */
@@ -107,8 +117,18 @@ public class PdProdHistQueryRepository {
                 .where(priceHist.prodId.eq(req.getProdId()),
                        dateBetween(req, "chg_date", priceHist.chgDate))
                 .orderBy(priceHist.chgDate.desc());
-        applyLimit(query, req);
+        applyPaging(query, req);
         return query.fetch();
+    }
+
+    /** ── 가격 이력 총건수 ── */
+    public long countPriceHist(PdProdHistDto.Request req) {
+        Long cnt = queryFactory.select(priceHist.count())
+                .from(priceHist)
+                .where(priceHist.prodId.eq(req.getProdId()),
+                       dateBetween(req, "chg_date", priceHist.chgDate))
+                .fetchOne();
+        return cnt != null ? cnt : 0L;
     }
 
     /** ── 상태 이력 (pdh_prod_status_hist) ── */
@@ -131,8 +151,18 @@ public class PdProdHistQueryRepository {
                 .where(statusHist.prodId.eq(req.getProdId()),
                        dateBetween(req, "proc_date", statusHist.procDate))
                 .orderBy(statusHist.procDate.desc());
-        applyLimit(query, req);
+        applyPaging(query, req);
         return query.fetch();
+    }
+
+    /** ── 상태 이력 총건수 ── */
+    public long countStatusHist(PdProdHistDto.Request req) {
+        Long cnt = queryFactory.select(statusHist.count())
+                .from(statusHist)
+                .where(statusHist.prodId.eq(req.getProdId()),
+                       dateBetween(req, "proc_date", statusHist.procDate))
+                .fetchOne();
+        return cnt != null ? cnt : 0L;
     }
 
     /** ── 변경 이력 (pdh_prod_chg_hist) ── */
@@ -152,8 +182,18 @@ public class PdProdHistQueryRepository {
                 .where(chgHist.prodId.eq(req.getProdId()),
                        dateBetween(req, "chg_date", chgHist.chgDate))
                 .orderBy(chgHist.chgDate.desc());
-        applyLimit(query, req);
+        applyPaging(query, req);
         return query.fetch();
+    }
+
+    /** ── 변경 이력 총건수 ── */
+    public long countChangeHist(PdProdHistDto.Request req) {
+        Long cnt = queryFactory.select(chgHist.count())
+                .from(chgHist)
+                .where(chgHist.prodId.eq(req.getProdId()),
+                       dateBetween(req, "chg_date", chgHist.chgDate))
+                .fetchOne();
+        return cnt != null ? cnt : 0L;
     }
 
     /**
@@ -176,10 +216,14 @@ public class PdProdHistQueryRepository {
         return new BooleanBuilder().and(path.goe(start)).and(path.loe(end));
     }
 
-    /* applyLimit */
-    private void applyLimit(JPAQuery<?> query, PdProdHistDto.Request req) {
-        if (req != null && req.getLimit() != null && req.getLimit() > 0) {
+    /* applyPaging — PageHelper.addPaging(req) 가 채운 limit/offset 적용 (PdProdHistService 에서 선행 호출) */
+    private void applyPaging(JPAQuery<?> query, PdProdHistDto.Request req) {
+        if (req == null) return;
+        if (req.getLimit() != null && req.getLimit() > 0) {
             query.limit(req.getLimit());
+        }
+        if (req.getOffset() != null && req.getOffset() > 0) {
+            query.offset(req.getOffset());
         }
     }
 }

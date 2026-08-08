@@ -233,10 +233,10 @@ window.OdOrderItemDtl = {
   <template #toolbar-actions>
     <button v-if="baseForm.orderId" class="btn btn-blue btn-sm"
       @click="handleBtnAction('btn-navOrder')">📦 주문 보기</button>
-    <button v-if="cfReadonly" class="btn btn_edit" @click="handleBtnAction('btn-edit')">수정</button>
-    <button v-if="!cfReadonly" class="btn btn_save" @click="handleBtnAction('btn-save')">저장</button>
-    <button v-if="!cfReadonly" class="btn btn_cancel" @click="handleBtnAction('btn-cancel')">취소</button>
-    <button class="btn btn_close" @click="handleBtnAction('btn-close')">닫기</button>
+    <button v-if="cfReadonly" class="btn btn_edit btn-sm" @click="handleBtnAction('btn-edit')">수정</button>
+    <button v-if="!cfReadonly" class="btn btn_save btn-sm" @click="handleBtnAction('btn-save')">저장</button>
+    <button v-if="!cfReadonly" class="btn btn_cancel btn-sm" @click="handleBtnAction('btn-cancel')">취소</button>
+    <button class="btn btn_close btn-sm" @click="handleBtnAction('btn-close')">닫기</button>
   </template>
   <!-- ===== 미선택 안내 ======================================================= -->
   <div v-if="!baseForm.orderItemId" style="padding:40px;text-align:center;color:#bbb;">

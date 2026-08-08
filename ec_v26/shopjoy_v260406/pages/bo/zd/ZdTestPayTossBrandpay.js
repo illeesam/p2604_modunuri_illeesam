@@ -213,9 +213,9 @@ window.ZdTestPayTossBrandpay = {
       <span style="font-size:11px;color:#888;margin-left:8px">결제창 전용 키 (test_ck_ / live_ck_ 접두어) — 결제위젯 키(gck) 사용 불가</span>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="display:flex;justify-content:flex-end;margin-top:8px">
-        <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
       </div>
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2;margin-top:8px">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
@@ -228,7 +228,7 @@ window.ZdTestPayTossBrandpay = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="payFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+      <bo-form-area :columns="payFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />
@@ -244,10 +244,10 @@ window.ZdTestPayTossBrandpay = {
     <div class="toolbar">
       <span class="list-title">테스트 실행</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn_confirm" :disabled="uiState.loading" @click="handleBtnAction('pay-test')">
+        <button class="btn btn_confirm btn-sm" :disabled="uiState.loading" @click="handleBtnAction('pay-test')">
           {{ uiState.loading ? '⏳ 처리 중…' : '브랜드페이 결제창 열기' }}
         </button>
-        <button class="btn btn_apply" :disabled="uiState.loading" @click="handleBtnAction('confirm-manual')">수동 승인 (paymentKey 입력)</button>
+        <button class="btn btn_apply btn-sm" :disabled="uiState.loading" @click="handleBtnAction('confirm-manual')">수동 승인 (paymentKey 입력)</button>
         <button class="btn btn_delete" :disabled="!result.confirmResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
       </div>
     </div>

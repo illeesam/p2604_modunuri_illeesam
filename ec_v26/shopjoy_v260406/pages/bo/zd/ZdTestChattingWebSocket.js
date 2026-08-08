@@ -180,15 +180,15 @@ window.ZdTestChattingWebSocket = {
         <span class="badge" :class="result.connected?'badge-green':'badge-gray'">
           {{ result.connected ? '● 연결됨' : '○ 미연결' }}
         </span>
-        <button v-if="!result.connected" class="btn btn_apply" :disabled="uiState.connecting" @click="handleBtnAction('connect')">
+        <button v-if="!result.connected" class="btn btn_apply btn-sm" :disabled="uiState.connecting" @click="handleBtnAction('connect')">
           {{ uiState.connecting ? '⏳ 연결 중…' : '🔌 연결' }}
         </button>
         <button v-else class="btn btn_cancel" @click="handleBtnAction('disconnect')">연결 해제</button>
-        <button class="btn btn_confirm" :disabled="!result.connected" @click="handleBtnAction('ping')">🏓 Ping</button>
+        <button class="btn btn_confirm btn-sm" :disabled="!result.connected" @click="handleBtnAction('ping')">🏓 Ping</button>
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;margin-top:8px">
         상태: <strong>{{ result.status }}</strong>
         <span v-if="result.pingMs" style="margin-left:12px;color:#15803d">RTT: {{ result.pingMs }}ms</span>
@@ -217,7 +217,7 @@ window.ZdTestChattingWebSocket = {
           placeholder="메시지 입력 (Enter: 전송)"
           :disabled="!result.connected"
           @keydown="onKeydown" />
-        <button class="btn btn_send" :disabled="!result.connected || !form.msg.trim()" @click="handleBtnAction('send')">전송</button>
+        <button class="btn btn_send btn-sm" :disabled="!result.connected || !form.msg.trim()" @click="handleBtnAction('send')">전송</button>
       </div>
     </div>
   </div>

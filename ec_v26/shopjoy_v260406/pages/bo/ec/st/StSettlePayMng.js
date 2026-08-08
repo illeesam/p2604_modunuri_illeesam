@@ -189,9 +189,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
 
     /* summaryFormColumns — 집계 카드 (BoFormArea, cols=3, labelLeft) */
     columns.summaryForm = [
-      { key: '_total',   label: '총 정산액', type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfSummary.value.total)}</b>` },
-      { key: '_paid',    label: '지급완료',  type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${fmtW(cfSummary.value.paid)}</b>` },
-      { key: '_pending', label: '지급대기',  type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${fmtW(cfSummary.value.pending)}</b>` },
+      { key: '_total',   label: '총 정산액', fmt: () => `<b style="color:#333;">${fmtW(cfSummary.value.total)}</b>` },
+      { key: '_paid',    label: '지급완료',  fmt: () => `<b style="color:#27ae60;">${fmtW(cfSummary.value.paid)}</b>` },
+      { key: '_pending', label: '지급대기',  fmt: () => `<b style="color:#3498db;">${fmtW(cfSummary.value.pending)}</b>` },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -212,7 +212,11 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
   </bo-container>
   <!-- ===== ■. 집계 영역 ================================================= -->
   <bo-container>
-    <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:8px 14px;background:#f8f9fb;border:1px solid #e5e7eb;border-radius:8px;font-size:12px;">
+      <span v-for="c in columns.summaryForm" :key="c.key" style="color:#666;">
+        {{ c.label }}: <span v-html="c.fmt()"></span>
+      </span>
+    </div>
   </bo-container>
   <!-- ===== ■. 목록 영역 ================================================= -->
   <bo-container title="목록" :count-text="baseGridPager.pageTotalCount + '건'">

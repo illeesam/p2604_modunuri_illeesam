@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.bo.ec.pd.controller;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdHistDto;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdProdHistService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecadminapi.common.response.PageResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,33 +34,33 @@ public class BoPdProdHistController {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getOrders(prodId, req)));
     }
 
-    /** stock */
+    /** stock — 페이징(스크롤 조회) */
     @GetMapping("/stock")
-    public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> stock(
+    public ResponseEntity<ApiResponse<PageResult<PdProdHistDto.Item>>> stock(
             @PathVariable("prodId") String prodId,
             @Valid @ModelAttribute PdProdHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStockHist(prodId, req)));
     }
 
-    /** price */
+    /** price — 페이징(스크롤 조회) */
     @GetMapping("/price")
-    public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> price(
+    public ResponseEntity<ApiResponse<PageResult<PdProdHistDto.Item>>> price(
             @PathVariable("prodId") String prodId,
             @Valid @ModelAttribute PdProdHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getPriceHist(prodId, req)));
     }
 
-    /** status */
+    /** status — 페이징(스크롤 조회) */
     @GetMapping("/status")
-    public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> status(
+    public ResponseEntity<ApiResponse<PageResult<PdProdHistDto.Item>>> status(
             @PathVariable("prodId") String prodId,
             @Valid @ModelAttribute PdProdHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getStatusHist(prodId, req)));
     }
 
-    /** changes */
+    /** changes — 페이징(스크롤 조회) */
     @GetMapping("/changes")
-    public ResponseEntity<ApiResponse<List<PdProdHistDto.Item>>> changes(
+    public ResponseEntity<ApiResponse<PageResult<PdProdHistDto.Item>>> changes(
             @PathVariable("prodId") String prodId,
             @Valid @ModelAttribute PdProdHistDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPdProdHistService.getChangeHist(prodId, req)));

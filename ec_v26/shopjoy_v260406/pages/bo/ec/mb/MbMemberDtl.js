@@ -105,13 +105,13 @@ window.MbMemberDtl = {
   <!-- ===== ■.■. 상세 툴바: 보기모드=[수정]/[닫기], 편집모드=[저장]/[삭제]/[닫기] ============ -->
   <template v-if="detailModal.dtlId" #toolbar-actions>
     <template v-if="!active">
-      <button class="btn btn_edit" @click="handleBtnAction('form-switch-edit')">수정</button>
-      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+      <button class="btn btn_edit btn-sm" @click="handleBtnAction('form-switch-edit')">수정</button>
+      <button class="btn btn_close btn-sm" @click="handleBtnAction('form-close')">닫기</button>
     </template>
     <template v-if="active">
-      <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-      <button v-if="!detailModal.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+      <button class="btn btn_save btn-sm" @click="handleBtnAction('form-save')">저장</button>
+      <button v-if="!detailModal.isNew" class="btn btn_delete btn-sm" @click="handleBtnAction('form-delete')">삭제</button>
+      <button class="btn btn_close btn-sm" @click="handleBtnAction('form-close')">닫기</button>
     </template>
   </template>
   <!-- ===== □.■. 상세 툴바 ================================================ -->

@@ -536,10 +536,10 @@ window.SyApiLogMng = {
       <span style="font-size:11px;color:#aaa;">
         행 클릭 시 상세정보 펼침
       </span>
-      <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggleExpandAll')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('apiLogs-toggleExpandAll')">
         {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
       </button>
-      <button class="btn btn-danger btn-xs" @click="handleBtnAction('apiLogs-clear')">
+      <button class="btn btn-danger btn-sm" @click="handleBtnAction('apiLogs-clear')">
         로그비우기
       </button>
     </template>
@@ -577,6 +577,8 @@ window.SyApiLogMng = {
       </template>
     </bo-grid>
     <!-- ===== ■.■. 페이저 (두 탭 공통 1개, 그리드 바깥) ========================== -->
+    <bo-pager :pager="{ pageTotalCount: accessGridPager.pageTotalCount }"
+      :show-pages="false" :loaded-count="cfCurrentList.length" />
   </bo-container>
 </bo-page>
 `,

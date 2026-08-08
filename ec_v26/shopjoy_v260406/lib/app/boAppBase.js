@@ -875,11 +875,14 @@
 
       /* boApi 인터셉터로 로그 수집 */
 
-      /* ── 반응형: 좁은 화면에서만 사이드바 강제 닫힘 (넓은 화면은 localStorage 값 유지) ── */
-      const checkWidth = () => {
-        if (window.innerWidth < 920) leftMenuOpen.value = false;
-      };
+      /* ── 반응형: 좁은 화면에서만 사이드바 강제 닫힘 (넓은 화면은 localStorage 값 유지) ──
+         leftMenuOpen 자체를 건드리면 그 값이 watch() 로 즉시 localStorage 에 저장되어
+         버린 사용자 선호가 사라지고, 다시 화면을 넓혀도 복원되지 않는다.
+         그래서 좁은 화면 여부는 별도 isNarrowScreen 에 담고, 실제 노출은 cfLeftMenuOpen(AND)으로 계산한다. */
+      const isNarrowScreen = ref(window.innerWidth < 920);
+      const checkWidth = () => { isNarrowScreen.value = window.innerWidth < 920; };
       onBeforeUnmount(() => window.removeEventListener('resize', checkWidth));
+      const cfLeftMenuOpen = computed(() => leftMenuOpen.value && !isNarrowScreen.value);
 
       /* ── 탭바 좌우 스크롤 ── */
       const tabBarRef = ref(null);
@@ -1899,6 +1902,7 @@
         cfOpenTabsWithGroup,
         activeTop,
         leftMenuOpen,
+        cfLeftMenuOpen,
         tabBarOpen,
         cfEmbed,
         setTopMenu,
@@ -2024,7 +2028,7 @@
 <div @click="onRootClick">
   <!-- ① TOP NAV -->
   <nav class="bo-top-nav" v-if="!cfEmbed">
-    <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" :title="leftMenuOpen ? '사이드바 접기' : '사이드바 펼치기'">{{ leftMenuOpen ? '‹' : '›' }}</button>
+    <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" :title="cfLeftMenuOpen ? '사이드바 접기' : '사이드바 펼치기'">{{ cfLeftMenuOpen ? '‹' : '›' }}</button>
     <button class="sidebar-toggle-btn tab-bar-toggle-btn" @click.stop="tabBarOpen=!tabBarOpen" :title="tabBarOpen ? '탭바 접기' : '탭바 펼치기'">{{ tabBarOpen ? '▲' : '▼' }}</button>
     <span class="brand" @click="onLogoClick" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
       ShopJoy
@@ -2210,7 +2214,7 @@
   <div class="bo-body" :style="cfEmbed ? 'min-height:100vh;' : ''">
 
     <!-- Left Sidebar -->
-    <nav class="bo-left-nav" v-if="!cfEmbed" :class="{closed: !leftMenuOpen}">
+    <nav class="bo-left-nav" v-if="!cfEmbed" :class="{closed: !cfLeftMenuOpen}">
       <div class="left-nav-top">
         <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
         <template v-for="item in (activeTop === 'home' ? [] : (LEFT_MENUS[activeTop] || []))" :key="item?.group || item?.id">

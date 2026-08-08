@@ -171,16 +171,16 @@ window.StErpGenMng = {
   <!-- ===== ■. 생성 설정 =================================================== -->
   <bo-container title="전표 생성 설정">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="columns.baseForm" :form="settingForm" :cols="3" :show-actions="false">
+    <bo-form-area :columns="columns.baseForm" :form="settingForm" :cols="3" :show-actions="false" compact>
       <template #targetMon>
         <input class="form-control" v-model="targetMon" type="month" style="width:160px" />
       </template>
       <template #actions>
-        <div style="display:flex;align-items:center;gap:8px;min-height:34px;">
-          <button class="btn btn-secondary" @click="handleBtnAction('preview-search')">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn btn_search" @click="handleBtnAction('preview-search')">
             조회
           </button>
-          <button class="btn btn-primary" @click="handleBtnAction('preview-generate')">
+          <button class="btn btn_save" @click="handleBtnAction('preview-generate')">
             📋 ERP 전표생성
           </button>
         </div>

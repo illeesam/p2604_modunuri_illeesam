@@ -449,17 +449,17 @@ window.SyTemplateMng = {
         @sort="key => handleBtnAction('templates-sort', key)"
         grid-id="templates-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
         <template #head-actions>
-          <th style="text-align:right">
+          <th style="text-align:right;position:sticky;right:0;z-index:6;">
             관리
           </th>
         </template>
-        <template #row-actions="{ row, gridId }">
-          <td style="white-space:nowrap;">
+        <template #row-actions="{ row, gridId, pinStyle }">
+          <td :style="'white-space:nowrap;' + pinStyle">
             <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
               <button class="btn btn-secondary btn-xs" @click="handleSelectAction('templates-rowPreview', row)">
                 미리보기
               </button>
-              <button class="btn btn_send" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-rowSend', row)">
+              <button class="btn btn_send btn-xs" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-rowSend', row)">
                 발송
               </button>
               <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">

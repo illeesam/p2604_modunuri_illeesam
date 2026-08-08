@@ -151,9 +151,9 @@ window.ZdTestChattingKakaoChannel = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">카카오 비즈메시지 설정</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
-        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
       </div>
     </div>
   </div>
@@ -163,13 +163,13 @@ window.ZdTestChattingKakaoChannel = {
     <div class="toolbar">
       <span class="list-title">메시지 발송</span>
       <div style="margin-left:auto">
-        <button class="btn btn_send" :disabled="uiState.loading" @click="handleBtnAction('send')">
+        <button class="btn btn_send btn-sm" :disabled="uiState.loading" @click="handleBtnAction('send')">
           {{ uiState.loading ? '⏳ 발송 중…' : '💬 발송' }}
         </button>
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="msgFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="msgFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div v-if="form.msgType==='channel_add'" style="padding:8px;background:#f0f4ff;border-radius:4px;font-size:12px;color:#444;margin-top:8px">
         채널 추가 요청 메시지를 발송합니다. 채널 ID: <b>{{ cfg.channelId || '(미설정)' }}</b>
       </div>

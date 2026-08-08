@@ -176,13 +176,13 @@ window.ZdTestPushAlimFcm = {
     <div class="toolbar">
       <span class="list-title">푸시 발송</span>
       <div style="margin-left:auto">
-        <button class="btn btn_send" :disabled="uiState.loading" @click="handleBtnAction('push-send')">
+        <button class="btn btn_send btn-sm" :disabled="uiState.loading" @click="handleBtnAction('push-send')">
           {{ uiState.loading ? '⏳ 발송 중…' : '🔔 테스트 FCM 푸시 발송' }}
         </button>
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #target-value>
           <input class="form-control" v-model="form.targetValue"
             :placeholder="form.targetType==='token'?'eXxxxxxx…':form.targetType==='topic'?'all_members':'MB000001'"

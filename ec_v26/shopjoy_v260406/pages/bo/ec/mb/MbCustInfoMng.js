@@ -4,17 +4,8 @@
 
   const SEARCH_MODES = [
     { id: 'member', label: '고객 검색' },
-    { id: 'order',  label: '주문번호' },
-    { id: 'claim',  label: '클레임번호' },
-  ];
-
-  const PERIOD_OPTS = [
-    { id: '1m',     label: '1개월' },
-    { id: '3m',     label: '3개월' },
-    { id: '6m',     label: '6개월' },
-    { id: '1y',     label: '1년',  default: true },
-    { id: 'all',    label: '전체' },
-    { id: 'custom', label: '직접입력' },
+    { id: 'order',  label: '주문고객검색' },
+    { id: 'claim',  label: '클레임고객검색' },
   ];
 
   /* fnBadgeCls — 상태 배지 클래스 */
@@ -40,19 +31,6 @@
 
   /* today — 오늘 YYYY-MM-DD */
   const today = () => coUtil.cofToYmd(new Date());
-
-  /* calcFrom — 기간 옵션 → from 날짜 문자열 */
-  const calcFrom = (period, customFrom) => {
-    if (period === 'all') { return ''; }
-    if (period === 'custom') { return customFrom; }
-    const d = new Date();
-    if (period === '1m') { d.setMonth(d.getMonth() - 1); }
-    else if (period === '3m') { d.setMonth(d.getMonth() - 3); }
-    else if (period === '6m') { d.setMonth(d.getMonth() - 6); }
-    else if (period === '1y') { d.setFullYear(d.getFullYear() - 1); }
-    return coUtil.cofToYmd(d);
-  };
-
 
 
   window._mbCustInfoState = window._mbCustInfoState || { tab: 'orders', tabMode: '3col' };
@@ -97,8 +75,8 @@
       const isExpanded = (key) => expandedRows.has(key);
 
       /* ===== 검색조건 (기간 필터) ===== */
-      const searchParam    = reactive({ period: '1y', customFrom: '', customTo: today() });
-      const searchParamOrg = reactive({ period: '1y', customFrom: '', customTo: today() });
+      const searchParam    = reactive({ dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '', _dateRange: '' });
+      const searchParamOrg = reactive({ dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '', _dateRange: '' });
 
       /* ===== 페이저 (탭별 + 모달) ===== */
       const PAGE_SIZE = 10;
@@ -132,10 +110,9 @@
           uiState.searchMode = param;
           uiState.searchInput = '';
           return;
-        // 기간 옵션 변경
-        } else if (cmd === 'searchParam-period') {
-          searchParam.period = param;
-          return;
+        // 기간 옵션(팝오버 프리셋) 변경
+        } else if (cmd === 'searchParam-dateRange') {
+          return window.boUtil.bofApplyDateRange(searchParam, undefined, 'dateRangeStart', 'dateRangeEnd', '_dateRange');
         // 고객 검색 모달 열기
         } else if (cmd === 'memberModal-open') {
           memberModalOpen.value = true;
@@ -200,12 +177,10 @@
       /* fnPagerOf — which → pager 객체 */
       const fnPagerOf = (which) => HIST_META[which]?.pager || null;
 
-      /* fnDateParams — 기간 검색 파라미터 (period='all' 면 미전달) */
+      /* fnDateParams — 기간 검색 파라미터 (dateRangeStart 없으면(=전체) 미전달) */
       const fnDateParams = (dateRangeType) => {
-        const from = calcFrom(searchParam.period, searchParam.customFrom);
-        if (!from) return {};
-        const to = searchParam.period === 'custom' ? searchParam.customTo : today();
-        return { dateRangeType, dateRangeStart: from, dateRangeEnd: to };
+        if (!searchParam.dateRangeStart) return {};
+        return { dateRangeType, dateRangeStart: searchParam.dateRangeStart, dateRangeEnd: searchParam.dateRangeEnd || today() };
       };
 
       /* fnLoadHist — 단일 영역 서버사이드 페이지 조회 */
@@ -293,6 +268,7 @@
          빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
       const initPage = async () => {
         await fnLoadCodes();
+        window.boUtil.bofApplyDateRange(searchParam, '1year', 'dateRangeStart', 'dateRangeEnd', '_dateRange');
         Object.assign(searchParamOrg, searchParam);
       };
       onMounted(initPage);
@@ -308,19 +284,7 @@
       watch(() => uiState.tab,      v => { window._mbCustInfoState.tab     = v; });
       watch(() => uiState.tabMode2, v => { window._mbCustInfoState.tabMode = v; });
 
-      /* watch — period 변경 시 custom 초기값 세팅 */
-      watch(() => searchParam.period, v => {
-        if (v === 'custom') {
-          const d = new Date(); d.setFullYear(d.getFullYear() - 1);
-          searchParam.customFrom = coUtil.cofToYmd(d);
-          searchParam.customTo   = today();
-        }
-      });
-
       /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-
-      const cfDateFrom = computed(() => calcFrom(searchParam.period, searchParam.customFrom));
-      const cfDateTo   = computed(() => searchParam.period === 'custom' ? searchParam.customTo : today());
 
       /* showTab — 탭 표시 여부 */
       const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
@@ -534,11 +498,13 @@
         { key: '_title',    label: '제목/내용', type: 'readonly', colSpan: 2, fmt: (v, row) => (row.title || '-') },
       ];
 
-      /* periodSearchColumns — 기간 필터 BoSearchArea 컬럼 */
+      /* periodSearchColumns — 기간 필터 BoSearchArea 컬럼 (주문항목관리와 동일한 dateRange 필드 패턴) */
       columns.periodSearch = [
-        { key: 'period',     type: 'slot', name: 'period', label: '조회기간' },
-        { key: 'customFrom', type: 'date', label: '시작일', visible: (p) => p.period === 'custom' },
-        { key: 'customTo',   type: 'date', label: '종료일', visible: (p) => p.period === 'custom' },
+        { key: '_dateRange', type: 'dateRange', dateWidth: '136px',
+          typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
+          typeOptions: () => [{ value: 'reg_date', label: '등록일자' }],
+          rangeOptions: () => window.boUtil.bofDateRangeOptions,
+          onRangeChange: () => handleBtnAction('searchParam-dateRange') },
       ];
 
       /* ##### [06] return (템플릿 노출) ############################################## */
@@ -547,11 +513,11 @@
         columns,
         uiState, searchParam, memberModalOpen,   // 상태 / 데이터
         orders, claims, deliveries, caches, contacts, chats, loginHistories, couponUsages, sendHistories, // 9개 이력 데이터
-        SEARCH_MODES, PERIOD_OPTS, // 정적 옵션
+        SEARCH_MODES, // 정적 옵션
         ordersPager, claimsPager, dlivPager, cachePager, contactsPager, chatsPager, loginPager, couponPager, sendPager, // 페이저
         onSetPage, onSizeChange, // BoGrid pager 콜백
         handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal, // dispatch + 모달 통합 콜백
-        cfDateFrom, cfDateTo, cfCustCacheBalance, tabs, // computed
+        cfCustCacheBalance, tabs, // computed
         showTab, fnFmtPrice, // 헬퍼
         toggleRow, isExpanded, fnExpKey, // 행 펼침
       };
@@ -605,25 +571,10 @@
    </div>
   </bo-container>
   <!-- ===== □. 검색 바 ==================================================== -->
-  <!-- ===== ■. 기간 필터 바 (BoSearchArea) =================================== -->
+  <!-- ===== ■. 기간 필터 바 (BoSearchArea, 주문항목관리와 동일한 dateRange 필드) ============ -->
   <bo-container>
     <bo-search-area :columns="columns.periodSearch" :param="searchParam"
-      @search="handleBtnAction('searchParam-list')" :show-reset="false">
-      <template #period>
-        <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;">
-          <button v-for="p in PERIOD_OPTS" :key="p?.id"
-            @click="handleBtnAction('searchParam-period', p.id)"
-            :style="searchParam.period===p.id
-            ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:4px 13px;font-size:12px;font-weight:600;'
-            : 'background:transparent;color:#666;border:none;border-radius:6px;padding:4px 13px;font-size:12px;'">
-            {{ p.label }}
-          </button>
-        </div>
-      </template>
-    </bo-search-area>
-    <span v-if="searchParam.period!=='custom'" style="font-size:12px;color:#aaa;display:block;margin-top:4px;">
-      {{ cfDateFrom ? cfDateFrom + ' ~ ' + cfDateTo : '전체 기간' }}
-    </span>
+      @search="handleBtnAction('searchParam-list')" :show-reset="false" />
   </bo-container>
   <!-- ===== □. 기간 필터 바 ================================================= -->
   <!-- ===== ■. 고객 없음 안내 ================================================ -->

@@ -785,8 +785,26 @@ window.BoGrid = {
        관리(rowActions) 항상 우측 고정. 가로스크롤 없는 그리드는 시각적 변화 없음(안전). */
     const cfPinNoLeft    = Vue.computed(() => (props.selectable ? 36 : 0) + (props.draggable ? 28 : 0));
     const cfPinFirstLeft = Vue.computed(() => cfPinNoLeft.value + 36);
-    const pinLeftStyle  = (px, z, edge) => 'position:sticky;left:' + px + 'px;z-index:' + z + ';' + (edge ? 'box-shadow:2px 0 4px rgba(0,0,0,.08);' : '');
-    const pinRightStyle = (z, edge) => 'position:sticky;right:0;z-index:' + z + ';' + (edge ? 'box-shadow:-2px 0 4px rgba(0,0,0,.08);' : '');
+    /* 선택행(.bo-row-selected) 은 tr 에 outline 을 그리는데, sticky(고정) 셀은 그 위에 자기 배경을 덧칠해
+       outline 이 지나가는 상/하단(과 고정영역 좌우 끝) 구간을 가려버린다. selected=true 인 고정 셀에는
+       inset box-shadow 로 같은 파란 테두리를 직접 그려 넣어 끊김 없이 이어지게 한다. */
+    const fnRowSelected = (row) => props.selectedKey != null && props.rowKey && row[props.rowKey] === props.selectedKey;
+    const pinLeftStyle  = (px, z, edge, selected) => {
+      let st = 'position:sticky;left:' + px + 'px;z-index:' + z + ';';
+      const sh = [];
+      if (selected) { if (px === 0) sh.push('inset 2px 0 0 #2563eb'); sh.push('inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb'); }
+      if (edge) sh.push('2px 0 4px rgba(0,0,0,.08)');
+      if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
+      return st;
+    };
+    const pinRightStyle = (z, edge, selected) => {
+      let st = 'position:sticky;right:0;z-index:' + z + ';';
+      const sh = [];
+      if (selected) sh.push('inset -2px 0 0 #2563eb', 'inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb');
+      if (edge) sh.push('-2px 0 4px rgba(0,0,0,.08)');
+      if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
+      return st;
+    };
 
     /* ── fitBottom — 그리드를 화면 하단까지 채운다 ──
        고정 오프셋(calc(100vh - 390px))은 화면 폭·검색영역 줄수에 따라 헤더 높이가 달라져
@@ -878,7 +896,7 @@ window.BoGrid = {
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
              handleBtnAction, handleSelectAction,
              colWidths, onResizeStart, thResizeStyle,
-             cfPinNoLeft, cfPinFirstLeft, pinLeftStyle, pinRightStyle, fnPinBg, onRowMouseEnter, onRowMouseLeave,
+             cfPinNoLeft, cfPinFirstLeft, pinLeftStyle, pinRightStyle, fnPinBg, fnRowSelected, onRowMouseEnter, onRowMouseLeave,
              columns: cfEffectiveCols };
   },
   template: /* html */`
@@ -954,19 +972,19 @@ window.BoGrid = {
           @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
           @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
           @dragend="handleSelectAction('grid-row-drag-end')">
-            <td v-if="selectable" :style="'text-align:center;' + pinLeftStyle(0, 4) + 'background:' + fnPinBg(row, idx) + ';'" @click.stop>
+            <td v-if="selectable" :style="'text-align:center;' + pinLeftStyle(0, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'" @click.stop>
               <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
             </td>
-            <td v-if="draggable" :style="'text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none;' + pinLeftStyle(selectable ? 36 : 0, 4) + 'background:' + fnPinBg(row, idx) + ';'">
+            <td v-if="draggable" :style="'text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none;' + pinLeftStyle(selectable ? 36 : 0, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
               ≡
             </td>
-            <td :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfPinNoLeft, 4) + 'background:' + fnPinBg(row, idx) + ';'" title="보기"
+            <td :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfPinNoLeft, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'" title="보기"
             @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__', link: true }, ci: -1, idx })">
               {{ rowNo(idx) }}
             </td>
             <template v-for="(col, ci) in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-                <td :style="U.tdStyle(col, row) + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 4, true) + 'background:' + fnPinBg(row, idx) + ';' : '')" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
+                <td :style="U.tdStyle(col, row) + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';' : '')" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
                 @click="rowClickable ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null">
                   <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
                   <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
@@ -1069,14 +1087,15 @@ window.BoGrid = {
                 </td>
               </slot>
             </template>
-            <td v-if="rowActions" :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true) + 'background:' + fnPinBg(row, idx) + ';'">
+            <td v-if="rowActions" :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
               <slot name="row-actions" :row="row" :idx="idx" :grid-id="gridId">
                 <button class="btn btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
                 </button>
               </slot>
             </td>
-            <slot v-else name="row-actions" :row="row" :idx="idx" :grid-id="gridId">
+            <slot v-else name="row-actions" :row="row" :idx="idx" :grid-id="gridId"
+              :pin-style="pinRightStyle(4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
             </slot>
           </tr>
           <tr v-if="fnIsExpanded(row, idx)" class="bo-grid-expand-row">
@@ -1336,12 +1355,28 @@ window.BoGridCrud = {
     /* ── ▼ 좌/우 고정(pin) — 드래그+번호+ID 좌측 고정(있는 것만 연속 누적), 관리(col-act) 우측 고정.
        가로스크롤 없는 그리드는 시각적 변화 없음(안전). CSS 고정폭(.col-drag 28px/번호 36px)을 그대로 사용. */
     const cfPinIdLeft = Vue.computed(() => (cfShowDrag.value ? 28 : 0) + (cfShowNo.value ? 36 : 0));
-    const pinLeftStyle  = (px, z, edge) => 'position:sticky;left:' + px + 'px;z-index:' + z + ';' + (edge ? 'box-shadow:2px 0 4px rgba(0,0,0,.08);' : '');
-    const pinRightStyle = (z, edge) => 'position:sticky;right:0;z-index:' + z + ';' + (edge ? 'box-shadow:-2px 0 4px rgba(0,0,0,.08);' : '');
+    /* 선택행 outline 이 고정(pin) 셀 아래로 가려지는 문제 방지 — BoGrid 와 동일한 inset box-shadow 보강 */
+    const fnRowSelected = (row) => props.selectedKey != null && row[props.rowKey] === props.selectedKey;
+    const pinLeftStyle  = (px, z, edge, selected) => {
+      let st = 'position:sticky;left:' + px + 'px;z-index:' + z + ';';
+      const sh = [];
+      if (selected) { if (px === 0) sh.push('inset 2px 0 0 #2563eb'); sh.push('inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb'); }
+      if (edge) sh.push('2px 0 4px rgba(0,0,0,.08)');
+      if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
+      return st;
+    };
+    const pinRightStyle = (z, edge, selected) => {
+      let st = 'position:sticky;right:0;z-index:' + z + ';';
+      const sh = [];
+      if (selected) sh.push('inset -2px 0 0 #2563eb', 'inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb');
+      if (edge) sh.push('-2px 0 4px rgba(0,0,0,.08)');
+      if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
+      return st;
+    };
 
     return { U, cfVisibleCount, cfCountText, cfScrollMaxHeight, onScroll, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
              sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey, fnRowCls, fnPinBg,
-             cfShowDrag, cfShowNo, cfShowId, cfPinIdLeft, pinLeftStyle, pinRightStyle, handleBtnAction, handleSelectAction };
+             cfShowDrag, cfShowNo, cfShowId, cfPinIdLeft, pinLeftStyle, pinRightStyle, fnRowSelected, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="card">
@@ -1415,13 +1450,13 @@ window.BoGridCrud = {
           </td>
         </tr>
         <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)" class="crud-row" :class="fnRowCls(item, idx)" :draggable="cfShowDrag" @click="handleSelectAction('grid-row-focus', { idx, row: fnRow(item) })" @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })" @dragstart="handleSelectAction('grid-row-drag-start', { idx })" @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })" @dragend="handleSelectAction('grid-row-drag-end')">
-        <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4) + 'background:' + fnPinBg(item, idx) + ';'">
+        <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
           ⠿
         </td>
-        <td v-if="cfShowNo" :style="'text-align:center;font-size:11px;color:#999;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4) + 'background:' + fnPinBg(item, idx) + ';'">
+        <td v-if="cfShowNo" :style="'text-align:center;font-size:11px;color:#999;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
           {{ idx + 1 }}
         </td>
-        <td v-if="cfShowId" class="col-id-val" :style="pinLeftStyle(cfPinIdLeft, 4, true) + 'background:' + fnPinBg(item, idx) + ';'">
+        <td v-if="cfShowId" class="col-id-val" :style="pinLeftStyle(cfPinIdLeft, 4, true, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
           {{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}
         </td>
         <td v-if="showRowStatus" class="col-status-val">
@@ -1508,7 +1543,7 @@ window.BoGridCrud = {
           </td>
         </slot>
       </template>
-      <td class="col-act-val" :style="pinRightStyle(4, true) + 'background:' + fnPinBg(item, idx) + ';'">
+      <td class="col-act-val" :style="pinRightStyle(4, true, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
         <div class="col-act-box">
           <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item" :grid-id="gridId">
           </slot>
@@ -2686,17 +2721,25 @@ window.BoGroupTable = {
       return null;
     });
 
-    /* pin 컬럼 sticky 포지션 스타일. z: 헤더=5 / 합계행=3 / 본문행=1 (thead sticky top:0 z:2 보다 헤더는 위, 본문은 아래) */
-    const fnPinStyle = (col, z) => {
+    /* pin 컬럼 sticky 포지션 스타일. z: 헤더=5 / 합계행=3 / 본문행=1 (thead sticky top:0 z:2 보다 헤더는 위, 본문은 아래)
+       row 를 주면 선택행 여부를 판단해, tr 의 outline(2563eb) 이 고정 셀 아래로 가려지는 구간을
+       inset box-shadow 로 보강한다(BoGrid/BoGridCrud 와 동일 처리). */
+    const fnPinStyle = (col, z, row) => {
       if (!col.pin) return '';
+      const selected = row != null && props.selectedKey != null && row[props.rowKey] === props.selectedKey;
       let st = 'position:sticky;z-index:' + z + ';';
+      const sh = [];
       if (col.pin === 'left') {
-        st += 'left:' + (cfPinLeftOffset.value[col.key] || 0) + 'px;';
-        if (col.key === cfPinLeftLastKey.value) st += 'box-shadow:2px 0 4px rgba(0,0,0,.08);';
+        const off = cfPinLeftOffset.value[col.key] || 0;
+        st += 'left:' + off + 'px;';
+        if (selected) { if (off === 0) sh.push('inset 2px 0 0 #2563eb'); sh.push('inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb'); }
+        if (col.key === cfPinLeftLastKey.value) sh.push('2px 0 4px rgba(0,0,0,.08)');
       } else {
         st += 'right:' + (cfPinRightOffset.value[col.key] || 0) + 'px;';
-        if (col.key === cfPinRightFirstKey.value) st += 'box-shadow:-2px 0 4px rgba(0,0,0,.08);';
+        if (selected) sh.push('inset -2px 0 0 #2563eb', 'inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb');
+        if (col.key === cfPinRightFirstKey.value) sh.push('-2px 0 4px rgba(0,0,0,.08)');
       }
+      if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
       return st;
     };
 
@@ -2810,7 +2853,7 @@ window.BoGroupTable = {
     const fnTdStyle = (col, row, idx) => {
       const base = col.tdStyle ? col.tdStyle(row) : ('text-align:' + (col.align || 'center') + ';');
       const bordered = props.colBorder ? base + 'border-right:' + props.colBorder + ';' : base;
-      return bordered + 'background:' + fnRowBg(row, idx) + ';' + fnPinStyle(col, 1);
+      return bordered + 'background:' + fnRowBg(row, idx) + ';' + fnPinStyle(col, 1, row);
     };
 
     /* 선택 행 outline + hover 커서 (배경은 fnRowBg 로 tr/td 공통 결정) */

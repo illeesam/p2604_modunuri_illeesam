@@ -427,7 +427,7 @@ window.SySendMsgLogMng = {
     </template>
     <template #toolbar-actions>
       <span style="font-size:11px;color:#aaa;">행 클릭 시 발송 내용 펼침</span>
-      <button class="btn btn-secondary btn-xs" @click="handleBtnAction('sendLogs-toggleExpandAll')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('sendLogs-toggleExpandAll')">
         {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
       </button>
     </template>
@@ -449,6 +449,8 @@ window.SySendMsgLogMng = {
         </td>
       </template>
     </bo-grid>
+    <bo-pager :pager="{ pageTotalCount: baseGridPager.pageTotalCount }"
+      :show-pages="false" :loaded-count="cfCurrentList.length" />
   </bo-container>
 </bo-page>
 `,

@@ -194,10 +194,10 @@ window.ZdTestSnsLoginGoogle = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">설정 / 키 확인</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="display:flex;gap:6px;margin-top:8px;margin-bottom:8px">
-        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
-        <button class="btn btn_apply" @click="handleBtnAction('sdk-init')">GSI 초기화</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_apply btn-sm" @click="handleBtnAction('sdk-init')">GSI 초기화</button>
       </div>
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
@@ -211,7 +211,7 @@ window.ZdTestSnsLoginGoogle = {
     <div class="toolbar">
       <span class="list-title">로그인 테스트</span>
       <div style="margin-left:auto">
-        <button class="btn btn_confirm" :disabled="uiState.loading || !uiState.sdkLoaded" @click="handleBtnAction('login-test')">
+        <button class="btn btn_confirm btn-sm" :disabled="uiState.loading || !uiState.sdkLoaded" @click="handleBtnAction('login-test')">
           {{ uiState.loading ? '⏳ 처리 중…' : '구글 로그인 팝업' }}
         </button>
       </div>

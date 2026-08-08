@@ -467,10 +467,10 @@ window.SyUserLoginHist = {
       <span style="font-size:11px;color:#aaa;">
         행 클릭 시 상세정보 펼침
       </span>
-      <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-toggleExpandAll')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('histList-toggleExpandAll')">
         {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
       </button>
-      <button class="btn btn-danger btn-xs" @click="handleBtnAction('histList-clearLog')">
+      <button class="btn btn-danger btn-sm" @click="handleBtnAction('histList-clearLog')">
         로그비우기
       </button>
     </template>
@@ -488,6 +488,8 @@ window.SyUserLoginHist = {
       </td>
     </template>
   </bo-grid>
+  <bo-pager v-if="searchParam.activeTab==='log'" :pager="{ pageTotalCount: logGridPager.pageTotalCount }"
+    :show-pages="false" :loaded-count="cfCurrentList.length" />
   <!-- ===== □. 로그인 로그 탭 ================================================ -->
   <!-- ===== ■. 토큰 이력 탭 ================================================= -->
   <bo-grid v-if="searchParam.activeTab==='token'" bare
@@ -504,6 +506,8 @@ window.SyUserLoginHist = {
       </td>
     </template>
   </bo-grid>
+  <bo-pager v-if="searchParam.activeTab==='token'" :pager="{ pageTotalCount: logGridPager.pageTotalCount }"
+    :show-pages="false" :loaded-count="cfCurrentList.length" />
   <!-- ===== □. 토큰 이력 탭 ================================================= -->
   </bo-container>
 </bo-page>

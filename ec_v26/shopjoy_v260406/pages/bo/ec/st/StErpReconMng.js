@@ -194,10 +194,10 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
 
     /* summaryFormColumns — 집계 카드 (BoFormArea, cols=4, labelLeft) */
     columns.summaryForm = [
-      { key: '_match',     label: '일치',          type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:16px;">${cfSummary.value.match}건</b>` },
-      { key: '_diff',      label: '금액 차이',     type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:16px;">${cfSummary.value.diff}건</b>` },
-      { key: '_noReflect', label: '미반영',        type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:16px;">${cfSummary.value.noReflect}건</b>` },
-      { key: '_diffAmt',   label: '차이금액 합계', type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfSummary.value.diffAmt)}</b>` },
+      { key: '_match',     label: '일치',          fmt: () => `<b style="color:#27ae60;">${cfSummary.value.match}건</b>` },
+      { key: '_diff',      label: '금액 차이',     fmt: () => `<b style="color:#e67e22;">${cfSummary.value.diff}건</b>` },
+      { key: '_noReflect', label: '미반영',        fmt: () => `<b style="color:#e74c3c;">${cfSummary.value.noReflect}건</b>` },
+      { key: '_diffAmt',   label: '차이금액 합계', fmt: () => `<b style="color:#333;">${fmtW(cfSummary.value.diffAmt)}</b>` },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -218,7 +218,11 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
   </bo-container>
   <!-- ===== ■. 집계 영역 =================================================== -->
   <bo-container>
-    <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:8px 14px;background:#f8f9fb;border:1px solid #e5e7eb;border-radius:8px;font-size:12px;">
+      <span v-for="c in columns.summaryForm" :key="c.key" style="color:#666;">
+        {{ c.label }}: <span v-html="c.fmt()"></span>
+      </span>
+    </div>
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="목록" :count-text="baseGridPager.pageTotalCount + '건'">

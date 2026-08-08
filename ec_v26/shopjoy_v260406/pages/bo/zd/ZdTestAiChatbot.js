@@ -184,9 +184,9 @@ window.ZdTestAiChatbot = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">AI 설정</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
-        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
       </div>
     </div>
   </div>
@@ -227,7 +227,7 @@ window.ZdTestAiChatbot = {
           placeholder="메시지 입력 (Enter: 전송 / Shift+Enter: 줄바꿈)"
           style="flex:1;font-size:13px;resize:none"
           @keydown="onKeydown" :disabled="uiState.loading"></textarea>
-        <button class="btn btn_send" style="align-self:flex-end" :disabled="uiState.loading || !form.userMsg.trim()" @click="handleBtnAction('send')">
+        <button class="btn btn_send btn-sm" style="align-self:flex-end" :disabled="uiState.loading || !form.userMsg.trim()" @click="handleBtnAction('send')">
           전송
         </button>
       </div>

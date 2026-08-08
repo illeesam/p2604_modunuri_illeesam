@@ -2522,8 +2522,8 @@ window.PdProdDtl = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🖼 이미지</div>
       <input type="file" ref="fileInputRef" multiple accept="image/*" style="display:none" @change="onFileChange" />
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
-        <button v-if="!cfDtlMode" class="btn btn-secondary" @click="handleBtnAction('img-triggerFile')">+ 파일 선택</button>
-        <button v-if="!cfDtlMode" class="btn btn-secondary" @click="handleBtnAction('img-addByUrl')">+ URL 입력</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('img-triggerFile')">+ 파일 선택</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('img-addByUrl')">+ URL 입력</button>
         <span style="font-size:12px;color:#aaa;">{{ images.length }}개</span>
       </div>
       <div v-if="images.length===0"
@@ -2928,8 +2928,8 @@ window.PdProdDtl = {
       <bo-grid bare :columns="columns.bundleGrid" :rows="tabData.bundleItems" row-key="_id"
         empty-text="+ 상품 추가 버튼으로 묶음 구성품을 등록하세요."
         @cell-change="e => { e.row[e.col.key] = e.value; }">
-        <template #row-actions="{ row, idx }">
-          <td style="text-align:center;white-space:nowrap;">
+        <template #row-actions="{ row, idx, pinStyle }">
+          <td :style="'text-align:center;white-space:nowrap;' + pinStyle">
             <button class="btn btn-xs btn-danger" @click="handleBtnAction('bundleItem-remove', idx)">삭제</button>
           </td>
         </template>

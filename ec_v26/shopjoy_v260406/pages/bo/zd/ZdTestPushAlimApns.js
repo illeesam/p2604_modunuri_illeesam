@@ -212,11 +212,11 @@ window.ZdTestPushAlimApns = {
     <div class="toolbar">
       <span class="list-title">APNs 설정</span>
       <div style="margin-left:auto">
-        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="margin-top:12px">
         <bo-grid :columns="configSummaryGridColumns" :rows="configSummaryRows" :show-row-num="false">
           <template #cfg-value="{ row }">
@@ -237,13 +237,13 @@ window.ZdTestPushAlimApns = {
     <div class="toolbar">
       <span class="list-title">푸시 발송</span>
       <div style="margin-left:auto">
-        <button class="btn btn_send" :disabled="uiState.loading" @click="handleBtnAction('push-send')">
+        <button class="btn btn_send btn-sm" :disabled="uiState.loading" @click="handleBtnAction('push-send')">
           {{ uiState.loading ? '⏳ 발송 중…' : '🍎 테스트 APNs 발송' }}
         </button>
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div v-if="result.status" style="margin-top:8px;font-size:13px;font-weight:600">{{ result.status }}</div>
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;margin-top:8px;white-space:pre-wrap">{{ result.error }}</div>
       <div v-if="result.response" style="padding:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:4px;font-size:12px;margin-top:8px">

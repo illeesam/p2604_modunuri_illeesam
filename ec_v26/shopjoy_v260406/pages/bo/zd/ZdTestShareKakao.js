@@ -210,10 +210,10 @@ window.ZdTestShareKakao = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
-        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
-        <button class="btn btn_apply" @click="handleBtnAction('sdk-init')">SDK 초기화</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_apply btn-sm" @click="handleBtnAction('sdk-init')">SDK 초기화</button>
       </div>
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2;margin-top:8px">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
@@ -227,13 +227,13 @@ window.ZdTestShareKakao = {
     <div class="toolbar">
       <span class="list-title">공유 테스트</span>
       <div style="margin-left:auto">
-        <button class="btn btn_send" :disabled="uiState.loading || !uiState.sdkInited" @click="handleBtnAction('share')">
+        <button class="btn btn_send btn-sm" :disabled="uiState.loading || !uiState.sdkInited" @click="handleBtnAction('share')">
           {{ uiState.loading ? '⏳' : '💬 카카오톡 공유창 열기' }}
         </button>
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="shareFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="shareFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div v-if="form.shareType === 'scrap'" style="padding:8px;background:#fff8e1;border-radius:4px;font-size:12px;color:#92400e;margin-top:8px">
         ⚠️ 스크랩은 해당 URL 의 Open Graph 메타 태그를 읽어 공유합니다. 카카오 개발자 콘솔에 도메인 등록 필요.
       </div>

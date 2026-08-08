@@ -283,13 +283,13 @@ const raws = reactive([]);
 
     /* summaryFormColumns — 집계 카드 (BoFormArea readonly, cols=7, labelLeft) */
     columns.summaryForm = [
-      { key: '_totalCnt',  label: '수집건수',    type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${rawGridPager.pageTotalCount.toLocaleString()}건</b>` },
-      { key: '_collectCnt',label: '정산대상',    type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${cfSummary.value.collectCnt.toLocaleString()}건</b>` },
-      { key: '_confirmCnt',label: '구매확정',    type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:15px;">${cfSummary.value.confirmCnt.toLocaleString()}건</b>` },
-      { key: '_closeCnt',  label: '마감완료',    type: 'readonly', html: true, fmt: () => `<b style="color:#8e44ad;font-size:15px;">${cfSummary.value.closeCnt.toLocaleString()}건</b>` },
-      { key: '_totalAmt',  label: '수집금액 합계',type: 'readonly', html: true, fmt: () => `<b style="color:${cfSummary.value.totalAmt>=0?'#333':'#e74c3c'};font-size:14px;">${fmtW(cfSummary.value.totalAmt)}</b>` },
-      { key: '_feeAmt',    label: '수수료 합계',  type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:14px;">${fmtW(cfSummary.value.feeAmt)}</b>` },
-      { key: '_settleAmt', label: '정산금액 합계',type: 'readonly', html: true, fmt: () => `<b style="color:#2980b9;font-size:14px;">${fmtW(cfSummary.value.settleAmt)}</b>` },
+      { key: '_totalCnt',  label: '수집건수',     fmt: () => `<b style="color:#3498db;">${rawGridPager.pageTotalCount.toLocaleString()}건</b>` },
+      { key: '_collectCnt',label: '정산대상',     fmt: () => `<b style="color:#27ae60;">${cfSummary.value.collectCnt.toLocaleString()}건</b>` },
+      { key: '_confirmCnt',label: '구매확정',     fmt: () => `<b style="color:#e67e22;">${cfSummary.value.confirmCnt.toLocaleString()}건</b>` },
+      { key: '_closeCnt',  label: '마감완료',     fmt: () => `<b style="color:#8e44ad;">${cfSummary.value.closeCnt.toLocaleString()}건</b>` },
+      { key: '_totalAmt',  label: '수집금액 합계', fmt: () => `<b style="color:${cfSummary.value.totalAmt>=0?'#333':'#e74c3c'};">${fmtW(cfSummary.value.totalAmt)}</b>` },
+      { key: '_feeAmt',    label: '수수료 합계',   fmt: () => `<b style="color:#e74c3c;">${fmtW(cfSummary.value.feeAmt)}</b>` },
+      { key: '_settleAmt', label: '정산금액 합계', fmt: () => `<b style="color:#2980b9;">${fmtW(cfSummary.value.settleAmt)}</b>` },
     ];
 
     /* baseSearchColumns — 검색 영역 컬럼 (1+2행 평면화) */
@@ -389,8 +389,8 @@ const raws = reactive([]);
     <bo-search-area :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-moreToggle')" style="min-width:70px">
-          {{ searchParam.searchMoreOpen ? '▲ 접기' : '▼ 상세검색' }}
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-moreToggle')" style="padding:0 8px;" :title="searchParam.searchMoreOpen?'조건닫기':'조건더보기'">
+          {{ searchParam.searchMoreOpen?'▲':'▼' }}
         </button>
       </template>
     </bo-search-area>

@@ -430,7 +430,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
           <button class="btn btn_row_edit" @click.stop="handleBtnAction('discnts-card-edit', d.discntId)">
             수정
           </button>
-          <button class="btn btn_delete" @click.stop="handleBtnAction('discnts-card-delete', d)">
+          <button class="btn btn_row_delete" @click.stop="handleBtnAction('discnts-card-delete', d)">
             삭제
           </button>
         </div>

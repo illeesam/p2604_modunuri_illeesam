@@ -242,9 +242,9 @@ window.ZdTestPayNaverpay = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="display:flex;justify-content:flex-end;margin-top:8px">
-        <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
       </div>
       <div style="font-size:11px;color:#666;background:#e8f5e9;padding:6px 10px;border-radius:4px;margin-top:8px;line-height:1.8;border:1px solid #a5d6a7">
         키 발급: <a href="https://developer.pay.naver.com/app" target="_blank" style="color:#2e7d32">developer.pay.naver.com</a>
@@ -258,7 +258,7 @@ window.ZdTestPayNaverpay = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="payFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+      <bo-form-area :columns="payFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #payKeySlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.payKey" style="flex:1;font-family:monospace;font-size:12px" />
@@ -274,10 +274,10 @@ window.ZdTestPayNaverpay = {
     <div class="toolbar">
       <span class="list-title">테스트 실행</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn_confirm" :disabled="uiState.loading" @click="handleBtnAction('reserve-test')">
+        <button class="btn btn_confirm btn-sm" :disabled="uiState.loading" @click="handleBtnAction('reserve-test')">
           {{ uiState.loading ? '⏳ 처리 중…' : '결제 예약 (reserve)' }}
         </button>
-        <button class="btn btn_preview" :disabled="!result.reserveResult" @click="handleBtnAction('open-window')">네이버페이 창 열기</button>
+        <button class="btn btn_preview btn-sm" :disabled="!result.reserveResult" @click="handleBtnAction('open-window')">네이버페이 창 열기</button>
         <button class="btn btn_delete" :disabled="!result.approveResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
       </div>
     </div>
@@ -296,9 +296,9 @@ window.ZdTestPayNaverpay = {
         <div style="font-size:11px;color:#555;margin-bottom:6px">
           네이버페이 완료 후 returnUrl 에 <code>paymentId</code> 파라미터가 붙습니다. 복사 후 아래 입력:
         </div>
-        <bo-form-area :columns="approveFormColumns" :form="manualApprove" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+        <bo-form-area :columns="approveFormColumns" :form="manualApprove" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
         <div style="display:flex;justify-content:flex-end;margin-top:8px">
-          <button class="btn btn_apply" :disabled="uiState.loading" @click="handleBtnAction('approve-test')">결제 승인 (approve)</button>
+          <button class="btn btn_apply btn-sm" :disabled="uiState.loading" @click="handleBtnAction('approve-test')">결제 승인 (approve)</button>
         </div>
       </div>
 

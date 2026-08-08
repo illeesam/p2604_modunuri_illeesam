@@ -2305,9 +2305,9 @@ od_order:
       <span style="font-size:11px;color:#888;margin-left:8px">결제위젯 전용 키 (test_gck_ / live_gck_ 접두어)</span>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
-        <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
+        <button class="btn btn_save btn-sm" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
       </div>
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2;margin-top:8px">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px">{{ result.sdkUrl }}</span></div>
@@ -2320,7 +2320,7 @@ od_order:
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />
@@ -2353,7 +2353,7 @@ od_order:
       <span style="font-size:11px;color:#888;margin-left:8px">requestPayment() 추가 파라미터 — 값 입력/체크 시 전송됨</span>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="hiddenFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+      <bo-form-area :columns="hiddenFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #sec1Header>
           <div style="font-size:11px;font-weight:600;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;margin-bottom:2px">💰 금액 세부</div>
         </template>
@@ -2411,7 +2411,7 @@ od_order:
       <span style="font-family:monospace">{{ result.callbackParams.amount.toLocaleString() }} 원</span>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn btn_confirm" :disabled="uiState.loading" @click="handleBtnAction('confirm-auto')">
+      <button class="btn btn_confirm btn-sm" :disabled="uiState.loading" @click="handleBtnAction('confirm-auto')">
         {{ uiState.loading ? '⏳ 승인 중…' : '✅ 승인 요청' }}
       </button>
     </div>
@@ -2422,11 +2422,11 @@ od_order:
     <div class="toolbar">
       <span class="list-title">결제위젯</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn_preview" :disabled="uiState.loading" @click="handleBtnAction('widget-mount')">위젯 렌더링</button>
-        <button class="btn btn_confirm" :disabled="uiState.loading || !uiState.widgetMounted" @click="handleBtnAction('pay-test')">
+        <button class="btn btn_preview btn-sm" :disabled="uiState.loading" @click="handleBtnAction('widget-mount')">위젯 렌더링</button>
+        <button class="btn btn_confirm btn-sm" :disabled="uiState.loading || !uiState.widgetMounted" @click="handleBtnAction('pay-test')">
           {{ uiState.loading ? '⏳ 처리 중…' : '결제하기' }}
         </button>
-        <button class="btn btn_apply" :disabled="uiState.loading" @click="handleBtnAction('confirm-manual')" title="paymentKey 직접 입력으로 승인 (예외 대응)">수동 승인</button>
+        <button class="btn btn_apply btn-sm" :disabled="uiState.loading" @click="handleBtnAction('confirm-manual')" title="paymentKey 직접 입력으로 승인 (예외 대응)">수동 승인</button>
         <button class="btn btn_delete" :disabled="!result.confirmResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
       </div>
     </div>

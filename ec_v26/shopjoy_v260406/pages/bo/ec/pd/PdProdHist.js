@@ -108,9 +108,51 @@ window.PdProdHist = {
 
     const ALL_TABS = ['qna', 'review', 'orders', 'stock', 'price', 'status', 'changes'];
 
+    /* 재고/가격/상태/변경 이력 — 스크롤 조회(무한스크롤) 전용 페이저 + 배열/라벨 맵 */
+    const HIST_PAGE_SIZE = 50;
+    const histPagers = reactive({
+      stock:   { pageNo: 1, pageSize: HIST_PAGE_SIZE, pageTotalCount: 0 },
+      price:   { pageNo: 1, pageSize: HIST_PAGE_SIZE, pageTotalCount: 0 },
+      status:  { pageNo: 1, pageSize: HIST_PAGE_SIZE, pageTotalCount: 0 },
+      changes: { pageNo: 1, pageSize: HIST_PAGE_SIZE, pageTotalCount: 0 },
+    });
+    const HIST_ARR   = { stock: stockHistories, price: priceHistories, status: statusHistories, changes: changeHistories };
+    const HIST_LABEL = { stock: '재고이력', price: '가격변경이력', status: '상태이력', changes: '정보변경이력' };
+
+    /* fnLoadHistTab — 재고/가격/상태/변경 이력 페이지 단위 조회. append=true 면 스크롤로 다음 페이지 이어붙임 */
+    const fnLoadHistTab = async (tab, append) => {
+      if (!props.prodId) { return; }
+      const pager = histPagers[tab];
+      if (!append) { pager.pageNo = 1; }
+      uiState.loading = true;
+      try {
+        const res = await boApi.get(BASE(tab), { params: { pageNo: pager.pageNo, pageSize: pager.pageSize }, ...HDR(HIST_LABEL[tab]) });
+        const d = res.data?.data || {};
+        const list = d.pageList || [];
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        const arr = HIST_ARR[tab];
+        if (append) { arr.push(...list); } else { arr.splice(0, arr.length, ...list); }
+        if (list.length >= pager.pageSize && arr.length < pager.pageTotalCount) { pager.pageNo += 1; }
+        uiState.loadedTabs.add(tab);
+      } catch (err) {
+        console.error('[PdProdHist]', tab, err);
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* onScrollEnd — 재고/가격/상태/변경 이력 그리드가 바닥에 닿으면 다음 페이지 이어붙임 */
+    const onScrollEnd = (tab) => {
+      const arr = HIST_ARR[tab];
+      const pager = histPagers[tab];
+      if (!arr || arr.length >= pager.pageTotalCount) { return; }
+      fnLoadHistTab(tab, true);
+    };
+
     /* handleLoadTab — 처리 */
     const handleLoadTab = async (tab) => {
       if (!props.prodId || uiState.loadedTabs.has(tab)) { return; }
+      if (['stock', 'price', 'status', 'changes'].includes(tab)) { return fnLoadHistTab(tab, false); }
       uiState.loading = true;
       try {
         if (tab === 'qna') {
@@ -122,18 +164,6 @@ window.PdProdHist = {
         } else if (tab === 'orders') {
           const res = await boApiSvc.odOrder.getPage({ prodId: props.prodId, pageNo: 1, pageSize: 200 }, '상품관리', '연관주문');
           relatedOrders.splice(0, relatedOrders.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-        } else if (tab === 'stock') {
-          const res = await boApi.get(BASE('stock'), HDR('재고이력'));
-          stockHistories.splice(0, stockHistories.length, ...(res.data?.data || []));
-        } else if (tab === 'price') {
-          const res = await boApi.get(BASE('price'), HDR('가격변경이력'));
-          priceHistories.splice(0, priceHistories.length, ...(res.data?.data || []));
-        } else if (tab === 'status') {
-          const res = await boApi.get(BASE('status'), HDR('상태이력'));
-          statusHistories.splice(0, statusHistories.length, ...(res.data?.data || []));
-        } else if (tab === 'changes') {
-          const res = await boApi.get(BASE('changes'), HDR('정보변경이력'));
-          changeHistories.splice(0, changeHistories.length, ...(res.data?.data || []));
         }
         uiState.loadedTabs.add(tab);
       } catch (err) {
@@ -345,6 +375,7 @@ window.PdProdHist = {
       priceHistories.splice(0);
       statusHistories.splice(0);
       changeHistories.splice(0);
+      Object.values(histPagers).forEach(p => { p.pageNo = 1; p.pageTotalCount = 0; });
       handleLoadTab(uiState.botTab);
       if (uiState.tabMode2 !== 'tab') {
         ALL_TABS.forEach(t => t !== uiState.botTab && handleLoadTab(t));
@@ -364,6 +395,7 @@ window.PdProdHist = {
       handleBtnAction, handleSelectAction, // dispatch
       showTab, fnNoCursor,                         // 헬퍼
       toggleRow, isExpanded, fnExpKey,             // 행 펼침
+      histPagers, onScrollEnd,                     // 재고/가격/상태/변경 이력 스크롤 조회
     };
   },
   template: /* html */`
@@ -454,13 +486,14 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.stockGrid" :rows="stockHistories" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('stock', row))">
+    <bo-grid bare fit-bottom @scroll-end="onScrollEnd('stock')" :columns="columns.stockGrid" :rows="stockHistories" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('stock', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
           <bo-form-area :columns="columns.stockGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
+    <bo-pager :pager="{ pageTotalCount: histPagers.stock.pageTotalCount }" :show-pages="false" :loaded-count="stockHistories.length" />
   </div>
   <!-- ===== □.□. 재고 이력 ================================================= -->
   <!-- ===== ■.■. 가격변경이력 ================================================ -->
@@ -472,13 +505,14 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.priceGrid" :rows="priceHistories" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('price', row))">
+    <bo-grid bare fit-bottom @scroll-end="onScrollEnd('price')" :columns="columns.priceGrid" :rows="priceHistories" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('price', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
           <bo-form-area :columns="columns.priceGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
+    <bo-pager :pager="{ pageTotalCount: histPagers.price.pageTotalCount }" :show-pages="false" :loaded-count="priceHistories.length" />
   </div>
   <!-- ===== □.□. 가격변경이력 ================================================ -->
   <!-- ===== ■.■. 상품상태 이력 =============================================== -->
@@ -490,13 +524,14 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.statusGrid" :rows="statusHistories" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('status', row))">
+    <bo-grid bare fit-bottom @scroll-end="onScrollEnd('status')" :columns="columns.statusGrid" :rows="statusHistories" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('status', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
           <bo-form-area :columns="columns.statusGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
+    <bo-pager :pager="{ pageTotalCount: histPagers.status.pageTotalCount }" :show-pages="false" :loaded-count="statusHistories.length" />
   </div>
   <!-- ===== □.□. 상품상태 이력 =============================================== -->
   <!-- ===== ■.■. 상품정보 변경이력 ============================================= -->
@@ -508,13 +543,14 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.changeGrid" :rows="changeHistories" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('changes', row))">
+    <bo-grid bare fit-bottom @scroll-end="onScrollEnd('changes')" :columns="columns.changeGrid" :rows="changeHistories" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('changes', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
           <bo-form-area :columns="columns.changeGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
+    <bo-pager :pager="{ pageTotalCount: histPagers.changes.pageTotalCount }" :show-pages="false" :loaded-count="changeHistories.length" />
   </div>
 </div>
 <!-- ===== □. 탭 컨텐츠 =================================================== -->

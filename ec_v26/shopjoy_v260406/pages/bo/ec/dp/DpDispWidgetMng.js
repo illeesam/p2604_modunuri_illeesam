@@ -562,7 +562,7 @@ window.DpDispWidgetMng = {
         <span v-if="applied.useYn" style="font-size:11px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
           상태: {{ applied.useYn === 'Y' ? '활성' : '비활성' }}
         </span>
-        <button @click="handleBtnAction('widgets-add')" class="btn btn_new" style="margin-left:auto;height:30px;padding:0 14px;">
+        <button @click="handleBtnAction('widgets-add')" class="btn btn_new" style="margin-left:auto;">
           + 신규등록
         </button>
       </template>
