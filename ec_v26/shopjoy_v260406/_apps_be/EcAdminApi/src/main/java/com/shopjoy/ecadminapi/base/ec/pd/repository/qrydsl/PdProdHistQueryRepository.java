@@ -157,7 +157,7 @@ public class PdProdHistQueryRepository {
     }
 
     /**
-     * dateRangeType 이 지정한 컬럼명과 일치할 때만 [dateRangeStart, dateRangeEnd+1day) 범위 조건 생성.
+     * dateRangeType 이 지정한 컬럼명과 일치할 때만 [dateRangeStart 00:00:00, dateRangeEnd 23:59:59.999999] 범위 조건 생성.
      * 일치하지 않거나 값이 비면 null 반환 → BooleanBuilder 에서 조건 무시.
      */
     private com.querydsl.core.types.Predicate dateBetween(
@@ -170,9 +170,10 @@ public class PdProdHistQueryRepository {
         if (!StringUtils.hasText(dateRangeType) || !column.equals(dateRangeType)) return null;
         if (!StringUtils.hasText(dateRangeStart) || !StringUtils.hasText(dateRangeEnd)) return null;
 
-        LocalDateTime start   = LocalDate.parse(dateRangeStart, DT_FMT).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(dateRangeEnd, DT_FMT).plusDays(1).atStartOfDay();
-        return new BooleanBuilder().and(path.goe(start)).and(path.lt(endExcl));
+        /* 23:59:59.999999(나노초까지) — SQL 로그에 검색한 날짜(start~end) 그대로 찍힘 (QdslUtil.dateBetween 과 동일 패턴) */
+        LocalDateTime start = LocalDate.parse(dateRangeStart, DT_FMT).atTime(0, 0, 0, 0);
+        LocalDateTime end   = LocalDate.parse(dateRangeEnd, DT_FMT).atTime(23, 59, 59, 999_999_999);
+        return new BooleanBuilder().and(path.goe(start)).and(path.loe(end));
     }
 
     /* applyLimit */

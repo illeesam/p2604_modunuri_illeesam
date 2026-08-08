@@ -141,11 +141,13 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         if (search == null) return null;
         BooleanExpression expr = null;
         if (StringUtils.hasText(search.getDateRangeStart())) {
-            LocalDateTime from = LocalDate.parse(search.getDateRangeStart(), DF).atStartOfDay();
+            LocalDateTime from = LocalDate.parse(search.getDateRangeStart(), DF).atTime(0, 0, 0, 0);
             expr = syBbs.regDate.goe(from);
         }
         if (StringUtils.hasText(search.getDateRangeEnd())) {
-            LocalDateTime to = LocalDate.parse(search.getDateRangeEnd(), DF).atTime(23, 59, 59);
+            /* 23:59:59.999999(나노초까지) — SQL 로그에 검색한 날짜 그대로 찍히면서도(QdslUtil.dateBetween 과 동일 패턴)
+             * 리터럴 23:59:59(초 단위)처럼 서브초 데이터를 놓치지 않는다 */
+            LocalDateTime to = LocalDate.parse(search.getDateRangeEnd(), DF).atTime(23, 59, 59, 999_999_999);
             BooleanExpression toExpr = syBbs.regDate.loe(to);
             expr = expr == null ? toExpr : expr.and(toExpr);
         }

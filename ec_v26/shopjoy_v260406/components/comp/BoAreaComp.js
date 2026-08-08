@@ -226,10 +226,17 @@ window.BoSearchArea = {
     resetLabel:  { type: String,  default: '초기화' },
     loading:     { type: Boolean, default: false },
     barStyle:    { type: String,  default: '' },     // search-bar 인라인 style 보존용
+    maxRows:     { type: Number,  default: 0 },       // 0=제한 없음(기존 동작). N>0 이면 기본 N줄만 노출 + 펼치기/접기
   },
   emits: ['search', 'reset'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
+
+    /* dateRange 옵션 popover — 열려있는 컬럼의 key. 한 번에 하나만 열림 */
+    const rangePopoverKey = Vue.ref(null);
+    const closeRangePopover = () => { rangePopoverKey.value = null; };
+    Vue.onMounted(() => document.addEventListener('click', closeRangePopover));
+    Vue.onUnmounted(() => document.removeEventListener('click', closeRangePopover));
 
     // ===== [02] 액션 모음 (dispatch) ==============================================
 
@@ -241,6 +248,10 @@ window.BoSearchArea = {
         if (!props.loading) return emit('search');
       } else if (cmd === 'search-reset') {
         return emit('reset');
+      } else if (cmd === 'range-popover-toggle') {
+        // param: { col } — 같은 컬럼을 다시 누르면 닫힘, 다른 컬럼이면 그쪽으로 전환
+        rangePopoverKey.value = rangePopoverKey.value === param.col.key ? null : param.col.key;
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -252,8 +263,11 @@ window.BoSearchArea = {
       if (cmd === 'field-select-change') {
         // param: { col, event }
         return param.col && param.col.onChange ? param.col.onChange(param.event) : null;
-      } else if (cmd === 'field-range-change') {
-        return param.col && param.col.onRangeChange ? param.col.onRangeChange(param.event) : null;
+      } else if (cmd === 'field-range-pick') {
+        // param: { col, value } — 기간 옵션 popover 에서 클릭. 값은 반영만 하고 표시는 하지 않는다
+        po(param.col)[param.col.key] = param.value;
+        rangePopoverKey.value = null;
+        return param.col.onRangeChange ? param.col.onRangeChange() : null;
       } else if (cmd === 'field-pick-open') {
         return param.col.onOpen(param.target);
       } else if (cmd === 'field-pick-clear') {
@@ -266,39 +280,109 @@ window.BoSearchArea = {
     const normOpts = (opts) => U.normOptions(opts);
     // col.paramObj 가 있으면 그 객체를, 없으면 props.param 사용 — 컬럼별 다른 reactive 매핑 지원
     const po = (col) => col.paramObj || props.param;
-    return { U, normOpts, po, handleBtnAction, handleSelectAction };
+
+    /* maxRows 펼치기/접기 — 컨테이너를 overflow:hidden 으로 자르지 않는다(자르면 그 안에 있는
+       요소는 뭐든 함께 잘려 사라진다 — search-actions 를 안에 두었다가 버튼이 사라진 사고 있었음).
+       대신 실제 DOM 에서 각 필드가 몇 번째 줄에 렌더됐는지 offsetTop 으로 측정해서, maxRows 를
+       넘는 줄에 속한 필드'만' v-show 로 숨긴다. search-actions 는 항상 별도로 렌더되며 결코
+       숨겨지지 않고, 남은 여유폭에 따라 자연스럽게 마지막 노출 줄 끝에 붙거나 다음 줄로 흐른다. */
+    const expanded = Vue.ref(false);
+    const measuredCutoff = Vue.ref(Infinity);   // 접힘 상태에서 이 컬럼 인덱스부터 숨김
+    const fieldEls = {};                         // ci -> DOM 엘리먼트
+    const setFieldRef = (ci, el) => { if (el) fieldEls[ci] = el; else delete fieldEls[ci]; };
+    const cfFieldVisible = (ci) => expanded.value || ci < measuredCutoff.value;
+
+    const measureRows = async () => {
+      if (!props.maxRows || props.maxRows <= 0) { measuredCutoff.value = Infinity; return; }
+      const wasExpanded = expanded.value;
+      expanded.value = true;           // 측정 동안은 전부 보이게(숨겨진 요소는 offsetTop 을 믿을 수 없음)
+      await Vue.nextTick();
+      const cols = props.columns || [];
+      const tops = [];
+      for (let ci = 0; ci < cols.length; ci++) {
+        const el = fieldEls[ci];
+        if (el) tops.push({ ci, top: el.offsetTop });
+      }
+      let cutoffIdx = Infinity;
+      if (tops.length) {
+        const rowTops = [];
+        for (const t of tops) {
+          if (!rowTops.length || t.top - rowTops[rowTops.length - 1] > 4) rowTops.push(t.top);
+        }
+        if (rowTops.length > props.maxRows) {
+          const cutoffTop = rowTops[props.maxRows];
+          const firstHidden = tops.find(t => t.top >= cutoffTop - 2);
+          if (firstHidden) cutoffIdx = firstHidden.ci;
+        }
+      }
+      measuredCutoff.value = cutoffIdx;
+      expanded.value = wasExpanded;    // 측정 위해 잠깐 켰던 펼침 상태 원복
+    };
+
+    const searchBarEl = Vue.ref(null);
+    let ro = null;
+    Vue.onMounted(() => {
+      Vue.nextTick(measureRows);
+      if (window.ResizeObserver && searchBarEl.value) {
+        ro = new ResizeObserver(() => measureRows());
+        ro.observe(searchBarEl.value);
+      } else {
+        window.addEventListener('resize', measureRows);
+      }
+    });
+    Vue.onUnmounted(() => {
+      if (ro) ro.disconnect(); else window.removeEventListener('resize', measureRows);
+    });
+    Vue.watch(() => props.columns, () => Vue.nextTick(measureRows));
+
+    /* dateRange 컬럼의 typeKey 값이 비어있고 typeOptions(코드 지연 로드) 가 채워지면
+       첫 번째 옵션으로 자동 채움 — 화면마다 초기값을 손으로 하드코딩할 필요 없게.
+       비워두면 dateRangeType 이 빈 값이라 QdslUtil.dateBetween 이 조건 자체를 건너뛰어
+       버튼상 날짜를 입력했는데도 조용히 필터가 안 걸리는 문제로 이어진다. */
+    Vue.watchEffect(() => {
+      for (const col of (props.columns || [])) {
+        if (col.type !== 'dateRange' || !col.typeKey || !col.typeOptions) continue;
+        const target = po(col);
+        if (target[col.typeKey]) continue;
+        const opts = normOpts(col.typeOptions);
+        if (opts.length) target[col.typeKey] = opts[0].value;
+      }
+    });
+
+    return { U, normOpts, po, handleBtnAction, handleSelectAction, rangePopoverKey, expanded, cfFieldVisible, setFieldRef, searchBarEl };
   },
   template: /* html */`
-<div class="search-bar" :style="barStyle" @keyup.enter="handleBtnAction('search-emit')">
+<div class="search-bar" :style="barStyle" ref="searchBarEl" @keyup.enter="handleBtnAction('search-emit')">
   <!-- ▼ search 영역 -->
   <template v-if="columns ? (param) : false">
   <!-- 라벨 텍스트(type:'label') / 슬롯(type:'slot') 은 묶음(search-field) 밖에 단독 배치 -->
   <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
-  <label v-if="col.type==='label'" class="search-label">
+  <label v-if="col.type==='label'" class="search-label" v-show="cfFieldVisible(ci)" :ref="el => setFieldRef(ci, el)">
     {{ col.label }}
   </label>
   <slot v-else-if="col.type==='slot'" :name="col.name || 'extra'">
   </slot>
   <!-- 그 외 컨트롤은 라벨+컨트롤을 한 묶음(search-field)으로 감싸 함께 줄바꿈되게 함 -->
-  <div v-else class="search-field">
+  <div v-else class="search-field" v-show="cfFieldVisible(ci)" :ref="el => setFieldRef(ci, el)">
     <!-- 필드 좌측 라벨 (col.label 지정 시) -->
     <label v-if="col.label" class="search-label">
     {{ col.label }}
   </label>
-  <!-- 회원/항목 picker 박스 (직접 입력 + 팝업 + 클리어) — col.type==='pick' -->
+  <!-- 회원/항목 picker 박스 (이름+ID 둘 다 직접 입력 + 팝업 + 클리어) — col.type==='pick'
+       이름:ID = 기본 70px:20px. 한쪽에 직접 입력하면 반대쪽은 초기화(둘 다 채워지는 건 팝업 선택 시만) -->
   <template v-if="col.type==='pick'">
-    <!-- 이름 직접 입력 가능 — 팝업 선택 시 이름+ID 모두 채워짐, 직접 입력 시 ID 초기화 -->
     <input :value="po(col)[col.nameKey || col.key] || ''"
           @input="e => { po(col)[col.nameKey || col.key] = e.target.value; if (col.nameKey && col.nameKey !== col.key) po(col)[col.key] = ''; }"
-          :placeholder="col.placeholder || '선택'"
-          class="form-control" :style="col.width ? ('width:' + col.width) : 'width:140px;'" />
-    <!-- ID 표시 (팝업 선택 시만, nameKey != key) -->
-    <input v-if="col.nameKey ? (col.nameKey !== col.key ? po(col)[col.key] : false) : false"
-          disabled :value="po(col)[col.key]"
-          class="form-control" style="width:36px;min-width:0;font-size:10px;color:#aaa;background:#f5f5f5;" />
+          :placeholder="col.placeholder || '이름입력'"
+          class="form-control" :style="'width:' + (col.width || '70px') + ';'" />
+    <input v-if="col.nameKey && col.nameKey !== col.key"
+          :value="po(col)[col.key] || ''"
+          @input="e => { po(col)[col.key] = e.target.value; po(col)[col.nameKey] = ''; }"
+          :placeholder="col.idPlaceholder || 'ID입력'"
+          class="form-control" :style="'width:' + (col.idWidth || '20px') + ';'" />
     <span style="display:inline-flex;align-items:center;">
-      <button class="btn btn-secondary btn-sm" style="padding:2px 7px;" @click="handleSelectAction('field-pick-open', { col, target: po(col) })" :title="col.openLabel || '검색'">🔍</button>
-      <button type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleSelectAction('field-pick-clear', { col, target: po(col) })" title="초기화">x</button>
+      <button type="button" class="btn btn-secondary btn-sm" style="padding:0;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;" @click="handleSelectAction('field-pick-open', { col, target: po(col) })" :title="col.openLabel || '검색'">🔍</button>
+      <button v-if="po(col)[col.key] || po(col)[col.nameKey]" type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleSelectAction('field-pick-clear', { col, target: po(col) })" title="초기화">x</button>
     </span>
   </template>
   <!-- 다중선택 (검색대상) -->
@@ -323,11 +407,18 @@ window.BoSearchArea = {
     <select v-if="col.typeKey" v-model="po(col)[col.typeKey]">
       <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">{{ c.label }}</option>
     </select>
-    <!-- rangeFirst: true → rangeOptions select 를 date 앞에 표시 (옵션선택 placeholder는 col.rangeFirstLabel) -->
-    <select v-if="col.rangeFirst ? (col.rangeOptions) : false" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })" :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
-    <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
-    <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
-  </select>
+    <!-- rangeFirst: true → 옵션 아이콘(popover)을 date 앞에 표시 -->
+    <span v-if="col.rangeFirst ? col.rangeOptions : false" style="position:relative;display:inline-flex;align-items:center;">
+      <button type="button" class="btn btn-secondary btn-sm range-popover-trigger" style="padding:4px 6px;line-height:1;"
+        :title="col.rangeFirstLabel || '기간 옵션'"
+        @click.stop="handleBtnAction('range-popover-toggle', { col })">📅</button>
+      <div v-if="rangePopoverKey === col.key" class="range-popover-menu"
+        style="position:absolute;top:100%;left:0;z-index:50;background:#fff;border:1px solid #e0e0e0;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.14);padding:4px;margin-top:4px;min-width:76px;">
+        <div v-for="o in normOpts(col.rangeOptions)" :key="o.value" class="range-popover-item"
+          style="padding:6px 10px;font-size:12px;color:#333;cursor:pointer;border-radius:4px;white-space:nowrap;"
+          @click.stop="handleSelectAction('field-range-pick', { col, value: o.value })">{{ o.label }}</div>
+      </div>
+    </span>
   <input type="date" v-model="po(col)[col.startKey || 'dateRangeStart']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
   <span :class="col.sepClass || 'date-range-sep'" :style="col.sepStyle || ''">
@@ -335,24 +426,37 @@ window.BoSearchArea = {
   </span>
   <input type="date" v-model="po(col)[col.endKey || 'dateRangeEnd']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
-  <select v-if="!col.rangeFirst ? (col.rangeOptions) : false" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })">
-  <option value="">옵션선택</option>
-  <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
-</select>
+  <!-- rangeFirst 아니면(기본) 옵션 아이콘(popover)을 date 뒤에 표시 -->
+  <span v-if="!col.rangeFirst ? col.rangeOptions : false" style="position:relative;display:inline-flex;align-items:center;">
+    <button type="button" class="btn btn-secondary btn-sm range-popover-trigger" style="padding:4px 6px;line-height:1;"
+      :title="col.rangeFirstLabel || '기간 옵션'"
+      @click.stop="handleBtnAction('range-popover-toggle', { col })">📅</button>
+    <div v-if="rangePopoverKey === col.key" class="range-popover-menu"
+      style="position:absolute;top:100%;right:0;z-index:50;background:#fff;border:1px solid #e0e0e0;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.14);padding:4px;margin-top:4px;min-width:76px;">
+      <div v-for="o in normOpts(col.rangeOptions)" :key="o.value" class="range-popover-item"
+        style="padding:6px 10px;font-size:12px;color:#333;cursor:pointer;border-radius:4px;white-space:nowrap;"
+        @click.stop="handleSelectAction('field-range-pick', { col, value: o.value })">{{ o.label }}</div>
+    </div>
+  </span>
 </template>
   </div>
 </template>
 </template>
 <slot>
 </slot>
+<!-- search-actions 는 항상 노출(v-show 로 숨기지 않음) — 접힘 상태에서 남은 필드들과 같은
+     wrap 흐름을 공유하므로, 여유가 있으면 마지막 노출 줄 끝에 자연스럽게 붙고 없으면 다음 줄로 흐른다.
+     순서: 초기화 → 조회 → 펼치기/접기(아이콘). maxRows 미사용 화면은 펼치기 버튼 자체가 없다 -->
 <div v-if="showActions" class="search-actions">
   <slot name="actions-before">
   </slot>
+  <button type="button" class="btn btn_reset" style="padding:0;width:26px;height:26px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;" :title="resetLabel" @click="handleBtnAction('search-reset')">🔄</button>
   <button class="btn btn_search" :disabled="loading" @click="handleBtnAction('search-emit')">
     {{ searchLabel }}
   </button>
-  <button class="btn btn_reset" @click="handleBtnAction('search-reset')">
-    {{ resetLabel }}
+  <button v-if="maxRows > 0" type="button" class="btn btn-secondary btn-sm" style="padding:0;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;"
+    :title="expanded ? '접기' : '펼치기'" @click="expanded = !expanded">
+    <span :style="'display:inline-block;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;' + (expanded ? 'border-bottom:5px solid currentColor;' : 'border-top:5px solid currentColor;')"></span>
   </button>
   <slot name="actions-after">
   </slot>
@@ -2384,7 +2488,7 @@ window.BoFormArea = {
     <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" title="선택"
       style="padding:0;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"
       @click="handleSelectAction('field-pick-open', { col })">🔍</button>
-    <button type="button" title="선택 해제"
+    <button v-if="form[col.key]" type="button" title="선택 해제"
       style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;"
       @click="handleBtnAction('form-pick-clear', { col })">x</button>
   </span>

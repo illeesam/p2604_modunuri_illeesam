@@ -185,9 +185,13 @@ public class QdslUtil {
         DateTimePath<LocalDateTime> path = dateFields.get(dateRangeType);
         if (path == null) return null;
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(dateRangeStart, fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(dateRangeEnd,   fmt).plusDays(1).atStartOfDay();
-        return path.goe(start).and(path.lt(endExcl));
+        /* 종료일 23:59:59.999999(마이크로초 끝) — SQL 로그에 검색한 두 날짜(start~end) 그대로 찍혀서
+         * 일자 기준 기간임을 바로 알아볼 수 있다. "다음날 00시 미만" 방식과 결과는 사실상 동일하고
+         * (빠지는 구간은 1마이크로초 미만 — Postgres timestamp 정밀도 한계라 그 이상 못 쪼갬),
+         * 리터럴 23:59:59(초 단위)로 하면 서브초 데이터가 실제로 누락되므로 반드시 나노초까지 채운다. */
+        LocalDateTime start = LocalDate.parse(dateRangeStart, fmt).atTime(0, 0, 0, 0);
+        LocalDateTime end   = LocalDate.parse(dateRangeEnd,   fmt).atTime(23, 59, 59, 999_999_999);
+        return path.goe(start).and(path.loe(end));
     }
 
     /**

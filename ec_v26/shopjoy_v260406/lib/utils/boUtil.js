@@ -16,17 +16,16 @@
 
   /* ── 등록기간 옵션 ── */
   const bofDateRangeOptions = [
-    { value: '1day',       label: '최근 1일' },
-    { value: '3days',      label: '최근 3일' },
-    { value: '1week',      label: '최근 1주' },
-    { value: '2weeks',     label: '최근 2주' },
-    { value: '1month',     label: '최근 1달' },
-    { value: '3months',    label: '최근 3달' },
-    { value: '6months',    label: '최근 6달' },
-    { value: '1year',      label: '최근 1년' },
-    { value: 'lastyear',   label: '전년' },
-    { value: 'yearbefore', label: '전전년' },
-    { value: 'all',        label: '전체' },
+    { value: '1day',      label: '1일' },
+    { value: '3days',     label: '3일' },
+    { value: '1week',     label: '1주일' },
+    { value: '1month',    label: '1달' },
+    { value: '3months',   label: '3달' },
+    { value: '6months',   label: '6달' },
+    { value: '1year',     label: '1년' },
+    { value: 'thismonth', label: '이번달' },
+    { value: 'thisyear',  label: '이번년' },
+    { value: 'lastyear',  label: '작년' },
   ];
 
   /* ── 날짜 헬퍼 ──
@@ -56,6 +55,12 @@
       case '3months':    return { from: _addMonths(today, -3),  to: today };
       case '6months':    return { from: _addMonths(today, -6),  to: today };
       case '1year':      return { from: _addMonths(today, -12), to: today };
+      case 'thismonth': {
+        const [y, m] = today.split('-');
+        const lastDay = String(new Date(Number(y), Number(m), 0).getDate()).padStart(2, '0');
+        return { from: `${y}-${m}-01`, to: `${y}-${m}-${lastDay}` };
+      }
+      case 'thisyear':   return { from: `${year}-01-01`,        to: `${year}-12-31` };
       case 'lastyear':   return { from: `${year-1}-01-01`,      to: `${year-1}-12-31` };
       case 'yearbefore': return { from: `${year-2}-01-01`,      to: `${year-2}-12-31` };
       default:           return { from: _addMonths(today, -3),  to: today };

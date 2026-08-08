@@ -362,7 +362,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
             p.put("dateRangeStart", s.getDateRangeStart());
         }
         if (StringUtils.hasText(s.getDateRangeEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day'\n");
+            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '23:59:59.999999'\n");
             p.put("dateRangeEnd", s.getDateRangeEnd());
         }
     }

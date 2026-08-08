@@ -24,7 +24,7 @@ window.OdOrderItemMng = {
       mdUserId: '', mdUserNm: '', courierCd: '',
       orderItemStatusCds: '', claimYn: '',
       searchType: '', searchValue: '',
-      dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '',
+      dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '', _dateRange: '',
     });
 
     const picks = reactive({ member: false, order: false, vendor: false, brand: false, md: false });
@@ -39,6 +39,8 @@ window.OdOrderItemMng = {
       if (cmd === 'searchParam-list') { listGridPager.pageNo = 1; return handleSearchList();
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, searchParamInit); listGridPager.pageNo = 1; resetDetailToNew(); return handleSearchList();
+      } else if (cmd === 'searchParam-dateRange') {
+        return window.boUtil.bofApplyDateRange(searchParam, undefined, 'dateRangeStart', 'dateRangeEnd', '_dateRange');
       } else if (cmd === 'items-pager-setPage') {
         if (param >= 1 && param <= listGridPager.pageTotalPage) { listGridPager.pageNo = param; handleSearchList(); } return;
       } else if (cmd === 'pick-member-open') { picks.member = true; return;
@@ -242,9 +244,9 @@ window.OdOrderItemMng = {
     const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
-        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS', 'OD_DATE_TYPE', 'COURIER'], { compNm: 'OdOrderItemMng' });
+        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS', 'ORDER_ITEM_DATE_TYPE', 'COURIER'], { compNm: 'OdOrderItemMng' });
         codes.order_item_statuses = codeStore.sgGetGrpCodes('ORDER_ITEM_STATUS');
-        codes.od_date_types       = codeStore.sgGetGrpCodes('OD_DATE_TYPE');
+        codes.od_date_types       = codeStore.sgGetGrpCodes('ORDER_ITEM_DATE_TYPE');
         codes.couriers            = codeStore.sgGetGrpCodes('COURIER');
       } catch (_) {}
     };
@@ -429,11 +431,13 @@ window.OdOrderItemMng = {
         options: [{ value: 'Y', label: '클레임 있음' }, { value: 'N', label: '클레임 없음' }], nullLabel: '전체' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [{ value: 'prodNm', label: '상품명' }, { value: 'brandNm', label: '브랜드명' }],
-        placeholder: '검색대상 전체', allLabel: '전체 선택' },
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '112px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '180px' },
-      { key: '_dateRange', type: 'dateRange', label: '기간',
+      { key: '_dateRange', type: 'dateRange',
         typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
-        typeOptions: () => codes.od_date_types, dateWidth: '136px' },
+        typeOptions: () => codes.od_date_types, dateWidth: '136px',
+        rangeOptions: () => window.boUtil.bofDateRangeOptions,
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
     /* ##### [07] return ########################################################## */
@@ -452,7 +456,7 @@ window.OdOrderItemMng = {
 
   <!-- ===== ■. 검색 ============================================================ -->
   <bo-container>
-    <bo-search-area :loading="uiState.loading"
+    <bo-search-area :loading="uiState.loading" :max-rows="2"
       :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
     </bo-search-area>

@@ -308,7 +308,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         p.put("searchValue", s.getSearchValue());
     }
 
-    /* AND t.reg_date >= :dateRangeStart AND t.reg_date <= :dateRangeEnd + 1 day */
+    /* AND t.reg_date >= :dateRangeStart 00:00:00 AND t.reg_date <= :dateRangeEnd 23:59:59.999999 */
     private void pathtreeAndDateRange(SyAlarmDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null) return;
         if (StringUtils.hasText(s.getDateRangeStart())) {
@@ -316,7 +316,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
             p.put("dateRangeStart", s.getDateRangeStart());
         }
         if (StringUtils.hasText(s.getDateRangeEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day'\n");
+            sql.append("      AND t.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '23:59:59.999999'\n");
             p.put("dateRangeEnd", s.getDateRangeEnd());
         }
     }

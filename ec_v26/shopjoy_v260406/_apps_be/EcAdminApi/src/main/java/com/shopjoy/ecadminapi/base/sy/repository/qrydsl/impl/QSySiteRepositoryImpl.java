@@ -352,7 +352,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
             p.put("dateRangeStart", sySite.getDateRangeStart());
         }
         if (StringUtils.hasText(sySite.getDateRangeEnd())) {
-            sql.append("      AND a.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '1 day' \n");
+            sql.append("      AND a.reg_date <= CAST(:dateRangeEnd   AS timestamp) + INTERVAL '23:59:59.999999' \n");
             p.put("dateRangeEnd", sySite.getDateRangeEnd());
         }
     }
