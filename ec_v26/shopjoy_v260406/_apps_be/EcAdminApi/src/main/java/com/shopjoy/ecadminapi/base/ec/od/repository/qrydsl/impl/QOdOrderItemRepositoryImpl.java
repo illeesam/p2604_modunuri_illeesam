@@ -159,7 +159,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                               .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
                               .where(odOrderEx.orderId.eq(odOrderItem.orderId),
                                      QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
-                                     QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
+                                     StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
                               .exists()
                         : null,
                     (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
@@ -167,7 +167,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                               .from(pVendorEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pVendorEx.vendorId))
                               .where(pVendorEx.prodId.eq(odOrderItem.prodId),
                                      QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
-                                     QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                                     StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
                               .exists()
                         : null,
                     (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
@@ -175,7 +175,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                               .from(pMdEx).join(syUserEx).on(syUserEx.userId.eq(pMdEx.mdUserId))
                               .where(pMdEx.prodId.eq(odOrderItem.prodId),
                                      QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
-                                     QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                                     StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
                               .exists()
                         : null,
                     (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
@@ -183,7 +183,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                               .from(pBrandEx).join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
                               .where(pBrandEx.prodId.eq(odOrderItem.prodId),
                                      QdslUtil.strEq(sBrandEx.brandId, search.getBrandId()),
-                                     QdslUtil.strLike(sBrandEx.brandNm, search.getBrandNm()))
+                                     StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(sBrandEx.brandNm, search.getBrandNm()))
                               .exists()
                         : null,
                     andSearchValue(search.getSearchValue(), search.getSearchType())
@@ -221,7 +221,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                           .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
                           .where(odOrderEx.orderId.eq(odOrderItem.orderId),
                                  QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
-                                 QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
+                                 StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
                           .exists()
                     : null,
                 (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
@@ -229,7 +229,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                           .from(pVendorEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pVendorEx.vendorId))
                           .where(pVendorEx.prodId.eq(odOrderItem.prodId),
                                  QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
-                                 QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                                 StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
                           .exists()
                     : null,
                 (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
@@ -237,7 +237,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                           .from(pMdEx).join(syUserEx).on(syUserEx.userId.eq(pMdEx.mdUserId))
                           .where(pMdEx.prodId.eq(odOrderItem.prodId),
                                  QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
-                                 QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                                 StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
                           .exists()
                     : null,
                 (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
@@ -245,7 +245,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                           .from(pBrandEx).join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
                           .where(pBrandEx.prodId.eq(odOrderItem.prodId),
                                  QdslUtil.strEq(sBrandEx.brandId, search.getBrandId()),
-                                 QdslUtil.strLike(sBrandEx.brandNm, search.getBrandNm()))
+                                 StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(sBrandEx.brandNm, search.getBrandNm()))
                           .exists()
                     : null,
                 andSearchValue(search.getSearchValue(), search.getSearchType())

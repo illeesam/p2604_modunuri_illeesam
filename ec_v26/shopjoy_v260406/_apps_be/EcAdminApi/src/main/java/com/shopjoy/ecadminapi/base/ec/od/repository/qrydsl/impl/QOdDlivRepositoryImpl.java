@@ -128,13 +128,13 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                         ? JPAExpressions.selectOne().from(mbMemberEx)
                               .where(mbMemberEx.memberId.eq(odDliv.memberId),
                                      QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
-                                     QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
+                                     StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
                         : null,
                     (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                         ? JPAExpressions.selectOne().from(syVendorEx)
                               .where(syVendorEx.vendorId.eq(odDliv.vendorId),
                                      QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
-                                     QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
+                                     StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                         : null,
                     QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -168,13 +168,13 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                     ? JPAExpressions.selectOne().from(mbMemberEx)
                           .where(mbMemberEx.memberId.eq(odDliv.memberId),
                                  QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
-                                 QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
+                                 StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
                     : null,
                 (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                     ? JPAExpressions.selectOne().from(syVendorEx)
                           .where(syVendorEx.vendorId.eq(odDliv.vendorId),
                                  QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
-                                 QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
+                                 StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                     : null,
                 QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),

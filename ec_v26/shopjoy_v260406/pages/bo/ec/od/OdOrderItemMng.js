@@ -279,12 +279,12 @@ window.OdOrderItemMng = {
     /* listGrid — 2행 그룹 헤더 (BoGroupTable 전용) */
     columns.listGrid = [
       /* ── Fixed (헤더 전체 행 span) ─────────────────────────────────────── */
-      { key: '_rowNum',     label: '번호',   width: 34,  slot: true },
-      { key: 'orderItemId', label: '항목ID', width: 104,
+      { key: '_rowNum',     label: '번호',   width: 34,  slot: true, pin: 'left' },
+      { key: 'orderItemId', label: '항목ID', width: 104, pin: 'left',
         titleFmt: (row) => row.orderItemId || '',
         tdStyle:  ()    => 'text-align:center;font-family:monospace;font-size:10px;color:#777;',
         fmt: (row) => row.orderItemId ? row.orderItemId.substring(0, 12) + '..' : '-' },
-      { key: 'orderId',     label: '주문ID', width: 90,
+      { key: 'orderId',     label: '주문ID', width: 90, pin: 'left',
         titleFmt: (row) => row.orderId || '',
         tdStyle:  (row) => 'text-align:center;font-family:monospace;font-size:10px;' + (detailPanel.selectedOrderId === row.orderId ? 'color:#e8587a;font-weight:700;' : 'color:#555;'),
         fmt: (row) => row.orderId ? row.orderId.substring(0, 12) + '..' : '-' },
@@ -404,7 +404,7 @@ window.OdOrderItemMng = {
         slot: true },
 
       /* ── Fixed action ────────────────────────────────────────────────── */
-      { key: '_actions', label: '작업', width: 56, align: 'center', slot: true },
+      { key: '_actions', label: '작업', width: 56, align: 'center', slot: true, pin: 'right' },
     ];
 
     columns.baseSearch = [

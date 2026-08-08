@@ -99,7 +99,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                         ? JPAExpressions.selectOne().from(mbMemberEx)
                               .where(mbMemberEx.memberId.eq(odCart.memberId),
                                      QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
-                                     QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
+                                     StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
                         : null,
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
@@ -130,7 +130,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                     ? JPAExpressions.selectOne().from(mbMemberEx)
                           .where(mbMemberEx.memberId.eq(odCart.memberId),
                                  QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
-                                 QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
+                                 StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
                     : null,
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())

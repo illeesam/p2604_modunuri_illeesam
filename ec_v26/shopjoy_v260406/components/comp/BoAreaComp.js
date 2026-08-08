@@ -762,6 +762,13 @@ window.BoGrid = {
       return base;
     };
 
+    /* ── ▼ 좌/우 고정(pin) 컬럼 — 번호(+체크/드래그) 항상 좌측 고정, 첫 데이터 컬럼(id/제목류) 좌측 고정,
+       관리(rowActions) 항상 우측 고정. 가로스크롤 없는 그리드는 시각적 변화 없음(안전). */
+    const cfPinNoLeft    = Vue.computed(() => (props.selectable ? 36 : 0) + (props.draggable ? 28 : 0));
+    const cfPinFirstLeft = Vue.computed(() => cfPinNoLeft.value + 36);
+    const pinLeftStyle  = (px, z, edge) => 'position:sticky;left:' + px + 'px;z-index:' + z + ';' + (edge ? 'box-shadow:2px 0 4px rgba(0,0,0,.08);' : '');
+    const pinRightStyle = (z, edge) => 'position:sticky;right:0;z-index:' + z + ';' + (edge ? 'box-shadow:-2px 0 4px rgba(0,0,0,.08);' : '');
+
     /* ── fitBottom — 그리드를 화면 하단까지 채운다 ──
        고정 오프셋(calc(100vh - 390px))은 화면 폭·검색영역 줄수에 따라 헤더 높이가 달라져
        어느 해상도에서는 반드시 어긋난다(실제로 모든 뷰포트에서 56px 넘쳤다).
@@ -852,6 +859,7 @@ window.BoGrid = {
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
              handleBtnAction, handleSelectAction,
              colWidths, onResizeStart, thResizeStyle,
+             cfPinNoLeft, cfPinFirstLeft, pinLeftStyle, pinRightStyle,
              columns: cfEffectiveCols };
   },
   template: /* html */`
@@ -881,20 +889,23 @@ window.BoGrid = {
     <table class="bo-table" :class="{ 'crud-grid': draggable || showSave, 'bo-table-narrow': narrow }">
       <thead>
         <tr>
-          <th v-if="selectable" style="width:36px;text-align:center;">
+          <th v-if="selectable" :style="'width:36px;text-align:center;' + pinLeftStyle(0, 6)">
             <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
           </th>
-          <th v-if="draggable" style="width:28px">
+          <th v-if="draggable" :style="'width:28px;' + pinLeftStyle(selectable ? 36 : 0, 6)">
           </th>
-          <th style="width:36px;text-align:center;">
+          <th :style="'width:36px;text-align:center;' + pinLeftStyle(cfPinNoLeft, 6)">
             번호
           </th>
           <slot name="head">
             <!-- ⚠ 아래 :style 에 position:relative 를 넣지 말 것 — CSS 의 thead th{position:sticky} 를
                  덮어 그리드 내부 스크롤 시 헤더가 사라진다.
-                 sticky 자체가 절대배치 컨테이닝블록이라 리사이즈 핸들 위치는 그대로 잡힌다. -->
-            <th v-for="col in columns" :key="col.key" :class="col.cls"
-            :style="thResizeStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;'"
+                 sticky 자체가 절대배치 컨테이닝블록이라 리사이즈 핸들 위치는 그대로 잡힌다.
+                 col.pin==='left' 인 컬럼(주로 짧은 id)만 번호와 함께 좌측 고정 — 폭 예측 불가한
+                 컬럼(이름+ID 합성 텍스트 등)을 임의로 고정하면 auto 테이블 레이아웃에서 sticky 폭
+                 계산이 어긋나 텍스트가 겹쳐 보이는 문제가 있어 자동고정 대신 명시적 opt-in만 허용. -->
+            <th v-for="(col, ci) in columns" :key="col.key" :class="col.cls"
+            :style="thResizeStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;' + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 6, true) : '')"
             @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
@@ -905,7 +916,7 @@ window.BoGrid = {
                 @mousedown.stop="onResizeStart($event, col)"></div>
             </th>
           </slot>
-          <th v-if="rowActions" style="min-width:40px;text-align:center;white-space:nowrap;">
+          <th v-if="rowActions" :style="'min-width:40px;text-align:center;white-space:nowrap;' + pinRightStyle(6, true)">
             <slot name="head-actions">
               관리
             </slot>
@@ -923,19 +934,19 @@ window.BoGrid = {
           @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
           @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
           @dragend="handleSelectAction('grid-row-drag-end')">
-            <td v-if="selectable" style="text-align:center;" @click.stop>
+            <td v-if="selectable" :style="'text-align:center;' + pinLeftStyle(0, 4)" @click.stop>
               <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
             </td>
-            <td v-if="draggable" style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">
+            <td v-if="draggable" :style="'text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none;' + pinLeftStyle(selectable ? 36 : 0, 4)">
               ≡
             </td>
-            <td style="text-align:center;font-size:11px;color:#999;cursor:pointer;" title="보기"
+            <td :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfPinNoLeft, 4)" title="보기"
             @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__', link: true }, ci: -1, idx })">
               {{ rowNo(idx) }}
             </td>
             <template v-for="(col, ci) in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
+                <td :style="U.tdStyle(col, row) + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 4, true) : '')" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
                 @click="rowClickable ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null">
                   <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
                   <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
@@ -1038,7 +1049,7 @@ window.BoGrid = {
                 </td>
               </slot>
             </template>
-            <td v-if="rowActions" style="text-align:center;white-space:nowrap;">
+            <td v-if="rowActions" :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true)">
               <slot name="row-actions" :row="row" :idx="idx" :grid-id="gridId">
                 <button class="btn btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
@@ -1288,9 +1299,15 @@ window.BoGridCrud = {
       emit('scroll-end');
     };
 
+    /* ── ▼ 좌/우 고정(pin) — 드래그+번호+ID 좌측 고정(있는 것만 연속 누적), 관리(col-act) 우측 고정.
+       가로스크롤 없는 그리드는 시각적 변화 없음(안전). CSS 고정폭(.col-drag 28px/번호 36px)을 그대로 사용. */
+    const cfPinIdLeft = Vue.computed(() => (cfShowDrag.value ? 28 : 0) + (cfShowNo.value ? 36 : 0));
+    const pinLeftStyle  = (px, z, edge) => 'position:sticky;left:' + px + 'px;z-index:' + z + ';' + (edge ? 'box-shadow:2px 0 4px rgba(0,0,0,.08);' : '');
+    const pinRightStyle = (z, edge) => 'position:sticky;right:0;z-index:' + z + ';' + (edge ? 'box-shadow:-2px 0 4px rgba(0,0,0,.08);' : '');
+
     return { U, cfVisibleCount, cfCountText, cfScrollMaxHeight, onScroll, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
              sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey, fnRowCls,
-             cfShowDrag, cfShowNo, cfShowId, handleBtnAction, handleSelectAction };
+             cfShowDrag, cfShowNo, cfShowId, cfPinIdLeft, pinLeftStyle, pinRightStyle, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="card">
@@ -1326,12 +1343,12 @@ window.BoGridCrud = {
     <table class="bo-table crud-grid">
       <thead>
         <tr>
-          <th v-if="cfShowDrag" class="col-drag">
+          <th v-if="cfShowDrag" class="col-drag" :style="pinLeftStyle(0, 6)">
           </th>
-          <th v-if="cfShowNo" style="width:36px;text-align:center;">
+          <th v-if="cfShowNo" :style="'width:36px;text-align:center;' + pinLeftStyle(cfShowDrag ? 28 : 0, 6)">
             번호
           </th>
-          <th v-if="cfShowId" class="col-id">
+          <th v-if="cfShowId" class="col-id" :style="pinLeftStyle(cfPinIdLeft, 6, true)">
             ID
           </th>
           <th v-if="showRowStatus" class="col-status">
@@ -1351,7 +1368,7 @@ window.BoGridCrud = {
               </span>
             </th>
           </slot>
-          <th class="col-act" style="text-align:center;">
+          <th class="col-act" :style="'text-align:center;' + pinRightStyle(6, true)">
             <slot name="head-actions">{{ actionHeader }}</slot>
           </th>
         </tr>
@@ -1364,13 +1381,13 @@ window.BoGridCrud = {
           </td>
         </tr>
         <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)" class="crud-row" :class="fnRowCls(item, idx)" :draggable="cfShowDrag" @click="handleSelectAction('grid-row-focus', { idx, row: fnRow(item) })" @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })" @dragstart="handleSelectAction('grid-row-drag-start', { idx })" @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })" @dragend="handleSelectAction('grid-row-drag-end')">
-        <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경">
+        <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4)">
           ⠿
         </td>
-        <td v-if="cfShowNo" style="text-align:center;font-size:11px;color:#999;">
+        <td v-if="cfShowNo" :style="'text-align:center;font-size:11px;color:#999;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4)">
           {{ idx + 1 }}
         </td>
-        <td v-if="cfShowId" class="col-id-val">
+        <td v-if="cfShowId" class="col-id-val" :style="pinLeftStyle(cfPinIdLeft, 4, true)">
           {{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}
         </td>
         <td v-if="showRowStatus" class="col-status-val">
@@ -1457,7 +1474,7 @@ window.BoGridCrud = {
           </td>
         </slot>
       </template>
-      <td class="col-act-val">
+      <td class="col-act-val" :style="pinRightStyle(4, true)">
         <div class="col-act-box">
           <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item" :grid-id="gridId">
           </slot>
@@ -2597,6 +2614,58 @@ window.BoGroupTable = {
       return m;
     });
 
+    /* 좌측 고정(col.pin==='left') 컬럼의 누적 left offset(px) — 앞에서부터 누적 */
+    const cfPinLeftOffset = computed(() => {
+      const map = {};
+      let acc = 0;
+      for (const col of props.columns) {
+        if (col.pin === 'left') {
+          map[col.key] = acc;
+          acc += (col.width || 60);
+        }
+      }
+      return map;
+    });
+
+    /* 우측 고정(col.pin==='right') 컬럼의 누적 right offset(px) — 뒤에서부터 누적 */
+    const cfPinRightOffset = computed(() => {
+      const map = {};
+      let acc = 0;
+      for (let i = props.columns.length - 1; i >= 0; i--) {
+        const col = props.columns[i];
+        if (col.pin === 'right') {
+          map[col.key] = acc;
+          acc += (col.width || 60);
+        }
+      }
+      return map;
+    });
+
+    /* 좌측고정 마지막 컬럼 / 우측고정 첫 컬럼 키 — 경계 그림자 자동 판단(수동 플래그 불필요) */
+    const cfPinLeftLastKey = computed(() => {
+      let last = null;
+      for (const col of props.columns) if (col.pin === 'left') last = col.key;
+      return last;
+    });
+    const cfPinRightFirstKey = computed(() => {
+      for (const col of props.columns) if (col.pin === 'right') return col.key;
+      return null;
+    });
+
+    /* pin 컬럼 sticky 포지션 스타일. z: 헤더=5 / 합계행=3 / 본문행=1 (thead sticky top:0 z:2 보다 헤더는 위, 본문은 아래) */
+    const fnPinStyle = (col, z) => {
+      if (!col.pin) return '';
+      let st = 'position:sticky;z-index:' + z + ';';
+      if (col.pin === 'left') {
+        st += 'left:' + (cfPinLeftOffset.value[col.key] || 0) + 'px;';
+        if (col.key === cfPinLeftLastKey.value) st += 'box-shadow:2px 0 4px rgba(0,0,0,.08);';
+      } else {
+        st += 'right:' + (cfPinRightOffset.value[col.key] || 0) + 'px;';
+        if (col.key === cfPinRightFirstKey.value) st += 'box-shadow:-2px 0 4px rgba(0,0,0,.08);';
+      }
+      return st;
+    };
+
     /* ^ 구분 문자열에서 depth 인덱스 값 추출: "a^b"[0]="a", "a^b"[1]="b", "a"[1]="a" */
     const fnLv = (val, depth) => {
       if (!val) return '';
@@ -2626,6 +2695,8 @@ window.BoGroupTable = {
                 key: col.key, label: col.label, rowspan: totalRows, colspan: 1,
                 thStyle: 'text-align:center;vertical-align:middle;'
                   + (col.width ? 'width:' + col.width + 'px;' : '')
+                  + (col.pin ? 'background:' + (col.thBg || '#f0f4f8') + ';' : '')
+                  + fnPinStyle(col, 5)
                   + (col.thStyle || ''),
               });
             }
@@ -2705,7 +2776,7 @@ window.BoGroupTable = {
     const fnTdStyle = (col, row, idx) => {
       const base = col.tdStyle ? col.tdStyle(row) : ('text-align:' + (col.align || 'center') + ';');
       const bordered = props.colBorder ? base + 'border-right:' + props.colBorder + ';' : base;
-      return bordered + 'background:' + fnRowBg(row, idx) + ';';
+      return bordered + 'background:' + fnRowBg(row, idx) + ';' + fnPinStyle(col, 1);
     };
 
     /* 선택 행 outline + hover 커서 (배경은 fnRowBg 로 tr/td 공통 결정) */
@@ -2735,9 +2806,10 @@ window.BoGroupTable = {
       const paths    = cfPaths.value;
       const firstKey = cfSumFirstFixedKey.value;
       return props.columns.map((col, i) => {
-        const tdSt = col.tdStyle ? col.tdStyle(props.summaryRow) : ('text-align:' + (col.align || 'center') + ';');
+        const pinSt = fnPinStyle(col, 3) + (col.pin ? 'background:' + props.summaryBg + ';' : '');
+        const tdSt = (col.tdStyle ? col.tdStyle(props.summaryRow) : ('text-align:' + (col.align || 'center') + ';')) + pinSt;
         if (col.key === firstKey) return { tdSt, type: 'label' };
-        if (paths[i].length === 0) return { tdSt: 'text-align:center;', type: 'blank' };
+        if (paths[i].length === 0) return { tdSt: 'text-align:center;' + pinSt, type: 'blank' };
         if (col.fmt) {
           const cs = col.cellStyle ? col.cellStyle(props.summaryRow) : '';
           return { tdSt, type: 'fmt', val: col.fmt(props.summaryRow, -1), cs };

@@ -217,19 +217,19 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         ? JPAExpressions.selectOne().from(syBrandEx)
                               .where(syBrandEx.brandId.eq(pdProd.brandId),
                                      QdslUtil.strEq(syBrandEx.brandId, search.getBrandId()),
-                                     QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm())).exists()
+                                     StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm())).exists()
                         : null,
                     (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                         ? JPAExpressions.selectOne().from(syVendorEx)
                               .where(syVendorEx.vendorId.eq(pdProd.vendorId),
                                      QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
-                                     QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
+                                     StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                         : null,
                     (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
                         ? JPAExpressions.selectOne().from(syUserEx)
                               .where(syUserEx.userId.eq(pdProd.mdUserId),
                                      QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
-                                     QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm())).exists()
+                                     StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm())).exists()
                         : null,
                     QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
                     QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()),
@@ -264,19 +264,19 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                     ? JPAExpressions.selectOne().from(syBrandEx)
                           .where(syBrandEx.brandId.eq(pdProd.brandId),
                                  QdslUtil.strEq(syBrandEx.brandId, search.getBrandId()),
-                                 QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm())).exists()
+                                 StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm())).exists()
                     : null,
                 (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                     ? JPAExpressions.selectOne().from(syVendorEx)
                           .where(syVendorEx.vendorId.eq(pdProd.vendorId),
                                  QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
-                                 QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
+                                 StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                     : null,
                 (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
                     ? JPAExpressions.selectOne().from(syUserEx)
                           .where(syUserEx.userId.eq(pdProd.mdUserId),
                                  QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
-                                 QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm())).exists()
+                                 StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm())).exists()
                     : null,
                 QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()),
                 QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()),
