@@ -239,7 +239,7 @@ window.ZdTestSnsLoginNaver = {
       <span class="list-title">로그인 테스트</span>
       <div style="margin-left:auto;display:flex;gap:6px">
         <button class="btn btn_apply btn-sm" :disabled="uiState.loading" @click="handleBtnAction('login')">🟢 네이버 로그인 팝업</button>
-        <button v-if="uiState.loggedIn" class="btn btn_cancel" @click="handleBtnAction('logout')">로그아웃</button>
+        <button v-if="uiState.loggedIn" class="btn btn_cancel btn-sm" @click="handleBtnAction('logout')">로그아웃</button>
       </div>
     </div>
     <div style="padding:12px">
@@ -251,7 +251,7 @@ window.ZdTestSnsLoginNaver = {
         <template #tokenRawSlot>
           <div style="display:flex;gap:8px;align-items:flex-end">
             <input class="form-control" v-model="result.tokenRaw" placeholder="AAAAxxxxx…" style="font-family:monospace;font-size:12px;flex:1" />
-            <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('profile-fetch')">
+            <button class="btn btn_search btn-sm" :disabled="uiState.loading" @click="handleBtnAction('profile-fetch')">
               {{ uiState.loading ? '⏳' : '프로필 조회' }}
             </button>
           </div>

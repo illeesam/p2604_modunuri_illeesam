@@ -2324,7 +2324,7 @@ od_order:
         <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />
-            <button class="btn btn_reset" @click="handleBtnAction('orderid-refresh')" style="white-space:nowrap">새로고침</button>
+            <button class="btn btn_reset btn-sm" @click="handleBtnAction('orderid-refresh')" style="white-space:nowrap">새로고침</button>
           </div>
         </template>
         <template #successUrlSlot>
@@ -2427,7 +2427,7 @@ od_order:
           {{ uiState.loading ? '⏳ 처리 중…' : '결제하기' }}
         </button>
         <button class="btn btn_apply btn-sm" :disabled="uiState.loading" @click="handleBtnAction('confirm-manual')" title="paymentKey 직접 입력으로 승인 (예외 대응)">수동 승인</button>
-        <button class="btn btn_delete" :disabled="!result.confirmResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
+        <button class="btn btn_delete btn-sm" :disabled="!result.confirmResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
       </div>
     </div>
     <div style="padding:12px">

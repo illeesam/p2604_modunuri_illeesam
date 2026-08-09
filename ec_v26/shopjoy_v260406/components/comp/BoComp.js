@@ -1701,14 +1701,14 @@ window.BoZdYmlGrid = {
     <span class="list-title">application.yml</span>
     <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
       <label style="font-size:12px;color:#6b7280;white-space:nowrap;">propProfile(local,dev,prod)</label>
-      <input type="text" class="form-control" style="width:120px;height:30px;font-size:12px;padding:2px 8px;font-family:monospace;background:#f3f4f6;color:#374151;"
+      <input type="text" class="form-control" style="width:120px;font-size:13px;padding:4px 10px;font-family:monospace;background:#f3f4f6;color:#374151;"
         :value="activeProfile" disabled placeholder="조회 중…" />
       <label style="font-size:12px;color:#6b7280;white-space:nowrap;margin-left:4px;">ymlKey</label>
-      <input type="text" class="form-control" style="width:200px;height:30px;font-size:12px;padding:2px 8px;font-family:monospace;"
+      <input type="text" class="form-control" style="width:200px;font-size:13px;padding:4px 10px;font-family:monospace;"
         :value="ymlKeyFilter" placeholder="키워드 입력 (contains, ; OR)"
         @input="ymlKeyFilter = $event.target.value"
         @keyup.enter="onSearch" />
-      <button class="btn btn_search" style="height:30px;font-size:12px;padding:0 10px;" :disabled="loading" @click="onSearch">
+      <button class="btn btn_search btn-sm" :disabled="loading" @click="onSearch">
         {{ loading ? '조회중…' : '조회' }}
       </button>
     </div>
@@ -1799,16 +1799,16 @@ window.BoZdSyPropGrid = {
     <span class="list-title">{{ title }}</span>
     <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
       <label style="font-size:12px;color:#6b7280;white-space:nowrap;">propProfile(local,dev,prod)</label>
-      <input type="text" class="form-control" style="width:120px;font-size:12px;padding:2px 8px;font-family:monospace;"
+      <input type="text" class="form-control" style="width:120px;font-size:13px;padding:4px 10px;font-family:monospace;"
         :value="syPropProfile" placeholder="local"
         @input="syPropProfile = $event.target.value"
         @keyup.enter="onSearch" />
       <label style="font-size:12px;color:#6b7280;white-space:nowrap;margin-left:4px;">propKey</label>
-      <input type="text" class="form-control" style="width:200px;font-size:12px;padding:2px 8px;font-family:monospace;"
+      <input type="text" class="form-control" style="width:200px;font-size:13px;padding:4px 10px;font-family:monospace;"
         :value="syPropKeyFilter" placeholder="키워드 입력 (contains, ; OR)"
         @input="syPropKeyFilter = $event.target.value"
         @keyup.enter="onSearch" />
-      <button class="btn btn_search" :disabled="loading" @click="onSearch">
+      <button class="btn btn_search btn-sm" :disabled="loading" @click="onSearch">
         {{ loading ? '조회중…' : '조회' }}
       </button>
     </div>

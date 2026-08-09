@@ -2733,11 +2733,12 @@ window.BoGroupTable = {
         const off = cfPinLeftOffset.value[col.key] || 0;
         st += 'left:' + off + 'px;';
         if (selected) { if (off === 0) sh.push('inset 2px 0 0 #2563eb'); sh.push('inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb'); }
-        if (col.key === cfPinLeftLastKey.value) sh.push('2px 0 4px rgba(0,0,0,.08)');
+        /* 스크롤 시에도 항상 보이도록 box-shadow 대신 실제 border 사용(인접 셀에 덮여 안 보이는 문제 방지) */
+        if (col.key === cfPinLeftLastKey.value) { st += 'border-right:2px solid #94a3b8;'; sh.push('3px 0 4px rgba(0,0,0,.08)'); }
       } else {
         st += 'right:' + (cfPinRightOffset.value[col.key] || 0) + 'px;';
         if (selected) sh.push('inset -2px 0 0 #2563eb', 'inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb');
-        if (col.key === cfPinRightFirstKey.value) sh.push('-2px 0 4px rgba(0,0,0,.08)');
+        if (col.key === cfPinRightFirstKey.value) { st += 'border-left:2px solid #94a3b8;'; sh.push('-3px 0 4px rgba(0,0,0,.08)'); }
       }
       if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
       return st;
@@ -2796,7 +2797,7 @@ window.BoGroupTable = {
             const fc = cols[i];
             const bg = fnLv(fc.colGroupBg, depth);
             const cl = fnLv(fc.colGroupColor, depth);
-            const bc = fnLv(fc.colGroupBorderColor, depth);
+            const bc = fnLv(fc.colGroupBorderColor, depth) ? '#94a3b8' : '';
             const s = [
               'text-align:center;vertical-align:middle;padding:4px;',
               depth > 0 ? 'font-size:10px;' : '',
@@ -2809,7 +2810,7 @@ window.BoGroupTable = {
           } else if (depth === path.length) {
             /* 컬럼 라벨: 남은 행 수만큼 rowspan */
             const fc = cfGroupFirstMap.value[col.colGroup] || col;
-            const bc = fnLv(fc.colGroupBorderColor, depth - 1);
+            const bc = fnLv(fc.colGroupBorderColor, depth - 1) ? '#94a3b8' : '';
             const isFirst = i === 0 || (paths[i - 1] || []).join('^') !== path.join('^');
             const isLast  = i >= cols.length - 1 || (paths[i + 1] || []).join('^') !== path.join('^');
             const fallbackBg = fnLv(fc.colGroupBg, depth - 1);
@@ -2849,11 +2850,27 @@ window.BoGroupTable = {
       return '#fff';
     };
 
-    /* td 스타일: tdStyle(row) 우선, 없으면 align 기본 + colBorder + 행 배경 */
-    const fnTdStyle = (col, row, idx) => {
+    /* 리프 컬럼별 그룹 경계 정보 — 헤더의 isFirst/isLast 판단 로직을 재사용해 본문 td 에도
+       그룹이 바뀌는 경계마다 구분선을 넣는다. 헤더처럼 그룹별 색을 입히면 산만해지므로
+       색상 구분 없이 중립 회색(#94a3b8) 한 가지로 통일한다. */
+    const cfLeafBorder = computed(() => {
+      const paths = cfPaths.value;
+      const bc = '#94a3b8';
+      return props.columns.map((col, i) => {
+        if (!col.colGroup) return null;
+        const isFirst = i === 0 || (paths[i - 1] || []).join('^') !== paths[i].join('^');
+        const isLast  = i >= props.columns.length - 1 || (paths[i + 1] || []).join('^') !== paths[i].join('^');
+        return { isFirst, isLast, bc };
+      });
+    });
+
+    /* td 스타일: tdStyle(row) 우선, 없으면 align 기본 + colBorder + 그룹경계선 + 행 배경 */
+    const fnTdStyle = (col, row, idx, ci) => {
       const base = col.tdStyle ? col.tdStyle(row) : ('text-align:' + (col.align || 'center') + ';');
       const bordered = props.colBorder ? base + 'border-right:' + props.colBorder + ';' : base;
-      return bordered + 'background:' + fnRowBg(row, idx) + ';' + fnPinStyle(col, 1, row);
+      const gb = cfLeafBorder.value[ci];
+      const groupBorder = gb ? (gb.isFirst ? 'border-left:2px solid ' + gb.bc + ';' : '') + (gb.isLast ? 'border-right:2px solid ' + gb.bc + ';' : '') : '';
+      return bordered + groupBorder + 'background:' + fnRowBg(row, idx) + ';' + fnPinStyle(col, 1, row);
     };
 
     /* 선택 행 outline + hover 커서 (배경은 fnRowBg 로 tr/td 공통 결정) */
@@ -2940,9 +2957,9 @@ window.BoGroupTable = {
           @mouseenter="onRowMouseEnter(row)"
           @mouseleave="onRowMouseLeave()"
           @click="onCellClick(row, idx)">
-          <td v-for="col in cfLeafCols" :key="col.key"
+          <td v-for="(col, ci) in cfLeafCols" :key="col.key"
             :title="col.titleFmt ? col.titleFmt(row) : ''"
-            :style="fnTdStyle(col, row, idx)">
+            :style="fnTdStyle(col, row, idx, ci)">
             <slot v-if="col.slot" :name="'cell-' + col.key" :row="row" :idx="idx" />
             <template v-else-if="col.iconBadge">
               <span v-if="col.iconBadge(row)"

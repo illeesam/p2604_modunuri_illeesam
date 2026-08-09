@@ -694,7 +694,7 @@ window.ZdTestAppMsgSendReceiv = {
           <button v-if="devices.selected.length" class="btn btn_send btn-sm" @click="handleBtnAction('send-to-selected')" :disabled="result.loading">
             {{ result.loading ? '⏳' : ('✉️ 선택 ' + devices.selected.length + '건 발송') }}
           </button>
-          <button class="btn btn_search" :disabled="result.loadingDev" @click="handleBtnAction('devices-load')">
+          <button class="btn btn_search btn-sm" :disabled="result.loadingDev" @click="handleBtnAction('devices-load')">
             {{ result.loadingDev ? '⏳' : '조회' }}
           </button>
         </div>
@@ -735,7 +735,7 @@ window.ZdTestAppMsgSendReceiv = {
       <div class="toolbar">
         <span class="list-title">발송 이력 (cmh_push_log)</span>
         <div style="margin-left:auto">
-          <button class="btn btn_search" :disabled="result.loadingHist" @click="handleBtnAction('hist-load')">
+          <button class="btn btn_search btn-sm" :disabled="result.loadingHist" @click="handleBtnAction('hist-load')">
             {{ result.loadingHist ? '⏳' : '조회' }}
           </button>
         </div>
@@ -768,8 +768,8 @@ window.ZdTestAppMsgSendReceiv = {
             {{ recvLog.connected ? '● 연결됨' : '○ 미연결' }}
           </span>
           <button v-if="!recvLog.connected" class="btn btn_apply btn-sm" @click="handleBtnAction('ws-connect')">🔌 연결</button>
-          <button v-else class="btn btn_cancel" @click="handleBtnAction('ws-disconnect')">연결 해제</button>
-          <button class="btn btn_reset" @click="handleBtnAction('recv-clear')">로그 지우기</button>
+          <button v-else class="btn btn_cancel btn-sm" @click="handleBtnAction('ws-disconnect')">연결 해제</button>
+          <button class="btn btn_reset btn-sm" @click="handleBtnAction('recv-clear')">로그 지우기</button>
         </div>
       </div>
       <div style="padding:12px">

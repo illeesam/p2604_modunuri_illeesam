@@ -264,7 +264,7 @@ window.ZdTestPayKakaopay = {
         <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />
-            <button class="btn btn_reset" @click="handleBtnAction('orderid-refresh')" style="white-space:nowrap">새로고침</button>
+            <button class="btn btn_reset btn-sm" @click="handleBtnAction('orderid-refresh')" style="white-space:nowrap">새로고침</button>
           </div>
         </template>
       </bo-form-area>
@@ -280,7 +280,7 @@ window.ZdTestPayKakaopay = {
           {{ uiState.loading ? '⏳ 처리 중…' : '결제 준비 (ready)' }}
         </button>
         <button class="btn btn_preview btn-sm" :disabled="!result.readyResult" @click="handleBtnAction('open-window')">카카오페이 창 열기</button>
-        <button class="btn btn_delete" :disabled="!result.approveResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
+        <button class="btn btn_delete btn-sm" :disabled="!result.approveResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
       </div>
     </div>
     <div style="padding:12px">

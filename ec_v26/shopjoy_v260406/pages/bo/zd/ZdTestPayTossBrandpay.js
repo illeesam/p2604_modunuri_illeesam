@@ -232,7 +232,7 @@ window.ZdTestPayTossBrandpay = {
         <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />
-            <button class="btn btn_reset" @click="handleBtnAction('orderid-refresh')" style="white-space:nowrap">새로고침</button>
+            <button class="btn btn_reset btn-sm" @click="handleBtnAction('orderid-refresh')" style="white-space:nowrap">새로고침</button>
           </div>
         </template>
       </bo-form-area>
@@ -248,7 +248,7 @@ window.ZdTestPayTossBrandpay = {
           {{ uiState.loading ? '⏳ 처리 중…' : '브랜드페이 결제창 열기' }}
         </button>
         <button class="btn btn_apply btn-sm" :disabled="uiState.loading" @click="handleBtnAction('confirm-manual')">수동 승인 (paymentKey 입력)</button>
-        <button class="btn btn_delete" :disabled="!result.confirmResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
+        <button class="btn btn_delete btn-sm" :disabled="!result.confirmResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
       </div>
     </div>
     <div style="padding:12px">

@@ -230,7 +230,7 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
       :columns="columns.baseGrid" :rows="recons" row-key="reconId"
       :row-actions="true">
       <template #head-actions>
-        <th style="text-align:right">액션</th>
+        액션
       </template>
       <template #row-actions="{ row: r }">
         <button v-if="r.diffStatus!=='일치'" class="btn btn-xs btn-primary" @click="handleSelectAction('recons-rowFix', r)">

@@ -160,7 +160,7 @@
   <div v-if="cfStats.length > 0" class="card" style="padding:14px 16px;margin-bottom:12px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
       <div class="list-title">📈 도메인별 통계</div>
-      <button class="btn btn_delete" @click="onClearAll">🗑 전체 삭제</button>
+      <button class="btn btn_delete btn-sm" @click="onClearAll">🗑 전체 삭제</button>
     </div>
     <bo-grid :rows="cfStats" :columns="statGridColumns" style="font-size:12px;">
       <template #gotoBtn="{ row }">
@@ -179,8 +179,8 @@
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
       <div class="list-title">📋 실행 로그 <span class="list-count">{{ pager.pageTotalCount }}건</span></div>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="btn btn_reset" @click="onSearch">🔄 새로고침</button>
-        <button v-if="pager.pageTotalCount > 0" class="btn btn_delete" @click="onClearAll">전체 삭제</button>
+        <button class="btn btn_reset btn-sm" @click="onSearch">🔄 새로고침</button>
+        <button v-if="pager.pageTotalCount > 0" class="btn btn_delete btn-sm" @click="onClearAll">전체 삭제</button>
       </div>
     </div>
 

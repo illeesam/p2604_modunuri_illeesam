@@ -253,7 +253,7 @@ window.StConfigMng = {
       :row-actions="true"
       :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
       <template #head-actions>
-        <th style="text-align:right">액션</th>
+        액션
       </template>
       <template #row-actions="{ row: c }">
         <div class="actions">

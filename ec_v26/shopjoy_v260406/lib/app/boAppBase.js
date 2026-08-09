@@ -17,6 +17,22 @@
       const page = ref('dashboard');
       const cfDashboardComp = 'DashboardBoEc' + (window.BO_SITE_NO || '01');
       const errorMessage = ref('');
+      /* 최근 500(서버오류)/네트워크 에러 목록 — 백엔드 다운 등으로 여러 API 가 동시에 실패했을 때
+         500 에러 화면 하단에서 한눈에 확인할 수 있도록 최신순으로 최대 20건만 보관한다.
+         새로고침(F5) 해도 없어지지 않도록 sessionStorage 에 미러링 — 탭을 닫으면 사라지고
+         다른 탭/창과는 섞이지 않는다(localStorage 는 탭 간 공유돼 코드 캐시 정책상 금지). */
+      const RECENT_SERVER_ERRORS_KEY = 'modu-bo-recent-server-errors';
+      const RECENT_SERVER_ERRORS_MAX = 20;
+      const recentServerErrors = reactive((() => {
+        try {
+          const saved = JSON.parse(sessionStorage.getItem(RECENT_SERVER_ERRORS_KEY) || '[]');
+          return saved.map((e) => ({ ...e, time: new Date(e.time) }));
+        } catch (_) { return []; }
+      })());
+      let _recentServerErrorSeq = recentServerErrors.reduce((m, e) => Math.max(m, e._rid || 0), 0); // 행 펼침 키용 안정적 id
+      const _saveRecentServerErrors = () => {
+        try { sessionStorage.setItem(RECENT_SERVER_ERRORS_KEY, JSON.stringify(recentServerErrors)); } catch (_) {}
+      };
       /* X- 헤더 배열을 압축 포맷으로 변환
   x-ui-nm: 사이트관리 | x-cmd-nm: 목록조회 | x-trace-id: 20260501_063729_0223
   x-site-type: BO | x-site-id: SITE_BO_01
@@ -44,6 +60,16 @@
           if (d.uiLabel) label += `  [${d.uiLabel}]`;
         }
         let msg = label ? `${label}\n${d.message || ''}` : d.message || '';
+        // 최근 오류 목록 — 4xx/5xx/네트워크(0) 모두 최신순 최대 20건 (500 화면 하단에서 한눈에 확인)
+        if (st === 0 || st >= 400) {
+          recentServerErrors.unshift({
+            _rid: ++_recentServerErrorSeq,
+            status: st, method: d.method || '', url: d.fullUrl || d.url || '',
+            uiLabel: d.uiLabel || '', message: d.message || '', time: new Date(),
+          });
+          if (recentServerErrors.length > RECENT_SERVER_ERRORS_MAX) { recentServerErrors.length = RECENT_SERVER_ERRORS_MAX; }
+          _saveRecentServerErrors();
+        }
         // 비 401/500 에러는 toast로 X- 헤더 정보 표시 (화면 유지)
         if (st !== 401 && !(st >= 500 || st === 0)) {
           let details = d.errorDetails || '';
@@ -708,13 +734,15 @@
       const apiLogLockedDetail = ref(null);
       const maxApiLogs = 15;
 
-      /* _loadApiLogsFromStorage */
+      /* _loadApiLogsFromStorage — 저장된 로그의 _isRecent 는 저장 당시 값이라 신뢰 불가하므로
+         복원 시점(화면 로드 시점) 기준으로 한 번만 다시 계산해 고정한다(라이브 재계산 금지). */
       const _loadApiLogsFromStorage = () => {
         try {
           const stored = localStorage.getItem('modu-bo-sy-apiLog');
           if (stored) {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
+              parsed.forEach((log) => { log._isRecent = window.boAppFunc.isWithin60Seconds(log.time); });
               apiLogs.push(...parsed);
             }
           }
@@ -814,9 +842,14 @@
           reqData: reqStr,
           resData: resStr,
           headers: headerStr,
+          _isRecent: true,
         });
         if (apiLogs.length > maxApiLogs) apiLogs.pop();
         _saveApiLogsToStorage();
+        /* _isRecent 는 생성 시점에 한 번만 true 로 고정 — 이후 hover 등으로 목록이 재렌더링돼도
+           라이브로 재계산하지 않고, 60초 뒤 단 한 번의 타이머로만 false 로 내린다. */
+        const _newLog = apiLogs[0];
+        setTimeout(() => { if (_newLog) _newLog._isRecent = false; }, 60000);
       };
 
       /* clearApiLogs */
@@ -1873,6 +1906,7 @@
         initSearchValue,
         navigate,
         errorMessage,
+        recentServerErrors,
         cfDashboardComp,
         TOP_MENUS,
         LEFT_MENUS,
@@ -2611,7 +2645,7 @@
             <zd-simul-voucher-mng v-else-if="page==='zdSimulVoucherMng'" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-log-mng     v-else-if="page==='zdSimulLogMng'"     :navigate="navigate" :show-toast="showToast" />
             <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
-            <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
+            <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" :errors="recentServerErrors" />
             <bo-error-404 v-else :navigate="navigate" :page-id="page" />
           </div><!-- /비고정 탭 래퍼 -->
         </template>
@@ -2707,7 +2741,7 @@
               </div>
               <!-- 2줄: uiLabel + duration(초) + 시각(분:초) -->
               <div style="display:flex;align-items:center;gap:6px;margin-top:1px;">
-                <span v-if="log.uiLabel" :style="{ fontWeight: isWithin60Seconds(log.time) ? '700' : '400' }" style="font-size:9px;color:#7c3aed;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.2px;">{{ log.uiLabel }}</span>
+                <span v-if="log.uiLabel" :style="{ fontWeight: log._isRecent ? '700' : '400' }" style="font-size:9px;color:#7c3aed;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.2px;">{{ log.uiLabel }}</span>
                 <span v-else style="flex:1;"></span>
                 <span v-if="log.duration" style="font-size:9px;color:#aaa;flex-shrink:0;" :title="log.duration + 'ms'">{{ fnFmtSec(log.duration) }}</span>
                 <span style="font-size:9px;color:#ccc;flex-shrink:0;" :title="log.time">{{ fnHmsToMs(log.time) }}</span>

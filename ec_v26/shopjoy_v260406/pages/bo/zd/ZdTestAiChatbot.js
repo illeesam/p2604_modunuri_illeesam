@@ -199,7 +199,7 @@ window.ZdTestAiChatbot = {
         <span v-if="result.usage" style="font-size:11px;color:#888">
           토큰: 입력 {{ result.usage.promptTokens || result.usage.input_tokens || '-' }} / 출력 {{ result.usage.completionTokens || result.usage.output_tokens || '-' }}
         </span>
-        <button class="btn btn_reset" @click="handleBtnAction('clear')">대화 초기화</button>
+        <button class="btn btn_reset btn-sm" @click="handleBtnAction('clear')">대화 초기화</button>
       </div>
     </div>
     <div style="padding:12px">

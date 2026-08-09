@@ -165,7 +165,7 @@ window.StErpViewMng = {
       :columns="columns.baseGrid" :rows="slips" :pager="baseGrid.pager" row-key="slipId"
       :row-actions="true">
       <template #head-actions>
-        <th style="text-align:right">액션</th>
+        액션
       </template>
       <template #row-actions="{ row: r }">
         <div class="actions">

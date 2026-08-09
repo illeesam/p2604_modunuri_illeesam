@@ -775,8 +775,8 @@ window.ZdInfDashboard = {
         table-max-height="720px"
       >
         <template #toolbar-actions>
-          <button class="btn btn_reset" @click="handleRefresh">새로고침</button>
-          <button class="btn btn_search" @click="handleTestAll">전체 테스트</button>
+          <button class="btn btn_reset btn-sm" @click="handleRefresh">새로고침</button>
+          <button class="btn btn_search btn-sm" @click="handleTestAll">전체 테스트</button>
         </template>
 
         <!-- BE 설정 상태 -->
@@ -854,8 +854,8 @@ window.ZdInfDashboard = {
       :count-text="histState.total + '건'">
       <template #toolbar-actions>
         <input v-model="histState.searchWord" class="form-control" style="width:180px;" placeholder="검색어 입력" @keyup.enter="handleHistSearch" />
-        <button class="btn btn_search" @click="handleHistSearch">검색</button>
-        <button class="btn btn_close" @click="handleHistClose">닫기</button>
+        <button class="btn btn_search btn-sm" @click="handleHistSearch">검색</button>
+        <button class="btn btn_close btn-sm" @click="handleHistClose">닫기</button>
       </template>
       <div v-if="histState.loading" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">조회 중...</div>
       <div v-else-if="!histState.logs.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">이력이 없습니다.</div>

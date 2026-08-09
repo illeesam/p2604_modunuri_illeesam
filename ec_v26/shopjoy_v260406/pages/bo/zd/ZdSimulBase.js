@@ -431,7 +431,7 @@
     <div class="list-title">📋 실행 로그</div>
     <div style="display:flex;gap:6px;align-items:center;">
       <span v-if="logs.length" style="font-size:11px;color:#94a3b8;">{{ logs.length }}건</span>
-      <button class="btn btn_reset" @click="onClearLog">지우기</button>
+      <button class="btn btn_reset btn-sm" @click="onClearLog">지우기</button>
     </div>
   </div>
   <div v-if="logs.length === 0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:#cbd5e1;border:1px solid #f1f5f9;border-radius:6px;">

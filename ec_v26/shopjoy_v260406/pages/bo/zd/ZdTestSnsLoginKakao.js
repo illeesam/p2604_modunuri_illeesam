@@ -216,7 +216,7 @@ window.ZdTestSnsLoginKakao = {
       <span class="list-title">로그인 / 로그아웃 테스트</span>
       <div style="margin-left:auto;display:flex;gap:6px">
         <button class="btn btn_confirm btn-sm" @click="handleBtnAction('login-test')">🟡 카카오 인증 열기</button>
-        <button class="btn btn_cancel" :disabled="!uiState.loggedIn" @click="handleBtnAction('logout-test')">로그아웃</button>
+        <button class="btn btn_cancel btn-sm" :disabled="!uiState.loggedIn" @click="handleBtnAction('logout-test')">로그아웃</button>
       </div>
     </div>
     <div style="padding:12px">
@@ -227,7 +227,7 @@ window.ZdTestSnsLoginKakao = {
         <template #tokenRawSlot>
           <div style="display:flex;gap:8px;align-items:flex-end">
             <input class="form-control" v-model="result.tokenRaw" placeholder="예: AAABxxxxx…" style="font-family:monospace;font-size:12px;flex:1" />
-            <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('profile-fetch')">
+            <button class="btn btn_search btn-sm" :disabled="uiState.loading" @click="handleBtnAction('profile-fetch')">
               {{ uiState.loading ? '⏳' : '프로필 조회' }}
             </button>
           </div>

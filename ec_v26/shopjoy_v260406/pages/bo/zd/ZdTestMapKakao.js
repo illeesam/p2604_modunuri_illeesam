@@ -300,7 +300,7 @@ window.ZdTestMapKakao = {
     <div class="toolbar">
       <span class="list-title">주소 검색 (지오코딩)</span>
       <div style="margin-left:auto">
-        <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('geocode')">
+        <button class="btn btn_search btn-sm" :disabled="uiState.loading" @click="handleBtnAction('geocode')">
           {{ uiState.loading ? '⏳ 조회 중…' : '주소 검색' }}
         </button>
       </div>

@@ -313,9 +313,7 @@ window.CmFaqMng = {
         :row-style="fnRowStyle"
         grid-id="faqs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
         <template #head-actions>
-          <th style="text-align:right;position:sticky;right:0;z-index:6;">
-            관리
-          </th>
+          관리
         </template>
         <template #row-actions="{ row, gridId, pinStyle }">
           <td :style="'white-space:nowrap;' + pinStyle">

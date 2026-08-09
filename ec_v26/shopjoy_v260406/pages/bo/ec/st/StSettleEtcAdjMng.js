@@ -297,7 +297,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''">
       <template #head-actions>
-        <th style="text-align:right">액션</th>
+        액션
       </template>
       <template #row-actions="{ row: r }">
         <div class="actions">

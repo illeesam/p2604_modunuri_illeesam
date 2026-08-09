@@ -183,7 +183,7 @@ window.ZdTestChattingWebSocket = {
         <button v-if="!result.connected" class="btn btn_apply btn-sm" :disabled="uiState.connecting" @click="handleBtnAction('connect')">
           {{ uiState.connecting ? '⏳ 연결 중…' : '🔌 연결' }}
         </button>
-        <button v-else class="btn btn_cancel" @click="handleBtnAction('disconnect')">연결 해제</button>
+        <button v-else class="btn btn_cancel btn-sm" @click="handleBtnAction('disconnect')">연결 해제</button>
         <button class="btn btn_confirm btn-sm" :disabled="!result.connected" @click="handleBtnAction('ping')">🏓 Ping</button>
       </div>
     </div>
@@ -201,7 +201,7 @@ window.ZdTestChattingWebSocket = {
     <div class="toolbar">
       <span class="list-title">메시지 로그</span>
       <div style="margin-left:auto">
-        <button class="btn btn_reset" @click="handleBtnAction('clear')">로그 지우기</button>
+        <button class="btn btn_reset btn-sm" @click="handleBtnAction('clear')">로그 지우기</button>
       </div>
     </div>
     <div style="padding:12px">

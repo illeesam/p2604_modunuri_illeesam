@@ -274,7 +274,7 @@ window.StSettleCloseMng = {
       :columns="columns.baseGrid" :rows="cfFilteredClose" row-key="closeId"
       :row-actions="true">
       <template #head-actions>
-        <th style="text-align:right">액션</th>
+        액션
       </template>
       <template #row-actions="{ row: r }">
         <button v-if="r.status==='마감완료'" class="btn btn-xs btn-secondary" @click="handleSelectAction('settleCloses-rowReopen', r)">

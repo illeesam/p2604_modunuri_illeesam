@@ -1,8 +1,31 @@
 /* BO - 500 Server Error */
 window.boError500 = {
   name: 'BoError500',
-  props: ['navigate', 'message'],
+  props: ['navigate', 'message', 'errors'],
+  data() {
+    /* _mountTime — 화면이 뜬 시점을 한 번만 고정. fnRowStyle 이 매번 Date.now() 를 읽으면
+       펼치기 클릭 등 재렌더링될 때마다 "최근" 여부가 달라져 강조가 깜빡이므로,
+       기준 시각을 여기서 스냅샷 떠서 이후로는 절대 다시 계산하지 않는다. */
+    return { showErrorList: false, expandedIds: new Set(), allExpanded: false, _mountTime: Date.now() };
+  },
   computed: {
+    /* cfErrorList — 최근 4xx/5xx/네트워크 에러 목록 (최신순, 최대 20건은 boAppBase 에서 이미 보장) */
+    cfErrorList() {
+      return this.errors || [];
+    },
+    cfErrorColumns() {
+      return [
+        { key: '_exp', label: '', style: 'width:22px', align: 'center', noEllipsis: true,
+          linkToggle: { active: (row) => this.expandedIds.has(row._rid), onClick: (row) => this.toggleRow(row._rid),
+            title: '상세보기', activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => this.expandedIds.has(row._rid) ? '▲' : '▼' },
+        { key: 'time',   label: '시간',    style: 'width:66px', align: 'center', mono: true, fmt: (v, row) => this.fnFmtTime(row.time) },
+        { key: 'status', label: '코드',    style: 'width:50px', align: 'center', badge: (row) => 'badge-orange' },
+        { key: 'method', label: 'Method', style: 'width:64px', align: 'center', mono: true },
+        { key: 'url',    label: 'URL', mono: true, cellTitle: true },
+        { key: 'uiLabel',label: '화면 > 기능', style: 'width:150px', cellTitle: true },
+      ];
+    },
     cfParsed() {
       if (!this.message) return null;
       const lines = this.message.split('\n');
@@ -42,6 +65,25 @@ window.boError500 = {
   },
   methods: {
     onReload() { window.location.reload(); },
+    fnFmtTime(t) {
+      const d = t instanceof Date ? t : new Date(t);
+      return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
+    },
+    toggleRow(rid) {
+      if (this.expandedIds.has(rid)) { this.expandedIds.delete(rid); } else { this.expandedIds.add(rid); }
+    },
+    isRowExpanded(row) { return this.expandedIds.has(row._rid); },
+    toggleExpandAll() {
+      if (this.allExpanded) { this.expandedIds.clear(); this.allExpanded = false; }
+      else { this.cfErrorList.forEach((row) => this.expandedIds.add(row._rid)); this.allExpanded = true; }
+    },
+    /* fnRowStyle — 화면 로드 시점(_mountTime) 기준 10초 이내 발생한 오류만 bold 로 강조.
+       Date.now() 를 직접 쓰면 펼치기 클릭 등으로 재렌더링될 때마다 기준 시각이 흘러가
+       강조 여부가 바뀌므로, 반드시 마운트 시점에 고정된 _mountTime 과 비교한다. */
+    fnRowStyle(row) {
+      const t = row.time instanceof Date ? row.time : new Date(row.time);
+      return (this._mountTime - t.getTime() <= 10000) ? 'font-weight:700;' : '';
+    },
   },
   template: /* html */`
 <div>
@@ -90,6 +132,29 @@ window.boError500 = {
         style="padding:12px 28px;font-size:14px;font-weight:600;background:#fff;color:#444;border:1px solid #ddd;border-radius:8px;cursor:pointer;">
         대시보드로
       </button>
+    </div>
+
+    <!-- 최근 4xx/5xx/네트워크 오류 목록 — 2건 이상일 때만(백엔드 다운 등으로 동시 실패) 접힌 상태로 노출 -->
+    <div v-if="cfErrorList.length > 1" style="margin-top:20px;max-width:900px;width:100%;text-align:left;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button @click="showErrorList = !showErrorList"
+          style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-size:12px;color:#888;padding:4px 0;">
+          <span>{{ showErrorList ? '▲' : '▼' }}</span>
+          <span>최근 서버 오류 {{ cfErrorList.length }}건 {{ showErrorList ? '접기' : '보기' }}</span>
+        </button>
+        <button v-if="showErrorList" class="btn btn-secondary btn-xs" @click="toggleExpandAll">
+          {{ allExpanded ? '전체닫기' : '전체펼치기' }}
+        </button>
+      </div>
+      <bo-grid v-if="showErrorList" bare
+        :columns="cfErrorColumns" :rows="cfErrorList" row-key="_rid"
+        :row-style="fnRowStyle" :is-expanded="isRowExpanded">
+        <template #row-expand="{ row, colspan }">
+          <td :colspan="colspan" style="background:#fff5f5;padding:8px 14px;font-family:monospace;font-size:11px;color:#c62828;white-space:pre-wrap;word-break:break-all;">
+            {{ row.message || '(메시지 없음)' }}
+          </td>
+        </template>
+      </bo-grid>
     </div>
   </div>
 </div>

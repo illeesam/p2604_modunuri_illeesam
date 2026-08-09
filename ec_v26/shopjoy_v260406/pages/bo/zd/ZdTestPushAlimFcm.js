@@ -202,7 +202,7 @@ window.ZdTestPushAlimFcm = {
     <div class="toolbar">
       <span class="list-title">등록된 디바이스 토큰 (mb_device_token)</span>
       <div style="margin-left:auto">
-        <button class="btn btn_search" :disabled="uiState.loadingTokens" @click="handleBtnAction('tokens-load')">
+        <button class="btn btn_search btn-sm" :disabled="uiState.loadingTokens" @click="handleBtnAction('tokens-load')">
           {{ uiState.loadingTokens ? '⏳ 조회 중…' : '토큰 목록 조회' }}
         </button>
       </div>

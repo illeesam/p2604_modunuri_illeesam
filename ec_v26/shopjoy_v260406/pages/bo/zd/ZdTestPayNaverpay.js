@@ -262,7 +262,7 @@ window.ZdTestPayNaverpay = {
         <template #payKeySlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.payKey" style="flex:1;font-family:monospace;font-size:12px" />
-            <button class="btn btn_reset" @click="handleBtnAction('paykey-refresh')" style="white-space:nowrap">새로고침</button>
+            <button class="btn btn_reset btn-sm" @click="handleBtnAction('paykey-refresh')" style="white-space:nowrap">새로고침</button>
           </div>
         </template>
       </bo-form-area>
@@ -278,7 +278,7 @@ window.ZdTestPayNaverpay = {
           {{ uiState.loading ? '⏳ 처리 중…' : '결제 예약 (reserve)' }}
         </button>
         <button class="btn btn_preview btn-sm" :disabled="!result.reserveResult" @click="handleBtnAction('open-window')">네이버페이 창 열기</button>
-        <button class="btn btn_delete" :disabled="!result.approveResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
+        <button class="btn btn_delete btn-sm" :disabled="!result.approveResult" @click="handleBtnAction('cancel-test')">결제 취소</button>
       </div>
     </div>
     <div style="padding:12px">

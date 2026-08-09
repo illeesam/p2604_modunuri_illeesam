@@ -243,7 +243,7 @@ window.ZdTestMapGoogle = {
     <div class="toolbar">
       <span class="list-title">지오코딩 (주소 → 좌표)</span>
       <div style="margin-left:auto">
-        <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('geocode')">
+        <button class="btn btn_search btn-sm" :disabled="uiState.loading" @click="handleBtnAction('geocode')">
           {{ uiState.loading ? '⏳ 조회 중…' : '지오코딩' }}
         </button>
       </div>

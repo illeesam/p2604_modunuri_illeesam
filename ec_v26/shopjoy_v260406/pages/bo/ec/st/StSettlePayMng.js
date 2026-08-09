@@ -224,7 +224,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       :columns="columns.baseGrid" :rows="pays" row-key="payId"
       :row-actions="true">
       <template #head-actions>
-        <th style="text-align:right">액션</th>
+        액션
       </template>
       <template #row-actions="{ row: r }">
         <button v-if="r.payStatus==='지급대기'" class="btn btn-xs btn-green" @click="handleSelectAction('settlePays-rowPay', r)">
