@@ -263,6 +263,7 @@
 | **DDL 관리** | `base/base.DDL작성규칙.md` — DB 자동 추출, `_doc/ddl_pgsql/{ec,sy}/` 구조 |
 | **권한** | `base/base.권한-*.md`, `sy.07.권한.md`, `sy/운영업체/sy.*.md` |
 | **배포/설정** | `base/base.운영환경-배포설정.md` |
+| **백엔드 부팅 시간** ⭐ | `base/base.백엔드부팅성능.md` — local 10초 내외 기준선. `bootstrap-mode: lazy`·`@MapperScan` 축소·`type-aliases-package` 미지정·Flyway/Jasypt 제외는 **되돌리지 말 것**. 측정은 3회 평균(편차 ±1초) |
 
 ---
 

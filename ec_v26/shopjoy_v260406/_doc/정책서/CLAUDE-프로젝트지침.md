@@ -26,6 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - [MyBatis SQL 테이블 별칭](#mybatis-sql-테이블-별칭-정책-postgresql) — 모든 컬럼 명시 ⭐
 - [MyBatis Mapper XML 수정 이력](#mybatis-mapper-xml-수정-이력-2026-04-16--2026-04-29) — 문제 해결 과정
 - [Spring Boot 빌드 & 배포](#spring-boot-빌드--배포) — ./gradlew clean build ⭐
+- [부팅 시간 기준선](#부팅-시간-기준선--local-10초-내외--2026-08-10-확정) — local 10초 내외, 되돌리면 안 되는 설정 ⭐
 - [데이터베이스 연결 설정](#데이터베이스-연결-설정) — PostgreSQL 접속 정보
 
 **📋 데이터 & 정책**
@@ -1611,6 +1612,24 @@ if (!user) {
 | Mapper XML 수정 | 런타임에 여전히 구 쿼리 실행 | `build/` 캐시 미정리 | `./gradlew clean build` |
 | 주석 또는 제어문자 추가 | SAXParseException, XML 파싱 에러 | 이진 `0x01` 등 제어 문자 | 텍스트 편집기로 검증 후 제거 |
 | SELECT * / COUNT(*) 명시화 | PostgreSQL "ambiguous column" | 테이블 별칭 누락 | 모든 컬럼에 `별칭.컬럼명` 적용 |
+
+### 부팅 시간 기준선 — local 10초 내외 ⭐⭐ (2026-08-10 확정)
+
+18.7초 → 9~11초로 단축한 상태다. **아래 설정은 부팅 시간을 위해 의도적으로 넣은 것이므로, 정리·리팩터링 중에 되돌리지 말 것.**
+
+| 설정 | 위치 | 효과 |
+|---|---|---|
+| `spring.data.jpa.repositories.bootstrap-mode: lazy` | `application-local.yml` | **단독 5초+** (리포지토리 175개 지연 생성). `deferred` 는 효과 없음 |
+| `@MapperScan` 을 실제 `@Mapper` 3개 패키지로 한정 | `EcAdminApiApplication.java` | 클래스 1600여 개 전수 스캔 제거. **새 `@Mapper` 패키지 추가 시 여기 등록 필수** |
+| `mybatis.type-aliases-package` 미지정 | `application-local/dev/prod.yml` | XML 이 전부 FQCN 사용 → 별칭 불필요. 루트 지정 시 또 전수 스캔 |
+| `spring.flyway.enabled: false` | `application-local.yml` | 마이그레이션 파일 0개인데 매번 원격 DB validate |
+| Jasypt·RedisRepositories autoconfig 제외 | `application-local.yml` | 미사용인데 전체 PropertySource 래핑 / base 패키지 전수 스캔 |
+
+- ⚠ **Jasypt 제외는 local 전용.** dev/prod 는 `ENC(...)` 를 쓰는 것이 정책(`base.설정값암호화.md`)이라, 거기서 제외하면 암호화 값이 **평문 그대로 주입**된다
+- ⚠ 측정은 **3회 이상 평균** — 회차 편차가 ±1초 이상이라 1회 측정으로는 판단 불가
+- ⚠ `hibernate.dialect` 는 deprecation 경고가 떠도 **제거 금지** (`allow_jdbc_metadata_access: false` 와 함께 써야 함)
+- **MyBatis 제거는 부팅 시간에 효과 0초** (실측 확인) — 이 목적으로 마이그레이션하지 말 것
+- 상세 및 진단 순서 → `_doc/정책서/base/base.백엔드부팅성능.md`
 
 ---
 

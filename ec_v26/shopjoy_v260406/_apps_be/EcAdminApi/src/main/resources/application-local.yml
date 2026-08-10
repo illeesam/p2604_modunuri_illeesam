@@ -25,6 +25,9 @@ spring:
   # 자동 설정 제외 — 사용 안 하는 모듈 제거로 부팅 단축
   autoconfigure:
     exclude:
+      # Jasypt — ENC(...) 로 암호화된 설정값이 하나도 없고 StringEncryptor 참조 코드도 없다.
+      #   그런데도 전체 PropertySource 를 래핑하고 RefreshScope 리스너를 건다. 암호화 값을 도입하면 이 줄 삭제.
+      - com.ulisesbocchio.jasyptspringbootstarter.JasyptSpringBootAutoConfiguration
       # 보안 OAuth2 클라이언트 안 씀
       - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
       # ElasticSearch 안 씀
@@ -35,12 +38,18 @@ spring:
       # MongoDB 안 씀
       - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
       - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      # Redis "리포지토리" 안 씀 — @RedisHash/KeyValueRepository 0개인데 base 패키지를 전수 스캔한다.
+      #   RedisTemplate 직접 사용(3곳)은 RedisAutoConfiguration 담당이라 그대로 동작한다.
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
 
   # Kotlin/Groovy 메시지 변환기 비활성
   mvc:
     converters:
       preferred-json-mapper: jackson
 
+  # ⚠ 아래 devtools 블록은 현재 동작하지 않는다 — build.gradle.kts 의
+  #   developmentOnly("org.springframework.boot:spring-boot-devtools") 가 주석 처리돼 있어
+  #   DevTools 가 클래스패스에 없다. 핫 리로드를 쓰려면 먼저 그 의존성을 살릴 것.
   # DevTools — hot-reload. poll 5s / quiet 3s (일괄 수정 중 단편 reload 방지)
   devtools:
     restart:
@@ -103,14 +112,28 @@ spring:
     init:
       mode: never
 
+  # Flyway 비활성 — 마이그레이션 파일이 0개(db/migration 디렉터리 없음)인데도 부팅마다
+  #   ClassPathScanner + 원격 DB 접속 + validate 를 수행한다. 마이그레이션을 도입하면 true 로 되돌릴 것.
   flyway:
+    enabled: false
     baseline-on-migrate: true
     baseline-version: 0
+
+  # JPA 리포지토리 175개 — lazy: 리포지토리 프록시를 첫 호출 시점에 생성한다.
+  #   deferred 는 EMF 준비 후 부팅 중에 175개를 전부 만들어 5초가량 잡아먹는다.
+  #   이미 spring.main.lazy-initialization=true 인 local 방침과 동일한 트레이드오프
+  #   (설정 오류가 부팅이 아닌 첫 요청에서 드러남). dev/prod 는 기본값 유지.
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: lazy
 
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   config-location: classpath:mybatis/mybatis-config.xml
-  type-aliases-package: com.shopjoy.ecadminapi
+  # type-aliases-package 제거 — mapper XML 이 resultType 에 전부 FQCN 을 쓰고 있어 별칭이 필요 없다.
+  #   루트 패키지를 지정하면 별칭 등록을 위해 클래스 1600여 개를 전수 스캔한다(부팅 지연).
+  #   XML 에서 짧은 별칭(resultType="SyDeptDto")을 쓰려면 그때 해당 DTO 패키지만 좁혀서 재지정할 것.
 
 server:
   port: 3000
