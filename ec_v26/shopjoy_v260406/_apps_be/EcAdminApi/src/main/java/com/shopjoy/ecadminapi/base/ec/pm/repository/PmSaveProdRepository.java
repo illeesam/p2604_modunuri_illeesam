@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface PmSaveProdRepository extends JpaRepository<PmSaveProd, PmSaveProd.PK> {
+public interface PmSaveProdRepository extends JpaRepository<PmSaveProd, String> {
 
     /** 특정 적립금의 전개 행 전체 삭제 (재계산 전 초기화용) */
     @Modifying

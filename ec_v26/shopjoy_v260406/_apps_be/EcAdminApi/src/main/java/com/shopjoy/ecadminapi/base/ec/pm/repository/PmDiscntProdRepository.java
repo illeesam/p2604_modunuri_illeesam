@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface PmDiscntProdRepository extends JpaRepository<PmDiscntProd, PmDiscntProd.PK> {
+public interface PmDiscntProdRepository extends JpaRepository<PmDiscntProd, String> {
 
     /** 특정 할인의 전개 행 전체 삭제 (재계산 전 초기화용) */
     @Modifying

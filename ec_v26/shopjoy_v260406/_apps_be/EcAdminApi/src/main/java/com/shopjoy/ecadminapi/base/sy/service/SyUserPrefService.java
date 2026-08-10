@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserPref;
 import com.shopjoy.ecadminapi.base.sy.repository.SyUserPrefRepository;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,18 +21,22 @@ public class SyUserPrefService {
     public Map<String, String> getAll(String userId) {
         return syUserPrefRepository.selectAll(userId).stream()
                 .collect(Collectors.toMap(
-                        p -> p.getId().getPrefKey(),
+                        SyUserPref::getPrefKey,
                         p -> p.getPrefValue() != null ? p.getPrefValue() : "",
                         (a, b) -> b
                 ));
     }
 
-    /** 단일 키 upsert (INSERT or UPDATE) */
+    /** 단일 키 upsert (INSERT or UPDATE)
+     *  복합 PK → 대리키 전환으로 findById 대신 (userId, prefKey) 조회로 기존 행을 찾는다. */
     @Transactional
     public void upsert(String userId, String prefKey, String prefValue) {
-        SyUserPref.SyUserPrefId pk = new SyUserPref.SyUserPrefId(userId, prefKey);
-        SyUserPref entity = syUserPrefRepository.findById(pk)
-                .orElseGet(() -> SyUserPref.builder().id(pk).build());
+        SyUserPref entity = syUserPrefRepository.findByUserIdAndPrefKey(userId, prefKey)
+                .orElseGet(() -> SyUserPref.builder()
+                        .userPrefId(CmUtil.generateId("sy_user_pref"))
+                        .userId(userId)
+                        .prefKey(prefKey)
+                        .build());
         entity.setPrefValue(prefValue);
         syUserPrefRepository.save(entity);
     }

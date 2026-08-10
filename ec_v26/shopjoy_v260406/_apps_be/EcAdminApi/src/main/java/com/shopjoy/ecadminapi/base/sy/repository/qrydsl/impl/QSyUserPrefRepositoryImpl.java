@@ -20,8 +20,8 @@ public class QSyUserPrefRepositoryImpl implements QSyUserPrefRepository {
     public List<SyUserPref> selectAll(String userId) {
         return queryFactory
                 .selectFrom(syUserPref)
-                .where(syUserPref.id.userId.eq(userId))
-                .orderBy(syUserPref.id.prefKey.asc())
+                .where(syUserPref.userId.eq(userId))
+                .orderBy(syUserPref.prefKey.asc())
                 .fetch();
     }
 }

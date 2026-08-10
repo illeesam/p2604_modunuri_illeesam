@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface PmEventProdRepository extends JpaRepository<PmEventProd, PmEventProd.PK> {
+public interface PmEventProdRepository extends JpaRepository<PmEventProd, String> {
 
     /** 특정 이벤트의 전개 행 전체 삭제 (재계산 전 초기화용) */
     @Modifying
