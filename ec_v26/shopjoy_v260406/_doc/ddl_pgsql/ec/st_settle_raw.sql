@@ -2,8 +2,8 @@
 -- 정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블)
 
 CREATE TABLE shopjoy_2604.st_settle_raw (
-    settle_raw_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id              VARCHAR(21)  NOT NULL,
+    settle_raw_id        VARCHAR(21)  NOT NULL CONSTRAINT st_settle_raw_pk_settle_raw_id PRIMARY KEY,
+    reg_site_id              VARCHAR(21)  NOT NULL,
     raw_type_cd          VARCHAR(20)  NOT NULL,
     raw_status_cd        VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     raw_status_cd_before VARCHAR(20) ,
@@ -74,7 +74,7 @@ CREATE TABLE shopjoy_2604.st_settle_raw (
 
 COMMENT ON TABLE  shopjoy_2604.st_settle_raw IS '정산 수집원장 (od_order_item / od_claim_item 기반 정산 원천 데이터, 통계·분석 기반 테이블)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.settle_raw_id IS '수집원장ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.st_settle_raw.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.st_settle_raw.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.raw_type_cd IS '수집유형 (코드: RAW_TYPE — ORDER/CLAIM)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.raw_status_cd IS '수집상태 (코드: RAW_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.raw_status_cd_before IS '변경 전 수집상태';
@@ -142,29 +142,35 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_raw.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.upd_date IS '수정일';
 
-CREATE INDEX idx_st_settle_raw_brand ON shopjoy_2604.st_settle_raw USING btree (brand_id);
-CREATE INDEX idx_st_settle_raw_brand_nm ON shopjoy_2604.st_settle_raw USING btree (brand_nm);
-CREATE INDEX idx_st_settle_raw_cate1 ON shopjoy_2604.st_settle_raw USING btree (category_id_1);
-CREATE INDEX idx_st_settle_raw_cate2 ON shopjoy_2604.st_settle_raw USING btree (category_id_2);
-CREATE INDEX idx_st_settle_raw_cate3 ON shopjoy_2604.st_settle_raw USING btree (category_id_3);
-CREATE INDEX idx_st_settle_raw_claim ON shopjoy_2604.st_settle_raw USING btree (claim_id);
-CREATE INDEX idx_st_settle_raw_close ON shopjoy_2604.st_settle_raw USING btree (close_yn, settle_period);
-CREATE INDEX idx_st_settle_raw_close_id ON shopjoy_2604.st_settle_raw USING btree (settle_close_id);
-CREATE INDEX idx_st_settle_raw_confirm ON shopjoy_2604.st_settle_raw USING btree (buy_confirm_yn, buy_confirm_date);
-CREATE INDEX idx_st_settle_raw_coupon ON shopjoy_2604.st_settle_raw USING btree (coupon_id);
-CREATE INDEX idx_st_settle_raw_erp ON shopjoy_2604.st_settle_raw USING btree (erp_voucher_id) WHERE (erp_voucher_id IS NOT NULL);
-CREATE INDEX idx_st_settle_raw_erp_send ON shopjoy_2604.st_settle_raw USING btree (erp_send_yn);
-CREATE INDEX idx_st_settle_raw_item ON shopjoy_2604.st_settle_raw USING btree (order_item_id);
-CREATE INDEX idx_st_settle_raw_md ON shopjoy_2604.st_settle_raw USING btree (md_user_id);
-CREATE INDEX idx_st_settle_raw_member ON shopjoy_2604.st_settle_raw USING btree (member_id);
-CREATE INDEX idx_st_settle_raw_order ON shopjoy_2604.st_settle_raw USING btree (order_id);
-CREATE INDEX idx_st_settle_raw_order_date ON shopjoy_2604.st_settle_raw USING btree (order_date);
-CREATE INDEX idx_st_settle_raw_pay ON shopjoy_2604.st_settle_raw USING btree (pay_method_cd);
-CREATE INDEX idx_st_settle_raw_period ON shopjoy_2604.st_settle_raw USING btree (settle_period, vendor_id);
-CREATE INDEX idx_st_settle_raw_prod ON shopjoy_2604.st_settle_raw USING btree (prod_id);
-CREATE INDEX idx_st_settle_raw_promo ON shopjoy_2604.st_settle_raw USING btree (promo_id);
-CREATE INDEX idx_st_settle_raw_settle ON shopjoy_2604.st_settle_raw USING btree (settle_id);
-CREATE INDEX idx_st_settle_raw_site ON shopjoy_2604.st_settle_raw USING btree (site_id);
-CREATE INDEX idx_st_settle_raw_sku ON shopjoy_2604.st_settle_raw USING btree (prod_sku_id);
-CREATE INDEX idx_st_settle_raw_status ON shopjoy_2604.st_settle_raw USING btree (raw_status_cd);
-CREATE INDEX idx_st_settle_raw_vendor ON shopjoy_2604.st_settle_raw USING btree (site_id, vendor_id);
+CREATE INDEX st_settle_raw_ix01_brand_id ON shopjoy_2604.st_settle_raw USING btree (brand_id);
+CREATE INDEX st_settle_raw_ix02_brand_nm ON shopjoy_2604.st_settle_raw USING btree (brand_nm);
+CREATE INDEX st_settle_raw_ix04_category_id_1 ON shopjoy_2604.st_settle_raw USING btree (category_id_1);
+CREATE INDEX st_settle_raw_ix05_category_id_2 ON shopjoy_2604.st_settle_raw USING btree (category_id_2);
+CREATE INDEX st_settle_raw_ix06_category_id_3 ON shopjoy_2604.st_settle_raw USING btree (category_id_3);
+CREATE INDEX st_settle_raw_ix07_claim_id ON shopjoy_2604.st_settle_raw USING btree (claim_id);
+CREATE INDEX st_settle_raw_ix09_close_yn_settle_period_x2 ON shopjoy_2604.st_settle_raw USING btree (close_yn, settle_period);
+CREATE INDEX st_settle_raw_ix27_settle_close_id ON shopjoy_2604.st_settle_raw USING btree (settle_close_id);
+CREATE INDEX st_settle_raw_ix03_buy_confirm_yn_buy_confirm_date_x2 ON shopjoy_2604.st_settle_raw USING btree (buy_confirm_yn, buy_confirm_date);
+CREATE INDEX st_settle_raw_ix10_coupon_id ON shopjoy_2604.st_settle_raw USING btree (coupon_id);
+CREATE INDEX st_settle_raw_ix14_erp_voucher_id ON shopjoy_2604.st_settle_raw USING btree (erp_voucher_id) WHERE (erp_voucher_id IS NOT NULL);
+CREATE INDEX st_settle_raw_ix13_erp_send_yn ON shopjoy_2604.st_settle_raw USING btree (erp_send_yn);
+CREATE INDEX st_settle_raw_ix20_order_item_id ON shopjoy_2604.st_settle_raw USING btree (order_item_id);
+CREATE INDEX st_settle_raw_ix16_md_user_id ON shopjoy_2604.st_settle_raw USING btree (md_user_id);
+CREATE INDEX st_settle_raw_ix17_member_id ON shopjoy_2604.st_settle_raw USING btree (member_id);
+CREATE INDEX st_settle_raw_ix18_order_id ON shopjoy_2604.st_settle_raw USING btree (order_id);
+CREATE INDEX st_settle_raw_ix19_order_date ON shopjoy_2604.st_settle_raw USING btree (order_date);
+CREATE INDEX st_settle_raw_ix21_pay_method_cd ON shopjoy_2604.st_settle_raw USING btree (pay_method_cd);
+CREATE INDEX st_settle_raw_ix28_settle_period_vendor_id_x2 ON shopjoy_2604.st_settle_raw USING btree (settle_period, vendor_id);
+CREATE INDEX st_settle_raw_ix22_prod_id ON shopjoy_2604.st_settle_raw USING btree (prod_id);
+CREATE INDEX st_settle_raw_ix24_promo_id ON shopjoy_2604.st_settle_raw USING btree (promo_id);
+CREATE INDEX st_settle_raw_ix26_settle_id ON shopjoy_2604.st_settle_raw USING btree (settle_id);
+CREATE INDEX st_settle_raw_ix23_prod_sku_id ON shopjoy_2604.st_settle_raw USING btree (prod_sku_id);
+CREATE INDEX st_settle_raw_ix25_raw_status_cd ON shopjoy_2604.st_settle_raw USING btree (raw_status_cd);
+CREATE INDEX st_settle_raw_ix_site_2 ON shopjoy_2604.st_settle_raw USING btree (site_id, vendor_id);
+CREATE INDEX st_settle_raw_ix08_claim_item_id ON shopjoy_2604.st_settle_raw USING btree (claim_item_id);
+CREATE INDEX st_settle_raw_ix11_coupon_issue_id ON shopjoy_2604.st_settle_raw USING btree (coupon_issue_id);
+CREATE INDEX st_settle_raw_ix12_discnt_id ON shopjoy_2604.st_settle_raw USING btree (discnt_id);
+CREATE INDEX st_settle_raw_ix15_gift_id ON shopjoy_2604.st_settle_raw USING btree (gift_id);
+CREATE INDEX st_settle_raw_ix29_vendor_id ON shopjoy_2604.st_settle_raw USING btree (vendor_id);
+CREATE INDEX st_settle_raw_ix30_voucher_id ON shopjoy_2604.st_settle_raw USING btree (voucher_id);
+CREATE INDEX st_settle_raw_ix31_voucher_issue_id ON shopjoy_2604.st_settle_raw USING btree (voucher_issue_id);

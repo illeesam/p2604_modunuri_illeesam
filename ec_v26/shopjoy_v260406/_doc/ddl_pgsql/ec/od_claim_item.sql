@@ -2,8 +2,8 @@
 -- 클레임 항목 (클레임 대상 주문상품 명세)
 
 CREATE TABLE shopjoy_2604.od_claim_item (
-    claim_item_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                     VARCHAR(21)  NOT NULL,
+    claim_item_id               VARCHAR(21)  NOT NULL CONSTRAINT od_claim_item_pk_claim_item_id PRIMARY KEY,
+    reg_site_id                     VARCHAR(21)  NOT NULL,
     claim_id                    VARCHAR(21)  NOT NULL,
     order_item_id               VARCHAR(21)  NOT NULL,
     prod_id                     VARCHAR(21) ,
@@ -37,7 +37,7 @@ CREATE TABLE shopjoy_2604.od_claim_item (
 
 COMMENT ON TABLE  shopjoy_2604.od_claim_item IS '클레임 항목 (클레임 대상 주문상품 명세)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.claim_item_id IS '클레임항목ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_claim_item.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_claim_item.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.claim_id IS '클레임ID (od_claim.)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.order_item_id IS '주문상품ID (od_order_item.)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.prod_id IS '상품ID';
@@ -68,4 +68,9 @@ COMMENT ON COLUMN shopjoy_2604.od_claim_item.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_claim_item.upd_date IS '수정일';
 
-CREATE INDEX idx_od_claim_item_site ON shopjoy_2604.od_claim_item USING btree (site_id);
+CREATE INDEX od_claim_item_ix01_claim_id ON shopjoy_2604.od_claim_item USING btree (claim_id);
+CREATE INDEX od_claim_item_ix02_new_prod_id ON shopjoy_2604.od_claim_item USING btree (new_prod_id);
+CREATE INDEX od_claim_item_ix03_new_prod_sku_id ON shopjoy_2604.od_claim_item USING btree (new_prod_sku_id);
+CREATE INDEX od_claim_item_ix04_order_item_id ON shopjoy_2604.od_claim_item USING btree (order_item_id);
+CREATE INDEX od_claim_item_ix05_prod_id ON shopjoy_2604.od_claim_item USING btree (prod_id);
+CREATE INDEX od_claim_item_ix06_prod_sku_id ON shopjoy_2604.od_claim_item USING btree (prod_sku_id);

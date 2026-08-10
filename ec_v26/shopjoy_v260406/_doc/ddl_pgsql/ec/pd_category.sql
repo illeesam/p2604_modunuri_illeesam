@@ -2,8 +2,8 @@
 -- 카테고리
 
 CREATE TABLE shopjoy_2604.pd_category (
-    category_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                   VARCHAR(21)  NOT NULL,
+    category_id               VARCHAR(21)  NOT NULL CONSTRAINT pd_category_pk_category_id PRIMARY KEY,
+    reg_site_id                   VARCHAR(21)  NOT NULL,
     parent_category_id        VARCHAR(21) ,
     category_nm               VARCHAR(100) NOT NULL,
     category_depth            INTEGER      DEFAULT 1,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.pd_category (
 
 COMMENT ON TABLE  shopjoy_2604.pd_category IS '카테고리';
 COMMENT ON COLUMN shopjoy_2604.pd_category.category_id IS '카테고리ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pd_category.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_category.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_category.parent_category_id IS '상위 카테고리ID';
 COMMENT ON COLUMN shopjoy_2604.pd_category.category_nm IS '카테고리명';
 COMMENT ON COLUMN shopjoy_2604.pd_category.category_depth IS '깊이 (1:대/2:중/3:소)';
@@ -34,4 +34,4 @@ COMMENT ON COLUMN shopjoy_2604.pd_category.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_category.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_category.upd_date IS '수정일';
 
-CREATE INDEX idx_pd_category_site ON shopjoy_2604.pd_category USING btree (site_id);
+CREATE INDEX pd_category_ix01_parent_category_id ON shopjoy_2604.pd_category USING btree (parent_category_id);

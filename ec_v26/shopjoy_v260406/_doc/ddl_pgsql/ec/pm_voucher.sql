@@ -2,8 +2,8 @@
 -- 상품권
 
 CREATE TABLE shopjoy_2604.pm_voucher (
-    voucher_id               VARCHAR(21)   NOT NULL PRIMARY KEY,
-    site_id                  VARCHAR(21)   NOT NULL,
+    voucher_id               VARCHAR(21)   NOT NULL CONSTRAINT pm_voucher_pk_voucher_id PRIMARY KEY,
+    reg_site_id                  VARCHAR(21)   NOT NULL,
     voucher_nm               VARCHAR(100)  NOT NULL,
     voucher_type_cd          VARCHAR(20)   NOT NULL,
     voucher_value            NUMERIC(10,2) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE shopjoy_2604.pm_voucher (
 
 COMMENT ON TABLE  shopjoy_2604.pm_voucher IS '상품권';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher.voucher_id IS '상품권ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_voucher.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.pm_voucher.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher.voucher_nm IS '상품권명';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher.voucher_type_cd IS '유형 (코드: VOUCHER_TYPE — AMOUNT/RATE)';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher.voucher_value IS '권면금액 또는 할인율';
@@ -38,5 +38,4 @@ COMMENT ON COLUMN shopjoy_2604.pm_voucher.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_voucher_site ON shopjoy_2604.pm_voucher USING btree (site_id);
-CREATE INDEX idx_pm_voucher_status ON shopjoy_2604.pm_voucher USING btree (voucher_status_cd);
+CREATE INDEX pm_voucher_ix01_voucher_status_cd ON shopjoy_2604.pm_voucher USING btree (voucher_status_cd);

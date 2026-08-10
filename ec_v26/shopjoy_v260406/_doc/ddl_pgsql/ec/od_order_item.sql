@@ -2,8 +2,8 @@
 -- 주문상품
 
 CREATE TABLE shopjoy_2604.od_order_item (
-    order_item_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                     VARCHAR(21)  NOT NULL,
+    order_item_id               VARCHAR(21)  NOT NULL CONSTRAINT od_order_item_pk_order_item_id PRIMARY KEY,
+    reg_site_id                     VARCHAR(21)  NOT NULL,
     order_id                    VARCHAR(21)  NOT NULL,
     prod_id                     VARCHAR(21)  NOT NULL,
     prod_sku_id                 VARCHAR(21) ,
@@ -52,7 +52,7 @@ CREATE TABLE shopjoy_2604.od_order_item (
 
 COMMENT ON TABLE  shopjoy_2604.od_order_item IS '주문상품';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.order_item_id IS '주문상품ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_order_item.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_order_item.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.order_id IS '주문ID (od_order.)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.prod_id IS '상품ID (pd_prod.)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.prod_sku_id IS 'SKU ID (pd_prod_sku.prod_sku_id, 무옵션 시 NULL)';
@@ -98,10 +98,12 @@ COMMENT ON COLUMN shopjoy_2604.od_order_item.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item.upd_date IS '수정일';
 
-CREATE INDEX idx_od_order_item_bundle ON shopjoy_2604.od_order_item USING btree (bundle_group_id) WHERE (bundle_group_id IS NOT NULL);
-CREATE INDEX idx_od_order_item_confirm ON shopjoy_2604.od_order_item USING btree (buy_confirm_yn, buy_confirm_schd_date);
-CREATE INDEX idx_od_order_item_order ON shopjoy_2604.od_order_item USING btree (order_id);
-CREATE INDEX idx_od_order_item_prod ON shopjoy_2604.od_order_item USING btree (prod_id);
-CREATE INDEX idx_od_order_item_settle ON shopjoy_2604.od_order_item USING btree (settle_yn);
-CREATE INDEX idx_od_order_item_site ON shopjoy_2604.od_order_item USING btree (site_id);
-CREATE INDEX idx_od_order_item_status ON shopjoy_2604.od_order_item USING btree (order_item_status_cd);
+CREATE INDEX od_order_item_ix01_bundle_group_id ON shopjoy_2604.od_order_item USING btree (bundle_group_id) WHERE (bundle_group_id IS NOT NULL);
+CREATE INDEX od_order_item_ix02_buy_confirm_yn_buy_confirm_schd_date_x2 ON shopjoy_2604.od_order_item USING btree (buy_confirm_yn, buy_confirm_schd_date);
+CREATE INDEX od_order_item_ix05_order_id ON shopjoy_2604.od_order_item USING btree (order_id);
+CREATE INDEX od_order_item_ix07_prod_id ON shopjoy_2604.od_order_item USING btree (prod_id);
+CREATE INDEX od_order_item_ix09_settle_yn ON shopjoy_2604.od_order_item USING btree (settle_yn);
+CREATE INDEX od_order_item_ix06_order_item_status_cd ON shopjoy_2604.od_order_item USING btree (order_item_status_cd);
+CREATE INDEX od_order_item_ix03_dliv_tmplt_id ON shopjoy_2604.od_order_item USING btree (dliv_tmplt_id);
+CREATE INDEX od_order_item_ix04_gift_id ON shopjoy_2604.od_order_item USING btree (gift_id);
+CREATE INDEX od_order_item_ix08_prod_sku_id ON shopjoy_2604.od_order_item USING btree (prod_sku_id);

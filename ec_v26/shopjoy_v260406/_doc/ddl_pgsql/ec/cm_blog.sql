@@ -2,8 +2,8 @@
 -- 블로그 게시글
 
 CREATE TABLE shopjoy_2604.cm_blog (
-    blog_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21)  NOT NULL,
+    blog_id      VARCHAR(21)  NOT NULL CONSTRAINT cm_blog_pk_blog_id PRIMARY KEY,
+    reg_site_id      VARCHAR(21)  NOT NULL,
     blog_cate_id VARCHAR(21) ,
     blog_type_cd VARCHAR(20)  DEFAULT 'BLOG',
     blog_title   VARCHAR(200) NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.cm_blog (
 
 COMMENT ON TABLE  shopjoy_2604.cm_blog IS '블로그 게시글';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_id IS '블로그ID';
-COMMENT ON COLUMN shopjoy_2604.cm_blog.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.cm_blog.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_cate_id IS '블로그카테고리ID (cm_bltn_cate.blog_cate_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_type_cd IS '게시글 구분 코드 (NEWS=뉴스 / BLOG=블로그)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_title IS '제목';
@@ -40,7 +40,7 @@ COMMENT ON COLUMN shopjoy_2604.cm_blog.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.upd_date IS '수정일';
 
-CREATE INDEX idx_cm_blog_cate ON shopjoy_2604.cm_blog USING btree (blog_cate_id);
-CREATE INDEX idx_cm_blog_date ON shopjoy_2604.cm_blog USING btree (reg_date DESC);
-CREATE INDEX idx_cm_blog_prod ON shopjoy_2604.cm_blog USING btree (prod_id);
-CREATE INDEX idx_cm_blog_site ON shopjoy_2604.cm_blog USING btree (site_id);
+CREATE INDEX cm_blog_ix01_blog_cate_id ON shopjoy_2604.cm_blog USING btree (blog_cate_id);
+CREATE INDEX cm_blog_ix04_reg_date ON shopjoy_2604.cm_blog USING btree (reg_date DESC);
+CREATE INDEX cm_blog_ix03_prod_id ON shopjoy_2604.cm_blog USING btree (prod_id);
+CREATE INDEX cm_blog_ix02_content_attach_grp_id ON shopjoy_2604.cm_blog USING btree (content_attach_grp_id);

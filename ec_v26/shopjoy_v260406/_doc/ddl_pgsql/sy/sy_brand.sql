@@ -2,8 +2,8 @@
 -- 브랜드
 
 CREATE TABLE shopjoy_2604.sy_brand (
-    brand_id     VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21)  NOT NULL,
+    brand_id     VARCHAR(21)  NOT NULL CONSTRAINT sy_brand_pk_brand_id PRIMARY KEY,
+    reg_site_id      VARCHAR(21)  NOT NULL,
     brand_code   VARCHAR(50)  NOT NULL,
     brand_nm     VARCHAR(100) NOT NULL,
     brand_en_nm  VARCHAR(100),
@@ -21,7 +21,7 @@ CREATE TABLE shopjoy_2604.sy_brand (
 
 COMMENT ON TABLE  shopjoy_2604.sy_brand IS '브랜드';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.brand_id IS '브랜드ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_brand.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_brand.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.brand_code IS '브랜드코드';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.brand_nm IS '브랜드명 (한글)';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.brand_en_nm IS '브랜드영문명';
@@ -36,5 +36,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_brand.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_brand_site ON shopjoy_2604.sy_brand USING btree (site_id);
-CREATE UNIQUE INDEX sy_brand_brand_code_key ON shopjoy_2604.sy_brand USING btree (brand_code);
+CREATE UNIQUE INDEX sy_brand_uk_brand_code ON shopjoy_2604.sy_brand USING btree (brand_code);
+CREATE INDEX sy_brand_ix01_vendor_id ON shopjoy_2604.sy_brand USING btree (vendor_id);

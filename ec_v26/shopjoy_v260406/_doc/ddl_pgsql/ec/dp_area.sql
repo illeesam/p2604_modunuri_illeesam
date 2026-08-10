@@ -2,9 +2,9 @@
 -- 디스플레이 영역
 
 CREATE TABLE shopjoy_2604.dp_area (
-    area_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
+    area_id        VARCHAR(21)  NOT NULL CONSTRAINT dp_area_pk_area_id PRIMARY KEY,
     ui_id          VARCHAR(21)  NOT NULL,
-    site_id        VARCHAR(21)  NOT NULL,
+    reg_site_id        VARCHAR(21)  NOT NULL,
     area_cd        VARCHAR(50)  NOT NULL,
     area_nm        VARCHAR(100) NOT NULL,
     area_type_cd   VARCHAR(30) ,
@@ -17,13 +17,13 @@ CREATE TABLE shopjoy_2604.dp_area (
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
     upd_date       TIMESTAMP   ,
-    CONSTRAINT dp_area_ui_id_fkey FOREIGN KEY (ui_id) REFERENCES shopjoy_2604.dp_ui (ui_id)
+    CONSTRAINT dp_area_fk_ui_id FOREIGN KEY (ui_id) REFERENCES shopjoy_2604.dp_ui (ui_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.dp_area IS '디스플레이 영역';
 COMMENT ON COLUMN shopjoy_2604.dp_area.area_id IS '영역ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.dp_area.ui_id IS 'UIID (dp_ui.ui_id)';
-COMMENT ON COLUMN shopjoy_2604.dp_area.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.dp_area.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_area.area_cd IS '영역코드 (예: MAIN_TOP, SIDEBAR_MID)';
 COMMENT ON COLUMN shopjoy_2604.dp_area.area_nm IS '영역명';
 COMMENT ON COLUMN shopjoy_2604.dp_area.area_type_cd IS '영역유형 (코드: DISP_AREA_TYPE)';
@@ -37,7 +37,6 @@ COMMENT ON COLUMN shopjoy_2604.dp_area.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.dp_area.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_area.upd_date IS '수정일';
 
-CREATE UNIQUE INDEX dp_area_site_id_area_cd_key ON shopjoy_2604.dp_area USING btree (site_id, area_cd);
-CREATE INDEX idx_dp_area_site ON shopjoy_2604.dp_area USING btree (site_id);
-CREATE INDEX idx_dp_area_ui ON shopjoy_2604.dp_area USING btree (ui_id);
-CREATE INDEX idx_dp_area_use ON shopjoy_2604.dp_area USING btree (use_yn, use_start_date, use_end_date);
+CREATE UNIQUE INDEX dp_area_uk_site ON shopjoy_2604.dp_area USING btree (site_id, area_cd);
+CREATE INDEX dp_area_ix01_ui_id ON shopjoy_2604.dp_area USING btree (ui_id);
+CREATE INDEX dp_area_ix02_use_yn_use_start_date_x3 ON shopjoy_2604.dp_area USING btree (use_yn, use_start_date, use_end_date);

@@ -2,8 +2,8 @@
 -- 배치 작업
 
 CREATE TABLE shopjoy_2604.sy_batch (
-    batch_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id           VARCHAR(21)  NOT NULL,
+    batch_id          VARCHAR(21)  NOT NULL CONSTRAINT sy_batch_pk_batch_id PRIMARY KEY,
+    reg_site_id           VARCHAR(21)  NOT NULL,
     batch_code        VARCHAR(50)  NOT NULL,
     batch_nm          VARCHAR(100) NOT NULL,
     batch_desc        TEXT        ,
@@ -25,7 +25,7 @@ CREATE TABLE shopjoy_2604.sy_batch (
 
 COMMENT ON TABLE  shopjoy_2604.sy_batch IS '배치 작업';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_id IS '배치ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_batch.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_batch.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_code IS '배치코드';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_nm IS '배치명';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_desc IS '배치설명';
@@ -44,5 +44,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_batch.upd_by IS '수정자 (sy_user.user_id, e
 COMMENT ON COLUMN shopjoy_2604.sy_batch.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 
-CREATE INDEX idx_sy_batch_site ON shopjoy_2604.sy_batch USING btree (site_id);
-CREATE UNIQUE INDEX sy_batch_batch_code_key ON shopjoy_2604.sy_batch USING btree (batch_code);
+CREATE UNIQUE INDEX sy_batch_uk_batch_code ON shopjoy_2604.sy_batch USING btree (batch_code);

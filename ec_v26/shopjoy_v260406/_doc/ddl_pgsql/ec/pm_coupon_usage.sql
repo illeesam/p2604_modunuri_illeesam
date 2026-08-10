@@ -2,8 +2,8 @@
 -- 쿠폰 사용 이력
 
 CREATE TABLE shopjoy_2604.pm_coupon_usage (
-    usage_id         VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21)  NOT NULL,
+    usage_id         VARCHAR(21)  NOT NULL CONSTRAINT pm_coupon_usage_pk_usage_id PRIMARY KEY,
+    reg_site_id          VARCHAR(21)  NOT NULL,
     coupon_id        VARCHAR(21)  NOT NULL,
     coupon_code      VARCHAR(50) ,
     coupon_nm        VARCHAR(100),
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.pm_coupon_usage (
 
 COMMENT ON TABLE  shopjoy_2604.pm_coupon_usage IS '쿠폰 사용 이력';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.usage_id IS '사용이력ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.coupon_id IS '쿠폰ID (pm_coupon.coupon_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.coupon_code IS '쿠폰코드 스냅샷';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.coupon_nm IS '쿠폰명 스냅샷';
@@ -40,9 +40,8 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_coupon_usage_coupon ON shopjoy_2604.pm_coupon_usage USING btree (coupon_id);
-CREATE INDEX idx_pm_coupon_usage_item ON shopjoy_2604.pm_coupon_usage USING btree (order_item_id);
-CREATE INDEX idx_pm_coupon_usage_member ON shopjoy_2604.pm_coupon_usage USING btree (member_id);
-CREATE INDEX idx_pm_coupon_usage_order ON shopjoy_2604.pm_coupon_usage USING btree (order_id);
-CREATE INDEX idx_pm_coupon_usage_prod ON shopjoy_2604.pm_coupon_usage USING btree (prod_id);
-CREATE INDEX idx_pm_coupon_usage_site ON shopjoy_2604.pm_coupon_usage USING btree (site_id);
+CREATE INDEX pm_coupon_usage_ix01_coupon_id ON shopjoy_2604.pm_coupon_usage USING btree (coupon_id);
+CREATE INDEX pm_coupon_usage_ix04_order_item_id ON shopjoy_2604.pm_coupon_usage USING btree (order_item_id);
+CREATE INDEX pm_coupon_usage_ix02_member_id ON shopjoy_2604.pm_coupon_usage USING btree (member_id);
+CREATE INDEX pm_coupon_usage_ix03_order_id ON shopjoy_2604.pm_coupon_usage USING btree (order_id);
+CREATE INDEX pm_coupon_usage_ix05_prod_id ON shopjoy_2604.pm_coupon_usage USING btree (prod_id);

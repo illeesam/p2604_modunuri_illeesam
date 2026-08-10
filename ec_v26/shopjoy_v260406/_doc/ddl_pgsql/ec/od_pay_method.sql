@@ -2,7 +2,7 @@
 -- 마이페이지 등록 결제수단
 
 CREATE TABLE shopjoy_2604.od_pay_method (
-    pay_method_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
+    pay_method_id      VARCHAR(21)  NOT NULL CONSTRAINT od_pay_method_pk_pay_method_id PRIMARY KEY,
     member_id          VARCHAR(21)  NOT NULL,
     pay_method_type_cd VARCHAR(20)  NOT NULL,
     pay_method_nm      VARCHAR(100) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.od_pay_method (
     reg_date           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by             VARCHAR(30) ,
     upd_date           TIMESTAMP   ,
-    site_id            VARCHAR(21)  NOT NULL
+    reg_site_id            VARCHAR(21)  NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.od_pay_method IS '마이페이지 등록 결제수단';
@@ -29,6 +29,5 @@ COMMENT ON COLUMN shopjoy_2604.od_pay_method.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.od_pay_method.upd_by IS '수정자ID';
 COMMENT ON COLUMN shopjoy_2604.od_pay_method.upd_date IS '수정일시';
 
-CREATE INDEX idx_od_pay_method_member ON shopjoy_2604.od_pay_method USING btree (member_id);
-CREATE INDEX idx_od_pay_method_site ON shopjoy_2604.od_pay_method USING btree (site_id);
-CREATE INDEX idx_od_pay_method_type ON shopjoy_2604.od_pay_method USING btree (pay_method_type_cd);
+CREATE INDEX od_pay_method_ix01_member_id ON shopjoy_2604.od_pay_method USING btree (member_id);
+CREATE INDEX od_pay_method_ix02_pay_method_type_cd ON shopjoy_2604.od_pay_method USING btree (pay_method_type_cd);

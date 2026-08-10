@@ -2,8 +2,8 @@
 -- 디스플레이 UI (최상위 화면 정의)
 
 CREATE TABLE shopjoy_2604.dp_ui (
-    ui_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21)  NOT NULL,
+    ui_id          VARCHAR(21)  NOT NULL CONSTRAINT dp_ui_pk_ui_id PRIMARY KEY,
+    reg_site_id        VARCHAR(21)  NOT NULL,
     ui_cd          VARCHAR(50)  NOT NULL,
     ui_nm          VARCHAR(100) NOT NULL,
     ui_desc        VARCHAR(300),
@@ -21,7 +21,7 @@ CREATE TABLE shopjoy_2604.dp_ui (
 
 COMMENT ON TABLE  shopjoy_2604.dp_ui IS '디스플레이 UI (최상위 화면 정의)';
 COMMENT ON COLUMN shopjoy_2604.dp_ui.ui_id IS 'UIID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.dp_ui.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.dp_ui.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_ui.ui_cd IS 'UI코드 (예: MOBILE_MAIN, PC_MAIN)';
 COMMENT ON COLUMN shopjoy_2604.dp_ui.ui_nm IS 'UI명';
 COMMENT ON COLUMN shopjoy_2604.dp_ui.ui_desc IS 'UI설명';
@@ -36,7 +36,6 @@ COMMENT ON COLUMN shopjoy_2604.dp_ui.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.dp_ui.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_ui.upd_date IS '수정일';
 
-CREATE UNIQUE INDEX dp_ui_site_id_ui_cd_key ON shopjoy_2604.dp_ui USING btree (site_id, ui_cd);
-CREATE INDEX idx_dp_ui_device ON shopjoy_2604.dp_ui USING btree (device_type_cd);
-CREATE INDEX idx_dp_ui_site ON shopjoy_2604.dp_ui USING btree (site_id);
-CREATE INDEX idx_dp_ui_use ON shopjoy_2604.dp_ui USING btree (use_yn, use_start_date, use_end_date);
+CREATE UNIQUE INDEX dp_ui_uk_site ON shopjoy_2604.dp_ui USING btree (site_id, ui_cd);
+CREATE INDEX dp_ui_ix01_device_type_cd ON shopjoy_2604.dp_ui USING btree (device_type_cd);
+CREATE INDEX dp_ui_ix02_use_yn_use_start_date_x3 ON shopjoy_2604.dp_ui USING btree (use_yn, use_start_date, use_end_date);

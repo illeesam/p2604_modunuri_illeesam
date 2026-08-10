@@ -2,8 +2,8 @@
 -- 푸시/알림 발송 로그
 
 CREATE TABLE shopjoy_2604.cmh_push_log (
-    log_id           VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21)  NOT NULL,
+    log_id           VARCHAR(21)  NOT NULL CONSTRAINT cmh_push_log_pk_log_id PRIMARY KEY,
+    reg_site_id          VARCHAR(21)  NOT NULL,
     channel_cd       VARCHAR(20)  NOT NULL,
     template_id      VARCHAR(21) ,
     member_id        VARCHAR(21) ,
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.cmh_push_log (
 
 COMMENT ON TABLE  shopjoy_2604.cmh_push_log IS '푸시/알림 발송 로그';
 COMMENT ON COLUMN shopjoy_2604.cmh_push_log.log_id IS '로그ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.cmh_push_log.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.cmh_push_log.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.cmh_push_log.channel_cd IS '발송채널 (코드: PUSH_CHANNEL)';
 COMMENT ON COLUMN shopjoy_2604.cmh_push_log.template_id IS '템플릿ID (sy_template.template_id)';
 COMMENT ON COLUMN shopjoy_2604.cmh_push_log.member_id IS '대상 회원ID';
@@ -40,7 +40,8 @@ COMMENT ON COLUMN shopjoy_2604.cmh_push_log.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.cmh_push_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.cmh_push_log.upd_date IS '수정일';
 
-CREATE INDEX idx_cmh_push_log_site ON shopjoy_2604.cmh_push_log USING btree (site_id);
-CREATE INDEX idx_sy_push_log_channel ON shopjoy_2604.cmh_push_log USING btree (channel_cd, result_cd);
-CREATE INDEX idx_sy_push_log_date ON shopjoy_2604.cmh_push_log USING btree (send_date);
-CREATE INDEX idx_sy_push_log_member ON shopjoy_2604.cmh_push_log USING btree (member_id);
+CREATE INDEX cmh_push_log_ix01_channel_cd_result_cd_x2 ON shopjoy_2604.cmh_push_log USING btree (channel_cd, result_cd);
+CREATE INDEX cmh_push_log_ix04_send_date ON shopjoy_2604.cmh_push_log USING btree (send_date);
+CREATE INDEX cmh_push_log_ix02_member_id ON shopjoy_2604.cmh_push_log USING btree (member_id);
+CREATE INDEX cmh_push_log_ix03_ref_id ON shopjoy_2604.cmh_push_log USING btree (ref_id);
+CREATE INDEX cmh_push_log_ix05_template_id ON shopjoy_2604.cmh_push_log USING btree (template_id);

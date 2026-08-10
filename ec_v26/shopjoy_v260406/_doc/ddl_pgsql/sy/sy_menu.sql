@@ -2,8 +2,8 @@
 -- 메뉴
 
 CREATE TABLE shopjoy_2604.sy_menu (
-    menu_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21)  NOT NULL,
+    menu_id        VARCHAR(21)  NOT NULL CONSTRAINT sy_menu_pk_menu_id PRIMARY KEY,
+    reg_site_id        VARCHAR(21)  NOT NULL,
     menu_code      VARCHAR(50)  NOT NULL,
     menu_nm        VARCHAR(100) NOT NULL,
     parent_menu_id VARCHAR(21) ,
@@ -21,7 +21,7 @@ CREATE TABLE shopjoy_2604.sy_menu (
 
 COMMENT ON TABLE  shopjoy_2604.sy_menu IS '메뉴';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.menu_id IS '메뉴ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_menu.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_menu.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.menu_code IS '메뉴코드';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.menu_nm IS '메뉴명';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.parent_menu_id IS '상위메뉴ID';
@@ -36,5 +36,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_menu.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_menu_site ON shopjoy_2604.sy_menu USING btree (site_id);
-CREATE UNIQUE INDEX sy_menu_menu_code_key ON shopjoy_2604.sy_menu USING btree (menu_code);
+CREATE UNIQUE INDEX sy_menu_uk_menu_code ON shopjoy_2604.sy_menu USING btree (menu_code);
+CREATE INDEX sy_menu_ix01_parent_menu_id ON shopjoy_2604.sy_menu USING btree (parent_menu_id);

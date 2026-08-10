@@ -2,8 +2,8 @@
 -- 상품문의
 
 CREATE TABLE shopjoy_2604.pd_prod_qna (
-    qna_id       VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21)  NOT NULL,
+    qna_id       VARCHAR(21)  NOT NULL CONSTRAINT pd_prod_qna_pk_prod_qna_id PRIMARY KEY,
+    reg_site_id      VARCHAR(21)  NOT NULL,
     prod_id      VARCHAR(21)  NOT NULL,
     prod_sku_id  VARCHAR(21) ,
     member_id    VARCHAR(21) ,
@@ -26,7 +26,7 @@ CREATE TABLE shopjoy_2604.pd_prod_qna (
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_qna IS '상품문의';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.qna_id IS '문의ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.prod_id IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.prod_sku_id IS 'SKU ID (pd_prod_sku.prod_sku_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.member_id IS '회원ID (mb_member.member_id)';
@@ -46,7 +46,9 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.upd_by IS '수정자ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_qna.upd_date IS '수정일시';
 
-CREATE INDEX idx_pd_prod_qna_answ ON shopjoy_2604.pd_prod_qna USING btree (answ_yn);
-CREATE INDEX idx_pd_prod_qna_member ON shopjoy_2604.pd_prod_qna USING btree (member_id);
-CREATE INDEX idx_pd_prod_qna_prod ON shopjoy_2604.pd_prod_qna USING btree (prod_id);
-CREATE INDEX idx_pd_prod_qna_site ON shopjoy_2604.pd_prod_qna USING btree (site_id);
+CREATE INDEX pd_prod_qna_ix02_answ_yn ON shopjoy_2604.pd_prod_qna USING btree (answ_yn);
+CREATE INDEX pd_prod_qna_ix03_member_id ON shopjoy_2604.pd_prod_qna USING btree (member_id);
+CREATE INDEX pd_prod_qna_ix05_prod_id ON shopjoy_2604.pd_prod_qna USING btree (prod_id);
+CREATE INDEX pd_prod_qna_ix01_answ_user_id ON shopjoy_2604.pd_prod_qna USING btree (answ_user_id);
+CREATE INDEX pd_prod_qna_ix04_order_id ON shopjoy_2604.pd_prod_qna USING btree (order_id);
+CREATE INDEX pd_prod_qna_ix06_prod_sku_id ON shopjoy_2604.pd_prod_qna USING btree (prod_sku_id);

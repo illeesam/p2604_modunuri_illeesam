@@ -2,8 +2,8 @@
 -- 쿠폰
 
 CREATE TABLE shopjoy_2604.pm_coupon (
-    coupon_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21)  NOT NULL,
+    coupon_id               VARCHAR(21)  NOT NULL CONSTRAINT pm_coupon_pk_coupon_id PRIMARY KEY,
+    reg_site_id                 VARCHAR(21)  NOT NULL,
     coupon_cd               VARCHAR(50)  NOT NULL,
     coupon_nm               VARCHAR(100) NOT NULL,
     coupon_type_cd          VARCHAR(20)  NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE shopjoy_2604.pm_coupon (
 
 COMMENT ON TABLE  shopjoy_2604.pm_coupon IS '쿠폰';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.coupon_id IS '쿠폰ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_coupon.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.coupon_cd IS '쿠폰코드';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.coupon_nm IS '쿠폰명';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.coupon_type_cd IS '쿠폰유형 (코드: COUPON_TYPE — PROD_DISCNT/ORDER_DISCNT/SHIP_DISCNT/SHIP_FREE/JOIN_GIFT/VIP/CLAIM_COMP)';
@@ -72,9 +72,8 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_coupon_code ON shopjoy_2604.pm_coupon USING btree (coupon_cd);
-CREATE INDEX idx_pm_coupon_grade ON shopjoy_2604.pm_coupon USING btree (mem_grade_cd);
-CREATE INDEX idx_pm_coupon_site ON shopjoy_2604.pm_coupon USING btree (site_id);
-CREATE INDEX idx_pm_coupon_status ON shopjoy_2604.pm_coupon USING btree (coupon_status_cd);
-CREATE INDEX idx_pm_coupon_type ON shopjoy_2604.pm_coupon USING btree (coupon_type_cd);
-CREATE UNIQUE INDEX pm_coupon_coupon_cd_key ON shopjoy_2604.pm_coupon USING btree (coupon_cd);
+CREATE INDEX pm_coupon_ix_coupon_cd ON shopjoy_2604.pm_coupon USING btree (coupon_cd);
+CREATE INDEX pm_coupon_ix03_mem_grade_cd ON shopjoy_2604.pm_coupon USING btree (mem_grade_cd);
+CREATE INDEX pm_coupon_ix01_coupon_status_cd ON shopjoy_2604.pm_coupon USING btree (coupon_status_cd);
+CREATE INDEX pm_coupon_ix02_coupon_type_cd ON shopjoy_2604.pm_coupon USING btree (coupon_type_cd);
+CREATE UNIQUE INDEX pm_coupon_uk_coupon_cd ON shopjoy_2604.pm_coupon USING btree (coupon_cd);

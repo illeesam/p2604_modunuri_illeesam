@@ -2,8 +2,8 @@
 -- 회원 로그인 로그
 
 CREATE TABLE shopjoy_2604.mbh_member_login_log (
-    log_id            VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id           VARCHAR(21)  NOT NULL,
+    log_id            VARCHAR(21)  NOT NULL CONSTRAINT mbh_member_login_log_pk_log_id PRIMARY KEY,
+    reg_site_id           VARCHAR(21)  NOT NULL,
     member_id         VARCHAR(21) ,
     login_id          VARCHAR(100),
     login_date        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -33,7 +33,7 @@ CREATE TABLE shopjoy_2604.mbh_member_login_log (
 
 COMMENT ON TABLE  shopjoy_2604.mbh_member_login_log IS '회원 로그인 로그';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.log_id IS '로그ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.member_id IS '회원ID (로그인 실패 시 NULL)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.login_id IS '입력한 로그인ID (이메일)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.login_date IS '로그인 시도일시';
@@ -56,7 +56,8 @@ COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.auth_id IS '인증ID';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.ui_nm IS '화면명 (X-UI-Nm 헤더)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_login_log.cmd_nm IS '기능명 (X-Cmd-Nm 헤더)';
 
-CREATE INDEX idx_mbh_member_login_log_date ON shopjoy_2604.mbh_member_login_log USING btree (login_date);
-CREATE INDEX idx_mbh_member_login_log_ip ON shopjoy_2604.mbh_member_login_log USING btree (ip);
-CREATE INDEX idx_mbh_member_login_log_member ON shopjoy_2604.mbh_member_login_log USING btree (member_id);
-CREATE INDEX idx_mbh_member_login_log_site ON shopjoy_2604.mbh_member_login_log USING btree (site_id);
+CREATE INDEX mbh_member_login_log_ix03_login_date ON shopjoy_2604.mbh_member_login_log USING btree (login_date);
+CREATE INDEX mbh_member_login_log_ix02_ip ON shopjoy_2604.mbh_member_login_log USING btree (ip);
+CREATE INDEX mbh_member_login_log_ix04_member_id ON shopjoy_2604.mbh_member_login_log USING btree (member_id);
+CREATE INDEX mbh_member_login_log_ix01_auth_id ON shopjoy_2604.mbh_member_login_log USING btree (auth_id);
+CREATE INDEX mbh_member_login_log_ix05_trace_id ON shopjoy_2604.mbh_member_login_log USING btree (trace_id);

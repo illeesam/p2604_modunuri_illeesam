@@ -4,8 +4,8 @@
 --             코드그룹명은 vw_sy_code VIEW (sy_code JOIN sy_code_grp) 로 조회
 
 CREATE TABLE shopjoy_2604.sy_code (
-    code_id           VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id           VARCHAR(21)  NOT NULL,
+    code_id           VARCHAR(21)  NOT NULL CONSTRAINT sy_code_pk_code_id PRIMARY KEY,
+    reg_site_id           VARCHAR(21)  NOT NULL,
     code_grp_id       VARCHAR(50)  NOT NULL,
     code_value        VARCHAR(50)  NOT NULL,
     code_label        VARCHAR(100) NOT NULL,
@@ -20,12 +20,12 @@ CREATE TABLE shopjoy_2604.sy_code (
     upd_date          TIMESTAMP   ,
     code_level        INTEGER     ,
     code_opt1         VARCHAR(200),
-    CONSTRAINT fk_sy_code_grp FOREIGN KEY (code_grp_id) REFERENCES shopjoy_2604.sy_code_grp(code_grp_id)
+    CONSTRAINT sy_code_fk_code_grp_id FOREIGN KEY (code_grp_id) REFERENCES shopjoy_2604.sy_code_grp(code_grp_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_code IS '공통코드';
 COMMENT ON COLUMN shopjoy_2604.sy_code.code_id IS '코드ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_code.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_code.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_code.code_grp_id IS '코드그룹ID (sy_code_grp.code_grp_id FK)';
 COMMENT ON COLUMN shopjoy_2604.sy_code.code_value IS '코드값 (저장값)';
 COMMENT ON COLUMN shopjoy_2604.sy_code.code_label IS '코드라벨 (표시명)';
@@ -41,10 +41,9 @@ COMMENT ON COLUMN shopjoy_2604.sy_code.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_code.code_level IS '코드 트리 레벨 (1=루트, 2=중간, 3=리프 등). parent_code_value와 함께 다단 트리 구성';
 COMMENT ON COLUMN shopjoy_2604.sy_code.code_opt1 IS '코드별 부가 옵션 1 (스타일 색상 hex, 아이콘 클래스 등 자유 문자열)';
 
-CREATE INDEX idx_sy_code_grp_id ON shopjoy_2604.sy_code USING btree (code_grp_id);
-CREATE UNIQUE INDEX idx_sy_code_grp_value ON shopjoy_2604.sy_code USING btree (code_grp_id, code_value);
-CREATE INDEX idx_sy_code_site ON shopjoy_2604.sy_code USING btree (site_id);
-CREATE INDEX idx_sy_code_use ON shopjoy_2604.sy_code USING btree (code_grp_id, use_yn);
+CREATE INDEX sy_code_ix01_code_grp_id ON shopjoy_2604.sy_code USING btree (code_grp_id);
+CREATE UNIQUE INDEX sy_code_uk_code_grp ON shopjoy_2604.sy_code USING btree (code_grp_id, code_value);
+CREATE INDEX sy_code_ix_code_grp_2 ON shopjoy_2604.sy_code USING btree (code_grp_id, use_yn);
 
 -- VIEW: vw_sy_code — sy_code JOIN sy_code_grp 으로 code_grp 텍스트 노출
 -- (QueryDSL 에서 QVwSyCode 로 사용, 코드그룹명 JOIN 조회용)

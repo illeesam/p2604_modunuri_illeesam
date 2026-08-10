@@ -2,8 +2,8 @@
 -- 주문상품할인 내역 (즉시할인·상품쿠폰)
 
 CREATE TABLE shopjoy_2604.od_order_item_discnt (
-    item_discnt_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21)  NOT NULL,
+    item_discnt_id   VARCHAR(21)  NOT NULL CONSTRAINT od_order_item_discnt_pk_item_discnt_id PRIMARY KEY,
+    reg_site_id          VARCHAR(21)  NOT NULL,
     order_id         VARCHAR(21)  NOT NULL,
     order_item_id    VARCHAR(21)  NOT NULL,
     discnt_type_cd   VARCHAR(30)  NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE shopjoy_2604.od_order_item_discnt (
 
 COMMENT ON TABLE  shopjoy_2604.od_order_item_discnt IS '주문상품할인 내역 (즉시할인·상품쿠폰)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.item_discnt_id IS '주문상품할인ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.order_id IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.order_item_id IS '주문상품ID (od_order_item.order_item_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.discnt_type_cd IS '할인유형코드 (코드: ORDER_ITEM_DISCNT_TYPE — ITEM_DISCNT/ITEM_COUPON)';
@@ -34,8 +34,8 @@ COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.order_qty IS '주문수량 �
 COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.reg_date IS '등록일시';
 
-CREATE INDEX idx_od_item_discnt_coupon ON shopjoy_2604.od_order_item_discnt USING btree (coupon_id) WHERE (coupon_id IS NOT NULL);
-CREATE INDEX idx_od_item_discnt_item ON shopjoy_2604.od_order_item_discnt USING btree (order_item_id);
-CREATE INDEX idx_od_item_discnt_order ON shopjoy_2604.od_order_item_discnt USING btree (order_id);
-CREATE INDEX idx_od_item_discnt_type ON shopjoy_2604.od_order_item_discnt USING btree (discnt_type_cd);
-CREATE INDEX idx_od_order_item_discnt_site ON shopjoy_2604.od_order_item_discnt USING btree (site_id);
+CREATE INDEX od_order_item_discnt_ix01_coupon_id ON shopjoy_2604.od_order_item_discnt USING btree (coupon_id) WHERE (coupon_id IS NOT NULL);
+CREATE INDEX od_order_item_discnt_ix05_order_item_id ON shopjoy_2604.od_order_item_discnt USING btree (order_item_id);
+CREATE INDEX od_order_item_discnt_ix04_order_id ON shopjoy_2604.od_order_item_discnt USING btree (order_id);
+CREATE INDEX od_order_item_discnt_ix03_discnt_type_cd ON shopjoy_2604.od_order_item_discnt USING btree (discnt_type_cd);
+CREATE INDEX od_order_item_discnt_ix02_coupon_issue_id ON shopjoy_2604.od_order_item_discnt USING btree (coupon_issue_id);

@@ -14,4 +14,4 @@ CREATE TABLE shopjoy_2604.zz_exam3 (
 
 COMMENT ON TABLE  shopjoy_2604.zz_exam3 IS 'zz_exam3';
 
-CREATE UNIQUE INDEX pk_zz_exam3 ON shopjoy_2604.zz_exam3 USING btree (exam1_id, exam2_id, exam3_id);
+CREATE UNIQUE INDEX zz_exam3_uk_exam1 ON shopjoy_2604.zz_exam3 USING btree (exam1_id, exam2_id, exam3_id);

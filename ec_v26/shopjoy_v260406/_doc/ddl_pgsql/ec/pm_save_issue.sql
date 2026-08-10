@@ -2,8 +2,8 @@
 -- 적립금 지급 이력 (구매적립/이벤트/리뷰/관리자 등)
 
 CREATE TABLE shopjoy_2604.pm_save_issue (
-    save_issue_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                VARCHAR(21)  NOT NULL,
+    save_issue_id          VARCHAR(21)  NOT NULL CONSTRAINT pm_save_issue_pk_save_issue_id PRIMARY KEY,
+    reg_site_id                VARCHAR(21)  NOT NULL,
     member_id              VARCHAR(21)  NOT NULL,
     save_issue_type_cd     VARCHAR(20)  NOT NULL,
     save_amt               BIGINT       NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE shopjoy_2604.pm_save_issue (
 
 COMMENT ON TABLE  shopjoy_2604.pm_save_issue IS '적립금 지급 이력 (구매적립/이벤트/리뷰/관리자 등)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_issue.save_issue_id IS '적립지급ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_save_issue.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_save_issue.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_issue.member_id IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_issue.save_issue_type_cd IS '지급유형 (코드: SAVE_ISSUE_TYPE — ORDER/EVENT/REVIEW/REFERRAL/ADMIN)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_issue.save_amt IS '지급 적립금액';
@@ -44,10 +44,11 @@ COMMENT ON COLUMN shopjoy_2604.pm_save_issue.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_save_issue.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pm_save_issue.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_save_issue_expire ON shopjoy_2604.pm_save_issue USING btree (expire_date);
-CREATE INDEX idx_pm_save_issue_item ON shopjoy_2604.pm_save_issue USING btree (order_item_id);
-CREATE INDEX idx_pm_save_issue_member ON shopjoy_2604.pm_save_issue USING btree (member_id);
-CREATE INDEX idx_pm_save_issue_order ON shopjoy_2604.pm_save_issue USING btree (order_id);
-CREATE INDEX idx_pm_save_issue_site ON shopjoy_2604.pm_save_issue USING btree (site_id);
-CREATE INDEX idx_pm_save_issue_status ON shopjoy_2604.pm_save_issue USING btree (issue_status_cd);
-CREATE INDEX idx_pm_save_issue_type ON shopjoy_2604.pm_save_issue USING btree (save_issue_type_cd);
+CREATE INDEX pm_save_issue_ix01_expire_date ON shopjoy_2604.pm_save_issue USING btree (expire_date);
+CREATE INDEX pm_save_issue_ix05_order_item_id ON shopjoy_2604.pm_save_issue USING btree (order_item_id);
+CREATE INDEX pm_save_issue_ix03_member_id ON shopjoy_2604.pm_save_issue USING btree (member_id);
+CREATE INDEX pm_save_issue_ix04_order_id ON shopjoy_2604.pm_save_issue USING btree (order_id);
+CREATE INDEX pm_save_issue_ix02_issue_status_cd ON shopjoy_2604.pm_save_issue USING btree (issue_status_cd);
+CREATE INDEX pm_save_issue_ix08_save_issue_type_cd ON shopjoy_2604.pm_save_issue USING btree (save_issue_type_cd);
+CREATE INDEX pm_save_issue_ix06_prod_id ON shopjoy_2604.pm_save_issue USING btree (prod_id);
+CREATE INDEX pm_save_issue_ix07_ref_id ON shopjoy_2604.pm_save_issue USING btree (ref_id);

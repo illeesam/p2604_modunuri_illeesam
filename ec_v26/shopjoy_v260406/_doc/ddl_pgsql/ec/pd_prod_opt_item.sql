@@ -6,8 +6,8 @@
 -- 상품 옵션 값 (구 테이블, 현재 pd_prod_opt 으로 rename됨)
 
 CREATE TABLE shopjoy_2604.pd_prod_opt_item (
-    opt_item_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id            VARCHAR(21)  NOT NULL,
+    opt_item_id        VARCHAR(21)  NOT NULL CONSTRAINT pd_prod_opt_item_pk PRIMARY KEY,
+    reg_site_id            VARCHAR(21)  NOT NULL,
     opt_id             VARCHAR(21)  NOT NULL,
     opt_item_nm        VARCHAR(100) NOT NULL,
     opt_item_val           VARCHAR(50) ,
@@ -24,7 +24,7 @@ CREATE TABLE shopjoy_2604.pd_prod_opt_item (
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_opt_item IS '상품 옵션 값';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.opt_item_id IS '옵션값ID';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.opt_id IS '옵션ID (pd_prod_opt.opt_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.opt_item_nm IS '옵션항목명 (예: 빨강, M)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.opt_item_val IS '실제 저장값 — opt_item_val_code_id 선택 시 codeValue 자동 채움, 직접입력도 허용';
@@ -38,6 +38,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.upd_by IS '수정자 (sy_user.us
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_item.opt_style IS '옵션 스타일 (컬러 hex 값, 아이콘 클래스 등 자유 문자열). 비어 있으면 표시명 텍스트만 사용';
 
-CREATE INDEX idx_pd_prod_opt_item_opt ON shopjoy_2604.pd_prod_opt_item USING btree (opt_id);
-CREATE INDEX idx_pd_prod_opt_item_parent ON shopjoy_2604.pd_prod_opt_item USING btree (parent_opt_item_id);
-CREATE INDEX idx_pd_prod_opt_item_site ON shopjoy_2604.pd_prod_opt_item USING btree (site_id);
+CREATE INDEX pd_prod_opt_item_ix_opt ON shopjoy_2604.pd_prod_opt_item USING btree (opt_id);
+CREATE INDEX pd_prod_opt_item_ix_parent_opt_item ON shopjoy_2604.pd_prod_opt_item USING btree (parent_opt_item_id);

@@ -2,7 +2,7 @@
 -- 회원 역할 연결
 
 CREATE TABLE shopjoy_2604.mb_member_role (
-    member_role_id     VARCHAR(21)  NOT NULL PRIMARY KEY,
+    member_role_id     VARCHAR(21)  NOT NULL CONSTRAINT mb_member_role_pk_member_role_id PRIMARY KEY,
     member_id          VARCHAR(21)  NOT NULL,
     role_id            VARCHAR(21)  NOT NULL,
     grant_user_id      VARCHAR(21) ,
@@ -14,10 +14,10 @@ CREATE TABLE shopjoy_2604.mb_member_role (
     reg_date           TIMESTAMP    DEFAULT now(),
     upd_by             VARCHAR(30) ,
     upd_date           TIMESTAMP   ,
-    site_id            VARCHAR(21)  NOT NULL,
-    CONSTRAINT fk_mb_member_role_grant FOREIGN KEY (grant_user_id) REFERENCES shopjoy_2604.sy_user (user_id),
-    CONSTRAINT fk_mb_member_role_member FOREIGN KEY (member_id) REFERENCES shopjoy_2604.mb_member (member_id),
-    CONSTRAINT fk_mb_member_role_role FOREIGN KEY (role_id) REFERENCES shopjoy_2604.sy_role (role_id)
+    reg_site_id            VARCHAR(21)  NOT NULL,
+    CONSTRAINT mb_member_role_fk_grant_user_id FOREIGN KEY (grant_user_id) REFERENCES shopjoy_2604.sy_user (user_id),
+    CONSTRAINT mb_member_role_fk2_member_id FOREIGN KEY (member_id) REFERENCES shopjoy_2604.mb_member (member_id),
+    CONSTRAINT mb_member_role_fk3_role_id FOREIGN KEY (role_id) REFERENCES shopjoy_2604.sy_role (role_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.mb_member_role IS '회원 역할 연결';
@@ -30,6 +30,6 @@ COMMENT ON COLUMN shopjoy_2604.mb_member_role.valid_from IS '유효 시작일';
 COMMENT ON COLUMN shopjoy_2604.mb_member_role.valid_to IS '유효 종료일';
 COMMENT ON COLUMN shopjoy_2604.mb_member_role.member_role_remark IS '비고';
 
-CREATE INDEX idx_mb_member_role_member ON shopjoy_2604.mb_member_role USING btree (member_id);
-CREATE INDEX idx_mb_member_role_role ON shopjoy_2604.mb_member_role USING btree (role_id);
-CREATE INDEX idx_mb_member_role_site ON shopjoy_2604.mb_member_role USING btree (site_id);
+CREATE INDEX mb_member_role_ix02_member_id ON shopjoy_2604.mb_member_role USING btree (member_id);
+CREATE INDEX mb_member_role_ix03_role_id ON shopjoy_2604.mb_member_role USING btree (role_id);
+CREATE INDEX mb_member_role_ix01_grant_user_id ON shopjoy_2604.mb_member_role USING btree (grant_user_id);

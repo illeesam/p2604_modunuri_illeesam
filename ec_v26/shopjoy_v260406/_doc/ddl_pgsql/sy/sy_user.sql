@@ -2,8 +2,8 @@
 -- 관리자 사용자
 
 CREATE TABLE shopjoy_2604.sy_user (
-    user_id           VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id           VARCHAR(21)  NOT NULL,
+    user_id           VARCHAR(21)  NOT NULL CONSTRAINT sy_user_pk_user_id PRIMARY KEY,
+    reg_site_id           VARCHAR(21)  NOT NULL,
     login_id          VARCHAR(50)  NOT NULL,
     login_pwd_hash    VARCHAR(255) NOT NULL,
     user_nm           VARCHAR(50)  NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE shopjoy_2604.sy_user (
 
 COMMENT ON TABLE  shopjoy_2604.sy_user IS '관리자 사용자';
 COMMENT ON COLUMN shopjoy_2604.sy_user.user_id IS '사용자ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_user.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_user.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_user.login_id IS '로그인 아이디';
 COMMENT ON COLUMN shopjoy_2604.sy_user.login_pwd_hash IS '비밀번호 (bcrypt)';
 COMMENT ON COLUMN shopjoy_2604.sy_user.user_nm IS '사용자명';
@@ -48,5 +48,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_user.last_login_date IS '마지막 로그인 �
 COMMENT ON COLUMN shopjoy_2604.sy_user.app_type_cd IS '앱 유형 (코드: APP_TYPE — FO:사용자앱, BO:관리자앱, SO:판매자앱, DO:배달기사앱, CO:고객사앱)';
 COMMENT ON COLUMN shopjoy_2604.sy_user.profile_attach_id IS '프로필 첨부아이디';
 
-CREATE INDEX idx_sy_user_site ON shopjoy_2604.sy_user USING btree (site_id);
-CREATE UNIQUE INDEX sy_user_login_id_key ON shopjoy_2604.sy_user USING btree (login_id);
+CREATE UNIQUE INDEX sy_user_uk_login_id ON shopjoy_2604.sy_user USING btree (login_id);
+CREATE INDEX sy_user_ix01_dept_id ON shopjoy_2604.sy_user USING btree (dept_id);
+CREATE INDEX sy_user_ix02_profile_attach_id ON shopjoy_2604.sy_user USING btree (profile_attach_id);
+CREATE INDEX sy_user_ix03_role_id ON shopjoy_2604.sy_user USING btree (role_id);

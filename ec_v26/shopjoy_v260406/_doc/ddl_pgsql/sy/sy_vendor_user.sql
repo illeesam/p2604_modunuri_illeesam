@@ -2,8 +2,8 @@
 -- 판매/배송업체 사용자 (담당자/실무자)
 
 CREATE TABLE shopjoy_2604.sy_vendor_user (
-    vendor_user_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id               VARCHAR(21)  NOT NULL,
+    vendor_user_id        VARCHAR(21)  NOT NULL CONSTRAINT sy_vendor_user_pk_vendor_user_id PRIMARY KEY,
+    reg_site_id               VARCHAR(21)  NOT NULL,
     vendor_id             VARCHAR(21)  NOT NULL,
     user_id               VARCHAR(21) ,
     role_id               VARCHAR(21) ,
@@ -28,7 +28,7 @@ CREATE TABLE shopjoy_2604.sy_vendor_user (
 
 COMMENT ON TABLE  shopjoy_2604.sy_vendor_user IS '판매/배송업체 사용자 (담당자/실무자)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.vendor_user_id IS '판매/배송업체사용자ID (PK)';
-COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.vendor_id IS '판매/배송업체ID (sy_vendor.vendor_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.user_id IS '사용자ID (sy_user.user_id, NULL=비로그인)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.role_id IS '역할ID (sy_role.role_id) - 판매업체/배송업체 역할 트리에서 선택';
@@ -50,9 +50,8 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_user.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_vendor_user_role ON shopjoy_2604.sy_vendor_user USING btree (role_id);
-CREATE INDEX idx_sy_vendor_user_site ON shopjoy_2604.sy_vendor_user USING btree (site_id);
-CREATE INDEX idx_sy_vendor_user_status ON shopjoy_2604.sy_vendor_user USING btree (vendor_user_status_cd);
-CREATE INDEX idx_sy_vendor_user_user ON shopjoy_2604.sy_vendor_user USING btree (user_id);
-CREATE INDEX idx_sy_vendor_user_vendor ON shopjoy_2604.sy_vendor_user USING btree (vendor_id);
-CREATE UNIQUE INDEX sy_vendor_user_vendor_id_user_id_key ON shopjoy_2604.sy_vendor_user USING btree (vendor_id, user_id);
+CREATE INDEX sy_vendor_user_ix01_role_id ON shopjoy_2604.sy_vendor_user USING btree (role_id);
+CREATE INDEX sy_vendor_user_ix03_vendor_user_status_cd ON shopjoy_2604.sy_vendor_user USING btree (vendor_user_status_cd);
+CREATE INDEX sy_vendor_user_ix02_user_id ON shopjoy_2604.sy_vendor_user USING btree (user_id);
+CREATE INDEX sy_vendor_user_ix_vendor ON shopjoy_2604.sy_vendor_user USING btree (vendor_id);
+CREATE UNIQUE INDEX sy_vendor_user_uk_vendor_id_user_id_x2 ON shopjoy_2604.sy_vendor_user USING btree (vendor_id, user_id);

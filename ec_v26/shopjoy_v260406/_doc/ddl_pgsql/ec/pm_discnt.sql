@@ -2,8 +2,8 @@
 -- 할인정책
 
 CREATE TABLE shopjoy_2604.pm_discnt (
-    discnt_id               VARCHAR(21)   NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21)   NOT NULL,
+    discnt_id               VARCHAR(21)   NOT NULL CONSTRAINT pm_discnt_pk_discnt_id PRIMARY KEY,
+    reg_site_id                 VARCHAR(21)   NOT NULL,
     discnt_nm               VARCHAR(100)  NOT NULL,
     discnt_type_cd          VARCHAR(20)   NOT NULL,
     discnt_val_type_cd      VARCHAR(20)  ,
@@ -32,7 +32,7 @@ CREATE TABLE shopjoy_2604.pm_discnt (
 
 COMMENT ON TABLE  shopjoy_2604.pm_discnt IS '할인정책';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt.discnt_id IS '할인ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_discnt.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_discnt.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt.discnt_nm IS '할인명';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt.discnt_type_cd IS '할인유형 (코드: DISCNT_TYPE — PROD/ORDER/SHIP/SHIP_FREE)';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt.discnt_val_type_cd IS '할인방식 (코드: DISCNT_VAL_TYPE — RATE/AMOUNT, SHIP_FREE 유형은 해당없음)';
@@ -58,7 +58,7 @@ COMMENT ON COLUMN shopjoy_2604.pm_discnt.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt.upd_by IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_discnt_date ON shopjoy_2604.pm_discnt USING btree (start_date, end_date);
-CREATE INDEX idx_pm_discnt_grade ON shopjoy_2604.pm_discnt USING btree (mem_grade_cd);
-CREATE INDEX idx_pm_discnt_site ON shopjoy_2604.pm_discnt USING btree (site_id);
-CREATE INDEX idx_pm_discnt_status ON shopjoy_2604.pm_discnt USING btree (discnt_status_cd);
+CREATE INDEX pm_discnt_ix04_start_date_end_date_x2 ON shopjoy_2604.pm_discnt USING btree (start_date, end_date);
+CREATE INDEX pm_discnt_ix03_mem_grade_cd ON shopjoy_2604.pm_discnt USING btree (mem_grade_cd);
+CREATE INDEX pm_discnt_ix01_discnt_status_cd ON shopjoy_2604.pm_discnt USING btree (discnt_status_cd);
+CREATE INDEX pm_discnt_ix02_discnt_val_type_cd ON shopjoy_2604.pm_discnt USING btree (discnt_val_type_cd);

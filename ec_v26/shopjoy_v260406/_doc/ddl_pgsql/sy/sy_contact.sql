@@ -2,8 +2,8 @@
 -- 고객문의
 
 CREATE TABLE shopjoy_2604.sy_contact (
-    contact_id              VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21)  NOT NULL,
+    contact_id              VARCHAR(21)  NOT NULL CONSTRAINT sy_contact_pk_contact_id PRIMARY KEY,
+    reg_site_id                 VARCHAR(21)  NOT NULL,
     member_id               VARCHAR(21) ,
     member_nm               VARCHAR(50) ,
     category_cd             VARCHAR(30) ,
@@ -24,7 +24,7 @@ CREATE TABLE shopjoy_2604.sy_contact (
 
 COMMENT ON TABLE  shopjoy_2604.sy_contact IS '고객문의';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.contact_id IS '문의ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_contact.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_contact.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.member_id IS '회원ID';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.member_nm IS '문의자명';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.category_cd IS '문의유형';
@@ -42,4 +42,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_contact.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_contact_site ON shopjoy_2604.sy_contact USING btree (site_id);
+CREATE INDEX sy_contact_ix01_answer_attach_grp_id ON shopjoy_2604.sy_contact USING btree (answer_attach_grp_id);
+CREATE INDEX sy_contact_ix02_answer_user_id ON shopjoy_2604.sy_contact USING btree (answer_user_id);
+CREATE INDEX sy_contact_ix03_content_attach_grp_id ON shopjoy_2604.sy_contact USING btree (content_attach_grp_id);
+CREATE INDEX sy_contact_ix04_member_id ON shopjoy_2604.sy_contact USING btree (member_id);

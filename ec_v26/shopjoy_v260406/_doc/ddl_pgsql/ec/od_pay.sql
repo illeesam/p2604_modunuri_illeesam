@@ -2,8 +2,8 @@
 -- 결제 (주문당 N건 결제 가능 — 분할결제)
 
 CREATE TABLE shopjoy_2604.od_pay (
-    pay_id                  VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21)  NOT NULL,
+    pay_id                  VARCHAR(21)  NOT NULL CONSTRAINT od_pay_pk_pay_id PRIMARY KEY,
+    reg_site_id                 VARCHAR(21)  NOT NULL,
     order_id                VARCHAR(21)  NOT NULL,
     claim_id                VARCHAR(21) ,
     pay_div_cd              VARCHAR(20) ,
@@ -47,12 +47,12 @@ CREATE TABLE shopjoy_2604.od_pay (
     reg_date                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by                  VARCHAR(30) ,
     upd_date                TIMESTAMP   ,
-    CONSTRAINT fk_od_pay_order FOREIGN KEY (order_id) REFERENCES shopjoy_2604.od_order (order_id)
+    CONSTRAINT od_pay_fk_order_id FOREIGN KEY (order_id) REFERENCES shopjoy_2604.od_order (order_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.od_pay IS '결제 (주문당 N건 결제 가능 — 분할결제)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pay_id IS '결제ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_pay.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_pay.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.order_id IS '주문ID (od_order.)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.claim_id IS '클레임ID (od_claim. — 클레임 추가결제 시)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pay_div_cd IS '주문/클레임 구분 (코드: PAY_DIV — ORDER/CLAIM)';
@@ -97,12 +97,11 @@ COMMENT ON COLUMN shopjoy_2604.od_pay.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.od_pay.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.upd_date IS '수정일';
 
-CREATE INDEX idx_od_pay_claim ON shopjoy_2604.od_pay USING btree (claim_id) WHERE (claim_id IS NOT NULL);
-CREATE INDEX idx_od_pay_date ON shopjoy_2604.od_pay USING btree (pay_date);
-CREATE INDEX idx_od_pay_div ON shopjoy_2604.od_pay USING btree (pay_div_cd, pay_dir_cd);
-CREATE INDEX idx_od_pay_method ON shopjoy_2604.od_pay USING btree (pay_method_cd, pay_status_cd);
-CREATE INDEX idx_od_pay_order ON shopjoy_2604.od_pay USING btree (order_id);
-CREATE INDEX idx_od_pay_pg_tid ON shopjoy_2604.od_pay USING btree (pg_transaction_id);
-CREATE INDEX idx_od_pay_site ON shopjoy_2604.od_pay USING btree (site_id);
-CREATE INDEX idx_od_pay_status ON shopjoy_2604.od_pay USING btree (pay_status_cd);
-CREATE INDEX idx_od_pay_vbank_due ON shopjoy_2604.od_pay USING btree (vbank_due_date) WHERE (vbank_due_date IS NOT NULL);
+CREATE INDEX od_pay_ix01_claim_id ON shopjoy_2604.od_pay USING btree (claim_id) WHERE (claim_id IS NOT NULL);
+CREATE INDEX od_pay_ix03_pay_date ON shopjoy_2604.od_pay USING btree (pay_date);
+CREATE INDEX od_pay_ix04_pay_div_cd_pay_dir_cd_x2 ON shopjoy_2604.od_pay USING btree (pay_div_cd, pay_dir_cd);
+CREATE INDEX od_pay_ix05_pay_method_cd_pay_status_cd_x2 ON shopjoy_2604.od_pay USING btree (pay_method_cd, pay_status_cd);
+CREATE INDEX od_pay_ix02_order_id ON shopjoy_2604.od_pay USING btree (order_id);
+CREATE INDEX od_pay_ix07_pg_transaction_id ON shopjoy_2604.od_pay USING btree (pg_transaction_id);
+CREATE INDEX od_pay_ix06_pay_status_cd ON shopjoy_2604.od_pay USING btree (pay_status_cd);
+CREATE INDEX od_pay_ix08_vbank_due_date ON shopjoy_2604.od_pay USING btree (vbank_due_date) WHERE (vbank_due_date IS NOT NULL);

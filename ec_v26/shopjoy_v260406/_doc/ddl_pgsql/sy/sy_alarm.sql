@@ -2,8 +2,8 @@
 -- 알림
 
 CREATE TABLE shopjoy_2604.sy_alarm (
-    alarm_id         VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21)  NOT NULL,
+    alarm_id         VARCHAR(21)  NOT NULL CONSTRAINT sy_alarm_pk_alarm_id PRIMARY KEY,
+    reg_site_id          VARCHAR(21)  NOT NULL,
     alarm_title      VARCHAR(200) NOT NULL,
     alarm_type_cd    VARCHAR(30) ,
     channel_cd       VARCHAR(20) ,
@@ -24,7 +24,7 @@ CREATE TABLE shopjoy_2604.sy_alarm (
 
 COMMENT ON TABLE  shopjoy_2604.sy_alarm IS '알림';
 COMMENT ON COLUMN shopjoy_2604.sy_alarm.alarm_id IS '알림ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_alarm.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_alarm.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_alarm.alarm_title IS '알림제목';
 COMMENT ON COLUMN shopjoy_2604.sy_alarm.alarm_type_cd IS '알림유형 (코드: ALARM_TYPE)';
 COMMENT ON COLUMN shopjoy_2604.sy_alarm.channel_cd IS '발송채널 (코드: ALARM_CHANNEL)';
@@ -42,4 +42,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_alarm.upd_by IS '수정자 (sy_user.user_id, e
 COMMENT ON COLUMN shopjoy_2604.sy_alarm.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_alarm.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 
-CREATE INDEX idx_sy_alarm_site ON shopjoy_2604.sy_alarm USING btree (site_id);
+CREATE INDEX sy_alarm_ix01_target_id ON shopjoy_2604.sy_alarm USING btree (target_id);
+CREATE INDEX sy_alarm_ix02_template_id ON shopjoy_2604.sy_alarm USING btree (template_id);

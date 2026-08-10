@@ -2,8 +2,8 @@
 -- 회원등급
 
 CREATE TABLE shopjoy_2604.mb_member_grade (
-    member_grade_id  VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21)  NOT NULL,
+    member_grade_id  VARCHAR(21)  NOT NULL CONSTRAINT mb_member_grade_pk_member_grade_id PRIMARY KEY,
+    reg_site_id          VARCHAR(21)  NOT NULL,
     grade_cd         VARCHAR(20)  NOT NULL,
     grade_nm         VARCHAR(50)  NOT NULL,
     grade_rank       INTEGER      DEFAULT 1,
@@ -18,7 +18,7 @@ CREATE TABLE shopjoy_2604.mb_member_grade (
 
 COMMENT ON TABLE  shopjoy_2604.mb_member_grade IS '회원등급';
 COMMENT ON COLUMN shopjoy_2604.mb_member_grade.member_grade_id IS '등급ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.mb_member_grade.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.mb_member_grade.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_member_grade.grade_cd IS '등급코드 (코드: MEMBER_GRADE)';
 COMMENT ON COLUMN shopjoy_2604.mb_member_grade.grade_nm IS '등급명';
 COMMENT ON COLUMN shopjoy_2604.mb_member_grade.grade_rank IS '등급우선순위 (낮을수록 낮은 등급)';
@@ -30,6 +30,5 @@ COMMENT ON COLUMN shopjoy_2604.mb_member_grade.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.mb_member_grade.upd_by IS '수정자ID';
 COMMENT ON COLUMN shopjoy_2604.mb_member_grade.upd_date IS '수정일시';
 
-CREATE INDEX idx_mb_member_grade_cd ON shopjoy_2604.mb_member_grade USING btree (grade_cd);
-CREATE INDEX idx_mb_member_grade_site ON shopjoy_2604.mb_member_grade USING btree (site_id);
-CREATE UNIQUE INDEX mb_member_grade_site_id_grade_cd_key ON shopjoy_2604.mb_member_grade USING btree (site_id, grade_cd);
+CREATE INDEX mb_member_grade_ix01_grade_cd ON shopjoy_2604.mb_member_grade USING btree (grade_cd);
+CREATE UNIQUE INDEX mb_member_grade_uk_site ON shopjoy_2604.mb_member_grade USING btree (site_id, grade_cd);

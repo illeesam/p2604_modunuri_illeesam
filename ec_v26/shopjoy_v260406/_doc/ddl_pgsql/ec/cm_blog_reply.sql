@@ -2,8 +2,8 @@
 -- 블로그 댓글
 
 CREATE TABLE shopjoy_2604.cm_blog_reply (
-    comment_id               VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id                  VARCHAR(21) NOT NULL,
+    comment_id               VARCHAR(21) NOT NULL CONSTRAINT cm_blog_reply_pk_comment_id PRIMARY KEY,
+    reg_site_id                  VARCHAR(21) NOT NULL,
     blog_id                  VARCHAR(21) NOT NULL,
     parent_comment_id        VARCHAR(21),
     writer_id                VARCHAR(21),
@@ -19,7 +19,7 @@ CREATE TABLE shopjoy_2604.cm_blog_reply (
 
 COMMENT ON TABLE  shopjoy_2604.cm_blog_reply IS '블로그 댓글';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_reply.comment_id IS '댓글ID';
-COMMENT ON COLUMN shopjoy_2604.cm_blog_reply.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.cm_blog_reply.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_reply.blog_id IS '블로그ID';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_reply.parent_comment_id IS '대댓글 부모ID';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_reply.writer_id IS '작성자ID';
@@ -32,6 +32,6 @@ COMMENT ON COLUMN shopjoy_2604.cm_blog_reply.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_reply.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_reply.upd_date IS '수정일';
 
-CREATE INDEX idx_cm_blog_reply_parent ON shopjoy_2604.cm_blog_reply USING btree (parent_comment_id);
-CREATE INDEX idx_cm_blog_reply_site ON shopjoy_2604.cm_blog_reply USING btree (site_id);
-CREATE INDEX idx_cm_bltn_reply_blog ON shopjoy_2604.cm_blog_reply USING btree (blog_id);
+CREATE INDEX cm_blog_reply_ix02_parent_comment_id ON shopjoy_2604.cm_blog_reply USING btree (parent_comment_id);
+CREATE INDEX cm_blog_reply_ix01_blog_id ON shopjoy_2604.cm_blog_reply USING btree (blog_id);
+CREATE INDEX cm_blog_reply_ix03_writer_id ON shopjoy_2604.cm_blog_reply USING btree (writer_id);

@@ -2,8 +2,8 @@
 -- 채팅 참여자 (2026-06-27 신규)
 
 CREATE TABLE shopjoy_2604.cm_chatt_member (
-    chatt_member_id    VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id            VARCHAR(21)  NOT NULL,
+    chatt_member_id    VARCHAR(21)  NOT NULL CONSTRAINT cm_chatt_member_pk_chatt_member_id PRIMARY KEY,
+    reg_site_id            VARCHAR(21)  NOT NULL,
     chatt_id           VARCHAR(21)  NOT NULL,
     member_type_cd     VARCHAR(20)  NOT NULL,
     ref_id             VARCHAR(21)  NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE shopjoy_2604.cm_chatt_member (
 
 COMMENT ON TABLE  shopjoy_2604.cm_chatt_member IS '채팅 참여자';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_member.chatt_member_id IS '참여자ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.cm_chatt_member.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt_member.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_member.chatt_id IS '채팅방ID (cm_chatt.chatt_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_member.member_type_cd IS '참여자유형 (MEMBER: 고객회원 / ADMIN: 관리자)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_member.ref_id IS '참조ID (MEMBER→mb_member.member_id / ADMIN→sy_user.user_id)';
@@ -32,7 +32,6 @@ COMMENT ON COLUMN shopjoy_2604.cm_chatt_member.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_member.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_member.upd_date IS '수정일시';
 
-CREATE INDEX idx_cm_chatt_member_chatt  ON shopjoy_2604.cm_chatt_member USING btree (chatt_id);
-CREATE INDEX idx_cm_chatt_member_ref    ON shopjoy_2604.cm_chatt_member USING btree (ref_id);
-CREATE INDEX idx_cm_chatt_member_type   ON shopjoy_2604.cm_chatt_member USING btree (member_type_cd);
-CREATE INDEX idx_cm_chatt_member_site   ON shopjoy_2604.cm_chatt_member USING btree (site_id);
+CREATE INDEX cm_chatt_member_ix01_chatt_id ON shopjoy_2604.cm_chatt_member USING btree (chatt_id);
+CREATE INDEX cm_chatt_member_ix03_ref_id ON shopjoy_2604.cm_chatt_member USING btree (ref_id);
+CREATE INDEX cm_chatt_member_ix02_member_type_cd ON shopjoy_2604.cm_chatt_member USING btree (member_type_cd);

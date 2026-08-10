@@ -2,8 +2,8 @@
 -- ERP 전표 마스터 (정산 → ERP 회계 전표)
 
 CREATE TABLE shopjoy_2604.st_erp_voucher (
-    erp_voucher_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                      VARCHAR(21)  NOT NULL,
+    erp_voucher_id               VARCHAR(21)  NOT NULL CONSTRAINT st_erp_voucher_pk_erp_voucher_id PRIMARY KEY,
+    reg_site_id                      VARCHAR(21)  NOT NULL,
     vendor_id                    VARCHAR(21) ,
     settle_id                    VARCHAR(21) ,
     settle_ym                    VARCHAR(6)  ,
@@ -25,7 +25,7 @@ CREATE TABLE shopjoy_2604.st_erp_voucher (
 
 COMMENT ON TABLE  shopjoy_2604.st_erp_voucher IS 'ERP 전표 마스터 (정산 → ERP 회계 전표)';
 COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.erp_voucher_id IS 'ERP전표ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.vendor_id IS '업체ID';
 COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.settle_id IS '정산ID (st_settle.settle_id)';
 COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.settle_ym IS '정산년월 (YYYYMM)';
@@ -44,9 +44,9 @@ COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.upd_date IS '수정일';
 
-CREATE INDEX idx_st_erp_voucher_no ON shopjoy_2604.st_erp_voucher USING btree (erp_voucher_no);
-CREATE INDEX idx_st_erp_voucher_settle ON shopjoy_2604.st_erp_voucher USING btree (settle_id);
-CREATE INDEX idx_st_erp_voucher_site ON shopjoy_2604.st_erp_voucher USING btree (site_id);
-CREATE INDEX idx_st_erp_voucher_status ON shopjoy_2604.st_erp_voucher USING btree (erp_voucher_status_cd);
-CREATE INDEX idx_st_erp_voucher_vendor ON shopjoy_2604.st_erp_voucher USING btree (site_id, vendor_id);
-CREATE INDEX idx_st_erp_voucher_ym ON shopjoy_2604.st_erp_voucher USING btree (settle_ym);
+CREATE INDEX st_erp_voucher_ix01_erp_voucher_no ON shopjoy_2604.st_erp_voucher USING btree (erp_voucher_no);
+CREATE INDEX st_erp_voucher_ix03_settle_id ON shopjoy_2604.st_erp_voucher USING btree (settle_id);
+CREATE INDEX st_erp_voucher_ix02_erp_voucher_status_cd ON shopjoy_2604.st_erp_voucher USING btree (erp_voucher_status_cd);
+CREATE INDEX st_erp_voucher_ix_site_2 ON shopjoy_2604.st_erp_voucher USING btree (site_id, vendor_id);
+CREATE INDEX st_erp_voucher_ix04_settle_ym ON shopjoy_2604.st_erp_voucher USING btree (settle_ym);
+CREATE INDEX st_erp_voucher_ix05_vendor_id ON shopjoy_2604.st_erp_voucher USING btree (vendor_id);

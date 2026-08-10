@@ -2,8 +2,8 @@
 -- 주문
 
 CREATE TABLE shopjoy_2604.od_order (
-    order_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                VARCHAR(21)  NOT NULL,
+    order_id               VARCHAR(21)  NOT NULL CONSTRAINT od_order_pk_order_id PRIMARY KEY,
+    reg_site_id                VARCHAR(21)  NOT NULL,
     member_id              VARCHAR(21)  NOT NULL,
     member_nm              VARCHAR(50) ,
     orderer_email          VARCHAR(100),
@@ -61,7 +61,7 @@ CREATE TABLE shopjoy_2604.od_order (
 
 COMMENT ON TABLE  shopjoy_2604.od_order IS '주문';
 COMMENT ON COLUMN shopjoy_2604.od_order.order_id IS '주문ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_order.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_order.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order.member_id IS '회원ID';
 COMMENT ON COLUMN shopjoy_2604.od_order.member_nm IS '주문자명';
 COMMENT ON COLUMN shopjoy_2604.od_order.orderer_email IS '주문자 이메일 (주문 시점 스냅샷)';
@@ -116,8 +116,10 @@ COMMENT ON COLUMN shopjoy_2604.od_order.appr_req_date IS '결재 요청일시';
 COMMENT ON COLUMN shopjoy_2604.od_order.appr_aprv_user_id IS '결재자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order.appr_aprv_date IS '결재일시';
 
-CREATE INDEX idx_od_order_channel ON shopjoy_2604.od_order USING btree (access_channel_cd);
-CREATE INDEX idx_od_order_date ON shopjoy_2604.od_order USING btree (order_date);
-CREATE INDEX idx_od_order_member ON shopjoy_2604.od_order USING btree (member_id);
-CREATE INDEX idx_od_order_site ON shopjoy_2604.od_order USING btree (site_id);
-CREATE INDEX idx_od_order_status ON shopjoy_2604.od_order USING btree (order_status_cd);
+CREATE INDEX od_order_ix01_access_channel_cd ON shopjoy_2604.od_order USING btree (access_channel_cd);
+CREATE INDEX od_order_ix06_order_date ON shopjoy_2604.od_order USING btree (order_date);
+CREATE INDEX od_order_ix05_member_id ON shopjoy_2604.od_order USING btree (member_id);
+CREATE INDEX od_order_ix07_order_status_cd ON shopjoy_2604.od_order USING btree (order_status_cd);
+CREATE INDEX od_order_ix02_appr_aprv_user_id ON shopjoy_2604.od_order USING btree (appr_aprv_user_id);
+CREATE INDEX od_order_ix03_appr_req_user_id ON shopjoy_2604.od_order USING btree (appr_req_user_id);
+CREATE INDEX od_order_ix04_coupon_id ON shopjoy_2604.od_order USING btree (coupon_id);

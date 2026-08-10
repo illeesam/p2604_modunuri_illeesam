@@ -2,8 +2,8 @@
 -- 기획전
 
 CREATE TABLE shopjoy_2604.pm_plan (
-    plan_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id               VARCHAR(21)  NOT NULL,
+    plan_id               VARCHAR(21)  NOT NULL CONSTRAINT pm_plan_pk_plan_id PRIMARY KEY,
+    reg_site_id               VARCHAR(21)  NOT NULL,
     plan_nm               VARCHAR(100) NOT NULL,
     plan_title            VARCHAR(200) NOT NULL,
     plan_type_cd          VARCHAR(20)  DEFAULT 'THEME'::character varying,
@@ -25,7 +25,7 @@ CREATE TABLE shopjoy_2604.pm_plan (
 
 COMMENT ON TABLE  shopjoy_2604.pm_plan IS '기획전';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.plan_id IS '기획전ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_plan.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.pm_plan.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.plan_nm IS '기획전명 (내부용)';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.plan_title IS '기획전 타이틀 (노출용)';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.plan_type_cd IS '유형 (코드: PLAN_TYPE — SEASON/BRAND/THEME/COLLAB)';
@@ -44,6 +44,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_plan.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_plan_date ON shopjoy_2604.pm_plan USING btree (start_date, end_date);
-CREATE INDEX idx_pm_plan_site ON shopjoy_2604.pm_plan USING btree (site_id);
-CREATE INDEX idx_pm_plan_status ON shopjoy_2604.pm_plan USING btree (plan_status_cd);
+CREATE INDEX pm_plan_ix03_start_date_end_date_x2 ON shopjoy_2604.pm_plan USING btree (start_date, end_date);
+CREATE INDEX pm_plan_ix01_plan_status_cd ON shopjoy_2604.pm_plan USING btree (plan_status_cd);
+CREATE INDEX pm_plan_ix02_plan_theme_cd ON shopjoy_2604.pm_plan USING btree (plan_theme_cd);

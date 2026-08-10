@@ -2,8 +2,8 @@
 -- 주문 변경 이력
 
 CREATE TABLE shopjoy_2604.odh_order_chg_hist (
-    order_chg_hist_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id           VARCHAR(21)  NOT NULL,
+    order_chg_hist_id VARCHAR(21)  NOT NULL CONSTRAINT odh_order_chg_hist_pk_order_chg_hist_id PRIMARY KEY,
+    reg_site_id           VARCHAR(21)  NOT NULL,
     order_id          VARCHAR(21)  NOT NULL,
     chg_type_cd       VARCHAR(30)  NOT NULL,
     chg_field         VARCHAR(50) ,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.odh_order_chg_hist (
 
 COMMENT ON TABLE  shopjoy_2604.odh_order_chg_hist IS '주문 변경 이력';
 COMMENT ON COLUMN shopjoy_2604.odh_order_chg_hist.order_chg_hist_id IS '이력ID';
-COMMENT ON COLUMN shopjoy_2604.odh_order_chg_hist.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.odh_order_chg_hist.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.odh_order_chg_hist.order_id IS '주문ID';
 COMMENT ON COLUMN shopjoy_2604.odh_order_chg_hist.chg_type_cd IS '변경유형코드 (PAY_METHOD/RECV_INFO/AMOUNT/MEMO/COUPON/CACHE/APPROVAL)';
 COMMENT ON COLUMN shopjoy_2604.odh_order_chg_hist.chg_field IS '변경 필드명';
@@ -34,7 +34,6 @@ COMMENT ON COLUMN shopjoy_2604.odh_order_chg_hist.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.odh_order_chg_hist.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.odh_order_chg_hist.upd_date IS '수정일';
 
-CREATE INDEX idx_odh_order_chg_hist_date ON shopjoy_2604.odh_order_chg_hist USING btree (chg_date);
-CREATE INDEX idx_odh_order_chg_hist_order ON shopjoy_2604.odh_order_chg_hist USING btree (order_id);
-CREATE INDEX idx_odh_order_chg_hist_site ON shopjoy_2604.odh_order_chg_hist USING btree (site_id);
-CREATE INDEX idx_odh_order_chg_hist_type ON shopjoy_2604.odh_order_chg_hist USING btree (chg_type_cd);
+CREATE INDEX odh_order_chg_hist_ix01_chg_date ON shopjoy_2604.odh_order_chg_hist USING btree (chg_date);
+CREATE INDEX odh_order_chg_hist_ix03_order_id ON shopjoy_2604.odh_order_chg_hist USING btree (order_id);
+CREATE INDEX odh_order_chg_hist_ix02_chg_type_cd ON shopjoy_2604.odh_order_chg_hist USING btree (chg_type_cd);

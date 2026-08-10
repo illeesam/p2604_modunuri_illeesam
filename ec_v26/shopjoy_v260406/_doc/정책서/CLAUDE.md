@@ -265,6 +265,7 @@
 | **배포/설정** | `base/base.운영환경-배포설정.md` |
 | **백엔드 부팅 시간** ⭐ | `base/base.백엔드부팅성능.md` — local 10초 내외 기준선. `bootstrap-mode: lazy`·`@MapperScan` 축소·`type-aliases-package` 미지정·Flyway/Jasypt 제외는 **되돌리지 말 것**. 측정은 3회 평균(편차 ±1초) |
 | **인덱스 튜닝** ⭐ | `base/base.인덱스튜닝정책.md` — 참조컬럼(FK/논리FK)은 인덱스 필수. 판단은 `pg_stats.n_distinct` 실측으로(seq_scan 수치만 보고 판단 금지). `reg_site_id` 단독 인덱스 금지(고유값 1) — 필요 시 복합으로 |
+| **인덱스·제약 명명 규칙** ⭐ | `base/base.인덱스튜닝정책.md` §3 — `{tbl}_ixNN_{col}[_xN]` / `{tbl}_pk_{col}` / `{tbl}_uk_{col}` / `{tbl}_fk_{col}`. 타입 2자 통일, 컬럼 최대 2개, 3개 이상이면 `_xN`. camelCase 금지(PG 가 소문자로 접음), DDL 무명 제약 금지(재생성 시 `_pkey` 로 돌아감) |
 
 ---
 

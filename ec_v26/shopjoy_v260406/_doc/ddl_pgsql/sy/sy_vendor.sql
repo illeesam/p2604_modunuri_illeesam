@@ -2,8 +2,8 @@
 -- 판매/배송업체 (사업체/법인)
 
 CREATE TABLE shopjoy_2604.sy_vendor (
-    vendor_id           VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id             VARCHAR(21)  NOT NULL,
+    vendor_id           VARCHAR(21)  NOT NULL CONSTRAINT sy_vendor_pk_vendor_id PRIMARY KEY,
+    reg_site_id             VARCHAR(21)  NOT NULL,
     vendor_no           VARCHAR(20)  NOT NULL,
     corp_no             VARCHAR(20) ,
     vendor_nm           VARCHAR(100) NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE shopjoy_2604.sy_vendor (
 
 COMMENT ON TABLE  shopjoy_2604.sy_vendor IS '판매/배송업체 (사업체/법인)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_id IS '판매/배송업체ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_vendor.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_vendor.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_no IS '판매/배송업체등록번호';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.corp_no IS '법인등록번호 (선택)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_nm IS '상호 / 회사명';
@@ -66,6 +66,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_vendor_site ON shopjoy_2604.sy_vendor USING btree (site_id);
-CREATE INDEX idx_sy_vendor_status ON shopjoy_2604.sy_vendor USING btree (vendor_status_cd);
-CREATE UNIQUE INDEX sy_vendor_vendor_no_key ON shopjoy_2604.sy_vendor USING btree (vendor_no);
+CREATE INDEX sy_vendor_ix01_vendor_status_cd ON shopjoy_2604.sy_vendor USING btree (vendor_status_cd);
+CREATE UNIQUE INDEX sy_vendor_uk_vendor_no ON shopjoy_2604.sy_vendor USING btree (vendor_no);

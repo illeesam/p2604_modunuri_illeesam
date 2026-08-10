@@ -2,8 +2,8 @@
 -- 첨부파일 정보 - 모든 도메인에서 업로드된 파일의 메타데이터 중앙 관리
 
 CREATE TABLE shopjoy_2604.sy_attach (
-    attach_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id            VARCHAR(21)  NOT NULL,
+    attach_id          VARCHAR(21)  NOT NULL CONSTRAINT sy_attach_pk_attach_id PRIMARY KEY,
+    reg_site_id            VARCHAR(21)  NOT NULL,
     attach_grp_id      VARCHAR(21)  NOT NULL,
     file_nm            VARCHAR(300) NOT NULL,
     file_size          BIGINT      ,
@@ -40,9 +40,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_attach.storage_path IS '파일 저장 경로 (
 COMMENT ON COLUMN shopjoy_2604.sy_attach.thumb_generated_yn IS '썸네일 생성 여부 (동영상은 필수 Y, 이미지는 선택)';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.physical_path IS '실제 물리 저장 전체 경로 (서버 절대경로, 예: src/main/resources/static/cdn/attch/NOTICE_ATTACH/2026/202605/20260503/파일명.png)';
 
-CREATE INDEX idx_sy_attach_file_ext ON shopjoy_2604.sy_attach USING btree (file_ext);
-CREATE INDEX idx_sy_attach_grp_id ON shopjoy_2604.sy_attach USING btree (attach_grp_id);
-CREATE INDEX idx_sy_attach_reg_date ON shopjoy_2604.sy_attach USING btree (reg_date);
-CREATE INDEX idx_sy_attach_site ON shopjoy_2604.sy_attach USING btree (site_id);
-CREATE INDEX idx_sy_attach_site_id ON shopjoy_2604.sy_attach USING btree (site_id);
-CREATE INDEX idx_sy_attach_storage_type ON shopjoy_2604.sy_attach USING btree (storage_type);
+CREATE INDEX sy_attach_ix02_file_ext ON shopjoy_2604.sy_attach USING btree (file_ext);
+CREATE INDEX sy_attach_ix01_attach_grp_id ON shopjoy_2604.sy_attach USING btree (attach_grp_id);
+CREATE INDEX sy_attach_ix03_reg_date ON shopjoy_2604.sy_attach USING btree (reg_date);
+CREATE INDEX sy_attach_ix04_storage_type ON shopjoy_2604.sy_attach USING btree (storage_type);

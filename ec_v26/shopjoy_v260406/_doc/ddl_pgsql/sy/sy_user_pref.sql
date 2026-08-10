@@ -10,7 +10,7 @@ CREATE TABLE shopjoy_2604.sy_user_pref (
     reg_date   timestamp    DEFAULT CURRENT_TIMESTAMP NOT NULL, -- 등록일시
     upd_by     varchar(30)  NULL,                               -- 수정자
     upd_date   timestamp    NULL,                               -- 최종 수정일시
-    CONSTRAINT sy_user_pref_pkey PRIMARY KEY (user_id, pref_key)
+    CONSTRAINT sy_user_pref_pk_user_id_pref_key_x2 PRIMARY KEY (user_id, pref_key)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_user_pref            IS '관리자 사용자 개인화 설정';

@@ -2,7 +2,7 @@
 -- 관리자 사용자-메뉴 매핑 (N:M)
 
 CREATE TABLE shopjoy_2604.sy_user_bookmark (
-    user_bookmark_id     VARCHAR(21)  NOT NULL PRIMARY KEY,
+    user_bookmark_id     VARCHAR(21)  NOT NULL CONSTRAINT sy_user_bookmark_pk_user_bookmark_id PRIMARY KEY,
     user_id              VARCHAR(21)  NOT NULL,
     menu_id              VARCHAR(21)  NOT NULL,
     grant_user_id        VARCHAR(21) ,
@@ -14,7 +14,7 @@ CREATE TABLE shopjoy_2604.sy_user_bookmark (
     reg_date             TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by               VARCHAR(30) ,
     upd_date             TIMESTAMP   ,
-    site_id              VARCHAR(21)  NOT NULL
+    reg_site_id              VARCHAR(21)  NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_user_bookmark IS '관리자 사용자-메뉴 매핑 (N:M)';
@@ -26,6 +26,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_user_bookmark.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_user_bookmark.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_user_bookmark.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_user_bookmark_site ON shopjoy_2604.sy_user_bookmark USING btree (site_id);
-CREATE INDEX idx_sy_user_bookmark_user ON shopjoy_2604.sy_user_bookmark USING btree (user_id);
-CREATE UNIQUE INDEX sy_user_bookmark_user_id_menu_id_key ON shopjoy_2604.sy_user_bookmark USING btree (user_id, menu_id);
+CREATE INDEX sy_user_bookmark_ix_user ON shopjoy_2604.sy_user_bookmark USING btree (user_id);
+CREATE UNIQUE INDEX sy_user_bookmark_uk_user_id_menu_id_x2 ON shopjoy_2604.sy_user_bookmark USING btree (user_id, menu_id);
+CREATE INDEX sy_user_bookmark_ix01_grant_user_id ON shopjoy_2604.sy_user_bookmark USING btree (grant_user_id);
+CREATE INDEX sy_user_bookmark_ix02_menu_id ON shopjoy_2604.sy_user_bookmark USING btree (menu_id);

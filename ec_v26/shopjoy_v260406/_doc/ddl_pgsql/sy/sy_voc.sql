@@ -2,8 +2,8 @@
 -- 고객의소리 VOC 분류
 
 CREATE TABLE shopjoy_2604.sy_voc (
-    voc_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21)  NOT NULL,
+    voc_id        VARCHAR(21)  NOT NULL CONSTRAINT sy_voc_pk_voc_id PRIMARY KEY,
+    reg_site_id       VARCHAR(21)  NOT NULL,
     voc_master_cd VARCHAR(20)  NOT NULL,
     voc_detail_cd VARCHAR(20)  NOT NULL,
     voc_nm        VARCHAR(100) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE shopjoy_2604.sy_voc (
 
 COMMENT ON TABLE  shopjoy_2604.sy_voc IS '고객의소리 VOC 분류';
 COMMENT ON COLUMN shopjoy_2604.sy_voc.voc_id IS 'VOC분류ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_voc.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_voc.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_voc.voc_master_cd IS 'VOC마스터코드 (코드: VOC_MASTER)';
 COMMENT ON COLUMN shopjoy_2604.sy_voc.voc_detail_cd IS 'VOC세부코드 (코드: VOC_DETAIL)';
 COMMENT ON COLUMN shopjoy_2604.sy_voc.voc_nm IS 'VOC항목명';
@@ -28,6 +28,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_voc.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.sy_voc.upd_by IS '수정자ID';
 COMMENT ON COLUMN shopjoy_2604.sy_voc.upd_date IS '수정일시';
 
-CREATE INDEX idx_sy_voc_master_cd ON shopjoy_2604.sy_voc USING btree (voc_master_cd);
-CREATE INDEX idx_sy_voc_site ON shopjoy_2604.sy_voc USING btree (site_id);
-CREATE UNIQUE INDEX sy_voc_site_id_voc_master_cd_voc_detail_cd_key ON shopjoy_2604.sy_voc USING btree (site_id, voc_master_cd, voc_detail_cd);
+CREATE INDEX sy_voc_ix01_voc_master_cd ON shopjoy_2604.sy_voc USING btree (voc_master_cd);
+CREATE UNIQUE INDEX sy_voc_uk_site ON shopjoy_2604.sy_voc USING btree (site_id, voc_master_cd, voc_detail_cd);

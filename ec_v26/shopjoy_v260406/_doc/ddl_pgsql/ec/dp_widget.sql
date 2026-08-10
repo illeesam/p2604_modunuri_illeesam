@@ -2,9 +2,9 @@
 -- 디스플레이 위젯 (라이브러리 참조 또는 직접 생성)
 
 CREATE TABLE shopjoy_2604.dp_widget (
-    widget_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
+    widget_id          VARCHAR(21)  NOT NULL CONSTRAINT dp_widget_pk_widget_id PRIMARY KEY,
     widget_lib_id      VARCHAR(21) ,
-    site_id            VARCHAR(21)  NOT NULL,
+    reg_site_id            VARCHAR(21)  NOT NULL,
     widget_nm          VARCHAR(100) NOT NULL,
     widget_type_cd     VARCHAR(30)  NOT NULL,
     widget_desc        VARCHAR(300),
@@ -21,13 +21,13 @@ CREATE TABLE shopjoy_2604.dp_widget (
     reg_date           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by             VARCHAR(30) ,
     upd_date           TIMESTAMP   ,
-    CONSTRAINT dp_widget_widget_lib_id_fkey FOREIGN KEY (widget_lib_id) REFERENCES shopjoy_2604.dp_widget_lib (widget_lib_id)
+    CONSTRAINT dp_widget_fk_widget_lib_id FOREIGN KEY (widget_lib_id) REFERENCES shopjoy_2604.dp_widget_lib (widget_lib_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.dp_widget IS '디스플레이 위젯 (라이브러리 참조 또는 직접 생성)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.widget_id IS '위젯ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.widget_lib_id IS '위젯라이브러리ID (dp_widget_lib.widget_lib_id, 참조 선택사항)';
-COMMENT ON COLUMN shopjoy_2604.dp_widget.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.dp_widget.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.widget_nm IS '위젯명';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.widget_type_cd IS '위젯유형 (코드: WIDGET_TYPE)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.widget_desc IS '위젯설명';
@@ -45,8 +45,7 @@ COMMENT ON COLUMN shopjoy_2604.dp_widget.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.upd_date IS '수정일';
 
-CREATE UNIQUE INDEX dp_widget_site_id_widget_nm_key ON shopjoy_2604.dp_widget USING btree (site_id, widget_nm);
-CREATE INDEX idx_dp_widget_disp_env ON shopjoy_2604.dp_widget USING btree (disp_env);
-CREATE INDEX idx_dp_widget_lib ON shopjoy_2604.dp_widget USING btree (widget_lib_id);
-CREATE INDEX idx_dp_widget_site ON shopjoy_2604.dp_widget USING btree (site_id);
-CREATE INDEX idx_dp_widget_type ON shopjoy_2604.dp_widget USING btree (widget_type_cd);
+CREATE UNIQUE INDEX dp_widget_uk_site ON shopjoy_2604.dp_widget USING btree (site_id, widget_nm);
+CREATE INDEX dp_widget_ix01_disp_env ON shopjoy_2604.dp_widget USING btree (disp_env);
+CREATE INDEX dp_widget_ix02_widget_lib_id ON shopjoy_2604.dp_widget USING btree (widget_lib_id);
+CREATE INDEX dp_widget_ix03_widget_type_cd ON shopjoy_2604.dp_widget USING btree (widget_type_cd);

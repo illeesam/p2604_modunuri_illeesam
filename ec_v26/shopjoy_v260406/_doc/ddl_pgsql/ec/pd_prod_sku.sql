@@ -2,8 +2,8 @@
 -- 상품 옵션 SKU (조합별 재고/가격)
 
 CREATE TABLE shopjoy_2604.pd_prod_sku (
-    prod_sku_id    VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21) NOT NULL,
+    prod_sku_id    VARCHAR(21) NOT NULL CONSTRAINT pd_prod_sku_pk_prod_sku_id PRIMARY KEY,
+    reg_site_id        VARCHAR(21) NOT NULL,
     prod_id        VARCHAR(21) NOT NULL,
     prod_opt_id_1  VARCHAR(21),
     prod_opt_id_2  VARCHAR(21),
@@ -18,7 +18,7 @@ CREATE TABLE shopjoy_2604.pd_prod_sku (
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_sku IS '상품 옵션 SKU (조합별 재고/가격)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_sku_id IS 'SKU ID';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_id IS '상품ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_opt_id_1 IS '옵션1 값ID (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_opt_id_2 IS '옵션2 값ID (pd_prod_opt.prod_opt_id)';
@@ -30,4 +30,4 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.upd_date IS '수정일';
 
-CREATE INDEX idx_pd_prod_sku_site ON shopjoy_2604.pd_prod_sku USING btree (site_id);
+CREATE INDEX pd_prod_sku_ix01_prod_id ON shopjoy_2604.pd_prod_sku USING btree (prod_id);

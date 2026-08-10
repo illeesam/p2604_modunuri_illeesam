@@ -2,8 +2,8 @@
 -- 클레임상품 상태 이력
 
 CREATE TABLE shopjoy_2604.odh_claim_item_status_hist (
-    claim_item_status_hist_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                     VARCHAR(21)  NOT NULL,
+    claim_item_status_hist_id   VARCHAR(21)  NOT NULL CONSTRAINT odh_claim_item_status_hist_pk_claim_item_status_hist_id PRIMARY KEY,
+    reg_site_id                     VARCHAR(21)  NOT NULL,
     claim_item_id               VARCHAR(21)  NOT NULL,
     claim_id                    VARCHAR(21) ,
     order_item_id               VARCHAR(21) ,
@@ -17,12 +17,12 @@ CREATE TABLE shopjoy_2604.odh_claim_item_status_hist (
     reg_date                    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by                      VARCHAR(30) ,
     upd_date                    TIMESTAMP   ,
-    CONSTRAINT fk_odh_claim_item_status_hist_item FOREIGN KEY (claim_item_id) REFERENCES shopjoy_2604.od_claim_item (claim_item_id)
+    CONSTRAINT odh_claim_item_status_hist_fk_claim_item_id FOREIGN KEY (claim_item_id) REFERENCES shopjoy_2604.od_claim_item (claim_item_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.odh_claim_item_status_hist IS '클레임상품 상태 이력';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_item_status_hist.claim_item_status_hist_id IS '클레임상품상태이력ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.odh_claim_item_status_hist.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.odh_claim_item_status_hist.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_item_status_hist.claim_item_id IS '클레임상품ID (od_claim_item.claim_item_id)';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_item_status_hist.claim_id IS '클레임ID (od_claim.claim_id)';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_item_status_hist.order_item_id IS '주문상품ID (od_order_item.order_item_id)';
@@ -37,8 +37,7 @@ COMMENT ON COLUMN shopjoy_2604.odh_claim_item_status_hist.reg_date IS '등록일
 COMMENT ON COLUMN shopjoy_2604.odh_claim_item_status_hist.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.odh_claim_item_status_hist.upd_date IS '수정일';
 
-CREATE INDEX idx_od_ci_status_hist_claim ON shopjoy_2604.odh_claim_item_status_hist USING btree (claim_id);
-CREATE INDEX idx_od_ci_status_hist_date ON shopjoy_2604.odh_claim_item_status_hist USING btree (chg_date);
-CREATE INDEX idx_od_ci_status_hist_item ON shopjoy_2604.odh_claim_item_status_hist USING btree (claim_item_id);
-CREATE INDEX idx_od_ci_status_hist_oi ON shopjoy_2604.odh_claim_item_status_hist USING btree (order_item_id);
-CREATE INDEX idx_odh_claim_item_status_hist_site ON shopjoy_2604.odh_claim_item_status_hist USING btree (site_id);
+CREATE INDEX odh_claim_item_status_hist_ix02_claim_id ON shopjoy_2604.odh_claim_item_status_hist USING btree (claim_id);
+CREATE INDEX odh_claim_item_status_hist_ix01_chg_date ON shopjoy_2604.odh_claim_item_status_hist USING btree (chg_date);
+CREATE INDEX odh_claim_item_status_hist_ix03_claim_item_id ON shopjoy_2604.odh_claim_item_status_hist USING btree (claim_item_id);
+CREATE INDEX odh_claim_item_status_hist_ix04_order_item_id ON shopjoy_2604.odh_claim_item_status_hist USING btree (order_item_id);

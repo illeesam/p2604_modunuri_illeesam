@@ -2,8 +2,8 @@
 -- 클레임 (취소/반품/교환)
 
 CREATE TABLE shopjoy_2604.od_claim (
-    claim_id                   VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                    VARCHAR(21)  NOT NULL,
+    claim_id                   VARCHAR(21)  NOT NULL CONSTRAINT od_claim_pk_claim_id PRIMARY KEY,
+    reg_site_id                    VARCHAR(21)  NOT NULL,
     order_id                   VARCHAR(21)  NOT NULL,
     member_id                  VARCHAR(21) ,
     member_nm                  VARCHAR(50) ,
@@ -81,7 +81,7 @@ CREATE TABLE shopjoy_2604.od_claim (
 
 COMMENT ON TABLE  shopjoy_2604.od_claim IS '클레임 (취소/반품/교환)';
 COMMENT ON COLUMN shopjoy_2604.od_claim.claim_id IS '클레임ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_claim.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_claim.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_claim.order_id IS '주문ID';
 COMMENT ON COLUMN shopjoy_2604.od_claim.member_id IS '회원ID';
 COMMENT ON COLUMN shopjoy_2604.od_claim.member_nm IS '회원명';
@@ -156,9 +156,13 @@ COMMENT ON COLUMN shopjoy_2604.od_claim.appr_req_date IS '결재 요청일시';
 COMMENT ON COLUMN shopjoy_2604.od_claim.appr_aprv_user_id IS '결재자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.od_claim.appr_aprv_date IS '결재일시';
 
-CREATE INDEX idx_od_claim_date ON shopjoy_2604.od_claim USING btree (request_date);
-CREATE INDEX idx_od_claim_member ON shopjoy_2604.od_claim USING btree (member_id);
-CREATE INDEX idx_od_claim_order ON shopjoy_2604.od_claim USING btree (order_id);
-CREATE INDEX idx_od_claim_site ON shopjoy_2604.od_claim USING btree (site_id);
-CREATE INDEX idx_od_claim_status ON shopjoy_2604.od_claim USING btree (claim_status_cd);
-CREATE INDEX idx_od_claim_type ON shopjoy_2604.od_claim USING btree (claim_type_cd);
+CREATE INDEX od_claim_ix10_request_date ON shopjoy_2604.od_claim USING btree (request_date);
+CREATE INDEX od_claim_ix06_member_id ON shopjoy_2604.od_claim USING btree (member_id);
+CREATE INDEX od_claim_ix07_order_id ON shopjoy_2604.od_claim USING btree (order_id);
+CREATE INDEX od_claim_ix03_claim_status_cd ON shopjoy_2604.od_claim USING btree (claim_status_cd);
+CREATE INDEX od_claim_ix04_claim_type_cd ON shopjoy_2604.od_claim USING btree (claim_type_cd);
+CREATE INDEX od_claim_ix01_appr_aprv_user_id ON shopjoy_2604.od_claim USING btree (appr_aprv_user_id);
+CREATE INDEX od_claim_ix02_appr_req_user_id ON shopjoy_2604.od_claim USING btree (appr_req_user_id);
+CREATE INDEX od_claim_ix05_inbound_dliv_id ON shopjoy_2604.od_claim USING btree (inbound_dliv_id);
+CREATE INDEX od_claim_ix08_outbound_dliv_id ON shopjoy_2604.od_claim USING btree (outbound_dliv_id);
+CREATE INDEX od_claim_ix09_proc_user_id ON shopjoy_2604.od_claim USING btree (proc_user_id);

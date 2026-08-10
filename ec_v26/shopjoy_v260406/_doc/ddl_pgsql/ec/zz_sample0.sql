@@ -2,7 +2,7 @@
 -- ZzSample0 - 샘플 데이터 관리 테이블 0
 
 CREATE TABLE shopjoy_2604.zz_sample0 (
-    sample0_id   VARCHAR(21)  NOT NULL PRIMARY KEY,
+    sample0_id   VARCHAR(21)  NOT NULL CONSTRAINT zz_sample0_pk PRIMARY KEY,
     sample_name  VARCHAR(100),
     sample_desc  VARCHAR(500),
     sample_value VARCHAR(100),

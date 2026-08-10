@@ -2,8 +2,8 @@
 -- 역할 (권한그룹)
 
 CREATE TABLE shopjoy_2604.sy_role (
-    role_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21)  NOT NULL,
+    role_id        VARCHAR(21)  NOT NULL CONSTRAINT sy_role_pk_role_id PRIMARY KEY,
+    reg_site_id        VARCHAR(21)  NOT NULL,
     role_code      VARCHAR(50)  NOT NULL,
     role_nm        VARCHAR(100) NOT NULL,
     parent_role_id VARCHAR(21) ,
@@ -21,7 +21,7 @@ CREATE TABLE shopjoy_2604.sy_role (
 
 COMMENT ON TABLE  shopjoy_2604.sy_role IS '역할 (권한그룹)';
 COMMENT ON COLUMN shopjoy_2604.sy_role.role_id IS '역할ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_role.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_role.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_role.role_code IS '역할코드';
 COMMENT ON COLUMN shopjoy_2604.sy_role.role_nm IS '역할명';
 COMMENT ON COLUMN shopjoy_2604.sy_role.parent_role_id IS '상위역할ID';
@@ -36,5 +36,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_role.upd_by IS '수정자 (sy_user.user_id, ec
 COMMENT ON COLUMN shopjoy_2604.sy_role.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_role.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 
-CREATE INDEX idx_sy_role_site ON shopjoy_2604.sy_role USING btree (site_id);
-CREATE UNIQUE INDEX sy_role_role_code_key ON shopjoy_2604.sy_role USING btree (role_code);
+CREATE UNIQUE INDEX sy_role_uk_role_code ON shopjoy_2604.sy_role USING btree (role_code);
+CREATE INDEX sy_role_ix01_parent_role_id ON shopjoy_2604.sy_role USING btree (parent_role_id);

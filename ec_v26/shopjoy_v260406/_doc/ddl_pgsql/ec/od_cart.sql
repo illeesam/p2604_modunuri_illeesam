@@ -2,8 +2,8 @@
 -- 장바구니
 
 CREATE TABLE shopjoy_2604.od_cart (
-    cart_id       VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21)  NOT NULL,
+    cart_id       VARCHAR(21)  NOT NULL CONSTRAINT od_cart_pk_cart_id PRIMARY KEY,
+    reg_site_id       VARCHAR(21)  NOT NULL,
     member_id     VARCHAR(21) ,
     session_key   VARCHAR(100),
     prod_id       VARCHAR(21)  NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE shopjoy_2604.od_cart (
 
 COMMENT ON TABLE  shopjoy_2604.od_cart IS '장바구니';
 COMMENT ON COLUMN shopjoy_2604.od_cart.cart_id IS '장바구니ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_cart.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_cart.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_cart.member_id IS '회원ID (비회원 NULL)';
 COMMENT ON COLUMN shopjoy_2604.od_cart.session_key IS '비회원 세션키';
 COMMENT ON COLUMN shopjoy_2604.od_cart.prod_id IS '상품ID (pd_prod.prod_id)';
@@ -38,7 +38,7 @@ COMMENT ON COLUMN shopjoy_2604.od_cart.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.od_cart.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_cart.upd_date IS '수정일';
 
-CREATE INDEX idx_od_cart_member ON shopjoy_2604.od_cart USING btree (member_id);
-CREATE INDEX idx_od_cart_prod ON shopjoy_2604.od_cart USING btree (prod_id);
-CREATE INDEX idx_od_cart_session ON shopjoy_2604.od_cart USING btree (session_key);
-CREATE INDEX idx_od_cart_site ON shopjoy_2604.od_cart USING btree (site_id);
+CREATE INDEX od_cart_ix01_member_id ON shopjoy_2604.od_cart USING btree (member_id);
+CREATE INDEX od_cart_ix02_prod_id ON shopjoy_2604.od_cart USING btree (prod_id);
+CREATE INDEX od_cart_ix04_session_key ON shopjoy_2604.od_cart USING btree (session_key);
+CREATE INDEX od_cart_ix03_prod_sku_id ON shopjoy_2604.od_cart USING btree (prod_sku_id);

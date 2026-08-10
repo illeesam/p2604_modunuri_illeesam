@@ -2,8 +2,8 @@
 -- 상품 리뷰
 
 CREATE TABLE shopjoy_2604.pd_review (
-    review_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21)  NOT NULL,
+    review_id               VARCHAR(21)  NOT NULL CONSTRAINT pd_review_pk_review_id PRIMARY KEY,
+    reg_site_id                 VARCHAR(21)  NOT NULL,
     prod_id                 VARCHAR(21)  NOT NULL,
     member_id               VARCHAR(21)  NOT NULL,
     review_title            VARCHAR(200) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE shopjoy_2604.pd_review (
 
 COMMENT ON TABLE  shopjoy_2604.pd_review IS '상품 리뷰';
 COMMENT ON COLUMN shopjoy_2604.pd_review.review_id IS '리뷰ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pd_review.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_review.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_review.prod_id IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_review.member_id IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_review.review_title IS '리뷰 제목';
@@ -38,8 +38,7 @@ COMMENT ON COLUMN shopjoy_2604.pd_review.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_review.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_review.upd_date IS '수정일';
 
-CREATE INDEX idx_pd_review_date ON shopjoy_2604.pd_review USING btree (review_date);
-CREATE INDEX idx_pd_review_member ON shopjoy_2604.pd_review USING btree (member_id);
-CREATE INDEX idx_pd_review_prod ON shopjoy_2604.pd_review USING btree (prod_id);
-CREATE INDEX idx_pd_review_site ON shopjoy_2604.pd_review USING btree (site_id);
-CREATE INDEX idx_pd_review_status ON shopjoy_2604.pd_review USING btree (review_status_cd);
+CREATE INDEX pd_review_ix03_review_date ON shopjoy_2604.pd_review USING btree (review_date);
+CREATE INDEX pd_review_ix01_member_id ON shopjoy_2604.pd_review USING btree (member_id);
+CREATE INDEX pd_review_ix02_prod_id ON shopjoy_2604.pd_review USING btree (prod_id);
+CREATE INDEX pd_review_ix04_review_status_cd ON shopjoy_2604.pd_review USING btree (review_status_cd);

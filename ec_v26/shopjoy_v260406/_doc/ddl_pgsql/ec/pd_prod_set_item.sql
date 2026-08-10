@@ -2,8 +2,8 @@
 -- 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의)
 
 CREATE TABLE shopjoy_2604.pd_prod_set_item (
-    set_item_id  VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21)  NOT NULL,
+    set_item_id  VARCHAR(21)  NOT NULL CONSTRAINT pd_prod_set_item_pk_set_item_id PRIMARY KEY,
+    reg_site_id      VARCHAR(21)  NOT NULL,
     set_prod_id  VARCHAR(21)  NOT NULL,
     item_prod_id VARCHAR(21) ,
     item_sku_id  VARCHAR(21) ,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.pd_prod_set_item (
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_set_item IS '세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.set_item_id IS '세트구성ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.set_prod_id IS '세트상품ID (pd_prod.prod_id, prod_type_cd=SET)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.item_prod_id IS '구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.item_sku_id IS '구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)';
@@ -34,4 +34,6 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.upd_by IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.upd_date IS '수정일';
 
-CREATE INDEX idx_pd_prod_set_item_site ON shopjoy_2604.pd_prod_set_item USING btree (site_id);
+CREATE INDEX pd_prod_set_item_ix01_item_prod_id ON shopjoy_2604.pd_prod_set_item USING btree (item_prod_id);
+CREATE INDEX pd_prod_set_item_ix02_item_sku_id ON shopjoy_2604.pd_prod_set_item USING btree (item_sku_id);
+CREATE INDEX pd_prod_set_item_ix03_set_prod_id ON shopjoy_2604.pd_prod_set_item USING btree (set_prod_id);

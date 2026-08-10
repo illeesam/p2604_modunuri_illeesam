@@ -2,8 +2,8 @@
 -- 상품/페이지 조회 로그
 
 CREATE TABLE shopjoy_2604.pdh_prod_view_log (
-    log_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id     VARCHAR(21)  NOT NULL,
+    log_id      VARCHAR(21)  NOT NULL CONSTRAINT pdh_prod_view_log_pk_log_id PRIMARY KEY,
+    reg_site_id     VARCHAR(21)  NOT NULL,
     member_id   VARCHAR(21) ,
     session_key VARCHAR(100),
     prod_id     VARCHAR(21)  NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE shopjoy_2604.pdh_prod_view_log (
 
 COMMENT ON TABLE  shopjoy_2604.pdh_prod_view_log IS '상품/페이지 조회 로그';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.log_id IS '로그ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.member_id IS '회원ID (비회원 NULL)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.session_key IS '비회원 세션키';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.prod_id IS '상품ID (pd_prod.prod_id)';
@@ -38,7 +38,6 @@ COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_view_log.upd_date IS '수정일';
 
-CREATE INDEX idx_ec_pvl_date ON shopjoy_2604.pdh_prod_view_log USING btree (view_date);
-CREATE INDEX idx_ec_pvl_member ON shopjoy_2604.pdh_prod_view_log USING btree (member_id);
-CREATE INDEX idx_ec_pvl_ref ON shopjoy_2604.pdh_prod_view_log USING btree (prod_id, ref_id);
-CREATE INDEX idx_pdh_prod_view_log_site ON shopjoy_2604.pdh_prod_view_log USING btree (site_id);
+CREATE INDEX pdh_prod_view_log_ix03_view_date ON shopjoy_2604.pdh_prod_view_log USING btree (view_date);
+CREATE INDEX pdh_prod_view_log_ix01_member_id ON shopjoy_2604.pdh_prod_view_log USING btree (member_id);
+CREATE INDEX pdh_prod_view_log_ix02_prod_id_ref_id_x2 ON shopjoy_2604.pdh_prod_view_log USING btree (prod_id, ref_id);

@@ -4,8 +4,8 @@
 -- 2026-07-13: prod_opt_input_type_cd 제거, prod_opt_type_level1_cd / prod_opt_type_level2_cd 추가
 
 CREATE TABLE shopjoy_2604.pd_prod_opt_type (
-    prod_opt_type_id        VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21) NOT NULL,
+    prod_opt_type_id        VARCHAR(21) NOT NULL CONSTRAINT pd_prod_opt_type_pk PRIMARY KEY,
+    reg_site_id                 VARCHAR(21) NOT NULL,
     prod_id                 VARCHAR(21) NOT NULL,
     prod_opt_type_nm        VARCHAR(50) NOT NULL,
     prod_opt_type_level     INTEGER     NOT NULL DEFAULT 1,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.pd_prod_opt_type (
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_opt_type IS '상품 옵션 유형 정의 (색상, 사이즈 등 옵션 차원 축)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_type.prod_opt_type_id IS '옵션유형ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_type.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_type.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_type.prod_id IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_type.prod_opt_type_nm IS '옵션유형명 (예: 색상, 사이즈)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_type.prod_opt_type_level IS '옵션 차원 순서 — 1=첫번째(색상), 2=두번째(사이즈)';
@@ -32,5 +32,4 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_type.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_type.upd_by IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt_type.upd_date IS '수정일시';
 
-CREATE INDEX idx_pd_prod_opt_type_prod ON shopjoy_2604.pd_prod_opt_type USING btree (prod_id);
-CREATE INDEX idx_pd_prod_opt_type_site ON shopjoy_2604.pd_prod_opt_type USING btree (site_id);
+CREATE INDEX pd_prod_opt_type_ix_prod ON shopjoy_2604.pd_prod_opt_type USING btree (prod_id);

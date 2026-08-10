@@ -2,8 +2,8 @@
 -- 정산기준 설정
 
 CREATE TABLE shopjoy_2604.st_settle_config (
-    settle_config_id     VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id              VARCHAR(21)  NOT NULL,
+    settle_config_id     VARCHAR(21)  NOT NULL CONSTRAINT st_settle_config_pk_settle_config_id PRIMARY KEY,
+    reg_site_id              VARCHAR(21)  NOT NULL,
     vendor_id            VARCHAR(21) ,
     category_id          VARCHAR(21) ,
     settle_cycle_cd      VARCHAR(20)  DEFAULT 'MONTHLY'::character varying,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.st_settle_config (
 
 COMMENT ON TABLE  shopjoy_2604.st_settle_config IS '정산기준 설정';
 COMMENT ON COLUMN shopjoy_2604.st_settle_config.settle_config_id IS '정산기준ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.st_settle_config.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.st_settle_config.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_config.vendor_id IS '업체ID (NULL=전체 기준)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_config.category_id IS '카테고리ID (NULL=전체 기준)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_config.settle_cycle_cd IS '정산주기 (코드: SETTLE_CYCLE — DAILY/WEEKLY/MONTHLY)';
@@ -34,7 +34,8 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_config.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.st_settle_config.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.st_settle_config.upd_date IS '수정일';
 
-CREATE INDEX idx_st_settle_config_category ON shopjoy_2604.st_settle_config USING btree (site_id, category_id);
-CREATE INDEX idx_st_settle_config_site ON shopjoy_2604.st_settle_config USING btree (site_id);
-CREATE INDEX idx_st_settle_config_vendor ON shopjoy_2604.st_settle_config USING btree (site_id, vendor_id);
-CREATE UNIQUE INDEX st_settle_config_site_id_vendor_id_category_id_key ON shopjoy_2604.st_settle_config USING btree (site_id, vendor_id, category_id);
+CREATE INDEX st_settle_config_ix_site ON shopjoy_2604.st_settle_config USING btree (site_id, category_id);
+CREATE INDEX st_settle_config_ix_site_3 ON shopjoy_2604.st_settle_config USING btree (site_id, vendor_id);
+CREATE UNIQUE INDEX st_settle_config_uk_site ON shopjoy_2604.st_settle_config USING btree (site_id, vendor_id, category_id);
+CREATE INDEX st_settle_config_ix01_category_id ON shopjoy_2604.st_settle_config USING btree (category_id);
+CREATE INDEX st_settle_config_ix02_vendor_id ON shopjoy_2604.st_settle_config USING btree (vendor_id);

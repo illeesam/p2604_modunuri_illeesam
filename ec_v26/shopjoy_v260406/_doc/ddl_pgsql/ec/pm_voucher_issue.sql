@@ -2,9 +2,9 @@
 -- 상품권 발급 및 사용 이력
 
 CREATE TABLE shopjoy_2604.pm_voucher_issue (
-    voucher_issue_id               VARCHAR(21) NOT NULL PRIMARY KEY,
+    voucher_issue_id               VARCHAR(21) NOT NULL CONSTRAINT pm_voucher_issue_pk_voucher_issue_id PRIMARY KEY,
     voucher_id                     VARCHAR(21) NOT NULL,
-    site_id                        VARCHAR(21) NOT NULL,
+    reg_site_id                        VARCHAR(21) NOT NULL,
     member_id                      VARCHAR(21),
     voucher_code                   VARCHAR(50) NOT NULL,
     issue_date                     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.pm_voucher_issue (
 COMMENT ON TABLE  shopjoy_2604.pm_voucher_issue IS '상품권 발급 및 사용 이력';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.voucher_issue_id IS '상품권발급ID';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.voucher_id IS '상품권ID (pm_voucher.voucher_id)';
-COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.member_id IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.voucher_code IS '발급 고유코드';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.issue_date IS '발급일시';
@@ -38,9 +38,8 @@ COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pm_voucher_issue.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_voucher_issue_expire ON shopjoy_2604.pm_voucher_issue USING btree (expire_date);
-CREATE INDEX idx_pm_voucher_issue_member ON shopjoy_2604.pm_voucher_issue USING btree (member_id);
-CREATE INDEX idx_pm_voucher_issue_order ON shopjoy_2604.pm_voucher_issue USING btree (order_id);
-CREATE INDEX idx_pm_voucher_issue_site ON shopjoy_2604.pm_voucher_issue USING btree (site_id);
-CREATE INDEX idx_pm_voucher_issue_voucher ON shopjoy_2604.pm_voucher_issue USING btree (voucher_id);
-CREATE UNIQUE INDEX pm_voucher_issue_voucher_code_key ON shopjoy_2604.pm_voucher_issue USING btree (voucher_code);
+CREATE INDEX pm_voucher_issue_ix01_expire_date ON shopjoy_2604.pm_voucher_issue USING btree (expire_date);
+CREATE INDEX pm_voucher_issue_ix02_member_id ON shopjoy_2604.pm_voucher_issue USING btree (member_id);
+CREATE INDEX pm_voucher_issue_ix03_order_id ON shopjoy_2604.pm_voucher_issue USING btree (order_id);
+CREATE INDEX pm_voucher_issue_ix04_voucher_id ON shopjoy_2604.pm_voucher_issue USING btree (voucher_id);
+CREATE UNIQUE INDEX pm_voucher_issue_uk_voucher_code ON shopjoy_2604.pm_voucher_issue USING btree (voucher_code);

@@ -2,8 +2,8 @@
 -- 배치 실행 로그
 
 CREATE TABLE shopjoy_2604.syh_batch_log (
-    batch_log_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id      VARCHAR(21)  NOT NULL,
+    batch_log_id VARCHAR(21)  NOT NULL CONSTRAINT syh_batch_log_pk_batch_log_id PRIMARY KEY,
+    reg_site_id      VARCHAR(21)  NOT NULL,
     batch_id     VARCHAR(21)  NOT NULL,
     batch_code   VARCHAR(50) ,
     batch_nm     VARCHAR(100),
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.syh_batch_log (
 
 COMMENT ON TABLE  shopjoy_2604.syh_batch_log IS '배치 실행 로그';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.batch_log_id IS '로그ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.syh_batch_log.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.syh_batch_log.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.batch_id IS '배치ID';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.batch_code IS '배치코드';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.batch_nm IS '배치명';
@@ -40,7 +40,6 @@ COMMENT ON COLUMN shopjoy_2604.syh_batch_log.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.upd_date IS '수정일';
 
-CREATE INDEX idx_syh_batch_log_batch ON shopjoy_2604.syh_batch_log USING btree (batch_id);
-CREATE INDEX idx_syh_batch_log_date ON shopjoy_2604.syh_batch_log USING btree (run_at);
-CREATE INDEX idx_syh_batch_log_site ON shopjoy_2604.syh_batch_log USING btree (site_id);
-CREATE INDEX idx_syh_batch_log_status ON shopjoy_2604.syh_batch_log USING btree (run_status);
+CREATE INDEX syh_batch_log_ix01_batch_id ON shopjoy_2604.syh_batch_log USING btree (batch_id);
+CREATE INDEX syh_batch_log_ix02_run_at ON shopjoy_2604.syh_batch_log USING btree (run_at);
+CREATE INDEX syh_batch_log_ix03_run_status ON shopjoy_2604.syh_batch_log USING btree (run_status);

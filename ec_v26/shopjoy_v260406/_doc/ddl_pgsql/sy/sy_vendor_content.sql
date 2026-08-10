@@ -2,8 +2,8 @@
 -- 판매/배송업체 콘텐츠 (회사소개/배너/약관 등)
 
 CREATE TABLE shopjoy_2604.sy_vendor_content (
-    vendor_content_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                  VARCHAR(21)  NOT NULL,
+    vendor_content_id        VARCHAR(21)  NOT NULL CONSTRAINT sy_vendor_content_pk_vendor_content_id PRIMARY KEY,
+    reg_site_id                  VARCHAR(21)  NOT NULL,
     vendor_id                VARCHAR(21)  NOT NULL,
     content_type_cd          VARCHAR(30)  NOT NULL,
     vendor_content_title     VARCHAR(200),
@@ -29,7 +29,7 @@ CREATE TABLE shopjoy_2604.sy_vendor_content (
 
 COMMENT ON TABLE  shopjoy_2604.sy_vendor_content IS '판매/배송업체 콘텐츠 (회사소개/배너/약관 등)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.vendor_content_id IS '업체콘텐츠ID (PK)';
-COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.vendor_id IS '업체ID (sy_vendor.vendor_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.content_type_cd IS '콘텐츠유형 (코드: VENDOR_CONTENT_TYPE)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.vendor_content_title IS '제목';
@@ -52,8 +52,8 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_vendor_content_date ON shopjoy_2604.sy_vendor_content USING btree (start_date, end_date);
-CREATE INDEX idx_sy_vendor_content_site ON shopjoy_2604.sy_vendor_content USING btree (site_id);
-CREATE INDEX idx_sy_vendor_content_status ON shopjoy_2604.sy_vendor_content USING btree (vendor_content_status_cd);
-CREATE INDEX idx_sy_vendor_content_type ON shopjoy_2604.sy_vendor_content USING btree (content_type_cd);
-CREATE INDEX idx_sy_vendor_content_vendor ON shopjoy_2604.sy_vendor_content USING btree (vendor_id);
+CREATE INDEX sy_vendor_content_ix03_start_date_end_date_x2 ON shopjoy_2604.sy_vendor_content USING btree (start_date, end_date);
+CREATE INDEX sy_vendor_content_ix05_vendor_content_status_cd ON shopjoy_2604.sy_vendor_content USING btree (vendor_content_status_cd);
+CREATE INDEX sy_vendor_content_ix02_content_type_cd ON shopjoy_2604.sy_vendor_content USING btree (content_type_cd);
+CREATE INDEX sy_vendor_content_ix04_vendor_id ON shopjoy_2604.sy_vendor_content USING btree (vendor_id);
+CREATE INDEX sy_vendor_content_ix01_attach_grp_id ON shopjoy_2604.sy_vendor_content USING btree (attach_grp_id);

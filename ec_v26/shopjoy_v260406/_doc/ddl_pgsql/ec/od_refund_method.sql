@@ -2,8 +2,8 @@
 -- 환불수단 내역 (수단별 환불금액 및 우선순위)
 
 CREATE TABLE shopjoy_2604.od_refund_method (
-    refund_method_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21)  NOT NULL,
+    refund_method_id        VARCHAR(21)  NOT NULL CONSTRAINT od_refund_method_pk_refund_method_id PRIMARY KEY,
+    reg_site_id                 VARCHAR(21)  NOT NULL,
     refund_id               VARCHAR(21)  NOT NULL,
     order_id                VARCHAR(21)  NOT NULL,
     pay_method_cd           VARCHAR(20)  NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE shopjoy_2604.od_refund_method (
 
 COMMENT ON TABLE  shopjoy_2604.od_refund_method IS '환불수단 내역 (수단별 환불금액 및 우선순위)';
 COMMENT ON COLUMN shopjoy_2604.od_refund_method.refund_method_id IS '환불수단ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_refund_method.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_refund_method.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_refund_method.refund_id IS '환불ID (od_refund.refund_id)';
 COMMENT ON COLUMN shopjoy_2604.od_refund_method.order_id IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN shopjoy_2604.od_refund_method.pay_method_cd IS '결제수단코드 (코드: PAY_METHOD — BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)';
@@ -42,9 +42,9 @@ COMMENT ON COLUMN shopjoy_2604.od_refund_method.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.od_refund_method.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_refund_method.upd_date IS '수정일시';
 
-CREATE INDEX idx_od_refund_method_order ON shopjoy_2604.od_refund_method USING btree (order_id);
-CREATE INDEX idx_od_refund_method_pay ON shopjoy_2604.od_refund_method USING btree (pay_id) WHERE (pay_id IS NOT NULL);
-CREATE INDEX idx_od_refund_method_prio ON shopjoy_2604.od_refund_method USING btree (refund_id, refund_priority);
-CREATE INDEX idx_od_refund_method_refund ON shopjoy_2604.od_refund_method USING btree (refund_id);
-CREATE INDEX idx_od_refund_method_site ON shopjoy_2604.od_refund_method USING btree (site_id);
-CREATE INDEX idx_od_refund_method_status ON shopjoy_2604.od_refund_method USING btree (refund_status_cd);
+CREATE INDEX od_refund_method_ix01_order_id ON shopjoy_2604.od_refund_method USING btree (order_id);
+CREATE INDEX od_refund_method_ix02_pay_id ON shopjoy_2604.od_refund_method USING btree (pay_id) WHERE (pay_id IS NOT NULL);
+CREATE INDEX od_refund_method_ix04_refund_id_refund_priority_x2 ON shopjoy_2604.od_refund_method USING btree (refund_id, refund_priority);
+CREATE INDEX od_refund_method_ix_refund_2 ON shopjoy_2604.od_refund_method USING btree (refund_id);
+CREATE INDEX od_refund_method_ix05_refund_status_cd ON shopjoy_2604.od_refund_method USING btree (refund_status_cd);
+CREATE INDEX od_refund_method_ix03_pg_refund_id ON shopjoy_2604.od_refund_method USING btree (pg_refund_id);

@@ -10,7 +10,7 @@
 
 CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_popup (
     popup_id        VARCHAR(21)  NOT NULL,
-    site_id         VARCHAR(21)  NOT NULL,
+    reg_site_id         VARCHAR(21)  NOT NULL,
     popup_code      VARCHAR(50)  NOT NULL,          -- 팝업 코드 (프론트 호출 키: user, dept, prod …)
     popup_nm        VARCHAR(100) NOT NULL,          -- 팝업 제목
     popup_pattern   SMALLINT     NOT NULL DEFAULT 1,-- 1:목록 / 2:트리+목록 / 3:트리+목록+선택목록
@@ -31,13 +31,13 @@ CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_popup (
     reg_date        TIMESTAMP,
     upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
-    CONSTRAINT pk_cm_popup PRIMARY KEY (popup_id),
-    CONSTRAINT uk_cm_popup_code UNIQUE (site_id, popup_code)
+    CONSTRAINT cm_popup_pk_popup_id PRIMARY KEY (popup_id),
+    CONSTRAINT cm_popup_uk_site UNIQUE (site_id, popup_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.cm_popup IS '공통 선택/조회 팝업 정의';
 COMMENT ON COLUMN shopjoy_2604.cm_popup.popup_id      IS '팝업ID';
-COMMENT ON COLUMN shopjoy_2604.cm_popup.site_id       IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.cm_popup.reg_site_id       IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.cm_popup.popup_code    IS '팝업코드 (프론트 호출 키)';
 COMMENT ON COLUMN shopjoy_2604.cm_popup.popup_nm      IS '팝업 제목';
 COMMENT ON COLUMN shopjoy_2604.cm_popup.popup_pattern IS '화면패턴 1:목록 / 2:트리+목록 / 3:트리+목록+선택목록';

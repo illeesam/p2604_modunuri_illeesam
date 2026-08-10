@@ -2,8 +2,8 @@
 -- 이벤트 혜택
 
 CREATE TABLE shopjoy_2604.pm_event_benefit (
-    benefit_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21)  NOT NULL,
+    benefit_id      VARCHAR(21)  NOT NULL CONSTRAINT pm_event_benefit_pk_benefit_id PRIMARY KEY,
+    reg_site_id         VARCHAR(21)  NOT NULL,
     event_id        VARCHAR(21)  NOT NULL,
     benefit_nm      VARCHAR(100) NOT NULL,
     benefit_type_cd VARCHAR(20) ,
@@ -19,7 +19,7 @@ CREATE TABLE shopjoy_2604.pm_event_benefit (
 
 COMMENT ON TABLE  shopjoy_2604.pm_event_benefit IS '이벤트 혜택';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.benefit_id IS '혜택ID';
-COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.event_id IS '이벤트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.benefit_nm IS '혜택명';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.benefit_type_cd IS '혜택유형 (코드: BENEFIT_TYPE)';
@@ -32,5 +32,5 @@ COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_event_benefit_event ON shopjoy_2604.pm_event_benefit USING btree (event_id);
-CREATE INDEX idx_pm_event_benefit_site ON shopjoy_2604.pm_event_benefit USING btree (site_id);
+CREATE INDEX pm_event_benefit_ix02_event_id ON shopjoy_2604.pm_event_benefit USING btree (event_id);
+CREATE INDEX pm_event_benefit_ix01_coupon_id ON shopjoy_2604.pm_event_benefit USING btree (coupon_id);

@@ -2,8 +2,8 @@
 -- 배치 실행 이력
 
 CREATE TABLE shopjoy_2604.syh_batch_hist (
-    batch_hist_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21)  NOT NULL,
+    batch_hist_id VARCHAR(21)  NOT NULL CONSTRAINT syh_batch_hist_pk_batch_hist_id PRIMARY KEY,
+    reg_site_id       VARCHAR(21)  NOT NULL,
     batch_id      VARCHAR(21)  NOT NULL,
     batch_code    VARCHAR(50) ,
     batch_nm      VARCHAR(100),
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.syh_batch_hist (
 
 COMMENT ON TABLE  shopjoy_2604.syh_batch_hist IS '배치 실행 이력';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.batch_hist_id IS '이력ID';
-COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.batch_id IS '배치ID';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.batch_code IS '배치코드';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.batch_nm IS '배치명';
@@ -40,4 +40,4 @@ COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.upd_date IS '수정일';
 
-CREATE INDEX idx_syh_batch_hist_site ON shopjoy_2604.syh_batch_hist USING btree (site_id);
+CREATE INDEX syh_batch_hist_ix01_batch_id ON shopjoy_2604.syh_batch_hist USING btree (batch_id);

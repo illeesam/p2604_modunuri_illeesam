@@ -2,8 +2,8 @@
 -- 적립금 사용 이력 (주문 시 사용된 적립금 건별 기록)
 
 CREATE TABLE shopjoy_2604.pm_save_usage (
-    save_usage_id VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21) NOT NULL,
+    save_usage_id VARCHAR(21) NOT NULL CONSTRAINT pm_save_usage_pk_save_usage_id PRIMARY KEY,
+    reg_site_id       VARCHAR(21) NOT NULL,
     member_id     VARCHAR(21) NOT NULL,
     order_id      VARCHAR(21),
     order_item_id VARCHAR(21),
@@ -19,7 +19,7 @@ CREATE TABLE shopjoy_2604.pm_save_usage (
 
 COMMENT ON TABLE  shopjoy_2604.pm_save_usage IS '적립금 사용 이력 (주문 시 사용된 적립금 건별 기록)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_usage.save_usage_id IS '적립사용ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_save_usage.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_save_usage.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_usage.member_id IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_usage.order_id IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_usage.order_item_id IS '주문상품ID (od_order_item.order_item_id, 상품별 사용 시)';
@@ -30,8 +30,7 @@ COMMENT ON COLUMN shopjoy_2604.pm_save_usage.used_date IS '사용일시';
 COMMENT ON COLUMN shopjoy_2604.pm_save_usage.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pm_save_usage.reg_date IS '등록일';
 
-CREATE INDEX idx_pm_save_usage_item ON shopjoy_2604.pm_save_usage USING btree (order_item_id);
-CREATE INDEX idx_pm_save_usage_member ON shopjoy_2604.pm_save_usage USING btree (member_id);
-CREATE INDEX idx_pm_save_usage_order ON shopjoy_2604.pm_save_usage USING btree (order_id);
-CREATE INDEX idx_pm_save_usage_prod ON shopjoy_2604.pm_save_usage USING btree (prod_id);
-CREATE INDEX idx_pm_save_usage_site ON shopjoy_2604.pm_save_usage USING btree (site_id);
+CREATE INDEX pm_save_usage_ix03_order_item_id ON shopjoy_2604.pm_save_usage USING btree (order_item_id);
+CREATE INDEX pm_save_usage_ix01_member_id ON shopjoy_2604.pm_save_usage USING btree (member_id);
+CREATE INDEX pm_save_usage_ix02_order_id ON shopjoy_2604.pm_save_usage USING btree (order_id);
+CREATE INDEX pm_save_usage_ix04_prod_id ON shopjoy_2604.pm_save_usage USING btree (prod_id);

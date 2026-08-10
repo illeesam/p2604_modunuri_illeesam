@@ -2,8 +2,8 @@
 -- 배송 품목 변경 이력
 
 CREATE TABLE shopjoy_2604.odh_dliv_item_chg_hist (
-    dliv_item_chg_hist_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id               VARCHAR(21)  NOT NULL,
+    dliv_item_chg_hist_id VARCHAR(21)  NOT NULL CONSTRAINT odh_dliv_item_chg_hist_pk_dliv_item_chg_hist_id PRIMARY KEY,
+    reg_site_id               VARCHAR(21)  NOT NULL,
     dliv_id               VARCHAR(21)  NOT NULL,
     dliv_item_id          VARCHAR(21)  NOT NULL,
     chg_type_cd           VARCHAR(30)  NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE shopjoy_2604.odh_dliv_item_chg_hist (
 
 COMMENT ON TABLE  shopjoy_2604.odh_dliv_item_chg_hist IS '배송 품목 변경 이력';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.dliv_item_chg_hist_id IS '이력ID';
-COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.dliv_id IS '배송ID (od_dliv.)';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.dliv_item_id IS '배송품목ID (od_dliv_item.)';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.chg_type_cd IS '변경유형코드 (QTY/STATUS/CARRIER/TRACK_NO/RECV_INFO)';
@@ -36,8 +36,7 @@ COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.odh_dliv_item_chg_hist.upd_date IS '수정일';
 
-CREATE INDEX idx_odh_dliv_item_chg_hist_date ON shopjoy_2604.odh_dliv_item_chg_hist USING btree (chg_date);
-CREATE INDEX idx_odh_dliv_item_chg_hist_dliv ON shopjoy_2604.odh_dliv_item_chg_hist USING btree (dliv_id);
-CREATE INDEX idx_odh_dliv_item_chg_hist_item ON shopjoy_2604.odh_dliv_item_chg_hist USING btree (dliv_item_id);
-CREATE INDEX idx_odh_dliv_item_chg_hist_site ON shopjoy_2604.odh_dliv_item_chg_hist USING btree (site_id);
-CREATE INDEX idx_odh_dliv_item_chg_hist_type ON shopjoy_2604.odh_dliv_item_chg_hist USING btree (chg_type_cd);
+CREATE INDEX odh_dliv_item_chg_hist_ix01_chg_date ON shopjoy_2604.odh_dliv_item_chg_hist USING btree (chg_date);
+CREATE INDEX odh_dliv_item_chg_hist_ix03_dliv_id ON shopjoy_2604.odh_dliv_item_chg_hist USING btree (dliv_id);
+CREATE INDEX odh_dliv_item_chg_hist_ix04_dliv_item_id ON shopjoy_2604.odh_dliv_item_chg_hist USING btree (dliv_item_id);
+CREATE INDEX odh_dliv_item_chg_hist_ix02_chg_type_cd ON shopjoy_2604.odh_dliv_item_chg_hist USING btree (chg_type_cd);

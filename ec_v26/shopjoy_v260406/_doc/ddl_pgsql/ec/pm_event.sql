@@ -2,8 +2,8 @@
 -- 이벤트
 
 CREATE TABLE shopjoy_2604.pm_event (
-    event_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                VARCHAR(21)  NOT NULL,
+    event_id               VARCHAR(21)  NOT NULL CONSTRAINT pm_event_pk_event_id PRIMARY KEY,
+    reg_site_id                VARCHAR(21)  NOT NULL,
     event_nm               VARCHAR(100) NOT NULL,
     event_type_cd          VARCHAR(20) ,
     img_url                VARCHAR(500),
@@ -28,7 +28,7 @@ CREATE TABLE shopjoy_2604.pm_event (
 
 COMMENT ON TABLE  shopjoy_2604.pm_event IS '이벤트';
 COMMENT ON COLUMN shopjoy_2604.pm_event.event_id IS '이벤트ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_event.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_event.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_event.event_nm IS '이벤트명';
 COMMENT ON COLUMN shopjoy_2604.pm_event.event_type_cd IS '이벤트유형 (코드: EVENT_TYPE)';
 COMMENT ON COLUMN shopjoy_2604.pm_event.img_url IS '배너이미지URL';
@@ -50,7 +50,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_event.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_event.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_event.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_event_date ON shopjoy_2604.pm_event USING btree (start_date, end_date);
-CREATE INDEX idx_pm_event_site ON shopjoy_2604.pm_event USING btree (site_id);
-CREATE INDEX idx_pm_event_status ON shopjoy_2604.pm_event USING btree (event_status_cd);
-CREATE INDEX idx_pm_event_type ON shopjoy_2604.pm_event USING btree (event_type_cd);
+CREATE INDEX pm_event_ix03_start_date_end_date_x2 ON shopjoy_2604.pm_event USING btree (start_date, end_date);
+CREATE INDEX pm_event_ix01_event_status_cd ON shopjoy_2604.pm_event USING btree (event_status_cd);
+CREATE INDEX pm_event_ix02_event_type_cd ON shopjoy_2604.pm_event USING btree (event_type_cd);

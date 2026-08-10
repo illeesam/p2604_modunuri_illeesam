@@ -2,8 +2,8 @@
 -- 환불 마스터 (클레임 건별 환불 총괄)
 
 CREATE TABLE shopjoy_2604.od_refund (
-    refund_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21)  NOT NULL,
+    refund_id               VARCHAR(21)  NOT NULL CONSTRAINT od_refund_pk_refund_id PRIMARY KEY,
+    reg_site_id                 VARCHAR(21)  NOT NULL,
     order_id                VARCHAR(21)  NOT NULL,
     claim_id                VARCHAR(21) ,
     refund_type_cd          VARCHAR(20)  NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE shopjoy_2604.od_refund (
 
 COMMENT ON TABLE  shopjoy_2604.od_refund IS '환불 마스터 (클레임 건별 환불 총괄)';
 COMMENT ON COLUMN shopjoy_2604.od_refund.refund_id IS '환불ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_refund.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_refund.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_refund.order_id IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN shopjoy_2604.od_refund.claim_id IS '클레임ID (od_claim.claim_id)';
 COMMENT ON COLUMN shopjoy_2604.od_refund.refund_type_cd IS '환불유형코드 (코드: REFUND_TYPE — CANCEL/RETURN/PARTIAL/EXTRA)';
@@ -50,8 +50,7 @@ COMMENT ON COLUMN shopjoy_2604.od_refund.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.od_refund.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_refund.upd_date IS '수정일시';
 
-CREATE INDEX idx_od_refund_claim ON shopjoy_2604.od_refund USING btree (claim_id) WHERE (claim_id IS NOT NULL);
-CREATE INDEX idx_od_refund_order ON shopjoy_2604.od_refund USING btree (order_id);
-CREATE INDEX idx_od_refund_req_date ON shopjoy_2604.od_refund USING btree (refund_req_date);
-CREATE INDEX idx_od_refund_site ON shopjoy_2604.od_refund USING btree (site_id);
-CREATE INDEX idx_od_refund_status ON shopjoy_2604.od_refund USING btree (refund_status_cd);
+CREATE INDEX od_refund_ix01_claim_id ON shopjoy_2604.od_refund USING btree (claim_id) WHERE (claim_id IS NOT NULL);
+CREATE INDEX od_refund_ix02_order_id ON shopjoy_2604.od_refund USING btree (order_id);
+CREATE INDEX od_refund_ix03_refund_req_date ON shopjoy_2604.od_refund USING btree (refund_req_date);
+CREATE INDEX od_refund_ix04_refund_status_cd ON shopjoy_2604.od_refund USING btree (refund_status_cd);

@@ -2,8 +2,8 @@
 -- 프로퍼티 (환경설정/공통 파라미터)
 
 CREATE TABLE shopjoy_2604.sy_prop (
-    prop_id      VARCHAR(21)  NOT NULL DEFAULT nextval('sy_prop_prop_id_seq'::regclass) PRIMARY KEY,
-    site_id      VARCHAR(21)  NOT NULL,
+    prop_id      VARCHAR(21)  NOT NULL DEFAULT nextval('sy_prop_prop_id_seq'::regclass) CONSTRAINT sy_prop_pk_prop_id PRIMARY KEY,
+    reg_site_id      VARCHAR(21)  NOT NULL,
     path_id      VARCHAR(21)  NOT NULL,
     prop_key     VARCHAR(100) NOT NULL,
     prop_value   TEXT        ,
@@ -21,7 +21,7 @@ CREATE TABLE shopjoy_2604.sy_prop (
 
 COMMENT ON TABLE  shopjoy_2604.sy_prop IS '프로퍼티 (환경설정/공통 파라미터)';
 COMMENT ON COLUMN shopjoy_2604.sy_prop.prop_id IS '프로퍼티ID (PK, auto)';
-COMMENT ON COLUMN shopjoy_2604.sy_prop.site_id IS '사이트ID (sy_site.site_id, NULL=전역)';
+COMMENT ON COLUMN shopjoy_2604.sy_prop.reg_site_id IS '사이트ID (sy_site.site_id, NULL=전역)';
 COMMENT ON COLUMN shopjoy_2604.sy_prop.path_id IS '점(.) 구분 표시경로 (aa.bb.cc)';
 COMMENT ON COLUMN shopjoy_2604.sy_prop.prop_key IS '키 (코드 식별자)';
 COMMENT ON COLUMN shopjoy_2604.sy_prop.prop_value IS '값';
@@ -32,7 +32,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_prop.use_yn IS '사용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.sy_prop.prop_remark IS '비고';
 COMMENT ON COLUMN shopjoy_2604.sy_prop.prop_profile IS '적용 프로파일 (^local^dev^prod^ 형식, 비어있으면 전체 환경 적용)';
 
-CREATE INDEX idx_sy_disp_path ON shopjoy_2604.sy_prop USING btree (path_id);
-CREATE INDEX idx_sy_prop_site ON shopjoy_2604.sy_prop USING btree (site_id);
+CREATE INDEX sy_prop_ix01_path_id ON shopjoy_2604.sy_prop USING btree (path_id);
 -- 2026-06-18: prop_profile 포함으로 확장 (환경별 동일 키 허용)
-CREATE UNIQUE INDEX sy_prop_site_path_key_profile_uq ON shopjoy_2604.sy_prop USING btree (site_id, path_id, prop_key, COALESCE(prop_profile, ''));
+CREATE UNIQUE INDEX sy_prop_uk_site ON shopjoy_2604.sy_prop USING btree (site_id, path_id, prop_key, COALESCE(prop_profile, ''));

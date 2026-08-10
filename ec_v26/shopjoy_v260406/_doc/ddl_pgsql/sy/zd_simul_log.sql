@@ -2,7 +2,7 @@
 -- 시뮬레이터 실행 로그
 
 CREATE TABLE shopjoy_2604.zd_simul_log (
-    log_id            VARCHAR(21)  NOT NULL PRIMARY KEY,
+    log_id            VARCHAR(21)  NOT NULL CONSTRAINT zd_simul_log_pk_log_id PRIMARY KEY,
     site_id           VARCHAR(21)  NOT NULL,
     domain            VARCHAR(30)  NOT NULL,
     simul_mode        VARCHAR(10)  NOT NULL,
@@ -36,6 +36,9 @@ COMMENT ON COLUMN shopjoy_2604.zd_simul_log.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.zd_simul_log.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.zd_simul_log.upd_date IS '수정일시';
 
-CREATE INDEX idx_zd_simul_log_site_id ON shopjoy_2604.zd_simul_log (site_id);
-CREATE INDEX idx_zd_simul_log_domain  ON shopjoy_2604.zd_simul_log (domain);
-CREATE INDEX idx_zd_simul_log_reg_date ON shopjoy_2604.zd_simul_log (reg_date DESC);
+CREATE INDEX zd_simul_log_ix03_site_id ON shopjoy_2604.zd_simul_log (site_id);
+CREATE INDEX zd_simul_log_ix01_domain ON shopjoy_2604.zd_simul_log (domain);
+CREATE INDEX zd_simul_log_ix02_reg_date ON shopjoy_2604.zd_simul_log (reg_date DESC);
+CREATE INDEX zd_simul_log_ix01_domain ON shopjoy_2604.zd_simul_log USING btree (domain);
+CREATE INDEX zd_simul_log_ix02_reg_date ON shopjoy_2604.zd_simul_log USING btree (reg_date DESC);
+CREATE INDEX zd_simul_log_ix03_site_id ON shopjoy_2604.zd_simul_log USING btree (site_id);

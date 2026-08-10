@@ -2,8 +2,8 @@
 -- 할인 적용 이력 (주문 시 적용된 할인정책 건별 기록)
 
 CREATE TABLE shopjoy_2604.pm_discnt_usage (
-    discnt_usage_id VARCHAR(21)   NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21)   NOT NULL,
+    discnt_usage_id VARCHAR(21)   NOT NULL CONSTRAINT pm_discnt_usage_pk_discnt_usage_id PRIMARY KEY,
+    reg_site_id         VARCHAR(21)   NOT NULL,
     discnt_id       VARCHAR(21)   NOT NULL,
     discnt_nm       VARCHAR(100) ,
     member_id       VARCHAR(21)  ,
@@ -22,7 +22,7 @@ CREATE TABLE shopjoy_2604.pm_discnt_usage (
 
 COMMENT ON TABLE  shopjoy_2604.pm_discnt_usage IS '할인 적용 이력 (주문 시 적용된 할인정책 건별 기록)';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt_usage.discnt_usage_id IS '할인사용ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_discnt_usage.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_discnt_usage.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt_usage.discnt_id IS '할인ID (pm_discnt.discnt_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt_usage.discnt_nm IS '할인명 스냅샷';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt_usage.member_id IS '회원ID (mb_member.member_id)';
@@ -36,9 +36,8 @@ COMMENT ON COLUMN shopjoy_2604.pm_discnt_usage.used_date IS '적용일시';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt_usage.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt_usage.reg_date IS '등록일';
 
-CREATE INDEX idx_pm_discnt_usage_discnt ON shopjoy_2604.pm_discnt_usage USING btree (discnt_id);
-CREATE INDEX idx_pm_discnt_usage_item ON shopjoy_2604.pm_discnt_usage USING btree (order_item_id);
-CREATE INDEX idx_pm_discnt_usage_member ON shopjoy_2604.pm_discnt_usage USING btree (member_id);
-CREATE INDEX idx_pm_discnt_usage_order ON shopjoy_2604.pm_discnt_usage USING btree (order_id);
-CREATE INDEX idx_pm_discnt_usage_prod ON shopjoy_2604.pm_discnt_usage USING btree (prod_id);
-CREATE INDEX idx_pm_discnt_usage_site ON shopjoy_2604.pm_discnt_usage USING btree (site_id);
+CREATE INDEX pm_discnt_usage_ix01_discnt_id ON shopjoy_2604.pm_discnt_usage USING btree (discnt_id);
+CREATE INDEX pm_discnt_usage_ix04_order_item_id ON shopjoy_2604.pm_discnt_usage USING btree (order_item_id);
+CREATE INDEX pm_discnt_usage_ix02_member_id ON shopjoy_2604.pm_discnt_usage USING btree (member_id);
+CREATE INDEX pm_discnt_usage_ix03_order_id ON shopjoy_2604.pm_discnt_usage USING btree (order_id);
+CREATE INDEX pm_discnt_usage_ix05_prod_id ON shopjoy_2604.pm_discnt_usage USING btree (prod_id);

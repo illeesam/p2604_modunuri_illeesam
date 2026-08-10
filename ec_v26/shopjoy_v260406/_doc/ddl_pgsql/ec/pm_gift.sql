@@ -2,8 +2,8 @@
 -- 사은품
 
 CREATE TABLE shopjoy_2604.pm_gift (
-    gift_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id               VARCHAR(21)  NOT NULL,
+    gift_id               VARCHAR(21)  NOT NULL CONSTRAINT pm_gift_pk_gift_id PRIMARY KEY,
+    reg_site_id               VARCHAR(21)  NOT NULL,
     gift_nm               VARCHAR(100) NOT NULL,
     gift_type_cd          VARCHAR(20)  DEFAULT 'PRODUCT'::character varying,
     prod_id               VARCHAR(21) ,
@@ -27,7 +27,7 @@ CREATE TABLE shopjoy_2604.pm_gift (
 
 COMMENT ON TABLE  shopjoy_2604.pm_gift IS '사은품';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.gift_id IS '사은품ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_gift.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.pm_gift.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.gift_nm IS '사은품명';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.gift_type_cd IS '사은품유형 (코드: GIFT_TYPE — PRODUCT/SAMPLE/ETC)';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.prod_id IS '연결 상품ID (pd_prod.prod_id)';
@@ -48,6 +48,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_gift.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_gift_grade ON shopjoy_2604.pm_gift USING btree (mem_grade_cd);
-CREATE INDEX idx_pm_gift_site ON shopjoy_2604.pm_gift USING btree (site_id);
-CREATE INDEX idx_pm_gift_status ON shopjoy_2604.pm_gift USING btree (gift_status_cd);
+CREATE INDEX pm_gift_ix02_mem_grade_cd ON shopjoy_2604.pm_gift USING btree (mem_grade_cd);
+CREATE INDEX pm_gift_ix01_gift_status_cd ON shopjoy_2604.pm_gift USING btree (gift_status_cd);
+CREATE INDEX pm_gift_ix03_prod_id ON shopjoy_2604.pm_gift USING btree (prod_id);

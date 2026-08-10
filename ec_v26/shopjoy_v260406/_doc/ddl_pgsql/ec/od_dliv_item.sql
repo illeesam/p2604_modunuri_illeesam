@@ -2,8 +2,8 @@
 -- 배송 항목 (배송에 포함된 주문상품 명세)
 
 CREATE TABLE shopjoy_2604.od_dliv_item (
-    dliv_item_id               VARCHAR(21) NOT NULL PRIMARY KEY,
-    site_id                    VARCHAR(21) NOT NULL,
+    dliv_item_id               VARCHAR(21) NOT NULL CONSTRAINT od_dliv_item_pk_dliv_item_id PRIMARY KEY,
+    reg_site_id                    VARCHAR(21) NOT NULL,
     dliv_id                    VARCHAR(21) NOT NULL,
     order_item_id              VARCHAR(21) NOT NULL,
     prod_id                    VARCHAR(21),
@@ -22,7 +22,7 @@ CREATE TABLE shopjoy_2604.od_dliv_item (
 
 COMMENT ON TABLE  shopjoy_2604.od_dliv_item IS '배송 항목 (배송에 포함된 주문상품 명세)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.dliv_item_id IS '배송항목ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_dliv_item.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_dliv_item.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.dliv_id IS '배송ID (od_dliv.)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.order_item_id IS '주문상품ID (od_order_item.)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.prod_id IS '상품ID';
@@ -38,5 +38,6 @@ COMMENT ON COLUMN shopjoy_2604.od_dliv_item.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.upd_date IS '수정일';
 
-CREATE INDEX idx_od_dliv_item_site ON shopjoy_2604.od_dliv_item USING btree (site_id);
-CREATE UNIQUE INDEX od_dliv_item_dliv_id_order_item_id_key ON shopjoy_2604.od_dliv_item USING btree (dliv_id, order_item_id);
+CREATE UNIQUE INDEX od_dliv_item_uk_dliv_id_order_item_id_x2 ON shopjoy_2604.od_dliv_item USING btree (dliv_id, order_item_id);
+CREATE INDEX od_dliv_item_ix01_order_item_id ON shopjoy_2604.od_dliv_item USING btree (order_item_id);
+CREATE INDEX od_dliv_item_ix02_prod_id ON shopjoy_2604.od_dliv_item USING btree (prod_id);

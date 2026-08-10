@@ -2,8 +2,8 @@
 -- 결제 변경 이력 (모든 결제 변경사항 추적)
 
 CREATE TABLE shopjoy_2604.odh_pay_chg_hist (
-    pay_chg_hist_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id              VARCHAR(21)  NOT NULL,
+    pay_chg_hist_id      VARCHAR(21)  NOT NULL CONSTRAINT odh_pay_chg_hist_pk_pay_chg_hist_id PRIMARY KEY,
+    reg_site_id              VARCHAR(21)  NOT NULL,
     pay_id               VARCHAR(21)  NOT NULL,
     order_id             VARCHAR(21)  NOT NULL,
     pay_status_cd_before VARCHAR(20) ,
@@ -20,12 +20,12 @@ CREATE TABLE shopjoy_2604.odh_pay_chg_hist (
     reg_date             TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by               VARCHAR(30) ,
     upd_date             TIMESTAMP   ,
-    CONSTRAINT fk_ec_pay_chg_hist_pay FOREIGN KEY (pay_id) REFERENCES shopjoy_2604.od_pay (pay_id)
+    CONSTRAINT odh_pay_chg_hist_fk_pay_id FOREIGN KEY (pay_id) REFERENCES shopjoy_2604.od_pay (pay_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.odh_pay_chg_hist IS '결제 변경 이력 (모든 결제 변경사항 추적)';
 COMMENT ON COLUMN shopjoy_2604.odh_pay_chg_hist.pay_chg_hist_id IS '결제변경이력ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.odh_pay_chg_hist.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.odh_pay_chg_hist.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.odh_pay_chg_hist.pay_id IS '결제ID (od_pay.)';
 COMMENT ON COLUMN shopjoy_2604.odh_pay_chg_hist.order_id IS '주문ID (od_order.)';
 COMMENT ON COLUMN shopjoy_2604.odh_pay_chg_hist.pay_status_cd_before IS '변경 전 결제상태 (코드: PAY_STATUS)';
@@ -43,8 +43,7 @@ COMMENT ON COLUMN shopjoy_2604.odh_pay_chg_hist.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.odh_pay_chg_hist.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.odh_pay_chg_hist.upd_date IS '수정일';
 
-CREATE INDEX idx_odh_pay_chg_hist_chg_type ON shopjoy_2604.odh_pay_chg_hist USING btree (chg_type_cd);
-CREATE INDEX idx_odh_pay_chg_hist_date ON shopjoy_2604.odh_pay_chg_hist USING btree (chg_date);
-CREATE INDEX idx_odh_pay_chg_hist_order ON shopjoy_2604.odh_pay_chg_hist USING btree (order_id);
-CREATE INDEX idx_odh_pay_chg_hist_pay ON shopjoy_2604.odh_pay_chg_hist USING btree (pay_id);
-CREATE INDEX idx_odh_pay_chg_hist_site ON shopjoy_2604.odh_pay_chg_hist USING btree (site_id);
+CREATE INDEX odh_pay_chg_hist_ix02_chg_type_cd ON shopjoy_2604.odh_pay_chg_hist USING btree (chg_type_cd);
+CREATE INDEX odh_pay_chg_hist_ix01_chg_date ON shopjoy_2604.odh_pay_chg_hist USING btree (chg_date);
+CREATE INDEX odh_pay_chg_hist_ix03_order_id ON shopjoy_2604.odh_pay_chg_hist USING btree (order_id);
+CREATE INDEX odh_pay_chg_hist_ix04_pay_id ON shopjoy_2604.odh_pay_chg_hist USING btree (pay_id);

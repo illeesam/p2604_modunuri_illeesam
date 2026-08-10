@@ -35,7 +35,7 @@ CREATE TABLE shopjoy_2604.zz_sample2 (
     div_cd        VARCHAR(20),
     kind_cd       VARCHAR(20),
     cate_cds      VARCHAR(100),
-    CONSTRAINT pk_zz_sample2 PRIMARY KEY (sample2_id)
+    CONSTRAINT zz_sample2_pk PRIMARY KEY (sample2_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.zz_sample2 IS '다목적 샘플/코드성 데이터 저장소 2';

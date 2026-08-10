@@ -2,8 +2,8 @@
 -- 적립금 (캐시)
 
 CREATE TABLE shopjoy_2604.pm_cache (
-    cache_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21)  NOT NULL,
+    cache_id      VARCHAR(21)  NOT NULL CONSTRAINT pm_cache_pk_cache_id PRIMARY KEY,
+    reg_site_id       VARCHAR(21)  NOT NULL,
     member_id     VARCHAR(21)  NOT NULL,
     member_nm     VARCHAR(50) ,
     cache_type_cd VARCHAR(20)  NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE shopjoy_2604.pm_cache (
 
 COMMENT ON TABLE  shopjoy_2604.pm_cache IS '적립금 (캐시)';
 COMMENT ON COLUMN shopjoy_2604.pm_cache.cache_id IS '적립금ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pm_cache.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_cache.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_cache.member_id IS '회원ID';
 COMMENT ON COLUMN shopjoy_2604.pm_cache.member_nm IS '회원명';
 COMMENT ON COLUMN shopjoy_2604.pm_cache.cache_type_cd IS '유형 (코드: CACHE_TYPE)';
@@ -38,4 +38,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_cache.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_cache.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_cache.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_cache_site ON shopjoy_2604.pm_cache USING btree (site_id);
+CREATE INDEX pm_cache_ix01_member_id ON shopjoy_2604.pm_cache USING btree (member_id);
+CREATE INDEX pm_cache_ix02_proc_user_id ON shopjoy_2604.pm_cache USING btree (proc_user_id);
+CREATE INDEX pm_cache_ix03_ref_id ON shopjoy_2604.pm_cache USING btree (ref_id);

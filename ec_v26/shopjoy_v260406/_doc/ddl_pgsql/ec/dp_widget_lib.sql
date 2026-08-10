@@ -2,8 +2,8 @@
 -- 디스플레이 위젯 라이브러리
 
 CREATE TABLE shopjoy_2604.dp_widget_lib (
-    widget_lib_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id            VARCHAR(21)  NOT NULL,
+    widget_lib_id      VARCHAR(21)  NOT NULL CONSTRAINT dp_widget_lib_pk_widget_lib_id PRIMARY KEY,
+    reg_site_id            VARCHAR(21)  NOT NULL,
     widget_code        VARCHAR(50)  NOT NULL,
     widget_nm          VARCHAR(100) NOT NULL,
     widget_type_cd     VARCHAR(30)  NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.dp_widget_lib (
 
 COMMENT ON TABLE  shopjoy_2604.dp_widget_lib IS '디스플레이 위젯 라이브러리';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.widget_lib_id IS '위젯라이브러리ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.widget_code IS '위젯코드';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.widget_nm IS '위젯명';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.widget_type_cd IS '위젯유형 (코드: WIDGET_TYPE — BANNER/PRODUCT/CATEGORY/HTML/SLIDER)';
@@ -40,5 +40,5 @@ COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.upd_date IS '수정일';
 
-CREATE UNIQUE INDEX dp_widget_lib_widget_code_key ON shopjoy_2604.dp_widget_lib USING btree (widget_code);
-CREATE INDEX idx_dp_widget_lib_site ON shopjoy_2604.dp_widget_lib USING btree (site_id);
+CREATE UNIQUE INDEX dp_widget_lib_uk_widget_code ON shopjoy_2604.dp_widget_lib USING btree (widget_code);
+CREATE INDEX dp_widget_lib_ix01_path_id ON shopjoy_2604.dp_widget_lib USING btree (path_id);

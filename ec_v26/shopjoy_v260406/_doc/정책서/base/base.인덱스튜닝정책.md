@@ -163,20 +163,99 @@ seq_scan 은 "의심 목록"을 좁히는 힌트일 뿐, 판단 근거는 **카�
 
 ---
 
-## 3. 명명 규칙
+## 3. 명명 규칙 ⭐ (2026-08-10 확정 · 전수 적용 완료)
+
+### 3-1. 형식
 
 ```
-idx_{테이블명}_{컬럼약칭}
+{테이블명}_{타입}{순번}_{컬럼1}[_{컬럼2}][_x{총컬럼수}]
 ```
 
-- `_id` 접미어는 약칭에서 뗀다 — `pd_prod.category_id` → `idx_pd_prod_category`
-- 복합 인덱스는 컬럼을 이어 붙인다 — `idx_pd_prod_site_status`
+| 타입 | 형식 | 개수 |
+|---|---|---|
+| 일반 인덱스 | `{tbl}_ixNN_{col1}[_{col2}][_xN]` | 497 |
+| PK (단일 컬럼) | `{tbl}_pk_{col}` | 164 |
+| PK (복합) | `{tbl}_pk_{col1}_{col2}_xN` | 5 |
+| UNIQUE | `{tbl}_uk[N]_{col1}[_{col2}][_xN]` | 38 |
+| FK | `{tbl}_fk[N]_{col}` | 21 |
+
+```
+cm_chatt_ix01_chatt_status_cd
+cm_chatt_ix02_reg_date
+cm_chatt_pk_chatt_id
+cm_blog_good_uk_blog_id_user_id_x2
+cm_dashboard_item_data_ix01_dashboard_item_id_yyyymmdd_x4
+dp_area_fk_ui_id
+```
+
+### 3-2. 규칙 상세
+
+1. **테이블명이 맨 앞** — 정렬하면 테이블의 모든 인덱스·제약이 한 덩어리로 모인다. 이게 이 명명의 1순위 목적이다.
+2. **타입은 2자로 통일** — `pk` / `uk` / `fk` / `ix`. 정렬 목록에서 타입 표기가 같은 자리에 온다.
+   `idx` 가 아니라 **`ix`** 인 이유가 이것이다.
+3. **순번**
+   - 일반 인덱스: `ix01`, `ix02` … **2자리 0채움**. `ix1` 은 10개를 넘으면 `ix1, ix10, ix2` 로 정렬이 깨진다
+   - PK: 테이블당 1개뿐이라 순번 없음
+   - UK/FK: **첫 번째는 순번 없이** `_uk` / `_fk`, 두 번째부터 `_uk2` / `_fk2`
+4. **컬럼명은 원형 그대로** — `member_id`, `channel_cd`. `_id`/`_cd` 를 떼지 않는다.
+   실측상 떼도 최대 길이가 같았고(56자), 실제 컬럼명과 일치해야 매핑을 머릿속에서 안 한다.
+5. **컬럼은 최대 2개까지만** 이름에 담는다. 3개 이상이어도 선두 2개까지.
+6. **`_x{총컬럼수}` 는 컬럼이 2개 이상일 때 붙인다** — 이름에 다 못 담은 컬럼이 있음을 알리는 신호.
+   `_x3` 인데 이름엔 2개만 보이면 "하나 더 있다 → 정의를 봐야 한다" 가 즉시 드러난다.
+   단일 컬럼은 숨은 게 없으므로 붙이지 않는다.
+
+### 3-3. ⚠ camelCase 금지
+
+PostgreSQL 은 **따옴표 없는 식별자를 소문자로 접는다.** `..._memberId` 로 만들어도 실제로는
+`..._memberid` 가 된다(실측 확인). 유지하려면 모든 참조를 `"..."` 로 감싸야 하는데
+스키마 전체가 snake_case 이므로 맞지 않는다. **컬럼명은 snake_case 원형을 쓴다.**
+
+### 3-4. ⚠ 제약명 = 인덱스명
+
+PK/UNIQUE 는 제약이 인덱스를 백업하며 **PostgreSQL 이 두 이름을 항상 동기화**한다(불일치 0건).
+따라서 이름을 바꿀 때는 반드시 제약 쪽 명령을 쓴다.
 
 ```sql
-CREATE INDEX IF NOT EXISTS idx_pd_prod_sku_prod ON shopjoy_2604.pd_prod_sku (prod_id);
+-- PK / UNIQUE / FK — 제약이므로 이 명령 (인덱스 이름도 함께 바뀐다)
+ALTER TABLE shopjoy_2604.cm_chatt RENAME CONSTRAINT cm_chatt_pkey TO cm_chatt_pk_chatt_id;
+
+-- 제약이 백업하지 않는 일반 인덱스만 이 명령
+ALTER INDEX shopjoy_2604.idx_cm_chatt_status RENAME TO cm_chatt_ix01_chatt_status_cd;
+```
+
+`ALTER ... RENAME` 은 **즉시 완료되고 재생성이 없다.** PostgreSQL 은 쿼리에서 인덱스명을
+참조하지 않으므로(인덱스 힌트 문법 없음) 애플리케이션 코드가 깨지지 않는다.
+
+### 3-5. ⚠ DDL 파일의 무명 제약
+
+DDL 에서 이름을 주지 않으면 PostgreSQL 이 `{tbl}_pkey` / `{tbl}_{col}_key` 로 자동 명명해
+**DB 를 새로 만드는 순간 규칙이 깨진다.** 반드시 명시할 것.
+
+```sql
+-- ❌ 무명 (재생성 시 cm_blog_pkey 가 된다)
+blog_id VARCHAR(21) NOT NULL PRIMARY KEY,
+PRIMARY KEY (coupon_id, prod_id)
+
+-- ✅ 명시
+blog_id VARCHAR(21) NOT NULL CONSTRAINT cm_blog_pk_blog_id PRIMARY KEY,
+CONSTRAINT pm_coupon_prod_pk_coupon_id_prod_id_x2 PRIMARY KEY (coupon_id, prod_id)
+```
+
+### 3-6. 길이
+
+PostgreSQL 식별자 한계는 **63자**이며 넘으면 **조용히 잘려** 충돌이 날 수 있다.
+현재 최대 58자로 여유가 있다. 초과 시에만 컬럼부를 잘라낸다.
+
+### 3-7. 생성 예시
+
+```sql
+CREATE INDEX IF NOT EXISTS cm_chatt_ix01_chatt_status_cd
+  ON shopjoy_2604.cm_chatt (chatt_status_cd);
 ```
 
 `IF NOT EXISTS` 를 붙여 재실행이 안전하게 한다.
+⚠ 단, **`IF NOT EXISTS` 는 이름으로만 판단**한다(§2 참조). 같은 이름이 다른 컬럼에 이미
+있으면 아무 말 없이 no-op 이므로, 생성 확인은 이름이 아니라 `indkey[0]` 로 해야 한다.
 
 ---
 
@@ -261,6 +340,29 @@ Spring Data 파생쿼리 `findByDlivId` / `findBySettleId` / `findByProdId` 등.
 - [`migration_20260810_index_tuning.sql`](../../ddl_pgsql/migration_20260810_index_tuning.sql)
 - [`migration_20260810_index_tuning2.sql`](../../ddl_pgsql/migration_20260810_index_tuning2.sql)
 - [`migration_20260810_index_tuning3.sql`](../../ddl_pgsql/migration_20260810_index_tuning3.sql)
+
+### 4차 — 명명 규칙 전수 적용 (§3)
+
+기존 이름이 **7가지 패턴**(`idx_` 492 / `_pkey` 158 / `_key` 36 / `pk_` 20 / `uq_` 3 / `ix_` 2 / 기타 3)
+으로 갈려 있었고, 테이블명과 불일치하는 것이 69건이었다(예: `cm_blog` 테이블에 `cm_bltn_*`,
+`odh_pay_chg_hist` 테이블에 `fk_ec_pay_chg_hist_pay` — 테이블 rename 후 인덱스명이 안 따라온 흔적).
+
+**DB 인덱스·제약 전건 rename + DDL 파일 동기화 완료.** 규칙 외 0건.
+
+DDL 파일에서 함께 정리한 것:
+- 마이그레이션에만 있던 인덱스 정의 **150건을 기본 DDL 에 편입** (그대로 두면 DB 재생성 시 누락)
+- 무명 인라인 PK **169건**에 `CONSTRAINT` 명시 (§3-5)
+- `site_id` → `reg_site_id` 정정: 컬럼정의 167 + COMMENT 148
+  (실 DB 는 `reg_site_id` 172개 테이블 / `site_id` 는 `sy_site`·`zd_simul_log` 2개뿐)
+- `(site_id)` 인덱스 정의 **162건 제거** — 컬럼명만 고쳐도 `reg_site_id` 는 §1 에 따라 인덱스를
+  만들지 않으므로(고유값 1) 정의 자체가 불필요
+
+**⚠ 삭제하지 않고 남긴 것 (기계적 삭제가 위험)**
+- DDL 에만 있는 정의 93건 중 **49건은 DB 에서 UNIQUE '제약'** 인데 DDL 은 `CREATE UNIQUE INDEX`
+  로 표현한다. 지우면 재생성 시 제약이 유실된다. DDL 을 테이블 레벨 `CONSTRAINT ... UNIQUE` 로
+  바꾸는 것이 정답이나 구조 변경이라 보류
+- `CREATE INDEX IF NOT EXISTS` 형태 13건은 옛 이름이 남아 있다(정규식 미포착)
+- `ec/cm_dashboard_data.sql` 은 **DB 에 테이블이 없다**(DB 는 `cm_dashboard_item_data`). obsolete 로 추정
 
 ### 추가 제외 항목 (2·3차)
 

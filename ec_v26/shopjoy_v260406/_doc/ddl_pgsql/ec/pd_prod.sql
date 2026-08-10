@@ -2,8 +2,8 @@
 -- 상품
 
 CREATE TABLE shopjoy_2604.pd_prod (
-    prod_id               VARCHAR(21)   NOT NULL PRIMARY KEY,
-    site_id               VARCHAR(21)   NOT NULL,
+    prod_id               VARCHAR(21)   NOT NULL CONSTRAINT pd_prod_pk_prod_id PRIMARY KEY,
+    reg_site_id               VARCHAR(21)   NOT NULL,
     category_id           VARCHAR(21)  ,
     brand_id              VARCHAR(21)  ,
     vendor_id             VARCHAR(21)  ,
@@ -51,7 +51,7 @@ CREATE TABLE shopjoy_2604.pd_prod (
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod IS '상품';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_id IS '상품ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.category_id IS '카테고리ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.brand_id IS '브랜드ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.vendor_id IS '업체ID';
@@ -96,4 +96,8 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_rate IS '플랫폼수수료 
 COMMENT ON COLUMN shopjoy_2604.pd_prod.platform_fee_amount IS '플랫폼수수료 금액 (원) — 내부 관리용. rate 와 amount 중 입력된 값을 우선 사용';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_opt_type_level1_cd IS '옵션 1단 분류 코드 (코드: PROD_OPT_CATEGORY level=1) — 옵션형 상품에서 옵션 그룹들이 속하는 1단 분류 (COLOR/SIZE 등)';
 
-CREATE INDEX idx_pd_prod_site ON shopjoy_2604.pd_prod USING btree (site_id);
+CREATE INDEX pd_prod_ix01_brand_id ON shopjoy_2604.pd_prod USING btree (brand_id);
+CREATE INDEX pd_prod_ix02_category_id ON shopjoy_2604.pd_prod USING btree (category_id);
+CREATE INDEX pd_prod_ix03_dliv_tmplt_id ON shopjoy_2604.pd_prod USING btree (dliv_tmplt_id);
+CREATE INDEX pd_prod_ix04_md_user_id ON shopjoy_2604.pd_prod USING btree (md_user_id);
+CREATE INDEX pd_prod_ix05_vendor_id ON shopjoy_2604.pd_prod USING btree (vendor_id);

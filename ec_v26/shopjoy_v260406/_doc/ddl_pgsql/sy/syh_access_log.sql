@@ -2,7 +2,7 @@
 -- API 요청/응답 액세스 로그 (비동기 선택 수집)
 
 CREATE TABLE shopjoy_2604.syh_access_log (
-    log_id       VARCHAR(20)   NOT NULL PRIMARY KEY,
+    log_id       VARCHAR(20)   NOT NULL CONSTRAINT syh_access_log_pk_log_id PRIMARY KEY,
     req_method   VARCHAR(10)  ,
     req_host     VARCHAR(200) ,
     req_path     VARCHAR(500) ,
@@ -30,7 +30,7 @@ CREATE TABLE shopjoy_2604.syh_access_log (
     func_nm      VARCHAR(200) ,
     line_no      VARCHAR(10)  ,
     trace_id     VARCHAR(50)  ,
-    site_id      VARCHAR(21)   NOT NULL
+    reg_site_id      VARCHAR(21)   NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.syh_access_log IS 'API 요청/응답 액세스 로그 (비동기 선택 수집)';
@@ -57,9 +57,9 @@ COMMENT ON COLUMN shopjoy_2604.syh_access_log.thread_nm IS '처리 스레드명'
 COMMENT ON COLUMN shopjoy_2604.syh_access_log.req_dt IS '요청 수신 시각';
 COMMENT ON COLUMN shopjoy_2604.syh_access_log.reg_date IS 'DB 저장 시각';
 
-CREATE INDEX idx_syh_access_log_site ON shopjoy_2604.syh_access_log USING btree (site_id);
-CREATE INDEX idx_syh_al_req_dt ON shopjoy_2604.syh_access_log USING btree (req_dt DESC);
-CREATE INDEX idx_syh_al_req_path ON shopjoy_2604.syh_access_log USING btree (req_path);
-CREATE INDEX idx_syh_al_resp_status ON shopjoy_2604.syh_access_log USING btree (resp_status);
-CREATE INDEX idx_syh_al_user_id ON shopjoy_2604.syh_access_log USING btree (user_id);
-CREATE UNIQUE INDEX pk_syh_access_log ON shopjoy_2604.syh_access_log USING btree (log_id);
+CREATE INDEX syh_access_log_ix01_req_dt ON shopjoy_2604.syh_access_log USING btree (req_dt DESC);
+CREATE INDEX syh_access_log_ix02_req_path ON shopjoy_2604.syh_access_log USING btree (req_path);
+CREATE INDEX syh_access_log_ix03_resp_status ON shopjoy_2604.syh_access_log USING btree (resp_status);
+CREATE INDEX syh_access_log_ix05_user_id ON shopjoy_2604.syh_access_log USING btree (user_id);
+CREATE UNIQUE INDEX syh_access_log_uk_log ON shopjoy_2604.syh_access_log USING btree (log_id);
+CREATE INDEX syh_access_log_ix04_trace_id ON shopjoy_2604.syh_access_log USING btree (trace_id);

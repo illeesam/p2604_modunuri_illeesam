@@ -2,7 +2,7 @@
 -- zz_exam1
 
 CREATE TABLE shopjoy_2604.zz_exam1 (
-    exam1_id VARCHAR(21)  NOT NULL PRIMARY KEY,
+    exam1_id VARCHAR(21)  NOT NULL CONSTRAINT zz_exam1_pk PRIMARY KEY,
     col11    VARCHAR(200),
     col12    VARCHAR(200),
     col13    VARCHAR(200),
@@ -12,4 +12,4 @@ CREATE TABLE shopjoy_2604.zz_exam1 (
 
 COMMENT ON TABLE  shopjoy_2604.zz_exam1 IS 'zz_exam1';
 
-CREATE UNIQUE INDEX pk_zz_exam1 ON shopjoy_2604.zz_exam1 USING btree (exam1_id);
+CREATE UNIQUE INDEX zz_exam1_uk_exam1 ON shopjoy_2604.zz_exam1 USING btree (exam1_id);

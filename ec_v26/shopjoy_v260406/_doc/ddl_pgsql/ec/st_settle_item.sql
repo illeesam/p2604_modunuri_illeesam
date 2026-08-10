@@ -2,9 +2,9 @@
 -- 정산 항목 (주문항목별 명세)
 
 CREATE TABLE shopjoy_2604.st_settle_item (
-    settle_item_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
+    settle_item_id      VARCHAR(21)  NOT NULL CONSTRAINT st_settle_item_pk_settle_item_id PRIMARY KEY,
     settle_id           VARCHAR(21)  NOT NULL,
-    site_id             VARCHAR(21)  NOT NULL,
+    reg_site_id             VARCHAR(21)  NOT NULL,
     order_id            VARCHAR(21)  NOT NULL,
     order_item_id       VARCHAR(21)  NOT NULL,
     vendor_id           VARCHAR(21)  NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE shopjoy_2604.st_settle_item (
 COMMENT ON TABLE  shopjoy_2604.st_settle_item IS '정산 항목 (주문항목별 명세)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_item.settle_item_id IS '정산항목ID';
 COMMENT ON COLUMN shopjoy_2604.st_settle_item.settle_id IS '정산ID (st_settle.settle_id)';
-COMMENT ON COLUMN shopjoy_2604.st_settle_item.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.st_settle_item.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.st_settle_item.order_id IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_item.order_item_id IS '주문항목ID (od_order_item.order_item_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_item.vendor_id IS '업체ID';
@@ -44,8 +44,9 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_item.settle_item_amt IS '항목 정산�
 COMMENT ON COLUMN shopjoy_2604.st_settle_item.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.st_settle_item.reg_date IS '등록일';
 
-CREATE INDEX idx_st_settle_item_order ON shopjoy_2604.st_settle_item USING btree (order_id);
-CREATE INDEX idx_st_settle_item_settle ON shopjoy_2604.st_settle_item USING btree (settle_id);
-CREATE INDEX idx_st_settle_item_site ON shopjoy_2604.st_settle_item USING btree (site_id);
-CREATE INDEX idx_st_settle_item_vendor ON shopjoy_2604.st_settle_item USING btree (vendor_id);
-CREATE UNIQUE INDEX st_settle_item_settle_id_order_item_id_key ON shopjoy_2604.st_settle_item USING btree (settle_id, order_item_id);
+CREATE INDEX st_settle_item_ix01_order_id ON shopjoy_2604.st_settle_item USING btree (order_id);
+CREATE INDEX st_settle_item_ix_settle ON shopjoy_2604.st_settle_item USING btree (settle_id);
+CREATE INDEX st_settle_item_ix04_vendor_id ON shopjoy_2604.st_settle_item USING btree (vendor_id);
+CREATE UNIQUE INDEX st_settle_item_uk_settle_id_order_item_id_x2 ON shopjoy_2604.st_settle_item USING btree (settle_id, order_item_id);
+CREATE INDEX st_settle_item_ix02_order_item_id ON shopjoy_2604.st_settle_item USING btree (order_item_id);
+CREATE INDEX st_settle_item_ix03_prod_id ON shopjoy_2604.st_settle_item USING btree (prod_id);

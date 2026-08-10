@@ -2,8 +2,8 @@
 -- 배송템플릿
 
 CREATE TABLE shopjoy_2604.pd_dliv_tmplt (
-    dliv_tmplt_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id            VARCHAR(21)  NOT NULL,
+    dliv_tmplt_id      VARCHAR(21)  NOT NULL CONSTRAINT pd_dliv_tmplt_pk_dliv_tmplt_id PRIMARY KEY,
+    reg_site_id            VARCHAR(21)  NOT NULL,
     vendor_id          VARCHAR(21) ,
     dliv_tmplt_nm      VARCHAR(100) NOT NULL,
     dliv_method_cd     VARCHAR(20) ,
@@ -29,7 +29,7 @@ CREATE TABLE shopjoy_2604.pd_dliv_tmplt (
 
 COMMENT ON TABLE  shopjoy_2604.pd_dliv_tmplt IS '배송템플릿';
 COMMENT ON COLUMN shopjoy_2604.pd_dliv_tmplt.dliv_tmplt_id IS '배송템플릿ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pd_dliv_tmplt.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_dliv_tmplt.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_dliv_tmplt.vendor_id IS '업체ID (sy_vendor.vendor_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_dliv_tmplt.dliv_tmplt_nm IS '템플릿명';
 COMMENT ON COLUMN shopjoy_2604.pd_dliv_tmplt.dliv_method_cd IS '배송방법코드 (코드: DLIV_METHOD)';
@@ -52,5 +52,4 @@ COMMENT ON COLUMN shopjoy_2604.pd_dliv_tmplt.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.pd_dliv_tmplt.upd_by IS '수정자ID';
 COMMENT ON COLUMN shopjoy_2604.pd_dliv_tmplt.upd_date IS '수정일시';
 
-CREATE INDEX idx_pd_dliv_tmplt_site ON shopjoy_2604.pd_dliv_tmplt USING btree (site_id);
-CREATE INDEX idx_pd_dliv_tmplt_vendor ON shopjoy_2604.pd_dliv_tmplt USING btree (vendor_id);
+CREATE INDEX pd_dliv_tmplt_ix01_vendor_id ON shopjoy_2604.pd_dliv_tmplt USING btree (vendor_id);

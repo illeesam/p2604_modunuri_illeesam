@@ -2,7 +2,7 @@
 -- 디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성)
 
 CREATE TABLE shopjoy_2604.dp_panel_item (
-    panel_item_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
+    panel_item_id      VARCHAR(21)  NOT NULL CONSTRAINT dp_panel_item_pk_panel_item_id PRIMARY KEY,
     panel_id           VARCHAR(21)  NOT NULL,
     widget_lib_id      VARCHAR(21) ,
     widget_type_cd     VARCHAR(30) ,
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.dp_panel_item (
     upd_date           TIMESTAMP   ,
     disp_start_dt      TIMESTAMP   ,
     disp_end_dt        TIMESTAMP   ,
-    site_id            VARCHAR(21)  NOT NULL
+    reg_site_id            VARCHAR(21)  NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.dp_panel_item IS '디스플레이 패널 항목 (위젯 인스턴스 - 참조 또는 직접 생성)';
@@ -49,12 +49,10 @@ COMMENT ON COLUMN shopjoy_2604.dp_panel_item.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.dp_panel_item.disp_start_dt IS '전시시작일시';
 COMMENT ON COLUMN shopjoy_2604.dp_panel_item.disp_end_dt IS '전시종료일시';
 
-CREATE INDEX idx_dp_panel_item_disp_date ON shopjoy_2604.dp_panel_item USING btree (disp_start_dt, disp_end_dt);
-CREATE INDEX idx_dp_panel_item_site ON shopjoy_2604.dp_panel_item USING btree (site_id);
-CREATE INDEX idx_dp_panel_item_panel ON shopjoy_2604.dp_panel_item USING btree (panel_id);
+CREATE INDEX dp_panel_item_ix01_disp_start_dt_disp_end_dt_x2 ON shopjoy_2604.dp_panel_item USING btree (disp_start_dt, disp_end_dt);
+CREATE INDEX dp_panel_item_ix02_panel_id ON shopjoy_2604.dp_panel_item USING btree (panel_id);
 
 -- 2026-06-11 구조개선: FK 보강 (패널 삭제 시 아이템 CASCADE)
-ALTER TABLE shopjoy_2604.dp_panel_item ADD CONSTRAINT dp_panel_item_panel_id_fkey
-    FOREIGN KEY (panel_id) REFERENCES shopjoy_2604.dp_panel (panel_id) ON DELETE CASCADE;
-ALTER TABLE shopjoy_2604.dp_panel_item ADD CONSTRAINT dp_panel_item_widget_lib_id_fkey
-    FOREIGN KEY (widget_lib_id) REFERENCES shopjoy_2604.dp_widget_lib (widget_lib_id);
+ALTER TABLE shopjoy_2604.dp_panel_item ADD CONSTRAINT dp_panel_item_fk_panel_id FOREIGN KEY (panel_id) REFERENCES shopjoy_2604.dp_panel (panel_id) ON DELETE CASCADE;
+ALTER TABLE shopjoy_2604.dp_panel_item ADD CONSTRAINT dp_panel_item_fk2_widget_lib_id FOREIGN KEY (widget_lib_id) REFERENCES shopjoy_2604.dp_widget_lib (widget_lib_id);
+CREATE INDEX dp_panel_item_ix03_widget_lib_id ON shopjoy_2604.dp_panel_item USING btree (widget_lib_id);

@@ -2,8 +2,8 @@
 -- 외부 API 연동 로그
 
 CREATE TABLE shopjoy_2604.syh_api_log (
-    log_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id     VARCHAR(21)  NOT NULL,
+    log_id      VARCHAR(21)  NOT NULL CONSTRAINT syh_api_log_pk_log_id PRIMARY KEY,
+    reg_site_id     VARCHAR(21)  NOT NULL,
     api_type_cd VARCHAR(50)  NOT NULL,
     api_nm      VARCHAR(100),
     method_cd   VARCHAR(10) ,
@@ -31,7 +31,7 @@ CREATE TABLE shopjoy_2604.syh_api_log (
 
 COMMENT ON TABLE  shopjoy_2604.syh_api_log IS '외부 API 연동 로그';
 COMMENT ON COLUMN shopjoy_2604.syh_api_log.log_id IS '로그ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.syh_api_log.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.syh_api_log.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.syh_api_log.api_type_cd IS '연동유형코드 (PG/LOGISTICS/KAKAO/NAVER/SMS 등)';
 COMMENT ON COLUMN shopjoy_2604.syh_api_log.api_nm IS 'API명 (예: 결제승인)';
 COMMENT ON COLUMN shopjoy_2604.syh_api_log.method_cd IS 'HTTP 메서드';
@@ -52,7 +52,7 @@ COMMENT ON COLUMN shopjoy_2604.syh_api_log.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.syh_api_log.ui_nm IS '화면명 (X-UI-Nm 헤더)';
 COMMENT ON COLUMN shopjoy_2604.syh_api_log.cmd_nm IS '작업명 (X-Cmd-Nm 헤더)';
 
-CREATE INDEX idx_syh_api_log_date ON shopjoy_2604.syh_api_log USING btree (call_date);
-CREATE INDEX idx_syh_api_log_ref ON shopjoy_2604.syh_api_log USING btree (ref_type_cd, ref_id);
-CREATE INDEX idx_syh_api_log_site ON shopjoy_2604.syh_api_log USING btree (site_id);
-CREATE INDEX idx_syh_api_log_type ON shopjoy_2604.syh_api_log USING btree (api_type_cd, result_cd);
+CREATE INDEX syh_api_log_ix02_call_date ON shopjoy_2604.syh_api_log USING btree (call_date);
+CREATE INDEX syh_api_log_ix03_ref_type_cd_ref_id_x2 ON shopjoy_2604.syh_api_log USING btree (ref_type_cd, ref_id);
+CREATE INDEX syh_api_log_ix01_api_type_cd_result_cd_x2 ON shopjoy_2604.syh_api_log USING btree (api_type_cd, result_cd);
+CREATE INDEX syh_api_log_ix04_trace_id ON shopjoy_2604.syh_api_log USING btree (trace_id);

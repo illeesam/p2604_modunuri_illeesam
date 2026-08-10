@@ -2,8 +2,8 @@
 -- 게시물
 
 CREATE TABLE shopjoy_2604.sy_bbs (
-    bbs_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21)  NOT NULL,
+    bbs_id        VARCHAR(21)  NOT NULL CONSTRAINT sy_bbs_pk_bbs_id PRIMARY KEY,
+    reg_site_id       VARCHAR(21)  NOT NULL,
     bbm_id        VARCHAR(21)  NOT NULL,
     parent_bbs_id VARCHAR(21) ,
     member_id     VARCHAR(21) ,
@@ -25,7 +25,7 @@ CREATE TABLE shopjoy_2604.sy_bbs (
 
 COMMENT ON TABLE  shopjoy_2604.sy_bbs IS '게시물';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.bbs_id IS '게시물ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_bbs.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_bbs.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.bbm_id IS '게시판ID';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.parent_bbs_id IS '부모게시물ID (답글)';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.member_id IS '작성자 회원ID';
@@ -44,4 +44,8 @@ COMMENT ON COLUMN shopjoy_2604.sy_bbs.upd_by IS '수정자 (sy_user.user_id, ec_
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 
-CREATE INDEX idx_sy_bbs_site ON shopjoy_2604.sy_bbs USING btree (site_id);
+CREATE INDEX sy_bbs_ix01_attach_grp_id ON shopjoy_2604.sy_bbs USING btree (attach_grp_id);
+CREATE INDEX sy_bbs_ix02_bbm_id ON shopjoy_2604.sy_bbs USING btree (bbm_id);
+CREATE INDEX sy_bbs_ix03_member_id ON shopjoy_2604.sy_bbs USING btree (member_id);
+CREATE INDEX sy_bbs_ix04_parent_bbs_id ON shopjoy_2604.sy_bbs USING btree (parent_bbs_id);
+CREATE INDEX sy_bbs_ix05_path_id ON shopjoy_2604.sy_bbs USING btree (path_id);

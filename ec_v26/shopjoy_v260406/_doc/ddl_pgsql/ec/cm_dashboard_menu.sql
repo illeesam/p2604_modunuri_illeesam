@@ -21,7 +21,7 @@
 
 CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_dashboard_menu (
     menu_node_id    VARCHAR(21)  NOT NULL,
-    site_id         VARCHAR(21)  NOT NULL,
+    reg_site_id         VARCHAR(21)  NOT NULL,
     owner_user_id   VARCHAR(30)  NOT NULL,          -- 이 메뉴 트리의 주인(sy_user.user_id)
     parent_node_id  VARCHAR(21),                    -- 상위 노드. NULL 이면 최상위
     node_type_cd    VARCHAR(10)  NOT NULL,          -- FOLDER / ITEM
@@ -34,12 +34,12 @@ CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_dashboard_menu (
     reg_date        TIMESTAMP,
     upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
-    CONSTRAINT pk_cm_dashboard_menu PRIMARY KEY (menu_node_id)
+    CONSTRAINT cm_dashboard_menu_pk_menu_node_id PRIMARY KEY (menu_node_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.cm_dashboard_menu               IS '사용자별 대시보드 좌측메뉴 트리 (폴더 + 대시보드 아이템)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.menu_node_id  IS '메뉴노드ID';
-COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.site_id       IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.reg_site_id       IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.owner_user_id IS '메뉴 트리 소유자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.parent_node_id IS '상위 메뉴노드ID. NULL 이면 최상위';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.node_type_cd  IS '노드유형 (FOLDER:폴더 / ITEM:대시보드)';
@@ -60,3 +60,6 @@ CREATE INDEX IF NOT EXISTS ix_cm_dashboard_menu_parent
 -- 두 방식을 함께 두면 반드시 어긋나므로 컬럼을 제거한다.
 ALTER TABLE shopjoy_2604.cm_dashboard DROP COLUMN IF EXISTS menu_show_yn;
 ALTER TABLE shopjoy_2604.cm_dashboard DROP COLUMN IF EXISTS menu_parent_id;
+CREATE INDEX cm_dashboard_menu_ix01_dashboard_id ON shopjoy_2604.cm_dashboard_menu USING btree (dashboard_id);
+CREATE INDEX cm_dashboard_menu_ix02_owner_user_id ON shopjoy_2604.cm_dashboard_menu USING btree (owner_user_id);
+CREATE INDEX cm_dashboard_menu_ix03_parent_node_id ON shopjoy_2604.cm_dashboard_menu USING btree (parent_node_id);

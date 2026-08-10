@@ -7,7 +7,7 @@
 
 CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_popup_item (
     popup_item_id   VARCHAR(21)  NOT NULL,
-    site_id         VARCHAR(21)  NOT NULL,
+    reg_site_id         VARCHAR(21)  NOT NULL,
     popup_id        VARCHAR(21)  NOT NULL,          -- cm_popup.popup_id FK
     field_nm        VARCHAR(50)  NOT NULL,          -- 엔티티 필드명 (userNm, loginId …)
     field_label     VARCHAR(100) NOT NULL,          -- 화면 표시 라벨
@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_popup_item (
     reg_date        TIMESTAMP,
     upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
-    CONSTRAINT pk_cm_popup_item PRIMARY KEY (popup_item_id)
+    CONSTRAINT cm_popup_item_pk_popup_item_id PRIMARY KEY (popup_item_id)
 );
 
 CREATE INDEX IF NOT EXISTS ix_cm_popup_item_popup ON shopjoy_2604.cm_popup_item (popup_id, sort_ord);
 
 COMMENT ON TABLE  shopjoy_2604.cm_popup_item IS '공통 팝업 항목(필드) 속성';
 COMMENT ON COLUMN shopjoy_2604.cm_popup_item.popup_item_id  IS '팝업항목ID';
-COMMENT ON COLUMN shopjoy_2604.cm_popup_item.site_id        IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.cm_popup_item.reg_site_id        IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.cm_popup_item.popup_id       IS '팝업ID (cm_popup.popup_id FK)';
 COMMENT ON COLUMN shopjoy_2604.cm_popup_item.field_nm       IS '엔티티 필드명';
 COMMENT ON COLUMN shopjoy_2604.cm_popup_item.field_label    IS '화면 표시 라벨';
@@ -50,3 +50,4 @@ COMMENT ON COLUMN shopjoy_2604.cm_popup_item.link_yn        IS '선택 트리거
 COMMENT ON COLUMN shopjoy_2604.cm_popup_item.sort_ord       IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.cm_popup_item.use_yn         IS '사용여부 (Y/N)';
 COMMENT ON COLUMN shopjoy_2604.cm_popup_item.remark         IS '비고';
+CREATE INDEX cm_popup_item_ix01_popup_id_sort_ord_x2 ON shopjoy_2604.cm_popup_item USING btree (popup_id, sort_ord);

@@ -2,8 +2,8 @@
 -- 공지사항
 
 CREATE TABLE shopjoy_2604.sy_notice (
-    notice_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id          VARCHAR(21)  NOT NULL,
+    notice_id        VARCHAR(21)  NOT NULL CONSTRAINT sy_notice_pk_notice_id PRIMARY KEY,
+    reg_site_id          VARCHAR(21)  NOT NULL,
     notice_title     VARCHAR(200) NOT NULL,
     notice_type_cd   VARCHAR(30) ,
     is_fixed         VARCHAR(1)   DEFAULT 'N'::bpchar,
@@ -21,7 +21,7 @@ CREATE TABLE shopjoy_2604.sy_notice (
 
 COMMENT ON TABLE  shopjoy_2604.sy_notice IS '공지사항';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_id IS '공지ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_notice.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_notice.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_title IS '제목';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_type_cd IS '공지유형 (코드: NOTICE_TYPE)';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.is_fixed IS '상단고정 Y/N';
@@ -36,4 +36,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_notice.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_notice_site ON shopjoy_2604.sy_notice USING btree (site_id);
+CREATE INDEX sy_notice_ix01_attach_grp_id ON shopjoy_2604.sy_notice USING btree (attach_grp_id);

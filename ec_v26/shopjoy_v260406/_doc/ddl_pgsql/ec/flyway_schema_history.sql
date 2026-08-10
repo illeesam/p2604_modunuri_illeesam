@@ -1,7 +1,7 @@
 -- flyway_schema_history 테이블 DDL
 
 CREATE TABLE shopjoy_2604.flyway_schema_history (
-    installed_rank INTEGER       NOT NULL PRIMARY KEY,
+    installed_rank INTEGER       NOT NULL CONSTRAINT flyway_schema_history_pk_installed_rank PRIMARY KEY,
     version        VARCHAR(50)  ,
     description    VARCHAR(200)  NOT NULL,
     type           VARCHAR(20)   NOT NULL,
@@ -14,5 +14,5 @@ CREATE TABLE shopjoy_2604.flyway_schema_history (
 );
 
 
-CREATE UNIQUE INDEX flyway_schema_history_pk ON shopjoy_2604.flyway_schema_history USING btree (installed_rank);
-CREATE INDEX flyway_schema_history_s_idx ON shopjoy_2604.flyway_schema_history USING btree (success);
+CREATE UNIQUE INDEX flyway_schema_history_uk_installed_rank ON shopjoy_2604.flyway_schema_history USING btree (installed_rank);
+CREATE INDEX flyway_schema_history_ix01_success ON shopjoy_2604.flyway_schema_history USING btree (success);

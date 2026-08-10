@@ -2,8 +2,8 @@
 -- 배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송)
 
 CREATE TABLE shopjoy_2604.od_dliv (
-    dliv_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id               VARCHAR(21)  NOT NULL,
+    dliv_id               VARCHAR(21)  NOT NULL CONSTRAINT od_dliv_pk_dliv_id PRIMARY KEY,
+    reg_site_id               VARCHAR(21)  NOT NULL,
     order_id              VARCHAR(21)  NOT NULL,
     claim_id              VARCHAR(21) ,
     vendor_id             VARCHAR(21) ,
@@ -49,7 +49,7 @@ CREATE TABLE shopjoy_2604.od_dliv (
 
 COMMENT ON TABLE  shopjoy_2604.od_dliv IS '배송 (1주문 N배송 가능 — 정상출고/반품반입/교환배송)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.dliv_id IS '배송ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.od_dliv.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.od_dliv.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.order_id IS '주문ID (od_order.)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.claim_id IS '클레임ID (od_claim., 클레임 배송일 때만)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.vendor_id IS '출고 업체ID (벤더별 분리출고 시)';
@@ -92,9 +92,13 @@ COMMENT ON COLUMN shopjoy_2604.od_dliv.appr_req_date IS '결재 요청일시';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.appr_aprv_user_id IS '결재자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.appr_aprv_date IS '결재일시';
 
-CREATE INDEX idx_od_dliv_claim ON shopjoy_2604.od_dliv USING btree (claim_id) WHERE (claim_id IS NOT NULL);
-CREATE INDEX idx_od_dliv_order ON shopjoy_2604.od_dliv USING btree (order_id);
-CREATE INDEX idx_od_dliv_ship_date ON shopjoy_2604.od_dliv USING btree (dliv_ship_date);
-CREATE INDEX idx_od_dliv_site ON shopjoy_2604.od_dliv USING btree (site_id);
-CREATE INDEX idx_od_dliv_status ON shopjoy_2604.od_dliv USING btree (dliv_status_cd);
-CREATE INDEX idx_od_dliv_type ON shopjoy_2604.od_dliv USING btree (dliv_div_cd, dliv_type_cd);
+CREATE INDEX od_dliv_ix03_claim_id ON shopjoy_2604.od_dliv USING btree (claim_id) WHERE (claim_id IS NOT NULL);
+CREATE INDEX od_dliv_ix08_order_id ON shopjoy_2604.od_dliv USING btree (order_id);
+CREATE INDEX od_dliv_ix05_dliv_ship_date ON shopjoy_2604.od_dliv USING btree (dliv_ship_date);
+CREATE INDEX od_dliv_ix06_dliv_status_cd ON shopjoy_2604.od_dliv USING btree (dliv_status_cd);
+CREATE INDEX od_dliv_ix04_dliv_div_cd_dliv_type_cd_x2 ON shopjoy_2604.od_dliv USING btree (dliv_div_cd, dliv_type_cd);
+CREATE INDEX od_dliv_ix01_appr_aprv_user_id ON shopjoy_2604.od_dliv USING btree (appr_aprv_user_id);
+CREATE INDEX od_dliv_ix02_appr_req_user_id ON shopjoy_2604.od_dliv USING btree (appr_req_user_id);
+CREATE INDEX od_dliv_ix07_member_id ON shopjoy_2604.od_dliv USING btree (member_id);
+CREATE INDEX od_dliv_ix09_parent_dliv_id ON shopjoy_2604.od_dliv USING btree (parent_dliv_id);
+CREATE INDEX od_dliv_ix10_vendor_id ON shopjoy_2604.od_dliv USING btree (vendor_id);

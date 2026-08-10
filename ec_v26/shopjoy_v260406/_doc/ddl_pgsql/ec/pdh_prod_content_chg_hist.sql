@@ -2,8 +2,8 @@
 -- 상품 컨텐츠 변경 이력
 
 CREATE TABLE shopjoy_2604.pdh_prod_content_chg_hist (
-    hist_id         VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21)  NOT NULL,
+    hist_id         VARCHAR(21)  NOT NULL CONSTRAINT pdh_prod_content_chg_hist_pk_hist_id PRIMARY KEY,
+    reg_site_id         VARCHAR(21)  NOT NULL,
     prod_id         VARCHAR(21)  NOT NULL,
     prod_content_id VARCHAR(21)  NOT NULL,
     content_type_cd VARCHAR(50) ,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.pdh_prod_content_chg_hist (
 
 COMMENT ON TABLE  shopjoy_2604.pdh_prod_content_chg_hist IS '상품 컨텐츠 변경 이력';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.hist_id IS '이력ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.prod_id IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.prod_content_id IS '상품컨텐츠ID (pd_prod_content.)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.content_type_cd IS '컨텐츠유형코드 (상세설명, 사용설명, 배송정보 등)';
@@ -34,5 +34,5 @@ COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.reg_date IS '등록일'
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pdh_prod_content_chg_hist.upd_date IS '수정일';
 
-CREATE INDEX idx_pdh_prod_content_chg_hist_prod ON shopjoy_2604.pdh_prod_content_chg_hist USING btree (prod_id, chg_date DESC);
-CREATE INDEX idx_pdh_prod_content_chg_hist_site ON shopjoy_2604.pdh_prod_content_chg_hist USING btree (site_id);
+CREATE INDEX pdh_prod_content_chg_hist_ix01_prod_id_chg_date_x2 ON shopjoy_2604.pdh_prod_content_chg_hist USING btree (prod_id, chg_date DESC);
+CREATE INDEX pdh_prod_content_chg_hist_ix02_prod_content_id ON shopjoy_2604.pdh_prod_content_chg_hist USING btree (prod_content_id);

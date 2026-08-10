@@ -2,8 +2,8 @@
 -- 채팅 메시지 (2026-06-27 재구조화 — chatt_room_id→chatt_id, 첨부/발신자 구조 개선)
 
 CREATE TABLE shopjoy_2604.cm_chatt_msg (
-    chatt_msg_id       VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id            VARCHAR(21)  NOT NULL,
+    chatt_msg_id       VARCHAR(21)  NOT NULL CONSTRAINT cm_chatt_msg_pk_chatt_msg_id PRIMARY KEY,
+    reg_site_id            VARCHAR(21)  NOT NULL,
     chatt_id           VARCHAR(21)  NOT NULL,
     sender_type_cd     VARCHAR(20)  NOT NULL,
     sender_id          VARCHAR(21)  NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.cm_chatt_msg (
 
 COMMENT ON TABLE  shopjoy_2604.cm_chatt_msg IS '채팅 메시지';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.chatt_msg_id IS '메시지ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.chatt_id IS '채팅방ID (cm_chatt.chatt_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.sender_type_cd IS '발신자유형 (MEMBER/ADMIN/SYSTEM)';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.sender_id IS '발신자ID (memberId 또는 userId)';
@@ -40,7 +40,9 @@ COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.cm_chatt_msg.upd_date IS '수정일시';
 
-CREATE INDEX idx_cm_chatt_msg_chatt    ON shopjoy_2604.cm_chatt_msg USING btree (chatt_id);
-CREATE INDEX idx_cm_chatt_msg_sender   ON shopjoy_2604.cm_chatt_msg USING btree (sender_id);
-CREATE INDEX idx_cm_chatt_msg_senddate ON shopjoy_2604.cm_chatt_msg USING btree (send_date DESC);
-CREATE INDEX idx_cm_chatt_msg_site     ON shopjoy_2604.cm_chatt_msg USING btree (site_id);
+CREATE INDEX cm_chatt_msg_ix02_chatt_id ON shopjoy_2604.cm_chatt_msg USING btree (chatt_id);
+CREATE INDEX cm_chatt_msg_ix06_sender_id ON shopjoy_2604.cm_chatt_msg USING btree (sender_id);
+CREATE INDEX cm_chatt_msg_ix05_send_date ON shopjoy_2604.cm_chatt_msg USING btree (send_date DESC);
+CREATE INDEX cm_chatt_msg_ix01_attach_grp_id ON shopjoy_2604.cm_chatt_msg USING btree (attach_grp_id);
+CREATE INDEX cm_chatt_msg_ix03_chatt_room_id ON shopjoy_2604.cm_chatt_msg USING btree (chatt_room_id);
+CREATE INDEX cm_chatt_msg_ix04_ref_id ON shopjoy_2604.cm_chatt_msg USING btree (ref_id);

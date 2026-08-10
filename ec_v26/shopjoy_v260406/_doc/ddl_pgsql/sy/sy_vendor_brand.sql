@@ -2,8 +2,8 @@
 -- 판매/배송업체-브랜드 매핑
 
 CREATE TABLE shopjoy_2604.sy_vendor_brand (
-    vendor_brand_id     VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id             VARCHAR(21)  NOT NULL,
+    vendor_brand_id     VARCHAR(21)  NOT NULL CONSTRAINT sy_vendor_brand_pk_vendor_brand_id PRIMARY KEY,
+    reg_site_id             VARCHAR(21)  NOT NULL,
     vendor_id           VARCHAR(21)  NOT NULL,
     brand_id            VARCHAR(21)  NOT NULL,
     is_main             VARCHAR(1)   DEFAULT 'N'::bpchar,
@@ -22,7 +22,7 @@ CREATE TABLE shopjoy_2604.sy_vendor_brand (
 
 COMMENT ON TABLE  shopjoy_2604.sy_vendor_brand IS '판매/배송업체-브랜드 매핑';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.vendor_brand_id IS '업체브랜드ID (PK)';
-COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.vendor_id IS '업체ID (sy_vendor.vendor_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.brand_id IS '브랜드ID (sy_brand.brand_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.is_main IS '대표 브랜드 여부 Y/N';
@@ -38,8 +38,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_brand.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_vendor_brand_brand ON shopjoy_2604.sy_vendor_brand USING btree (brand_id);
-CREATE INDEX idx_sy_vendor_brand_site ON shopjoy_2604.sy_vendor_brand USING btree (site_id);
-CREATE INDEX idx_sy_vendor_brand_use ON shopjoy_2604.sy_vendor_brand USING btree (use_yn);
-CREATE INDEX idx_sy_vendor_brand_vendor ON shopjoy_2604.sy_vendor_brand USING btree (vendor_id);
-CREATE UNIQUE INDEX sy_vendor_brand_vendor_id_brand_id_key ON shopjoy_2604.sy_vendor_brand USING btree (vendor_id, brand_id);
+CREATE INDEX sy_vendor_brand_ix01_brand_id ON shopjoy_2604.sy_vendor_brand USING btree (brand_id);
+CREATE INDEX sy_vendor_brand_ix02_use_yn ON shopjoy_2604.sy_vendor_brand USING btree (use_yn);
+CREATE INDEX sy_vendor_brand_ix_vendor ON shopjoy_2604.sy_vendor_brand USING btree (vendor_id);
+CREATE UNIQUE INDEX sy_vendor_brand_uk_vendor_id_brand_id_x2 ON shopjoy_2604.sy_vendor_brand USING btree (vendor_id, brand_id);

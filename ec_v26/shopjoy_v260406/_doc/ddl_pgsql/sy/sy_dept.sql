@@ -2,8 +2,8 @@
 -- 부서
 
 CREATE TABLE shopjoy_2604.sy_dept (
-    dept_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21)  NOT NULL,
+    dept_id        VARCHAR(21)  NOT NULL CONSTRAINT sy_dept_pk_dept_id PRIMARY KEY,
+    reg_site_id        VARCHAR(21)  NOT NULL,
     dept_code      VARCHAR(50)  NOT NULL,
     dept_nm        VARCHAR(100) NOT NULL,
     parent_dept_id VARCHAR(21) ,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.sy_dept (
 
 COMMENT ON TABLE  shopjoy_2604.sy_dept IS '부서';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.dept_id IS '부서ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_dept.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_dept.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.dept_code IS '부서코드';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.dept_nm IS '부서명';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.parent_dept_id IS '상위부서ID';
@@ -34,5 +34,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_dept.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_dept_site ON shopjoy_2604.sy_dept USING btree (site_id);
-CREATE UNIQUE INDEX sy_dept_dept_code_key ON shopjoy_2604.sy_dept USING btree (dept_code);
+CREATE UNIQUE INDEX sy_dept_uk_dept_code ON shopjoy_2604.sy_dept USING btree (dept_code);
+CREATE INDEX sy_dept_ix01_manager_id ON shopjoy_2604.sy_dept USING btree (manager_id);
+CREATE INDEX sy_dept_ix02_parent_dept_id ON shopjoy_2604.sy_dept USING btree (parent_dept_id);

@@ -2,9 +2,9 @@
 -- 정산지급
 
 CREATE TABLE shopjoy_2604.st_settle_pay (
-    settle_pay_id        VARCHAR(21) NOT NULL PRIMARY KEY,
+    settle_pay_id        VARCHAR(21) NOT NULL CONSTRAINT st_settle_pay_pk_settle_pay_id PRIMARY KEY,
     settle_id            VARCHAR(21) NOT NULL,
-    site_id              VARCHAR(21) NOT NULL,
+    reg_site_id              VARCHAR(21) NOT NULL,
     vendor_id            VARCHAR(21) NOT NULL,
     pay_amt              BIGINT      NOT NULL,
     pay_method_cd        VARCHAR(20) DEFAULT 'BANK_TRANSFER'::character varying,
@@ -25,7 +25,7 @@ CREATE TABLE shopjoy_2604.st_settle_pay (
 COMMENT ON TABLE  shopjoy_2604.st_settle_pay IS '정산지급';
 COMMENT ON COLUMN shopjoy_2604.st_settle_pay.settle_pay_id IS '정산지급ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_pay.settle_id IS '정산ID (st_settle.settle_id)';
-COMMENT ON COLUMN shopjoy_2604.st_settle_pay.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.st_settle_pay.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.st_settle_pay.vendor_id IS '업체ID (sy_vendor.vendor_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_pay.pay_amt IS '지급금액';
 COMMENT ON COLUMN shopjoy_2604.st_settle_pay.pay_method_cd IS '지급수단 (코드: PAY_METHOD_CD)';
@@ -42,7 +42,6 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_pay.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.st_settle_pay.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.st_settle_pay.upd_date IS '수정일';
 
-CREATE INDEX idx_st_settle_pay_settle ON shopjoy_2604.st_settle_pay USING btree (settle_id);
-CREATE INDEX idx_st_settle_pay_site ON shopjoy_2604.st_settle_pay USING btree (site_id);
-CREATE INDEX idx_st_settle_pay_status ON shopjoy_2604.st_settle_pay USING btree (pay_status_cd);
-CREATE INDEX idx_st_settle_pay_vendor ON shopjoy_2604.st_settle_pay USING btree (vendor_id);
+CREATE INDEX st_settle_pay_ix02_settle_id ON shopjoy_2604.st_settle_pay USING btree (settle_id);
+CREATE INDEX st_settle_pay_ix01_pay_status_cd ON shopjoy_2604.st_settle_pay USING btree (pay_status_cd);
+CREATE INDEX st_settle_pay_ix03_vendor_id ON shopjoy_2604.st_settle_pay USING btree (vendor_id);

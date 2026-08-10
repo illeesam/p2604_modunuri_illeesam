@@ -2,8 +2,8 @@
 -- 회원
 
 CREATE TABLE shopjoy_2604.mb_member (
-    member_id               VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id                 VARCHAR(21)  NOT NULL,
+    member_id               VARCHAR(21)  NOT NULL CONSTRAINT mb_member_pk_member_id PRIMARY KEY,
+    reg_site_id                 VARCHAR(21)  NOT NULL,
     login_id                VARCHAR(100) NOT NULL,
     login_pwd_hash          VARCHAR(255) NOT NULL,
     member_nm               VARCHAR(50)  NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE shopjoy_2604.mb_member (
 
 COMMENT ON TABLE  shopjoy_2604.mb_member IS '회원';
 COMMENT ON COLUMN shopjoy_2604.mb_member.member_id IS '회원ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.mb_member.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.mb_member.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.login_id IS '이메일 (로그인 ID)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.login_pwd_hash IS '비밀번호 (bcrypt)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.member_nm IS '회원명';
@@ -54,5 +54,4 @@ COMMENT ON COLUMN shopjoy_2604.mb_member.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.mb_member.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.upd_date IS '수정일';
 
-CREATE INDEX idx_mb_member_site ON shopjoy_2604.mb_member USING btree (site_id);
-CREATE UNIQUE INDEX mb_member_member_email_key ON shopjoy_2604.mb_member USING btree (login_id);
+CREATE UNIQUE INDEX mb_member_uk_login_id ON shopjoy_2604.mb_member USING btree (login_id);

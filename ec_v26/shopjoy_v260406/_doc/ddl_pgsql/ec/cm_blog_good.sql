@@ -2,14 +2,14 @@
 -- 블로그 좋아요
 
 CREATE TABLE shopjoy_2604.cm_blog_good (
-    like_id  VARCHAR(21) NOT NULL PRIMARY KEY,
+    like_id  VARCHAR(21) NOT NULL CONSTRAINT cm_blog_good_pk_like_id PRIMARY KEY,
     blog_id  VARCHAR(21) NOT NULL,
     user_id  VARCHAR(21) NOT NULL,
     reg_date TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     reg_by   VARCHAR(30),
     upd_by   VARCHAR(30),
     upd_date TIMESTAMP  ,
-    site_id  VARCHAR(21) NOT NULL
+    reg_site_id  VARCHAR(21) NOT NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.cm_blog_good IS '블로그 좋아요';
@@ -18,7 +18,6 @@ COMMENT ON COLUMN shopjoy_2604.cm_blog_good.blog_id IS '블로그ID (cm_bltn.)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_good.user_id IS '사용자ID (sy_member.user_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_good.reg_date IS '등록일';
 
-CREATE UNIQUE INDEX cm_bltn_good_blog_id_user_id_key ON shopjoy_2604.cm_blog_good USING btree (blog_id, user_id);
-CREATE INDEX idx_cm_blog_good_site ON shopjoy_2604.cm_blog_good USING btree (site_id);
-CREATE INDEX idx_cm_bltn_good_blog ON shopjoy_2604.cm_blog_good USING btree (blog_id);
-CREATE INDEX idx_cm_bltn_good_user ON shopjoy_2604.cm_blog_good USING btree (user_id);
+CREATE UNIQUE INDEX cm_blog_good_uk_blog_id_user_id_x2 ON shopjoy_2604.cm_blog_good USING btree (blog_id, user_id);
+CREATE INDEX cm_blog_good_ix_blog ON shopjoy_2604.cm_blog_good USING btree (blog_id);
+CREATE INDEX cm_blog_good_ix01_user_id ON shopjoy_2604.cm_blog_good USING btree (user_id);

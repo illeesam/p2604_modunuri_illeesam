@@ -2,9 +2,9 @@
 -- 사은품 발급
 
 CREATE TABLE shopjoy_2604.pm_gift_issue (
-    gift_issue_id               VARCHAR(21) NOT NULL PRIMARY KEY,
+    gift_issue_id               VARCHAR(21) NOT NULL CONSTRAINT pm_gift_issue_pk_gift_issue_id PRIMARY KEY,
     gift_id                     VARCHAR(21) NOT NULL,
-    site_id                     VARCHAR(21) NOT NULL,
+    reg_site_id                     VARCHAR(21) NOT NULL,
     member_id                   VARCHAR(21) NOT NULL,
     order_id                    VARCHAR(21),
     issue_date                  TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.pm_gift_issue (
 COMMENT ON TABLE  shopjoy_2604.pm_gift_issue IS '사은품 발급';
 COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.gift_issue_id IS '사은품발급ID';
 COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.gift_id IS '사은품ID (pm_gift.gift_id)';
-COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.member_id IS '회원ID';
 COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.order_id IS '기준주문ID (od_order.order_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.issue_date IS '발급일시';
@@ -32,7 +32,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pm_gift_issue.upd_date IS '수정일';
 
-CREATE INDEX idx_pm_gift_issue_gift ON shopjoy_2604.pm_gift_issue USING btree (gift_id);
-CREATE INDEX idx_pm_gift_issue_member ON shopjoy_2604.pm_gift_issue USING btree (member_id);
-CREATE INDEX idx_pm_gift_issue_order ON shopjoy_2604.pm_gift_issue USING btree (order_id);
-CREATE INDEX idx_pm_gift_issue_site ON shopjoy_2604.pm_gift_issue USING btree (site_id);
+CREATE INDEX pm_gift_issue_ix01_gift_id ON shopjoy_2604.pm_gift_issue USING btree (gift_id);
+CREATE INDEX pm_gift_issue_ix02_member_id ON shopjoy_2604.pm_gift_issue USING btree (member_id);
+CREATE INDEX pm_gift_issue_ix03_order_id ON shopjoy_2604.pm_gift_issue USING btree (order_id);

@@ -2,8 +2,8 @@
 -- 이메일 발송 로그
 
 CREATE TABLE shopjoy_2604.syh_send_email_log (
-    log_id        VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id       VARCHAR(21)  NOT NULL,
+    log_id        VARCHAR(21)  NOT NULL CONSTRAINT syh_send_email_log_pk_log_id PRIMARY KEY,
+    reg_site_id       VARCHAR(21)  NOT NULL,
     template_id   VARCHAR(21) ,
     template_code VARCHAR(50) ,
     member_id     VARCHAR(21) ,
@@ -28,7 +28,7 @@ CREATE TABLE shopjoy_2604.syh_send_email_log (
 
 COMMENT ON TABLE  shopjoy_2604.syh_send_email_log IS '이메일 발송 로그';
 COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.log_id IS '로그ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.template_id IS '템플릿ID (sy_template.template_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.template_code IS '템플릿코드 스냅샷';
 COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.member_id IS '대상 회원ID (ec_member.member_id, 비회원 NULL)';
@@ -50,9 +50,8 @@ COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_send_email_log.upd_date IS '수정일';
 
-CREATE INDEX idx_syh_send_email_log_date ON shopjoy_2604.syh_send_email_log USING btree (send_date);
-CREATE INDEX idx_syh_send_email_log_member ON shopjoy_2604.syh_send_email_log USING btree (member_id);
-CREATE INDEX idx_syh_send_email_log_ref ON shopjoy_2604.syh_send_email_log USING btree (ref_type_cd, ref_id);
-CREATE INDEX idx_syh_send_email_log_site ON shopjoy_2604.syh_send_email_log USING btree (site_id);
-CREATE INDEX idx_syh_send_email_log_template ON shopjoy_2604.syh_send_email_log USING btree (template_id);
-CREATE INDEX idx_syh_send_email_log_user ON shopjoy_2604.syh_send_email_log USING btree (user_id);
+CREATE INDEX syh_send_email_log_ix03_send_date ON shopjoy_2604.syh_send_email_log USING btree (send_date);
+CREATE INDEX syh_send_email_log_ix01_member_id ON shopjoy_2604.syh_send_email_log USING btree (member_id);
+CREATE INDEX syh_send_email_log_ix02_ref_type_cd_ref_id_x2 ON shopjoy_2604.syh_send_email_log USING btree (ref_type_cd, ref_id);
+CREATE INDEX syh_send_email_log_ix04_template_id ON shopjoy_2604.syh_send_email_log USING btree (template_id);
+CREATE INDEX syh_send_email_log_ix05_user_id ON shopjoy_2604.syh_send_email_log USING btree (user_id);

@@ -2,8 +2,8 @@
 -- 게시판 마스터
 
 CREATE TABLE shopjoy_2604.sy_bbm (
-    bbm_id          VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id         VARCHAR(21)  NOT NULL,
+    bbm_id          VARCHAR(21)  NOT NULL CONSTRAINT sy_bbm_pk_bbm_id PRIMARY KEY,
+    reg_site_id         VARCHAR(21)  NOT NULL,
     bbm_code        VARCHAR(50)  NOT NULL,
     bbm_nm          VARCHAR(100) NOT NULL,
     path_id         VARCHAR(21) ,
@@ -24,7 +24,7 @@ CREATE TABLE shopjoy_2604.sy_bbm (
 
 COMMENT ON TABLE  shopjoy_2604.sy_bbm IS '게시판 마스터';
 COMMENT ON COLUMN shopjoy_2604.sy_bbm.bbm_id IS '게시판ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.sy_bbm.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.sy_bbm.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_bbm.bbm_code IS '게시판코드';
 COMMENT ON COLUMN shopjoy_2604.sy_bbm.bbm_nm IS '게시판명';
 COMMENT ON COLUMN shopjoy_2604.sy_bbm.bbm_type_cd IS '게시판유형 (코드: BBM_TYPE — NORMAL/FAQ/REVIEW/QNA)';
@@ -41,5 +41,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_bbm.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_bbm.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_bbm.upd_date IS '수정일';
 
-CREATE INDEX idx_sy_bbm_site ON shopjoy_2604.sy_bbm USING btree (site_id);
-CREATE UNIQUE INDEX sy_bbm_bbm_code_key ON shopjoy_2604.sy_bbm USING btree (bbm_code);
+CREATE UNIQUE INDEX sy_bbm_uk_bbm_code ON shopjoy_2604.sy_bbm USING btree (bbm_code);

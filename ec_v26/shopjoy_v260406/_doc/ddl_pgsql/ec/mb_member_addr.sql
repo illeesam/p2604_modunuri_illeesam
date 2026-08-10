@@ -2,8 +2,8 @@
 -- 회원 배송지
 
 CREATE TABLE shopjoy_2604.mb_member_addr (
-    member_addr_id VARCHAR(21)  NOT NULL PRIMARY KEY,
-    site_id        VARCHAR(21)  NOT NULL,
+    member_addr_id VARCHAR(21)  NOT NULL CONSTRAINT mb_member_addr_pk_member_addr_id PRIMARY KEY,
+    reg_site_id        VARCHAR(21)  NOT NULL,
     member_id      VARCHAR(21)  NOT NULL,
     addr_nm        VARCHAR(50) ,
     recv_nm        VARCHAR(50)  NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.mb_member_addr (
 
 COMMENT ON TABLE  shopjoy_2604.mb_member_addr IS '회원 배송지';
 COMMENT ON COLUMN shopjoy_2604.mb_member_addr.member_addr_id IS '배송지ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN shopjoy_2604.mb_member_addr.site_id IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.mb_member_addr.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.mb_member_addr.member_id IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_member_addr.addr_nm IS '배송지명 (예: 집, 회사)';
 COMMENT ON COLUMN shopjoy_2604.mb_member_addr.recv_nm IS '수령자명';
@@ -34,5 +34,4 @@ COMMENT ON COLUMN shopjoy_2604.mb_member_addr.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.mb_member_addr.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.mb_member_addr.upd_date IS '수정일';
 
-CREATE INDEX idx_mb_member_addr_member ON shopjoy_2604.mb_member_addr USING btree (member_id);
-CREATE INDEX idx_mb_member_addr_site ON shopjoy_2604.mb_member_addr USING btree (site_id);
+CREATE INDEX mb_member_addr_ix01_member_id ON shopjoy_2604.mb_member_addr USING btree (member_id);

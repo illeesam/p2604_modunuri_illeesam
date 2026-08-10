@@ -5,7 +5,7 @@
 -- ============================================================
 CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_dashboard_item (
     dashboard_item_id   VARCHAR(21)     NOT NULL,
-    site_id             VARCHAR(21)     NOT NULL,
+    reg_site_id             VARCHAR(21)     NOT NULL,
     ui_nm               VARCHAR(100)    NOT NULL,
     item_key            VARCHAR(50)     NOT NULL,
     item_nm             VARCHAR(100)    NOT NULL,
@@ -26,12 +26,12 @@ CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_dashboard_item (
     reg_date            TIMESTAMP,
     upd_by              VARCHAR(30),
     upd_date            TIMESTAMP,
-    CONSTRAINT pk_cm_dashboard_item PRIMARY KEY (dashboard_item_id)
+    CONSTRAINT cm_dashboard_item_pk_dashboard_item_id PRIMARY KEY (dashboard_item_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.cm_dashboard_item                    IS '대시보드 차트 패널 정의';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.dashboard_item_id  IS '패널ID';
-COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.site_id            IS '사이트ID';
+COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.reg_site_id            IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.ui_nm              IS '대상화면명 (DashboardBoEc01 등)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.item_key           IS '패널 키 (COMP0101, sales, xview 등)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.item_nm            IS '패널명 (화면 표시용)';
@@ -55,3 +55,5 @@ CREATE INDEX IF NOT EXISTS idx_cm_dashboard_item_ui_nm
     ON shopjoy_2604.cm_dashboard_item (ui_nm);
 CREATE INDEX IF NOT EXISTS idx_cm_dashboard_item_site_id
     ON shopjoy_2604.cm_dashboard_item (site_id);
+CREATE UNIQUE INDEX cm_dashboard_item_ix01_dashboard_id_item_key_x2 ON shopjoy_2604.cm_dashboard_item USING btree (dashboard_id, item_key);
+CREATE INDEX cm_dashboard_item_ix02_data_source_cd ON shopjoy_2604.cm_dashboard_item USING btree (data_source_cd);
