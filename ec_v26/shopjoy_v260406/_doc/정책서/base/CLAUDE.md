@@ -30,11 +30,12 @@
 | `base.인증-fo.md` | 사용자 로그인/토큰 정책 (멀티디바이스, 15일 Sliding) |
 | `base.인증-authId.md` | 통합 인증 식별자 설계 (BO=user_id, FO=member_id) |
 
-### 📋 백엔드 설계 (4개)
+### 📋 백엔드 설계 (5개)
 | 파일 | 내용 |
 |------|------|
 | `base.backend-EcAdminApi.md` | Spring Boot EcAdminApi 구조 및 패키지 기준 |
 | `base.백엔드부팅성능.md` | **local 부팅 10초 내외 기준선** — 되돌리면 안 되는 설정 5종, 진단 순서 ⭐ |
+| `base.인덱스튜닝정책.md` | **인덱스는 감이 아니라 n_distinct 실측으로 결정** — FK 인덱스 필수, reg_site_id 단독 금지 ⭐ |
 | `base.설정값암호화.md` | 설정값 암호화 정책 |
 | `base.DDL작성규칙.md` | PostgreSQL DDL 파일 구조, ID 생성, 컬럼명 표준 |
 
