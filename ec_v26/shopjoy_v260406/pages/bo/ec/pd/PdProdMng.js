@@ -398,10 +398,16 @@ window.PdProdMng = {
       { key: 'cate', label: '카테고리', type: 'pick',
         display: (p) => p.cate, placeholder: '카테고리 선택', width: '120px',
         openLabel: '선택', onOpen: () => handleBtnAction('catModal-open'), onClear: () => handleBtnAction('searchParam-cateClear') },
-      // 상품유형 — 유형별 개별 메뉴(fixedProdTypeCd 지정)에서는 이미 고정이므로 검색조건에서 숨김
-      ...(props.fixedProdTypeCd ? [] : [
-        { key: 'prodTypeCd', label: '상품유형', type: 'select', options: () => codes.prod_types, nullLabel: '유형 전체' },
-      ]),
+      /* 상품유형 — 항상 검색조건에 노출한다.
+         유형별 개별 메뉴(단품/옵션/묶음/세트/사은)는 값을 해당 유형으로 고정하고 disabled 처리한다.
+         숨기지 않는 이유: 어떤 유형으로 걸러진 목록인지 화면에서 바로 보여야 한다
+         (숨기면 '상품관리와 건수가 왜 다르지?' 를 사용자가 확인할 방법이 없다).
+         '상품관리' 메뉴는 fixedProdTypeCd 가 없으므로 전체 유형 선택 가능. */
+      { key: 'prodTypeCd', label: '상품유형', type: 'select',
+        options: () => codes.prod_types,
+        nullLabel: '유형 전체',
+        nullable: !props.fixedProdTypeCd,          // 고정 메뉴에서는 '유형 전체' 선택지 자체를 없앤다
+        disabled: () => !!props.fixedProdTypeCd },
       { key: 'vendorId', label: '판매업체', type: 'select',
         options: () => vendors.map(v => ({ value: v.vendorId, label: v.vendorNm })), nullLabel: '업체 전체' },
       { key: 'mdUserId', label: '담당MD', type: 'pick',

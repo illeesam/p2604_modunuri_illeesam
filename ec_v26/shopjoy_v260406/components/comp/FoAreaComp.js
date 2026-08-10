@@ -289,8 +289,10 @@ window.FoSearchArea = {
   <!-- ▼ search 영역 -->
   <template v-if="cfAutoMode">
     <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
-      <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
-      <label v-if="col.label ? (col.type!=='label' ? (col.type!=='slot') : false) : false" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">
+      <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시)
+           ⚠ dateRange + typeKey 는 라벨 생략 — BoSearchArea 와 동일 규칙.
+              기간유형 select 가 필드명을 이미 표시해 좌측 라벨과 중복된다. -->
+      <label v-if="col.label ? (col.type!=='label' ? (col.type!=='slot' ? !(col.type==='dateRange' ? !!col.typeKey : false) : false) : false) : false" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">
       {{ col.label }}
     </label>
     <!-- 라벨 텍스트 -->

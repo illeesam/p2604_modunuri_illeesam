@@ -280,6 +280,10 @@ window.BoSearchArea = {
     const normOpts = (opts) => U.normOptions(opts);
     // col.paramObj 가 있으면 그 객체를, 없으면 props.param 사용 — 컬럼별 다른 reactive 매핑 지원
     const po = (col) => col.paramObj || props.param;
+    /* col.disabled — 값 고정 필드(메뉴 자체가 조건을 확정하는 경우) 용.
+       숨기지 않고 '보이되 못 바꾸게' 한다 — 어떤 조건으로 조회 중인지 사용자가 알 수 있어야 한다.
+       boolean 또는 () => boolean 둘 다 허용. */
+    const cfDisabled = (col) => (typeof col.disabled === 'function' ? !!col.disabled() : !!col.disabled);
 
     /* maxRows 펼치기/접기 — 컨테이너를 overflow:hidden 으로 자르지 않는다(자르면 그 안에 있는
        요소는 뭐든 함께 잘려 사라진다 — search-actions 를 안에 두었다가 버튼이 사라진 사고 있었음).
@@ -349,7 +353,7 @@ window.BoSearchArea = {
       }
     });
 
-    return { U, normOpts, po, handleBtnAction, handleSelectAction, rangePopoverKey, expanded, cfFieldVisible, setFieldRef, searchBarEl };
+    return { U, normOpts, po, cfDisabled, handleBtnAction, handleSelectAction, rangePopoverKey, expanded, cfFieldVisible, setFieldRef, searchBarEl };
   },
   template: /* html */`
 <div class="search-bar" :style="barStyle" ref="searchBarEl" @keyup.enter="handleBtnAction('search-emit')">
@@ -364,8 +368,12 @@ window.BoSearchArea = {
   </slot>
   <!-- 그 외 컨트롤은 라벨+컨트롤을 한 묶음(search-field)으로 감싸 함께 줄바꿈되게 함 -->
   <div v-else class="search-field" v-show="cfFieldVisible(ci)" :ref="el => setFieldRef(ci, el)">
-    <!-- 필드 좌측 라벨 (col.label 지정 시) -->
-    <label v-if="col.label" class="search-label">
+    <!-- 필드 좌측 라벨 (col.label 지정 시)
+         ⚠ dateRange 에 typeKey(기간유형 select)가 있으면 라벨을 렌더하지 않는다.
+            select 자체가 '등록일자/수정일자' 처럼 필드명을 이미 보여주므로
+            좌측 라벨("등록일")과 겹쳐 같은 말이 두 번 나온다.
+            typeKey 가 없는 dateRange(예: CmNoticeMng)는 라벨이 유일한 설명이므로 그대로 유지. -->
+    <label v-if="col.label &amp;&amp; !(col.type==='dateRange' &amp;&amp; col.typeKey)" class="search-label">
     {{ col.label }}
   </label>
   <!-- 회원/항목 picker 박스 (이름+ID 둘 다 직접 입력 + 팝업 + 클리어) — col.type==='pick'
@@ -396,6 +404,9 @@ window.BoSearchArea = {
         @keyup.enter="handleBtnAction('search-emit')" />
   <!-- select (col.onChange: fn 지원) -->
   <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
+        :disabled="cfDisabled(col)"
+        :style="cfDisabled(col) ? 'background:#f1f3f5;color:#495057;cursor:not-allowed;' : ''"
+        :title="cfDisabled(col) ? '이 화면은 해당 값으로 고정되어 있습니다' : ''"
         @change="handleSelectAction('field-select-change', { col, event: $event })">
     <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
     <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
