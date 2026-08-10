@@ -174,9 +174,8 @@ seq_scan 은 "의심 목록"을 좁히는 힌트일 뿐, 판단 근거는 **카�
 | 타입 | 형식 | 개수 |
 |---|---|---|
 | 일반 인덱스 | `{tbl}_ixNN_{col1}[_{col2}][_xN]` | 497 |
-| PK (단일 컬럼) | `{tbl}_pk_{col}` | 164 |
-| PK (복합) | `{tbl}_pk_{col1}_{col2}_xN` | 5 |
-| UNIQUE | `{tbl}_uk[N]_{col1}[_{col2}][_xN]` | 38 |
+| PK (항상 단일 컬럼 — §3-3) | `{tbl}_pk_{col}` | 169 |
+| UNIQUE | `{tbl}_uk[N]_{col1}[_{col2}][_xN]` | 43 |
 | FK | `{tbl}_fk[N]_{col}` | 21 |
 
 ```
@@ -204,13 +203,46 @@ dp_area_fk_ui_id
    `_x3` 인데 이름엔 2개만 보이면 "하나 더 있다 → 정의를 봐야 한다" 가 즉시 드러난다.
    단일 컬럼은 숨은 게 없으므로 붙이지 않는다.
 
-### 3-3. ⚠ camelCase 금지
+### 3-3. PK 구조 정책 ⭐ — 대리키 단일 PK + 복합키는 UNIQUE
+
+**모든 테이블은 자기 테이블명 기반 단일 컬럼을 PK 로 갖는다.**
+
+```
+PK 컬럼명 = {테이블명에서 도메인 접두어를 뺀 이름}_id
+```
+
+| 테이블 | PK 컬럼 |
+|---|---|
+| `cm_blog` | `blog_id` |
+| `pd_prod_sku` | `prod_sku_id` |
+| `pm_coupon_prod` | `coupon_prod_id` |
+
+**복합키가 필요하면 PK 가 아니라 UNIQUE 제약으로 만든다.**
+유일성 보장은 UNIQUE 가 그대로 해주므로 기능이 약해지지 않으면서,
+- 자식 테이블이 부모를 참조할 때 컬럼 하나만 들고 가면 된다
+- JPA 에서 `@IdClass` / `@EmbeddedId` 없이 단순 `@Id` 로 매핑된다
+- `findById(id)` 같은 표준 메서드를 그대로 쓴다
+
+```sql
+-- ❌ 복합 PK
+CONSTRAINT pm_coupon_prod_pk_coupon_id_prod_id_x2 PRIMARY KEY (coupon_id, prod_id)
+
+-- ✅ 대리키 PK + UNIQUE
+CONSTRAINT pm_coupon_prod_pk_coupon_prod_id      PRIMARY KEY (coupon_prod_id),
+CONSTRAINT pm_coupon_prod_uk_coupon_id_prod_id_x2 UNIQUE     (coupon_id, prod_id)
+```
+
+**예외: 로그(`*_log`) · 이력(`*_hist`) 테이블**
+적재 전용이라 개별 행을 키로 다룰 일이 없고, PK 컬럼명도 `log_id` / `hist_id` 처럼
+짧은 관례명을 쓰는 곳이 많다. 강제하지 않는다.
+
+### 3-4. ⚠ camelCase 금지
 
 PostgreSQL 은 **따옴표 없는 식별자를 소문자로 접는다.** `..._memberId` 로 만들어도 실제로는
 `..._memberid` 가 된다(실측 확인). 유지하려면 모든 참조를 `"..."` 로 감싸야 하는데
 스키마 전체가 snake_case 이므로 맞지 않는다. **컬럼명은 snake_case 원형을 쓴다.**
 
-### 3-4. ⚠ 제약명 = 인덱스명
+### 3-5. ⚠ 제약명 = 인덱스명
 
 PK/UNIQUE 는 제약이 인덱스를 백업하며 **PostgreSQL 이 두 이름을 항상 동기화**한다(불일치 0건).
 따라서 이름을 바꿀 때는 반드시 제약 쪽 명령을 쓴다.
@@ -226,7 +258,7 @@ ALTER INDEX shopjoy_2604.idx_cm_chatt_status RENAME TO cm_chatt_ix01_chatt_statu
 `ALTER ... RENAME` 은 **즉시 완료되고 재생성이 없다.** PostgreSQL 은 쿼리에서 인덱스명을
 참조하지 않으므로(인덱스 힌트 문법 없음) 애플리케이션 코드가 깨지지 않는다.
 
-### 3-5. ⚠ DDL 파일의 무명 제약
+### 3-6. ⚠ DDL 파일의 무명 제약
 
 DDL 에서 이름을 주지 않으면 PostgreSQL 이 `{tbl}_pkey` / `{tbl}_{col}_key` 로 자동 명명해
 **DB 를 새로 만드는 순간 규칙이 깨진다.** 반드시 명시할 것.
@@ -241,12 +273,12 @@ blog_id VARCHAR(21) NOT NULL CONSTRAINT cm_blog_pk_blog_id PRIMARY KEY,
 CONSTRAINT pm_coupon_prod_pk_coupon_id_prod_id_x2 PRIMARY KEY (coupon_id, prod_id)
 ```
 
-### 3-6. 길이
+### 3-7. 길이
 
 PostgreSQL 식별자 한계는 **63자**이며 넘으면 **조용히 잘려** 충돌이 날 수 있다.
 현재 최대 58자로 여유가 있다. 초과 시에만 컬럼부를 잘라낸다.
 
-### 3-7. 생성 예시
+### 3-8. 생성 예시
 
 ```sql
 CREATE INDEX IF NOT EXISTS cm_chatt_ix01_chatt_status_cd
