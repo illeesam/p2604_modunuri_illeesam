@@ -7,6 +7,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -14,8 +15,15 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmDiscnt;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscnt;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntProd;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmDiscntRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
+import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -32,6 +40,13 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmDiscnt.regDate,
         "upd_date", pmDiscnt.updDate
     );
+    // EXISTS 서브쿼리용 별칭 (사용회원/대상상품/업체/담당MD 필터)
+    private static final QPmDiscntUsage discntUsageEx = new QPmDiscntUsage("discnt_usage_ex");
+    private static final QMbMember      mbMemberEx    = new QMbMember("mb_member_ex");
+    private static final QPmDiscntProd  discntProdEx  = new QPmDiscntProd("discnt_prod_ex");
+    private static final QPdProd        pProdEx       = new QPdProd("p_prod_ex");
+    private static final QSyVendor      syVendorEx    = new QSyVendor("sy_vendor_ex");
+    private static final QSyUser        syUserEx      = new QSyUser("sy_user_ex");
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -89,6 +104,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                     QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()),
                     QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    andMember(search), andProdVendorMd(search),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -118,6 +134,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                 QdslUtil.strEq(pmDiscnt.discntTypeCd, search.getDiscntTypeCd()),
                 QdslUtil.strEq(pmDiscnt.discntStatusCd, search.getDiscntStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                andMember(search), andProdVendorMd(search),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
@@ -142,6 +159,55 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         BasePage<PmDiscntDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
+    /** andMember — 사용회원 필터. pm_discnt_usage(discnt_id↔member_id) 에 사용 이력이
+     *  있는 회원만 남긴다. discnt_usage.member_id 는 사용 시점 스냅샷이라 mb_member 는
+     *  memberNm 검색 시에만 조인한다. */
+    private BooleanExpression andMember(PmDiscntDto.Request search) {
+        if (!StringUtils.hasText(search.getMemberId()) && !StringUtils.hasText(search.getMemberNm())) return null;
+        return JPAExpressions.selectOne().from(discntUsageEx)
+            .where(discntUsageEx.discntId.eq(pmDiscnt.discntId),
+                   QdslUtil.strEq(discntUsageEx.memberId, search.getMemberId()),
+                   StringUtils.hasText(search.getMemberId()) ? null
+                       : JPAExpressions.selectOne().from(mbMemberEx)
+                             .where(mbMemberEx.memberId.eq(discntUsageEx.memberId), QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists())
+            .exists();
+    }
+
+    /** andProdVendorMd — 대상상품/업체/담당MD 필터. pm_discnt_prod(discnt_id↔prod_id) 를
+     *  거쳐 pd_prod 의 vendor_id/md_user_id 까지 조인해야 하는 2단 EXISTS. */
+    private BooleanExpression andProdVendorMd(PmDiscntDto.Request search) {
+        boolean needProd   = StringUtils.hasText(search.getProdId()) || StringUtils.hasText(search.getProdNm());
+        boolean needVendor = StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm());
+        boolean needMd     = StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm());
+        if (!needProd && !needVendor && !needMd) return null;
+
+        com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(discntProdEx)
+            .where(discntProdEx.discntId.eq(pmDiscnt.discntId));
+
+        if (needProd) {
+            sub = sub.where(
+                QdslUtil.strEq(discntProdEx.prodId, search.getProdId()),
+                StringUtils.hasText(search.getProdId()) ? null
+                    : JPAExpressions.selectOne().from(pProdEx)
+                          .where(pProdEx.prodId.eq(discntProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
+        }
+        if (needVendor) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))
+                .where(pProdEx.prodId.eq(discntProdEx.prodId),
+                       QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                       StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                .exists());
+        }
+        if (needMd) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syUserEx).on(syUserEx.userId.eq(pProdEx.mdUserId))
+                .where(pProdEx.prodId.eq(discntProdEx.prodId),
+                       QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                       StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                .exists());
+        }
+        return sub.exists();
+    }
+
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

@@ -7,6 +7,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -14,11 +15,16 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmSaveDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmSave;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSave;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveProd;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmSaveRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -35,6 +41,11 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     private static final QSySite   sySite  = QSySite.sySite;
     private static final QMbMember mbMember  = QMbMember.mbMember;
     private static final QVwSyCode   cdSt = new QVwSyCode("cd_st");
+    // EXISTS 서브쿼리용 별칭 (대상상품/업체/담당MD 필터 — pm_save_prod → pd_prod → sy_vendor/sy_user)
+    private static final QPmSaveProd saveProdEx = new QPmSaveProd("save_prod_ex");
+    private static final QPdProd     pProdEx    = new QPdProd("p_prod_ex");
+    private static final QSyVendor   syVendorEx = new QSyVendor("sy_vendor_ex");
+    private static final QSyUser     syUserEx   = new QSyUser("sy_user_ex");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmSave.regDate,
         "upd_date", pmSave.updDate
     );
@@ -85,6 +96,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                     QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()),
                     QdslUtil.strEq(pmSave.memberId, search.getMemberId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    andProdVendorMd(search),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -111,7 +123,11 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 QdslUtil.strIn(pmSave.saveId, search.getSaveIds()),
                 QdslUtil.strEq(pmSave.saveId, search.getSaveId()),
                 QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()),
+                /* ⚠ memberId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
+                   — 페이지 조회 모드에서만 회원 필터가 무시되던 기존 버그. 같이 정정. */
+                QdslUtil.strEq(pmSave.memberId, search.getMemberId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                andProdVendorMd(search),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
@@ -135,6 +151,41 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
 
         BasePage<PmSaveDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    /** andProdVendorMd — 대상상품/업체/담당MD 필터. pm_save_prod(save_id↔prod_id) 를 거쳐
+     *  pd_prod 의 vendor_id/md_user_id 까지 조인해야 하는 2단 EXISTS. */
+    private BooleanExpression andProdVendorMd(PmSaveDto.Request search) {
+        boolean needProd   = StringUtils.hasText(search.getProdId()) || StringUtils.hasText(search.getProdNm());
+        boolean needVendor = StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm());
+        boolean needMd     = StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm());
+        if (!needProd && !needVendor && !needMd) return null;
+
+        com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(saveProdEx)
+            .where(saveProdEx.saveId.eq(pmSave.saveId));
+
+        if (needProd) {
+            sub = sub.where(
+                QdslUtil.strEq(saveProdEx.prodId, search.getProdId()),
+                StringUtils.hasText(search.getProdId()) ? null
+                    : JPAExpressions.selectOne().from(pProdEx)
+                          .where(pProdEx.prodId.eq(saveProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
+        }
+        if (needVendor) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))
+                .where(pProdEx.prodId.eq(saveProdEx.prodId),
+                       QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                       StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                .exists());
+        }
+        if (needMd) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syUserEx).on(syUserEx.userId.eq(pProdEx.mdUserId))
+                .where(pProdEx.prodId.eq(saveProdEx.prodId),
+                       QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                       StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                .exists());
+        }
+        return sub.exists();
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

@@ -15,7 +15,6 @@ window.PdDlivTmpltMng = {
     const dlivTmplts = reactive([]);              // 배송템플릿 목록 (메인 그리드)
     const uiState = reactive({ loading: false, error: null, selectedId: null, sortKey: '', sortDir: 'asc', isNew: false });
     const codes = reactive({
-      DLIV_TEMPLATE_TYPE: [],
       USE_YN: [],
       DLIV_METHOD: [], DLIV_PAY_TYPE: [], COURIER: [],
     });
@@ -195,9 +194,8 @@ window.PdDlivTmpltMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['DLIV_TEMPLATE_TYPE', 'USE_YN', 'DLIV_METHOD', 'DLIV_PAY_TYPE', 'COURIER'], {compNm: 'PdDlivTmpltMng'});
+      await codeStore.saLoadCodes(['USE_YN', 'DLIV_METHOD', 'DLIV_PAY_TYPE', 'COURIER'], {compNm: 'PdDlivTmpltMng'});
       try {
-        codes.DLIV_TEMPLATE_TYPE = codeStore.sgGetGrpCodes('DLIV_TEMPLATE_TYPE');
         codes.USE_YN = codeStore.sgGetGrpCodes('USE_YN');
         codes.DLIV_METHOD  = codeStore.sgGetGrpCodes('DLIV_METHOD');
         codes.DLIV_PAY_TYPE = codeStore.sgGetGrpCodes('DLIV_PAY_TYPE');

@@ -11,14 +11,20 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlan;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmPlan;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmPlanItem;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmPlanRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -35,6 +41,11 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     private static final QSySite sySite  = QSySite.sySite;
     private static final QVwSyCode cdPt = new QVwSyCode("cd_pt");
     private static final QVwSyCode cdPs = new QVwSyCode("cd_ps");
+    // EXISTS 서브쿼리용 별칭 (대상상품/업체/담당MD 필터 — pm_plan_item → pd_prod → sy_vendor/sy_user)
+    private static final QPmPlanItem planItemEx = new QPmPlanItem("plan_item_ex");
+    private static final QPdProd     pProdEx    = new QPdProd("p_prod_ex");
+    private static final QSyVendor   syVendorEx = new QSyVendor("sy_vendor_ex");
+    private static final QSyUser     syUserEx   = new QSyUser("sy_user_ex");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmPlan.regDate,
         "upd_date", pmPlan.updDate
     );
@@ -87,6 +98,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                     QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    andProdVendorMd(search),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -114,6 +126,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                 QdslUtil.strEq(pmPlan.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmPlan.planStatusCd, search.getPlanStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                andProdVendorMd(search),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
@@ -137,6 +150,43 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
 
         BasePage<PmPlanDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    /** andProdVendorMd — 대상상품/업체/담당MD 필터. pm_plan_item(plan_id↔prod_id) 를 거쳐
+     *  pd_prod 의 vendor_id/md_user_id 까지 조인해야 하는 2단 EXISTS.
+     *  ⚠ memberId 는 추가하지 않았다 — 기획전을 회원별로 기록하는 테이블이 없어
+     *     안전하게 연결할 근거 컬럼이 없다. */
+    private BooleanExpression andProdVendorMd(PmPlanDto.Request search) {
+        boolean needProd   = StringUtils.hasText(search.getProdId()) || StringUtils.hasText(search.getProdNm());
+        boolean needVendor = StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm());
+        boolean needMd     = StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm());
+        if (!needProd && !needVendor && !needMd) return null;
+
+        com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(planItemEx)
+            .where(planItemEx.planId.eq(pmPlan.planId));
+
+        if (needProd) {
+            sub = sub.where(
+                QdslUtil.strEq(planItemEx.prodId, search.getProdId()),
+                StringUtils.hasText(search.getProdId()) ? null
+                    : JPAExpressions.selectOne().from(pProdEx)
+                          .where(pProdEx.prodId.eq(planItemEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
+        }
+        if (needVendor) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))
+                .where(pProdEx.prodId.eq(planItemEx.prodId),
+                       QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                       StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                .exists());
+        }
+        if (needMd) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syUserEx).on(syUserEx.userId.eq(pProdEx.mdUserId))
+                .where(pProdEx.prodId.eq(planItemEx.prodId),
+                       QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                       StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                .exists());
+        }
+        return sub.exists();
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

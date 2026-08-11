@@ -21,6 +21,14 @@ public class PmDiscntDto {
         private List<String> discntIds;            // PK 다건 IN
         @Size(max = 20) private String discntTypeCd;
         @Size(max = 20) private String discntStatusCd;
+        @Size(max = 21)  private String memberId;       // 사용회원 ID 필터 (EXISTS eq via pm_discnt_usage)
+        @Size(max = 200) private String memberNm;       // 사용회원명 필터 (EXISTS LIKE via pm_discnt_usage→mb_member)
+        @Size(max = 21)  private String prodId;         // 대상상품 ID 필터 (EXISTS eq via pm_discnt_prod)
+        @Size(max = 200) private String prodNm;         // 대상상품명 필터 (EXISTS LIKE via pm_discnt_prod→pd_prod)
+        @Size(max = 21)  private String vendorId;       // 업체 ID 필터 (EXISTS eq via pm_discnt_prod→pd_prod)
+        @Size(max = 200) private String vendorNm;       // 업체명 필터 (EXISTS LIKE via pm_discnt_prod→pd_prod→sy_vendor)
+        @Size(max = 21)  private String mdUserId;       // 담당MD ID 필터 (EXISTS eq via pm_discnt_prod→pd_prod)
+        @Size(max = 200) private String mdUserNm;       // 담당MD명 필터 (EXISTS LIKE via pm_discnt_prod→pd_prod→sy_user)
     }
 
     @Getter @Setter @NoArgsConstructor

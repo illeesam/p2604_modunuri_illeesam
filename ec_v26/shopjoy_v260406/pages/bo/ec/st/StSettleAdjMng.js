@@ -11,14 +11,11 @@ window.StSettleAdjMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '', selectedId: null, isNew: false});
+    const uiState = reactive({ error: null, selectedId: null, isNew: false });
     const codes = reactive({
       settle_adj_types: [],
       settle_adj_statuses: [],
-      date_range_opts: [],
     });
-
-    /* 정산 조정 fnLoadCodes */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -32,8 +29,6 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
         Object.assign(searchParam, searchParamInit);
         baseGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
-      } else if (cmd === 'searchParam-dateRange') {
-        return handleDateRangeChange();
       } else if (cmd === 'settleAdjs-add') {
         return openNew();
       } else if (cmd === 'form-save') {
@@ -53,6 +48,8 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       console.log(' ■■ StSettleAdjMng.js : handleSelectAction -> ', cmd, param);
       if (cmd === 'settleAdjs-rowApprove') {
         return doApprove(param);
+      } else if (cmd === 'settleAdjs-rowReject') {
+        return doReject(param);
       } else if (cmd === 'settleAdjs-rowEdit') {
         return openEdit(param);
       } else if (cmd === 'settleAdjs-rowDelete') {
@@ -67,52 +64,58 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* fnLoadCodes — 공통코드 로드 */
+    /* fnLoadCodes — 공통코드 로드
+       ⚠ 'SETTLE_ADJ_TYPE_KR' 는 DB 에 존재하지 않는 그룹이었다(오타/미정의).
+          실제 그룹은 'SETTLE_ADJ_TYPE'(PENALTY/BONUS/ERROR_FIX/OTHER, 영문 코드값). */
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['SETTLE_ADJ_TYPE_KR', 'SETTLE_ADJ_STATUS', 'DATE_RANGE_OPT'], {compNm: 'StSettleAdjMng'});
+      await codeStore.saLoadCodes(['SETTLE_ADJ_TYPE', 'SETTLE_ADJ_STATUS'], {compNm: 'StSettleAdjMng'});
       try {
-        codes.settle_adj_types = codeStore.sgGetGrpCodes('SETTLE_ADJ_TYPE_KR');
+        codes.settle_adj_types = codeStore.sgGetGrpCodes('SETTLE_ADJ_TYPE');
         codes.settle_adj_statuses = codeStore.sgGetGrpCodes('SETTLE_ADJ_STATUS');
-        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
     };
 
-    /* handleDateRangeChange — 기간 변경 */
-    const handleDateRangeChange = () => {
-      boUtil.bofApplyDateRange(searchParam);
-    };
+    /* settleId 선택용 — 정산마스터(st_settle) 목록.
+       StSettleAdjDto 에는 vendorId/vendorNm 이 없다(정산조정은 settleId 로만 연결).
+       업체·기간은 정산마스터(st_settle) 쪽 정보라 선택 라벨에 함께 보여준다. */
+    const settles = reactive([]);
+    const cfSettleOptions = computed(() => settles.map(s => ({
+      value: s.settleId,
+      label: `${s.settleId} · ${s.vendorId} · ${s.settleYm} · ${fmtW(s.finalSettleAmt)}`,
+    })));
 
-    const vendors = reactive([]);
-    const cfVendors = computed(() => vendors.filter(v => v.vendorType === '판매업체'));
-
-    /* handleSearchData — 처리 */
+    /* handleSearchData — 처리
+       ⚠ StSettleAdjDto.Request 는 settleAdjId/adjTypeCd/aprvStatusCd 만 지원한다.
+          정산조정건수가 많지 않아(정책서 st.06 기준 5건) 자유검색·기간검색 필드는
+          백엔드에 대응 파라미터가 없어 제거했다 — 있어도 서버가 조용히 무시했다. */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
-        const [resV, resA] = await Promise.all([
-          boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산조정관리', '목록조회'),
-          (() => {
-            const params = {
-              pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
-              ...coUtil.cofOmitEmpty(searchParam)
-            };
-            // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-            if (params.searchValue && !params.searchType) {
-              params.searchType = 'settleAdjId,siteNm,adjReason';
-            }
-            return boApiSvc.stSettleAdj.getPage(params, '정산조정관리', '목록조회');
-          })()
-        ]);
-        vendors.splice(0, vendors.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
-        const data = resA.data?.data;
+        const params = {
+          pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
+          ...coUtil.cofOmitEmpty(searchParam),
+        };
+        const res = await boApiSvc.stSettleAdj.getPage(params, '정산조정관리', '목록조회');
+        const data = res.data?.data;
         adjs.splice(0, adjs.length, ...(data?.pageList || data?.list || []));
         baseGridPager.pageTotalCount = data?.pageTotalCount || adjs.length;
         baseGridPager.pageTotalPage = data?.pageTotalPage || coUtil.cofTotalPage(baseGridPager);
         coUtil.cofBuildPagerNums(baseGridPager);
         Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
+      } catch (_) {
+        console.error('[catch-info]', _);
+      }
+    };
+
+    /* fnLoadSettles — 정산마스터 선택 목록 로드 */
+    const fnLoadSettles = async () => {
+      try {
+        const res = await boApiSvc.stSettle.getPage({ pageNo: 1, pageSize: 500 }, '정산조정관리', '정산목록조회');
+        const data = res.data?.data;
+        settles.splice(0, settles.length, ...(data?.pageList || data?.list || []));
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -124,7 +127,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
-      await handleSearchData('DEFAULT');
+      await Promise.all([handleSearchData('DEFAULT'), fnLoadSettles()]);
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
     onMounted(initPage);
@@ -133,168 +136,153 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
 
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-
     const form = reactive({});
     const errors = reactive({});
 
-    const searchParam = reactive({ searchType: '', searchValue: '', adjTypeCd: '', aprvStatusCd: '', dateRange: '이번달', dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '' });
-    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
-       리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
-       기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
+    const searchParam = reactive({ adjTypeCd: '', aprvStatusCd: '' });
+    /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다. */
     const searchParamInit = {};
-    boUtil.bofApplyDateRange(searchParam, '이번달');
 
     const schema = window.yup.object({
-      vendorId: window.yup.number().required('업체를 선택하세요.').min(1, '업체를 선택하세요.'),
-      adjType:  window.yup.string().required('조정유형을 선택하세요.'),
-      adjAmt:   window.yup.number().required('조정금액을 입력하세요.'),
-      reason:   window.yup.string().required('사유를 입력하세요.'),
+      settleId:  window.yup.string().required('정산건을 선택하세요.'),
+      adjTypeCd: window.yup.string().required('조정유형을 선택하세요.'),
+      adjAmt:    window.yup.number().required('조정금액을 입력하세요.'),
+      adjReason: window.yup.string().required('사유를 입력하세요.'),
     });
 
     /* openNew — 신규 열기 */
     const openNew = () => {
-      Object.assign(form, { adjId: null, adjDate: coUtil.cofToYmd(new Date()), vendorId: '', vendorNm: '', adjType: '매출조정', adjAmt: 0, reason: '', aprvStatusCd: '대기', regUserNm: '관리자' });
+      Object.assign(form, { settleAdjId: null, settleId: '', adjTypeCd: '', adjAmt: 0, adjReason: '', settleAdjMemo: '', aprvStatusCd: '대기' });
       uiState.selectedId = '__new__'; uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* openEdit — 열기 */
-    const openEdit = (r) => { Object.assign(form, {...r}); uiState.selectedId = r.adjId; uiState.isNew = false; Object.keys(errors).forEach(k => delete errors[k]); };
+    const openEdit = (r) => { Object.assign(form, {...r}); uiState.selectedId = r.settleAdjId; uiState.isNew = false; Object.keys(errors).forEach(k => delete errors[k]); };
 
     /* closeForm — 닫기 */
     const closeForm = () => { uiState.selectedId = null; };
 
-    /* 정산 조정 저장 */
-
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* handleSave — 저장 */
+    /* handleSave — 저장
+       ⚠ create body 는 StSettleAdj 엔티티 자체(@RequestBody StSettleAdj) 다.
+          settleId/adjTypeCd/adjAmt/adjReason 은 NOT NULL — 없으면 저장이 거부된다. */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
       catch (err) {
       console.error('[catch-info]', err); err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const v = cfVendors.value.find(x => x.vendorId === Number(form.vendorId));
-      if (v) { form.vendorNm = v.vendorNm; }
       const ok = await showConfirm('저장', '정산조정을 저장하시겠습니까?');
       if (!ok) { return; }
-      /* ⚠ 이전에는 API 호출 '전' 에 목록을 갱신하고 폼까지 닫아, 저장이 실패해도
-         화면에는 저장된 것처럼 행이 남았다(롤백 없음). 게다가 신규 시 클라이언트에서
-         'ADJ-'+Date.now() 로 ID 를 만들어 서버가 채번한 실제 ID 와 어긋났다.
-         → 저장이 성공한 뒤에만 서버 기준으로 재조회하고 폼을 닫는다. */
+      const body = { settleId: form.settleId, adjTypeCd: form.adjTypeCd, adjAmt: form.adjAmt, adjReason: form.adjReason, settleAdjMemo: form.settleAdjMemo, aprvStatusCd: form.aprvStatusCd || '대기' };
       try {
-        await (uiState.isNew ? boApiSvc.stSettleAdj.create({ ...form }, '정산조정관리', '등록') : boApiSvc.stSettleAdj.update(form.adjId, { ...form }, '정산조정관리', '저장'));
-        if (showToast) { showToast('저장되었습니다.', 'success'); }
+        await (uiState.isNew ? boApiSvc.stSettleAdj.create(body, '정산조정관리', '등록') : boApiSvc.stSettleAdj.update(form.settleAdjId, body, '정산조정관리', '저장'));
+        showToast('저장되었습니다.', 'success');
         closeForm();
         await handleSearchData();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (showToast) { showToast(errMsg, 'error', 0); }
+        showToast(errMsg, 'error', 0);
       }
     };
 
-    /* handleDelete — 삭제 */
+    /* handleDelete — 삭제 (성공 후에만 목록 갱신) */
     const handleDelete = async (r) => {
-      const ok = await showConfirm('삭제', `[${r.adjId}] 정산조정을 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${r.settleAdjId}] 정산조정을 삭제하시겠습니까?`);
       if (!ok) { return; }
-      const idx = adjs.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjs.splice(idx, 1); if (uiState.selectedId === r.adjId) closeForm();
       try {
-        const res = await boApiSvc.stSettleAdj.remove(r.adjId, '정산조정관리', '삭제');
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
+        await boApiSvc.stSettleAdj.remove(r.settleAdjId, '정산조정관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        if (uiState.selectedId === r.settleAdjId) closeForm();
+        await handleSearchData();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (showToast) { showToast(errMsg, 'error', 0); }
+        showToast(errMsg, 'error', 0);
       }
     };
 
-    /* doApprove — 실행 */
+    /* doApprove — 승인 */
     const doApprove = async (r) => {
       const ok = await showConfirm('승인', '정산조정을 승인하시겠습니까?');
       if (!ok) { return; }
-      r.aprvStatusCd = '승인';
       try {
-        const res = await boApiSvc.stSettleAdj.approve(r.adjId, { aprvStatusCd: '승인' }, '정산조정관리', '상태변경');
-        if (showToast) { showToast('승인되었습니다.', 'success'); }
+        await boApiSvc.stSettleAdj.approve(r.settleAdjId, { aprvStatusCd: '승인' }, '정산조정관리', '상태변경');
+        showToast('승인되었습니다.', 'success');
+        await handleSearchData();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (showToast) { showToast(errMsg, 'error', 0); }
+        showToast(errMsg, 'error', 0);
       }
     };
 
-    /* 정산 조정 fnAprvBadge */
-    const _SETTLE_ADJ_STATUS_FB = { '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' };
-    /* fnAprvBadge — 유틸 */
-    const fnAprvBadge = s => coUtil.cofCodeBadge('SETTLE_ADJ_STATUS', s, _SETTLE_ADJ_STATUS_FB[s] || 'badge-gray');
+    /* doReject — 반려 */
+    const doReject = async (r) => {
+      const ok = await showConfirm('반려', '정산조정을 반려하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        await boApiSvc.stSettleAdj.approve(r.settleAdjId, { aprvStatusCd: '반려' }, '정산조정관리', '상태변경');
+        showToast('반려되었습니다.', 'success');
+        await handleSearchData();
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        showToast(errMsg, 'error', 0);
+      }
+    };
 
-    /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge = t => ({ '매출조정':'badge-blue', '수수료조정':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
+    /* fnAprvBadge — 승인상태 배지. SETTLE_ADJ_STATUS 는 sy_code.code_opt1 에 배지색이
+       이미 지정돼 있다(대기=badge-blue/승인=badge-green/반려=badge-red). */
+    const fnAprvBadge = s => coUtil.cofCodeBadge('SETTLE_ADJ_STATUS', s, { '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');
+
+    /* fnTypeBadge — 조정유형 배지 (SETTLE_ADJ_TYPE 실 코드값 기준) */
+    const fnTypeBadge = t => ({ PENALTY:'badge-red', BONUS:'badge-green', ERROR_FIX:'badge-orange', OTHER:'badge-gray' }[t] || 'badge-gray');
 
     /* fmtW — 포맷 W */
     const fmtW = n => coUtil.cofWon(n, true);
 
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-
-
-
-    /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
-
-
-
-        /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-
-        // --- [컬럼 정의] ---
-
-        const columns = {};
-        columns.baseSearch = [
-      { key: 'dateRange', label: '정산일', type: 'dateRange',
-        typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
-        typeOptions: () => [{ value: 'reg_date', label: '등록일' }, { value: 'upd_date', label: '수정일' }],
-        rangeOptions: () => codes.date_range_opts,
-        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
-        onRangeChange: () => handleDateRangeChange() },
+    // --- [컬럼 정의] ---
+    const columns = {};
+    columns.baseSearch = [
       { key: 'adjTypeCd', label: '유형', type: 'select', options: () => codes.settle_adj_types, nullLabel: '유형 전체' },
-      { key: 'aprvStatusCd', label: '상태', type: 'select', options: () => codes.settle_adj_statuses, nullLabel: '상태 전체' },
-      { key: 'searchType', label: '검색대상', type: 'multiCheck',
-        options: [
-          { value: 'settleAdjId', label: '조정ID' },
-          { value: 'siteNm',      label: '업체명' },
-          { value: 'adjReason',   label: '사유' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '200px' },
+      { key: 'aprvStatusCd', label: '승인상태', type: 'select', options: () => codes.settle_adj_statuses, nullLabel: '상태 전체' },
     ];
 
-    // 기본 그리드
+    /* 기본 그리드
+       ⚠ key 는 백엔드 StSettleAdjDto.Item 필드명과 일치해야 값이 표시된다.
+          vendorNm/adjDate/regUserNm 은 Item 에 없는 필드라 제거했다(항상 빈 값이었다).
+          업체·기간이 필요하면 settleId 로 정산마스터(st_settle)를 조회해야 한다.
+          상세 → _doc/정책서/ec/st/st.06.정산화면-백엔드불일치.md */
     columns.baseGrid = [
-      { key: 'adjId',        label: '조정ID' },
-      { key: 'adjDate',      label: '조정일자',  fmt: (v) => coUtil.cofYmd(v) || '-' },
-      { key: 'vendorNm',     label: '업체명' },
-      { key: 'adjType',      label: '유형', badge: (row) => fnTypeBadge(row.adjType) },
-      { key: 'adjAmt',       label: '조정금액', fmt: fmtW,
-        cellStyle: (v, row) => row.adjAmt < 0
-          ? 'color:#e74c3c;font-weight:700' : 'color:#27ae60;font-weight:700' },
-      { key: 'reason',       label: '사유',
+      { key: 'settleAdjId',   label: '조정ID' },
+      { key: 'settleId',      label: '정산ID', cellStyle: 'color:#666;font-size:11px' },
+      { key: 'adjTypeCd',     label: '유형', badge: (row) => fnTypeBadge(row.adjTypeCd) },
+      { key: 'adjAmt',        label: '조정금액', fmt: fmtW, cellStyle: 'color:#27ae60;font-weight:700' },
+      { key: 'adjReason',     label: '사유',
         cellStyle: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
-      { key: 'aprvStatusCd', label: '승인상태', badge: (row) => fnAprvBadge(row.aprvStatusCd) },
-      { key: 'regUserNm',    label: '등록자' },
+      { key: 'aprvStatusCd',  label: '승인상태', badge: (row) => fnAprvBadge(row.aprvStatusCd) },
+      { key: 'regBy',         label: '등록자' },
+      { key: 'regDate',       label: '등록일', fmt: (v) => coUtil.cofYmd(v) || '-' },
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 조정 추가/수정 ================
-    // 기본 폼
     columns.baseForm = [
-      { key: 'vendorId', label: '업체', type: 'select', required: true, nullLabel: '선택',
-        options: () => (cfVendors.value || []).map(v => ({ value: v.vendorId, label: v.vendorNm })) },
-      { key: 'adjType',  label: '조정유형', type: 'select', required: true, nullable: false,
+      { key: 'settleId', label: '정산건', type: 'select', required: true, nullLabel: '선택', colSpan: 3,
+        options: () => cfSettleOptions.value },
+      { key: 'adjTypeCd', label: '조정유형', type: 'select', required: true, nullable: false,
         options: () => codes.settle_adj_types },
-      { key: 'adjAmt',   label: '조정금액(원)', type: 'number', required: true, placeholder: '음수 입력 시 차감' },
-      { key: 'adjDate',  label: '조정일자', type: 'date' },
+      { key: 'adjAmt',   label: '조정금액(원)', type: 'number', required: true, placeholder: '항상 양수 — 가산/차감은 유형으로 구분' },
+      { key: 'aprvStatusCd', label: '승인상태', type: 'select', nullable: false,
+        options: () => codes.settle_adj_statuses },
       { type: 'rowBreak' },
-      { key: 'reason',   label: '사유', type: 'text', required: true,
-        placeholder: '조정 사유를 입력하세요.', colSpan: 4 },
+      { key: 'adjReason', label: '사유', type: 'text', required: true,
+        placeholder: '조정 사유를 입력하세요.', colSpan: 3 },
+      { key: 'settleAdjMemo', label: '메모', type: 'textarea', colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -307,8 +295,8 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
   },
   template: /* html */`
 <bo-page title="정산조정"
-  desc-summary="수집원장 데이터에 업체별 추가·차감 조정 항목을 입력하여 최종 정산액을 보정합니다."
-  :desc-detail="['• 조정 유형: 추가(+) / 차감(-) / 위약금 / 프로모션 분담금 등','• 조정 항목은 담당자 승인 후 정산마감에 반영됩니다.','• 승인 상태: 대기 / 승인 / 반려','• 마감 완료된 기간의 조정은 재오픈 후 처리해야 합니다.'].join(String.fromCharCode(10))">
+  desc-summary="정산건에 업체별 추가·차감 조정 항목을 입력하여 최종 정산액을 보정합니다."
+  :desc-detail="['• 조정 유형: 패널티 / 보너스 / 오류수정 / 기타','• 조정 항목은 담당자 승인 후 정산마감에 반영됩니다.','• 승인 상태: 대기 / 승인 / 반려','• 마감 완료된 정산건의 조정은 재오픈 후 처리해야 합니다.'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 영역 =================================================== -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
@@ -319,17 +307,16 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       <button class="btn btn_new" @click="handleBtnAction('settleAdjs-add')">+ 조정 추가</button>
     </template>
     <bo-grid bare
-      :columns="columns.baseGrid" :rows="adjs" row-key="adjId" :selected-key="uiState.selectedId"
+      :columns="columns.baseGrid" :rows="adjs" row-key="settleAdjId" :selected-key="uiState.selectedId"
       :row-actions="true"
-      :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''">
+      :row-class="(r) => uiState.selectedId===r.settleAdjId ? 'selected' : ''">
       <template #head-actions>
         액션
       </template>
       <template #row-actions="{ row: r }">
         <div class="actions">
-          <button v-if="r.aprvStatusCd==='대기'" class="btn btn-xs btn-green" @click="handleSelectAction('settleAdjs-rowApprove', r)">
-            승인
-          </button>
+          <button v-if="r.aprvStatusCd==='대기'" class="btn btn-xs btn-green" @click="handleSelectAction('settleAdjs-rowApprove', r)">승인</button>
+          <button v-if="r.aprvStatusCd==='대기'" class="btn btn-xs btn-danger" @click="handleSelectAction('settleAdjs-rowReject', r)">반려</button>
           <button class="btn btn_row_edit" @click="handleSelectAction('settleAdjs-rowEdit', r)">수정</button>
           <button class="btn btn_row_delete"  @click="handleSelectAction('settleAdjs-rowDelete', r)">삭제</button>
         </div>
@@ -342,7 +329,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     :title="!uiState.selectedId ? '조정 상세' : (uiState.isNew ? '조정 추가' : '조정 수정')">
     <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
     <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
-      목록에서 조정 행을 선택하거나 [+신규]를 누르면 입력할 수 있습니다.
+      목록에서 조정 행을 선택하거나 [+ 조정 추가]를 누르면 입력할 수 있습니다.
     </div>
     <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) ============================= -->
     <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"

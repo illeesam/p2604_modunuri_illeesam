@@ -16,9 +16,9 @@ public interface CmDashboardItemDataRepository extends JpaRepository<CmDashboard
     void deleteByDashboardItemIdAndYyyymmdd(
             String dashboardItemId, String yyyymmdd);
 
-    List<CmDashboardItemData> findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
+    List<CmDashboardItemData> findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscDashboardItemDataIdAsc(
             String dashboardItemId, String yyyymmddStart, String yyyymmddEnd);
 
-    List<CmDashboardItemData> findByDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(
+    List<CmDashboardItemData> findByDashboardItemIdOrderByYyyymmddAscDashboardItemDataIdAsc(
             String dashboardItemId);
 }

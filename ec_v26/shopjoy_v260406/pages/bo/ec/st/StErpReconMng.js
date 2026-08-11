@@ -13,7 +13,6 @@ window.StErpReconMng = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
 const uiState = reactive({ loading: false, error: null, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: ''});
     const codes = reactive({
-      erp_recon_statuses: [],
       erp_voucher_types: [],
       erp_recon_results: [],
       date_range_opts: [],
@@ -66,9 +65,8 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ERP_RECON_STATUS', 'ERP_VOUCHER_TYPE_KR', 'ERP_RECON_RESULT', 'DATE_RANGE_OPT'], {compNm: 'StErpReconMng'});
+      await codeStore.saLoadCodes(['ERP_VOUCHER_TYPE_KR', 'ERP_RECON_RESULT', 'DATE_RANGE_OPT'], {compNm: 'StErpReconMng'});
       try {
-        codes.erp_recon_statuses = codeStore.sgGetGrpCodes('ERP_RECON_STATUS');
         codes.erp_voucher_types = codeStore.sgGetGrpCodes('ERP_VOUCHER_TYPE_KR');
         codes.erp_recon_results = codeStore.sgGetGrpCodes('ERP_RECON_RESULT');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');

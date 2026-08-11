@@ -7,6 +7,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -14,10 +15,15 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmCoupon;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCoupon;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponProd;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmCouponRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -35,6 +41,11 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     private static final QVwSyCode  cdCs = new QVwSyCode("cd_cs");
     private static final QVwSyCode  cdTt = new QVwSyCode("cd_tt");
     private static final QVwSyCode  cdMg = new QVwSyCode("cd_mg");
+    // EXISTS 서브쿼리용 별칭 (대상상품/업체/담당MD 필터 — pm_coupon_prod → pd_prod → sy_vendor/sy_user)
+    private static final QPmCouponProd couponProdEx = new QPmCouponProd("coupon_prod_ex");
+    private static final QPdProd       pProdEx      = new QPdProd("p_prod_ex");
+    private static final QSyVendor     syVendorEx   = new QSyVendor("sy_vendor_ex");
+    private static final QSyUser       syUserEx     = new QSyUser("sy_user_ex");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmCoupon.regDate,
         "upd_date", pmCoupon.updDate
     );
@@ -112,6 +123,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                     QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    andProdVendorMd(search),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -140,6 +152,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                andProdVendorMd(search),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
@@ -164,6 +177,41 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         BasePage<PmCouponDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
+    /** andProdVendorMd — 대상상품/업체/담당MD 필터. pm_coupon_prod(coupon_id↔prod_id) 를 거쳐
+     *  pd_prod 의 vendor_id/md_user_id 까지 조인해야 하는 2단 EXISTS. */
+    private BooleanExpression andProdVendorMd(PmCouponDto.Request search) {
+        boolean needProd   = StringUtils.hasText(search.getProdId()) || StringUtils.hasText(search.getProdNm());
+        boolean needVendor = StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm());
+        boolean needMd     = StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm());
+        if (!needProd && !needVendor && !needMd) return null;
+
+        com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(couponProdEx)
+            .where(couponProdEx.couponId.eq(pmCoupon.couponId));
+
+        if (needProd) {
+            sub = sub.where(
+                QdslUtil.strEq(couponProdEx.prodId, search.getProdId()),
+                StringUtils.hasText(search.getProdId()) ? null
+                    : JPAExpressions.selectOne().from(pProdEx)
+                          .where(pProdEx.prodId.eq(couponProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
+        }
+        if (needVendor) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))
+                .where(pProdEx.prodId.eq(couponProdEx.prodId),
+                       QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                       StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                .exists());
+        }
+        if (needMd) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syUserEx).on(syUserEx.userId.eq(pProdEx.mdUserId))
+                .where(pProdEx.prodId.eq(couponProdEx.prodId),
+                       QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                       StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                .exists());
+        }
+        return sub.exists();
+    }
+
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

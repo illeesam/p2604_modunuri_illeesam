@@ -17,6 +17,8 @@ public class PmVoucherDto {
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String voucherId;
         @Size(max = 20) private String voucherStatusCd; // 상태 (코드: VOUCHER_STATUS)
+        @Size(max = 21)  private String memberId;  // 발급회원 ID 필터 (EXISTS eq via pm_voucher_issue)
+        @Size(max = 200) private String memberNm;  // 발급회원명 필터 (EXISTS LIKE via pm_voucher_issue→mb_member)
     }
 
     @Getter @Setter @NoArgsConstructor

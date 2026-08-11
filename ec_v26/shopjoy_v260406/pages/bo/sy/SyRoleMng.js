@@ -25,7 +25,7 @@ window.SyRoleMng = {
       error: null,
       userSelectOpen: false,
       loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchValue: ''});
-    const codes = reactive({ role_status: [], use_yn: [], perm_levels: ['없음','읽기','쓰기','관리','차단'], role_cats: [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']] });
+    const codes = reactive({ use_yn: [], perm_levels: ['없음','읽기','쓰기','관리','차단'], role_cats: [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']] });
 
     /* permLevel 매핑 — DB(Integer) ↔ UI(문자열) 변환 (0:없음 / 1:읽기 / 2:쓰기 / 3:관리 / 4:차단) */
     const PERM_LABEL_BY_NUM = { 0: '없음', 1: '읽기', 2: '쓰기', 3: '관리', 4: '차단' };
@@ -344,8 +344,7 @@ window.SyRoleMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ROLE_STATUS', 'USE_YN'], {compNm: 'SyRoleMng'});
-      codes.role_status = codeStore.sgGetGrpCodes('ROLE_STATUS');
+      await codeStore.saLoadCodes(['USE_YN'], {compNm: 'SyRoleMng'});
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
     };
 

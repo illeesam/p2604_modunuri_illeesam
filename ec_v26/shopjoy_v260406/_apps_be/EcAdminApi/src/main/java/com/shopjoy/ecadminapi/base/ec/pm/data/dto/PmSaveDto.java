@@ -19,6 +19,12 @@ public class PmSaveDto {
         @Size(max = 20) private String saveTypeCd;
         /* 회원별 적립 조회 — 화면(PmSaveMng)에 검색란이 있었으나 필드가 없어 무시되던 것을 추가 */
         @Size(max = 21) private String memberId;
+        @Size(max = 21)  private String prodId;    // 대상상품 ID 필터 (EXISTS eq via pm_save_prod)
+        @Size(max = 200) private String prodNm;    // 대상상품명 필터 (EXISTS LIKE via pm_save_prod→pd_prod)
+        @Size(max = 21)  private String vendorId;  // 업체 ID 필터 (EXISTS eq via pm_save_prod→pd_prod)
+        @Size(max = 200) private String vendorNm;  // 업체명 필터 (EXISTS LIKE via pm_save_prod→pd_prod→sy_vendor)
+        @Size(max = 21)  private String mdUserId;  // 담당MD ID 필터 (EXISTS eq via pm_save_prod→pd_prod)
+        @Size(max = 200) private String mdUserNm;  // 담당MD명 필터 (EXISTS LIKE via pm_save_prod→pd_prod→sy_user)
     }
 
     @Getter @Setter @NoArgsConstructor

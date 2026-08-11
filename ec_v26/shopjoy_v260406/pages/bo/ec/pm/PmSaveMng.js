@@ -117,16 +117,14 @@ window.PmSaveMng = {
     const saves = reactive([]);
     const uiState = reactive({ loading: false, error: null, saveList: [], tabMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
-      save_statuses: [],
       save_issue_types: [],
-      promo_statuses: [],
       date_range_opts: [],
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
 
-    const searchParam = reactive({ searchType: '', searchValue: '', dateRangeType: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '', saveTypeCd: '', status: '', memberId: '', memberNm: '', mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', dateRangeType: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '', saveTypeCd: '', memberId: '', memberNm: '', mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
        기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
@@ -141,11 +139,12 @@ window.PmSaveMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['SAVE_STATUS', 'SAVE_ISSUE_TYPE', 'PROMO_STATUS', 'DATE_RANGE_OPT'], {compNm: 'PmSaveMng'});
+      /* PROMO_STATUS 는 검색 select 용 codes.promo_statuses 로는 안 쓰지만(제거됨 — pm_save 에
+         상태 컬럼 자체가 없다), fnStatusBadge() 가 coUtil.cofCodeBadge('PROMO_STATUS', ...) 로
+         스토어에서 직접 조회하므로 로드는 유지한다. */
+      await codeStore.saLoadCodes(['SAVE_ISSUE_TYPE', 'PROMO_STATUS', 'DATE_RANGE_OPT'], {compNm: 'PmSaveMng'});
       try {
-        codes.save_statuses = codeStore.sgGetGrpCodes('SAVE_STATUS');
         codes.save_issue_types = codeStore.sgGetGrpCodes('SAVE_ISSUE_TYPE');
-        codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -317,7 +316,6 @@ window.PmSaveMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'saveTypeCd', type: 'select', label: '유형', options: () => codes.save_issue_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.promo_statuses, nullLabel: '상태 전체' },
       { key: 'memberId', label: '회원', type: 'pick', display: (p) => p.memberNm, placeholder: '회원 선택',
         onOpen: () => handleBtnAction('memberModal-open'), onClear: () => handleBtnAction('searchParam-memberClear') },
       { key: 'mdUserId', label: '담당MD', type: 'pick', display: (p) => p.mdUserNm, placeholder: 'MD 선택',

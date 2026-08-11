@@ -17,6 +17,12 @@ public class PmPlanDto {
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String planId;
         @Size(max = 20) private String planStatusCd;
+        @Size(max = 21)  private String prodId;    // 대상상품 ID 필터 (EXISTS eq via pm_plan_item)
+        @Size(max = 200) private String prodNm;    // 대상상품명 필터 (EXISTS LIKE via pm_plan_item→pd_prod)
+        @Size(max = 21)  private String vendorId;  // 업체 ID 필터 (EXISTS eq via pm_plan_item→pd_prod)
+        @Size(max = 200) private String vendorNm;  // 업체명 필터 (EXISTS LIKE via pm_plan_item→pd_prod→sy_vendor)
+        @Size(max = 21)  private String mdUserId;  // 담당MD ID 필터 (EXISTS eq via pm_plan_item→pd_prod)
+        @Size(max = 200) private String mdUserNm;  // 담당MD명 필터 (EXISTS LIKE via pm_plan_item→pd_prod→sy_user)
     }
 
     @Getter @Setter @NoArgsConstructor

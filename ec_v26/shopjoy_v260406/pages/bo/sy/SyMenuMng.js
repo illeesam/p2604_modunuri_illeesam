@@ -17,7 +17,7 @@ window.SyMenuMng = {
     const uiState = reactive({                     // UI 상태
       checkAll: false, loading: false, error: null, selectedTreeId: null, focusedIdx: null,
     });
-    const codes = reactive({ menu_type: [], menu_status: [], use_yn: [], menu_types: ['페이지','폴더','외부링크','구분선'] });
+    const codes = reactive({ menu_type: [], use_yn: [], menu_types: ['페이지','폴더','외부링크','구분선'] });
 
     /* ===== 검색조건 ===== */
 
@@ -190,9 +190,8 @@ window.SyMenuMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['MENU_TYPE', 'MENU_STATUS', 'USE_YN'], {compNm: 'SyMenuMng'});
+      await codeStore.saLoadCodes(['MENU_TYPE', 'USE_YN'], {compNm: 'SyMenuMng'});
       codes.menu_type = codeStore.sgGetGrpCodes('MENU_TYPE');
-      codes.menu_status = codeStore.sgGetGrpCodes('MENU_STATUS');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
     };
 

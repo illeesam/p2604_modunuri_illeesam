@@ -14,7 +14,7 @@ window.SyAttachMng = {
     const attaches = reactive([]);
     const attachGrps = reactive([]);
     const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, selectedGrpId: null, grpEditId: null, fileEditId: null });
-    const codes = reactive({ attach_type: [], active_statuses: [], use_yns: [], storage_types: [], date_range_opts: [] });
+    const codes = reactive({ active_statuses: [], use_yns: [], storage_types: [], date_range_opts: [] });
     const grpSearchParam = reactive({ searchType: '', searchValue: '' });
 
     const fileGridPager = reactive({
@@ -207,8 +207,7 @@ window.SyAttachMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ATTACH_TYPE', 'ACTIVE_STATUS', 'USE_YN', 'STORAGE_TYPE', 'DATE_RANGE_OPT'], {compNm: 'SyAttachMng'});
-      codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
+      await codeStore.saLoadCodes(['ACTIVE_STATUS', 'USE_YN', 'STORAGE_TYPE', 'DATE_RANGE_OPT'], {compNm: 'SyAttachMng'});
       codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       codes.use_yns = codeStore.sgGetGrpCodes('USE_YN');
       codes.storage_types = codeStore.sgGetGrpCodes('STORAGE_TYPE');

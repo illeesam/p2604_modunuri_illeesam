@@ -21,6 +21,12 @@ public class PmGiftDto {
         @Size(max = 20) private String giftStatusCd;
         /* 상품별 사은품 조회 — 화면(PmGiftMng)에 검색란이 있었으나 필드가 없어 무시되던 것을 추가 */
         @Size(max = 21) private String prodId;
+        @Size(max = 21)  private String vendorId;  // 업체 ID 필터 (base 조인 pd_prod.vendor_id)
+        @Size(max = 200) private String vendorNm;  // 업체명 필터 (base 조인 sy_vendor.vendor_nm)
+        @Size(max = 21)  private String mdUserId;  // 담당MD ID 필터 (base 조인 pd_prod.md_user_id)
+        @Size(max = 200) private String mdUserNm;  // 담당MD명 필터 (base 조인 sy_user.user_nm)
+        @Size(max = 21)  private String memberId;  // 발급회원 ID 필터 (EXISTS eq via pm_gift_issue)
+        @Size(max = 200) private String memberNm;  // 발급회원명 필터 (EXISTS LIKE via pm_gift_issue→mb_member)
     }
 
     @Getter @Setter @NoArgsConstructor

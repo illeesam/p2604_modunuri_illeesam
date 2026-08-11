@@ -153,6 +153,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                     QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
                     QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()),
                     QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
+                    QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                         ? JPAExpressions.selectOne()
@@ -215,6 +216,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
                 QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()),
                 QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
+                QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                     ? JPAExpressions.selectOne()

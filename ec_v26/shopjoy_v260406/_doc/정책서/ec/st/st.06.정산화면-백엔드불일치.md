@@ -1,99 +1,53 @@
-# 정산 화면 ↔ 백엔드 불일치 (2026-08-10 발견)
+# 정산 화면 ↔ 백엔드 불일치 (2026-08-10 발견 / 2026-08-12 정정 완료)
 
 ## 요약
 
-정산 4개 화면의 **그리드 컬럼 key 가 백엔드 응답 DTO 필드와 거의 겹치지 않는다.**
-DB · Entity · DTO 3계층은 서로 일치하며 **프론트만 다른 설계를 전제**로 만들어져 있다.
+정산 4개 화면의 **그리드 컬럼 key 가 백엔드 응답 DTO 필드와 거의 겹치지 않았다.**
+DB · Entity · DTO 3계층은 서로 일치하는데 **프론트만 다른 설계(주문·클레임 집계 기반 정산월)를
+전제로 만들어져 있었다.**
 
-4개 화면 모두 `boAppMenuData.js` 에 등록되어 실제 렌더된다(프로토타입 아님).
-따라서 현재 사용자에게는 **값이 비어 보이는 그리드**가 노출되고 있을 가능성이 높다.
-
-| 테이블 | 행수 |
-|---|---|
-| `st_settle_close` | 8 |
-| `st_settle_pay` | 7 |
-| `st_settle_adj` | 5 |
-| `st_settle_etc_adj` | 5 |
-
-데이터는 실제로 들어 있으므로 "데이터가 없어서 안 보이는" 것이 아니다.
+**2026-08-12 — 안 B(화면을 백엔드에 맞춘다)로 4개 화면 전부 재작성 완료.**
+`StSettlePayMng` 은 이전 세션에서 먼저 정정됨. 이번엔 `StSettleCloseMng` / `StSettleAdjMng` /
+`StSettleEtcAdjMng` 3개를 정정했다.
 
 ---
 
-## 화면별 불일치
+## 재설계 방향
+
+`sales`/`refund`/`net`/`comm`/`promo` 같은 주문·클레임 파생 집계값은 DB 어디에도 저장되지 않는다.
+정산 마스터(`st_settle`)가 이미 `totalOrderAmt`/`totalReturnAmt`/`commissionAmt`/`settleAmt`/
+`adjAmt`/`etcAdjAmt`/`finalSettleAmt` 를 보유하고 있으므로(별도 집계 배치가 채우는 값),
+화면은 **이 값을 그대로 표시**하고, 조정·마감은 `settleId` 로 정산 마스터를 참조하는
+구조로 다시 짰다.
 
 ### StSettleCloseMng (정산마감)
 
-| 프론트 컬럼 | 백엔드 Item 필드 | 비고 |
-|---|---|---|
-| `closeMon` | — | **없음.** 정산월 개념이 DB 에 없다 |
-| `sales` `refund` `net` `comm` `promo` `settle` | — | **없음.** DB 는 `final_settle_amt` 하나만 저장 |
-| `status` | `closeStatusCd` | 이름 불일치 |
-| `regUserNm` | `regBy` | ID 만 있음(이름 조인 없음) |
-| — | `settleCloseId` `settleId` `closeReason` `closeBy` `closeDate` | 화면이 안 쓰는 실제 필드 |
+- "이번달 마감 대상"(주문·클레임 재계산 카드) → **정산확정(`settleStatusCd='CONFIRMED'`) 상태의
+  `st_settle` 목록**으로 교체. 행별 `[마감]` 버튼 클릭 시 그 `settleId` 를 참조하는
+  `st_settle_close` 레코드를 생성한다.
+- 저장 payload: `{ settleId, closeStatusCd:'CLOSED', finalSettleAmt, closeBy }` — 엔티티 NOT NULL
+  전부 충족. 이전에는 `closeMon`/`sales`/`refund`/... 를 보내 전부 버려지고 INSERT 가 거부됐다.
+- `closeStatusCd` 는 `SETTLE_STATUS`(CG000121) 코드값 `OPEN`/`CLOSED` 를 그대로 쓴다
+  (`reopen()` 서비스가 실제로 `'OPEN'` 을 쓰기 때문 — 별도 한글 그룹을 쓰면 저장값과 어긋난다).
 
-⚠ **저장 경로도 어긋난다.**
-`boApiSvc.stSettleClose.create({ closeMon, sales, refund, net, comm, promo, settle })` 로 보내는데
-백엔드에 해당 필드가 없어 **값이 전부 버려질 가능성이 크다.**
+### StSettleAdjMng (정산조정) / StSettleEtcAdjMng (정산기타조정)
 
-### StSettleAdjMng (정산조정)
-
-| 프론트 | 백엔드 |
-|---|---|
-| `adjId` | `settleAdjId` |
-| `adjType` | `adjTypeCd` |
-| `reason` | `adjReason` |
-| `adjDate` | — (없음, `regDate` 로 대체 가능) |
-| `vendorNm` `regUserNm` | — (조인 필드 없음. `vendorId` 도 이 DTO 엔 없음) |
-
-### StSettleEtcAdjMng (정산기타조정)
-
-| 프론트 | 백엔드 |
-|---|---|
-| `adjId` | `settleEtcAdjId` |
-| `adjType` | `etcAdjTypeCd` |
-| `adjAmt` | `etcAdjAmt` |
-| `reason` | `etcAdjReason` |
-| `aprvStatusCd` | — (`st_settle_adj` 에만 있고 이 테이블엔 없음) |
-| `vendorNm` `adjDate` `regUserNm` | — |
-
-### StSettlePayMng (정산지급관리)
-
-| 프론트 | 백엔드 |
-|---|---|
-| `payId` | `settlePayId` |
-| `settleAmt` | `payAmt` |
-| `payStatus` | `payStatusCd` |
-| `vendorNm` | `vendorId` 만 있음 |
-| `closeMon` `regUserNm` | — |
+- `vendorId`/`vendorNm` 대신 **`settleId` select**(정산마스터 목록에서 선택, 라벨에 업체·정산월·
+  최종정산액을 함께 노출)로 교체. 두 테이블 모두 `vendorId` 컬럼 자체가 없다(정산ID로만 연결).
+- 필드명 정정: `adjId`→`settleAdjId`, `adjType`→`adjTypeCd`(실제 코드값 PENALTY/BONUS/ERROR_FIX/
+  OTHER, `SETTLE_ADJ_TYPE_KR` 그룹은 존재하지 않아 정정), `reason`→`adjReason`/`etcAdjReason` 등.
+- `StSettleEtcAdjMng` 에는 `etcAdjDirCd`(가산/차감, 코드그룹 `ADJ_DIR`) 입력이 **통째로 빠져 있었다**
+  — NOT NULL 컬럼인데 폼에 필드 자체가 없어 저장이 항상 실패했다. 추가함.
+- `StSettleEtcAdjMng` 은 승인 개념(`aprvStatusCd`)이 없는 테이블인데 화면은 `SETTLE_ADJ_STATUS`
+  뱃지를 그리고 있었다 — 제거. 승인 흐름은 `StSettleAdjMng` 전용이다.
 
 ---
 
-## 왜 기계적으로 못 고치는가
+## 남은 제약 (표시명 미해결)
 
-1. **이름 불일치가 아니라 설계 불일치다.**
-   `sales`/`refund`/`net`/`comm`/`promo` 는 주문·클레임을 집계한 파생값인데
-   DB 는 `final_settle_amt` 하나만 저장한다. 이름을 바꿔서 될 문제가 아니다.
-2. **표시명 필드가 백엔드에 없다.**
-   `vendorNm` / `regUserNm` / `closeMon` 은 Item 에 없다. 프론트만 고치면
-   화면에 **ID 가 그대로 노출**되어 퇴화한다. 제대로 하려면 DTO + QueryDSL 에 조인 필드를 추가해야 한다.
-3. **금액을 다루는 화면이다.** 매핑을 추측하면 *틀린 숫자*를 보여주게 되는데,
-   이는 빈 화면보다 위험하다. 그래서 추측 수정을 하지 않았다.
-
----
-
-## 선택지
-
-| 안 | 내용 | 비용 / 리스크 |
-|---|---|---|
-| **A. 백엔드를 화면에 맞춘다** | Item 에 `vendorNm`·`closeMon`·`regUserNm` 조인 추가 + 집계값(sales/refund/…) 산출 로직 | 큼. 다만 화면 기획 의도는 보존 |
-| **B. 화면을 백엔드에 맞춘다** | 그리드 컬럼을 실제 DTO 필드로 교체, 없는 컬럼은 제거 | 작음. 단 화면이 단순해지고 ID 노출 |
-| **C. 절충** | 이름 불일치만 먼저 정정(`adjId`→`settleAdjId` 등)하고, 조인 필드는 백엔드에 추가 | 권장 |
-
-**C 를 권장한다.** 이름만 맞추면 실제 저장된 데이터가 즉시 화면에 뜨고,
-표시명(`vendorNm` 등)은 백엔드 조인 추가로 단계적으로 채울 수 있다.
-
-⚠ 어느 안이든 **`StSettleCloseMng` 의 저장 경로(create 파라미터)를 먼저 확인**할 것.
-지금 구조면 마감 데이터가 저장되지 않고 있을 수 있다.
+`vendorNm`/`regUserNm` 같은 조인 표시명은 여전히 Item 에 없다. 그리드는 `settleId`/`vendorId` 등
+ID 를 그대로 보여준다(안 B 선택의 트레이드오프). 사람이 읽기 좋은 이름이 필요해지면
+Item + QueryDSL 에 `st_settle`→`sy_vendor` 조인을 추가해야 한다(안 A, 별도 작업).
 
 ---
 

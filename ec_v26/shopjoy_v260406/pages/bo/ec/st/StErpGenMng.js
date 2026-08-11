@@ -39,9 +39,9 @@ window.StErpGenMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ERP_STATUS', 'ERP_VOUCHER_TYPE_KR'], {compNm: 'StErpGenMng'});
+      await codeStore.saLoadCodes(['ERP_VOUCHER_STATUS_KR', 'ERP_VOUCHER_TYPE_KR'], {compNm: 'StErpGenMng'});
       try {
-        codes.erp_statuses = codeStore.sgGetGrpCodes('ERP_STATUS');
+        codes.erp_statuses = codeStore.sgGetGrpCodes('ERP_VOUCHER_STATUS_KR');
         codes.erp_voucher_types = codeStore.sgGetGrpCodes('ERP_VOUCHER_TYPE_KR');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -116,7 +116,7 @@ window.StErpGenMng = {
     /* fnStatusBadge */
     const _ERP_STATUS_FB = { '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' };
     /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('ERP_STATUS', s, _ERP_STATUS_FB[s] || 'badge-gray');
+    const fnStatusBadge = s => coUtil.cofCodeBadge('ERP_VOUCHER_STATUS_KR', s, _ERP_STATUS_FB[s] || 'badge-gray');
 
     /* fmtW — 포맷 W */
     const fmtW = coUtil.cofWon;

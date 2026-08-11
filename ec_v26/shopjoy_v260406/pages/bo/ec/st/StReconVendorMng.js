@@ -11,7 +11,6 @@ window.StReconVendorMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: '', dateRangeEnd: ''});
     const codes = reactive({
-      vendor_settle_statuses: [],
       recon_results: [],
       date_range_opts: [],
     });
@@ -55,9 +54,8 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['VENDOR_SETTLE_STATUS', 'RECON_RESULT_VENDOR', 'DATE_RANGE_OPT'], {compNm: 'StReconVendorMng'});
+      await codeStore.saLoadCodes(['RECON_RESULT_VENDOR', 'DATE_RANGE_OPT'], {compNm: 'StReconVendorMng'});
       try {
-        codes.vendor_settle_statuses = codeStore.sgGetGrpCodes('VENDOR_SETTLE_STATUS');
         codes.recon_results = codeStore.sgGetGrpCodes('RECON_RESULT_VENDOR');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       } catch (err) {

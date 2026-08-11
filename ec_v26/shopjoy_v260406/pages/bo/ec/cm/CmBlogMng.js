@@ -16,7 +16,6 @@ window.CmBlogMng = {
       loading: false, error: null, selectedId: null, sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({                       // 공통코드 / 정적 옵션
-      BLOG_DISPLAY_STATUS: [],
       OPEN_YN: [], NOTICE_YN: [], BLOG_TYPE: [],
     });
     const SORT_MAP = { nm: { asc: 'blogTitle asc', desc: 'blogTitle desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -366,8 +365,7 @@ window.CmBlogMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['BLOG_DISPLAY_STATUS', 'BLOG_TYPE', 'OPEN_YN', 'NOTICE_YN'], {compNm: 'CmBlogMng'});
-      codes.BLOG_DISPLAY_STATUS = codeStore.sgGetGrpCodes('BLOG_DISPLAY_STATUS');
+      await codeStore.saLoadCodes(['BLOG_TYPE', 'OPEN_YN', 'NOTICE_YN'], {compNm: 'CmBlogMng'});
       codes.BLOG_TYPE  = codeStore.sgGetGrpCodes('BLOG_TYPE');
       codes.OPEN_YN    = codeStore.sgGetGrpCodes('OPEN_YN');
       codes.NOTICE_YN  = codeStore.sgGetGrpCodes('NOTICE_YN');

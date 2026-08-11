@@ -7,6 +7,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -14,8 +15,13 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEvent;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEvent;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEventProd;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmEventRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -32,6 +38,11 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmEvent.regDate,
         "upd_date", pmEvent.updDate
     );
+    // EXISTS 서브쿼리용 별칭 (업체/담당MD 필터 — pm_event_prod → pd_prod → sy_vendor/sy_user)
+    private static final QPmEventProd eventProdEx = new QPmEventProd("event_prod_ex");
+    private static final QPdProd      pProdEx     = new QPdProd("p_prod_ex");
+    private static final QSyVendor    syVendorEx  = new QSyVendor("sy_vendor_ex");
+    private static final QSyUser      syUserEx    = new QSyUser("sy_user_ex");
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
@@ -86,6 +97,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                     QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    andVendorMd(search),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -114,6 +126,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 QdslUtil.strEq(pmEvent.useYn, search.getUseYn()),
                 QdslUtil.strEq(pmEvent.eventStatusCd, search.getEventStatusCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                andVendorMd(search),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
@@ -138,6 +151,44 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         BasePage<PmEventDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
+    /** andVendorMd — 대상상품/업체/담당MD 필터. pm_event_prod(event_id↔prod_id) 를 거쳐
+     *  pd_prod 의 vendor_id/md_user_id 까지 조인해야 하는 2단 EXISTS.
+     *  ⚠ memberId 는 추가하지 않았다 — 이벤트 참여자를 회원별로 기록하는 테이블이
+     *     없어(PmEventItem 은 target_type_cd/target_id 범용 폴리모픽, 회원 전용 아님)
+     *     안전하게 연결할 근거 컬럼이 없다. */
+    private BooleanExpression andVendorMd(PmEventDto.Request search) {
+        boolean needProd   = StringUtils.hasText(search.getProdId()) || StringUtils.hasText(search.getProdNm());
+        boolean needVendor = StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm());
+        boolean needMd     = StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm());
+        if (!needProd && !needVendor && !needMd) return null;
+
+        com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(eventProdEx)
+            .where(eventProdEx.eventId.eq(pmEvent.eventId));
+
+        if (needProd) {
+            sub = sub.where(
+                QdslUtil.strEq(eventProdEx.prodId, search.getProdId()),
+                StringUtils.hasText(search.getProdId()) ? null
+                    : JPAExpressions.selectOne().from(pProdEx)
+                          .where(pProdEx.prodId.eq(eventProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
+        }
+        if (needVendor) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))
+                .where(pProdEx.prodId.eq(eventProdEx.prodId),
+                       QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
+                       StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
+                .exists());
+        }
+        if (needMd) {
+            sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syUserEx).on(syUserEx.userId.eq(pProdEx.mdUserId))
+                .where(pProdEx.prodId.eq(eventProdEx.prodId),
+                       QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
+                       StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
+                .exists());
+        }
+        return sub.exists();
+    }
+
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {

@@ -70,8 +70,6 @@ window.PmEventMng = {
       // 페이지 번호 클릭
       } else if (cmd === 'events-pager-setPage') {
         return setPage(param);
-      } else if (cmd === 'memberModal-open') { modals.isMemberPick = true;
-      } else if (cmd === 'searchParam-memberClear') { searchParam.memberId = ''; searchParam.memberNm = '';
       } else if (cmd === 'mdModal-open') { modals.isMdPick = true;
       } else if (cmd === 'searchParam-mdClear') { searchParam.mdUserId = ''; searchParam.mdUserNm = '';
       } else if (cmd === 'prodModal-open') { modals.isProdPick = true;
@@ -116,10 +114,7 @@ window.PmEventMng = {
 
     /* fnCallbackModal — 모달 callback dispatch */
     const fnCallbackModal = (popCmd, param, result) => {
-      if (popCmd === 'cmPopup-member-pick') {
-        searchParam.memberId = result ? result.memberId || '' : ''; searchParam.memberNm = result ? result.memberNm || '' : '';
-        modals.isMemberPick = false;
-      } else if (popCmd === 'cmPopup-userMd-pick') {
+      if (popCmd === 'cmPopup-userMd-pick') {
         searchParam.mdUserId = result ? result.userId || '' : ''; searchParam.mdUserNm = result ? result.userNm || '' : '';
         modals.isMdPick = false;
       } else if (popCmd === 'cmPopup-prod-pick') {
@@ -132,12 +127,12 @@ window.PmEventMng = {
     };
 
     const searchParam = reactive({ searchValue: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '', eventStatusCd: '',
-      memberId: '', memberNm: '', mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
+      mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
        기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
     const searchParamInit = {};
-    const modals = reactive({ isMemberPick: false, isMdPick: false, isProdPick: false, isVendorPick: false });
+    const modals = reactive({ isMdPick: false, isProdPick: false, isVendorPick: false });
     /* 이벤트 fnLoadCodes */
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
@@ -299,8 +294,6 @@ window.PmEventMng = {
     columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '이벤트 제목', placeholder: '이벤트 제목 검색' },
       { key: 'eventStatusCd', type: 'select', label: '상태', options: () => codes.event_statuses, nullLabel: '상태 전체' },
-      { key: 'memberId', label: '회원', type: 'pick', display: (p) => p.memberNm, placeholder: '회원 선택',
-        onOpen: () => handleBtnAction('memberModal-open'), onClear: () => handleBtnAction('searchParam-memberClear') },
       { key: 'mdUserId', label: '담당MD', type: 'pick', display: (p) => p.mdUserNm, placeholder: 'MD 선택',
         onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('searchParam-mdClear') },
       { key: 'prodId', label: '상품', type: 'pick', display: (p) => p.prodNm, placeholder: '상품 선택',
@@ -454,7 +447,6 @@ window.PmEventMng = {
     :active="detailPanel.active"
     :reload-trigger="detailPanel.reloadTrigger"
     />
-  <bo-cm-popup-modal v-if="modals.isMemberPick" popup-cmd="cmPopup-member-pick" popup-code="member" :on-callback="fnCallbackModal" @close="modals.isMemberPick = false" />
   <bo-cm-popup-modal v-if="modals.isMdPick" popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :on-callback="fnCallbackModal" @close="modals.isMdPick = false" />
   <bo-cm-popup-modal v-if="modals.isProdPick" popup-cmd="cmPopup-prod-pick" popup-code="prod" :on-callback="fnCallbackModal" @close="modals.isProdPick = false" />
   <bo-cm-popup-modal v-if="modals.isVendorPick" popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :on-callback="fnCallbackModal" @close="modals.isVendorPick = false" />

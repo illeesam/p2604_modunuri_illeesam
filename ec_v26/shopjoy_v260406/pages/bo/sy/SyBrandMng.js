@@ -15,7 +15,7 @@ window.SyBrandMng = {
     const brands  = reactive([]);                  // 브랜드 목록 (원본)
     const brandCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, selectedPath: null, focusedIdx: null, dragSrc: null });
-    const codes   = reactive({ brand_status: [], use_yn: [], date_range_opts: [] });
+    const codes   = reactive({ use_yn: [], date_range_opts: [] });
 
     // 현재 환경이 local인지 확인
     const cfIsLocalMode = computed(() => {
@@ -152,8 +152,7 @@ window.SyBrandMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['BRAND_STATUS', 'USE_YN', 'DATE_RANGE_OPT'], {compNm: 'SyBrandMng'});
-      codes.brand_status = codeStore.sgGetGrpCodes('BRAND_STATUS');
+      await codeStore.saLoadCodes(['USE_YN', 'DATE_RANGE_OPT'], {compNm: 'SyBrandMng'});
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
     };

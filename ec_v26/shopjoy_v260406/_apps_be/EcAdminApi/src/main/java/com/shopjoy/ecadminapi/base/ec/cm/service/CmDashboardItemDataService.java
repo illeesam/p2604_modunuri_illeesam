@@ -53,12 +53,12 @@ public class CmDashboardItemDataService {
         /* 기간 서버 필터 — startYmd/endYmd (YYYYMMDD) BETWEEN */
         if (dashboardItemId != null && startYmd != null && endYmd != null) {
             return cmDashboardItemDataRepository
-                .findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
+                .findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscDashboardItemDataIdAsc(
                     dashboardItemId, startYmd, endYmd);
         }
         if (dashboardItemId != null) {
             return cmDashboardItemDataRepository
-                .findByDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(dashboardItemId);
+                .findByDashboardItemIdOrderByYyyymmddAscDashboardItemDataIdAsc(dashboardItemId);
         }
         return cmDashboardItemDataRepository.findAll();
     }

@@ -82,6 +82,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                 .where(
                     QdslUtil.strEq(pmCache.cacheId, search.getCacheId()),
                     QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()),
+                    QdslUtil.strEq(pmCache.memberId, search.getMemberId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -108,6 +109,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmCache.cacheId, search.getCacheId()),
                 QdslUtil.strEq(pmCache.cacheTypeCd, search.getCacheTypeCd()),
+                QdslUtil.strEq(pmCache.memberId, search.getMemberId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };

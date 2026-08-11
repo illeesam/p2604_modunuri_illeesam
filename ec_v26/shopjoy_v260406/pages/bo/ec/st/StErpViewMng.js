@@ -11,7 +11,7 @@ window.StErpViewMng = {
     const { reactive, onMounted } = Vue;
     const { showToast, showConfirm } = window.boApp;
     const uiState = reactive({ loading: false, error: null, dateRangeType: 'voucher_date', dateRange: '이번달', dateRangeStart: '', dateRangeEnd: '' });
-    const codes = reactive({ erp_statuses: [], erp_voucher_types: [], erp_voucher_statuses: [], date_range_opts: [] });
+    const codes = reactive({ erp_voucher_types: [], erp_voucher_statuses: [], date_range_opts: [] });
     const slips = reactive([]);
 
     const searchParam = reactive({ searchType: '', searchValue: '', erpVoucherTypeCd: '', erpVoucherStatusCd: '' });
@@ -62,8 +62,7 @@ window.StErpViewMng = {
     const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await s.saLoadCodes(['ERP_STATUS', 'ERP_VOUCHER_TYPE_KR', 'ERP_VOUCHER_STATUS_KR', 'DATE_RANGE_OPT'], {compNm: 'StErpViewMng'});
-      codes.erp_statuses         = s.sgGetGrpCodes('ERP_STATUS');
+      await s.saLoadCodes(['ERP_VOUCHER_TYPE_KR', 'ERP_VOUCHER_STATUS_KR', 'DATE_RANGE_OPT'], {compNm: 'StErpViewMng'});
       codes.erp_voucher_types    = s.sgGetGrpCodes('ERP_VOUCHER_TYPE_KR');
       codes.erp_voucher_statuses = s.sgGetGrpCodes('ERP_VOUCHER_STATUS_KR');
       codes.date_range_opts      = s.sgGetGrpCodes('DATE_RANGE_OPT');
@@ -140,7 +139,7 @@ window.StErpViewMng = {
       { key: 'description',label: '적요',
         cellStyle: 'color:#555;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
       { key: 'erpRef',     label: 'ERP전표번호', cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
-      { key: 'sendStatus', label: '전송상태', badge: (row) => coUtil.cofCodeBadge('ERP_STATUS', row.sendStatus, _STATUS_FB[row.sendStatus] || 'badge-gray') },
+      { key: 'sendStatus', label: '전송상태', badge: (row) => coUtil.cofCodeBadge('ERP_VOUCHER_STATUS_KR', row.sendStatus, _STATUS_FB[row.sendStatus] || 'badge-gray') },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

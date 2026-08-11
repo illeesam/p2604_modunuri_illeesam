@@ -22,6 +22,7 @@ public class OdOrderItemDto {
         @Size(max = 30) private String orderItemStatusCd;  // 품목상태 단건 필터 (strEq)
         private List<String> orderItemStatusCds;           // 품목상태 다중 필터 (strIn, BO multiCheck)
         @Size(max = 1)  private String claimYn;            // 클레임여부 필터 Y/N
+        @Size(max = 30) private String dlivCourierCd;       // 배송 택배사 필터 (strEq, 항목 자체 컬럼)
         @Size(max = 21)  private String memberId;            // 회원 ID 필터 (EXISTS eq via od_order)
         @Size(max = 200) private String memberNm;           // 회원명 필터 (EXISTS LIKE via mb_member)
         @Size(max = 21)  private String vendorId;           // 판매업체 ID 필터 (EXISTS eq via pd_prod→sy_vendor)

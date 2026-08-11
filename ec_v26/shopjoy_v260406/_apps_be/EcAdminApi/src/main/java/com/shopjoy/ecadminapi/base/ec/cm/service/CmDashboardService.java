@@ -117,11 +117,11 @@ public class CmDashboardService {
     private List<CmDashboardItemData> queryRows(String siteId, String itemId, String startYmd, String endYmd) {
         if (startYmd != null && endYmd != null) {
             return cmDashboardItemDataRepository
-                .findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
+                .findByDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscDashboardItemDataIdAsc(
                     itemId, startYmd, endYmd);
         }
         return cmDashboardItemDataRepository
-            .findByDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(itemId);
+            .findByDashboardItemIdOrderByYyyymmddAscDashboardItemDataIdAsc(itemId);
     }
 
     /** optionJson 에서 _srcItemId 문자열 추출 (없거나 파싱 실패 시 null) */

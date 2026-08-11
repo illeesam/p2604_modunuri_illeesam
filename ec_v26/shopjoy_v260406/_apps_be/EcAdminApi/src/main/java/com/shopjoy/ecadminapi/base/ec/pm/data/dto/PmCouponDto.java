@@ -21,6 +21,12 @@ public class PmCouponDto {
         private List<String> couponIds;                // PK 다건 IN
         @Size(max = 21) private String memberId;
         @Size(max = 20) private String couponStatusCd; // 상태 (코드: COUPON_STATUS)
+        @Size(max = 21)  private String prodId;         // 대상상품 ID 필터 (EXISTS eq via pm_coupon_prod)
+        @Size(max = 200) private String prodNm;         // 대상상품명 필터 (EXISTS LIKE via pm_coupon_prod→pd_prod)
+        @Size(max = 21)  private String vendorId;       // 업체 ID 필터 (EXISTS eq via pm_coupon_prod→pd_prod)
+        @Size(max = 200) private String vendorNm;       // 업체명 필터 (EXISTS LIKE via pm_coupon_prod→pd_prod→sy_vendor)
+        @Size(max = 21)  private String mdUserId;       // 담당MD ID 필터 (EXISTS eq via pm_coupon_prod→pd_prod)
+        @Size(max = 200) private String mdUserNm;       // 담당MD명 필터 (EXISTS LIKE via pm_coupon_prod→pd_prod→sy_user)
     }
 
     @Getter @Setter @NoArgsConstructor

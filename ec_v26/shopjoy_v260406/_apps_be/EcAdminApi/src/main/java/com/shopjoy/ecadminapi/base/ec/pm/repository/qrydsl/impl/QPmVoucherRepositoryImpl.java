@@ -11,14 +11,18 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmVoucherDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmVoucher;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmVoucher;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmVoucherIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmVoucherRepository;
+import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -35,6 +39,9 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
     private static final QSySite    sySite  = QSySite.sySite;
     private static final QVwSyCode    cdVt = new QVwSyCode("cd_vt");
     private static final QVwSyCode    cdVs = new QVwSyCode("cd_vs");
+    // EXISTS 서브쿼리용 별칭 (발급회원 필터 — pm_voucher_issue → mb_member)
+    private static final QPmVoucherIssue voucherIssueEx = new QPmVoucherIssue("voucher_issue_ex");
+    private static final QMbMember       mbMemberEx     = new QMbMember("mb_member_ex");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmVoucher.regDate,
         "upd_date", pmVoucher.updDate
     );
@@ -85,6 +92,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                     QdslUtil.strEq(pmVoucher.voucherStatusCd, search.getVoucherStatusCd()),
                     QdslUtil.strEq(pmVoucher.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                    andMember(search),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -112,6 +120,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                 QdslUtil.strEq(pmVoucher.voucherStatusCd, search.getVoucherStatusCd()),
                 QdslUtil.strEq(pmVoucher.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                andMember(search),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
@@ -135,6 +144,20 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
 
         BasePage<PmVoucherDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    /** andMember — 발급회원 필터. pm_voucher_issue(voucher_id↔member_id) 에 발급 이력이
+     *  있는 회원만 남긴다. pm_voucher 자체는 상품/업체/담당MD 와 연결된 컬럼·브릿지 테이블이
+     *  없어(발급만 회원 단위로 추적) 그 3개는 추가하지 않았다 — 프론트에서도 제거했다. */
+    private BooleanExpression andMember(PmVoucherDto.Request search) {
+        if (!StringUtils.hasText(search.getMemberId()) && !StringUtils.hasText(search.getMemberNm())) return null;
+        return JPAExpressions.selectOne().from(voucherIssueEx)
+            .where(voucherIssueEx.voucherId.eq(pmVoucher.voucherId),
+                   QdslUtil.strEq(voucherIssueEx.memberId, search.getMemberId()),
+                   StringUtils.hasText(search.getMemberId()) ? null
+                       : JPAExpressions.selectOne().from(mbMemberEx)
+                             .where(mbMemberEx.memberId.eq(voucherIssueEx.memberId), QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists())
+            .exists();
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */

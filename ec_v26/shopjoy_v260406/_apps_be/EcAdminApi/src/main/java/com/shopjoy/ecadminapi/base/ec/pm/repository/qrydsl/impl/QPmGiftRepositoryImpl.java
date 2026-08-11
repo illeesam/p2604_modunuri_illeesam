@@ -11,15 +11,21 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGift;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGift;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGiftIssue;
 import com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.QPmGiftRepository;
+import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -36,9 +42,14 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     private static final QPmGift  pmGift    = QPmGift.pmGift;
     private static final QPdProd  pdProd  = QPdProd.pdProd;
     private static final QSySite  sySite  = QSySite.sySite;
+    private static final QSyVendor syVendor = QSyVendor.syVendor;
+    private static final QSyUser   syUser   = QSyUser.syUser;
     private static final QVwSyCode  cdGt = new QVwSyCode("cd_gt");
     private static final QVwSyCode  cdGs = new QVwSyCode("cd_gs");
     private static final QVwSyCode  cdMg = new QVwSyCode("cd_mg");
+    // EXISTS 서브쿼리용 별칭 (발급회원 필터 — pm_gift_issue → mb_member)
+    private static final QPmGiftIssue giftIssueEx = new QPmGiftIssue("gift_issue_ex");
+    private static final QMbMember    mbMemberEx  = new QMbMember("mb_member_ex");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", pmGift.regDate,
         "upd_date", pmGift.updDate
     );
@@ -72,6 +83,8 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 ))
                 .from(pmGift)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmGift.prodId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
+                .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
                 .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE").and(cdGt.codeValue.eq(pmGift.giftTypeCd)))
                 .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS").and(cdGs.codeValue.eq(pmGift.giftStatusCd)))
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmGift.memGradeCd)));
@@ -99,6 +112,11 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                     QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
                     QdslUtil.strEq(pmGift.useYn, search.getUseYn()),
                     QdslUtil.strEq(pmGift.prodId, search.getProdId()),
+                    QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
+                    QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()),
+                    QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
+                    QdslUtil.strLike(syUser.userNm, search.getMdUserNm()),
+                    andMember(search),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -127,6 +145,14 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()),
                 QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
                 QdslUtil.strEq(pmGift.useYn, search.getUseYn()),
+                /* ⚠ prodId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
+                   — 페이지 조회 모드에서만 상품 필터가 무시되던 기존 버그. 같이 정정. */
+                QdslUtil.strEq(pmGift.prodId, search.getProdId()),
+                QdslUtil.strEq(pdProd.vendorId, search.getVendorId()),
+                QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()),
+                QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()),
+                QdslUtil.strLike(syUser.userNm, search.getMdUserNm()),
+                andMember(search),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -151,6 +177,19 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
         BasePage<PmGiftDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
+    }
+
+    /** andMember — 발급회원 필터. pm_gift_issue(gift_id↔member_id) 에 발급 이력이
+     *  있는 회원만 남긴다. */
+    private BooleanExpression andMember(PmGiftDto.Request search) {
+        if (!StringUtils.hasText(search.getMemberId()) && !StringUtils.hasText(search.getMemberNm())) return null;
+        return JPAExpressions.selectOne().from(giftIssueEx)
+            .where(giftIssueEx.giftId.eq(pmGift.giftId),
+                   QdslUtil.strEq(giftIssueEx.memberId, search.getMemberId()),
+                   StringUtils.hasText(search.getMemberId()) ? null
+                       : JPAExpressions.selectOne().from(mbMemberEx)
+                             .where(mbMemberEx.memberId.eq(giftIssueEx.memberId), QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists())
+            .exists();
     }
 
     /** 검색조건 빌드 — Mapper XML pmGiftCond 와 동일 */
