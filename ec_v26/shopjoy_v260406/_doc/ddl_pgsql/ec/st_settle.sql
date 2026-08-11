@@ -53,7 +53,5 @@ COMMENT ON COLUMN shopjoy_2604.st_settle.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.st_settle.upd_date IS '수정일';
 
 CREATE INDEX st_settle_ix01_settle_status_cd ON shopjoy_2604.st_settle USING btree (settle_status_cd);
-CREATE INDEX st_settle_ix_site_2 ON shopjoy_2604.st_settle USING btree (site_id, vendor_id);
 CREATE INDEX st_settle_ix02_settle_ym ON shopjoy_2604.st_settle USING btree (settle_ym);
-CREATE UNIQUE INDEX st_settle_uk_site ON shopjoy_2604.st_settle USING btree (site_id, vendor_id, settle_ym);
 CREATE INDEX st_settle_ix03_vendor_id ON shopjoy_2604.st_settle USING btree (vendor_id);

@@ -17,7 +17,7 @@ public class PmCouponIssueDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
-        @Size(max = 21) private String issueId;
+        @Size(max = 21) private String couponIssueId;
         @Size(max = 21) private String memberId;
         private List<String> couponIds;          // 쿠폰 ID IN — prodId 기반 사전 필터용
         @Size(max = 21) private String prodId;   // 상품 기준 필터 — pm_coupon_prod 조회 후 couponIds 주입
@@ -25,7 +25,7 @@ public class PmCouponIssueDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String issueId;
+        private String couponIssueId;
         private String couponId;
         private String memberId;
         private LocalDateTime issueDate;

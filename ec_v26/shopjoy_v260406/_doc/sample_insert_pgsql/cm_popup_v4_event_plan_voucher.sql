@@ -1,5 +1,5 @@
 INSERT INTO shopjoy_2604.cm_popup
- (popup_id, site_id, popup_code, popup_nm, popup_pattern, entity_nm, id_field, nm_field,
+ (popup_id, reg_site_id, popup_code, popup_nm, popup_pattern, entity_nm, id_field, nm_field,
   parent_field, tree_entity_nm, tree_id_field, tree_nm_field, tree_link_field,
   site_field, order_by, base_where, multi_yn, paging_yn, page_size, modal_width, use_yn, sort_ord, reg_by, reg_date)
 VALUES
@@ -12,7 +12,7 @@ VALUES
 ON CONFLICT (popup_id) DO NOTHING;
 
 INSERT INTO shopjoy_2604.cm_popup_item
- (popup_item_id, site_id, popup_id, field_nm, field_label, field_type_cd, code_grp,
+ (popup_item_id, reg_site_id, popup_id, field_nm, field_label, field_type_cd, code_grp,
   search_yn, search_type_cd, list_yn, tree_label_yn, col_width, col_align, link_yn, sort_ord, use_yn, reg_by, reg_date)
 VALUES
  ('PPI000000000000241','2604010000000001','POP0000000000000024','eventNm','이벤트명','TEXT',NULL,'Y','LIKE','Y','N',NULL,NULL,'Y',10,'Y','SYSTEM',CURRENT_TIMESTAMP),

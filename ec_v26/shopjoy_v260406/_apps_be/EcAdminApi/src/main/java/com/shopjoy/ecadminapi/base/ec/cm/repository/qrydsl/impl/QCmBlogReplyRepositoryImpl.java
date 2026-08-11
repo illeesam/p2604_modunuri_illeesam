@@ -41,7 +41,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     private JPAQuery<CmBlogReplyDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogReplyDto.Item.class,
-                        cmBlogReply.commentId,             // 댓글ID (PK)
+                        cmBlogReply.blogReplyId,             // 댓글ID (PK)
                         cmBlogReply.blogId,                 // 블로그ID
                         cmBlogReply.parentCommentId,         // 대댓글 부모ID
                         cmBlogReply.writerId,                // 작성자ID
@@ -59,10 +59,10 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
     /** 단건 조회 */
     @Override
-    public Optional<CmBlogReplyDto.Item> selectById(String commentId) {
+    public Optional<CmBlogReplyDto.Item> selectById(String blogReplyId) {
         CmBlogReplyDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(cmBlogReply.commentId.eq(commentId))
+                .where(cmBlogReply.blogReplyId.eq(blogReplyId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -75,7 +75,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()),
-                QdslUtil.strEq(cmBlogReply.commentId, search.getCommentId()),
+                QdslUtil.strEq(cmBlogReply.blogReplyId, search.getBlogReplyId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
@@ -102,7 +102,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(cmBlogReply.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogReply.blogId, search.getBlogId()),
-                QdslUtil.strEq(cmBlogReply.commentId, search.getCommentId()),
+                QdslUtil.strEq(cmBlogReply.blogReplyId, search.getBlogReplyId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -136,7 +136,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("blogCommentContent", cmBlogReply.blogCommentContent),
             QdslUtil.FieldDef.like("blogId", cmBlogReply.blogId),
-            QdslUtil.FieldDef.like("commentId", cmBlogReply.commentId),
+            QdslUtil.FieldDef.like("blogReplyId", cmBlogReply.blogReplyId),
             QdslUtil.FieldDef.like("commentStatusCd", cmBlogReply.commentStatusCd),
             QdslUtil.FieldDef.like("commentStatusCdBefore", cmBlogReply.commentStatusCdBefore),
             QdslUtil.FieldDef.like("parentCommentId", cmBlogReply.parentCommentId),
@@ -147,17 +147,17 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
-            Map.of("commentId", cmBlogReply.commentId,
+            Map.of("blogReplyId", cmBlogReply.blogReplyId,
                    "writerNm",  cmBlogReply.writerNm,
                    "regDate",   cmBlogReply.regDate),
             new OrderSpecifier<>(Order.DESC, cmBlogReply.regDate),
-            new OrderSpecifier<>(Order.ASC,  cmBlogReply.commentId));
+            new OrderSpecifier<>(Order.ASC,  cmBlogReply.blogReplyId));
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */
     @Override
     public int updateSelective(CmBlogReply entity) {
-        if (entity.getCommentId() == null) return 0;
+        if (entity.getBlogReplyId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(cmBlogReply);
         boolean hasAny = false;
@@ -175,7 +175,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
         if (!hasAny) return 0;
 
-        long affected = update.where(cmBlogReply.commentId.eq(entity.getCommentId())).execute();
+        long affected = update.where(cmBlogReply.blogReplyId.eq(entity.getBlogReplyId())).execute();
         return (int) affected;
     }
 }

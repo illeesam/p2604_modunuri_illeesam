@@ -16,7 +16,8 @@ CREATE TABLE shopjoy_2604.sy_role (
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
     upd_date       TIMESTAMP   ,
-    path_id        VARCHAR(21) 
+    path_id        VARCHAR(21) ,
+    CONSTRAINT sy_role_uk_role_code UNIQUE (role_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_role IS '역할 (권한그룹)';
@@ -35,6 +36,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_role.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_role.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_role.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_role.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
-
-CREATE UNIQUE INDEX sy_role_uk_role_code ON shopjoy_2604.sy_role USING btree (role_code);
 CREATE INDEX sy_role_ix01_parent_role_id ON shopjoy_2604.sy_role USING btree (parent_role_id);

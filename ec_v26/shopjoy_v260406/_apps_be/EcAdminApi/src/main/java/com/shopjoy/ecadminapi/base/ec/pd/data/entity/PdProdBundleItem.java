@@ -21,8 +21,8 @@ public class PdProdBundleItem extends BaseEntity {
 
     @Id
     @Comment("묶음구성ID (YYMMDDhhmmss+rand4)")
-    @Column(name = "bundle_item_id", length = 21, nullable = false)
-    private String bundleItemId;
+    @Column(name = "prod_bundle_item_id", length = 21, nullable = false)
+    private String prodBundleItemId;
 
 
     @Comment("묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)")

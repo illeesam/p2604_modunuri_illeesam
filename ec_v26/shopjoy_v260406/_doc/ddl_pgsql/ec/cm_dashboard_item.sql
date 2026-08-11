@@ -49,11 +49,8 @@ COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.option_json        IS 'ECharts 
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.realtime_yn        IS '실시간 차트 여부 (Y: 폴링/스트리밍, N: 정적)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.realtime_json      IS '실시간 차트 설정 JSON {intervalMs,maxPoints,apiUrl,thresholds:[{value,color,label}],brushEnabled,smoothing}';
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_cm_dashboard_item_key
     ON shopjoy_2604.cm_dashboard_item (site_id, ui_nm, item_key);
-CREATE INDEX IF NOT EXISTS idx_cm_dashboard_item_ui_nm
     ON shopjoy_2604.cm_dashboard_item (ui_nm);
-CREATE INDEX IF NOT EXISTS idx_cm_dashboard_item_site_id
     ON shopjoy_2604.cm_dashboard_item (site_id);
 CREATE UNIQUE INDEX cm_dashboard_item_ix01_dashboard_id_item_key_x2 ON shopjoy_2604.cm_dashboard_item USING btree (dashboard_id, item_key);
 CREATE INDEX cm_dashboard_item_ix02_data_source_cd ON shopjoy_2604.cm_dashboard_item USING btree (data_source_cd);

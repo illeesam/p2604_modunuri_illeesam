@@ -14,14 +14,14 @@ public class PmEventBenefitDto {
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
-        @Size(max = 21) private String benefitId;
+        @Size(max = 21) private String eventBenefitId;
         @Size(max = 21) private String eventId;         // 상위 FK 필터
         private List<String> eventIds;                 // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String benefitId;
+        private String eventBenefitId;
         private String eventId;
         private String benefitNm;
         private String benefitTypeCd;

@@ -45,6 +45,5 @@ COMMENT ON COLUMN shopjoy_2604.od_refund_method.upd_date IS '수정일시';
 CREATE INDEX od_refund_method_ix01_order_id ON shopjoy_2604.od_refund_method USING btree (order_id);
 CREATE INDEX od_refund_method_ix02_pay_id ON shopjoy_2604.od_refund_method USING btree (pay_id) WHERE (pay_id IS NOT NULL);
 CREATE INDEX od_refund_method_ix04_refund_id_refund_priority_x2 ON shopjoy_2604.od_refund_method USING btree (refund_id, refund_priority);
-CREATE INDEX od_refund_method_ix_refund_2 ON shopjoy_2604.od_refund_method USING btree (refund_id);
 CREATE INDEX od_refund_method_ix05_refund_status_cd ON shopjoy_2604.od_refund_method USING btree (refund_status_cd);
 CREATE INDEX od_refund_method_ix03_pg_refund_id ON shopjoy_2604.od_refund_method USING btree (pg_refund_id);

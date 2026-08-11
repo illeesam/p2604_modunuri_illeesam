@@ -11,7 +11,8 @@ CREATE TABLE shopjoy_2604.sy_i18n_msg (
     upd_by      VARCHAR(30),
     upd_date    TIMESTAMP  ,
     reg_site_id     VARCHAR(21) NOT NULL,
-    CONSTRAINT sy_i18n_msg_fk_i18n_id FOREIGN KEY (i18n_id) REFERENCES shopjoy_2604.sy_i18n (i18n_id)
+    CONSTRAINT sy_i18n_msg_fk_i18n_id FOREIGN KEY (i18n_id) REFERENCES shopjoy_2604.sy_i18n (i18n_id),
+    CONSTRAINT sy_i18n_msg_uk_i18n_id_lang_cd_x2 UNIQUE (i18n_id, lang_cd)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_i18n_msg IS '다국어 메시지 (언어별)';
@@ -24,6 +25,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_i18n_msg.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_i18n_msg.upd_by IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_i18n_msg.upd_date IS '수정일';
 
-CREATE INDEX sy_i18n_msg_ix_i18n ON shopjoy_2604.sy_i18n_msg USING btree (i18n_id);
 CREATE INDEX sy_i18n_msg_ix01_lang_cd ON shopjoy_2604.sy_i18n_msg USING btree (lang_cd);
-CREATE UNIQUE INDEX sy_i18n_msg_uk_i18n_id_lang_cd_x2 ON shopjoy_2604.sy_i18n_msg USING btree (i18n_id, lang_cd);

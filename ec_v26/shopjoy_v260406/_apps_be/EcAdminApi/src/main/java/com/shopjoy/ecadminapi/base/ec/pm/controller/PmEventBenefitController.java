@@ -47,14 +47,14 @@ public class PmEventBenefitController {
     /* 이벤트 혜택 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmEventBenefit>> save(@PathVariable("id") String id, @RequestBody PmEventBenefit entity) {
-        entity.setBenefitId(id);
+        entity.setEventBenefitId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 이벤트 혜택 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<PmEventBenefit>> updateSelective(@PathVariable("id") String id, @RequestBody PmEventBenefit entity) {
-        entity.setBenefitId(id);
+        entity.setEventBenefitId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

@@ -171,12 +171,14 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       if (v) { form.vendorNm = v.vendorNm; }
       const ok = await showConfirm('저장', '기타조정을 저장하시겠습니까?');
       if (!ok) { return; }
-      if (uiState.isNew) { form.adjId = 'ETCADJ-' + String(etcAdjs.length + 1).padStart(3, '0'); etcAdjs.unshift({ ...form }); }
-      else { const idx = etcAdjs.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(etcAdjs[idx], { ...form }); }
-      closeForm();
+      /* ⚠ StSettleAdjMng 와 동일 — API 호출 전 목록 갱신 + 폼 닫기는 실패 시 롤백되지 않아
+         저장된 것처럼 보였다. 신규 ID 도 클라이언트 채번이라 서버 ID 와 어긋났다.
+         → 성공 이후에만 폼을 닫고 서버 기준으로 재조회한다. */
       try {
-        const res = await (uiState.isNew ? boApiSvc.stSettleEtcAdj.create({ ...form }, '정산기타조정', '저장') : boApiSvc.stSettleEtcAdj.update(form.adjId, { ...form }, '정산기타조정', '저장'));
+        await (uiState.isNew ? boApiSvc.stSettleEtcAdj.create({ ...form }, '정산기타조정', '저장') : boApiSvc.stSettleEtcAdj.update(form.adjId, { ...form }, '정산기타조정', '저장'));
         if (showToast) { showToast('저장되었습니다.', 'success'); }
+        closeForm();
+        await handleSearchData();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

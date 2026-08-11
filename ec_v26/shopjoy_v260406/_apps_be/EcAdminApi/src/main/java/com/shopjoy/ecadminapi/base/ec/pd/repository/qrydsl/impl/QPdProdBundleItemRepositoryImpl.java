@@ -46,7 +46,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     private JPAQuery<PdProdBundleItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdBundleItemDto.Item.class,
-                        pdProdBundleItem.bundleItemId,   // 묶음구성ID (PK, YYMMDDhhmmss+rand4)
+                        pdProdBundleItem.prodBundleItemId,   // 묶음구성ID (PK, YYMMDDhhmmss+rand4)
                         pdProdBundleItem.bundleProdId,     // 묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)
                         pdProdBundleItem.itemProdId,       // 구성품 상품ID (pd_prod.prod_id) — 독립 판매 상품
                         pdProdBundleItem.itemSkuId,        // 구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)
@@ -63,9 +63,9 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
 
     /* 묶음상품 구성 키조회 */
     @Override
-    public Optional<PdProdBundleItemDto.Item> selectById(String bundleItemId) {
+    public Optional<PdProdBundleItemDto.Item> selectById(String prodBundleItemId) {
         PdProdBundleItemDto.Item dto = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdBundleItem.bundleItemId.eq(bundleItemId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdBundleItem.prodBundleItemId.eq(prodBundleItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -78,7 +78,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         JPAQuery<PdProdBundleItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdProdBundleItem.bundleItemId, search.getBundleItemId()),
+                    QdslUtil.strEq(pdProdBundleItem.prodBundleItemId, search.getProdBundleItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -103,7 +103,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdProdBundleItem.bundleItemId, search.getBundleItemId()),
+                QdslUtil.strEq(pdProdBundleItem.prodBundleItemId, search.getProdBundleItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -132,7 +132,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("bundleItemId", pdProdBundleItem.bundleItemId),
+            QdslUtil.FieldDef.like("prodBundleItemId", pdProdBundleItem.prodBundleItemId),
             QdslUtil.FieldDef.like("bundleProdId", pdProdBundleItem.bundleProdId),
             QdslUtil.FieldDef.like("itemProdId", pdProdBundleItem.itemProdId),
             QdslUtil.FieldDef.like("itemSkuId", pdProdBundleItem.itemSkuId),
@@ -146,19 +146,19 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
      */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
-            Map.of("bundleItemId", pdProdBundleItem.bundleItemId,
+            Map.of("prodBundleItemId", pdProdBundleItem.prodBundleItemId,
                    "regDate", pdProdBundleItem.regDate,
                    "sortOrd", pdProdBundleItem.sortOrd),
         new OrderSpecifier<>(Order.ASC, pdProdBundleItem.sortOrd),
         new OrderSpecifier<>(Order.ASC, pdProdBundleItem.regDate),
-        new OrderSpecifier<>(Order.ASC, pdProdBundleItem.bundleItemId));
+        new OrderSpecifier<>(Order.ASC, pdProdBundleItem.prodBundleItemId));
     }
 
     /* 묶음상품 구성 수정 */
 
     @Override
     public int updateSelective(PdProdBundleItem entity) {
-        if (entity.getBundleItemId() == null) return 0;
+        if (entity.getProdBundleItemId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(pdProdBundleItem);
         boolean hasAny = false;
@@ -176,7 +176,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
 
         if (!hasAny) return 0;
 
-        long affected = update.where(pdProdBundleItem.bundleItemId.eq(entity.getBundleItemId())).execute();
+        long affected = update.where(pdProdBundleItem.prodBundleItemId.eq(entity.getProdBundleItemId())).execute();
         return (int) affected;
     }
 }

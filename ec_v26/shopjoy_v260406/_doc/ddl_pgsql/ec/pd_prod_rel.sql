@@ -12,7 +12,8 @@ CREATE TABLE shopjoy_2604.pd_prod_rel (
     reg_date         TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30),
     upd_date         TIMESTAMP  ,
-    reg_site_id          VARCHAR(21) NOT NULL
+    reg_site_id          VARCHAR(21) NOT NULL,
+    CONSTRAINT pd_prod_rel_uk_prod_id_rel_prod_id_x3 UNIQUE (prod_id, rel_prod_id, prod_rel_type_cd)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_rel IS '상품 연관 관계 (연관상품/코디상품)';
@@ -29,4 +30,3 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_rel.upd_date IS '수정일';
 
 CREATE INDEX pd_prod_rel_ix01_prod_id_prod_rel_type_cd_x3 ON shopjoy_2604.pd_prod_rel USING btree (prod_id, prod_rel_type_cd, sort_ord);
 CREATE INDEX pd_prod_rel_ix02_rel_prod_id ON shopjoy_2604.pd_prod_rel USING btree (rel_prod_id);
-CREATE UNIQUE INDEX pd_prod_rel_uk_prod_id_rel_prod_id_x3 ON shopjoy_2604.pd_prod_rel USING btree (prod_id, rel_prod_id, prod_rel_type_cd);

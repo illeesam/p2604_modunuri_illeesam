@@ -15,12 +15,12 @@ public class PdProdBundleItemDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
-        @Size(max = 21) private String bundleItemId;
+        @Size(max = 21) private String prodBundleItemId;
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String bundleItemId;
+        private String prodBundleItemId;
         private String bundleProdId;
         private String itemProdId;
         private String itemSkuId;

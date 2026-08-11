@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface QCmBlogReplyRepository {
 
     /** 단건 조회 */
-    Optional<CmBlogReplyDto.Item> selectById(String commentId);
+    Optional<CmBlogReplyDto.Item> selectById(String blogReplyId);
 
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     List<CmBlogReplyDto.Item> selectList(CmBlogReplyDto.Request search);

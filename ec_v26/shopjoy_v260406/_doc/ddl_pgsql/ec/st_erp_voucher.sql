@@ -47,6 +47,5 @@ COMMENT ON COLUMN shopjoy_2604.st_erp_voucher.upd_date IS '수정일';
 CREATE INDEX st_erp_voucher_ix01_erp_voucher_no ON shopjoy_2604.st_erp_voucher USING btree (erp_voucher_no);
 CREATE INDEX st_erp_voucher_ix03_settle_id ON shopjoy_2604.st_erp_voucher USING btree (settle_id);
 CREATE INDEX st_erp_voucher_ix02_erp_voucher_status_cd ON shopjoy_2604.st_erp_voucher USING btree (erp_voucher_status_cd);
-CREATE INDEX st_erp_voucher_ix_site_2 ON shopjoy_2604.st_erp_voucher USING btree (site_id, vendor_id);
 CREATE INDEX st_erp_voucher_ix04_settle_ym ON shopjoy_2604.st_erp_voucher USING btree (settle_ym);
 CREATE INDEX st_erp_voucher_ix05_vendor_id ON shopjoy_2604.st_erp_voucher USING btree (vendor_id);

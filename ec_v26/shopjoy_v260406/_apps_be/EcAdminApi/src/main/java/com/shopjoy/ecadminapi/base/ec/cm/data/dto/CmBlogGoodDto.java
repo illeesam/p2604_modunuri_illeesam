@@ -12,12 +12,12 @@ public class CmBlogGoodDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String likeId;
+        @Size(max = 21) private String blogGoodId;
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String likeId;
+        private String blogGoodId;
         private String blogId;
         private String userId;
         private LocalDateTime regDate;

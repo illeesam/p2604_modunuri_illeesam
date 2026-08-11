@@ -21,8 +21,8 @@ public class PmCouponIssue extends BaseEntity {
 
     @Id
     @Comment("발급ID")
-    @Column(name = "issue_id", length = 21, nullable = false)
-    private String issueId;
+    @Column(name = "coupon_issue_id", length = 21, nullable = false)
+    private String couponIssueId;
 
 
     @Comment("쿠폰ID")

@@ -22,7 +22,8 @@ CREATE TABLE shopjoy_2604.sy_user (
     auth_method_cd    VARCHAR(20)  DEFAULT 'MAIN'::character varying,
     last_login_date   TIMESTAMP   ,
     app_type_cd       VARCHAR(2)  ,
-    profile_attach_id VARCHAR(21) 
+    profile_attach_id VARCHAR(21) ,
+    CONSTRAINT sy_user_uk_login_id UNIQUE (login_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_user IS '관리자 사용자';
@@ -47,8 +48,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_user.auth_method_cd IS '인증방식 (코드: 
 COMMENT ON COLUMN shopjoy_2604.sy_user.last_login_date IS '마지막 로그인 일시';
 COMMENT ON COLUMN shopjoy_2604.sy_user.app_type_cd IS '앱 유형 (코드: APP_TYPE — FO:사용자앱, BO:관리자앱, SO:판매자앱, DO:배달기사앱, CO:고객사앱)';
 COMMENT ON COLUMN shopjoy_2604.sy_user.profile_attach_id IS '프로필 첨부아이디';
-
-CREATE UNIQUE INDEX sy_user_uk_login_id ON shopjoy_2604.sy_user USING btree (login_id);
 CREATE INDEX sy_user_ix01_dept_id ON shopjoy_2604.sy_user USING btree (dept_id);
 CREATE INDEX sy_user_ix02_profile_attach_id ON shopjoy_2604.sy_user USING btree (profile_attach_id);
 CREATE INDEX sy_user_ix03_role_id ON shopjoy_2604.sy_user USING btree (role_id);

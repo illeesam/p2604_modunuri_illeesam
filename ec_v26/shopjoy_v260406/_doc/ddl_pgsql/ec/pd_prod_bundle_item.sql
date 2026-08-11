@@ -2,7 +2,7 @@
 -- 묶음상품 구성품 (prod_type_cd=BUNDLE)
 
 CREATE TABLE shopjoy_2604.pd_prod_bundle_item (
-    bundle_item_id VARCHAR(21)  NOT NULL CONSTRAINT pd_prod_bundle_item_pk_bundle_item_id PRIMARY KEY,
+    prod_bundle_item_id VARCHAR(21)  NOT NULL CONSTRAINT pd_prod_bundle_item_pk_prod_bundle_item_id PRIMARY KEY,
     reg_site_id        VARCHAR(21)  NOT NULL,
     bundle_prod_id VARCHAR(21)  NOT NULL,
     item_prod_id   VARCHAR(21)  NOT NULL,
@@ -14,11 +14,12 @@ CREATE TABLE shopjoy_2604.pd_prod_bundle_item (
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
-    upd_date       TIMESTAMP   
+    upd_date       TIMESTAMP   ,
+    CONSTRAINT pd_prod_bundle_item_uk_bundle_prod_id_item_prod_id_x2 UNIQUE (bundle_prod_id, item_prod_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_bundle_item IS '묶음상품 구성품 (prod_type_cd=BUNDLE)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.bundle_item_id IS '묶음구성ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.prod_bundle_item_id IS '묶음구성ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.bundle_prod_id IS '묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.item_prod_id IS '구성품 상품ID (pd_prod.prod_id) — 독립 판매 상품';
@@ -34,5 +35,4 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.upd_date IS '수정일';
 
 CREATE INDEX pd_prod_bundle_item_ix01_bundle_prod_id_sort_ord_x2 ON shopjoy_2604.pd_prod_bundle_item USING btree (bundle_prod_id, sort_ord);
 CREATE INDEX pd_prod_bundle_item_ix02_item_prod_id ON shopjoy_2604.pd_prod_bundle_item USING btree (item_prod_id);
-CREATE UNIQUE INDEX pd_prod_bundle_item_uk_bundle_prod_id_item_prod_id_x2 ON shopjoy_2604.pd_prod_bundle_item USING btree (bundle_prod_id, item_prod_id);
 CREATE INDEX pd_prod_bundle_item_ix03_item_sku_id ON shopjoy_2604.pd_prod_bundle_item USING btree (item_sku_id);

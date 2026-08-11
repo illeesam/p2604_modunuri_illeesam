@@ -21,8 +21,8 @@ public class PmCouponUsage extends BaseEntity {
 
     @Id
     @Comment("사용이력ID (YYMMDDhhmmss+rand4)")
-    @Column(name = "usage_id", length = 21, nullable = false)
-    private String usageId;
+    @Column(name = "coupon_usage_id", length = 21, nullable = false)
+    private String couponUsageId;
 
 
     @Comment("쿠폰ID (pm_coupon.coupon_id)")

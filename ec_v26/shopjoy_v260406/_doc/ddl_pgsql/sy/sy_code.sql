@@ -42,8 +42,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_code.code_level IS '코드 트리 레벨 (1=�
 COMMENT ON COLUMN shopjoy_2604.sy_code.code_opt1 IS '코드별 부가 옵션 1 (스타일 색상 hex, 아이콘 클래스 등 자유 문자열)';
 
 CREATE INDEX sy_code_ix01_code_grp_id ON shopjoy_2604.sy_code USING btree (code_grp_id);
-CREATE UNIQUE INDEX sy_code_uk_code_grp ON shopjoy_2604.sy_code USING btree (code_grp_id, code_value);
-CREATE INDEX sy_code_ix_code_grp_2 ON shopjoy_2604.sy_code USING btree (code_grp_id, use_yn);
 
 -- VIEW: vw_sy_code — sy_code JOIN sy_code_grp 으로 code_grp 텍스트 노출
 -- (QueryDSL 에서 QVwSyCode 로 사용, 코드그룹명 JOIN 조회용)

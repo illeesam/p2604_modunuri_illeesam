@@ -49,7 +49,7 @@ public class BoPdProdPlanController {
         List<Map<String, Object>> rows = body != null && body.get("plans") instanceof List
             ? (List<Map<String, Object>>) body.get("plans") : List.of();
 
-        LocalDateTime now = LocalDateTime.now();   // planId 생성용 (감사컬럼은 EntitySaveListener 담당)
+        LocalDateTime now = LocalDateTime.now();   // prodPlanId 생성용 (감사컬럼은 EntitySaveListener 담당)
 
         // 기존 전체 삭제
         planRepository.deleteByProdId(prodId);
@@ -70,7 +70,7 @@ public class BoPdProdPlanController {
 
             /* 감사컬럼은 EntitySaveListener 가 @PrePersist 에서 주입 */
             PdProdPlan plan = PdProdPlan.builder()
-                .planId("PP" + now.format(ID_FMT) + String.format("%05d", (int)(Math.random() * 100000)))
+                .prodPlanId("PP" + now.format(ID_FMT) + String.format("%05d", (int)(Math.random() * 100000)))
                 .prodId(prodId)
                 .startDatetime(startDt)
                 .endDatetime(endDt)

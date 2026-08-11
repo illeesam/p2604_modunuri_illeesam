@@ -76,7 +76,7 @@ public class CmBlogFileService {
     /* 게시물 첨부파일 등록 */
     @Transactional
     public CmBlogFile create(CmBlogFile body) {
-        body.setBlogImgId(CmUtil.generateId("cm_blog_file"));
+        body.setBlogFileId(CmUtil.generateId("cm_blog_file"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -94,7 +94,7 @@ public class CmBlogFileService {
     public CmBlogFile update(String id, CmBlogFile body) {
         CmUtil.requireId(id, "id", this);
         CmBlogFile entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "blogImgId^regBy^regDate");
+        VoUtil.voCopyExclude(body, entity, "blogFileId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogFile saved = cmBlogFileRepository.save(entity);
@@ -106,9 +106,9 @@ public class CmBlogFileService {
     /* 게시물 첨부파일 수정 */
     @Transactional
     public CmBlogFile updateSelective(CmBlogFile entity) {
-        if (entity.getBlogImgId() == null) throw new CmBizException("blogImgId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getBlogImgId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogImgId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getBlogFileId() == null) throw new CmBizException("blogFileId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getBlogFileId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogFileId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = cmBlogFileRepository.updateSelective(entity);
@@ -138,31 +138,31 @@ public class CmBlogFileService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        rowStatus = entity.resolveRowStatus(entity.getBlogImgId());
+        rowStatus = entity.resolveRowStatus(entity.getBlogFileId());
 
         if ("D".equals(rowStatus)) {
-            if (entity.getBlogImgId() == null)
-                throw new CmBizException("삭제 대상 blogImgId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!cmBlogFileRepository.existsById(entity.getBlogImgId()))
-                throw new CmBizException("존재하지 않는 CmBlogFile입니다: " + entity.getBlogImgId() + "::" + CmUtil.svcCallerInfo(this));
-            cmBlogFileRepository.deleteById(entity.getBlogImgId());
+            if (entity.getBlogFileId() == null)
+                throw new CmBizException("삭제 대상 blogFileId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!cmBlogFileRepository.existsById(entity.getBlogFileId()))
+                throw new CmBizException("존재하지 않는 CmBlogFile입니다: " + entity.getBlogFileId() + "::" + CmUtil.svcCallerInfo(this));
+            cmBlogFileRepository.deleteById(entity.getBlogFileId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setBlogImgId(CmUtil.generateId("cm_blog_file"));
+            entity.setBlogFileId(CmUtil.generateId("cm_blog_file"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             CmBlogFile saved = cmBlogFileRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getBlogImgId() == null)
-                throw new CmBizException("수정 대상 blogImgId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (entity.getBlogFileId() == null)
+                throw new CmBizException("수정 대상 blogFileId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = cmBlogFileRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 CmBlogFile입니다: " + entity.getBlogImgId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 CmBlogFile입니다: " + entity.getBlogFileId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getBlogImgId());
+            return findById(entity.getBlogFileId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -176,20 +176,20 @@ public class CmBlogFileService {
         for (CmBlogFile row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getBlogImgId() == null || row.getBlogImgId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getBlogFileId() == null || row.getBlogFileId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, CmBlogFile::getBlogImgId, "U", "blogImgId", this);
-        CmUtil.requireRowIds(rows, CmBlogFile::getBlogImgId, "D", "blogImgId", this);
+        CmUtil.requireRowIds(rows, CmBlogFile::getBlogFileId, "U", "blogFileId", this);
+        CmUtil.requireRowIds(rows, CmBlogFile::getBlogFileId, "D", "blogFileId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(CmBlogFile::getBlogImgId)
+            .map(CmBlogFile::getBlogFileId)
             .toList();
         if (!deleteIds.isEmpty()) {
             cmBlogFileRepository.deleteAllById(deleteIds);
@@ -202,7 +202,7 @@ public class CmBlogFileService {
         for (CmBlogFile row : updateRows) {
             row.setUpdBy(authId);
             int affected = cmBlogFileRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBlogImgId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBlogFileId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -210,7 +210,7 @@ public class CmBlogFileService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (CmBlogFile row : insertRows) {
-            row.setBlogImgId(CmUtil.generateId("cm_blog_file"));
+            row.setBlogFileId(CmUtil.generateId("cm_blog_file"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmBlogFileRepository.save(row);

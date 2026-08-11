@@ -40,7 +40,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     private JPAQuery<PmEventBenefitDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmEventBenefitDto.Item.class,
-                        pmEventBenefit.benefitId,       // 혜택ID (PK)
+                        pmEventBenefit.eventBenefitId,       // 혜택ID (PK)
                         pmEventBenefit.eventId,         // 이벤트ID
                         pmEventBenefit.benefitNm,       // 혜택명
                         pmEventBenefit.benefitTypeCd,   // 혜택유형 — BENEFIT_TYPE {COUPON: '쿠폰', POINT: '적립금', DISCOUNT: '할인', GIFT: '사은품'}
@@ -55,9 +55,9 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
 
     /* 이벤트 혜택 키조회 */
     @Override
-    public Optional<PmEventBenefitDto.Item> selectById(String benefitId) {
+    public Optional<PmEventBenefitDto.Item> selectById(String eventBenefitId) {
         PmEventBenefitDto.Item dto = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmEventBenefit.benefitId.eq(benefitId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmEventBenefit.eventBenefitId.eq(eventBenefitId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -72,7 +72,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                 .where(
                     QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()),
                     QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()),
-                    QdslUtil.strEq(pmEventBenefit.benefitId, search.getBenefitId()),
+                    QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -99,7 +99,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmEventBenefit.eventId, search.getEventIds()),
                 QdslUtil.strEq(pmEventBenefit.eventId, search.getEventId()),
-                QdslUtil.strEq(pmEventBenefit.benefitId, search.getBenefitId()),
+                QdslUtil.strEq(pmEventBenefit.eventBenefitId, search.getEventBenefitId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -129,7 +129,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("benefitId", pmEventBenefit.benefitId),
+            QdslUtil.FieldDef.like("eventBenefitId", pmEventBenefit.eventBenefitId),
             QdslUtil.FieldDef.like("benefitNm", pmEventBenefit.benefitNm),
             QdslUtil.FieldDef.like("benefitTypeCd", pmEventBenefit.benefitTypeCd),
             QdslUtil.FieldDef.like("benefitValue", pmEventBenefit.benefitValue),
@@ -145,20 +145,20 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
      */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
-            Map.of("benefitId", pmEventBenefit.benefitId,
+            Map.of("eventBenefitId", pmEventBenefit.eventBenefitId,
                    "benefitNm", pmEventBenefit.benefitNm,
                    "regDate", pmEventBenefit.regDate,
                    "sortOrd", pmEventBenefit.sortOrd),
         new OrderSpecifier<>(Order.ASC, pmEventBenefit.sortOrd),
         new OrderSpecifier<>(Order.ASC, pmEventBenefit.regDate),
-        new OrderSpecifier<>(Order.ASC, pmEventBenefit.benefitId));
+        new OrderSpecifier<>(Order.ASC, pmEventBenefit.eventBenefitId));
     }
 
     /* 이벤트 혜택 수정 */
 
     @Override
     public int updateSelective(PmEventBenefit entity) {
-        if (entity.getBenefitId() == null) return 0;
+        if (entity.getEventBenefitId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(pmEventBenefit);
         boolean hasAny = false;
@@ -176,7 +176,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
 
         if (!hasAny) return 0;
 
-        long affected = update.where(pmEventBenefit.benefitId.eq(entity.getBenefitId())).execute();
+        long affected = update.where(pmEventBenefit.eventBenefitId.eq(entity.getEventBenefitId())).execute();
         return (int) affected;
     }
 }

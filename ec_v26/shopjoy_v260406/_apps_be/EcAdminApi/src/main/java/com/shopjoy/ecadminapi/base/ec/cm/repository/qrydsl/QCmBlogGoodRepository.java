@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface QCmBlogGoodRepository {
 
     /** 단건 조회 */
-    Optional<CmBlogGoodDto.Item> selectById(String likeId);
+    Optional<CmBlogGoodDto.Item> selectById(String blogGoodId);
 
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     List<CmBlogGoodDto.Item> selectList(CmBlogGoodDto.Request search);

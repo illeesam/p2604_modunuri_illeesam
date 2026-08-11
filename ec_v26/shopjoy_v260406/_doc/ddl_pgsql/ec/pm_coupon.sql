@@ -34,7 +34,8 @@ CREATE TABLE shopjoy_2604.pm_coupon (
     reg_by                  VARCHAR(30) ,
     reg_date                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by                  VARCHAR(30) ,
-    upd_date                TIMESTAMP   
+    upd_date                TIMESTAMP   ,
+    CONSTRAINT pm_coupon_uk_coupon_cd UNIQUE (coupon_cd)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pm_coupon IS '쿠폰';
@@ -72,8 +73,6 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.upd_date IS '수정일';
 
-CREATE INDEX pm_coupon_ix_coupon_cd ON shopjoy_2604.pm_coupon USING btree (coupon_cd);
 CREATE INDEX pm_coupon_ix03_mem_grade_cd ON shopjoy_2604.pm_coupon USING btree (mem_grade_cd);
 CREATE INDEX pm_coupon_ix01_coupon_status_cd ON shopjoy_2604.pm_coupon USING btree (coupon_status_cd);
 CREATE INDEX pm_coupon_ix02_coupon_type_cd ON shopjoy_2604.pm_coupon USING btree (coupon_type_cd);
-CREATE UNIQUE INDEX pm_coupon_uk_coupon_cd ON shopjoy_2604.pm_coupon USING btree (coupon_cd);

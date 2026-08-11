@@ -2,7 +2,7 @@
 -- 쿠폰 사용 이력
 
 CREATE TABLE shopjoy_2604.pm_coupon_usage (
-    usage_id         VARCHAR(21)  NOT NULL CONSTRAINT pm_coupon_usage_pk_usage_id PRIMARY KEY,
+    coupon_usage_id         VARCHAR(21)  NOT NULL CONSTRAINT pm_coupon_usage_pk_coupon_usage_id PRIMARY KEY,
     reg_site_id          VARCHAR(21)  NOT NULL,
     coupon_id        VARCHAR(21)  NOT NULL,
     coupon_code      VARCHAR(50) ,
@@ -22,7 +22,7 @@ CREATE TABLE shopjoy_2604.pm_coupon_usage (
 );
 
 COMMENT ON TABLE  shopjoy_2604.pm_coupon_usage IS '쿠폰 사용 이력';
-COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.usage_id IS '사용이력ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.coupon_usage_id IS '사용이력ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.coupon_id IS '쿠폰ID (pm_coupon.coupon_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_usage.coupon_code IS '쿠폰코드 스냅샷';

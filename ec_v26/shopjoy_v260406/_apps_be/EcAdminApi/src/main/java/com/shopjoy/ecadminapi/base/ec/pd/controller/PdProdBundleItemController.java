@@ -47,14 +47,14 @@ public class PdProdBundleItemController {
     /* 묶음상품 구성 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdBundleItem>> save(@PathVariable("id") String id, @RequestBody PdProdBundleItem entity) {
-        entity.setBundleItemId(id);
+        entity.setProdBundleItemId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 묶음상품 구성 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdBundleItem>> updateSelective(@PathVariable("id") String id, @RequestBody PdProdBundleItem entity) {
-        entity.setBundleItemId(id);
+        entity.setProdBundleItemId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

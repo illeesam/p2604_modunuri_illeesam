@@ -10,7 +10,8 @@ CREATE TABLE shopjoy_2604.pm_discnt_item (
     reg_by         VARCHAR(30),
     reg_date       TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30),
-    upd_date       TIMESTAMP  
+    upd_date       TIMESTAMP  ,
+    CONSTRAINT pm_discnt_item_uk_discnt_id_target_type_cd_x3 UNIQUE (discnt_id, target_type_cd, target_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pm_discnt_item IS '할인 대상 항목';
@@ -22,6 +23,4 @@ COMMENT ON COLUMN shopjoy_2604.pm_discnt_item.target_id IS '대상ID (category_i
 COMMENT ON COLUMN shopjoy_2604.pm_discnt_item.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pm_discnt_item.reg_date IS '등록일';
 
-CREATE INDEX pm_discnt_item_ix_discnt ON shopjoy_2604.pm_discnt_item USING btree (discnt_id);
 CREATE INDEX pm_discnt_item_ix01_target_type_cd_target_id_x2 ON shopjoy_2604.pm_discnt_item USING btree (target_type_cd, target_id);
-CREATE UNIQUE INDEX pm_discnt_item_uk_discnt_id_target_type_cd_x3 ON shopjoy_2604.pm_discnt_item USING btree (discnt_id, target_type_cd, target_id);

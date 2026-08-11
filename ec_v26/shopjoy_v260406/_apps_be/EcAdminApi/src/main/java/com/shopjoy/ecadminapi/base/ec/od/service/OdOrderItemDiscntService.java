@@ -76,7 +76,7 @@ public class OdOrderItemDiscntService {
     /* 주문 아이템 할인 등록 */
     @Transactional
     public OdOrderItemDiscnt create(OdOrderItemDiscnt body) {
-        body.setItemDiscntId(CmUtil.generateId("od_order_item_discnt"));
+        body.setOrderItemDiscntId(CmUtil.generateId("od_order_item_discnt"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -94,7 +94,7 @@ public class OdOrderItemDiscntService {
     public OdOrderItemDiscnt update(String id, OdOrderItemDiscnt body) {
         CmUtil.requireId(id, "id", this);
         OdOrderItemDiscnt entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "itemDiscntId^regBy^regDate");
+        VoUtil.voCopyExclude(body, entity, "orderItemDiscntId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdOrderItemDiscnt saved = odOrderItemDiscntRepository.save(entity);
@@ -106,9 +106,9 @@ public class OdOrderItemDiscntService {
     /* 주문 아이템 할인 수정 */
     @Transactional
     public OdOrderItemDiscnt updateSelective(OdOrderItemDiscnt entity) {
-        if (entity.getItemDiscntId() == null) throw new CmBizException("itemDiscntId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getItemDiscntId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getItemDiscntId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getOrderItemDiscntId() == null) throw new CmBizException("orderItemDiscntId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getOrderItemDiscntId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getOrderItemDiscntId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = odOrderItemDiscntRepository.updateSelective(entity);
@@ -138,31 +138,31 @@ public class OdOrderItemDiscntService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        rowStatus = entity.resolveRowStatus(entity.getItemDiscntId());
+        rowStatus = entity.resolveRowStatus(entity.getOrderItemDiscntId());
 
         if ("D".equals(rowStatus)) {
-            if (entity.getItemDiscntId() == null)
-                throw new CmBizException("삭제 대상 itemDiscntId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!odOrderItemDiscntRepository.existsById(entity.getItemDiscntId()))
-                throw new CmBizException("존재하지 않는 OdOrderItemDiscnt입니다: " + entity.getItemDiscntId() + "::" + CmUtil.svcCallerInfo(this));
-            odOrderItemDiscntRepository.deleteById(entity.getItemDiscntId());
+            if (entity.getOrderItemDiscntId() == null)
+                throw new CmBizException("삭제 대상 orderItemDiscntId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!odOrderItemDiscntRepository.existsById(entity.getOrderItemDiscntId()))
+                throw new CmBizException("존재하지 않는 OdOrderItemDiscnt입니다: " + entity.getOrderItemDiscntId() + "::" + CmUtil.svcCallerInfo(this));
+            odOrderItemDiscntRepository.deleteById(entity.getOrderItemDiscntId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setItemDiscntId(CmUtil.generateId("od_order_item_discnt"));
+            entity.setOrderItemDiscntId(CmUtil.generateId("od_order_item_discnt"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             OdOrderItemDiscnt saved = odOrderItemDiscntRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getItemDiscntId() == null)
-                throw new CmBizException("수정 대상 itemDiscntId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (entity.getOrderItemDiscntId() == null)
+                throw new CmBizException("수정 대상 orderItemDiscntId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = odOrderItemDiscntRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 OdOrderItemDiscnt입니다: " + entity.getItemDiscntId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 OdOrderItemDiscnt입니다: " + entity.getOrderItemDiscntId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getItemDiscntId());
+            return findById(entity.getOrderItemDiscntId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -176,20 +176,20 @@ public class OdOrderItemDiscntService {
         for (OdOrderItemDiscnt row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getItemDiscntId() == null || row.getItemDiscntId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getOrderItemDiscntId() == null || row.getOrderItemDiscntId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, OdOrderItemDiscnt::getItemDiscntId, "U", "itemDiscntId", this);
-        CmUtil.requireRowIds(rows, OdOrderItemDiscnt::getItemDiscntId, "D", "itemDiscntId", this);
+        CmUtil.requireRowIds(rows, OdOrderItemDiscnt::getOrderItemDiscntId, "U", "orderItemDiscntId", this);
+        CmUtil.requireRowIds(rows, OdOrderItemDiscnt::getOrderItemDiscntId, "D", "orderItemDiscntId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(OdOrderItemDiscnt::getItemDiscntId)
+            .map(OdOrderItemDiscnt::getOrderItemDiscntId)
             .toList();
         if (!deleteIds.isEmpty()) {
             odOrderItemDiscntRepository.deleteAllById(deleteIds);
@@ -202,7 +202,7 @@ public class OdOrderItemDiscntService {
         for (OdOrderItemDiscnt row : updateRows) {
             row.setUpdBy(authId);
             int affected = odOrderItemDiscntRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getItemDiscntId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getOrderItemDiscntId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -210,7 +210,7 @@ public class OdOrderItemDiscntService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (OdOrderItemDiscnt row : insertRows) {
-            row.setItemDiscntId(CmUtil.generateId("od_order_item_discnt"));
+            row.setOrderItemDiscntId(CmUtil.generateId("od_order_item_discnt"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             odOrderItemDiscntRepository.save(row);

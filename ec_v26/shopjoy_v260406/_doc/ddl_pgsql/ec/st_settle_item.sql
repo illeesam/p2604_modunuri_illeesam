@@ -21,7 +21,8 @@ CREATE TABLE shopjoy_2604.st_settle_item (
     reg_by              VARCHAR(30) ,
     reg_date            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by              VARCHAR(30) ,
-    upd_date            TIMESTAMP   
+    upd_date            TIMESTAMP   ,
+    CONSTRAINT st_settle_item_uk_settle_id_order_item_id_x2 UNIQUE (settle_id, order_item_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.st_settle_item IS '정산 항목 (주문항목별 명세)';
@@ -45,8 +46,6 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_item.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.st_settle_item.reg_date IS '등록일';
 
 CREATE INDEX st_settle_item_ix01_order_id ON shopjoy_2604.st_settle_item USING btree (order_id);
-CREATE INDEX st_settle_item_ix_settle ON shopjoy_2604.st_settle_item USING btree (settle_id);
 CREATE INDEX st_settle_item_ix04_vendor_id ON shopjoy_2604.st_settle_item USING btree (vendor_id);
-CREATE UNIQUE INDEX st_settle_item_uk_settle_id_order_item_id_x2 ON shopjoy_2604.st_settle_item USING btree (settle_id, order_item_id);
 CREATE INDEX st_settle_item_ix02_order_item_id ON shopjoy_2604.st_settle_item USING btree (order_item_id);
 CREATE INDEX st_settle_item_ix03_prod_id ON shopjoy_2604.st_settle_item USING btree (prod_id);

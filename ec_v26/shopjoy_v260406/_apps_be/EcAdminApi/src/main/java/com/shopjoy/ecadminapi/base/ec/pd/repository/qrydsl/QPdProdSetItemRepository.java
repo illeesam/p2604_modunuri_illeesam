@@ -10,7 +10,7 @@ import java.util.Optional;
 /** PdProdSetItem QueryDSL Custom Repository */
 public interface QPdProdSetItemRepository {
 
-    Optional<PdProdSetItemDto.Item> selectById(String setItemId);
+    Optional<PdProdSetItemDto.Item> selectById(String prodSetItemId);
 
     List<PdProdSetItemDto.Item> selectList(PdProdSetItemDto.Request search);
 

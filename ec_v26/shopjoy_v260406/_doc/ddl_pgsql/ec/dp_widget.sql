@@ -45,7 +45,6 @@ COMMENT ON COLUMN shopjoy_2604.dp_widget.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget.upd_date IS '수정일';
 
-CREATE UNIQUE INDEX dp_widget_uk_site ON shopjoy_2604.dp_widget USING btree (site_id, widget_nm);
 CREATE INDEX dp_widget_ix01_disp_env ON shopjoy_2604.dp_widget USING btree (disp_env);
 CREATE INDEX dp_widget_ix02_widget_lib_id ON shopjoy_2604.dp_widget USING btree (widget_lib_id);
 CREATE INDEX dp_widget_ix03_widget_type_cd ON shopjoy_2604.dp_widget USING btree (widget_type_cd);

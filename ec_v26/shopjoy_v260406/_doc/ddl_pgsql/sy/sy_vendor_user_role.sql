@@ -15,7 +15,8 @@ CREATE TABLE shopjoy_2604.sy_vendor_user_role (
     reg_date                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by                  VARCHAR(30) ,
     upd_date                TIMESTAMP   ,
-    reg_site_id                 VARCHAR(21)  NOT NULL
+    reg_site_id                 VARCHAR(21)  NOT NULL,
+    CONSTRAINT sy_vendor_user_role_uk_vendor_id_user_id_x3 UNIQUE (vendor_id, user_id, role_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_vendor_user_role IS '업체 사용자 역할 연결';
@@ -35,6 +36,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor_user_role.upd_date IS '수정일';
 
 CREATE INDEX sy_vendor_user_role_ix02_role_id ON shopjoy_2604.sy_vendor_user_role USING btree (role_id);
 CREATE INDEX sy_vendor_user_role_ix03_user_id ON shopjoy_2604.sy_vendor_user_role USING btree (user_id);
-CREATE INDEX sy_vendor_user_role_ix_vendor ON shopjoy_2604.sy_vendor_user_role USING btree (vendor_id);
-CREATE UNIQUE INDEX sy_vendor_user_role_uk_vendor_id_user_id_x3 ON shopjoy_2604.sy_vendor_user_role USING btree (vendor_id, user_id, role_id);
 CREATE INDEX sy_vendor_user_role_ix01_grant_user_id ON shopjoy_2604.sy_vendor_user_role USING btree (grant_user_id);

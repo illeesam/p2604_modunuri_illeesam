@@ -13,12 +13,12 @@ public class PmCouponUsageDto {
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
-        @Size(max = 21) private String usageId;
+        @Size(max = 21) private String couponUsageId;
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String usageId;
+        private String couponUsageId;
         private String couponId;
         private String couponCode;
         private String couponNm;

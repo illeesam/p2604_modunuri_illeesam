@@ -199,7 +199,7 @@ window.CmBlogMng = {
     /* _loadAttachRows — row.files[] → 첨부 그리드 행(_row_status='N') 으로 적재 */
     const _loadAttachRows = (files) => {
       const list = (Array.isArray(files) ? files : []).map(f => ({
-        blogImgId: f.blogImgId, blogId: f.blogId, imgUrl: f.imgUrl || '', thumbUrl: f.thumbUrl || '',
+        blogFileId: f.blogFileId, blogId: f.blogId, imgUrl: f.imgUrl || '', thumbUrl: f.thumbUrl || '',
         imgAltText: f.imgAltText || '', sortOrd: f.sortOrd ?? 0,
         _row_status: 'N', _row_check: false, _row_org: null,
       }));
@@ -301,7 +301,7 @@ window.CmBlogMng = {
     /* attachAddRow — 행 추가 */
     const attachAddRow = () => {
       const newRow = {
-        blogImgId: _attachTempId--, blogId: detailPanel.form.blogId || null, imgUrl: '', thumbUrl: '',
+        blogFileId: _attachTempId--, blogId: detailPanel.form.blogId || null, imgUrl: '', thumbUrl: '',
         imgAltText: '', sortOrd: attachRows.length + 1,
         _row_status: 'I', _row_check: false, _row_org: null,
       };
@@ -353,7 +353,7 @@ window.CmBlogMng = {
       const rows = changed.map(r => {
         const isNew = r._row_status === 'I';
         return {
-          blogImgId: isNew ? null : r.blogImgId,
+          blogFileId: isNew ? null : r.blogFileId,
           blogId, siteId,
           imgUrl: r.imgUrl, thumbUrl: r.thumbUrl || r.imgUrl, imgAltText: r.imgAltText, sortOrd: r.sortOrd,
           rowStatus: r._row_status,
@@ -548,7 +548,7 @@ window.CmBlogMng = {
         <div style="margin-top:16px;">
           <bo-grid-crud
             list-title="첨부 이미지"
-            :columns="columns.attachGrid" :rows="attachRows" row-key="blogImgId"
+            :columns="columns.attachGrid" :rows="attachRows" row-key="blogFileId"
             grid-id="attach-cellChange"
             v-model:focused-idx="attachUi.focusedIdx" v-model:check-all="attachUi.checkAll"
             :show-row-id="false" max-height="280px"

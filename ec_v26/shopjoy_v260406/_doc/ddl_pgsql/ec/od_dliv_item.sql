@@ -17,7 +17,8 @@ CREATE TABLE shopjoy_2604.od_dliv_item (
     reg_by                     VARCHAR(30),
     reg_date                   TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by                     VARCHAR(30),
-    upd_date                   TIMESTAMP  
+    upd_date                   TIMESTAMP  ,
+    CONSTRAINT od_dliv_item_uk_dliv_id_order_item_id_x2 UNIQUE (dliv_id, order_item_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.od_dliv_item IS '배송 항목 (배송에 포함된 주문상품 명세)';
@@ -37,7 +38,5 @@ COMMENT ON COLUMN shopjoy_2604.od_dliv_item.reg_by IS '등록자 (sy_user.user_i
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv_item.upd_date IS '수정일';
-
-CREATE UNIQUE INDEX od_dliv_item_uk_dliv_id_order_item_id_x2 ON shopjoy_2604.od_dliv_item USING btree (dliv_id, order_item_id);
 CREATE INDEX od_dliv_item_ix01_order_item_id ON shopjoy_2604.od_dliv_item USING btree (order_item_id);
 CREATE INDEX od_dliv_item_ix02_prod_id ON shopjoy_2604.od_dliv_item USING btree (prod_id);

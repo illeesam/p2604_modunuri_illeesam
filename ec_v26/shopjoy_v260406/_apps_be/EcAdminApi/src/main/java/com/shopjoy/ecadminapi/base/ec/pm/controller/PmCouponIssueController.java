@@ -47,14 +47,14 @@ public class PmCouponIssueController {
     /* 쿠폰 발행 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCouponIssue>> save(@PathVariable("id") String id, @RequestBody PmCouponIssue entity) {
-        entity.setIssueId(id);
+        entity.setCouponIssueId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 쿠폰 발행 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<PmCouponIssue>> updateSelective(@PathVariable("id") String id, @RequestBody PmCouponIssue entity) {
-        entity.setIssueId(id);
+        entity.setCouponIssueId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

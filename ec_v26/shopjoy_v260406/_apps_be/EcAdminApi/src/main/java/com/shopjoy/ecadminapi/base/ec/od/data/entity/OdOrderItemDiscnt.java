@@ -21,8 +21,8 @@ public class OdOrderItemDiscnt extends BaseEntity {
 
     @Id
     @Comment("주문상품할인ID (YYMMDDhhmmss+rand4)")
-    @Column(name = "item_discnt_id", length = 21, nullable = false)
-    private String itemDiscntId;
+    @Column(name = "order_item_discnt_id", length = 21, nullable = false)
+    private String orderItemDiscntId;
 
 
     @Comment("주문ID (od_order.order_id)")

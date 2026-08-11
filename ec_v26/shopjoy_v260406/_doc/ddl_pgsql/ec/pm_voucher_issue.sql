@@ -17,7 +17,8 @@ CREATE TABLE shopjoy_2604.pm_voucher_issue (
     reg_by                         VARCHAR(30),
     reg_date                       TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by                         VARCHAR(30),
-    upd_date                       TIMESTAMP  
+    upd_date                       TIMESTAMP  ,
+    CONSTRAINT pm_voucher_issue_uk_voucher_code UNIQUE (voucher_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pm_voucher_issue IS '상품권 발급 및 사용 이력';
@@ -42,4 +43,3 @@ CREATE INDEX pm_voucher_issue_ix01_expire_date ON shopjoy_2604.pm_voucher_issue 
 CREATE INDEX pm_voucher_issue_ix02_member_id ON shopjoy_2604.pm_voucher_issue USING btree (member_id);
 CREATE INDEX pm_voucher_issue_ix03_order_id ON shopjoy_2604.pm_voucher_issue USING btree (order_id);
 CREATE INDEX pm_voucher_issue_ix04_voucher_id ON shopjoy_2604.pm_voucher_issue USING btree (voucher_id);
-CREATE UNIQUE INDEX pm_voucher_issue_uk_voucher_code ON shopjoy_2604.pm_voucher_issue USING btree (voucher_code);

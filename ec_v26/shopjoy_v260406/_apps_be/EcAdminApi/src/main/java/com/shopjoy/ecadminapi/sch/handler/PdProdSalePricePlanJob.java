@@ -55,7 +55,7 @@ public class PdProdSalePricePlanJob implements SchBatchJobHandler {
             plan.setPlanStatusCd("ENDED");
             plan.setUpdDate(now);
             planRepository.save(plan);
-            log.debug("[{}] ENDED: planId={} prodId={}", batchCode(), plan.getPlanId(), plan.getProdId());
+            log.debug("[{}] ENDED: prodPlanId={} prodId={}", batchCode(), plan.getProdPlanId(), plan.getProdId());
         }
 
         // 2) 지금 유효한 계획 → ACTIVE + pd_prod 가격 반영

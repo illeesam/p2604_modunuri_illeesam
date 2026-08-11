@@ -1,6 +1,6 @@
 -- 정산기준 설정 샘플 데이터 INSERT
 INSERT INTO shopjoy_2604.st_settle_config (
-  settle_config_id, site_id, vendor_id, category_id, settle_cycle_cd, settle_day,
+  settle_config_id, reg_site_id, vendor_id, category_id, settle_cycle_cd, settle_day,
   commission_rate, min_settle_amt, settle_config_remark, use_yn, reg_by, reg_date, upd_by, upd_date
 ) VALUES
 -- ShopJoy 01 - 판매업체 기본 정산

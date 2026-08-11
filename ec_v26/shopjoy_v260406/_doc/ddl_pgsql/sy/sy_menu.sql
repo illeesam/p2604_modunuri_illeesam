@@ -16,7 +16,8 @@ CREATE TABLE shopjoy_2604.sy_menu (
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
-    upd_date       TIMESTAMP   
+    upd_date       TIMESTAMP   ,
+    CONSTRAINT sy_menu_uk_menu_code UNIQUE (menu_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_menu IS '메뉴';
@@ -35,6 +36,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_menu.reg_by IS '등록자 (sy_user.user_id, ec
 COMMENT ON COLUMN shopjoy_2604.sy_menu.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_menu.upd_date IS '수정일';
-
-CREATE UNIQUE INDEX sy_menu_uk_menu_code ON shopjoy_2604.sy_menu USING btree (menu_code);
 CREATE INDEX sy_menu_ix01_parent_menu_id ON shopjoy_2604.sy_menu USING btree (parent_menu_id);

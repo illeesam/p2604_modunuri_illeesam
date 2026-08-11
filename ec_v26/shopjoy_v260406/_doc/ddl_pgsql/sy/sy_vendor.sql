@@ -31,7 +31,8 @@ CREATE TABLE shopjoy_2604.sy_vendor (
     reg_by              VARCHAR(30) ,
     reg_date            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by              VARCHAR(30) ,
-    upd_date            TIMESTAMP   
+    upd_date            TIMESTAMP   ,
+    CONSTRAINT sy_vendor_uk_vendor_no UNIQUE (vendor_no)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_vendor IS '판매/배송업체 (사업체/법인)';
@@ -67,4 +68,3 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor.upd_by IS '수정자 (sy_user.user_id, 
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.upd_date IS '수정일';
 
 CREATE INDEX sy_vendor_ix01_vendor_status_cd ON shopjoy_2604.sy_vendor USING btree (vendor_status_cd);
-CREATE UNIQUE INDEX sy_vendor_uk_vendor_no ON shopjoy_2604.sy_vendor USING btree (vendor_no);

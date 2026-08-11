@@ -236,6 +236,38 @@ CONSTRAINT pm_coupon_prod_uk_coupon_id_prod_id_x2 UNIQUE     (coupon_id, prod_id
 적재 전용이라 개별 행을 키로 다룰 일이 없고, PK 컬럼명도 `log_id` / `hist_id` 처럼
 짧은 관례명을 쓰는 곳이 많다. 강제하지 않는다.
 
+#### 적용 이력 (2026-08-10) — 전수 정합 완료
+
+- **복합 PK 5건** → 대리키 PK + UNIQUE 전환 (`migration_20260810_surrogate_pk.sql`)
+- **PK 컬럼명 불일치 12건** → rename (`migration_20260810_pk_col_rename.sql`)
+- 결과: 로그/이력 제외 **불일치 0건**
+
+특히 두 건은 이름 충돌을 해소했다.
+
+| 변경 | 이유 |
+|---|---|
+| `pm_coupon_issue.issue_id` → `coupon_issue_id` | 참조측(`od_order_discnt`·`od_order_item_discnt`·`st_settle_raw`)이 **이미 `coupon_issue_id` 로 부르고 있었다.** 원본 PK 만 달랐던 불일치 |
+| `pd_prod_plan.plan_id` → `prod_plan_id` | `pm_plan.plan_id`(기획전)와 이름이 같아 의미가 혼동됐다 |
+
+**⚠ 컬럼 rename 시 함께 봐야 하는 것**
+
+1. **PK 제약명** — 제약명에 컬럼명이 들어가므로 같이 바꾼다.
+   단, 코드 치환 시 `pm_coupon_issue_pk_issue_id` 의 `issue_id` 는 앞이 `_` 라
+   단어경계 정규식에 안 걸린다. **별도로 처리해야 한다.**
+2. **getter/setter** — `blogImgId` 만 바꾸면 `getBlogImgId()` 가 남아 컴파일이 깨진다.
+   `get`/`set` 접두어를 포함해 치환할 것.
+3. **같은 이름을 쓰는 다른 엔티티** — 무차별 치환 금지. 실제로 아래는 **보존 대상**이다.
+
+   | 보존 | 이유 |
+   |---|---|
+   | `mb_like.like_id` | `mb_like` 의 정상 PK (`mb_` 제외 → `like_id`) |
+   | `pm_plan.plan_id` / `pm_plan_item.plan_id` | 기획전 PK 및 그 FK |
+   | `cm_blog_reply.parent_comment_id` | 자기참조 컬럼 (PK 아님) |
+   | `cm_dashboard_menu.parent_node_id` | 자기참조 컬럼 |
+
+4. **엔티티를 사용만 하는 파일** — 경로에 엔티티명이 없어 범위 지정에서 빠진다.
+   실제로 `PdProdSalePricePlanJob` / `SySendMsgJob` 이 그랬다. **컴파일러가 최종 검증자**다.
+
 ### 3-4. ⚠ camelCase 금지
 
 PostgreSQL 은 **따옴표 없는 식별자를 소문자로 접는다.** `..._memberId` 로 만들어도 실제로는
@@ -389,12 +421,85 @@ DDL 파일에서 함께 정리한 것:
 - `(site_id)` 인덱스 정의 **162건 제거** — 컬럼명만 고쳐도 `reg_site_id` 는 §1 에 따라 인덱스를
   만들지 않으므로(고유값 1) 정의 자체가 불필요
 
-**⚠ 삭제하지 않고 남긴 것 (기계적 삭제가 위험)**
-- DDL 에만 있는 정의 93건 중 **49건은 DB 에서 UNIQUE '제약'** 인데 DDL 은 `CREATE UNIQUE INDEX`
-  로 표현한다. 지우면 재생성 시 제약이 유실된다. DDL 을 테이블 레벨 `CONSTRAINT ... UNIQUE` 로
-  바꾸는 것이 정답이나 구조 변경이라 보류
-- `CREATE INDEX IF NOT EXISTS` 형태 13건은 옛 이름이 남아 있다(정규식 미포착)
-- `ec/cm_dashboard_data.sql` 은 **DB 에 테이블이 없다**(DB 는 `cm_dashboard_item_data`). obsolete 로 추정
+### 5차 — DDL ↔ DB 완전 정합 (2026-08-10 마무리)
+
+앞 단계에서 보류했던 항목을 순서대로 해소했다. **순서가 중요하다** — 뒤집으면 제약이 유실된다.
+
+1. **DDL 의 `CREATE UNIQUE INDEX` → 테이블 레벨 `CONSTRAINT ... UNIQUE` 전환 (37건)**
+   DB 에서는 UNIQUE '제약'인데 DDL 은 인덱스로 표현하고 있었다. 그대로 재생성하면
+   제약이 아닌 인덱스만 생겨 `pg_constraint` 에 안 잡힌다.
+2. **누락 DDL 파일 생성 (2건)** — `cm_dashboard`, `cm_dashboard_item_data` 는
+   **DB 에 있는데 DDL 파일이 아예 없었다.** 실 DB 에서 추출해 생성.
+3. **obsolete DDL 파일 보관 이동 (4건)** — `_obsolete/` 로 이동(삭제 아님).
+   `cm_chatt_room`(→`cm_chatt`), `cm_dashboard_data`(→`cm_dashboard_item_data`),
+   `pd_prod_opt_item` / `pd_prod_opt_type`(→`pd_prod_opt`). 모두 DB 에 테이블이 없다.
+   `vw_dp_disp` 는 **뷰**라 정상이므로 유지.
+4. **DB 에 없는 인덱스 정의 제거 (71건)** — 1번을 끝낸 뒤라 안전해졌다.
+   내역: 의도적 DROP 36 / 없는 컬럼(`site_id`) 참조 19 / UNIQUE 잔재 16.
+   특히 `(site_id, ...)` 참조 19건은 컬럼이 없어 **재생성 시 에러가 나던 것**이다.
+
+**최종 상태 — 5개 지표 전부 0**
+
+| 지표 | 결과 |
+|---|---|
+| 인덱스 없는 FK 제약 | 0 |
+| 완전중복 인덱스 | 0 |
+| 복합 PK | 0 |
+| PK 컬럼명 불일치(로그/이력 제외) | 0 |
+| 명명규칙 위반 | 0 |
+| DDL↔DB 인덱스 차이 | 0 (추가 0 / DDL 전용 0) |
+
+**⚠ 이 작업에서 배운 함정 — 다음에 같은 점검을 할 때 반드시 확인할 것**
+
+- **비교 기준을 만들 때 넣은 필터가 그대로 삭제 기준이 된다.**
+  `zz_*` / `flyway_schema_history` 를 제외하고 "DB 인덱스 목록"을 뽑은 뒤 그것과 DDL 을 비교했더니,
+  제외된 테이블의 정의가 전부 "DB 에 없음"으로 잡혀 **10건 넘게 잘못 삭제될 뻔했다.**
+  삭제 전에는 반드시 `pg_indexes` 로 **개별 실존 확인**을 할 것.
+- **삭제는 항상 마지막에.** UNIQUE 를 제약으로 보존하기 전에 인덱스 정의를 지웠다면 제약 49건이 사라졌다.
+
+### 6차 — 샘플 INSERT(`_doc/sample_insert_pgsql/`) 정합
+
+DDL 뿐 아니라 **샘플 INSERT 도 컬럼명을 직접 쓰므로** 컬럼 rename 의 영향을 받는다.
+`SeedAudit` 로 INSERT 문 2,496건의 (테이블, 컬럼)을 실 DB 스키마와 대조했다.
+
+**적용 완료**
+- `site_id` → `reg_site_id` (19개 파일) — 안 고치면 재시딩이 전부 실패한다
+- `bundle_item_id` → `prod_bundle_item_id`, `set_item_id` → `prod_set_item_id`
+- `qna_*` → `prod_qna_*`, `sku_id`/`sku_code` → `prod_sku_*`, `reg_dt`/`rgtr` → `reg_date`/`reg_by`
+
+**⚠ 미해결 — 오늘 작업과 무관한 기존 누적 드리프트 (5개 파일)**
+
+단순 rename 이 아니라 성격별로 판단이 필요해 손대지 않았다.
+
+| 분류 | 대상 | 왜 기계적으로 못 고치나 |
+|---|---|---|
+| 컬럼 자체가 사라짐 | `pd_prod.prod_stock`·`sale_count`, `pd_prod_sku.prod_opt_stock`, `pd_prod_opt.prod_opt_type_*` | 재고 구조가 재설계돼 대응 컬럼이 없다. INSERT 문 재작성 필요 |
+| 값 의미가 바뀜 | `sy_code.code_grp` → `code_grp_id`, `sy_code_grp.disp_path` → `path_id` | 이름만 바꾸면 안 되고 **값도 코드문자열→ID 로 바꿔야 한다** |
+| 대상 폐기 | `co_dashboard.sql`(테이블 없음), `pd_prod_opt_type`(폐기) | 파일 자체가 obsolete |
+| 스키마 전면 상이 | `sy_zz_sample2_insert.sql` | `item_code/price/quantity` ↔ 실제 `cd_grp/cd_vl/cd_nm` — 다른 설계의 잔재 |
+
+**해소 완료 (2026-08-10)** — 위 미해결분을 아래와 같이 정리해 **INSERT 2,696건 전부 스키마 정합**(테이블 없음 0 / 컬럼 없음 0).
+
+| 파일 | 처리 |
+|---|---|
+| `sy_code.sql` (1,331건) · `sy_code_grp.sql` (245건) | **DB 에서 재생성**. `code_grp`→`code_grp_id`, `disp_path`→`path_id` 드리프트가 원천 해소됨. 공통코드는 전 화면이 의존하는 기반 데이터라 최우선 처리 |
+| `cm_dashboard.sql`(25) · `cm_dashboard_item.sql`(150) | **신규 생성**. 기존 `co_dashboard.sql` 은 `co_`→`cm_` rename 이전 잔재였다 |
+| `sy_code_prod_opt.sql` | `_obsolete/` 이동 — `sy_code` 재생성분에 포함됨 |
+| `co_dashboard.sql` | `_obsolete/` 이동 — 대상 테이블 없음 |
+| `sy_zz_sample2_insert.sql` | `_obsolete/` 이동 — 스키마 전면 상이 + DB 테이블 0행 |
+| `pd_prod_samples.sql` | `_obsolete/` 이동 — 제거된 컬럼(`prod_stock`/`sale_count`/`prod_opt_type_*`) 참조. 상품 샘플은 "무엇을 샘플로 둘지"가 업무 판단이라 재생성하지 않고 보관 |
+
+### 재생성 도구
+
+```bash
+# 실 DB 데이터를 INSERT 문으로 내보낸다. 컬럼 목록을 스키마에서 읽으므로 드리프트가 원천 차단된다.
+java -cp <postgresql.jar> c:/tmp/GenInsert.java <테이블> [정렬컬럼] > out.sql
+# 전체 검증
+java -cp <postgresql.jar> c:/tmp/SeedAudit.java
+```
+
+⚠ 재생성은 **현재 DB 데이터를 그대로 박제**한다. 테스트로 만든 행이 섞여 있으면 함께 들어가므로,
+기반 데이터(공통코드 등)에는 적합하지만 업무 샘플에는 내용 검토가 필요하다.
 
 ### 추가 제외 항목 (2·3차)
 

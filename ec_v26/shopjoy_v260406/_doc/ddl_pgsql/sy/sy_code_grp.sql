@@ -29,5 +29,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_code_grp.upd_by IS '수정자 (sy_user.user_id
 COMMENT ON COLUMN shopjoy_2604.sy_code_grp.upd_date IS '수정일';
 
 CREATE INDEX sy_code_grp_ix01_code_grp ON shopjoy_2604.sy_code_grp USING btree (code_grp);
-CREATE UNIQUE INDEX sy_code_grp_uk_site ON shopjoy_2604.sy_code_grp USING btree (site_id, code_grp);
 CREATE INDEX sy_code_grp_ix02_path_id ON shopjoy_2604.sy_code_grp USING btree (path_id);

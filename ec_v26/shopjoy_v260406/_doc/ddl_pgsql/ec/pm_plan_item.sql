@@ -11,7 +11,8 @@ CREATE TABLE shopjoy_2604.pm_plan_item (
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
-    upd_date       TIMESTAMP   
+    upd_date       TIMESTAMP   ,
+    CONSTRAINT pm_plan_item_uk_plan_id_prod_id_x2 UNIQUE (plan_id, prod_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pm_plan_item IS '기획전 상품';
@@ -26,6 +27,4 @@ COMMENT ON COLUMN shopjoy_2604.pm_plan_item.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_plan_item.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pm_plan_item.upd_date IS '수정일';
 
-CREATE INDEX pm_plan_item_ix_plan ON shopjoy_2604.pm_plan_item USING btree (plan_id);
 CREATE INDEX pm_plan_item_ix01_prod_id ON shopjoy_2604.pm_plan_item USING btree (prod_id);
-CREATE UNIQUE INDEX pm_plan_item_uk_plan_id_prod_id_x2 ON shopjoy_2604.pm_plan_item USING btree (plan_id, prod_id);

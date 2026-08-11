@@ -18,8 +18,8 @@ public class CmDashboardItemData extends BaseEntity {
 
     @Id
     @Comment("데이터ID")
-    @Column(name = "item_data_id", length = 21, nullable = false)
-    private String itemDataId;
+    @Column(name = "dashboard_item_data_id", length = 21, nullable = false)
+    private String dashboardItemDataId;
 
 
     @Comment("패널ID FK")

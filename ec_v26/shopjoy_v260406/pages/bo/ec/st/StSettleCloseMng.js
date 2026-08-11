@@ -159,15 +159,20 @@ window.StSettleCloseMng = {
       if (cfAlreadyClosed.value) { showToast('이미 마감된 월입니다.', 'error'); return; }
       const ok = await showConfirm('정산마감', `${thisMonth} 정산을 마감하시겠습니까?\n마감 후에는 수정이 제한됩니다.`);
       if (!ok) { return; }
-      closes.unshift({
-        closeId: 'CLS-' + thisMonth, closeMon: thisMonth,
-        sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value,
-        comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value,
-        status: '마감완료', closeDate: coUtil.cofToYmd(new Date()), regUserNm: '관리자',
-      });
+      /* ⚠ 이전에는 API 호출 '전' 에 closes.unshift(...) 로 목록에 먼저 넣고 실패해도 되돌리지 않아,
+         저장이 안 됐는데도 화면에는 '마감완료' 행이 남아 성공한 것처럼 보였다.
+         저장 성공 이후에만 목록을 갱신하도록 바꿨다(성공 시 서버 기준으로 재조회).
+
+         ⚠⚠ 현재 이 저장은 백엔드와 계약이 맞지 않아 실패한다.
+            보내는 필드(closeMon/sales/refund/net/comm/promo/settle)가
+            StSettleClose 엔티티에 없어 Jackson 이 전부 버리고,
+            settle_id / close_status_cd / close_by 는 NOT NULL 이라 INSERT 가 거부된다.
+            → 이제 실패가 토스트로 드러난다(조용한 가짜 성공 제거).
+            근본 해결은 _doc/정책서/ec/st/st.06.정산화면-백엔드불일치.md 참조. */
       try {
-        const res = await boApiSvc.stSettleClose.create({ closeMon: thisMonth, sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value, comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value }, '정산마감관리', '저장');
+        await boApiSvc.stSettleClose.create({ closeMon: thisMonth, sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value, comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value }, '정산마감관리', '저장');
         if (showToast) { showToast('정산마감이 완료되었습니다.', 'success'); }
+        await handleSearchData();          // 서버 저장 결과로 목록 갱신
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

@@ -2,7 +2,7 @@
 -- 이벤트 혜택
 
 CREATE TABLE shopjoy_2604.pm_event_benefit (
-    benefit_id      VARCHAR(21)  NOT NULL CONSTRAINT pm_event_benefit_pk_benefit_id PRIMARY KEY,
+    event_benefit_id      VARCHAR(21)  NOT NULL CONSTRAINT pm_event_benefit_pk_event_benefit_id PRIMARY KEY,
     reg_site_id         VARCHAR(21)  NOT NULL,
     event_id        VARCHAR(21)  NOT NULL,
     benefit_nm      VARCHAR(100) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE shopjoy_2604.pm_event_benefit (
 );
 
 COMMENT ON TABLE  shopjoy_2604.pm_event_benefit IS '이벤트 혜택';
-COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.benefit_id IS '혜택ID';
+COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.event_benefit_id IS '혜택ID';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.reg_site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.event_id IS '이벤트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_event_benefit.benefit_nm IS '혜택명';

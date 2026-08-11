@@ -47,14 +47,14 @@ public class OdOrderItemDiscntController {
     /* 주문 아이템 할인 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<OdOrderItemDiscnt>> save(@PathVariable("id") String id, @RequestBody OdOrderItemDiscnt entity) {
-        entity.setItemDiscntId(id);
+        entity.setOrderItemDiscntId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 주문 아이템 할인 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<OdOrderItemDiscnt>> updateSelective(@PathVariable("id") String id, @RequestBody OdOrderItemDiscnt entity) {
-        entity.setItemDiscntId(id);
+        entity.setOrderItemDiscntId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

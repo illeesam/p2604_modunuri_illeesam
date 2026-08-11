@@ -2,7 +2,7 @@
 -- 다목적 샘플/코드성 데이터 저장소 1
 
 CREATE TABLE shopjoy_2604.zz_sample1 (
-    sample1_id    VARCHAR(21)   NOT NULL CONSTRAINT zz_sample1_pk PRIMARY KEY,
+    sample1_id    VARCHAR(21)   NOT NULL CONSTRAINT zz_sample1_pk_sample1_id PRIMARY KEY,
     cd_grp        VARCHAR(50)  ,
     cd_vl         VARCHAR(20)  ,
     cd_nm         VARCHAR(200) ,
@@ -36,5 +36,3 @@ CREATE TABLE shopjoy_2604.zz_sample1 (
 );
 
 COMMENT ON TABLE  shopjoy_2604.zz_sample1 IS '다목적 샘플/코드성 데이터 저장소 1';
-
-CREATE UNIQUE INDEX zz_sample1_uk_sample1 ON shopjoy_2604.zz_sample1 USING btree (sample1_id);

@@ -17,6 +17,8 @@ public class PmSaveDto {
         @Size(max = 21) private String saveId;
         private List<String> saveIds;              // PK 다건 IN
         @Size(max = 20) private String saveTypeCd;
+        /* 회원별 적립 조회 — 화면(PmSaveMng)에 검색란이 있었으나 필드가 없어 무시되던 것을 추가 */
+        @Size(max = 21) private String memberId;
     }
 
     @Getter @Setter @NoArgsConstructor

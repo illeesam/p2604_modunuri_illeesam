@@ -10,7 +10,7 @@ import java.util.Optional;
 /** PmEventBenefit QueryDSL Custom Repository */
 public interface QPmEventBenefitRepository {
 
-    Optional<PmEventBenefitDto.Item> selectById(String benefitId);
+    Optional<PmEventBenefitDto.Item> selectById(String eventBenefitId);
 
     List<PmEventBenefitDto.Item> selectList(PmEventBenefitDto.Request search);
 

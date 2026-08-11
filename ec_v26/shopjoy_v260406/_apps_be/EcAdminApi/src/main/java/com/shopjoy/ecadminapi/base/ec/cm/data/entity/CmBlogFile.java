@@ -20,8 +20,8 @@ public class CmBlogFile extends BaseEntity {
 
     @Id
     @Comment("블로그이미지ID")
-    @Column(name = "blog_img_id", length = 21, nullable = false)
-    private String blogImgId;
+    @Column(name = "blog_file_id", length = 21, nullable = false)
+    private String blogFileId;
 
 
     @Comment("블로그ID (cm_bltn.)")

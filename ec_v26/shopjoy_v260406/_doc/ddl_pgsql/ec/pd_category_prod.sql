@@ -15,7 +15,8 @@ CREATE TABLE shopjoy_2604.pd_category_prod (
     reg_by                VARCHAR(30) ,
     reg_date              TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by                VARCHAR(30) ,
-    upd_date              TIMESTAMP   
+    upd_date              TIMESTAMP   ,
+    CONSTRAINT pd_category_prod_uk_category_id_prod_id_x3 UNIQUE (category_id, prod_id, category_prod_type_cd)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_category_prod IS '상품-카테고리 연결 (N:N, 복수 카테고리·타입 등록)';
@@ -33,4 +34,3 @@ COMMENT ON COLUMN shopjoy_2604.pd_category_prod.reg_date IS '등록일';
 
 CREATE INDEX pd_category_prod_ix01_category_id_category_prod_type_cd_x3 ON shopjoy_2604.pd_category_prod USING btree (category_id, category_prod_type_cd, sort_ord);
 CREATE INDEX pd_category_prod_ix02_prod_id_category_prod_type_cd_x3 ON shopjoy_2604.pd_category_prod USING btree (prod_id, category_prod_type_cd, sort_ord);
-CREATE UNIQUE INDEX pd_category_prod_uk_category_id_prod_id_x3 ON shopjoy_2604.pd_category_prod USING btree (category_id, prod_id, category_prod_type_cd);

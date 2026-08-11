@@ -10,7 +10,7 @@ import java.util.Optional;
 /** OdOrderItemDiscnt QueryDSL Custom Repository */
 public interface QOdOrderItemDiscntRepository {
 
-    Optional<OdOrderItemDiscntDto.Item> selectById(String itemDiscntId);
+    Optional<OdOrderItemDiscntDto.Item> selectById(String orderItemDiscntId);
 
     List<OdOrderItemDiscntDto.Item> selectList(OdOrderItemDiscntDto.Request search);
 

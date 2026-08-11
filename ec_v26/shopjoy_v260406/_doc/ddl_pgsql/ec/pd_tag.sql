@@ -29,4 +29,3 @@ COMMENT ON COLUMN shopjoy_2604.pd_tag.upd_by IS '수정자 (sy_user.user_id, mb_
 COMMENT ON COLUMN shopjoy_2604.pd_tag.upd_date IS '수정일';
 
 CREATE INDEX pd_tag_ix01_tag_nm ON shopjoy_2604.pd_tag USING btree (tag_nm);
-CREATE UNIQUE INDEX pd_tag_uk_site ON shopjoy_2604.pd_tag USING btree (site_id, tag_nm);

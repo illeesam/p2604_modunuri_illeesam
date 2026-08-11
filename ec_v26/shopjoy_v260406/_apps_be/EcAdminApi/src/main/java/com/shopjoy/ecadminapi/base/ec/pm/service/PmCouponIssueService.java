@@ -76,7 +76,7 @@ public class PmCouponIssueService {
     /* 쿠폰 발행 등록 */
     @Transactional
     public PmCouponIssue create(PmCouponIssue body) {
-        body.setIssueId(CmUtil.generateId("pm_coupon_issue"));
+        body.setCouponIssueId(CmUtil.generateId("pm_coupon_issue"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -94,7 +94,7 @@ public class PmCouponIssueService {
     public PmCouponIssue update(String id, PmCouponIssue body) {
         CmUtil.requireId(id, "id", this);
         PmCouponIssue entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "issueId^regBy^regDate");
+        VoUtil.voCopyExclude(body, entity, "couponIssueId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmCouponIssue saved = pmCouponIssueRepository.save(entity);
@@ -106,9 +106,9 @@ public class PmCouponIssueService {
     /* 쿠폰 발행 수정 */
     @Transactional
     public PmCouponIssue updateSelective(PmCouponIssue entity) {
-        if (entity.getIssueId() == null) throw new CmBizException("issueId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getIssueId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getIssueId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getCouponIssueId() == null) throw new CmBizException("couponIssueId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getCouponIssueId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCouponIssueId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = pmCouponIssueRepository.updateSelective(entity);
@@ -138,31 +138,31 @@ public class PmCouponIssueService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        rowStatus = entity.resolveRowStatus(entity.getIssueId());
+        rowStatus = entity.resolveRowStatus(entity.getCouponIssueId());
 
         if ("D".equals(rowStatus)) {
-            if (entity.getIssueId() == null)
-                throw new CmBizException("삭제 대상 issueId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!pmCouponIssueRepository.existsById(entity.getIssueId()))
-                throw new CmBizException("존재하지 않는 PmCouponIssue입니다: " + entity.getIssueId() + "::" + CmUtil.svcCallerInfo(this));
-            pmCouponIssueRepository.deleteById(entity.getIssueId());
+            if (entity.getCouponIssueId() == null)
+                throw new CmBizException("삭제 대상 couponIssueId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!pmCouponIssueRepository.existsById(entity.getCouponIssueId()))
+                throw new CmBizException("존재하지 않는 PmCouponIssue입니다: " + entity.getCouponIssueId() + "::" + CmUtil.svcCallerInfo(this));
+            pmCouponIssueRepository.deleteById(entity.getCouponIssueId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setIssueId(CmUtil.generateId("pm_coupon_issue"));
+            entity.setCouponIssueId(CmUtil.generateId("pm_coupon_issue"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             PmCouponIssue saved = pmCouponIssueRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getIssueId() == null)
-                throw new CmBizException("수정 대상 issueId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (entity.getCouponIssueId() == null)
+                throw new CmBizException("수정 대상 couponIssueId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = pmCouponIssueRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 PmCouponIssue입니다: " + entity.getIssueId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 PmCouponIssue입니다: " + entity.getCouponIssueId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getIssueId());
+            return findById(entity.getCouponIssueId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -176,20 +176,20 @@ public class PmCouponIssueService {
         for (PmCouponIssue row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getIssueId() == null || row.getIssueId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getCouponIssueId() == null || row.getCouponIssueId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, PmCouponIssue::getIssueId, "U", "issueId", this);
-        CmUtil.requireRowIds(rows, PmCouponIssue::getIssueId, "D", "issueId", this);
+        CmUtil.requireRowIds(rows, PmCouponIssue::getCouponIssueId, "U", "couponIssueId", this);
+        CmUtil.requireRowIds(rows, PmCouponIssue::getCouponIssueId, "D", "couponIssueId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(PmCouponIssue::getIssueId)
+            .map(PmCouponIssue::getCouponIssueId)
             .toList();
         if (!deleteIds.isEmpty()) {
             pmCouponIssueRepository.deleteAllById(deleteIds);
@@ -202,7 +202,7 @@ public class PmCouponIssueService {
         for (PmCouponIssue row : updateRows) {
             row.setUpdBy(authId);
             int affected = pmCouponIssueRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getIssueId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCouponIssueId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -210,7 +210,7 @@ public class PmCouponIssueService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (PmCouponIssue row : insertRows) {
-            row.setIssueId(CmUtil.generateId("pm_coupon_issue"));
+            row.setCouponIssueId(CmUtil.generateId("pm_coupon_issue"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pmCouponIssueRepository.save(row);

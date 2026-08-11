@@ -147,10 +147,8 @@
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/dp/widget/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
-  /* ── dp: 전시연관자원 ───────────────────────────────────────── */
-  boApiSvc.dpResource = {
-    getPage(params, uiNm, cmdNm, opt) { return global.boApi.get(   '/bo/ec/resource/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
-  };
+  /* dpResource 제거(2026-08-10) — /bo/ec/resource/page 는 백엔드 컨트롤러가 없고(404),
+     프론트 어디에서도 호출하지 않는 死코드였다. 필요해지면 백엔드 신설과 함께 다시 추가할 것. */
 
   /* ── dp: 전시UI ─────────────────────────────────────────────── */
   boApiSvc.dpUi = {

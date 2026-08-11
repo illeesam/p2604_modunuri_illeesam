@@ -13,7 +13,8 @@ CREATE TABLE shopjoy_2604.sy_i18n (
     reg_by        VARCHAR(30) ,
     reg_date      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by        VARCHAR(30) ,
-    upd_date      TIMESTAMP   
+    upd_date      TIMESTAMP   ,
+    CONSTRAINT sy_i18n_uk_i18n_key_i18n_scope_cd_x2 UNIQUE (i18n_key, i18n_scope_cd)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_i18n IS '다국어 키 마스터';
@@ -32,4 +33,3 @@ COMMENT ON COLUMN shopjoy_2604.sy_i18n.upd_date IS '수정일';
 
 CREATE INDEX sy_i18n_ix01_i18n_category ON shopjoy_2604.sy_i18n USING btree (i18n_category);
 CREATE INDEX sy_i18n_ix02_i18n_scope_cd_use_yn_x2 ON shopjoy_2604.sy_i18n USING btree (i18n_scope_cd, use_yn);
-CREATE UNIQUE INDEX sy_i18n_uk_i18n_key_i18n_scope_cd_x2 ON shopjoy_2604.sy_i18n USING btree (i18n_key, i18n_scope_cd);

@@ -36,9 +36,6 @@ COMMENT ON COLUMN shopjoy_2604.zd_simul_log.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.zd_simul_log.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.zd_simul_log.upd_date IS '수정일시';
 
-CREATE INDEX zd_simul_log_ix03_site_id ON shopjoy_2604.zd_simul_log (site_id);
-CREATE INDEX zd_simul_log_ix01_domain ON shopjoy_2604.zd_simul_log (domain);
-CREATE INDEX zd_simul_log_ix02_reg_date ON shopjoy_2604.zd_simul_log (reg_date DESC);
 CREATE INDEX zd_simul_log_ix01_domain ON shopjoy_2604.zd_simul_log USING btree (domain);
 CREATE INDEX zd_simul_log_ix02_reg_date ON shopjoy_2604.zd_simul_log USING btree (reg_date DESC);
 CREATE INDEX zd_simul_log_ix03_site_id ON shopjoy_2604.zd_simul_log USING btree (site_id);

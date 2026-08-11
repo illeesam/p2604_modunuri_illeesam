@@ -76,7 +76,7 @@ public class CmBlogGoodService {
     /* 게시물 좋아요 등록 */
     @Transactional
     public CmBlogGood create(CmBlogGood body) {
-        body.setLikeId(CmUtil.generateId("cm_blog_good"));
+        body.setBlogGoodId(CmUtil.generateId("cm_blog_good"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -94,7 +94,7 @@ public class CmBlogGoodService {
     public CmBlogGood update(String id, CmBlogGood body) {
         CmUtil.requireId(id, "id", this);
         CmBlogGood entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "likeId^regBy^regDate");
+        VoUtil.voCopyExclude(body, entity, "blogGoodId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogGood saved = cmBlogGoodRepository.save(entity);
@@ -106,9 +106,9 @@ public class CmBlogGoodService {
     /* 게시물 좋아요 수정 */
     @Transactional
     public CmBlogGood updateSelective(CmBlogGood entity) {
-        if (entity.getLikeId() == null) throw new CmBizException("likeId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getLikeId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getLikeId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getBlogGoodId() == null) throw new CmBizException("blogGoodId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getBlogGoodId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogGoodId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = cmBlogGoodRepository.updateSelective(entity);
@@ -138,31 +138,31 @@ public class CmBlogGoodService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        rowStatus = entity.resolveRowStatus(entity.getLikeId());
+        rowStatus = entity.resolveRowStatus(entity.getBlogGoodId());
 
         if ("D".equals(rowStatus)) {
-            if (entity.getLikeId() == null)
-                throw new CmBizException("삭제 대상 likeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!cmBlogGoodRepository.existsById(entity.getLikeId()))
-                throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + entity.getLikeId() + "::" + CmUtil.svcCallerInfo(this));
-            cmBlogGoodRepository.deleteById(entity.getLikeId());
+            if (entity.getBlogGoodId() == null)
+                throw new CmBizException("삭제 대상 blogGoodId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!cmBlogGoodRepository.existsById(entity.getBlogGoodId()))
+                throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + entity.getBlogGoodId() + "::" + CmUtil.svcCallerInfo(this));
+            cmBlogGoodRepository.deleteById(entity.getBlogGoodId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setLikeId(CmUtil.generateId("cm_blog_good"));
+            entity.setBlogGoodId(CmUtil.generateId("cm_blog_good"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             CmBlogGood saved = cmBlogGoodRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getLikeId() == null)
-                throw new CmBizException("수정 대상 likeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (entity.getBlogGoodId() == null)
+                throw new CmBizException("수정 대상 blogGoodId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = cmBlogGoodRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + entity.getLikeId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 CmBlogGood입니다: " + entity.getBlogGoodId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getLikeId());
+            return findById(entity.getBlogGoodId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -176,20 +176,20 @@ public class CmBlogGoodService {
         for (CmBlogGood row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getLikeId() == null || row.getLikeId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getBlogGoodId() == null || row.getBlogGoodId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, CmBlogGood::getLikeId, "U", "likeId", this);
-        CmUtil.requireRowIds(rows, CmBlogGood::getLikeId, "D", "likeId", this);
+        CmUtil.requireRowIds(rows, CmBlogGood::getBlogGoodId, "U", "blogGoodId", this);
+        CmUtil.requireRowIds(rows, CmBlogGood::getBlogGoodId, "D", "blogGoodId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(CmBlogGood::getLikeId)
+            .map(CmBlogGood::getBlogGoodId)
             .toList();
         if (!deleteIds.isEmpty()) {
             cmBlogGoodRepository.deleteAllById(deleteIds);
@@ -202,7 +202,7 @@ public class CmBlogGoodService {
         for (CmBlogGood row : updateRows) {
             row.setUpdBy(authId);
             int affected = cmBlogGoodRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getLikeId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBlogGoodId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -210,7 +210,7 @@ public class CmBlogGoodService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (CmBlogGood row : insertRows) {
-            row.setLikeId(CmUtil.generateId("cm_blog_good"));
+            row.setBlogGoodId(CmUtil.generateId("cm_blog_good"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmBlogGoodRepository.save(row);

@@ -2,7 +2,7 @@
 -- 샘플 데이터 0: 기본 정보 관리
 
 CREATE TABLE shopjoy_2604.zz_sample0 (
-    sample0_id        VARCHAR(20) NOT NULL CONSTRAINT zz_sample0_pk PRIMARY KEY,
+    sample0_id        VARCHAR(20) NOT NULL CONSTRAINT zz_sample0_pk_sample0_id PRIMARY KEY,
     sample_name       VARCHAR(100),
     sample_desc       TEXT,
     sample_value      VARCHAR(255),

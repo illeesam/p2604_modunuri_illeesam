@@ -16,7 +16,8 @@ CREATE TABLE shopjoy_2604.sy_brand (
     reg_by       VARCHAR(30) ,
     reg_date     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by       VARCHAR(30) ,
-    upd_date     TIMESTAMP   
+    upd_date     TIMESTAMP   ,
+    CONSTRAINT sy_brand_uk_brand_code UNIQUE (brand_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_brand IS '브랜드';
@@ -35,6 +36,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_brand.reg_by IS '등록자 (sy_user.user_id, e
 COMMENT ON COLUMN shopjoy_2604.sy_brand.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_brand.upd_date IS '수정일';
-
-CREATE UNIQUE INDEX sy_brand_uk_brand_code ON shopjoy_2604.sy_brand USING btree (brand_code);
 CREATE INDEX sy_brand_ix01_vendor_id ON shopjoy_2604.sy_brand USING btree (vendor_id);

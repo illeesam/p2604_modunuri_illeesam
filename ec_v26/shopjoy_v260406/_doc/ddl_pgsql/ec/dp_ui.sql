@@ -36,6 +36,5 @@ COMMENT ON COLUMN shopjoy_2604.dp_ui.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.dp_ui.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_ui.upd_date IS '수정일';
 
-CREATE UNIQUE INDEX dp_ui_uk_site ON shopjoy_2604.dp_ui USING btree (site_id, ui_cd);
 CREATE INDEX dp_ui_ix01_device_type_cd ON shopjoy_2604.dp_ui USING btree (device_type_cd);
 CREATE INDEX dp_ui_ix02_use_yn_use_start_date_x3 ON shopjoy_2604.dp_ui USING btree (use_yn, use_start_date, use_end_date);

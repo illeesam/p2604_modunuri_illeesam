@@ -17,5 +17,3 @@ CREATE TABLE shopjoy_2604.zz_exmy3 (
 );
 
 COMMENT ON TABLE  shopjoy_2604.zz_exmy3 IS 'zz_exmy3';
-
-CREATE UNIQUE INDEX zz_exmy3_uk_exmy1 ON shopjoy_2604.zz_exmy3 USING btree (exmy1_id, exmy2_id, exmy3_id);

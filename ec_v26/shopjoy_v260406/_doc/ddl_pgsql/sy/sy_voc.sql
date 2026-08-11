@@ -29,4 +29,3 @@ COMMENT ON COLUMN shopjoy_2604.sy_voc.upd_by IS '수정자ID';
 COMMENT ON COLUMN shopjoy_2604.sy_voc.upd_date IS '수정일시';
 
 CREATE INDEX sy_voc_ix01_voc_master_cd ON shopjoy_2604.sy_voc USING btree (voc_master_cd);
-CREATE UNIQUE INDEX sy_voc_uk_site ON shopjoy_2604.sy_voc USING btree (site_id, voc_master_cd, voc_detail_cd);

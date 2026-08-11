@@ -1,6 +1,6 @@
 -- 상품 판매계획 (시간대별 가격 스케줄)
 CREATE TABLE shopjoy_2604.pd_prod_plan (
-    plan_id         VARCHAR(21)  NOT NULL,
+    prod_plan_id         VARCHAR(21)  NOT NULL,
     reg_site_id         VARCHAR(21)  NOT NULL,
     prod_id         VARCHAR(21)  NOT NULL,
     start_datetime  TIMESTAMP,
@@ -14,11 +14,11 @@ CREATE TABLE shopjoy_2604.pd_prod_plan (
     reg_date        TIMESTAMP,
     upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
-    CONSTRAINT pd_prod_plan_pk_plan_id PRIMARY KEY (plan_id)
+    CONSTRAINT pd_prod_plan_pk_prod_plan_id PRIMARY KEY (prod_plan_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_plan                IS '상품 판매계획';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.plan_id        IS '판매계획ID';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.prod_plan_id        IS '판매계획ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.reg_site_id        IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.prod_id        IS '상품ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.start_datetime IS '시작일시';
@@ -33,7 +33,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.reg_date       IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.upd_by         IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_plan.upd_date       IS '수정일';
 
-CREATE INDEX pd_prod_plan_ix01_prod_id ON shopjoy_2604.pd_prod_plan (prod_id);
-CREATE INDEX pd_prod_plan_ix02_start_datetime_end_datetime_x2 ON shopjoy_2604.pd_prod_plan (start_datetime, end_datetime);
 CREATE INDEX pd_prod_plan_ix01_prod_id ON shopjoy_2604.pd_prod_plan USING btree (prod_id);
 CREATE INDEX pd_prod_plan_ix02_start_datetime_end_datetime_x2 ON shopjoy_2604.pd_prod_plan USING btree (start_datetime, end_datetime);

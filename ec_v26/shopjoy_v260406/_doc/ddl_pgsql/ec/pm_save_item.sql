@@ -28,5 +28,4 @@ COMMENT ON COLUMN shopjoy_2604.pm_save_item.upd_date IS '수정일시';
 CREATE INDEX pm_save_item_ix01_reg_date ON shopjoy_2604.pm_save_item USING btree (reg_date DESC);
 CREATE INDEX pm_save_item_ix02_save_id ON shopjoy_2604.pm_save_item USING btree (save_id);
 CREATE INDEX pm_save_item_ix04_target_type_cd_target_id_x2 ON shopjoy_2604.pm_save_item USING btree (target_type_cd, target_id);
-CREATE UNIQUE INDEX pm_save_item_uk_save_item ON shopjoy_2604.pm_save_item USING btree (save_item_id);
 CREATE INDEX pm_save_item_ix03_target_id ON shopjoy_2604.pm_save_item USING btree (target_id);

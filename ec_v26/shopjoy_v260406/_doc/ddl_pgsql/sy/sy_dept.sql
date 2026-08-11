@@ -15,7 +15,8 @@ CREATE TABLE shopjoy_2604.sy_dept (
     reg_by         VARCHAR(30) ,
     reg_date       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30) ,
-    upd_date       TIMESTAMP   
+    upd_date       TIMESTAMP   ,
+    CONSTRAINT sy_dept_uk_dept_code UNIQUE (dept_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_dept IS '부서';
@@ -33,7 +34,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_dept.reg_by IS '등록자 (sy_user.user_id, ec
 COMMENT ON COLUMN shopjoy_2604.sy_dept.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_dept.upd_date IS '수정일';
-
-CREATE UNIQUE INDEX sy_dept_uk_dept_code ON shopjoy_2604.sy_dept USING btree (dept_code);
 CREATE INDEX sy_dept_ix01_manager_id ON shopjoy_2604.sy_dept USING btree (manager_id);
 CREATE INDEX sy_dept_ix02_parent_dept_id ON shopjoy_2604.sy_dept USING btree (parent_dept_id);

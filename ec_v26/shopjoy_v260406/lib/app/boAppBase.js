@@ -1811,13 +1811,13 @@
           const flat = [];
           const walk = (pid, depth) => (byParent[pid] || []).forEach((x) => {
             if (x.nodeTypeCd === 'FOLDER') {
-              flat.push({ key: 'F:' + x.menuNodeId, label: x.nodeNm || '폴더', folder: true, depth });
+              flat.push({ key: 'F:' + x.dashboardMenuId, label: x.nodeNm || '폴더', folder: true, depth });
             } else {
               const d = dashMap[x.dashboardId];
-              if (d) flat.push({ key: x.menuNodeId, label: d.dashboardNm, depth,
+              if (d) flat.push({ key: x.dashboardMenuId, label: d.dashboardNm, depth,
                                  pageId: fnSysDashPageId(d.uiCompNm), dashboardId: d.dashboardId });
             }
-            walk(x.menuNodeId, depth + 1);
+            walk(x.dashboardMenuId, depth + 1);
           });
           walk('', 0);
           sysDashMenus.splice(0, sysDashMenus.length, ...flat);
@@ -1866,13 +1866,13 @@
               const flat = [];
               const walk = (pid, depth) => (byParent[pid] || []).forEach((x) => {
                 if (x.nodeTypeCd === 'FOLDER') {
-                  flat.push({ dashboardId: 'F:' + x.menuNodeId, dashboardNm: x.nodeNm || '폴더',
+                  flat.push({ dashboardId: 'F:' + x.dashboardMenuId, dashboardNm: x.nodeNm || '폴더',
                               folder: true, depth, mine: true });
                 } else {
                   const d = dashMap[x.dashboardId];
                   if (d) flat.push(Object.assign({}, d, { depth }));
                 }
-                walk(x.menuNodeId, depth + 1);
+                walk(x.dashboardMenuId, depth + 1);
               });
               walk('', 0);
               userDashMenus.splice(0, userDashMenus.length, ...flat);

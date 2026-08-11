@@ -40,7 +40,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
     private JPAQuery<PmCouponUsageDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmCouponUsageDto.Item.class,
-                        pmCouponUsage.usageId,          // 사용이력ID (PK, YYMMDDhhmmss+rand4)
+                        pmCouponUsage.couponUsageId,          // 사용이력ID (PK, YYMMDDhhmmss+rand4)
                         pmCouponUsage.couponId,         // 쿠폰ID (pm_coupon.coupon_id)
                         pmCouponUsage.couponCode,       // 쿠폰코드 스냅샷
                         pmCouponUsage.couponNm,         // 쿠폰명 스냅샷
@@ -59,9 +59,9 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
 
     /* 쿠폰 사용 이력 키조회 */
     @Override
-    public Optional<PmCouponUsageDto.Item> selectById(String usageId) {
+    public Optional<PmCouponUsageDto.Item> selectById(String couponUsageId) {
         PmCouponUsageDto.Item dto = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCouponUsage.usageId.eq(usageId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCouponUsage.couponUsageId.eq(couponUsageId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -74,7 +74,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         JPAQuery<PmCouponUsageDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pmCouponUsage.usageId, search.getUsageId()),
+                    QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -99,7 +99,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pmCouponUsage.usageId, search.getUsageId()),
+                QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -137,7 +137,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
             QdslUtil.FieldDef.like("orderId", pmCouponUsage.orderId),
             QdslUtil.FieldDef.like("orderItemId", pmCouponUsage.orderItemId),
             QdslUtil.FieldDef.like("prodId", pmCouponUsage.prodId),
-            QdslUtil.FieldDef.like("usageId", pmCouponUsage.usageId)
+            QdslUtil.FieldDef.like("couponUsageId", pmCouponUsage.couponUsageId)
         ));
     }
 
@@ -147,18 +147,18 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
      */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
-            Map.of("usageId", pmCouponUsage.usageId,
+            Map.of("couponUsageId", pmCouponUsage.couponUsageId,
                    "couponNm", pmCouponUsage.couponNm,
                    "regDate", pmCouponUsage.regDate),
         new OrderSpecifier<>(Order.DESC, pmCouponUsage.regDate),
-        new OrderSpecifier<>(Order.ASC, pmCouponUsage.usageId));
+        new OrderSpecifier<>(Order.ASC, pmCouponUsage.couponUsageId));
     }
 
     /* 쿠폰 사용 이력 수정 */
 
     @Override
     public int updateSelective(PmCouponUsage entity) {
-        if (entity.getUsageId() == null) return 0;
+        if (entity.getCouponUsageId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(pmCouponUsage);
         boolean hasAny = false;
@@ -180,7 +180,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
 
         if (!hasAny) return 0;
 
-        long affected = update.where(pmCouponUsage.usageId.eq(entity.getUsageId())).execute();
+        long affected = update.where(pmCouponUsage.couponUsageId.eq(entity.getCouponUsageId())).execute();
         return (int) affected;
     }
 }

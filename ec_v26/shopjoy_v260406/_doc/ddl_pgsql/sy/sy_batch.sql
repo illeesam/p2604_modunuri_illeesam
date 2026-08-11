@@ -20,7 +20,8 @@ CREATE TABLE shopjoy_2604.sy_batch (
     reg_date          TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by            VARCHAR(30) ,
     upd_date          TIMESTAMP   ,
-    path_id           VARCHAR(21) 
+    path_id           VARCHAR(21) ,
+    CONSTRAINT sy_batch_uk_batch_code UNIQUE (batch_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_batch IS '배치 작업';
@@ -43,5 +44,3 @@ COMMENT ON COLUMN shopjoy_2604.sy_batch.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
-
-CREATE UNIQUE INDEX sy_batch_uk_batch_code ON shopjoy_2604.sy_batch USING btree (batch_code);

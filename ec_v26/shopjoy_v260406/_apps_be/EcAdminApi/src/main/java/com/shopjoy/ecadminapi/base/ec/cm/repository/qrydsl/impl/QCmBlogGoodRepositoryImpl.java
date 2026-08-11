@@ -40,7 +40,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     private JPAQuery<CmBlogGoodDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogGoodDto.Item.class,
-                        cmBlogGood.likeId,   // 좋아요ID (PK)
+                        cmBlogGood.blogGoodId,   // 좋아요ID (PK)
                         cmBlogGood.blogId,   // 블로그ID (cm_blog.blog_id)
                         cmBlogGood.userId,   // 사용자ID (mb_member.member_id)
                         cmBlogGood.regDate   // 등록일시
@@ -51,10 +51,10 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
     /** 단건 조회 */
     @Override
-    public Optional<CmBlogGoodDto.Item> selectById(String likeId) {
+    public Optional<CmBlogGoodDto.Item> selectById(String blogGoodId) {
         CmBlogGoodDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(cmBlogGood.likeId.eq(likeId))
+                .where(cmBlogGood.blogGoodId.eq(blogGoodId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -65,7 +65,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         JPAQuery<CmBlogGoodDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(cmBlogGood.likeId, search.getLikeId()),
+                QdslUtil.strEq(cmBlogGood.blogGoodId, search.getBlogGoodId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
@@ -90,7 +90,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmBlogGood.likeId, search.getLikeId()),
+                QdslUtil.strEq(cmBlogGood.blogGoodId, search.getBlogGoodId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -122,7 +122,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("blogId", cmBlogGood.blogId),
-            QdslUtil.FieldDef.like("likeId", cmBlogGood.likeId),
+            QdslUtil.FieldDef.like("blogGoodId", cmBlogGood.blogGoodId),
             QdslUtil.FieldDef.like("userId", cmBlogGood.userId)
         ));
     }
@@ -133,16 +133,16 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
      */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
-            Map.of("likeId", cmBlogGood.likeId,
+            Map.of("blogGoodId", cmBlogGood.blogGoodId,
                    "regDate", cmBlogGood.regDate),
         new OrderSpecifier<>(Order.DESC, cmBlogGood.regDate),
-        new OrderSpecifier<>(Order.ASC, cmBlogGood.likeId));
+        new OrderSpecifier<>(Order.ASC, cmBlogGood.blogGoodId));
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */
     @Override
     public int updateSelective(CmBlogGood entity) {
-        if (entity.getLikeId() == null) return 0;
+        if (entity.getBlogGoodId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(cmBlogGood);
         boolean hasAny = false;
@@ -152,7 +152,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
         if (!hasAny) return 0;
 
-        long affected = update.where(cmBlogGood.likeId.eq(entity.getLikeId())).execute();
+        long affected = update.where(cmBlogGood.blogGoodId.eq(entity.getBlogGoodId())).execute();
         return (int) affected;
     }
 }

@@ -10,7 +10,7 @@ import java.util.Optional;
 /** PdProdBundleItem QueryDSL Custom Repository */
 public interface QPdProdBundleItemRepository {
 
-    Optional<PdProdBundleItemDto.Item> selectById(String bundleItemId);
+    Optional<PdProdBundleItemDto.Item> selectById(String prodBundleItemId);
 
     List<PdProdBundleItemDto.Item> selectList(PdProdBundleItemDto.Request search);
 

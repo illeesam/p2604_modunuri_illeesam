@@ -292,13 +292,13 @@ public class BoCmDashboardController {
            (그냥 재생성만 하면 parentNodeId 가 끊어진 키를 가리켜 트리가 무너진다). */
         java.util.Map<String, String> keyToId = new java.util.LinkedHashMap<>();
         for (CmDashboardMenu n : nodes) {
-            keyToId.put(n.getMenuNodeId(), CmUtil.generateId("cm_dashboard_menu"));
+            keyToId.put(n.getDashboardMenuId(), CmUtil.generateId("cm_dashboard_menu"));
         }
         int i = 0;
         for (CmDashboardMenu n : nodes) {
             String pk = n.getParentNodeId();
             n.setParentNodeId(pk == null || pk.isBlank() ? null : keyToId.get(pk));
-            n.setMenuNodeId(keyToId.get(n.getMenuNodeId()));
+            n.setDashboardMenuId(keyToId.get(n.getDashboardMenuId()));
             n.setMenuScopeCd(scp);
             /* SYS 는 주인이 없다. USER 는 세션 고정 — 클라이언트 값 무시 */
             n.setOwnerUserId("SYS".equals(scp) ? null : uid);

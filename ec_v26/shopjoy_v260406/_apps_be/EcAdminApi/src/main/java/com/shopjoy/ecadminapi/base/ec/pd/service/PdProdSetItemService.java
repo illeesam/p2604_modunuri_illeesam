@@ -76,7 +76,7 @@ public class PdProdSetItemService {
     /* 세트상품 구성 등록 */
     @Transactional
     public PdProdSetItem create(PdProdSetItem body) {
-        body.setSetItemId(CmUtil.generateId("pd_prod_set_item"));
+        body.setProdSetItemId(CmUtil.generateId("pd_prod_set_item"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -94,7 +94,7 @@ public class PdProdSetItemService {
     public PdProdSetItem update(String id, PdProdSetItem body) {
         CmUtil.requireId(id, "id", this);
         PdProdSetItem entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "setItemId^regBy^regDate");
+        VoUtil.voCopyExclude(body, entity, "prodSetItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdSetItem saved = pdProdSetItemRepository.save(entity);
@@ -106,9 +106,9 @@ public class PdProdSetItemService {
     /* 세트상품 구성 수정 */
     @Transactional
     public PdProdSetItem updateSelective(PdProdSetItem entity) {
-        if (entity.getSetItemId() == null) throw new CmBizException("setItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getSetItemId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getSetItemId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getProdSetItemId() == null) throw new CmBizException("prodSetItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getProdSetItemId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdSetItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = pdProdSetItemRepository.updateSelective(entity);
@@ -138,31 +138,31 @@ public class PdProdSetItemService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        rowStatus = entity.resolveRowStatus(entity.getSetItemId());
+        rowStatus = entity.resolveRowStatus(entity.getProdSetItemId());
 
         if ("D".equals(rowStatus)) {
-            if (entity.getSetItemId() == null)
-                throw new CmBizException("삭제 대상 setItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!pdProdSetItemRepository.existsById(entity.getSetItemId()))
-                throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + entity.getSetItemId() + "::" + CmUtil.svcCallerInfo(this));
-            pdProdSetItemRepository.deleteById(entity.getSetItemId());
+            if (entity.getProdSetItemId() == null)
+                throw new CmBizException("삭제 대상 prodSetItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!pdProdSetItemRepository.existsById(entity.getProdSetItemId()))
+                throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + entity.getProdSetItemId() + "::" + CmUtil.svcCallerInfo(this));
+            pdProdSetItemRepository.deleteById(entity.getProdSetItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setSetItemId(CmUtil.generateId("pd_prod_set_item"));
+            entity.setProdSetItemId(CmUtil.generateId("pd_prod_set_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             PdProdSetItem saved = pdProdSetItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getSetItemId() == null)
-                throw new CmBizException("수정 대상 setItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (entity.getProdSetItemId() == null)
+                throw new CmBizException("수정 대상 prodSetItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = pdProdSetItemRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + entity.getSetItemId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 PdProdSetItem입니다: " + entity.getProdSetItemId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getSetItemId());
+            return findById(entity.getProdSetItemId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -176,20 +176,20 @@ public class PdProdSetItemService {
         for (PdProdSetItem row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getSetItemId() == null || row.getSetItemId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getProdSetItemId() == null || row.getProdSetItemId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, PdProdSetItem::getSetItemId, "U", "setItemId", this);
-        CmUtil.requireRowIds(rows, PdProdSetItem::getSetItemId, "D", "setItemId", this);
+        CmUtil.requireRowIds(rows, PdProdSetItem::getProdSetItemId, "U", "prodSetItemId", this);
+        CmUtil.requireRowIds(rows, PdProdSetItem::getProdSetItemId, "D", "prodSetItemId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(PdProdSetItem::getSetItemId)
+            .map(PdProdSetItem::getProdSetItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
             pdProdSetItemRepository.deleteAllById(deleteIds);
@@ -202,7 +202,7 @@ public class PdProdSetItemService {
         for (PdProdSetItem row : updateRows) {
             row.setUpdBy(authId);
             int affected = pdProdSetItemRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSetItemId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdSetItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -210,7 +210,7 @@ public class PdProdSetItemService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (PdProdSetItem row : insertRows) {
-            row.setSetItemId(CmUtil.generateId("pd_prod_set_item"));
+            row.setProdSetItemId(CmUtil.generateId("pd_prod_set_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdSetItemRepository.save(row);

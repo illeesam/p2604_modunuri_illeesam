@@ -98,6 +98,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                     QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()),
                     QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()),
                     QdslUtil.strEq(pmGift.useYn, search.getUseYn()),
+                    QdslUtil.strEq(pmGift.prodId, search.getProdId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )

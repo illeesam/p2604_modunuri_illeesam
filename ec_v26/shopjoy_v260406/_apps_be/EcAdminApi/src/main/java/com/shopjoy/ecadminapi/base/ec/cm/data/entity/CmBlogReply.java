@@ -20,8 +20,8 @@ public class CmBlogReply extends BaseEntity {
 
     @Id
     @Comment("댓글ID")
-    @Column(name = "comment_id", length = 21, nullable = false)
-    private String commentId;
+    @Column(name = "blog_reply_id", length = 21, nullable = false)
+    private String blogReplyId;
 
 
     @Comment("블로그ID")

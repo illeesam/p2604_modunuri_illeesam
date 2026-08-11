@@ -2,7 +2,7 @@
 -- 세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의)
 
 CREATE TABLE shopjoy_2604.pd_prod_set_item (
-    set_item_id  VARCHAR(21)  NOT NULL CONSTRAINT pd_prod_set_item_pk_set_item_id PRIMARY KEY,
+    prod_set_item_id  VARCHAR(21)  NOT NULL CONSTRAINT pd_prod_set_item_pk_prod_set_item_id PRIMARY KEY,
     reg_site_id      VARCHAR(21)  NOT NULL,
     set_prod_id  VARCHAR(21)  NOT NULL,
     item_prod_id VARCHAR(21) ,
@@ -19,7 +19,7 @@ CREATE TABLE shopjoy_2604.pd_prod_set_item (
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_set_item IS '세트상품 구성 목록 (prod_type_cd=SET, 표시·배송 단위 정의)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.set_item_id IS '세트구성ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.prod_set_item_id IS '세트구성ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.set_prod_id IS '세트상품ID (pd_prod.prod_id, prod_type_cd=SET)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_set_item.item_prod_id IS '구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)';

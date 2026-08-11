@@ -49,7 +49,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
     private JPAQuery<PmCouponIssueDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmCouponIssueDto.Item.class,
-                        pmCouponIssue.issueId,     // 발급ID (PK)
+                        pmCouponIssue.couponIssueId,     // 발급ID (PK)
                         pmCouponIssue.couponId,    // 쿠폰ID (pm_coupon.coupon_id)
                         pmCouponIssue.memberId,    // 회원ID
                         pmCouponIssue.issueDate,   // 발급일시
@@ -77,9 +77,9 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
 
     /* 쿠폰 발행 키조회 */
     @Override
-    public Optional<PmCouponIssueDto.Item> selectById(String issueId) {
+    public Optional<PmCouponIssueDto.Item> selectById(String couponIssueId) {
         PmCouponIssueDto.Item dto = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCouponIssue.issueId.eq(issueId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCouponIssue.couponIssueId.eq(couponIssueId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -93,7 +93,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strIn(pmCouponIssue.couponId, search.getCouponIds()),
-                    QdslUtil.strEq(pmCouponIssue.issueId, search.getIssueId()),
+                    QdslUtil.strEq(pmCouponIssue.couponIssueId, search.getCouponIssueId()),
                     QdslUtil.strEq(pmCouponIssue.memberId, search.getMemberId()),
                     QdslUtil.strEq(pmCouponIssue.useYn, search.getUseYn()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -121,7 +121,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(pmCouponIssue.couponId, search.getCouponIds()),
-                QdslUtil.strEq(pmCouponIssue.issueId, search.getIssueId()),
+                QdslUtil.strEq(pmCouponIssue.couponIssueId, search.getCouponIssueId()),
                 QdslUtil.strEq(pmCouponIssue.memberId, search.getMemberId()),
                 QdslUtil.strEq(pmCouponIssue.useYn, search.getUseYn()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
@@ -154,7 +154,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("couponId", pmCouponIssue.couponId),
-            QdslUtil.FieldDef.like("issueId", pmCouponIssue.issueId),
+            QdslUtil.FieldDef.like("couponIssueId", pmCouponIssue.couponIssueId),
             QdslUtil.FieldDef.like("memberId", pmCouponIssue.memberId),
             QdslUtil.FieldDef.like("orderId", pmCouponIssue.orderId),
             QdslUtil.FieldDef.like("useYn", pmCouponIssue.useYn)
@@ -167,17 +167,17 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
      */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
-            Map.of("issueId", pmCouponIssue.issueId,
+            Map.of("couponIssueId", pmCouponIssue.couponIssueId,
                    "issueDate", pmCouponIssue.issueDate),
         new OrderSpecifier<>(Order.DESC, pmCouponIssue.regDate),
-        new OrderSpecifier<>(Order.ASC, pmCouponIssue.issueId));
+        new OrderSpecifier<>(Order.ASC, pmCouponIssue.couponIssueId));
     }
 
     /* 쿠폰 발행 수정 */
 
     @Override
     public int updateSelective(PmCouponIssue entity) {
-        if (entity.getIssueId() == null) return 0;
+        if (entity.getCouponIssueId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(pmCouponIssue);
         boolean hasAny = false;
@@ -191,7 +191,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
 
         if (!hasAny) return 0;
 
-        long affected = update.where(pmCouponIssue.issueId.eq(entity.getIssueId())).execute();
+        long affected = update.where(pmCouponIssue.couponIssueId.eq(entity.getCouponIssueId())).execute();
         return (int) affected;
     }
 }

@@ -47,14 +47,14 @@ public class CmBlogReplyController {
     /* 게시물 댓글 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogReply>> save(@PathVariable("id") String id, @RequestBody CmBlogReply entity) {
-        entity.setCommentId(id);
+        entity.setBlogReplyId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 게시물 댓글 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogReply>> updateSelective(@PathVariable("id") String id, @RequestBody CmBlogReply entity) {
-        entity.setCommentId(id);
+        entity.setBlogReplyId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

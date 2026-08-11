@@ -31,4 +31,3 @@ COMMENT ON COLUMN shopjoy_2604.mb_member_grade.upd_by IS '수정자ID';
 COMMENT ON COLUMN shopjoy_2604.mb_member_grade.upd_date IS '수정일시';
 
 CREATE INDEX mb_member_grade_ix01_grade_cd ON shopjoy_2604.mb_member_grade USING btree (grade_cd);
-CREATE UNIQUE INDEX mb_member_grade_uk_site ON shopjoy_2604.mb_member_grade USING btree (site_id, grade_cd);

@@ -10,7 +10,8 @@ CREATE TABLE shopjoy_2604.sy_role_menu (
     reg_by       VARCHAR(30),
     reg_date     TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by       VARCHAR(30),
-    upd_date     TIMESTAMP  
+    upd_date     TIMESTAMP  ,
+    CONSTRAINT sy_role_menu_uk_role_id_menu_id_x2 UNIQUE (role_id, menu_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_role_menu IS '역할-메뉴 권한 매핑';
@@ -23,6 +24,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_role_menu.reg_by IS '등록자 (sy_user.user_i
 COMMENT ON COLUMN shopjoy_2604.sy_role_menu.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_role_menu.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_role_menu.upd_date IS '수정일';
-
-CREATE UNIQUE INDEX sy_role_menu_uk_role_id_menu_id_x2 ON shopjoy_2604.sy_role_menu USING btree (role_id, menu_id);
 CREATE INDEX sy_role_menu_ix01_menu_id ON shopjoy_2604.sy_role_menu USING btree (menu_id);

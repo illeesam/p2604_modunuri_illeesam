@@ -10,7 +10,7 @@ import java.util.Optional;
 /** PmCouponIssue QueryDSL Custom Repository */
 public interface QPmCouponIssueRepository {
 
-    Optional<PmCouponIssueDto.Item> selectById(String issueId);
+    Optional<PmCouponIssueDto.Item> selectById(String couponIssueId);
 
     List<PmCouponIssueDto.Item> selectList(PmCouponIssueDto.Request search);
 

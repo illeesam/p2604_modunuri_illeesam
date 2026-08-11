@@ -63,5 +63,4 @@ CREATE INDEX syh_access_error_log_ix01_error_type ON shopjoy_2604.syh_access_err
 CREATE INDEX syh_access_error_log_ix02_log_dt ON shopjoy_2604.syh_access_error_log USING btree (log_dt DESC);
 CREATE INDEX syh_access_error_log_ix03_req_path ON shopjoy_2604.syh_access_error_log USING btree (req_path);
 CREATE INDEX syh_access_error_log_ix05_user_id ON shopjoy_2604.syh_access_error_log USING btree (user_id);
-CREATE UNIQUE INDEX syh_access_error_log_uk_log ON shopjoy_2604.syh_access_error_log USING btree (log_id);
 CREATE INDEX syh_access_error_log_ix04_trace_id ON shopjoy_2604.syh_access_error_log USING btree (trace_id);

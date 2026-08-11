@@ -30,7 +30,6 @@ CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_popup_item (
     CONSTRAINT cm_popup_item_pk_popup_item_id PRIMARY KEY (popup_item_id)
 );
 
-CREATE INDEX IF NOT EXISTS ix_cm_popup_item_popup ON shopjoy_2604.cm_popup_item (popup_id, sort_ord);
 
 COMMENT ON TABLE  shopjoy_2604.cm_popup_item IS '공통 팝업 항목(필드) 속성';
 COMMENT ON COLUMN shopjoy_2604.cm_popup_item.popup_item_id  IS '팝업항목ID';

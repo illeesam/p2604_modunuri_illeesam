@@ -2,7 +2,7 @@
 -- 주문상품할인 내역 (즉시할인·상품쿠폰)
 
 CREATE TABLE shopjoy_2604.od_order_item_discnt (
-    item_discnt_id   VARCHAR(21)  NOT NULL CONSTRAINT od_order_item_discnt_pk_item_discnt_id PRIMARY KEY,
+    order_item_discnt_id   VARCHAR(21)  NOT NULL CONSTRAINT od_order_item_discnt_pk_order_item_discnt_id PRIMARY KEY,
     reg_site_id          VARCHAR(21)  NOT NULL,
     order_id         VARCHAR(21)  NOT NULL,
     order_item_id    VARCHAR(21)  NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE shopjoy_2604.od_order_item_discnt (
 );
 
 COMMENT ON TABLE  shopjoy_2604.od_order_item_discnt IS '주문상품할인 내역 (즉시할인·상품쿠폰)';
-COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.item_discnt_id IS '주문상품할인ID (YYMMDDhhmmss+rand4)';
+COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.order_item_discnt_id IS '주문상품할인ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.order_id IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN shopjoy_2604.od_order_item_discnt.order_item_id IS '주문상품ID (od_order_item.order_item_id)';

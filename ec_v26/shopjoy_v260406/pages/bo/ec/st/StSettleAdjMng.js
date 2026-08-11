@@ -178,12 +178,15 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       if (v) { form.vendorNm = v.vendorNm; }
       const ok = await showConfirm('저장', '정산조정을 저장하시겠습니까?');
       if (!ok) { return; }
-      if (uiState.isNew) { form.adjId = 'ADJ-' + Date.now(); adjs.unshift({ ...form }); }
-      else { const idx = adjs.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjs[idx], { ...form }); }
-      closeForm();
+      /* ⚠ 이전에는 API 호출 '전' 에 목록을 갱신하고 폼까지 닫아, 저장이 실패해도
+         화면에는 저장된 것처럼 행이 남았다(롤백 없음). 게다가 신규 시 클라이언트에서
+         'ADJ-'+Date.now() 로 ID 를 만들어 서버가 채번한 실제 ID 와 어긋났다.
+         → 저장이 성공한 뒤에만 서버 기준으로 재조회하고 폼을 닫는다. */
       try {
-        const res = await (uiState.isNew ? boApiSvc.stSettleAdj.create({ ...form }, '정산조정관리', '등록') : boApiSvc.stSettleAdj.update(form.adjId, { ...form }, '정산조정관리', '저장'));
+        await (uiState.isNew ? boApiSvc.stSettleAdj.create({ ...form }, '정산조정관리', '등록') : boApiSvc.stSettleAdj.update(form.adjId, { ...form }, '정산조정관리', '저장'));
         if (showToast) { showToast('저장되었습니다.', 'success'); }
+        closeForm();
+        await handleSearchData();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';

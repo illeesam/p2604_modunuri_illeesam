@@ -79,7 +79,9 @@
     },
     getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/my/chat/${_id}`, hdr(uiNm, cmdNm)); },
     getMessages(_id, params, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/my/chat/${_id}/messages`, { params, ...hdr(uiNm, cmdNm) }); },
-    createRoom(body, uiNm, cmdNm) { return global.foApi.post('/fo/my/chat/room', body, hdr(uiNm, cmdNm)); },
+    /* 백엔드는 FoCmChattController 의 POST /open (기존 열린 방 반환 또는 신규 생성).
+       /room 은 존재하지 않아 404 였다 — FO 푸터 '채팅 상담' 버튼이 동작하지 않던 원인. */
+    createRoom(body, uiNm, cmdNm) { return global.foApi.post('/fo/my/chat/open', body, hdr(uiNm, cmdNm)); },
     sendMsg(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.foApi.post(`/fo/my/chat/${_id}/msg`, body, hdr(uiNm, cmdNm)); },
   };
 

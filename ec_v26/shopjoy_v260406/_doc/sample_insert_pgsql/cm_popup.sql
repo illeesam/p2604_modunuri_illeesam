@@ -6,7 +6,7 @@
 
 -- ── 팝업 정의 ─────────────────────────────────────────────
 INSERT INTO shopjoy_2604.cm_popup
- (popup_id, site_id, popup_code, popup_nm, popup_pattern, entity_nm, id_field, nm_field,
+ (popup_id, reg_site_id, popup_code, popup_nm, popup_pattern, entity_nm, id_field, nm_field,
   parent_field, site_field, order_by, base_where, multi_yn, page_size, modal_width, use_yn, sort_ord, reg_by, reg_date)
 VALUES
  ('POP0000000000000001','2604010000000001','user','사용자 선택',1,'SyUser','userId','userNm',
@@ -51,7 +51,7 @@ ON CONFLICT (popup_id) DO NOTHING;
 
 -- ── 팝업 항목 ─────────────────────────────────────────────
 INSERT INTO shopjoy_2604.cm_popup_item
- (popup_item_id, site_id, popup_id, field_nm, field_label, field_type_cd,
+ (popup_item_id, reg_site_id, popup_id, field_nm, field_label, field_type_cd,
   search_yn, search_type_cd, list_yn, tree_label_yn, col_width, col_align, link_yn, sort_ord, use_yn, reg_by, reg_date)
 VALUES
  -- user (POP..01)

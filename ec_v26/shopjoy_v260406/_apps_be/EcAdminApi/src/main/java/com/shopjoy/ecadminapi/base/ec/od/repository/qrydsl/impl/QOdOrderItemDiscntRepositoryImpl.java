@@ -51,7 +51,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
     private JPAQuery<OdOrderItemDiscntDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdOrderItemDiscntDto.Item.class,
-                        odOrderItemDiscnt.itemDiscntId,    // 주문상품할인ID (YYMMDDhhmmss+rand4)
+                        odOrderItemDiscnt.orderItemDiscntId,    // 주문상품할인ID (YYMMDDhhmmss+rand4)
                         odOrderItemDiscnt.orderId,          // 주문ID (od_order.order_id)
                         odOrderItemDiscnt.orderItemId,      // 주문상품ID (od_order_item.order_item_id)
                         odOrderItemDiscnt.discntTypeCd,     // 할인유형코드 — ORDER_ITEM_DISCNT_TYPE {ITEM_DISCNT:즉시할인, ITEM_COUPON:상품쿠폰}
@@ -72,9 +72,9 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
 
     /* 주문 아이템 할인 키조회 */
     @Override
-    public Optional<OdOrderItemDiscntDto.Item> selectById(String itemDiscntId) {
+    public Optional<OdOrderItemDiscntDto.Item> selectById(String orderItemDiscntId) {
         OdOrderItemDiscntDto.Item dto = baseListQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odOrderItemDiscnt.itemDiscntId.eq(itemDiscntId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odOrderItemDiscnt.orderItemDiscntId.eq(orderItemDiscntId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -87,7 +87,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
         JPAQuery<OdOrderItemDiscntDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(odOrderItemDiscnt.itemDiscntId, search.getItemDiscntId()),
+                    QdslUtil.strEq(odOrderItemDiscnt.orderItemDiscntId, search.getOrderItemDiscntId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -112,7 +112,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(odOrderItemDiscnt.itemDiscntId, search.getItemDiscntId()),
+                QdslUtil.strEq(odOrderItemDiscnt.orderItemDiscntId, search.getOrderItemDiscntId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -144,7 +144,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
             QdslUtil.FieldDef.like("couponId", odOrderItemDiscnt.couponId),
             QdslUtil.FieldDef.like("couponIssueId", odOrderItemDiscnt.couponIssueId),
             QdslUtil.FieldDef.like("discntTypeCd", odOrderItemDiscnt.discntTypeCd),
-            QdslUtil.FieldDef.like("itemDiscntId", odOrderItemDiscnt.itemDiscntId),
+            QdslUtil.FieldDef.like("orderItemDiscntId", odOrderItemDiscnt.orderItemDiscntId),
             QdslUtil.FieldDef.like("orderId", odOrderItemDiscnt.orderId),
             QdslUtil.FieldDef.like("orderItemId", odOrderItemDiscnt.orderItemId)
         ));
@@ -156,16 +156,16 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
      */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
-            Map.of("itemDiscntId", odOrderItemDiscnt.itemDiscntId,
+            Map.of("orderItemDiscntId", odOrderItemDiscnt.orderItemDiscntId,
                    "regDate", odOrderItemDiscnt.regDate),
         new OrderSpecifier<>(Order.DESC, odOrderItemDiscnt.regDate),
-        new OrderSpecifier<>(Order.ASC, odOrderItemDiscnt.itemDiscntId));
+        new OrderSpecifier<>(Order.ASC, odOrderItemDiscnt.orderItemDiscntId));
     }
 
     /* 주문 아이템 할인 수정 */
     @Override
     public int updateSelective(OdOrderItemDiscnt entity) {
-        if (entity.getItemDiscntId() == null) return 0;
+        if (entity.getOrderItemDiscntId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(odOrderItemDiscnt);
         boolean hasAny = false;
@@ -182,7 +182,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
 
         if (!hasAny) return 0;
 
-        long affected = update.where(odOrderItemDiscnt.itemDiscntId.eq(entity.getItemDiscntId())).execute();
+        long affected = update.where(odOrderItemDiscnt.orderItemDiscntId.eq(entity.getOrderItemDiscntId())).execute();
         return (int) affected;
     }
 }

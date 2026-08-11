@@ -139,7 +139,7 @@ public class CmDashboardService {
 
     private CmDashboardDto toDto(CmDashboardItemData d) {
         return CmDashboardDto.builder()
-            .dashboardId(d.getItemDataId())
+            .dashboardId(d.getDashboardItemDataId())
             .compId(d.getItemKey())
             .yyyymmdd(d.getYyyymmdd())
             .siteNo(null)

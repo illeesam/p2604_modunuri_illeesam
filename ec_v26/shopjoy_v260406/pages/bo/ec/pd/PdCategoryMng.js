@@ -128,7 +128,9 @@ window.PdCategoryMng = {
       }
     };
 
-    const searchParam = reactive({ siteId: '', categoryDepth: '', categoryStatusCd: '' });
+    /* ⚠ 검색 키는 백엔드 PdCategoryDto.Request 필드명(depth / status)과 일치시켜야 한다.
+       엔티티 필드명(categoryDepth / categoryStatusCd)을 그대로 쓰면 바인딩에서 버려져 필터가 무시된다. */
+    const searchParam = reactive({ siteId: '', depth: '', status: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
        기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
@@ -518,8 +520,8 @@ window.PdCategoryMng = {
         options: () => sites.value.map(s => ({ value: s.siteId, label: s.siteId + ' ' + s.siteNm })),
         onChange: () => handleSelectAction('searchParam-siteChange') },
       { key: 'searchValue', label: '카테고리명', type: 'text', placeholder: '카테고리명 검색' },
-      { key: 'categoryDepth', label: '단계', type: 'select', options: () => codes.category_depths, nullLabel: '전체' },
-      { key: 'categoryStatusCd', label: '상태', type: 'select', options: () => codes.category_statuses, nullLabel: '전체' },
+      { key: 'depth', label: '단계', type: 'select', options: () => codes.category_depths, nullLabel: '전체' },
+      { key: 'status', label: '상태', type: 'select', options: () => codes.category_statuses, nullLabel: '전체' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

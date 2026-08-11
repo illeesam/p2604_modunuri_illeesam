@@ -10,7 +10,7 @@ import java.util.Optional;
 /** CmBlogFile QueryDSL Custom Repository */
 public interface QCmBlogFileRepository {
 
-    Optional<CmBlogFileDto.Item> selectById(String blogImgId);
+    Optional<CmBlogFileDto.Item> selectById(String blogFileId);
 
     List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search);
 

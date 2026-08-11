@@ -121,9 +121,9 @@ window.CmDashboardMenuMng = {
         rows.forEach(r => { const p = r.parentNodeId || ''; (byParent[p] = byParent[p] || []).push(r); });
         const flat = [];
         const walk = (pid, depth) => (byParent[pid] || []).forEach(r => {
-          flat.push({ key: r.menuNodeId, parentKey: r.parentNodeId || '', depth,
+          flat.push({ key: r.dashboardMenuId, parentKey: r.parentNodeId || '', depth,
                       nodeTypeCd: r.nodeTypeCd, nodeNm: r.nodeNm, dashboardId: r.dashboardId });
-          walk(r.menuNodeId, depth + 1);
+          walk(r.dashboardMenuId, depth + 1);
         });
         walk('', 0);
         menuNodes.splice(0, menuNodes.length, ...flat);
@@ -160,7 +160,7 @@ window.CmDashboardMenuMng = {
     const handleSaveMenuTree = async () => {
       try {
         const nodes = menuNodes.map(n => ({
-          menuNodeId:   n.key,          /* 임시 키 — 서버가 실제 ID 로 매핑 */
+          dashboardMenuId:   n.key,          /* 임시 키 — 서버가 실제 ID 로 매핑 */
           parentNodeId: n.parentKey || null,
           nodeTypeCd:   n.nodeTypeCd,
           nodeNm:       n.nodeTypeCd === 'FOLDER' ? (n.nodeNm || '새 폴더') : null,

@@ -52,6 +52,5 @@ CREATE INDEX st_recon_ix04_settle_period ON shopjoy_2604.st_recon USING btree (s
 CREATE INDEX st_recon_ix02_ref_id ON shopjoy_2604.st_recon USING btree (ref_id);
 CREATE INDEX st_recon_ix03_settle_id ON shopjoy_2604.st_recon USING btree (settle_id);
 CREATE INDEX st_recon_ix01_recon_type_cd_recon_status_cd_x2 ON shopjoy_2604.st_recon USING btree (recon_type_cd, recon_status_cd);
-CREATE INDEX st_recon_ix_site_2 ON shopjoy_2604.st_recon USING btree (site_id, vendor_id);
 CREATE INDEX st_recon_ix05_settle_raw_id ON shopjoy_2604.st_recon USING btree (settle_raw_id);
 CREATE INDEX st_recon_ix06_vendor_id ON shopjoy_2604.st_recon USING btree (vendor_id);

@@ -2,7 +2,7 @@
 -- 블로그 이미지
 
 CREATE TABLE shopjoy_2604.cm_blog_file (
-    blog_img_id  VARCHAR(21)  NOT NULL CONSTRAINT cm_blog_file_pk_blog_img_id PRIMARY KEY,
+    blog_file_id  VARCHAR(21)  NOT NULL CONSTRAINT cm_blog_file_pk_blog_file_id PRIMARY KEY,
     blog_id      VARCHAR(21)  NOT NULL,
     img_url      VARCHAR(500) NOT NULL,
     thumb_url    VARCHAR(500),
@@ -16,7 +16,7 @@ CREATE TABLE shopjoy_2604.cm_blog_file (
 );
 
 COMMENT ON TABLE  shopjoy_2604.cm_blog_file IS '블로그 이미지';
-COMMENT ON COLUMN shopjoy_2604.cm_blog_file.blog_img_id IS '블로그이미지ID';
+COMMENT ON COLUMN shopjoy_2604.cm_blog_file.blog_file_id IS '블로그이미지ID';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.blog_id IS '블로그ID (cm_bltn.)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.img_url IS '원본 이미지 URL';
 COMMENT ON COLUMN shopjoy_2604.cm_blog_file.thumb_url IS '썸네일 이미지 URL';

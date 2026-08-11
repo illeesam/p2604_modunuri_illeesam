@@ -222,16 +222,13 @@ window.MbMemberMng = {
       const isNewMember = detailPanel.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) { return; }
+      /* ⚠ 목록(members) 을 API 호출 전에 미리 바꾸지 않는다.
+         저장이 실패해도 되돌리지 않아 화면에만 저장된 것처럼 남는 문제가 있었다.
+         성공 시 아래에서 handleSearchList('RELOAD') 로 서버 기준 재조회하므로 낙관적 갱신이 불필요하다. */
       if (isNewMember) {
         detailPanel.form.memberId = 'MB' + String(Date.now()).slice(-6);
         detailPanel.form.orderCount = 0;
         detailPanel.form.totalPurchaseAmt = 0;
-        members.unshift({ ...detailPanel.form });
-        detailPanel.dtlId = detailPanel.form.memberId;
-        detailPanel.isNew = false;
-      } else {
-        const si = members.findIndex(m => m.memberId === detailPanel.form.memberId);
-        if (si !== -1) { Object.assign(members[si], detailPanel.form); }
       }
       try {
         /* DB join_date 컬럼은 TIMESTAMP — LocalDateTime 매핑이라 'YYYY-MM-DDTHH:mm:ss' 형식 필요 */

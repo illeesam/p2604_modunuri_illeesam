@@ -25,7 +25,8 @@ CREATE TABLE shopjoy_2604.mb_member (
     reg_by                  VARCHAR(30) ,
     reg_date                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by                  VARCHAR(30) ,
-    upd_date                TIMESTAMP   
+    upd_date                TIMESTAMP   ,
+    CONSTRAINT mb_member_uk_login_id UNIQUE (login_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.mb_member IS '회원';
@@ -53,5 +54,3 @@ COMMENT ON COLUMN shopjoy_2604.mb_member.reg_by IS '등록자 (sy_user.user_id, 
 COMMENT ON COLUMN shopjoy_2604.mb_member.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.mb_member.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.upd_date IS '수정일';
-
-CREATE UNIQUE INDEX mb_member_uk_login_id ON shopjoy_2604.mb_member USING btree (login_id);

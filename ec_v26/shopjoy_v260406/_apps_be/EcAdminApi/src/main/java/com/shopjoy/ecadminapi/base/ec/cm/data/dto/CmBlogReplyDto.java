@@ -14,14 +14,14 @@ public class CmBlogReplyDto {
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
-        @Size(max = 21) private String commentId;
+        @Size(max = 21) private String blogReplyId;
         @Size(max = 21) private String blogId;          // 상위 FK 필터
         private List<String> blogIds;                  // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String commentId;
+        private String blogReplyId;
         private String blogId;
         private String parentCommentId;
         private String writerId;

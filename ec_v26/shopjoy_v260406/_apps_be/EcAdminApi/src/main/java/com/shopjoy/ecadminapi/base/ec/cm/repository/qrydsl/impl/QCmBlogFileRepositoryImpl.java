@@ -38,7 +38,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     private JPAQuery<CmBlogFileDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogFileDto.Item.class,
-                        cmBlogFile.blogImgId,   // 블로그이미지ID (PK)
+                        cmBlogFile.blogFileId,   // 블로그이미지ID (PK)
                         cmBlogFile.blogId,      // 블로그ID (cm_blog.blog_id)
                         cmBlogFile.imgUrl,      // 원본 이미지 URL
                         cmBlogFile.thumbUrl,    // 썸네일 이미지 URL
@@ -52,10 +52,10 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
     /* 게시물 첨부파일 키조회 */
     @Override
-    public Optional<CmBlogFileDto.Item> selectById(String blogImgId) {
+    public Optional<CmBlogFileDto.Item> selectById(String blogFileId) {
         CmBlogFileDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(cmBlogFile.blogImgId.eq(blogImgId))
+                .where(cmBlogFile.blogFileId.eq(blogFileId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -68,7 +68,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogFile.blogId, search.getBlogId()),
-                QdslUtil.strEq(cmBlogFile.blogImgId, search.getBlogImgId()),
+                QdslUtil.strEq(cmBlogFile.blogFileId, search.getBlogFileId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
@@ -95,7 +95,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         BooleanExpression[] wheres = {
                 QdslUtil.strIn(cmBlogFile.blogId, search.getBlogIds()),
                 QdslUtil.strEq(cmBlogFile.blogId, search.getBlogId()),
-                QdslUtil.strEq(cmBlogFile.blogImgId, search.getBlogImgId()),
+                QdslUtil.strEq(cmBlogFile.blogFileId, search.getBlogFileId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -125,7 +125,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("blogId", cmBlogFile.blogId),
-            QdslUtil.FieldDef.like("blogImgId", cmBlogFile.blogImgId),
+            QdslUtil.FieldDef.like("blogFileId", cmBlogFile.blogFileId),
             QdslUtil.FieldDef.like("imgAltText", cmBlogFile.imgAltText),
             QdslUtil.FieldDef.like("imgUrl", cmBlogFile.imgUrl),
             QdslUtil.FieldDef.like("thumbUrl", cmBlogFile.thumbUrl)
@@ -138,18 +138,18 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
      */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
-            Map.of("blogImgId", cmBlogFile.blogImgId,
+            Map.of("blogFileId", cmBlogFile.blogFileId,
                    "regDate", cmBlogFile.regDate,
                    "sortOrd", cmBlogFile.sortOrd),
         new OrderSpecifier<>(Order.ASC, cmBlogFile.sortOrd),
         new OrderSpecifier<>(Order.ASC, cmBlogFile.regDate),
-        new OrderSpecifier<>(Order.ASC, cmBlogFile.blogImgId));
+        new OrderSpecifier<>(Order.ASC, cmBlogFile.blogFileId));
     }
 
     /* 게시물 첨부파일 수정 */
     @Override
     public int updateSelective(CmBlogFile entity) {
-        if (entity.getBlogImgId() == null) return 0;
+        if (entity.getBlogFileId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(cmBlogFile);
         boolean hasAny = false;
@@ -162,7 +162,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
         if (!hasAny) return 0;
 
-        long affected = update.where(cmBlogFile.blogImgId.eq(entity.getBlogImgId())).execute();
+        long affected = update.where(cmBlogFile.blogFileId.eq(entity.getBlogFileId())).execute();
         return (int) affected;
     }
 }

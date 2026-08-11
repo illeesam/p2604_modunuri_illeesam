@@ -76,7 +76,7 @@ public class PdProdBundleItemService {
     /* 묶음상품 구성 등록 */
     @Transactional
     public PdProdBundleItem create(PdProdBundleItem body) {
-        body.setBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
+        body.setProdBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -94,7 +94,7 @@ public class PdProdBundleItemService {
     public PdProdBundleItem update(String id, PdProdBundleItem body) {
         CmUtil.requireId(id, "id", this);
         PdProdBundleItem entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "bundleItemId^regBy^regDate");
+        VoUtil.voCopyExclude(body, entity, "prodBundleItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdBundleItem saved = pdProdBundleItemRepository.save(entity);
@@ -106,9 +106,9 @@ public class PdProdBundleItemService {
     /* 묶음상품 구성 수정 */
     @Transactional
     public PdProdBundleItem updateSelective(PdProdBundleItem entity) {
-        if (entity.getBundleItemId() == null) throw new CmBizException("bundleItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getBundleItemId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getProdBundleItemId() == null) throw new CmBizException("prodBundleItemId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getProdBundleItemId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getProdBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = pdProdBundleItemRepository.updateSelective(entity);
@@ -138,31 +138,31 @@ public class PdProdBundleItemService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        rowStatus = entity.resolveRowStatus(entity.getBundleItemId());
+        rowStatus = entity.resolveRowStatus(entity.getProdBundleItemId());
 
         if ("D".equals(rowStatus)) {
-            if (entity.getBundleItemId() == null)
-                throw new CmBizException("삭제 대상 bundleItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!pdProdBundleItemRepository.existsById(entity.getBundleItemId()))
-                throw new CmBizException("존재하지 않는 PdProdBundleItem입니다: " + entity.getBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
-            pdProdBundleItemRepository.deleteById(entity.getBundleItemId());
+            if (entity.getProdBundleItemId() == null)
+                throw new CmBizException("삭제 대상 prodBundleItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!pdProdBundleItemRepository.existsById(entity.getProdBundleItemId()))
+                throw new CmBizException("존재하지 않는 PdProdBundleItem입니다: " + entity.getProdBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
+            pdProdBundleItemRepository.deleteById(entity.getProdBundleItemId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
+            entity.setProdBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             PdProdBundleItem saved = pdProdBundleItemRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getBundleItemId() == null)
-                throw new CmBizException("수정 대상 bundleItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (entity.getProdBundleItemId() == null)
+                throw new CmBizException("수정 대상 prodBundleItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = pdProdBundleItemRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 PdProdBundleItem입니다: " + entity.getBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 PdProdBundleItem입니다: " + entity.getProdBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getBundleItemId());
+            return findById(entity.getProdBundleItemId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -176,20 +176,20 @@ public class PdProdBundleItemService {
         for (PdProdBundleItem row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getBundleItemId() == null || row.getBundleItemId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getProdBundleItemId() == null || row.getProdBundleItemId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, PdProdBundleItem::getBundleItemId, "U", "bundleItemId", this);
-        CmUtil.requireRowIds(rows, PdProdBundleItem::getBundleItemId, "D", "bundleItemId", this);
+        CmUtil.requireRowIds(rows, PdProdBundleItem::getProdBundleItemId, "U", "prodBundleItemId", this);
+        CmUtil.requireRowIds(rows, PdProdBundleItem::getProdBundleItemId, "D", "prodBundleItemId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(PdProdBundleItem::getBundleItemId)
+            .map(PdProdBundleItem::getProdBundleItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
             pdProdBundleItemRepository.deleteAllById(deleteIds);
@@ -202,7 +202,7 @@ public class PdProdBundleItemService {
         for (PdProdBundleItem row : updateRows) {
             row.setUpdBy(authId);
             int affected = pdProdBundleItemRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getProdBundleItemId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -210,7 +210,7 @@ public class PdProdBundleItemService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (PdProdBundleItem row : insertRows) {
-            row.setBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
+            row.setProdBundleItemId(CmUtil.generateId("pd_prod_bundle_item"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             pdProdBundleItemRepository.save(row);

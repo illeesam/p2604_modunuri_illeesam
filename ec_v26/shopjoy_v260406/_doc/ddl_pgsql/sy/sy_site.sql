@@ -22,7 +22,8 @@ CREATE TABLE shopjoy_2604.sy_site (
     reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30) ,
     upd_date         TIMESTAMP   ,
-    path_id          VARCHAR(21) 
+    path_id          VARCHAR(21) ,
+    CONSTRAINT sy_site_uk_site_code UNIQUE (site_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_site IS '사이트';
@@ -47,6 +48,3 @@ COMMENT ON COLUMN shopjoy_2604.sy_site.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_site.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_site.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_site.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
-
-CREATE INDEX sy_site_ix_site ON shopjoy_2604.sy_site USING btree (site_id);
-CREATE UNIQUE INDEX sy_site_uk_site_code ON shopjoy_2604.sy_site USING btree (site_code);

@@ -124,7 +124,7 @@ public class SySendMsgJob implements SchBatchJobHandler {
                     SendResultVo result = cmMsgSendService.sendKakaoByTemplate(
                         siteId, phone, "COUPON_EXPIRE_KAKAO",
                         buildCouponExpireContent(member.getMemberNm(), couponNm),
-                        "COUPON_EXPIRE", issue.getIssueId(), params
+                        "COUPON_EXPIRE", issue.getCouponIssueId(), params
                     );
 
                     if (Boolean.TRUE.equals(result.getSuccess())) {

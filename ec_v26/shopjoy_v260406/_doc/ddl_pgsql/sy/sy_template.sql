@@ -15,7 +15,8 @@ CREATE TABLE shopjoy_2604.sy_template (
     reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30) ,
     upd_date         TIMESTAMP   ,
-    path_id          VARCHAR(21) 
+    path_id          VARCHAR(21) ,
+    CONSTRAINT sy_template_uk_template_type_cd_template_code_x2 UNIQUE (template_type_cd, template_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_template IS '발송 템플릿';
@@ -33,5 +34,3 @@ COMMENT ON COLUMN shopjoy_2604.sy_template.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_template.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_template.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_template.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
-
-CREATE UNIQUE INDEX sy_template_uk_template_type_cd_template_code_x2 ON shopjoy_2604.sy_template USING btree (template_type_cd, template_code);

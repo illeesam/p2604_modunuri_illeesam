@@ -47,14 +47,14 @@ public class PdProdSetItemController {
     /* 세트상품 구성 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdSetItem>> save(@PathVariable("id") String id, @RequestBody PdProdSetItem entity) {
-        entity.setSetItemId(id);
+        entity.setProdSetItemId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 세트상품 구성 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<PdProdSetItem>> updateSelective(@PathVariable("id") String id, @RequestBody PdProdSetItem entity) {
-        entity.setSetItemId(id);
+        entity.setProdSetItemId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

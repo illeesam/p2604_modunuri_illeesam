@@ -75,8 +75,8 @@ public class CmDashboardItemDataService {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
-        if (body.getItemDataId() != null && !body.getItemDataId().isBlank()) {
-            Optional<CmDashboardItemData> existing = cmDashboardItemDataRepository.findById(body.getItemDataId());
+        if (body.getDashboardItemDataId() != null && !body.getDashboardItemDataId().isBlank()) {
+            Optional<CmDashboardItemData> existing = cmDashboardItemDataRepository.findById(body.getDashboardItemDataId());
             if (existing.isPresent()) {
                 CmDashboardItemData entity = existing.get();
                 copyFields(body, entity);
@@ -101,7 +101,7 @@ public class CmDashboardItemDataService {
             }
         }
 
-        body.setItemDataId(CmUtil.generateId("cm_dashboard_item_data"));
+        body.setDashboardItemDataId(CmUtil.generateId("cm_dashboard_item_data"));
         body.setRegBy(authId); body.setRegDate(now);
         body.setUpdBy(authId); body.setUpdDate(now);
         CmDashboardItemData saved = cmDashboardItemDataRepository.save(body);

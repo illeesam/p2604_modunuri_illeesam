@@ -18,7 +18,8 @@ CREATE TABLE shopjoy_2604.dp_widget_lib (
     reg_by             VARCHAR(30) ,
     reg_date           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by             VARCHAR(30) ,
-    upd_date           TIMESTAMP   
+    upd_date           TIMESTAMP   ,
+    CONSTRAINT dp_widget_lib_uk_widget_code UNIQUE (widget_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.dp_widget_lib IS '디스플레이 위젯 라이브러리';
@@ -39,6 +40,4 @@ COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.reg_by IS '등록자 (sy_user.user_
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_widget_lib.upd_date IS '수정일';
-
-CREATE UNIQUE INDEX dp_widget_lib_uk_widget_code ON shopjoy_2604.dp_widget_lib USING btree (widget_code);
 CREATE INDEX dp_widget_lib_ix01_path_id ON shopjoy_2604.dp_widget_lib USING btree (path_id);

@@ -153,7 +153,7 @@ window.BlogView = {
         files:     files,
         tags:      (raw.tags || []).map(t => t.tagNm).filter(Boolean),
         comments:  (raw.replies || []).map(r => ({
-                     id:     r.commentId,
+                     id:     r.blogReplyId,
                      author: r.writerNm || r.writerId || '익명',
                      date:   (r.regDate || '').tocoUtil.cofYmdDot(),
                      text:   r.blogCommentContent || '',
@@ -313,7 +313,7 @@ window.BlogView = {
         첨부 ({{ cfPost.files.length }})
       </h3>
       <div style="display:flex;flex-wrap:wrap;gap:10px;">
-        <a v-for="f in cfPost.files" :key="f.blogImgId" :href="f.imgUrl" target="_blank" rel="noopener"
+        <a v-for="f in cfPost.files" :key="f.blogFileId" :href="f.imgUrl" target="_blank" rel="noopener"
             style="display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:4px;font-size:0.8rem;color:var(--text-secondary);text-decoration:none;background:var(--bg-card);">
           <span>
             📎

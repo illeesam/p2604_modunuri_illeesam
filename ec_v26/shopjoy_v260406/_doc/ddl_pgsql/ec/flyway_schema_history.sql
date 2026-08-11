@@ -14,5 +14,4 @@ CREATE TABLE shopjoy_2604.flyway_schema_history (
 );
 
 
-CREATE UNIQUE INDEX flyway_schema_history_uk_installed_rank ON shopjoy_2604.flyway_schema_history USING btree (installed_rank);
 CREATE INDEX flyway_schema_history_ix01_success ON shopjoy_2604.flyway_schema_history USING btree (success);

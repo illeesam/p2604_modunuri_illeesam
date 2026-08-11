@@ -47,14 +47,14 @@ public class CmBlogGoodController {
     /* 게시물 좋아요 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogGood>> save(@PathVariable("id") String id, @RequestBody CmBlogGood entity) {
-        entity.setLikeId(id);
+        entity.setBlogGoodId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 게시물 좋아요 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogGood>> updateSelective(@PathVariable("id") String id, @RequestBody CmBlogGood entity) {
-        entity.setLikeId(id);
+        entity.setBlogGoodId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

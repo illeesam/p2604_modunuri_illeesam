@@ -76,7 +76,7 @@ public class CmBlogReplyService {
     /* 게시물 댓글 등록 */
     @Transactional
     public CmBlogReply create(CmBlogReply body) {
-        body.setCommentId(CmUtil.generateId("cm_blog_reply"));
+        body.setBlogReplyId(CmUtil.generateId("cm_blog_reply"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -94,7 +94,7 @@ public class CmBlogReplyService {
     public CmBlogReply update(String id, CmBlogReply body) {
         CmUtil.requireId(id, "id", this);
         CmBlogReply entity = findById(id);
-        VoUtil.voCopyExclude(body, entity, "commentId^regBy^regDate");
+        VoUtil.voCopyExclude(body, entity, "blogReplyId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlogReply saved = cmBlogReplyRepository.save(entity);
@@ -106,9 +106,9 @@ public class CmBlogReplyService {
     /* 게시물 댓글 수정 */
     @Transactional
     public CmBlogReply updateSelective(CmBlogReply entity) {
-        if (entity.getCommentId() == null) throw new CmBizException("commentId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        if (!existsById(entity.getCommentId()))
-            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getCommentId() + "::" + CmUtil.svcCallerInfo(this));
+        if (entity.getBlogReplyId() == null) throw new CmBizException("blogReplyId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (!existsById(entity.getBlogReplyId()))
+            throw new CmBizException("존재하지 않는 데이터입니다: " + entity.getBlogReplyId() + "::" + CmUtil.svcCallerInfo(this));
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         int affected = cmBlogReplyRepository.updateSelective(entity);
@@ -138,31 +138,31 @@ public class CmBlogReplyService {
         LocalDateTime now = LocalDateTime.now();
 
         /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-        rowStatus = entity.resolveRowStatus(entity.getCommentId());
+        rowStatus = entity.resolveRowStatus(entity.getBlogReplyId());
 
         if ("D".equals(rowStatus)) {
-            if (entity.getCommentId() == null)
-                throw new CmBizException("삭제 대상 commentId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-            if (!cmBlogReplyRepository.existsById(entity.getCommentId()))
-                throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + entity.getCommentId() + "::" + CmUtil.svcCallerInfo(this));
-            cmBlogReplyRepository.deleteById(entity.getCommentId());
+            if (entity.getBlogReplyId() == null)
+                throw new CmBizException("삭제 대상 blogReplyId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!cmBlogReplyRepository.existsById(entity.getBlogReplyId()))
+                throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + entity.getBlogReplyId() + "::" + CmUtil.svcCallerInfo(this));
+            cmBlogReplyRepository.deleteById(entity.getBlogReplyId());
             return null;
         } else if ("I".equals(rowStatus)) {
-            entity.setCommentId(CmUtil.generateId("cm_blog_reply"));
+            entity.setBlogReplyId(CmUtil.generateId("cm_blog_reply"));
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             CmBlogReply saved = cmBlogReplyRepository.save(entity);
             if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
             return saved;
         } else if ("U".equals(rowStatus)) {
-            if (entity.getCommentId() == null)
-                throw new CmBizException("수정 대상 commentId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (entity.getBlogReplyId() == null)
+                throw new CmBizException("수정 대상 blogReplyId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
             entity.setUpdBy(authId);
             int affected = cmBlogReplyRepository.updateSelective(entity);
             if (affected == 0)
-                throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + entity.getCommentId() + "::" + CmUtil.svcCallerInfo(this));
+                throw new CmBizException("존재하지 않는 CmBlogReply입니다: " + entity.getBlogReplyId() + "::" + CmUtil.svcCallerInfo(this));
             em.clear();
-            return findById(entity.getCommentId());
+            return findById(entity.getBlogReplyId());
         }
         throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
 
@@ -176,20 +176,20 @@ public class CmBlogReplyService {
         for (CmBlogReply row : rows) {
             String rs = row.getRowStatus();
             if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                row.setRowStatus((row.getCommentId() == null || row.getCommentId().isBlank()) ? "I" : "U");
+                row.setRowStatus((row.getBlogReplyId() == null || row.getBlogReplyId().isBlank()) ? "I" : "U");
             } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
                 throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
         }
-        CmUtil.requireRowIds(rows, CmBlogReply::getCommentId, "U", "commentId", this);
-        CmUtil.requireRowIds(rows, CmBlogReply::getCommentId, "D", "commentId", this);
+        CmUtil.requireRowIds(rows, CmBlogReply::getBlogReplyId, "U", "blogReplyId", this);
+        CmUtil.requireRowIds(rows, CmBlogReply::getBlogReplyId, "D", "blogReplyId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄
         List<String> deleteIds = rows.stream()
             .filter(r -> "D".equals(r.getRowStatus()))
-            .map(CmBlogReply::getCommentId)
+            .map(CmBlogReply::getBlogReplyId)
             .toList();
         if (!deleteIds.isEmpty()) {
             cmBlogReplyRepository.deleteAllById(deleteIds);
@@ -202,7 +202,7 @@ public class CmBlogReplyService {
         for (CmBlogReply row : updateRows) {
             row.setUpdBy(authId);
             int affected = cmBlogReplyRepository.updateSelective(row);
-            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCommentId() + "::" + CmUtil.svcCallerInfo(this));
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBlogReplyId() + "::" + CmUtil.svcCallerInfo(this));
         }
 
         // 3단계: INSERT
@@ -210,7 +210,7 @@ public class CmBlogReplyService {
             .filter(r -> "I".equals(r.getRowStatus()))
             .toList();
         for (CmBlogReply row : insertRows) {
-            row.setCommentId(CmUtil.generateId("cm_blog_reply"));
+            row.setBlogReplyId(CmUtil.generateId("cm_blog_reply"));
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             cmBlogReplyRepository.save(row);

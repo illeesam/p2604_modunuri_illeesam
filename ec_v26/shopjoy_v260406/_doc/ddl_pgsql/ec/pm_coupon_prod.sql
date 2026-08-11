@@ -19,4 +19,3 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon_prod.reg_site_id   IS '사이트ID (sy_
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_prod.reg_date  IS '배치 생성일시';
 
 CREATE INDEX pm_coupon_prod_ix01_prod_id ON shopjoy_2604.pm_coupon_prod USING btree (prod_id);
-CREATE INDEX pm_coupon_prod_ix_coupon ON shopjoy_2604.pm_coupon_prod USING btree (coupon_id);

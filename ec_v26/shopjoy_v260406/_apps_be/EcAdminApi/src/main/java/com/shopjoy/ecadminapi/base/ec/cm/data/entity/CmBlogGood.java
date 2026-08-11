@@ -20,8 +20,8 @@ public class CmBlogGood extends BaseEntity {
 
     @Id
     @Comment("좋아요ID")
-    @Column(name = "like_id", length = 21, nullable = false)
-    private String likeId;
+    @Column(name = "blog_good_id", length = 21, nullable = false)
+    private String blogGoodId;
 
 
     @Comment("블로그ID (cm_bltn.)")

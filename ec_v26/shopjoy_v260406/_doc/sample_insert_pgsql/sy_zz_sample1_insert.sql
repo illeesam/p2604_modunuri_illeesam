@@ -11,7 +11,7 @@
 -- ================================================
 
 INSERT INTO shopjoy_2604.zz_sample1
-    (sample1_id, cd_grp, cd_nm, col01, col02, col03, srtord_vl, use_yn, rgtr, reg_dt)
+    (sample1_id, cd_grp, cd_nm, col01, col02, col03, srtord_vl, use_yn, reg_by, reg_date)
 VALUES
 ('ZS1260424000101', 'S01_MEMBER', '김민준', 'minjun.kim@example.com',    '010-1234-5678', '일반', 1,  'Y', 'admin', CURRENT_DATE),
 ('ZS1260424000102', 'S01_MEMBER', '이서연', 'seoyeon.lee@example.com',   '010-2345-6789', '우수', 2,  'Y', 'admin', CURRENT_DATE),
@@ -70,7 +70,7 @@ VALUES
 -- ================================================
 
 INSERT INTO shopjoy_2604.zz_sample1
-    (sample1_id, cd_grp, cd_nm, col01, col02, col03, srtord_vl, use_yn, rgtr, reg_dt)
+    (sample1_id, cd_grp, cd_nm, col01, col02, col03, srtord_vl, use_yn, reg_by, reg_date)
 VALUES
 ('ZS1260424000201', 'S02_PRODUCT', '린넨 크롭 자켓',         '아우터', '89000',  '45',  1,  'Y', 'admin', CURRENT_DATE),
 ('ZS1260424000202', 'S02_PRODUCT', '와이드 데님 팬츠',        '하의',   '65000',  '120', 2,  'Y', 'admin', CURRENT_DATE),

@@ -20,8 +20,8 @@ public class PdProdSetItem extends BaseEntity {
 
     @Id
     @Comment("세트구성ID (YYMMDDhhmmss+rand4)")
-    @Column(name = "set_item_id", length = 21, nullable = false)
-    private String setItemId;
+    @Column(name = "prod_set_item_id", length = 21, nullable = false)
+    private String prodSetItemId;
 
 
     @Comment("세트상품ID (pd_prod.prod_id, prod_type_cd=SET)")

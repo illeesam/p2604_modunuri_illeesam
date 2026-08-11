@@ -17,8 +17,8 @@ public class PdProdPlan extends BaseEntity {
 
     @Id
     @Comment("판매계획ID (YYMMDDhhmmss+rand4)")
-    @Column(name = "plan_id", length = 21, nullable = false)
-    private String planId;
+    @Column(name = "prod_plan_id", length = 21, nullable = false)
+    private String prodPlanId;
 
 
     @Comment("상품ID (pd_prod.prod_id)")

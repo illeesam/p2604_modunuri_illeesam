@@ -24,7 +24,5 @@ COMMENT ON COLUMN shopjoy_2604.mb_like.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.mb_like.upd_by IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.mb_like.upd_date IS '수정일';
 
-CREATE INDEX mb_like_ix01_member_id_target_type_cd_x3 ON shopjoy_2604.mb_like USING btree (member_id);
 CREATE INDEX mb_like_ix02_target_type_cd_target_id_x2 ON shopjoy_2604.mb_like USING btree (target_type_cd, target_id);
-CREATE UNIQUE INDEX mb_like_uk_member ON shopjoy_2604.mb_like USING btree (member_id, target_type_cd, target_id);
 CREATE UNIQUE INDEX mb_like_ix01_member_id_target_type_cd_x3 ON shopjoy_2604.mb_like USING btree (member_id, target_type_cd, target_id);

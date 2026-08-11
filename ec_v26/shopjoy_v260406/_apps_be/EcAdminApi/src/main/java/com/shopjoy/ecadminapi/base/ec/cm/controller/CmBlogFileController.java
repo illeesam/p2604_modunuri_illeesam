@@ -47,14 +47,14 @@ public class CmBlogFileController {
     /* 게시물 첨부파일 저장 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogFile>> save(@PathVariable("id") String id, @RequestBody CmBlogFile entity) {
-        entity.setBlogImgId(id);
+        entity.setBlogFileId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 게시물 첨부파일 수정 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<CmBlogFile>> updateSelective(@PathVariable("id") String id, @RequestBody CmBlogFile entity) {
-        entity.setBlogImgId(id);
+        entity.setBlogFileId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
 

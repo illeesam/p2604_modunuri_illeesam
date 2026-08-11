@@ -34,4 +34,3 @@ COMMENT ON COLUMN shopjoy_2604.sy_prop.prop_profile IS '적용 프로파일 (^lo
 
 CREATE INDEX sy_prop_ix01_path_id ON shopjoy_2604.sy_prop USING btree (path_id);
 -- 2026-06-18: prop_profile 포함으로 확장 (환경별 동일 키 허용)
-CREATE UNIQUE INDEX sy_prop_uk_site ON shopjoy_2604.sy_prop USING btree (site_id, path_id, prop_key, COALESCE(prop_profile, ''));

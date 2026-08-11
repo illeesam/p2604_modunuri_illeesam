@@ -46,7 +46,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
     private JPAQuery<PdProdSetItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdSetItemDto.Item.class,
-                        pdProdSetItem.setItemId,     // 세트구성ID (PK, YYMMDDhhmmss+rand4)
+                        pdProdSetItem.prodSetItemId,     // 세트구성ID (PK, YYMMDDhhmmss+rand4)
                         pdProdSetItem.setProdId,       // 세트상품ID (pd_prod.prod_id, prod_type_cd=SET)
                         pdProdSetItem.itemProdId,      // 구성품 상품ID (pd_prod.prod_id, NULL=비상품 구성품)
                         pdProdSetItem.itemSkuId,       // 구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)
@@ -64,9 +64,9 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 
     /* 세트상품 구성 키조회 */
     @Override
-    public Optional<PdProdSetItemDto.Item> selectById(String setItemId) {
+    public Optional<PdProdSetItemDto.Item> selectById(String prodSetItemId) {
         PdProdSetItemDto.Item dto = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdSetItem.setItemId.eq(setItemId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdSetItem.prodSetItemId.eq(prodSetItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -79,7 +79,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         JPAQuery<PdProdSetItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                    QdslUtil.strEq(pdProdSetItem.setItemId, search.getSetItemId()),
+                    QdslUtil.strEq(pdProdSetItem.prodSetItemId, search.getProdSetItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
@@ -104,7 +104,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdProdSetItem.setItemId, search.getSetItemId()),
+                QdslUtil.strEq(pdProdSetItem.prodSetItemId, search.getProdSetItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -138,7 +138,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
             QdslUtil.FieldDef.like("itemNm", pdProdSetItem.itemNm),
             QdslUtil.FieldDef.like("itemProdId", pdProdSetItem.itemProdId),
             QdslUtil.FieldDef.like("itemSkuId", pdProdSetItem.itemSkuId),
-            QdslUtil.FieldDef.like("setItemId", pdProdSetItem.setItemId),
+            QdslUtil.FieldDef.like("prodSetItemId", pdProdSetItem.prodSetItemId),
             QdslUtil.FieldDef.like("setProdId", pdProdSetItem.setProdId),
             QdslUtil.FieldDef.like("useYn", pdProdSetItem.useYn)
         ));
@@ -150,20 +150,20 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
      */
     private List<OrderSpecifier<?>> buildOrder(String sort) {
         return QdslUtil.buildOrder(sort,
-            Map.of("setItemId", pdProdSetItem.setItemId,
+            Map.of("prodSetItemId", pdProdSetItem.prodSetItemId,
                    "itemNm", pdProdSetItem.itemNm,
                    "regDate", pdProdSetItem.regDate,
                    "sortOrd", pdProdSetItem.sortOrd),
         new OrderSpecifier<>(Order.ASC, pdProdSetItem.sortOrd),
         new OrderSpecifier<>(Order.ASC, pdProdSetItem.regDate),
-        new OrderSpecifier<>(Order.ASC, pdProdSetItem.setItemId));
+        new OrderSpecifier<>(Order.ASC, pdProdSetItem.prodSetItemId));
     }
 
     /* 세트상품 구성 수정 */
 
     @Override
     public int updateSelective(PdProdSetItem entity) {
-        if (entity.getSetItemId() == null) return 0;
+        if (entity.getProdSetItemId() == null) return 0;
 
         JPAUpdateClause update = queryFactory.update(pdProdSetItem);
         boolean hasAny = false;
@@ -182,7 +182,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 
         if (!hasAny) return 0;
 
-        long affected = update.where(pdProdSetItem.setItemId.eq(entity.getSetItemId())).execute();
+        long affected = update.where(pdProdSetItem.prodSetItemId.eq(entity.getProdSetItemId())).execute();
         return (int) affected;
     }
 }

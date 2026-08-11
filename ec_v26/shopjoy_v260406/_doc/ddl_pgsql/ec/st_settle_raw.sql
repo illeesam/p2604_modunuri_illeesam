@@ -166,7 +166,6 @@ CREATE INDEX st_settle_raw_ix24_promo_id ON shopjoy_2604.st_settle_raw USING btr
 CREATE INDEX st_settle_raw_ix26_settle_id ON shopjoy_2604.st_settle_raw USING btree (settle_id);
 CREATE INDEX st_settle_raw_ix23_prod_sku_id ON shopjoy_2604.st_settle_raw USING btree (prod_sku_id);
 CREATE INDEX st_settle_raw_ix25_raw_status_cd ON shopjoy_2604.st_settle_raw USING btree (raw_status_cd);
-CREATE INDEX st_settle_raw_ix_site_2 ON shopjoy_2604.st_settle_raw USING btree (site_id, vendor_id);
 CREATE INDEX st_settle_raw_ix08_claim_item_id ON shopjoy_2604.st_settle_raw USING btree (claim_item_id);
 CREATE INDEX st_settle_raw_ix11_coupon_issue_id ON shopjoy_2604.st_settle_raw USING btree (coupon_issue_id);
 CREATE INDEX st_settle_raw_ix12_discnt_id ON shopjoy_2604.st_settle_raw USING btree (discnt_id);

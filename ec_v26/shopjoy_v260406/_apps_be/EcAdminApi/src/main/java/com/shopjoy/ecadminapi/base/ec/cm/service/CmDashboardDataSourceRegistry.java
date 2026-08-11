@@ -27,7 +27,7 @@ import java.util.Map;
  * <h3>반환 규약</h3>
  * <p>결과는 {@link CmDashboardItemData} 형태로 맞춘다 — 프론트(cmDashWidgetUtil)가
  * {@code col1Nm~col6Nm}(텍스트) / {@code col1Num~col9Num}(숫자) 만 보기 때문이다.
- * 저장하지 않는 <b>일회성 객체</b>라 itemDataId 는 채우지 않는다.</p>
+ * 저장하지 않는 <b>일회성 객체</b>라 dashboardItemDataId 는 채우지 않는다.</p>
  *
  * <ul>
  *   <li>KPI   — 마지막 행의 col1Num 이 값, col1Nm 이 라벨. 2행이면 앞 행 대비 증감이 표시된다</li>

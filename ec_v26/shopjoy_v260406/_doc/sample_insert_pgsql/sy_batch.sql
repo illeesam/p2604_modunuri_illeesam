@@ -3,7 +3,7 @@
 -- cron_expr: 5자리 Unix cron (분 시 일 월 요일)
 
 INSERT INTO shopjoy_2604.sy_batch
-    (batch_id, site_id, batch_code, batch_nm, batch_desc, cron_expr, batch_cycle_cd,
+    (batch_id, reg_site_id, batch_code, batch_nm, batch_desc, cron_expr, batch_cycle_cd,
      batch_run_count, batch_status_cd, batch_run_status, batch_timeout_sec, reg_by, reg_date)
 VALUES
 ('BT000004', '2604010000000001', 'SETTLEMENT_REPORT',  '정산 리포트 생성',      '월간 정산 리포트 자동 생성 및 이메일 발송',      '0 8 1 * *',    'MONTHLY', 0, 'ACTIVE',   'IDLE', 300, 'SYSTEM', CURRENT_TIMESTAMP),

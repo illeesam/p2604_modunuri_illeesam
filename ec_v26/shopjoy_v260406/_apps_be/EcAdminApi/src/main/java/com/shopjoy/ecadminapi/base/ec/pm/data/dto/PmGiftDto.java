@@ -19,6 +19,8 @@ public class PmGiftDto {
         @Size(max = 21) private String giftId;
         @Size(max = 20) private String giftTypeCd;
         @Size(max = 20) private String giftStatusCd;
+        /* 상품별 사은품 조회 — 화면(PmGiftMng)에 검색란이 있었으나 필드가 없어 무시되던 것을 추가 */
+        @Size(max = 21) private String prodId;
     }
 
     @Getter @Setter @NoArgsConstructor

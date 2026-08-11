@@ -271,7 +271,7 @@ INSERT INTO sy_path (biz_cd, parent_path_id, path_label, sort_ord, use_yn, reg_b
 --      ⚠️ path_id 를 yml 경로 문자열로 명시 지정 (시퀀스 자동생성 미사용)
 --          sy_prop.path_id 컬럼이 이 값을 직접 참조하므로 반드시 일치해야 함
 -- ============================================================
-INSERT INTO sy_path (path_id, biz_cd, parent_path_id, path_label, sort_ord, use_yn, site_id, reg_by, reg_date) VALUES
+INSERT INTO sy_path (path_id, biz_cd, parent_path_id, path_label, sort_ord, use_yn, reg_site_id, reg_by, reg_date) VALUES
   ('app',              'sy_prop', NULL,         'app',     1, 'Y', 'SITE000001', 'admin', NOW()),
   ('app.ext-sdk',      'sy_prop', 'app',        'ext-sdk', 1, 'Y', 'SITE000001', 'admin', NOW()),
   ('app.auth',         'sy_prop', 'app',        'auth',    2, 'Y', 'SITE000001', 'admin', NOW()),

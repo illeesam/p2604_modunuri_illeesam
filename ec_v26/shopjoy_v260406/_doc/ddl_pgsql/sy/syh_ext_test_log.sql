@@ -29,6 +29,4 @@ COMMENT ON COLUMN shopjoy_2604.syh_ext_test_log.reg_date     IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.syh_ext_test_log.upd_by       IS '수정자';
 COMMENT ON COLUMN shopjoy_2604.syh_ext_test_log.upd_date     IS '수정일시';
 
-CREATE INDEX IF NOT EXISTS idx_syh_ext_test_log_channel ON shopjoy_2604.syh_ext_test_log (channel_key, reg_date DESC);
-CREATE INDEX IF NOT EXISTS idx_syh_ext_test_log_site    ON shopjoy_2604.syh_ext_test_log (site_id, reg_date DESC);
 CREATE INDEX syh_ext_test_log_ix01_channel_key_reg_date_x2 ON shopjoy_2604.syh_ext_test_log USING btree (channel_key, reg_date DESC);

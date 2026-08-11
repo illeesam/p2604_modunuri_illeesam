@@ -20,7 +20,7 @@
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_dashboard_menu (
-    menu_node_id    VARCHAR(21)  NOT NULL,
+    dashboard_menu_id    VARCHAR(21)  NOT NULL,
     reg_site_id         VARCHAR(21)  NOT NULL,
     owner_user_id   VARCHAR(30)  NOT NULL,          -- 이 메뉴 트리의 주인(sy_user.user_id)
     parent_node_id  VARCHAR(21),                    -- 상위 노드. NULL 이면 최상위
@@ -34,11 +34,11 @@ CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_dashboard_menu (
     reg_date        TIMESTAMP,
     upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
-    CONSTRAINT cm_dashboard_menu_pk_menu_node_id PRIMARY KEY (menu_node_id)
+    CONSTRAINT cm_dashboard_menu_pk_dashboard_menu_id PRIMARY KEY (dashboard_menu_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.cm_dashboard_menu               IS '사용자별 대시보드 좌측메뉴 트리 (폴더 + 대시보드 아이템)';
-COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.menu_node_id  IS '메뉴노드ID';
+COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.dashboard_menu_id  IS '메뉴노드ID';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.reg_site_id       IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.owner_user_id IS '메뉴 트리 소유자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.parent_node_id IS '상위 메뉴노드ID. NULL 이면 최상위';
@@ -48,9 +48,7 @@ COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.dashboard_id  IS 'ITEM 이 가�
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.sort_ord      IS '같은 부모 안에서의 정렬순서';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_menu.use_yn        IS '사용여부';
 
-CREATE INDEX IF NOT EXISTS ix_cm_dashboard_menu_owner
     ON shopjoy_2604.cm_dashboard_menu (site_id, owner_user_id, sort_ord);
-CREATE INDEX IF NOT EXISTS ix_cm_dashboard_menu_parent
     ON shopjoy_2604.cm_dashboard_menu (parent_node_id);
 
 -- ── 이전 방식 정리 ─────────────────────────────────────────────────────────

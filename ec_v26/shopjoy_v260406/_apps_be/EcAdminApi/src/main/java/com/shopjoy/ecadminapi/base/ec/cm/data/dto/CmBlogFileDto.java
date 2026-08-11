@@ -13,14 +13,14 @@ public class CmBlogFileDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String blogImgId;
+        @Size(max = 21) private String blogFileId;
         @Size(max = 21) private String blogId;          // 상위 FK 필터
         private List<String> blogIds;                  // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String blogImgId;
+        private String blogFileId;
         private String blogId;
         private String imgUrl;
         private String thumbUrl;

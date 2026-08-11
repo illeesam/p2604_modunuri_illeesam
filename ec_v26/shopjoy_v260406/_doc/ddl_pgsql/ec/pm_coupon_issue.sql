@@ -2,7 +2,7 @@
 -- 쿠폰 발급
 
 CREATE TABLE shopjoy_2604.pm_coupon_issue (
-    issue_id   VARCHAR(21) NOT NULL CONSTRAINT pm_coupon_issue_pk_issue_id PRIMARY KEY,
+    coupon_issue_id   VARCHAR(21) NOT NULL CONSTRAINT pm_coupon_issue_pk_coupon_issue_id PRIMARY KEY,
     reg_site_id    VARCHAR(21) NOT NULL,
     coupon_id  VARCHAR(21) NOT NULL,
     member_id  VARCHAR(21) NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE shopjoy_2604.pm_coupon_issue (
 );
 
 COMMENT ON TABLE  shopjoy_2604.pm_coupon_issue IS '쿠폰 발급';
-COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.issue_id IS '발급ID';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.coupon_issue_id IS '발급ID';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.coupon_id IS '쿠폰ID';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon_issue.member_id IS '회원ID';

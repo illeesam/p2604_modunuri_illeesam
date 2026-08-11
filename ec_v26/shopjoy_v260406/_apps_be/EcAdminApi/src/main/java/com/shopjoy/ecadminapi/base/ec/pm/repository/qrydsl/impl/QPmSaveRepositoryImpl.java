@@ -83,6 +83,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                     QdslUtil.strIn(pmSave.saveId, search.getSaveIds()),
                     QdslUtil.strEq(pmSave.saveId, search.getSaveId()),
                     QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()),
+                    QdslUtil.strEq(pmSave.memberId, search.getMemberId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )

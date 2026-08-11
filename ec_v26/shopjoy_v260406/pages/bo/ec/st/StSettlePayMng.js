@@ -122,19 +122,23 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
 
+    /* ⚠ 상태는 한글 라벨이 아니라 코드값으로 비교해야 한다.
+       실 데이터는 SETTLE_PAY_STATUS 코드(PENDING/COMPLT/FAILED/CANCELLED/…)이고
+       '지급완료' 같은 라벨과 비교하면 항상 false 라 집계가 0 으로 나온다.
+       settleAmt 는 백엔드 Item 에 없어 payAmt 로 집계한다. */
     const cfSummary = computed(() => ({
-      total:   pays.reduce((s, r) => s + r.settleAmt, 0),
-      paid:    pays.filter(r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
-      pending: pays.filter(r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
+      total:   pays.reduce((s, r) => s + (r.payAmt || 0), 0),
+      paid:    pays.filter(r => r.payStatusCd === 'COMPLT').reduce((s, r) => s + (r.payAmt || 0), 0),
+      pending: pays.filter(r => r.payStatusCd === 'PENDING').reduce((s, r) => s + (r.payAmt || 0), 0),
     }));
 
     /* doPay — 실행 */
     const doPay = async (r) => {
-      const ok = await showConfirm('지급처리', `[${r.vendorNm}]에게 ${Number(r.settleAmt).toLocaleString()}원을 지급하시겠습니까?`);
+      const ok = await showConfirm('지급처리', `[${r.vendorId}] 업체에 ${Number(r.payAmt || 0).toLocaleString()}원을 지급하시겠습니까?`);
       if (!ok) { return; }
-      r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = coUtil.cofToYmd(new Date());
+      r.payStatusCd = 'COMPLT'; r.payDate = coUtil.cofToYmd(new Date());
       try {
-        const res = await boApiSvc.stSettlePay.pay(r.settlePayId || r.payId, { payAmt: r.payAmt ?? r.settleAmt }, '정산지급관리', '저장');
+        const res = await boApiSvc.stSettlePay.pay(r.settlePayId, { payAmt: r.payAmt }, '정산지급관리', '저장');
         if (showToast) { showToast('지급처리가 완료되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
@@ -144,7 +148,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     };
 
     /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
+    /* SETTLE_PAY_STATUS 코드값 기준 (한글 라벨 아님 — 실 데이터가 코드다) */
+    const fnStatusBadge = s => ({ COMPLT:'badge-green', PENDING:'badge-blue', FAILED:'badge-red',
+      CANCELLED:'badge-gray', PARTIAL_REFUND:'badge-orange', REFUNDED:'badge-orange' }[s] || 'badge-gray');
 
     /* fmtW — 포맷 W */
     const fmtW = coUtil.cofWon;
@@ -170,21 +176,25 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
     ];
 
-    // 기본 그리드
+    /* 기본 그리드
+       ⚠ key 는 백엔드 StSettlePayDto.Item 필드명과 일치해야 값이 표시된다.
+          이름이 다르면 에러 없이 빈 칸으로만 보인다.
+       제거한 컬럼: closeMon(정산월) / settleAmt(정산액) — 백엔드 Item 에 대응 필드가 없어
+          항상 빈 값이었다. 필요하면 백엔드에 st_settle 조인으로 추가할 것.
+       vendorNm / regUserNm 도 조인 필드가 없어 ID(vendorId/regBy)로 표시한다.
+       상세 → _doc/정책서/ec/st/st.06.정산화면-백엔드불일치.md */
     columns.baseGrid = [
-      { key: 'payId',      label: '지급ID' },
+      { key: 'settlePayId', label: '지급ID' },
       { key: 'payDate',    label: '지급일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
-      { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
-      { key: 'closeMon',   label: '정산월' },
-      { key: 'settleAmt',  label: '정산액', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'vendorId',   label: '업체', cellStyle: 'font-weight:700' },
       { key: 'payAmt',     label: '지급액',
         fmt: (v) => v > 0 ? fmtW(v) : '-',
         cellStyle: (v) => v > 0 ? 'color:#27ae60;font-weight:700' : 'color:#999' },
       { key: 'bankNm',     label: '은행' },
       { key: 'bankAccount',label: '계좌번호', cellStyle: 'color:#666' },
       { key: 'bankHolder', label: '예금주' },
-      { key: 'payStatus',  label: '상태', badge: (row) => fnStatusBadge(row.payStatus) },
-      { key: 'regUserNm',  label: '담당자' },
+      { key: 'payStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.payStatusCd) },
+      { key: 'regBy',      label: '담당자' },
     ];
 
     /* summaryFormColumns — 집계 카드 (BoFormArea, cols=3, labelLeft) */
@@ -227,7 +237,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.payStatus==='지급대기'" class="btn btn-xs btn-green" @click="handleSelectAction('settlePays-rowPay', r)">
+        <button v-if="r.payStatusCd==='PENDING'" class="btn btn-xs btn-green" @click="handleSelectAction('settlePays-rowPay', r)">
           지급처리
         </button>
       </template>

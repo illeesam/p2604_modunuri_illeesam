@@ -58,6 +58,7 @@ window.PdProdMng = {
       // 카테고리 선택 비우기
       } else if (cmd === 'searchParam-cateClear') {
         searchParam.cate = '';
+        searchParam.categoryId = '';
         return;
       // 상품 신규 등록 (인라인 패널)
       } else if (cmd === 'prods-add') {
@@ -146,7 +147,11 @@ window.PdProdMng = {
       }
     };
     const searchParam = reactive({
-      searchType: '', searchValue: '', dateRangeType: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '', cate: '', status: '',
+      /* ⚠ 검색 키는 백엔드 PdProdDto.Request 필드명과 일치해야 한다.
+         이름이 다르면 Spring 바인딩에서 조용히 버려져 "필터가 안 걸리는" 버그가 된다(에러 없음).
+         cate 는 표시용 카테고리명, categoryId 가 실제 서버 전송 값. */
+      searchType: '', searchValue: '', dateRangeType: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '',
+      cate: '', categoryId: '', prodStatusCd: '',
       prodTypeCd: '',
       vendorId: '',   // initPage 에서 로그인 사용자의 소속 업체로 기본값 설정
       mdUserId: '',   // 담당MD 사용자ID (type:pick 검색 파라미터)
@@ -292,7 +297,8 @@ window.PdProdMng = {
     /* onCatSelect — 카테고리 선택 */
     const onCatSelect = (cat) => {
       /* 트리에서 '선택 안함' 을 고르면 categoryNm 이 빈 값으로 와 검색조건이 비워진다 */
-      searchParam.cate = (cat ? cat.categoryNm : '') || '';
+      searchParam.cate       = (cat ? cat.categoryNm : '') || '';   // 화면 표시용
+      searchParam.categoryId = (cat ? cat.categoryId : '') || '';   // 실제 필터 값(서버 전송)
       modals.isCatModal = false;
     };
 
@@ -314,9 +320,9 @@ window.PdProdMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'OPTION_TYPE', 'CATEGORY_DEPTH', 'PROD_DATE_TYPE', 'DATE_RANGE_OPT', 'PROD_TYPE'], {compNm: 'PdProdMng'});
+      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'OPT_TYPE', 'CATEGORY_DEPTH', 'PROD_DATE_TYPE', 'DATE_RANGE_OPT', 'PROD_TYPE'], {compNm: 'PdProdMng'});
       codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
-      codes.option_types = codeStore.sgGetGrpCodes('OPTION_TYPE');
+      codes.option_types = codeStore.sgGetGrpCodes('OPT_TYPE');
       codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
       codes.prod_date_types = codeStore.sgGetGrpCodes('PROD_DATE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
@@ -413,7 +419,7 @@ window.PdProdMng = {
       { key: 'mdUserId', label: '담당MD', type: 'pick',
         display: (p) => p.mdUserNm, placeholder: 'MD 선택', width: '120px',
         openLabel: '선택', onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('searchParam-mdClear') },
-      { key: 'status', label: '상태', type: 'select', options: () => codes.product_statuses, nullLabel: '상태 전체' },
+      { key: 'prodStatusCd', label: '상태', type: 'select', options: () => codes.product_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', label: '등록일', type: 'dateRange',
         typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         typeOptions: () => codes.prod_date_types,

@@ -43,6 +43,5 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.reg_date IS '등록일시';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.upd_by IS '수정자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_opt.upd_date IS '수정일시';
 
-CREATE INDEX pd_prod_opt_ix_prod_opt_type ON shopjoy_2604.pd_prod_opt USING btree (prod_opt_type_id);
 CREATE INDEX pd_prod_opt_ix02_prod_id ON shopjoy_2604.pd_prod_opt USING btree (prod_id);
 CREATE INDEX pd_prod_opt_ix01_parent_prod_opt_id ON shopjoy_2604.pd_prod_opt USING btree (parent_prod_opt_id);

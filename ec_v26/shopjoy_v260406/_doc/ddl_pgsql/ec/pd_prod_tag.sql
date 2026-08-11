@@ -9,7 +9,8 @@ CREATE TABLE shopjoy_2604.pd_prod_tag (
     reg_by      VARCHAR(30),
     reg_date    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by      VARCHAR(30),
-    upd_date    TIMESTAMP  
+    upd_date    TIMESTAMP  ,
+    CONSTRAINT pd_prod_tag_uk_prod_id_tag_id_x2 UNIQUE (prod_id, tag_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_tag IS '상품-태그 매핑';
@@ -20,6 +21,4 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.tag_id IS '태그ID (pd_tag.)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_tag.reg_date IS '등록일';
 
-CREATE INDEX pd_prod_tag_ix_prod ON shopjoy_2604.pd_prod_tag USING btree (prod_id);
 CREATE INDEX pd_prod_tag_ix01_tag_id ON shopjoy_2604.pd_prod_tag USING btree (tag_id);
-CREATE UNIQUE INDEX pd_prod_tag_uk_prod_id_tag_id_x2 ON shopjoy_2604.pd_prod_tag USING btree (prod_id, tag_id);
