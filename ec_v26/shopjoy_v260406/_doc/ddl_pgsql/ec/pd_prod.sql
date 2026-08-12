@@ -57,7 +57,7 @@ COMMENT ON COLUMN shopjoy_2604.pd_prod.brand_id IS '브랜드ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.vendor_id IS '업체ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.md_user_id IS '담당MD (sy_user.user_id) — 등록 시 본인 기본값, 변경 가능';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_nm IS '상품명';
-COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_type_cd IS '상품유형 (코드: PRODUCT_TYPE — SINGLE/GROUP/SET)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_type_cd IS '상품유형 (코드: PROD_TYPE — SINGLE/GROUP/SET)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.prod_code IS '상품코드(SKU)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.list_price IS '정가';
 COMMENT ON COLUMN shopjoy_2604.pd_prod.sale_price IS '판매가';

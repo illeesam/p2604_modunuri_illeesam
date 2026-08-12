@@ -4,14 +4,14 @@
 독립적으로 판매 가능한 상품 N개를 하나의 패키지로 묶어 **할인 가격**으로 판매하는 상품 유형.
 구성품은 개별 판매도 가능하며, 묶음 구성원으로도 판매 가능.
 
-> `pd_prod.prod_type_cd = 'BUNDLE'`
+> `pd_prod.prod_type_cd = 'GROUP'`
 
 ---
 
 ## 구성 구조
 
 ```
-pd_prod (묶음상품, prod_type_cd=BUNDLE)
+pd_prod (묶음상품, prod_type_cd=GROUP)
 └─ pd_prod_bundle_item (구성품 매핑)
      ├─ item_prod_id → pd_prod (구성품 A)
      ├─ item_prod_id → pd_prod (구성품 B)
@@ -21,7 +21,7 @@ pd_prod (묶음상품, prod_type_cd=BUNDLE)
 ### pd_prod_bundle_item 주요 필드
 | 필드 | 설명 |
 |---|---|
-| `bundle_prod_id` | 묶음상품 ID (pd_prod.prod_id, prod_type_cd=BUNDLE) |
+| `bundle_prod_id` | 묶음상품 ID (pd_prod.prod_id, prod_type_cd=GROUP) |
 | `item_prod_id` | 구성품 상품ID (pd_prod.prod_id) — 독립 판매 상품 |
 | `item_sku_id` | 구성품 SKU ID (NULL=SKU 미지정) |
 | `item_qty` | 구성 수량 (기본 1) |
@@ -138,12 +138,12 @@ A-PROD-003  샴푸         price_rate = 30%  개별가 15,000원
 ---
 
 ## DDL
-- `pd_prod` — 묶음상품 마스터 (`prod_type_cd = 'BUNDLE'`)
+- `pd_prod` — 묶음상품 마스터 (`prod_type_cd = 'GROUP'`)
 - `pd_prod_bundle_item` — 구성품 매핑 (`bundle_prod_id`, `item_prod_id`, `item_sku_id`, `item_qty`, `price_rate`)
 - `od_order_item` — 주문 시 구성품별 행 생성 (`bundle_group_id`, `item_prod_id`)
 
 ## 관련 테이블
-- `pd_prod` (prod_type_cd=BUNDLE)
+- `pd_prod` (prod_type_cd=GROUP)
 - `pd_prod_bundle_item` (구성 매핑)
 - `od_order_item` (bundle_group_id)
 - `od_claim` / `od_claim_item` (구성품 단위 클레임)
@@ -152,7 +152,7 @@ A-PROD-003  샴푸         price_rate = 30%  개별가 15,000원
 | pageId | 라벨 |
 |---|---|
 | `pdBundleMng` | 상품관리 > 묶음상품관리 |
-| `pdProdMng` | 상품관리 > 상품관리 (prod_type_cd=BUNDLE 필터) |
+| `pdProdMng` | 상품관리 > 상품관리 (prod_type_cd=GROUP 필터) |
 
 ## 관련 정책서
 - `pd.06.세트상품.md` — 세트상품과 차이점
@@ -160,6 +160,6 @@ A-PROD-003  샴푸         price_rate = 30%  개별가 15,000원
 - `od.16.묶음세트사은품-클레임.md` — 클레임 처리
 
 ## 변경이력
-- 2026-04-19: DDL 테이블명 `pd_prod_bundle` → `pd_prod_bundle_item` 반영, `item_prod_id`·`item_sku_id`·`item_qty` 필드명 현행화, prod_type_cd BUNDLE 정정
+- 2026-04-19: DDL 테이블명 `pd_prod_bundle` → `pd_prod_bundle_item` 반영, `item_prod_id`·`item_sku_id`·`item_qty` 필드명 현행화, prod_type_cd BUNDLE 정정 (2026-08-13: 실제 코드값은 GROUP 으로 재정정)
 - 2026-04-19: 주문 관점·클레임 관점·환불 계산 관점 및 데이터 시뮬레이션 추가
 - 2026-04-18: 초기 작성

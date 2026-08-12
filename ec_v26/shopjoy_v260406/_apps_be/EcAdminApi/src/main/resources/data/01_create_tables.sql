@@ -180,7 +180,7 @@ COMMENT ON COLUMN sy_code.upd_date            IS '수정일';
 --
 -- [상품]
 -- PRODUCT_STATUS       : 상품상태 (DRAFT/ACTIVE/STOPPED/SOLD_OUT/DISCONTINUED)
--- PRODUCT_TYPE         : 상품유형 (SINGLE/GROUP/SET)
+-- PROD_TYPE         : 상품유형 (SINGLE/GROUP/SET)
 -- VAT_TYPE             : 부가세유형 (TAXABLE/TAX_FREE)
 -- OPT_TYPE             : 옵션카테고리 (NONE/COLOR/SIZE/MATERIAL/CUSTOM)
 -- OPT_VAL              : 옵션프리셋값 (RED/BLUE/.../S/M/L/XL/... parentCodeValue=OPT_TYPE값)
@@ -2468,7 +2468,7 @@ CREATE TABLE IF NOT EXISTS pd_prod (
     vendor_id       VARCHAR(21),
     md_user_id      VARCHAR(21),                            -- 담당MD (sy_user.user_id)
     prod_nm         VARCHAR(200)    NOT NULL,
-    prod_type_cd    VARCHAR(20)     DEFAULT 'SINGLE',           -- 코드: PRODUCT_TYPE (SINGLE/GROUP/SET)
+    prod_type_cd    VARCHAR(20)     DEFAULT 'SINGLE',           -- 코드: PROD_TYPE (SINGLE/GROUP/SET)
     prod_code       VARCHAR(50),
     list_price      BIGINT          DEFAULT 0,
     sale_price      BIGINT          DEFAULT 0,
@@ -2521,7 +2521,7 @@ COMMENT ON COLUMN pd_prod.brand_id      IS '브랜드ID';
 COMMENT ON COLUMN pd_prod.vendor_id     IS '업체ID';
 COMMENT ON COLUMN pd_prod.md_user_id    IS '담당MD (sy_user.user_id) — 등록 시 본인 기본값, 변경 가능';
 COMMENT ON COLUMN pd_prod.prod_nm       IS '상품명';
-COMMENT ON COLUMN pd_prod.prod_type_cd  IS '상품유형 (코드: PRODUCT_TYPE — SINGLE/GROUP/SET)';
+COMMENT ON COLUMN pd_prod.prod_type_cd  IS '상품유형 (코드: PROD_TYPE — SINGLE/GROUP/SET)';
 COMMENT ON COLUMN pd_prod.prod_code     IS '상품코드(SKU)';
 COMMENT ON COLUMN pd_prod.list_price    IS '정가';
 COMMENT ON COLUMN pd_prod.sale_price    IS '판매가';
@@ -2562,7 +2562,7 @@ COMMENT ON COLUMN pd_prod.upd_date      IS '수정일';
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pd_prod.prod_type_cd (상품유형) : PRODUCT_TYPE { SINGLE:단일상품, GROUP:그룹상품, SET:세트상품 }
+-- [CODES] pd_prod.prod_type_cd (상품유형) : PROD_TYPE { SINGLE:단일상품, GROUP:그룹상품, SET:세트상품 }
 -- [CODES] pd_prod.prod_status_cd (상태) : 상품상태 { ON_SALE:판매중, PREPARING:준비중, SOLD_OUT:품절, SUSPENDED:판매중지 }
 -- [CODES] pd_prod.size_info_cd (사이즈) : 상품사이즈 { FREE:FREE, XS:XS, S:S, M:M, L:L, XL:XL, XXL:XXL }
 

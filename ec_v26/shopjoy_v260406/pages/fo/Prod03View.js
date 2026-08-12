@@ -739,7 +739,19 @@ window.Prod03View = {
     /* validate — 검증 */
     const validate = () => {
       let ok = true;
-      if (!uiState.selectedColor) { uiState.colorError = '색상을 선택해주세요.'; ok = false; }
+      /* 상품유형별 옵션 처리 (정책: 옵션상품은 옵션 필수 / 그 외 유형은 옵션 없는 것이 정상)
+         - 단품(SINGLE)·묶음(GROUP)·세트(SET) 등: 옵션이 없어도 정상이므로 기본값 자동 선택
+         - 옵션상품(OPTION) 인데 옵션이 없음: 잘못 등록된 상품이므로 담기를 차단한다
+           (조용히 FREE 로 담으면 잘못된 데이터가 주문까지 흘러간다) */
+      if (!uiState.selectedColor) {
+        if ((svProduct.opt1s || []).length > 0) {
+          uiState.colorError = '색상을 선택해주세요.'; ok = false;
+        } else if (svProduct.prodTypeCd === 'OPTION') {
+          uiState.colorError = '옵션 정보가 없는 상품입니다. 관리자에게 문의해 주세요.'; ok = false;
+        } else {
+          uiState.selectedColor = { name: 'FREE', hex: '#e5e7eb', priceDelta: 0 };
+        }
+      }
       /* 사이즈 FREE 또는 미설정이면 자동 선택 */
       const sizes = svProduct.opt2s || [];
       if (!uiState.selectedSize) {

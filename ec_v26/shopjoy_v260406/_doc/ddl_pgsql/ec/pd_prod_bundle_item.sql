@@ -1,5 +1,5 @@
 -- pd_prod_bundle_item 테이블 DDL
--- 묶음상품 구성품 (prod_type_cd=BUNDLE)
+-- 묶음상품 구성품 (prod_type_cd=GROUP)
 
 CREATE TABLE shopjoy_2604.pd_prod_bundle_item (
     prod_bundle_item_id VARCHAR(21)  NOT NULL CONSTRAINT pd_prod_bundle_item_pk_prod_bundle_item_id PRIMARY KEY,
@@ -18,10 +18,10 @@ CREATE TABLE shopjoy_2604.pd_prod_bundle_item (
     CONSTRAINT pd_prod_bundle_item_uk_bundle_prod_id_item_prod_id_x2 UNIQUE (bundle_prod_id, item_prod_id)
 );
 
-COMMENT ON TABLE  shopjoy_2604.pd_prod_bundle_item IS '묶음상품 구성품 (prod_type_cd=BUNDLE)';
+COMMENT ON TABLE  shopjoy_2604.pd_prod_bundle_item IS '묶음상품 구성품 (prod_type_cd=GROUP)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.prod_bundle_item_id IS '묶음구성ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.reg_site_id IS '사이트ID (sy_site.site_id)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.bundle_prod_id IS '묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.bundle_prod_id IS '묶음상품ID (pd_prod.prod_id, prod_type_cd=GROUP)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.item_prod_id IS '구성품 상품ID (pd_prod.prod_id) — 독립 판매 상품';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.item_sku_id IS '구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_bundle_item.item_qty IS '구성 수량 (기본 1)';

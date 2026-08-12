@@ -55,7 +55,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     /*
      * baseListQuery / selectById — 코드성 필드 예시 코드값 (sy_code 등록 기준)
      * PROD_STATUS_CD (PRODUCT_STATUS)  {ON_SALE: '판매중', PREPARING: '준비중', SOLD_OUT: '품절', SUSPENDED: '판매중지'}
-     * PROD_TYPE_CD   (PRODUCT_TYPE)    {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'} — Entity 주석 기준 예시(코드그룹 미등록)
+     * PROD_TYPE_CD   (PROD_TYPE)    {SINGLE: '단품', GROUP: '그룹상품', SET: '세트상품'} — Entity 주석 기준 예시(코드그룹 미등록)
      * SIZE_INFO_CD   (PRODUCT_SIZE)    {FREE: 'FREE', XS: 'XS', S: 'S', M: 'M', L: 'L', XL: 'XL', XXL: 'XXL'}
      * IS_NEW/IS_BEST/ADLT_YN/SAME_DAY_DLIV_YN/SOLD_OUT_YN/COUPON_USE_YN/SAVE_USE_YN/DISCNT_USE_YN/SIMUL_YN  {Y: '예', N: '아니오'}
      */
@@ -111,7 +111,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         syVendor.vendorNm.as("vendorNm"),          // 업체명 (조인)
                         syUser.userNm.as("mdUserNm"),               // 담당MD명 (조인)
                         cdPs.codeLabel.as("prodStatusCdNm"),        // 상품상태 코드라벨 (조인, sy_code.PRODUCT_STATUS)
-                        cdPt.codeLabel.as("prodTypeCdNm"),          // 상품유형 코드라벨 (조인, sy_code.PRODUCT_TYPE)
+                        cdPt.codeLabel.as("prodTypeCdNm"),          // 상품유형 코드라벨 (조인, sy_code.PROD_TYPE)
                         pdProd.thumbnailUrl                          // 썸네일URL (직접 컬럼값; 없으면 _listFillRelations에서 imgMap으로 보완)
                 ))
                 .from(pdProd)
@@ -120,7 +120,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
                 .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd)))
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PRODUCT_TYPE").and(cdPt.codeValue.eq(pdProd.prodTypeCd)));
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE").and(cdPt.codeValue.eq(pdProd.prodTypeCd)));
     }
 
     /** 단건 조회 — selectById 와 동일 컬럼 셋 (size_info_cd_nm 포함) */
@@ -196,7 +196,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
                 .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd)))
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PRODUCT_TYPE").and(cdPt.codeValue.eq(pdProd.prodTypeCd)))
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE").and(cdPt.codeValue.eq(pdProd.prodTypeCd)))
                 .leftJoin(cdSz).on(cdSz.codeGrp.eq("PRODUCT_SIZE").and(cdSz.codeValue.eq(pdProd.sizeInfoCd)))
                 .where(pdProd.prodId.eq(prodId))
                 .fetchOne();

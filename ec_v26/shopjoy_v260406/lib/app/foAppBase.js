@@ -349,10 +349,14 @@
     };
 
     /* ── Likes (좋아요/위시리스트) ── */
-    let likes = reactive(new Set());
+    /* ⛔ likes 는 절대 재할당하지 않는다 — 재할당하면 reactive 프록시가 평범한 Set 으로 바뀌어
+       추적이 끊긴다. 그러면 헤더 하트 뱃지·상품카드 하트색·위시리스트 목록이 갱신되지 않는다.
+       변경은 반드시 add()/delete() 로 한다 (Vue 3 reactive 는 Set 의 add/delete/has/size 를 추적). */
+    const likes = reactive(new Set());
     try {
       const savedLikes = localStorage.getItem('modu-fo-pd-like');
-      if (savedLikes) likes = new Set(JSON.parse(savedLikes));
+      const arr = savedLikes ? JSON.parse(savedLikes) : null;
+      if (Array.isArray(arr)) arr.forEach(v => likes.add(v));
     } catch (e) {}
 
     /* saveLikes */
@@ -360,9 +364,7 @@
 
     /* toggleLike */
     const toggleLike = (prodId) => {
-      const s = new Set(likes);
-      if (s.has(prodId)) s.delete(prodId); else s.add(prodId);
-      likes = s;
+      if (likes.has(prodId)) likes.delete(prodId); else likes.add(prodId);
       saveLikes();
     };
 

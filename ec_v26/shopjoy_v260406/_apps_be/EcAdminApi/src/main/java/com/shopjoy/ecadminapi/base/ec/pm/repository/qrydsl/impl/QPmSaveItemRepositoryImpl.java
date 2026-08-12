@@ -55,7 +55,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                 ))
                 .from(pmSaveItem)
                 .leftJoin(pmSave).on(pmSave.saveId.eq(pmSaveItem.saveId))
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ITEM_TARGET").and(cdSit.codeValue.eq(pmSaveItem.targetTypeCd)));
+                .leftJoin(cdSit).on(cdSit.codeGrp.eq("PROMO_TARGET_TYPE").and(cdSit.codeValue.eq(pmSaveItem.targetTypeCd)));
     }
 
     /* 적립금 대상 상품 키조회 */

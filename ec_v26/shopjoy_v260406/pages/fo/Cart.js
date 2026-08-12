@@ -57,7 +57,7 @@ window.Cart = {
         return toggleCheck(param);
       // 행 수량 증감 ({ idx, delta })
       } else if (cmd === 'cart-rowQty') {
-        return updateCartQty(param.idx, param.delta);
+        return changeQty(param.idx, param.delta);
       // 행 삭제
       } else if (cmd === 'cart-rowRemove') {
         return removeItem(param);
@@ -109,12 +109,23 @@ window.Cart = {
       newSet.forEach(i => uiState.checkedIdxs.add(i));
     };
 
+    /* changeQty — 행 수량 증감. 수량이 0 이 되면 행이 사라지므로
+       반드시 removeItem 을 거쳐 checkedIdxs 를 재정합한다
+       (updateCartQty 를 직접 부르면 체크 인덱스가 밀려 엉뚱한 행이 선택되거나 범위를 벗어난다). */
+    const changeQty = (idx, delta) => {
+      const item = cart[idx];
+      if (!item) return;
+      if (item.qty + delta <= 0) { removeItem(idx); return; }
+      updateCartQty(idx, delta);
+    };
+
     /* goOrder — 주문 페이지로 이동 */
     const goOrder = () => {
       if (uiState.checkedIdxs.size === 0) {
         props.navigate('order');
       } else {
-        const ids = [...uiState.checkedIdxs].sort().map(i => cart[i].cartId);
+        const ids = [...uiState.checkedIdxs].sort((a, b) => a - b)
+          .map(i => cart[i]).filter(Boolean).map(it => it.cartId);
         props.navigate('order', { cartIds: ids });
       }
     };
@@ -164,10 +175,11 @@ window.Cart = {
     const cfAllChecked = computed(() => cart.length > 0 && uiState.checkedIdxs.size === cart.length);
     const cfSomeChecked = computed(() => uiState.checkedIdxs.size > 0 && uiState.checkedIdxs.size < cart.length);
 
-    /* 요약 패널: 체크된 항목(없으면 전체) 기준 */
+    /* 요약 패널: 체크된 항목(없으면 전체) 기준.
+       filter(Boolean) — 체크 인덱스가 잠시 범위를 벗어나도 합계 계산이 죽지 않게 방어 */
     const cfSummaryItems = computed(() =>
       uiState.checkedIdxs.size > 0
-        ? [...uiState.checkedIdxs].sort().map(i => cart[i])
+        ? [...uiState.checkedIdxs].sort((a, b) => a - b).map(i => cart[i]).filter(Boolean)
         : (cart || [])
     );
 

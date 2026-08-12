@@ -74,7 +74,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 ))
                 .from(stSettlePay)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId))
-                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd)))
+                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd)))
                 .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(stSettlePay.payStatusCd)));
     }
 

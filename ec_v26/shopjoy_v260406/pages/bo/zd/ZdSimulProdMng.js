@@ -4,10 +4,10 @@
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const SALE_TYPES = [
-    { cd: 'NORMAL', label: '단품',   badge: 'badge-blue',   color: '#3b82f6' },
+    { cd: 'SINGLE', label: '단품',   badge: 'badge-blue',   color: '#3b82f6' },
     { cd: 'OPTION', label: '옵션형', badge: 'badge-purple', color: '#a855f7' },
     { cd: 'SET',    label: '세트',   badge: 'badge-orange', color: '#f97316' },
-    { cd: 'BUNDLE', label: '묶음',   badge: 'badge-green',  color: '#22c55e' },
+    { cd: 'GROUP',  label: '묶음',   badge: 'badge-green',  color: '#22c55e' },
   ];
   const PROD_STATUSES = [
     { value: 'SELLING',     label: '판매중'   },
@@ -67,7 +67,7 @@
         stockMax: 999,
         priceRoundUnit: 100,
         fixedSaleType: '__weighted__',
-        saleTypeWeights: { NORMAL: 10, OPTION: 70, SET: 10, BUNDLE: 10 },
+        saleTypeWeights: { SINGLE: 10, OPTION: 70, SET: 10, GROUP: 10 },
         createStatus: 'SELLING',
         useAdCopy: true,
         useOptImg: true,
@@ -117,6 +117,25 @@
         let r = Math.random() * total;
         for (const p of OPT_PRESETS) { r -= Number(w[p.cd] || 0); if (r <= 0) return p; }
         return OPT_PRESETS[0];
+      };
+
+      /* fnCheckProdTypeRule — 상품유형별 구성요건 검증. 위반 시 사유 문자열, 정상이면 '' 반환.
+         정책: 옵션상품(OPTION)=옵션 필수 / 세트(SET)·묶음(GROUP)=구성상품 필수.
+         미리보기(dry-run)에서는 prodOpts 가 _hide_prodOpts 로 옮겨지므로 둘 다 본다.
+         정책서: _doc/정책서/ec/pd/pd.02.상품유형-구성요건.md */
+      const fnCheckProdTypeRule = (body, typeCd) => {
+        if (typeCd === 'OPTION') {
+          const grps = body.prodOpts || body._hide_prodOpts || [];
+          const cnt = grps.reduce((s, g) => s + ((g && g.prodOpts) ? g.prodOpts.length : 0), 0);
+          if (!cnt) return '옵션상품인데 옵션이 없습니다 — 생성 중단 (옵션 항목 수 설정을 확인하세요)';
+        }
+        if (typeCd === 'SET' || typeCd === 'GROUP') {
+          if (!(body.prodCompItems || []).length) {
+            return (typeCd === 'SET' ? '세트상품' : '묶음상품')
+              + '인데 구성상품이 없습니다 — 생성 중단 (구성상품으로 쓸 기존 상품이 있어야 합니다)';
+          }
+        }
+        return '';
       };
 
       /* 레거시 호환 — 기본 풀 (카테고리 프리뷰용) */
@@ -349,7 +368,27 @@
               if (previewOnly) {
                 body.prodImgs = [{ cdnImgUrl: 'https://picsum.photos/seed/200/400/400', isThumb: 'Y', sortOrd: 1 }];
               }
+              /* 세트(SET)/묶음(GROUP): 구성상품을 기존 상품 중에서 골라 담는다.
+                 미리보기(dry-run)에서도 실제 목록 조회가 필요하므로 _zdRealBoApi 를 쓴다. */
+              if (type.cd === 'SET' || type.cd === 'GROUP') {
+                const _realBoApi = window._zdRealBoApi || window.boApi;
+                const compCnt = randInt(2, 3);
+                const cres = await _realBoApi.post('/bo/zd/simul/order/rand-prod',
+                  { count: compCnt, prodStatusCd: 'ACTIVE' }, coUtil.cofApiHdr('상품시뮬', '구성상품조회'));
+                body.prodCompItems = (cres?.data?.data?.prods || [])
+                  .filter(cp => cp.prodId && cp.prodId !== tmpProdId)  /* 자기 자신 구성 방지 */
+                  .map((cp, i) => ({
+                    itemProdId: cp.prodId, itemNm: cp.prodNm, itemQty: 1, sortOrd: i + 1,
+                  }));
+              }
             }
+            /* ── 상품유형 정책 가드 ─────────────────────────────────────────
+               옵션상품은 옵션이, 세트/묶음상품은 구성상품이 반드시 있어야 한다.
+               없으면 FO 에서 담을 수 없는 잘못된 상품이 되므로 생성을 중단한다.
+               정책서: _doc/정책서/ec/pd/pd.02.상품유형-구성요건.md */
+            const _violation = fnCheckProdTypeRule(body, type.cd);
+            if (_violation) throw new Error(_violation);
+
             const res = await boApi.post('/bo/zd/simul/prod/create', body, coUtil.cofApiHdr('상품시뮬', '생성'));
             const savedProdId = res?.data?.data?.prodId || tmpProdId;
 

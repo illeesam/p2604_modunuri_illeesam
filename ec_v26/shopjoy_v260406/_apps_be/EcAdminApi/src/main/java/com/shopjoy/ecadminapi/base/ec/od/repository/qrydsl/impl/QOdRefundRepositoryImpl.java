@@ -78,7 +78,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                 .leftJoin(cla).on(cla.claimId.eq(odRefund.claimId))
                 .leftJoin(cdRt).on(cdRt.codeGrp.eq("REFUND_TYPE").and(cdRt.codeValue.eq(odRefund.refundTypeCd)))
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odRefund.refundStatusCd)))
-                .leftJoin(cdCf).on(cdCf.codeGrp.eq("CLAIM_FAULT").and(cdCf.codeValue.eq(odRefund.faultTypeCd)));
+                .leftJoin(cdCf).on(cdCf.codeGrp.eq("FAULT_TYPE").and(cdCf.codeValue.eq(odRefund.faultTypeCd)));
     }
 
     /* 환불 키조회 */

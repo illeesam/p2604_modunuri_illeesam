@@ -21,6 +21,10 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdStock;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSetItem;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdBundleItem;
+import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdSetItemService;
+import com.shopjoy.ecadminapi.base.ec.pd.service.PdProdBundleItemService;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdImgRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdSkuRepository;
@@ -95,6 +99,8 @@ public class ZdSimulController {
     private final PdProdSkuRepository      pdProdSkuRepository;
     private final PdProdImgRepository      pdProdImgRepository;
     private final PdProdStockRepository    pdProdStockRepository;
+    private final PdProdSetItemService        pdProdSetItemService;
+    private final PdProdBundleItemService     pdProdBundleItemService;
     private final PdDlivTmpltService   pdDlivTmpltService;
     private final MbMemberService      mbMemberService;
     private final MbMemberGradeService mbMemberGradeService;
@@ -375,6 +381,50 @@ public class ZdSimulController {
                     .sortOrd(1)
                     .build();
                 pdProdImgService.create(img);
+            }
+        }
+
+        /* ── 세트/묶음 구성상품 저장 ────────────────────────────────────────────
+           정책: 세트(SET)·묶음(GROUP) 상품은 구성상품이 반드시 1건 이상 있어야 한다.
+                 구성상품 없이 만들면 FO 에서 담을 수 없는 잘못된 상품이 된다.
+           정책서: _doc/정책서/ec/pd/pd.02.상품유형-구성요건.md */
+        String typeCd = CmUtil.nvlStr(prod.getProdTypeCd());
+        if ("SET".equals(typeCd) || "GROUP".equals(typeCd)) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> compItems = body.get("prodCompItems") instanceof List
+                ? (List<Map<String, Object>>) body.get("prodCompItems") : List.of();
+            if (compItems.isEmpty()) {
+                throw new IllegalArgumentException(
+                    ("SET".equals(typeCd) ? "세트상품" : "묶음상품")
+                    + "은 구성상품이 1건 이상 있어야 합니다. (prodCompItems 누락)");
+            }
+            int ord = 1;
+            for (Map<String, Object> ci : compItems) {
+                String itemProdId = str(ci, "itemProdId");
+                if (itemProdId == null || itemProdId.isBlank()) continue;
+                int qty = ci.get("itemQty") instanceof Number n ? n.intValue() : 1;
+                if ("SET".equals(typeCd)) {
+                    pdProdSetItemService.create(PdProdSetItem.builder()
+                        .setProdId(prodId)
+                        .itemProdId(itemProdId)
+                        .itemNm(CmUtil.nvlStr(str(ci, "itemNm")))
+                        .itemQty(qty)
+                        .sortOrd(ord++)
+                        .useYn("Y")
+                        .build());
+                } else {
+                    /* price_rate 는 NOT NULL — 구성상품 수로 균등 배분(합계 100) */
+                    java.math.BigDecimal rate = java.math.BigDecimal.valueOf(100.0 / compItems.size())
+                        .setScale(2, java.math.RoundingMode.HALF_UP);
+                    pdProdBundleItemService.create(PdProdBundleItem.builder()
+                        .bundleProdId(prodId)
+                        .itemProdId(itemProdId)
+                        .itemQty(qty)
+                        .priceRate(rate)
+                        .sortOrd(ord++)
+                        .useYn("Y")
+                        .build());
+                }
             }
         }
 
