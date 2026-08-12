@@ -1364,10 +1364,10 @@ CREATE TABLE IF NOT EXISTS sy_i18n (
     i18n_desc       VARCHAR(200),                           -- 키 설명
     i18n_scope_cd   VARCHAR(20)     DEFAULT 'COMMON',       -- 코드: I18N_SCOPE (FO/BO/COMMON)
     i18n_category   VARCHAR(50),                            -- 키 첫 세그먼트 (common/error/link 등)
-    i18n_msg_ko     TEXT,                                   -- 한국어 메시지 ({0},{1} 플레이스홀더)
-    i18n_msg_en     TEXT,                                   -- 영어 메시지
-    i18n_msg_cn     TEXT,                                   -- 중국어 메시지
-    i18n_msg_ja     TEXT,                                   -- 일본어 메시지
+    i18n_msg_ko     VARCHAR(500)    NOT NULL,                                   -- 한국어 메시지 ({0},{1} 플레이스홀더)
+    i18n_msg_en     VARCHAR(500),                                   -- 영어 메시지
+    i18n_msg_cn     VARCHAR(500),                                   -- 중국어 메시지
+    i18n_msg_ja     VARCHAR(500),                                   -- 일본어 메시지
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     reg_by          VARCHAR(16),

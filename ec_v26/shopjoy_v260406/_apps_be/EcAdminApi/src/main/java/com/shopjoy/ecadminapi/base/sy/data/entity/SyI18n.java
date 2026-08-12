@@ -44,19 +44,19 @@ public class SyI18n extends BaseEntity {
        언어를 추가하려면 컬럼을 늘려야 한다(행 추가가 아님) — sy.58 §7 참조. */
 
     @Comment("한국어 메시지 (플레이스홀더 {0},{1} 지원)")
-    @Column(name = "i18n_msg_ko", columnDefinition = "TEXT")
+    @Column(name = "i18n_msg_ko", length = 500, nullable = false)
     private String i18nMsgKo;
 
     @Comment("영어 메시지 (플레이스홀더 {0},{1} 지원)")
-    @Column(name = "i18n_msg_en", columnDefinition = "TEXT")
+    @Column(name = "i18n_msg_en", length = 500)
     private String i18nMsgEn;
 
     @Comment("중국어 메시지 (플레이스홀더 {0},{1} 지원)")
-    @Column(name = "i18n_msg_cn", columnDefinition = "TEXT")
+    @Column(name = "i18n_msg_cn", length = 500)
     private String i18nMsgCn;
 
     @Comment("일본어 메시지 (플레이스홀더 {0},{1} 지원)")
-    @Column(name = "i18n_msg_ja", columnDefinition = "TEXT")
+    @Column(name = "i18n_msg_ja", length = 500)
     private String i18nMsgJa;
 
     @Comment("정렬순서")
