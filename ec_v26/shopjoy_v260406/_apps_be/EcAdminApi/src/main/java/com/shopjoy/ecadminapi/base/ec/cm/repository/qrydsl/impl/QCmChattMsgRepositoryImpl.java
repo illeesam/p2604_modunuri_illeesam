@@ -53,7 +53,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
                         cmChattMsg.msgText,       // 메시지 내용
                         cmChattMsg.msgTypeCd,     // 메시지유형 — MSG_TYPE_CD {TEXT: '텍스트', IMAGE: '이미지', FILE: '파일', REF: '참조', SYSTEM: '시스템'}
                         cmChattMsg.attachGrpId,   // 첨부그룹ID (sy_attach_grp.attach_grp_id)
-                        cmChattMsg.refType,       // 참조유형 — REF_TYPE {ORDER: '주문', PRODUCT: '상품', CLAIM: '클레임'}
+                        cmChattMsg.refTypeCd,       // 참조유형 — REF_TYPE {ORDER: '주문', PRODUCT: '상품', CLAIM: '클레임'}
                         cmChattMsg.refId,         // 참조ID
                         cmChattMsg.readYn,        // 읽음여부 — READ_YN {Y: '읽음', N: '안읽음'}
                         cmChattMsg.sendDate,      // 발송일시
@@ -141,7 +141,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
             QdslUtil.FieldDef.like("senderNm", cmChattMsg.senderNm),
             QdslUtil.FieldDef.like("msgText", cmChattMsg.msgText),
             QdslUtil.FieldDef.like("refId", cmChattMsg.refId),
-            QdslUtil.FieldDef.like("refType", cmChattMsg.refType)
+            QdslUtil.FieldDef.like("refTypeCd", cmChattMsg.refTypeCd)
         ));
     }
 
@@ -168,7 +168,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         if (entity.getMsgText()      != null) { update.set(cmChattMsg.msgText,        entity.getMsgText());      hasAny = true; }
         if (entity.getMsgTypeCd()    != null) { update.set(cmChattMsg.msgTypeCd,     entity.getMsgTypeCd());    hasAny = true; }
         if (entity.getAttachGrpId()  != null) { update.set(cmChattMsg.attachGrpId,   entity.getAttachGrpId());  hasAny = true; }
-        if (entity.getRefType()      != null) { update.set(cmChattMsg.refType,        entity.getRefType());      hasAny = true; }
+        if (entity.getRefTypeCd()      != null) { update.set(cmChattMsg.refTypeCd,        entity.getRefTypeCd());      hasAny = true; }
         if (entity.getRefId()        != null) { update.set(cmChattMsg.refId,          entity.getRefId());        hasAny = true; }
         if (entity.getReadYn()       != null) { update.set(cmChattMsg.readYn,         entity.getReadYn());       hasAny = true; }
         if (entity.getSendDate()     != null) { update.set(cmChattMsg.sendDate,       entity.getSendDate());     hasAny = true; }

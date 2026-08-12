@@ -39,6 +39,26 @@ public class SyI18n extends BaseEntity {
     @Column(name = "i18n_category", length = 50)
     private String i18nCategory;
 
+    /* ── 언어별 메시지 (2026-08-13 sy_i18n_msg 통합) ──────────────────────
+       지원 언어 4종 고정: 한국어/영어/중국어/일본어.
+       언어를 추가하려면 컬럼을 늘려야 한다(행 추가가 아님) — sy.58 §7 참조. */
+
+    @Comment("한국어 메시지 (플레이스홀더 {0},{1} 지원)")
+    @Column(name = "i18n_msg_ko", columnDefinition = "TEXT")
+    private String i18nMsgKo;
+
+    @Comment("영어 메시지 (플레이스홀더 {0},{1} 지원)")
+    @Column(name = "i18n_msg_en", columnDefinition = "TEXT")
+    private String i18nMsgEn;
+
+    @Comment("중국어 메시지 (플레이스홀더 {0},{1} 지원)")
+    @Column(name = "i18n_msg_cn", columnDefinition = "TEXT")
+    private String i18nMsgCn;
+
+    @Comment("일본어 메시지 (플레이스홀더 {0},{1} 지원)")
+    @Column(name = "i18n_msg_ja", columnDefinition = "TEXT")
+    private String i18nMsgJa;
+
     @Comment("정렬순서")
     @Column(name = "sort_ord")
     private Integer sortOrd;

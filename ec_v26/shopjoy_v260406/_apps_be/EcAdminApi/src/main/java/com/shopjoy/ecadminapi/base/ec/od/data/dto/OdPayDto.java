@@ -41,7 +41,7 @@ public class OdPayDto {
         private String cardNo;
         private String cardTypeCd;
         private Integer cardInstallMonth;
-        private String vbankBankCode;
+        private String vbankBankCd;
         private String vbankAccountNo;
         private String vbankAccountNm;
         private LocalDateTime vbankExpireDate;
@@ -60,7 +60,7 @@ public class OdPayDto {
         private String payDirCdNm;
         private String payChannelCdNm;
         private String refundStatusCdNm;
-        private String vbankBankCodeNm;
+        private String vbankBankCdNm;
         private String cardTypeCdNm;
     }
 

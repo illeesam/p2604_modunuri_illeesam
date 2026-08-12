@@ -56,37 +56,25 @@ public class BoSyI18nService {
     }
 
     /**
-     * 다국어 메시지 일괄 저장 — 언어코드별 upsert
-     * 기존 메시지가 있으면 UPDATE, 없으면 INSERT
+     * 다국어 메시지 일괄 저장 — sy_i18n 의 언어별 컬럼에 직접 반영
+     *
+     * 2026-08-13: sy_i18n_msg(행 방식) → sy_i18n 언어컬럼(ko/en/cn/ja)으로 통합.
+     * 요청 형태({"msgs":{"ko":"...","en":"..."}})는 프론트 호환을 위해 그대로 유지한다.
+     * 지원하지 않는 언어코드는 조용히 무시한다(잘못된 키로 컬럼이 늘지 않게).
      */
     @Transactional
     public void saveMsgs(String i18nId, Map<String, String> msgs) {
+        SyI18n patch = new SyI18n();
         msgs.forEach((langCd, msgText) -> {
-            SyI18nMsgDto.Request req = new SyI18nMsgDto.Request();
-            req.setI18nId(i18nId);
-            req.setLangCd(langCd);
-            List<SyI18nMsgDto.Item> existing = syI18nMsgRepository.selectList(req);
-
-            if (!existing.isEmpty()) {
-                SyI18nMsgDto.Item dto = existing.get(0);
-                /* 감사컬럼은 EntitySaveListener 가 @PrePersist/@PreUpdate 에서 주입 */
-                SyI18nMsg entity = SyI18nMsg.builder()
-                    .i18nMsgId(dto.getI18nMsgId())
-                    .i18nId(i18nId)
-                    .langCd(langCd)
-                    .i18nMsg(msgText)
-                    .build();
-                syI18nMsgRepository.save(entity);
-            } else {
-                SyI18nMsg entity = SyI18nMsg.builder()
-                    .i18nMsgId(CmUtil.generateId("sy_i18n_msg"))
-                    .i18nId(i18nId)
-                    .langCd(langCd)
-                    .i18nMsg(msgText)
-                    .build();
-                syI18nMsgRepository.save(entity);
+            switch (langCd == null ? "" : langCd) {
+                case "ko" -> patch.setI18nMsgKo(msgText);
+                case "en" -> patch.setI18nMsgEn(msgText);
+                case "cn" -> patch.setI18nMsgCn(msgText);
+                case "ja" -> patch.setI18nMsgJa(msgText);
+                default   -> { /* 미지원 언어 — 무시 */ }
             }
         });
+        syI18nService.update(i18nId, patch);
         i18nCache.evictAll();
     }
 }

@@ -382,7 +382,7 @@ window.SyMemberLoginHist = {
       { key: 'ip',            label: 'IP', mono: true, fmt: (v) => v || '-' },
       { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
       { key: 'traceId',       label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
-      { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
+      { key: 'revokeReasonCd',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
 
     /* logGridRowDetail — 로그인 로그 행 펼침 BoFormArea 컬럼 (cols=6, 라벨+값 그대로) */
@@ -415,7 +415,7 @@ window.SyMemberLoginHist = {
       { key: '_rtExp',       label: 'RT만료',   type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.tokenExp || '') || '-' },
       { key: '_ip',          label: 'IP',       type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
       { key: '_memberId',    label: '회원ID',   type: 'readonly', fmt: (v, row) => row.memberId || '-' },
-      { key: '_revokeReason',label: '폐기사유', type: 'readonly', visible: (row) => !!row.revokeReason, fmt: (v, row) => row.revokeReason || '-' },
+      { key: '_revokeReason',label: '폐기사유', type: 'readonly', visible: (row) => !!row.revokeReasonCd, fmt: (v, row) => row.revokeReasonCd || '-' },
       { key: '_uiNm',        label: 'x-ui-nm',  type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
       { key: '_cmdNm',       label: 'x-cmd-nm', type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
       { key: '_fileNm',      label: 'x-file-nm',type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },

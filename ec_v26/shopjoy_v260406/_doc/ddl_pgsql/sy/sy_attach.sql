@@ -10,7 +10,7 @@ CREATE TABLE shopjoy_2604.sy_attach (
     file_ext           VARCHAR(20) ,
     mime_type_cd       VARCHAR(100),
     stored_nm          VARCHAR(300),
-    storage_type       VARCHAR(50) ,
+    storage_type_cd       VARCHAR(50) ,
     storage_path       VARCHAR(500),
     attach_url         VARCHAR(500),
     cdn_host           VARCHAR(100),
@@ -35,7 +35,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_attach.attach_id IS '첨부파일 ID (YYMMDDhh
 COMMENT ON COLUMN shopjoy_2604.sy_attach.attach_grp_id IS '파일 그룹 ID (sy_attach_grp과 연계)';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.file_nm IS '원본 파일명';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.stored_nm IS '저장된 파일명 (YYYYMMDD_hhmmss_seq_random.ext)';
-COMMENT ON COLUMN shopjoy_2604.sy_attach.storage_type IS '스토리지 타입 (LOCAL/AWS_S3/NCP_OBS)';
+COMMENT ON COLUMN shopjoy_2604.sy_attach.storage_type_cd IS '스토리지 타입 (LOCAL/AWS_S3/NCP_OBS)';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.storage_path IS '파일 저장 경로 (정책: /cdn/{업무명}/YYYY/YYYYMM/YYYYMMDD/{파일명})';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.thumb_generated_yn IS '썸네일 생성 여부 (동영상은 필수 Y, 이미지는 선택)';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.physical_path IS '실제 물리 저장 전체 경로 (서버 절대경로, 예: src/main/resources/static/cdn/attch/NOTICE_ATTACH/2026/202605/20260503/파일명.png)';
@@ -43,4 +43,4 @@ COMMENT ON COLUMN shopjoy_2604.sy_attach.physical_path IS '실제 물리 저장 
 CREATE INDEX sy_attach_ix02_file_ext ON shopjoy_2604.sy_attach USING btree (file_ext);
 CREATE INDEX sy_attach_ix01_attach_grp_id ON shopjoy_2604.sy_attach USING btree (attach_grp_id);
 CREATE INDEX sy_attach_ix03_reg_date ON shopjoy_2604.sy_attach USING btree (reg_date);
-CREATE INDEX sy_attach_ix04_storage_type ON shopjoy_2604.sy_attach USING btree (storage_type);
+CREATE INDEX sy_attach_ix04_storage_type_cd ON shopjoy_2604.sy_attach USING btree (storage_type_cd);

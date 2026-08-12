@@ -133,7 +133,7 @@ public class CmUploadService {
                     .fileExt(fileUploadUtil.isVideo(ext) ? "mp4" : ext)
                     .mimeTypeCd(file.getContentType())
                     .storedNm(finalStoredNm)
-                    .storageType("LOCAL")
+                    .storageTypeCd("LOCAL")
                     .storagePath(filePath)
                     .thumbGeneratedYn(thumbGeneratedYn)
                     .sortOrd(1)
@@ -171,7 +171,7 @@ public class CmUploadService {
             result.put("fileType", file.getContentType());
             result.put("fileExt", ext);
             result.put("uploadedAt", LocalDateTime.now());
-            result.put("storageType", "LOCAL");
+            result.put("storageTypeCd", "LOCAL");
             result.put("storagePath", filePath);
             result.put("thumbGeneratedYn", savedAttach.getThumbGeneratedYn());
             if ("Y".equals(savedAttach.getThumbGeneratedYn())) {
@@ -269,7 +269,7 @@ public class CmUploadService {
                             .fileExt(fileUploadUtil.isVideo(ext) ? "mp4" : ext)
                             .mimeTypeCd(file.getContentType())
                             .storedNm(finalStoredNm)
-                            .storageType("LOCAL")
+                            .storageTypeCd("LOCAL")
                             .storagePath(storageFilePath)
                             .physicalPath(filePath)
                             .cdnImgUrl(cdnImgUrl)
@@ -309,7 +309,7 @@ public class CmUploadService {
                     fileInfo.put("fileType", file.getContentType());
                     fileInfo.put("fileExt", ext);
                     fileInfo.put("uploadedAt", LocalDateTime.now());
-                    fileInfo.put("storageType", "LOCAL");
+                    fileInfo.put("storageTypeCd", "LOCAL");
                     fileInfo.put("storagePath", storageFilePath);
                     fileInfo.put("cdnImgUrl", savedAttach.getCdnImgUrl());
                     fileInfo.put("thumbGeneratedYn", savedAttach.getThumbGeneratedYn());

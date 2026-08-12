@@ -37,7 +37,7 @@ window.SyAttachMng = {
     /* -- 첨부파일 -- */
     const fileForm = reactive({
       attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', mimeTypeCd: '',
-      storedNm: '', storageType: '', storagePath: '', attachUrl: '', cdnHost: '', cdnImgUrl: '',
+      storedNm: '', storageTypeCd: '', storagePath: '', attachUrl: '', cdnHost: '', cdnImgUrl: '',
       thumbFileNm: '', thumbStoredNm: '', thumbUrl: '', thumbCdnUrl: '', thumbGeneratedYn: 'N',
       sortOrd: 0, attachMemo: '', refId: '',
     });
@@ -304,7 +304,7 @@ window.SyAttachMng = {
       uiState.fileEditId = null; uiState.fileEditMode = true;
       Object.assign(fileForm, {
         attachGrpId: uiState.selectedGrpId, fileNm: '', fileSize: 0, fileExt: '', mimeTypeCd: '',
-        storedNm: '', storageType: 'LOCAL', storagePath: '', attachUrl: '', cdnHost: '', cdnImgUrl: '',
+        storedNm: '', storageTypeCd: 'LOCAL', storagePath: '', attachUrl: '', cdnHost: '', cdnImgUrl: '',
         thumbFileNm: '', thumbStoredNm: '', thumbUrl: '', thumbCdnUrl: '', thumbGeneratedYn: 'N',
         sortOrd: 0, attachMemo: '', refId: '',
       });
@@ -403,7 +403,7 @@ window.SyAttachMng = {
       { key: 'fileSize',         label: '파일크기(byte)', type: 'number', placeholder: '0' },
       { key: 'refId',            label: '참조ID', type: 'text', placeholder: 'PROD-001' },
       { key: 'sortOrd',          label: '정렬순서', type: 'number' },
-      { key: 'storageType',      label: '스토리지타입', type: 'select', options: () => codes.storage_types },
+      { key: 'storageTypeCd',      label: '스토리지타입', type: 'select', options: () => codes.storage_types },
       { key: 'storagePath',      label: '저장경로', type: 'text', placeholder: '/cdn/{업무명}/YYYY/MM/DD/' },
       { key: 'storedNm',         label: '저장파일명', type: 'text', placeholder: 'YYYYMMDD_hhmmss_seq_random' },
       { key: 'attachUrl',        label: '첨부URL', type: 'text', placeholder: '/uploads/...' },

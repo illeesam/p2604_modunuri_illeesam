@@ -133,7 +133,7 @@ window.SyBatchMng = {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
     };
-    const searchParam = reactive({ searchType: '', searchValue: '', status: '', runStatus: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', status: '', runStatusCd: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
        기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
@@ -246,7 +246,7 @@ window.SyBatchMng = {
         batchId: _tempId--, batchNm: '', batchCode: '',
         cronExpr: refRow ? refRow.cronExpr : '0 0 * * *',
         batchStatusCd: '활성', batchDesc: '',
-        batchLastRun: '-', batchNextRun: '-', batchRunCount: 0, batchRunStatus: '대기',
+        batchLastRun: '-', batchNextRun: '-', batchRunCount: 0, batchRunStatusCd: '대기',
         _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
@@ -329,13 +329,13 @@ window.SyBatchMng = {
       const ok = await showConfirm('즉시 실행', `[${row.batchNm}] 배치를 즉시 실행하시겠습니까?`);
       if (!ok) { return; }
       const src = batches.find(x => x.batchId === row.batchId);
-      row.batchRunStatus = '실행중';
-      if (src) { src.batchRunStatus = '실행중'; }
+      row.batchRunStatusCd = '실행중';
+      if (src) { src.batchRunStatusCd = '실행중'; }
       showToast('배치 실행을 시작했습니다.');
       setTimeout(() => {
         const now = new Date().toLocaleString('ko-KR').slice(0, 16);
-        row.batchRunStatus = '성공'; row.batchLastRun = now; row.batchRunCount = (row.batchRunCount || 0) + 1;
-        if (src) { src.batchRunStatus = '성공'; src.batchLastRun = now; src.batchRunCount = row.batchRunCount; }
+        row.batchRunStatusCd = '성공'; row.batchLastRun = now; row.batchRunCount = (row.batchRunCount || 0) + 1;
+        if (src) { src.batchRunStatusCd = '성공'; src.batchLastRun = now; src.batchRunCount = row.batchRunCount; }
       }, 1500);
     };
 
@@ -363,7 +363,7 @@ window.SyBatchMng = {
         { label: 'ID', key: 'batchId' }, { label: '배치명', key: 'batchNm' },
         { label: '배치코드', key: 'batchCode' }, { label: 'Cron', key: 'cronExpr' },
         { label: '최근실행', key: 'batchLastRun' }, { label: '실행횟수', key: 'batchRunCount' },
-        { label: '활성', key: 'batchStatusCd' }, { label: '실행상태', key: 'batchRunStatus' },
+        { label: '활성', key: 'batchStatusCd' }, { label: '실행상태', key: 'batchRunStatusCd' },
         { label: '설명', key: 'batchDesc' },
       ],
       '배치목록.csv'
@@ -410,7 +410,7 @@ window.SyBatchMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'status', type: 'select', label: '활성여부', options: () => codes.active_statuses, nullLabel: '활성여부 전체' },
-      { key: 'runStatus', type: 'select', label: '실행상태', options: () => codes.batch_run_statuses, nullLabel: '실행상태 전체' },
+      { key: 'runStatusCd', type: 'select', label: '실행상태', options: () => codes.batch_run_statuses, nullLabel: '실행상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -458,8 +458,8 @@ window.SyBatchMng = {
       { key: 'batchLastRun',  label: '최종실행',     style: 'width:136px;', align: 'center',
         cellStyle: 'font-size:11px;color:#555;white-space:nowrap;font-family:monospace;',
         fmt: (v) => fnFmtLastRun(v) },
-      { key: 'batchRunStatus',label: '최근상태',     style: 'width:80px;', align: 'center',
-        html: true, fmt: (v, row) => row._row_status === 'N' ? fnRunStatusBadge(row.batchRunStatus) : '' },
+      { key: 'batchRunStatusCd',label: '최근상태',     style: 'width:80px;', align: 'center',
+        html: true, fmt: (v, row) => row._row_status === 'N' ? fnRunStatusBadge(row.batchRunStatusCd) : '' },
       { key: 'siteNm',        label: '사이트',       style: 'width:55px;', align: 'center',
         cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
     ];

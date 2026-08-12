@@ -60,7 +60,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                         syVendor.vendorNm,                    // 상호 / 회사명
                         syVendor.vendorNmEn,                  // 영문 상호
                         syVendor.ceoNm,                       // 대표자명
-                        syVendor.vendorType,                  // 업태
+                        syVendor.vendorTypeCd,                  // 업태
                         syVendor.vendorItem,                  // 종목
                         syVendor.vendorClassCd,               // 판매/배송업체구분 — VENDOR_CLASS {INDIVIDUAL: '개인사업자', CORPORATION: '법인사업자', TAX_EXEMPT: '면세사업자', SIMPLIFIED: '간이과세자'}
                         syVendor.vendorZipCode,               // 우편번호
@@ -109,7 +109,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 QdslUtil.strEq(syVendor.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()),
                 QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()),
-                QdslUtil.strEq(syVendor.vendorType, search.getVendorType()),
+                QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         )
@@ -138,7 +138,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 QdslUtil.strEq(syVendor.vendorId, search.getVendorId()),
                 QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()),
                 QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()),
-                QdslUtil.strEq(syVendor.vendorType, search.getVendorType()),
+                QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
@@ -197,7 +197,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
             QdslUtil.FieldDef.like("vendorRegUrl", syVendor.vendorRegUrl),
             QdslUtil.FieldDef.like("vendorRemark", syVendor.vendorRemark),
             QdslUtil.FieldDef.like("vendorStatusCd", syVendor.vendorStatusCd),
-            QdslUtil.FieldDef.like("vendorType", syVendor.vendorType),
+            QdslUtil.FieldDef.like("vendorTypeCd", syVendor.vendorTypeCd),
             QdslUtil.FieldDef.like("vendorZipCode", syVendor.vendorZipCode)
         ));
     }
@@ -228,7 +228,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         if (entity.getVendorNm()          != null) { update.set(syVendor.vendorNm,          entity.getVendorNm());          hasAny = true; }
         if (entity.getVendorNmEn()        != null) { update.set(syVendor.vendorNmEn,        entity.getVendorNmEn());        hasAny = true; }
         if (entity.getCeoNm()             != null) { update.set(syVendor.ceoNm,             entity.getCeoNm());             hasAny = true; }
-        if (entity.getVendorType()        != null) { update.set(syVendor.vendorType,        entity.getVendorType());        hasAny = true; }
+        if (entity.getVendorTypeCd()        != null) { update.set(syVendor.vendorTypeCd,        entity.getVendorTypeCd());        hasAny = true; }
         if (entity.getVendorItem()        != null) { update.set(syVendor.vendorItem,        entity.getVendorItem());        hasAny = true; }
         if (entity.getVendorClassCd()     != null) { update.set(syVendor.vendorClassCd,     entity.getVendorClassCd());     hasAny = true; }
         if (entity.getVendorZipCode()     != null) { update.set(syVendor.vendorZipCode,     entity.getVendorZipCode());     hasAny = true; }
@@ -334,9 +334,9 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     }
 
     private void pathtreeAndVendorType(SyVendorDto.Request s, StringBuilder sql, Map<String, Object> p) {
-        if (s == null || !StringUtils.hasText(s.getVendorType())) return;
-        sql.append("      AND t.vendor_type = :vendorType\n");
-        p.put("vendorType", s.getVendorType());
+        if (s == null || !StringUtils.hasText(s.getVendorTypeCd())) return;
+        sql.append("      AND t.vendor_type = :vendorTypeCd\n");
+        p.put("vendorTypeCd", s.getVendorTypeCd());
     }
 
     private void pathtreeAndSearchValue(SyVendorDto.Request s, StringBuilder sql, Map<String, Object> p) {

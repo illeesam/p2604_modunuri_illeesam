@@ -178,14 +178,14 @@ public class AppTableLog {
     private static void checkFileStorageConfiguration(ConfigurableApplicationContext ctx) {
         try {
             org.springframework.core.env.Environment env = ctx.getEnvironment();
-            String storageType  = env.getProperty("app.file.storage-type", "LOCAL");
+            String storageTypeCd  = env.getProperty("app.file.storage-type", "LOCAL");
             String cdnHost      = env.getProperty("app.file.cdn-host", "");
             String thumbEnabled = env.getProperty("app.file.thumbnail-enabled", "true");
             String thumbSizes   = env.getProperty("app.file.thumbnail-sizes", "");
             String nc = "(not configured)";
 
             List<String[]> rows = new ArrayList<>();
-            rows.add(new String[]{"Storage Type", storageType,
+            rows.add(new String[]{"Storage Type", storageTypeCd,
                 "application-{profile}.yml : app.file.storage-type", ""});
             rows.add(new String[]{"CDN Host", cdnHost.isBlank() ? nc : cdnHost,
                 "application-{profile}.yml : app.file.cdn-host",
@@ -195,7 +195,7 @@ public class AppTableLog {
             rows.add(new String[]{"Thumb Sizes", thumbSizes.isBlank() ? nc : thumbSizes,
                 "application-{profile}.yml : app.file.thumbnail-sizes", ""});
 
-            switch (storageType.toUpperCase()) {
+            switch (storageTypeCd.toUpperCase()) {
                 case "LOCAL" -> {
                     rows.add(new String[]{"Base Path",  env.getProperty("app.file.local.base-path",  "static/cdn"),
                         "application-{profile}.yml : app.file.local.base-path", ""});
@@ -229,7 +229,7 @@ public class AppTableLog {
                         env.getProperty("app.file.ncp.access-key", "").isBlank() ? "NCP 포털 → 인증키 관리에서 Access Key 발급 후 입력" : ""});
                     rows.add(new String[]{"Status", "NCP OBS Active", "", ""});
                 }
-                default -> rows.add(new String[]{"Status", "Unknown: " + storageType, "", "LOCAL / AWS_S3 / NCP_OBS 중 하나로 변경 필요"});
+                default -> rows.add(new String[]{"Status", "Unknown: " + storageTypeCd, "", "LOCAL / AWS_S3 / NCP_OBS 중 하나로 변경 필요"});
             }
             logTable("File Storage", rows.toArray(new String[0][]));
         } catch (Exception e) {

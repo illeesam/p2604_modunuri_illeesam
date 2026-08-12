@@ -58,7 +58,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                         mbhMemberTokenLog.refreshToken,      // 리프레시 토큰
                         mbhMemberTokenLog.ip,                // IP주소
                         mbhMemberTokenLog.deviceInfo,        // User-Agent
-                        mbhMemberTokenLog.revokeReason,      // 폐기 사유 (LOGOUT/FORCE/EXPIRED 등)
+                        mbhMemberTokenLog.revokeReasonCd,      // 폐기 사유 (LOGOUT/FORCE/EXPIRED 등)
                         mbhMemberTokenLog.accessTokenExp,    // 액세스 토큰 만료일시
                         mbhMemberTokenLog.uiNm,              // 화면명 (X-UI-Nm 헤더)
                         mbhMemberTokenLog.cmdNm,             // 기능명 (X-Cmd-Nm 헤더)
@@ -156,7 +156,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
             QdslUtil.FieldDef.like("memberId", mbhMemberTokenLog.memberId),
             QdslUtil.FieldDef.like("prevToken", mbhMemberTokenLog.prevToken),
             QdslUtil.FieldDef.like("refreshToken", mbhMemberTokenLog.refreshToken),
-            QdslUtil.FieldDef.like("revokeReason", mbhMemberTokenLog.revokeReason),
+            QdslUtil.FieldDef.like("revokeReasonCd", mbhMemberTokenLog.revokeReasonCd),
             QdslUtil.FieldDef.like("tokenTypeCd", mbhMemberTokenLog.tokenTypeCd),
             QdslUtil.FieldDef.like("uiNm", mbhMemberTokenLog.uiNm)
         ));
@@ -192,7 +192,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         if (entity.getRefreshToken()   != null) { update.set(mbhMemberTokenLog.refreshToken,   entity.getRefreshToken());   hasAny = true; }
         if (entity.getIp()             != null) { update.set(mbhMemberTokenLog.ip,             entity.getIp());             hasAny = true; }
         if (entity.getDeviceInfo()     != null) { update.set(mbhMemberTokenLog.deviceInfo,     entity.getDeviceInfo());     hasAny = true; }
-        if (entity.getRevokeReason()   != null) { update.set(mbhMemberTokenLog.revokeReason,   entity.getRevokeReason());   hasAny = true; }
+        if (entity.getRevokeReasonCd()   != null) { update.set(mbhMemberTokenLog.revokeReasonCd,   entity.getRevokeReasonCd());   hasAny = true; }
         if (entity.getAccessTokenExp() != null) { update.set(mbhMemberTokenLog.accessTokenExp, entity.getAccessTokenExp()); hasAny = true; }
         if (entity.getUiNm()           != null) { update.set(mbhMemberTokenLog.uiNm,           entity.getUiNm());           hasAny = true; }
         if (entity.getCmdNm()          != null) { update.set(mbhMemberTokenLog.cmdNm,          entity.getCmdNm());          hasAny = true; }

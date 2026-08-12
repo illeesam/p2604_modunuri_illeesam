@@ -46,8 +46,8 @@ public class SyVendor extends BaseEntity {
     private String ceoNm;
 
     @Comment("업태")
-    @Column(name = "vendor_type", length = 50)
-    private String vendorType;
+    @Column(name = "vendor_type_cd", length = 50)
+    private String vendorTypeCd;
 
     @Comment("종목")
     @Column(name = "vendor_item", length = 100)

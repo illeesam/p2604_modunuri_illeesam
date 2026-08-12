@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 대시보드 항목 공용 렌더 유틸 (window.cmDashWidgetUtil)
  * CmDashboardLayoutMng(항목배치 시뮬레이션) / CmDashboardMyMng(개인화 대시보드) 공용.
- * cm_dashboard_item(chartType/seriesJson/optionJson) + cm_dashboard_item_data(rows)
+ * cm_dashboard_item(chartTypeCd/seriesJson/optionJson) + cm_dashboard_item_data(rows)
  * 를 받아 ECharts 옵션 또는 KPI 카드 정보를 생성한다.
  * 로드 순서: bo.html 에서 CmDashboardLayoutMng.js / CmDashboardMyMng.js 보다 먼저 로드 필수.
  */
@@ -33,7 +33,7 @@
   /** 항목유형 정규화 — item_type_cd 가 없는 구 데이터는 chart_type 으로 추정한다 */
   const itemTypeOf = (item) => {
     if (item && item.itemTypeCd) return item.itemTypeCd;
-    const ct = (item && item.chartType || '').toLowerCase();
+    const ct = (item && item.chartTypeCd || '').toLowerCase();
     if (ct === 'kpi')   return 'KPI';
     if (ct === 'table') return 'TABLE';
     return 'CHART';
@@ -91,7 +91,7 @@
     if (!rows || !rows.length) return { kind: 'empty' };
 
     const itemType  = itemTypeOf(item);
-    const type      = item.chartType || 'bar';
+    const type      = item.chartTypeCd || 'bar';
     const seriesArr = _parseJson(item.seriesJson) || [];
     const optOver   = _parseJson(item.optionJson) || {};
     delete optOver._srcItemId; /* 개인화 대시보드 원본 참조키 — ECharts 옵션 아님 */

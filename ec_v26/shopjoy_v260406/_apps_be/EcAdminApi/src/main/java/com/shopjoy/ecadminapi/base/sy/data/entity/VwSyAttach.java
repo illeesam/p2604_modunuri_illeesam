@@ -44,8 +44,8 @@ public class VwSyAttach {
     @Column(name = "stored_nm", length = 300)
     private String storedNm;
 
-    @Column(name = "storage_type", length = 50)
-    private String storageType;
+    @Column(name = "storage_type_cd", length = 50)
+    private String storageTypeCd;
 
     @Column(name = "storage_path", length = 500)
     private String storagePath;

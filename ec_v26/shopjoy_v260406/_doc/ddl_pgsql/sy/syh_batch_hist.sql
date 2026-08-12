@@ -10,7 +10,7 @@ CREATE TABLE shopjoy_2604.syh_batch_hist (
     run_at        TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     end_at        TIMESTAMP   ,
     duration_ms   INTEGER     ,
-    run_status    VARCHAR(20) ,
+    run_status_cd    VARCHAR(20) ,
     proc_count    INTEGER      DEFAULT 0,
     error_count   INTEGER      DEFAULT 0,
     message       TEXT        ,
@@ -30,7 +30,7 @@ COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.batch_nm IS '배치명';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.run_at IS '실행시작일시';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.end_at IS '실행종료일시';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.duration_ms IS '실행시간(ms)';
-COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.run_status IS '실행결과 (SUCCESS/FAILED/TIMEOUT)';
+COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.run_status_cd IS '실행결과 (SUCCESS/FAILED/TIMEOUT)';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.proc_count IS '처리건수';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.error_count IS '오류건수';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_hist.message IS '결과메시지';

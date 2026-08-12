@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_dashboard_item (
     ui_nm               VARCHAR(100)    NOT NULL,
     item_key            VARCHAR(50)     NOT NULL,
     item_nm             VARCHAR(100)    NOT NULL,
-    chart_type          VARCHAR(30),
+    chart_type_cd          VARCHAR(30),
     sort_ord            INTEGER,
     grid_col_start      INTEGER,
     grid_col_end        INTEGER,
@@ -35,7 +35,7 @@ COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.reg_site_id            IS '사�
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.ui_nm              IS '대상화면명 (DashboardBoEc01 등)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.item_key           IS '패널 키 (COMP0101, sales, xview 등)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.item_nm            IS '패널명 (화면 표시용)';
-COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.chart_type         IS '차트 유형 (bar/line/pie/scatter/kpi/heatmap 등)';
+COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.chart_type_cd         IS '차트 유형 (bar/line/pie/scatter/kpi/heatmap 등)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.sort_ord           IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.grid_col_start     IS 'CSS Grid 열 시작 위치 (1-based, grid-column-start)';
 COMMENT ON COLUMN shopjoy_2604.cm_dashboard_item.grid_col_end       IS 'CSS Grid 열 끝 위치 (grid-column-end, 미지정 시 auto)';

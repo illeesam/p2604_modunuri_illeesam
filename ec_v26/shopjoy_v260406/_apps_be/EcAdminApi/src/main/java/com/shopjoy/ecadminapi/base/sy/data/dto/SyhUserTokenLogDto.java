@@ -41,7 +41,7 @@ public class SyhUserTokenLogDto {
         private String refreshToken;
         private String ip;
         private String deviceInfo;
-        private String revokeReason;
+        private String revokeReasonCd;
         private LocalDateTime accessTokenExp;
         private String uiNm;
         private String cmdNm;

@@ -186,7 +186,7 @@ window.SyVendorUserMng = {
           ...coUtil.cofOmitEmpty({
             searchValue: (uiState.bizSearchValue || '').trim(),
             searchType:  uiState.bizSearchType,
-            vendorType:  uiState.bizVendorFlt,
+            vendorTypeCd:  uiState.bizVendorFlt,
           }),
         };
         if (params.searchValue && !params.searchType) {

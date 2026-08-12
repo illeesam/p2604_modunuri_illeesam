@@ -91,9 +91,9 @@ public class SchBatchExecutor {
     }
 
     /** updateStatus — 수정 */
-    private void updateStatus(SyBatch batch, String runStatus, LocalDateTime lastRun) {
+    private void updateStatus(SyBatch batch, String runStatusCd, LocalDateTime lastRun) {
         try {
-            batch.setBatchRunStatus(runStatus);
+            batch.setBatchRunStatusCd(runStatusCd);
             if (lastRun != null) {
                 batch.setBatchLastRun(lastRun);
                 batch.setBatchRunCount(batch.getBatchRunCount() == null ? 1 : batch.getBatchRunCount() + 1);

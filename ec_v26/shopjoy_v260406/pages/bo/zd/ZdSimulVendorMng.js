@@ -72,7 +72,7 @@
             const corpNo = String(randInt(100, 999)) + '-' + String(randInt(10, 99)) + '-' + String(randInt(10000, 99999));
             const email  = 'vendor' + seq + '@' + biz.toLowerCase() + '.co.kr';
             const body   = {
-              vendorNm: nm, ceoNm: ceo, vendorType: type,
+              vendorNm: nm, ceoNm: ceo, vendorTypeCd: type,
               vendorPhone: phone, vendorEmail: email, corpNo: corpNo,
               vendorStatusCd: domCfg.statusOnCreate,
               openDate: coUtil.cofToYmd(new Date()),

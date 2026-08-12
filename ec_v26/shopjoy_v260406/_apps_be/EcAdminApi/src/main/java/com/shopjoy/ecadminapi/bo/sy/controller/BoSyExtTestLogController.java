@@ -69,7 +69,7 @@ public class BoSyExtTestLogController {
             .logId(UUID.randomUUID().toString().replace("-", ""))   // 32자 고정
             .channelKey(str(body, "channelKey", "unknown"))
             .channelLabel(str(body, "channelLabel", null))
-            .testResult(str(body, "testResult", "FAIL"))
+            .testResultCd(str(body, "testResultCd", "FAIL"))
             .testMsg(str(body, "testMsg", null))
             .testUrl(str(body, "testUrl", null))
             .testReqBody(str(body, "testReqBody", null))

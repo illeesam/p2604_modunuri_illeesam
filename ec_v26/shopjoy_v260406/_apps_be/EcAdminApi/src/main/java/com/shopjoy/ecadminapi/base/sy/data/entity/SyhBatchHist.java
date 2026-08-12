@@ -50,8 +50,8 @@ public class SyhBatchHist extends BaseEntity {
     private Integer durationMs;
 
     @Comment("실행결과 (SUCCESS/FAILED/TIMEOUT)")
-    @Column(name = "run_status", length = 20)
-    private String runStatus;
+    @Column(name = "run_status_cd", length = 20)
+    private String runStatusCd;
 
     @Comment("처리건수")
     @Column(name = "proc_count")

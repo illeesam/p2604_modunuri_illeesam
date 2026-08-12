@@ -148,7 +148,7 @@
             userNm:   e.userNm || '-',
             uiNm:     e.uiNm   || '-',
             mode:     e.simulMode || '-',
-            status:   e.simulStatus === 'SUCCESS' ? 'ok' : 'fail',
+            status:   e.simulStatusCd === 'SUCCESS' ? 'ok' : 'fail',
             desc,
             reason:   e.reasonTxt || '',
             domain:   e.domain   || '',

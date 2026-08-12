@@ -26,9 +26,9 @@ public class SyhExtTestLog extends BaseEntity {
     @Comment("채널 표시명")
     private String channelLabel;
 
-    @Column(name = "test_result", length = 10, nullable = false)
+    @Column(name = "test_result_cd", length = 10, nullable = false)
     @Comment("테스트결과 (SUCCESS/FAIL)")
-    private String testResult;
+    private String testResultCd;
 
     @Column(name = "test_msg", length = 2000)
     @Comment("결과 메시지 (응답 내용)")

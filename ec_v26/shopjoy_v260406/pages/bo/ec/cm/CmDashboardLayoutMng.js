@@ -100,7 +100,7 @@ window.CmDashboardLayoutMng = {
         list.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
         cards.splice(0, cards.length, ...list.map(i => ({
           dashboardItemId: i.dashboardItemId, itemKey: i.itemKey, itemNm: i.itemNm,
-          itemTypeCd: util.itemTypeOf(i), chartType: i.chartType || 'bar', sortOrd: i.sortOrd || 0,
+          itemTypeCd: util.itemTypeOf(i), chartTypeCd: i.chartTypeCd || 'bar', sortOrd: i.sortOrd || 0,
           panelWidth: i.panelWidth || 1, panelHeight: i.panelHeight || 1,
           useYn: i.useYn || 'Y', realtimeYn: i.realtimeYn || 'N',
           seriesJson: i.seriesJson || null, optionJson: i.optionJson || null,

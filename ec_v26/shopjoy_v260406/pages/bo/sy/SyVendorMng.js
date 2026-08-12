@@ -99,7 +99,7 @@ window.SyVendorMng = {
       }
     };
 
-    const searchParam = reactive({ searchType: '', searchValue: '', vendorType: '', status: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', vendorTypeCd: '', status: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
        기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
@@ -243,7 +243,7 @@ window.SyVendorMng = {
     };
 
     /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(vendors, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceoNm'},{label:'사업자번호',key:'vendorNo'},{label:'전화',key:'vendorPhone'},{label:'상태',key:'vendorStatusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
+    const exportExcel = () => coUtil.cofExportCsv(vendors, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorTypeCd'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceoNm'},{label:'사업자번호',key:'vendorNo'},{label:'전화',key:'vendorPhone'},{label:'상태',key:'vendorStatusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
 
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -298,7 +298,7 @@ window.SyVendorMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'vendorType', type: 'select', label: '유형', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
+      { key: 'vendorTypeCd', type: 'select', label: '유형', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.vendor_status, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
@@ -310,7 +310,7 @@ window.SyVendorMng = {
     columns.baseGrid = [
       { key: 'pathId',        label: '표시경로', style: 'width:170px;max-width:170px;', pathPick: 'sy_vendor' },
       { key: 'vendorId',      label: 'ID' },
-      { key: 'vendorType',    label: '업체유형', badge: (row) => fnTypeBadge(row.vendorType) },
+      { key: 'vendorTypeCd',    label: '업체유형', badge: (row) => fnTypeBadge(row.vendorTypeCd) },
       { key: 'vendorNm',      label: '업체명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'ceoNm',         label: '대표자' },

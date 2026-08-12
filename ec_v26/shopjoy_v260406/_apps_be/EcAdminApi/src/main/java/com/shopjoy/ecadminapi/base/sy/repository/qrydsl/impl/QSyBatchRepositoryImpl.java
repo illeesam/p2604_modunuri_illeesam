@@ -41,7 +41,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
      * baseQuery(baseSelColumnQuery 역할) — 코드성 필드 예시 코드값
      * BATCH_CYCLE      {MANUAL: '수동', HOURLY: '시간별', DAILY: '일간', WEEKLY: '주간', MONTHLY: '월간'}
      * BATCH_STATUS_CD  {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'} (활성상태, DDL 기본값 'ACTIVE')
-     * BATCH_RUN_STATUS (sy_code 미등록, DDL 주석 기준) {IDLE: '대기', RUNNING: '실행중', SUCCESS: '성공', FAILED: '실패'}
+     * BATCH_STATUS (sy_code 미등록, DDL 주석 기준) {IDLE: '대기', RUNNING: '실행중', SUCCESS: '성공', FAILED: '실패'}
      */
     private JPAQuery<SyBatchDto.Item> baseQuery() {
         return queryFactory
@@ -56,7 +56,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                         syBatch.batchNextRun,     // 다음실행예정일시
                         syBatch.batchRunCount,    // 실행횟수
                         syBatch.batchStatusCd,    // 활성상태 — BATCH_STATUS_CD {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'}
-                        syBatch.batchRunStatus,   // 실행상태 — BATCH_RUN_STATUS {IDLE: '대기', RUNNING: '실행중', SUCCESS: '성공', FAILED: '실패'}
+                        syBatch.batchRunStatusCd,   // 실행상태 — BATCH_STATUS {IDLE: '대기', RUNNING: '실행중', SUCCESS: '성공', FAILED: '실패'}
                         syBatch.batchTimeoutSec,  // 타임아웃(초)
                         syBatch.batchMemo,        // 메모
                         syBatch.regBy,            // 등록자
@@ -87,7 +87,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                     andPathIdIn(search),
                     QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
                     QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
-                    QdslUtil.strEq(syBatch.batchRunStatus, search.getRunStatus()),
+                    QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -114,7 +114,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 andPathIdIn(search),
                 QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
                 QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
-                QdslUtil.strEq(syBatch.batchRunStatus, search.getRunStatus()),
+                QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 
@@ -157,7 +157,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
             QdslUtil.FieldDef.like("batchId", syBatch.batchId),
             QdslUtil.FieldDef.like("batchMemo", syBatch.batchMemo),
             QdslUtil.FieldDef.like("batchNm", syBatch.batchNm),
-            QdslUtil.FieldDef.like("batchRunStatus", syBatch.batchRunStatus),
+            QdslUtil.FieldDef.like("batchRunStatusCd", syBatch.batchRunStatusCd),
             QdslUtil.FieldDef.like("batchStatusCd", syBatch.batchStatusCd),
             QdslUtil.FieldDef.like("cronExpr", syBatch.cronExpr),
             QdslUtil.FieldDef.like("pathId", syBatch.pathId)
@@ -194,7 +194,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         if (entity.getBatchNextRun()    != null) { update.set(syBatch.batchNextRun,    entity.getBatchNextRun());    hasAny = true; }
         if (entity.getBatchRunCount()   != null) { update.set(syBatch.batchRunCount,   entity.getBatchRunCount());   hasAny = true; }
         if (entity.getBatchStatusCd()   != null) { update.set(syBatch.batchStatusCd,   entity.getBatchStatusCd());   hasAny = true; }
-        if (entity.getBatchRunStatus()  != null) { update.set(syBatch.batchRunStatus,  entity.getBatchRunStatus());  hasAny = true; }
+        if (entity.getBatchRunStatusCd()  != null) { update.set(syBatch.batchRunStatusCd,  entity.getBatchRunStatusCd());  hasAny = true; }
         if (entity.getBatchTimeoutSec() != null) { update.set(syBatch.batchTimeoutSec, entity.getBatchTimeoutSec()); hasAny = true; }
         if (entity.getBatchMemo()       != null) { update.set(syBatch.batchMemo,       entity.getBatchMemo());       hasAny = true; }
         if (entity.getUpdBy()           != null) { update.set(syBatch.updBy,           entity.getUpdBy());           hasAny = true; }

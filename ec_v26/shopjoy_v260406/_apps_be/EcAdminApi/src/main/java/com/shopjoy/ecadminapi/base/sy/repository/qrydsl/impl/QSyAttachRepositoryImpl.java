@@ -153,7 +153,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
             QdslUtil.FieldDef.like("mimeTypeCd", syAttach.mimeTypeCd),
             QdslUtil.FieldDef.like("physicalPath", syAttach.physicalPath),
             QdslUtil.FieldDef.like("storagePath", syAttach.storagePath),
-            QdslUtil.FieldDef.like("storageType", syAttach.storageType),
+            QdslUtil.FieldDef.like("storageTypeCd", syAttach.storageTypeCd),
             QdslUtil.FieldDef.like("storedNm", syAttach.storedNm),
             QdslUtil.FieldDef.like("thumbCdnUrl", syAttach.thumbCdnUrl),
             QdslUtil.FieldDef.like("thumbFileNm", syAttach.thumbFileNm),

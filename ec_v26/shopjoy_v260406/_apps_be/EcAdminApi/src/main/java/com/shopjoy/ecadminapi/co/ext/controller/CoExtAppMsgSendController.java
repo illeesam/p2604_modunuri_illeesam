@@ -93,7 +93,7 @@ public class CoExtAppMsgSendController {
         int pageSize    = toInt(p.get("pageSize"), 20);
 
         List<MbDeviceTokenDto.Item> items = mbDeviceTokenRepository.findAll().stream()
-                .filter(t -> platform == null || platform.isBlank() || platform.equalsIgnoreCase(t.getOsType()))
+                .filter(t -> platform == null || platform.isBlank() || platform.equalsIgnoreCase(t.getOsTypeCd()))
                 .filter(t -> memberId == null || memberId.isBlank() || memberId.equals(t.getMemberId()))
                 .limit(pageSize)
                 .map(t -> {
@@ -101,7 +101,7 @@ public class CoExtAppMsgSendController {
                     item.setDeviceTokenId(t.getDeviceTokenId());
                     item.setDeviceToken(t.getDeviceToken());
                     item.setMemberId(t.getMemberId());
-                    item.setOsType(t.getOsType());
+                    item.setOsTypeCd(t.getOsTypeCd());
                     item.setRegDate(t.getRegDate());
                     return item;
                 })

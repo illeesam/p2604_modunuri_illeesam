@@ -35,7 +35,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값 (sy_code 미등록, Entity 주석 기준 예시값)
-     * runStatus  {SUCCESS: '성공', FAILED: '실패', TIMEOUT: '시간초과'}
+     * runStatusCd  {SUCCESS: '성공', FAILED: '실패', TIMEOUT: '시간초과'}
      */
     /* 배치 실행 이력 baseSelColumnQuery */
     private JPAQuery<SyhBatchHistDto.Item> baseSelColumnQuery() {
@@ -48,7 +48,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
                         syhBatchHist.runAt,         // 실행시작일시
                         syhBatchHist.endAt,         // 실행종료일시
                         syhBatchHist.durationMs,    // 실행시간(ms)
-                        syhBatchHist.runStatus,     // 실행결과 — {SUCCESS: '성공', FAILED: '실패', TIMEOUT: '시간초과'}
+                        syhBatchHist.runStatusCd,     // 실행결과 — {SUCCESS: '성공', FAILED: '실패', TIMEOUT: '시간초과'}
                         syhBatchHist.procCount,     // 처리건수
                         syhBatchHist.errorCount,    // 오류건수
                         syhBatchHist.message,       // 결과메시지
@@ -140,7 +140,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
             QdslUtil.FieldDef.like("batchNm", syhBatchHist.batchNm),
             QdslUtil.FieldDef.like("detail", syhBatchHist.detail),
             QdslUtil.FieldDef.like("message", syhBatchHist.message),
-            QdslUtil.FieldDef.like("runStatus", syhBatchHist.runStatus)
+            QdslUtil.FieldDef.like("runStatusCd", syhBatchHist.runStatusCd)
         ));
     }
 
@@ -171,7 +171,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         if (entity.getRunAt()      != null) { update.set(syhBatchHist.runAt,      entity.getRunAt());      hasAny = true; }
         if (entity.getEndAt()      != null) { update.set(syhBatchHist.endAt,      entity.getEndAt());      hasAny = true; }
         if (entity.getDurationMs() != null) { update.set(syhBatchHist.durationMs, entity.getDurationMs()); hasAny = true; }
-        if (entity.getRunStatus()  != null) { update.set(syhBatchHist.runStatus,  entity.getRunStatus());  hasAny = true; }
+        if (entity.getRunStatusCd()  != null) { update.set(syhBatchHist.runStatusCd,  entity.getRunStatusCd());  hasAny = true; }
         if (entity.getProcCount()  != null) { update.set(syhBatchHist.procCount,  entity.getProcCount());  hasAny = true; }
         if (entity.getErrorCount() != null) { update.set(syhBatchHist.errorCount, entity.getErrorCount()); hasAny = true; }
         if (entity.getMessage()    != null) { update.set(syhBatchHist.message,    entity.getMessage());    hasAny = true; }

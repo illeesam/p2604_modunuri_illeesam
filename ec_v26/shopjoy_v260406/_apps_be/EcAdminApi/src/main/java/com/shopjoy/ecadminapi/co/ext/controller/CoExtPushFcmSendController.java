@@ -52,14 +52,14 @@ public class CoExtPushFcmSendController {
             @RequestParam(required = false) String platform) {
 
         List<MbDeviceTokenDto.Item> items = mbDeviceTokenRepository.findAll().stream()
-                .filter(t -> platform == null || platform.equalsIgnoreCase(t.getOsType()))
+                .filter(t -> platform == null || platform.equalsIgnoreCase(t.getOsTypeCd()))
                 .limit(50)
                 .map(t -> {
                     MbDeviceTokenDto.Item item = new MbDeviceTokenDto.Item();
                     item.setDeviceTokenId(t.getDeviceTokenId());
                     item.setDeviceToken(t.getDeviceToken());
                     item.setMemberId(t.getMemberId());
-                    item.setOsType(t.getOsType());
+                    item.setOsTypeCd(t.getOsTypeCd());
                     item.setRegDate(t.getRegDate());
                     return item;
                 })

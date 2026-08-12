@@ -58,8 +58,8 @@ public class SyAttach extends BaseEntity {
     private String cdnThumbUrl;
 
     @Comment("스토리지 타입 (LOCAL/AWS_S3/NCP_OBS)")
-    @Column(name = "storage_type", length = 50)
-    private String storageType;
+    @Column(name = "storage_type_cd", length = 50)
+    private String storageTypeCd;
 
     @Comment("파일 저장 경로 (정책: /cdn/{업무명}/YYYY/YYYYMM/YYYYMMDD/{파일명})")
     @Column(name = "storage_path", length = 500)

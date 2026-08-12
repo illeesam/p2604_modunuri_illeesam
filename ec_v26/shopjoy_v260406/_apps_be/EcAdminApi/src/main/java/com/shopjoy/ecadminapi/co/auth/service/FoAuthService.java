@@ -276,7 +276,7 @@ public class FoAuthService {
     private void saveTokenLog(String authId, String siteId,
                               String accessToken, String refreshToken,
                               String actionCd, String appTypeCd,
-                              String revokeReason, String uiNm, String cmdNm) {
+                              String revokeReasonCd, String uiNm, String cmdNm) {
         String logId = "TL" + LocalDateTime.now().format(ID_FMT)
             + String.format("%04d", (int)(Math.random() * 10000));
         LocalDateTime now = LocalDateTime.now();
@@ -290,7 +290,7 @@ public class FoAuthService {
             .refreshToken(refreshToken)
             .accessTokenExp(accessToken != null ? now.plusMinutes(jwtProvider.getFoAccessExpiryMinutes()) : null)
             .tokenExp(now.plusMinutes(jwtProvider.getFoRefreshExpiryMinutes()))
-            .revokeReason(revokeReason)
+            .revokeReasonCd(revokeReasonCd)
             .uiNm(uiNm)
             .cmdNm(cmdNm)
             .regBy(authId)

@@ -62,8 +62,8 @@ public class SyBatch extends BaseEntity {
     private String batchStatusCd;
 
     @Comment("실행상태 (IDLE/RUNNING/SUCCESS/FAILED)")
-    @Column(name = "batch_run_status", length = 20)
-    private String batchRunStatus;
+    @Column(name = "batch_run_status_cd", length = 20)
+    private String batchRunStatusCd;
 
     @Comment("타임아웃(초)")
     @Column(name = "batch_timeout_sec")

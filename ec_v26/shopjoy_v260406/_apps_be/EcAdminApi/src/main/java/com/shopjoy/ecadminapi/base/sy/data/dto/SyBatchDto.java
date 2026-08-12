@@ -19,7 +19,7 @@ public class SyBatchDto {
         @Size(max = 21) private String batchId;
         @Size(max = 21) private String pathId;
         @Size(max = 20) private String status;
-        @Size(max = 20) private String runStatus;
+        @Size(max = 20) private String batchRunStatusCd;
     }
 
     /** 단건/목록 항목 */
@@ -37,7 +37,7 @@ public class SyBatchDto {
         private LocalDateTime batchNextRun;
         private Integer batchRunCount;
         private String batchStatusCd;
-        private String batchRunStatus;
+        private String batchRunStatusCd;
         private Integer batchTimeoutSec;
         private String batchMemo;
         private String regBy;

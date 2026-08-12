@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.mbh_member_token_log (
     prev_token       VARCHAR(512) ,
     ip               VARCHAR(50)  ,
     device_info      VARCHAR(200) ,
-    revoke_reason    VARCHAR(200) ,
+    revoke_reason_cd    VARCHAR(200) ,
     reg_by           VARCHAR(30)  ,
     reg_date         TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30)  ,
@@ -41,7 +41,7 @@ COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.token_exp IS '토큰 만료�
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.prev_token IS '갱신 전 토큰 해시 (REFRESH 액션 시)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.ip IS 'IP주소';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.device_info IS 'User-Agent';
-COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.revoke_reason IS '폐기 사유 (LOGOUT/FORCE/EXPIRED 등)';
+COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.revoke_reason_cd IS '폐기 사유 (LOGOUT/FORCE/EXPIRED 등)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.mbh_member_token_log.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';

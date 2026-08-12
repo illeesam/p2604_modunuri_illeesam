@@ -447,7 +447,7 @@ public class CmDashboardDataSourceRegistry {
         SQL.put("SY_BATCH_FAIL",
             "SELECT '배치 실패' AS col1_nm, COUNT(b.*) AS col1_num "
           + "FROM shopjoy_2604.sy_batch b "
-          + "WHERE b.batch_run_status IN ('FAIL', 'ERROR', '실패')");
+          + "WHERE b.batch_run_status_cd IN ('FAIL', 'ERROR', '실패')");
 
         /* 에러/접속 로그는 site_id 가 NULL 인 행이 정상적으로 존재한다(미인증 요청).
            사이트로 좁히면 대부분 빠지므로 전체를 센다. */
@@ -485,7 +485,7 @@ public class CmDashboardDataSourceRegistry {
 
         SQL.put("SY_BATCH_LIST",
             "SELECT b.batch_nm AS col1_nm, COALESCE(b.batch_cycle_cd, '-') AS col2_nm, "
-          + "       COALESCE(b.batch_run_status, '-') AS col3_nm, "
+          + "       COALESCE(b.batch_run_status_cd, '-') AS col3_nm, "
           + "       TO_CHAR(b.batch_last_run, 'MM-DD HH24:MI') AS col4_nm, "
           + "       COALESCE(b.batch_run_count, 0) AS col1_num "
           + "FROM shopjoy_2604.sy_batch b "

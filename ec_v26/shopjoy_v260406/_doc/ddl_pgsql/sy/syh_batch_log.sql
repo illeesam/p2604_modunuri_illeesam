@@ -10,7 +10,7 @@ CREATE TABLE shopjoy_2604.syh_batch_log (
     run_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     end_at       TIMESTAMP   ,
     duration_ms  INTEGER     ,
-    run_status   VARCHAR(20) ,
+    run_status_cd   VARCHAR(20) ,
     proc_count   INTEGER      DEFAULT 0,
     error_count  INTEGER      DEFAULT 0,
     message      TEXT        ,
@@ -30,7 +30,7 @@ COMMENT ON COLUMN shopjoy_2604.syh_batch_log.batch_nm IS '배치명';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.run_at IS '실행시작일시';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.end_at IS '실행종료일시';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.duration_ms IS '실행시간(ms)';
-COMMENT ON COLUMN shopjoy_2604.syh_batch_log.run_status IS '실행결과 (SUCCESS/FAILED/TIMEOUT)';
+COMMENT ON COLUMN shopjoy_2604.syh_batch_log.run_status_cd IS '실행결과 (SUCCESS/FAILED/TIMEOUT)';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.proc_count IS '처리건수';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.error_count IS '오류건수';
 COMMENT ON COLUMN shopjoy_2604.syh_batch_log.message IS '결과메시지';
@@ -42,4 +42,4 @@ COMMENT ON COLUMN shopjoy_2604.syh_batch_log.upd_date IS '수정일';
 
 CREATE INDEX syh_batch_log_ix01_batch_id ON shopjoy_2604.syh_batch_log USING btree (batch_id);
 CREATE INDEX syh_batch_log_ix02_run_at ON shopjoy_2604.syh_batch_log USING btree (run_at);
-CREATE INDEX syh_batch_log_ix03_run_status ON shopjoy_2604.syh_batch_log USING btree (run_status);
+CREATE INDEX syh_batch_log_ix03_run_status_cd ON shopjoy_2604.syh_batch_log USING btree (run_status_cd);

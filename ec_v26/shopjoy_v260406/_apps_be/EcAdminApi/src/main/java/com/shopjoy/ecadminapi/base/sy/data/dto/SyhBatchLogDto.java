@@ -31,7 +31,7 @@ public class SyhBatchLogDto {
         private LocalDateTime runAt;
         private LocalDateTime endAt;
         private Integer durationMs;
-        private String runStatus;
+        private String runStatusCd;
         private Integer procCount;
         private Integer errorCount;
         private String message;
@@ -43,7 +43,7 @@ public class SyhBatchLogDto {
         private LocalDateTime updDate;
 
         // ── JOIN ──────────────────────────────────────────────────
-        private String runStatusNm;
+        private String runStatusCdNm;
     }
 
     /** 응답 (pageList + 페이징 메타 + 조회조건 echo) */

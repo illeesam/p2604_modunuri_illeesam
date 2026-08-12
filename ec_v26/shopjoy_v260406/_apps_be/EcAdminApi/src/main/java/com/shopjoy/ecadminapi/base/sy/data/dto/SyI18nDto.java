@@ -29,6 +29,11 @@ public class SyI18nDto {
         private String i18nDesc;
         private String i18nScopeCd;
         private String i18nCategory;
+        /* 언어별 메시지 (2026-08-13 sy_i18n_msg 통합) — ko/en/cn/ja 4종 고정 */
+        private String i18nMsgKo;
+        private String i18nMsgEn;
+        private String i18nMsgCn;
+        private String i18nMsgJa;
         private Integer sortOrd;
         private String useYn;
         private String regBy;

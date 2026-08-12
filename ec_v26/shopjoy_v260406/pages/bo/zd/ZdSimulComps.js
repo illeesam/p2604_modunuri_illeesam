@@ -549,7 +549,7 @@
     userNm: '사용자명', userEmail: '이메일', userPhone: '전화번호', userStatusCd: '사용자상태',
     deptId: '부서ID', roleIds: '권한목록',
     /* 업체 */
-    vendorNm: '업체명', ceoNm: '대표자명', vendorType: '업체유형',
+    vendorNm: '업체명', ceoNm: '대표자명', vendorTypeCd: '업체유형',
     vendorPhone: '업체전화', vendorEmail: '업체이메일', corpNo: '사업자번호',
     vendorStatusCd: '업체상태', openDate: '개업일', contractDate: '계약일',
     /* 적립금 */
@@ -669,7 +669,7 @@
     'userNm', 'loginId', 'userEmail', 'userPhone', 'userStatusCd',
     'deptId', 'roleIds',
     /* 업체 */
-    'vendorNm', 'ceoNm', 'vendorType',
+    'vendorNm', 'ceoNm', 'vendorTypeCd',
     'vendorPhone', 'vendorEmail', 'corpNo',
     'vendorStatusCd', 'openDate', 'contractDate',
     /* 주문 */

@@ -23,7 +23,7 @@ CREATE TABLE shopjoy_2604.od_pay (
     pg_approval_no          VARCHAR(50) ,
     pg_response             TEXT        ,
     vbank_account           VARCHAR(20) ,
-    vbank_bank_code         VARCHAR(10) ,
+    vbank_bank_cd         VARCHAR(10) ,
     vbank_bank_nm           VARCHAR(50) ,
     vbank_holder_nm         VARCHAR(50) ,
     vbank_due_date          DATE        ,
@@ -72,7 +72,7 @@ COMMENT ON COLUMN shopjoy_2604.od_pay.pg_transaction_id IS 'PG 거래ID';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pg_approval_no IS 'PG 승인번호';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pg_response IS 'PG 응답 데이터 (JSON)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.vbank_account IS '가상계좌 계좌번호';
-COMMENT ON COLUMN shopjoy_2604.od_pay.vbank_bank_code IS '가상계좌 은행코드 (코드: BANK_CODE)';
+COMMENT ON COLUMN shopjoy_2604.od_pay.vbank_bank_cd IS '가상계좌 은행코드 (코드: BANK_CODE)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.vbank_bank_nm IS '가상계좌 은행명';
 COMMENT ON COLUMN shopjoy_2604.od_pay.vbank_holder_nm IS '가상계좌 예금주명';
 COMMENT ON COLUMN shopjoy_2604.od_pay.vbank_due_date IS '가상계좌 입금기한';

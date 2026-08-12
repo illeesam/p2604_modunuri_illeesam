@@ -19,7 +19,7 @@ window.SyVendorInfoMng = {
     });
     const codes = reactive({ vendor_status: [], vendor_type_kr: [] });
 
-    const searchParam = reactive({ searchType: '', searchValue: '', vendorType: '', status: '' });
+    const searchParam = reactive({ searchType: '', searchValue: '', vendorTypeCd: '', status: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
        리터럴 기본값이 아니라 '화면을 열었을 때의 상태'가 기준이라, initPage 가 채운
        기본 기간·사이트 값도 함께 복원된다. (재대입 금지 — Object.assign 으로만 갱신) */
@@ -247,13 +247,13 @@ window.SyVendorInfoMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'vendorType', type: 'select', label: '유형', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
+      { key: 'vendorTypeCd', type: 'select', label: '유형', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.vendor_status, nullLabel: '상태 전체' },
     ];
 
     // 2단 업체 그리드
     columns.baseGrid = [
-      { key: 'vendorType',    label: '업체유형', align: 'center', badge: (row) => fnTypeBadge(row.vendorType) },
+      { key: 'vendorTypeCd',    label: '업체유형', align: 'center', badge: (row) => fnTypeBadge(row.vendorTypeCd) },
       { key: 'vendorNm',      label: '업체명', cellStyle: 'font-weight:600' },
       { key: 'ceoNm',         label: '대표자' },
       { key: 'vendorNo',      label: '사업자번호',

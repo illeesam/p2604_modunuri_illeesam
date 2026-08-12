@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.sy_batch (
     batch_next_run    TIMESTAMP   ,
     batch_run_count   INTEGER      DEFAULT 0,
     batch_status_cd   VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
-    batch_run_status  VARCHAR(20)  DEFAULT 'IDLE'::character varying,
+    batch_run_status_cd  VARCHAR(20)  DEFAULT 'IDLE'::character varying,
     batch_timeout_sec INTEGER      DEFAULT 300,
     batch_memo        TEXT        ,
     reg_by            VARCHAR(30) ,
@@ -36,7 +36,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_last_run IS '최근실행일시';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_next_run IS '다음실행예정일시';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_run_count IS '실행횟수';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_status_cd IS '활성상태 (코드: BATCH_STATUS)';
-COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_run_status IS '실행상태 (IDLE/RUNNING/SUCCESS/FAILED)';
+COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_run_status_cd IS '실행상태 (IDLE/RUNNING/SUCCESS/FAILED)';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_timeout_sec IS '타임아웃(초)';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.batch_memo IS '메모';
 COMMENT ON COLUMN shopjoy_2604.sy_batch.reg_by IS '등록자 (sy_user.user_id, ec_member.member_id)';

@@ -157,7 +157,7 @@ public class ZdSimulController {
             .logId(CmUtil.generateId("zd_simul_log"))
             .domain(str(body, "domain", "unknown"))
             .simulMode(str(body, "mode", "생성"))
-            .simulStatus(str(body, "status", "SUCCESS"))
+            .simulStatusCd(str(body, "status", "SUCCESS"))
             .descTxt(sanitizeText(str(body, "desc", null)))
             .reasonTxt(sanitizeText(str(body, "reason", null)))
             .targetId(str(body, "targetId", null))

@@ -66,7 +66,7 @@ public class CmSmsSendService {
         if (recvPhone == null || recvPhone.isBlank()) {
             failReason = "수신 전화번호 없음 + SMS API 미연동";
         }
-        log.info("[CmSmsSend] SMS 발송 시도 (미연동) → phone={}, refType={}, refId={}",
+        log.info("[CmSmsSend] SMS 발송 시도 (미연동) → phone={}, refTypeCd={}, refId={}",
             recvPhone, refTypeCd, refId);
 
         String logId = null;

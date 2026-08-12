@@ -45,7 +45,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
                         mbDeviceToken.deviceTokenId,   // 디바이스 토큰ID (PK)
                         mbDeviceToken.deviceToken,     // 디바이스 토큰 키
                         mbDeviceToken.memberId,        // 회원ID (mb_member.member_id, 비회원 가능)
-                        mbDeviceToken.osType,          // OS유형 — ANDROID/IOS
+                        mbDeviceToken.osTypeCd,          // OS유형 — ANDROID/IOS
                         mbDeviceToken.benefitNotiYn,   // 혜택알림수신여부 — BENEFIT_NOTI_YN {Y: '수신', N: '미수신'}
                         mbDeviceToken.alimReadDate,    // 알림리스트 읽음일시
                         mbDeviceToken.regBy,           // 등록자
@@ -130,7 +130,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
             QdslUtil.FieldDef.like("deviceToken", mbDeviceToken.deviceToken),
             QdslUtil.FieldDef.like("deviceTokenId", mbDeviceToken.deviceTokenId),
             QdslUtil.FieldDef.like("memberId", mbDeviceToken.memberId),
-            QdslUtil.FieldDef.like("osType", mbDeviceToken.osType)
+            QdslUtil.FieldDef.like("osTypeCd", mbDeviceToken.osTypeCd)
         ));
     }
 
@@ -155,7 +155,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         boolean hasAny = false;
         if (entity.getDeviceToken()   != null) { update.set(mbDeviceToken.deviceToken,   entity.getDeviceToken());   hasAny = true; }
         if (entity.getMemberId()      != null) { update.set(mbDeviceToken.memberId,      entity.getMemberId());      hasAny = true; }
-        if (entity.getOsType()        != null) { update.set(mbDeviceToken.osType,        entity.getOsType());        hasAny = true; }
+        if (entity.getOsTypeCd()        != null) { update.set(mbDeviceToken.osTypeCd,        entity.getOsTypeCd());        hasAny = true; }
         if (entity.getBenefitNotiYn() != null) { update.set(mbDeviceToken.benefitNotiYn, entity.getBenefitNotiYn()); hasAny = true; }
         if (entity.getAlimReadDate()  != null) { update.set(mbDeviceToken.alimReadDate,  entity.getAlimReadDate());  hasAny = true; }
         if (entity.getUpdBy()         != null) { update.set(mbDeviceToken.updBy,         entity.getUpdBy());         hasAny = true; }

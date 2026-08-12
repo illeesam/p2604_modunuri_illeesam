@@ -76,7 +76,7 @@ public class SchBatchController {
                 m.put("batchNm",        CmUtil.nvlStr(b.getBatchNm()));
                 m.put("cronExpr",       CmUtil.nvlStr(b.getCronExpr()));
                 m.put("batchStatusCd",  CmUtil.nvlStr(b.getBatchStatusCd()));
-                m.put("batchRunStatus", CmUtil.nvlStr(b.getBatchRunStatus()));
+                m.put("batchRunStatus", CmUtil.nvlStr(b.getBatchRunStatusCd()));
                 m.put("batchLastRun",   b.getBatchLastRun() != null ? b.getBatchLastRun().toString() : "");
                 m.put("batchNextRun",   b.getBatchNextRun() != null ? b.getBatchNextRun().toString() : "");
                 m.put("batchRunCount",  CmUtil.nvlInt(b.getBatchRunCount()));

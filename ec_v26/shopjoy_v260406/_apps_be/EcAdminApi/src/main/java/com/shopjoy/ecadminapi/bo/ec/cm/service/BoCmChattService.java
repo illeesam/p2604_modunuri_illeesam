@@ -105,7 +105,7 @@ public class BoCmChattService {
             .msgText(body.getMsgText())
             .msgTypeCd(body.getMsgTypeCd() != null ? body.getMsgTypeCd() : "TEXT")
             .attachGrpId(body.getAttachGrpId())
-            .refType(body.getRefType())
+            .refTypeCd(body.getRefTypeCd())
             .refId(body.getRefId())
             .readYn("N")
             .sendDate(LocalDateTime.now())

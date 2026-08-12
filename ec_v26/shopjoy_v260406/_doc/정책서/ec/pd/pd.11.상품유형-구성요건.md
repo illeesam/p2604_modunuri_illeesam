@@ -164,15 +164,38 @@ QueryDSL 이 없는 코드그룹으로 조인하면 **에러 없이 라벨만 NU
 이 그룹은 DB 에 실재해 **라벨은 정상 표시되므로 버그는 아니다.** 다만 위 정본 방침에 따르면
 `PROMO_TARGET_TYPE` 으로 통합 대상이다. 값 구성이 달라 깨질 수 있으므로 별도 검증 후 진행할 것.
 
-### 미해결 — 판단 보류 (2종)
+### 미등록 — Entity 코멘트 기준 등록 (2종)
 
-| 그룹 | 대상 컬럼 | 사유 |
-|---|---|---|
-| `SKU_CHG_TYPE` | `pdh_prod_sku_chg_hist.chg_type_cd` | 테이블 데이터 0건 + 유사 그룹 없음 → 어떤 코드값이 필요한지 업무 판단 필요 |
-| `SKU_STOCK_CHG` | `pdh_prod_sku_stock_hist.chg_reason_cd` | 동일 (데이터 0건) |
+두 그룹은 대상 테이블 데이터가 0건이라 값을 역추적할 수 없었으나,
+**Entity `@Comment` 에 기대 코드값이 명시**돼 있어 그대로 등록했다(추측이 아니라 전사).
 
-추측으로 코드를 만들면 잘못된 선택지가 노출되므로 **값이 정해질 때 등록**한다.
-등록 전까지 이 두 이력화면의 유형·사유 라벨은 빈칸으로 표시된다.
+| 그룹 | 대상 컬럼 | 등록한 코드값 | 근거 |
+|---|---|---|---|
+| `SKU_STOCK_CHG` | `pdh_prod_sku_stock_hist.chg_reason_cd` | `SALE`·`PURCHASE`·`RETURN`·`EXCHANGE`·`ADJUST`·`CLAIM`·`ADMIN` | `PdhProdSkuStockHist` 코멘트에 7종 전부 명시 |
+| `SKU_CHG_TYPE` | `pdh_prod_sku_chg_hist.chg_type_cd` | `STATUS` **만** | 코멘트가 `"STATUS 등"` 으로 불완전 |
+
+> 변경이력 `chg_type_cd` 의 관례는 **바뀐 필드명**을 담는 것이다 (`PAY_CHG_TYPE : STATUS/METHOD/AMOUNT`).
+> `SKU_CHG_TYPE` 은 코멘트가 `"등"` 으로 끝나 전체 집합을 알 수 없으므로 명시된 `STATUS` 만 등록했다.
+> 나머지는 적재 로직을 구현할 때 실제 쓰는 값으로 추가할 것.
+> (미등록 값이 들어와도 라벨만 빈칸이 될 뿐 오류는 없다.)
+
+### ⚠️ 두 SKU 이력은 "적재 로직이 없다"
+
+`pdh_prod_sku_chg_hist` / `pdh_prod_sku_stock_hist` 는 **백엔드에 쓰기 경로가 전혀 없다.**
+
+```bash
+# 결과 0건 — setChgTypeCd / setChgReasonCd 를 호출하는 코드가 없음
+grep -rn "setChgTypeCd\|setChgReasonCd" _apps_be/EcAdminApi/src/main/java --include="*.java"
+```
+
+Controller·Service·Repository·조회화면([`PdProdHist.js`](../../../../pages/bo/ec/pd/PdProdHist.js) 재고/변경 이력 탭)은
+전부 만들어져 있지만 **기록하는 쪽이 미구현**이라 데이터가 영원히 0건이다.
+코드그룹을 등록해도 **적재 로직을 넣기 전까지는 화면에 아무것도 안 나온다.**
+
+즉 이것은 "안 쓰는 코드"가 아니라 **절반만 구현된 기능**이다. 처리 방향은 둘 중 하나다.
+
+1. SKU 재고/상태 변경 지점(`PdProdSkuService` 등)에 이력 INSERT 를 추가해 기능을 완성
+2. 기능을 접기로 했다면 조회 화면·Controller·Service·Repository·테이블을 **함께** 정리
 
 ### 재현 방법
 

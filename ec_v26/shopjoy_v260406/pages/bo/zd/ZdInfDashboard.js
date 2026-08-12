@@ -179,7 +179,7 @@ window.ZdInfDashboard = {
       { key: 'beStat',      label: 'BE 설정',        width: '240px', align: 'center' },
       { key: 'feStat',      label: 'FE 설정',        width: '200px', align: 'center' },
       { key: '_test',       label: '테스트',         width: '90px',  align: 'center' },
-      { key: 'testResult',  label: '연동결과',       width: '150px', align: 'center' },
+      { key: 'testResultCd',  label: '연동결과',       width: '150px', align: 'center' },
       { key: 'testMsg',     label: '테스트 결과',    width: '180px' },
     ];
 
@@ -417,7 +417,7 @@ window.ZdInfDashboard = {
           beStat:        m.beKey ? _statOf(beVal)  : '-',
           feRawVal:      feVal ? String(feVal).slice(0, 6) + '••••••' : null,
           beRawVal:      beVal ? String(beVal).slice(0, 6) + '••••••' : null,
-          testResult:    '-',
+          testResultCd:    '-',
           testMsg:       '',
           lastTestDate:  null,
           lastTestOk:    null,
@@ -450,7 +450,7 @@ window.ZdInfDashboard = {
           const lg = map[row.keyName];
           if (lg) {
             row.lastTestDate = lg.regDate;
-            row.lastTestOk   = lg.testResult === 'SUCCESS';
+            row.lastTestOk   = lg.testResultCd === 'SUCCESS';
           }
         });
       } catch (_) { /* 무시 */ }
@@ -629,8 +629,8 @@ window.ZdInfDashboard = {
     const handleTest = async (row) => {
       if (row._testing) return;
       const meta = _TEST_MAP[row._testFn];
-      if (!meta) { row.testResult = '실패'; row.testMsg = '테스트 미정의'; return; }
-      row._testing = true; row.testResult = '-'; row.testMsg = '확인 중...';
+      if (!meta) { row.testResultCd = '실패'; row.testMsg = '테스트 미정의'; return; }
+      row._testing = true; row.testResultCd = '-'; row.testMsg = '확인 중...';
 
       let ok = false;
       let msg = '';
@@ -657,12 +657,12 @@ window.ZdInfDashboard = {
           ok  = res.data?.success !== false;
           msg = res.data?.data?.message || res.data?.message || (ok ? '정상' : '오류');
         }
-        row.testResult = ok ? '성공' : '실패';
+        row.testResultCd = ok ? '성공' : '실패';
         row.testMsg    = msg;
       } catch (e) {
         ok  = false;
         msg = e.response?.data?.message || e.message || '연결 실패';
-        row.testResult = '실패';
+        row.testResultCd = '실패';
         row.testMsg    = msg;
       } finally {
         row._testing = false;
@@ -698,7 +698,7 @@ window.ZdInfDashboard = {
           siteId:       window.boCommonFilter?.siteId || '',
           channelKey:   row.keyName,
           channelLabel: row.channel,
-          testResult:   ok ? 'SUCCESS' : 'FAIL',
+          testResultCd:   ok ? 'SUCCESS' : 'FAIL',
           testMsg:      msg.slice(0, 2000),
           testUrl:      meta.url || null,
           testReqBody:  testReqBody,
@@ -835,7 +835,7 @@ window.ZdInfDashboard = {
         </template>
 
         <!-- 연동결과: 마지막 테스트 일시 + 결과 -->
-        <template #cell-testResult="{ row }">
+        <template #cell-testResultCd="{ row }">
           <td style="text-align:center;padding:4px 6px;">
             <div v-if="row.lastTestDate" style="font-size:11px;line-height:1.5;">
               <div style="color:#6b7280;font-size:10px;">{{ fnFmtDatetime(row.lastTestDate) }}</div>
@@ -887,7 +887,7 @@ window.ZdInfDashboard = {
                 <td style="text-align:center;color:#aaa;vertical-align:top;padding-top:8px;">{{ histState.total - (histState.pageNo - 1) * histState.pageSize - li }}</td>
                 <td style="text-align:center;white-space:nowrap;color:#6b7280;font-size:11px;vertical-align:top;padding-top:8px;">{{ fnFmtDatetime(lg.regDate) }}</td>
                 <td style="text-align:center;vertical-align:top;padding-top:8px;">
-                  <span v-if="lg.testResult === 'SUCCESS'" class="badge badge-green">성공</span>
+                  <span v-if="lg.testResultCd === 'SUCCESS'" class="badge badge-green">성공</span>
                   <span v-else class="badge badge-red">실패</span>
                 </td>
                 <td style="font-family:monospace;font-size:10px;color:#0284c7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top;padding-top:8px;" :title="lg.testUrl">{{ lg.testUrl || '-' }}</td>

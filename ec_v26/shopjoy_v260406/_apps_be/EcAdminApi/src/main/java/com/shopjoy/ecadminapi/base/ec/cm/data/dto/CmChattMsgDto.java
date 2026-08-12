@@ -33,7 +33,7 @@ public class CmChattMsgDto {
         private String msgText;
         private String msgTypeCd;
         private String attachGrpId;
-        private String refType;
+        private String refTypeCd;
         private String refId;
         private String readYn;
         private LocalDateTime sendDate;
@@ -52,7 +52,7 @@ public class CmChattMsgDto {
         private String msgText;
         private String msgTypeCd;
         private String attachGrpId;
-        private String refType;
+        private String refTypeCd;
         private String refId;
         private String senderTypeCd;
     }

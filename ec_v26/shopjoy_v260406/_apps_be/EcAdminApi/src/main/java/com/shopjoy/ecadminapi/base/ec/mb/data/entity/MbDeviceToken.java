@@ -32,8 +32,8 @@ public class MbDeviceToken extends BaseEntity {
     private String memberId;
 
     @Comment("OS유형 ANDROID/IOS")
-    @Column(name = "os_type", length = 10)
-    private String osType;
+    @Column(name = "os_type_cd", length = 10)
+    private String osTypeCd;
 
     @Comment("혜택알림수신여부 Y/N")
     @Column(name = "benefit_noti_yn", length = 1)

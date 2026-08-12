@@ -31,7 +31,7 @@ window.CmDashboardItemMng = {
     /* panelDetail — 항목 인라인 폼 상태 */
     const panelDetail = reactive({ selectedId: null, isNew: false, show: false });
     const _initPanelForm = () => ({
-      dashboardItemId: null, itemKey: '', itemNm: '', itemTypeCd: 'CHART', chartType: 'bar', sortOrd: 10,
+      dashboardItemId: null, itemKey: '', itemNm: '', itemTypeCd: 'CHART', chartTypeCd: 'bar', sortOrd: 10,
       panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', seriesJson: '', optionJson: '',
     });
     const panelForm = reactive(_initPanelForm());
@@ -157,7 +157,7 @@ window.CmDashboardItemMng = {
       panelDetail.show = true;
       Object.assign(panelForm, {
         dashboardItemId: row.dashboardItemId, itemKey: row.itemKey, itemNm: row.itemNm,
-        itemTypeCd: util.itemTypeOf(row), chartType: row.chartType || 'bar', sortOrd: row.sortOrd || 10,
+        itemTypeCd: util.itemTypeOf(row), chartTypeCd: row.chartTypeCd || 'bar', sortOrd: row.sortOrd || 10,
         panelWidth: row.panelWidth || 1, panelHeight: row.panelHeight || 1,
         realtimeYn: row.realtimeYn || 'N', useYn: row.useYn || 'Y',
         seriesJson: row.seriesJson || '', optionJson: row.optionJson || '',
@@ -178,7 +178,7 @@ window.CmDashboardItemMng = {
           itemKey: panelForm.itemKey, itemNm: panelForm.itemNm,
           itemTypeCd: panelForm.itemTypeCd,
           /* 차트가 아닌 유형은 차트종류를 비워 둔다 — 남겨두면 'kpi 차트' 같은 오해가 생긴다 */
-          chartType: panelForm.itemTypeCd === 'CHART' ? panelForm.chartType : null,
+          chartTypeCd: panelForm.itemTypeCd === 'CHART' ? panelForm.chartTypeCd : null,
           sortOrd: Number(panelForm.sortOrd) || 10,
           panelWidth: Number(panelForm.panelWidth) || 1, panelHeight: Number(panelForm.panelHeight) || 1,
           realtimeYn: panelForm.realtimeYn, useYn: panelForm.useYn,
@@ -236,7 +236,7 @@ window.CmDashboardItemMng = {
         cellInnerStyle: (v, row) => panelDetail.selectedId === row.dashboardItemId ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'itemTypeCd', label: '유형', style: 'width:88px;',
         fmt: (v, row) => util.itemTypeIcon(util.itemTypeOf(row)) + ' ' + util.itemTypeLabel(util.itemTypeOf(row)) },
-      { key: 'chartType', label: '차트종류', style: 'width:96px;',
+      { key: 'chartTypeCd', label: '차트종류', style: 'width:96px;',
         fmt: (v, row) => util.itemTypeOf(row) === 'CHART' ? util.chartTypeIcon(v) + ' ' + util.chartTypeLabel(v) : '-' },
       { key: 'panelWidth',  label: '폭', style: 'width:50px;', align: 'center', fmt: (v) => (v || 1) },
       { key: 'panelHeight', label: '높이', style: 'width:50px;', align: 'center', fmt: (v) => (v || 1) },
@@ -255,7 +255,7 @@ window.CmDashboardItemMng = {
       { key: 'itemTypeCd', label: '항목유형', type: 'select',
         options: () => util.ITEM_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
       /* 차트종류는 차트일 때만 물어본다 — KPI·목록에는 의미가 없다 */
-      { key: 'chartType', label: '차트종류', type: 'select',
+      { key: 'chartTypeCd', label: '차트종류', type: 'select',
         visible: (form) => form.itemTypeCd === 'CHART',
         options: () => util.CHART_TYPES.map(c => ({ value: c.value, label: c.icon + ' ' + c.label })) },
       { key: 'panelWidth', label: '항목 폭(열 span)', type: 'select',

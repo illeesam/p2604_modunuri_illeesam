@@ -39,8 +39,8 @@ public class CmDashboardItem extends BaseEntity {
     private String itemTypeCd;
 
     @Comment("차트종류 (bar/line/pie/radar/heatmap/scatter). item_type_cd=CHART 일 때만 유효")
-    @Column(name = "chart_type", length = 30)
-    private String chartType;
+    @Column(name = "chart_type_cd", length = 30)
+    private String chartTypeCd;
 
     @Comment("실데이터 소스명 (CmDashboardDataSourceRegistry 등록명). 비우면 cm_dashboard_item_data 사용")
     @Column(name = "data_source_cd", length = 50)

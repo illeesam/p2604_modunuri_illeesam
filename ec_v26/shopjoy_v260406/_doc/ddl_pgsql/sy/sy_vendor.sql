@@ -9,7 +9,7 @@ CREATE TABLE shopjoy_2604.sy_vendor (
     vendor_nm           VARCHAR(100) NOT NULL,
     vendor_nm_en        VARCHAR(100),
     ceo_nm              VARCHAR(50) ,
-    vendor_type         VARCHAR(50) ,
+    vendor_type_cd         VARCHAR(50) ,
     vendor_item         VARCHAR(100),
     vendor_class_cd     VARCHAR(20) ,
     vendor_zip_code     VARCHAR(10) ,
@@ -43,7 +43,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor.corp_no IS '법인등록번호 (선택)
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_nm IS '상호 / 회사명';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_nm_en IS '영문 상호';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.ceo_nm IS '대표자명';
-COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_type IS '업태';
+COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_type_cd IS '업태';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_item IS '종목';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_class_cd IS '판매/배송업체구분 (코드: VENDOR_CLASS)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_zip_code IS '우편번호';

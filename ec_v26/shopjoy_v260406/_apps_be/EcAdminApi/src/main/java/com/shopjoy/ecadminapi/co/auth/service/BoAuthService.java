@@ -291,7 +291,7 @@ public class BoAuthService {
     private String saveTokenLog(String authId, String siteId,
                                 String accessToken, String refreshToken,
                                 String actionCd, String appTypeCd,
-                                String revokeReason, String uiNm, String cmdNm) {
+                                String revokeReasonCd, String uiNm, String cmdNm) {
         String logId = "TL" + LocalDateTime.now().format(ID_FMT)
             + String.format("%04d", (int)(Math.random() * 10000));
         LocalDateTime now = LocalDateTime.now();
@@ -305,7 +305,7 @@ public class BoAuthService {
             .refreshToken(refreshToken)
             .accessTokenExp(accessToken != null ? now.plusMinutes(jwtProvider.getBoAccessExpiryMinutes()) : null)
             .tokenExp(now.plusMinutes(jwtProvider.getBoRefreshExpiryMinutes()))
-            .revokeReason(revokeReason)
+            .revokeReasonCd(revokeReasonCd)
             .uiNm(uiNm)
             .cmdNm(cmdNm)
             .regBy(authId)

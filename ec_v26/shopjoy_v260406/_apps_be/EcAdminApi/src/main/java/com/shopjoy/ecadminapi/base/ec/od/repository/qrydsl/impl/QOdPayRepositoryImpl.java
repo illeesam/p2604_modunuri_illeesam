@@ -74,7 +74,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         odPay.cardNo,                 // 카드번호 (마스킹: ****-****-****-5678)
                         odPay.cardTypeCd,             // 카드 타입 — CARD_TYPE {CREDIT:신용카드, DEBIT:체크카드, CHECK:직불카드}
                         odPay.installmentMonth.as("cardInstallMonth"),  // 할부 개월수 (0=일시불)
-                        odPay.vbankBankCode,          // 가상계좌 은행코드 — BANK_CODE
+                        odPay.vbankBankCd,          // 가상계좌 은행코드 — BANK_CODE
                         odPay.vbankAccount.as("vbankAccountNo"),      // 가상계좌 계좌번호
                         odPay.vbankHolderNm.as("vbankAccountNm"),     // 가상계좌 예금주명
                         odPay.vbankDepositDate.as("vbankExpireDate"), // 가상계좌 입금확인일시
@@ -98,7 +98,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
 
     /*
      * selectById — 코드성 필드는 baseListQuery 와 동일 코드그룹
-     * + 상세조회 전용 추가 조인: payChannelCd→PAY_CHANNEL, vbankBankCode→BANK_CODE, cardTypeCd→CARD_TYPE
+     * + 상세조회 전용 추가 조인: payChannelCd→PAY_CHANNEL, vbankBankCd→BANK_CODE, cardTypeCd→CARD_TYPE
      */
     /* 결제 키조회 */
     @Override
@@ -121,7 +121,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         odPay.cardNo,                  // 카드번호 (마스킹)
                         odPay.cardTypeCd,              // 카드 타입 — CARD_TYPE {CREDIT:신용카드, DEBIT:체크카드, CHECK:직불카드}
                         odPay.installmentMonth.as("cardInstallMonth"),  // 할부 개월수 (0=일시불)
-                        odPay.vbankBankCode,           // 가상계좌 은행코드 — BANK_CODE
+                        odPay.vbankBankCd,           // 가상계좌 은행코드 — BANK_CODE
                         odPay.vbankAccount.as("vbankAccountNo"),      // 가상계좌 계좌번호
                         odPay.vbankHolderNm.as("vbankAccountNm"),     // 가상계좌 예금주명
                         odPay.vbankDepositDate.as("vbankExpireDate"), // 가상계좌 입금확인일시
@@ -136,7 +136,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         cdPd.codeLabel.as("payDirCdNm"),
                         cdPc.codeLabel.as("payChannelCdNm"),
                         cdRs.codeLabel.as("refundStatusCdNm"),
-                        cdVb.codeLabel.as("vbankBankCodeNm"),
+                        cdVb.codeLabel.as("vbankBankCdNm"),
                         cdCt.codeLabel.as("cardTypeCdNm")
                 ))
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odPay)
@@ -147,7 +147,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(odPay.payDirCd)))
                 .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL").and(cdPc.codeValue.eq(odPay.payChannelCd)))
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odPay.refundStatusCd)))
-                .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(odPay.vbankBankCode)))
+                .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(odPay.vbankBankCd)))
                 .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE").and(cdCt.codeValue.eq(odPay.cardTypeCd)))
                 .where(odPay.payId.eq(payId))
                 .fetchOne();
@@ -247,7 +247,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
             QdslUtil.FieldDef.like("refundStatusCd", odPay.refundStatusCd),
             QdslUtil.FieldDef.like("refundStatusCdBefore", odPay.refundStatusCdBefore),
             QdslUtil.FieldDef.like("vbankAccount", odPay.vbankAccount),
-            QdslUtil.FieldDef.like("vbankBankCode", odPay.vbankBankCode),
+            QdslUtil.FieldDef.like("vbankBankCd", odPay.vbankBankCd),
             QdslUtil.FieldDef.like("vbankBankNm", odPay.vbankBankNm),
             QdslUtil.FieldDef.like("vbankDepositNm", odPay.vbankDepositNm),
             QdslUtil.FieldDef.like("vbankHolderNm", odPay.vbankHolderNm)

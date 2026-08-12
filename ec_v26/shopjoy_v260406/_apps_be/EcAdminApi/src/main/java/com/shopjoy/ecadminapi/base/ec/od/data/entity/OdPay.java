@@ -91,8 +91,8 @@ public class OdPay extends BaseEntity {
     private String vbankAccount;
 
     @Comment("가상계좌 은행코드 (코드: BANK_CODE)")
-    @Column(name = "vbank_bank_code", length = 10)
-    private String vbankBankCode;
+    @Column(name = "vbank_bank_cd", length = 10)
+    private String vbankBankCd;
 
     @Comment("가상계좌 은행명")
     @Column(name = "vbank_bank_nm", length = 50)

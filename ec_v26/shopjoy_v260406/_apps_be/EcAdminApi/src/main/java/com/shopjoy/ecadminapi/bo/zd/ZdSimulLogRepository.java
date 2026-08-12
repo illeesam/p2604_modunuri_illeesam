@@ -13,7 +13,7 @@ public interface ZdSimulLogRepository extends JpaRepository<ZdSimulLog, String> 
            " AND (:uiNm IS NULL OR l.uiNm LIKE %:uiNm%)" +
            " AND (:userNm IS NULL OR l.userNm LIKE %:userNm%)" +
            " AND (:desc IS NULL OR l.descTxt LIKE %:desc%)" +
-           " AND (:status IS NULL OR l.simulStatus = :status)" +
+           " AND (:status IS NULL OR l.simulStatusCd = :status)" +
            " ORDER BY l.regDate DESC")
     Page<ZdSimulLog> search(
         @Param("siteId")  String siteId,

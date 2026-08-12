@@ -31,7 +31,7 @@ public class SyhBatchHistDto {
         private LocalDateTime runAt;
         private LocalDateTime endAt;
         private Integer durationMs;
-        private String runStatus;
+        private String runStatusCd;
         private Integer procCount;
         private Integer errorCount;
         private String message;

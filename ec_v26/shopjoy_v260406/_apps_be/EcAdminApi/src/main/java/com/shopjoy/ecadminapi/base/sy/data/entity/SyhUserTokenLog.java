@@ -69,8 +69,8 @@ public class SyhUserTokenLog extends BaseEntity {
     private String deviceInfo;
 
     @Comment("폐기 사유 (LOGOUT/FORCE/EXPIRED 등)")
-    @Column(name = "revoke_reason", length = 200)
-    private String revokeReason;
+    @Column(name = "revoke_reason_cd", length = 200)
+    private String revokeReasonCd;
 
     @Comment("액세스 토큰 만료일시")
     @Column(name = "access_token_exp")

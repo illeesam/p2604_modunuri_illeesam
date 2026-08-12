@@ -21,7 +21,7 @@ public class MbDeviceTokenDto {
         private String deviceTokenId;
         private String deviceToken;
         private String memberId;
-        private String osType;
+        private String osTypeCd;
         private String benefitNotiYn;
         private LocalDateTime alimReadDate;
         private String regBy;

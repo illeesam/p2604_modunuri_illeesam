@@ -59,7 +59,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                         syhUserTokenLog.refreshToken,         // 리프레시 토큰
                         syhUserTokenLog.ip,                   // IP주소
                         syhUserTokenLog.deviceInfo,           // User-Agent
-                        syhUserTokenLog.revokeReason,         // 폐기 사유 (LOGOUT/FORCE/EXPIRED 등)
+                        syhUserTokenLog.revokeReasonCd,         // 폐기 사유 (LOGOUT/FORCE/EXPIRED 등)
                         syhUserTokenLog.accessTokenExp,       // 액세스 토큰 만료일시
                         syhUserTokenLog.uiNm,                 // 화면명 (X-UI-Nm 헤더)
                         syhUserTokenLog.cmdNm,                // 기능명 (X-Cmd-Nm 헤더)
@@ -166,7 +166,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
             QdslUtil.FieldDef.like("loginLogId", syhUserTokenLog.loginLogId),
             QdslUtil.FieldDef.like("prevToken", syhUserTokenLog.prevToken),
             QdslUtil.FieldDef.like("refreshToken", syhUserTokenLog.refreshToken),
-            QdslUtil.FieldDef.like("revokeReason", syhUserTokenLog.revokeReason),
+            QdslUtil.FieldDef.like("revokeReasonCd", syhUserTokenLog.revokeReasonCd),
             QdslUtil.FieldDef.like("tokenTypeCd", syhUserTokenLog.tokenTypeCd),
             QdslUtil.FieldDef.like("uiNm", syhUserTokenLog.uiNm),
             QdslUtil.FieldDef.like("userId", syhUserTokenLog.userId)
@@ -203,7 +203,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         if (entity.getRefreshToken()   != null) { update.set(syhUserTokenLog.refreshToken,   entity.getRefreshToken());   hasAny = true; }
         if (entity.getIp()             != null) { update.set(syhUserTokenLog.ip,             entity.getIp());             hasAny = true; }
         if (entity.getDeviceInfo()     != null) { update.set(syhUserTokenLog.deviceInfo,     entity.getDeviceInfo());     hasAny = true; }
-        if (entity.getRevokeReason()   != null) { update.set(syhUserTokenLog.revokeReason,   entity.getRevokeReason());   hasAny = true; }
+        if (entity.getRevokeReasonCd()   != null) { update.set(syhUserTokenLog.revokeReasonCd,   entity.getRevokeReasonCd());   hasAny = true; }
         if (entity.getAccessTokenExp() != null) { update.set(syhUserTokenLog.accessTokenExp, entity.getAccessTokenExp()); hasAny = true; }
         if (entity.getUiNm()           != null) { update.set(syhUserTokenLog.uiNm,           entity.getUiNm());           hasAny = true; }
         if (entity.getCmdNm()          != null) { update.set(syhUserTokenLog.cmdNm,          entity.getCmdNm());          hasAny = true; }

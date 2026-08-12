@@ -53,8 +53,8 @@ public class CmChattMsg extends BaseEntity {
     private String attachGrpId;
 
     @Comment("참조유형 (ORDER/PRODUCT/CLAIM)")
-    @Column(name = "ref_type", length = 20)
-    private String refType;
+    @Column(name = "ref_type_cd", length = 20)
+    private String refTypeCd;
 
     @Comment("참조ID")
     @Column(name = "ref_id", length = 21)

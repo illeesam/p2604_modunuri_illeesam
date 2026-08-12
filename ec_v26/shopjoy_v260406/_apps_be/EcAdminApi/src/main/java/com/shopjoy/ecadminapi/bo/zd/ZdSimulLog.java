@@ -34,8 +34,8 @@ public class ZdSimulLog extends BaseEntity {
     private String simulMode;
 
     @Comment("결과 (SUCCESS/FAIL)")
-    @Column(name = "simul_status", length = 10, nullable = false)
-    private String simulStatus;
+    @Column(name = "simul_status_cd", length = 10, nullable = false)
+    private String simulStatusCd;
 
     @Comment("실행 내용 설명")
     @Column(name = "desc_txt", columnDefinition = "TEXT")

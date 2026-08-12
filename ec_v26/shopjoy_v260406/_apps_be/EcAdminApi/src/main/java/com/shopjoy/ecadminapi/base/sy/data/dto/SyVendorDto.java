@@ -17,7 +17,7 @@ public class SyVendorDto {
         @Size(max = 21) private String vendorId;
         @Size(max = 21) private String pathId;
         @Size(max = 50) private String vendorClassCd;
-        @Size(max = 50) private String vendorType;
+        @Size(max = 50) private String vendorTypeCd;
         @Size(max = 20) private String status;
     }
 
@@ -31,7 +31,7 @@ public class SyVendorDto {
         private String vendorNm;
         private String vendorNmEn;
         private String ceoNm;
-        private String vendorType;
+        private String vendorTypeCd;
         private String vendorItem;
         private String vendorClassCd;
         private String vendorZipCode;

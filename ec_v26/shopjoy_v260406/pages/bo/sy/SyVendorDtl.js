@@ -21,7 +21,7 @@ window.SyVendorDtl = {
     const codes = reactive({ active_statuses: [], vendor_type_kr: [] });              // 공통코드
 
     const form = reactive({                        // 업체 폼 데이터
-      vendorId: null, vendorType: '판매업체', vendorNm: '', ceoNm: '', vendorNo: '', vendorPhone: '', vendorEmail: '',
+      vendorId: null, vendorTypeCd: '판매업체', vendorNm: '', ceoNm: '', vendorNo: '', vendorPhone: '', vendorEmail: '',
       vendorZipCode: '', vendorAddr: '', vendorAddrDetail: '',
       contractDate: '', vendorStatusCd: '활성', vendorRemark: '',
     });
@@ -163,7 +163,7 @@ window.SyVendorDtl = {
     columns.baseForm = [
       // 1행: 사이트명(2) + 업체유형(1)
       { key: '_siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
-      { key: 'vendorType',     label: '업체유형', type: 'select', nullable: false, required: true,
+      { key: 'vendorTypeCd',     label: '업체유형', type: 'select', nullable: false, required: true,
         options: () => codes.vendor_type_kr },
       // 2행: 업체명 / 사업자등록번호 / 대표자명
       { key: 'vendorNm',       label: '업체명', type: 'text', required: true, placeholder: '업체명' },

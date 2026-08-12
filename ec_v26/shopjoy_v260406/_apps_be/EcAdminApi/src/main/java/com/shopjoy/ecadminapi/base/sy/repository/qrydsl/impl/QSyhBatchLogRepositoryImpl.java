@@ -53,7 +53,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                         syhBatchLog.runAt,        // 실행시작일시
                         syhBatchLog.endAt,        // 실행종료일시
                         syhBatchLog.durationMs,   // 실행시간(ms)
-                        syhBatchLog.runStatus,    // 실행결과 — BATCH_STATUS {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'}
+                        syhBatchLog.runStatusCd,    // 실행결과 — BATCH_STATUS {PENDING: '대기', RUNNING: '실행중', DONE: '완료', FAILED: '실패'}
                         syhBatchLog.procCount,    // 처리건수
                         syhBatchLog.errorCount,   // 오류건수
                         syhBatchLog.message,      // 결과메시지
@@ -62,10 +62,10 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                         syhBatchLog.regDate,      // 등록일시
                         syhBatchLog.updBy,        // 수정자
                         syhBatchLog.updDate,      // 수정일시
-                        cd_bs.codeLabel.as("runStatusNm")  // 실행결과 코드명 (조인: sy_code BATCH_STATUS)
+                        cd_bs.codeLabel.as("runStatusCdNm")  // 실행결과 코드명 (조인: sy_code BATCH_STATUS)
                 ))
                 .from(syhBatchLog)
-                .leftJoin(cd_bs).on(cd_bs.codeGrp.eq("BATCH_STATUS").and(cd_bs.codeValue.eq(syhBatchLog.runStatus)));
+                .leftJoin(cd_bs).on(cd_bs.codeGrp.eq("BATCH_STATUS").and(cd_bs.codeValue.eq(syhBatchLog.runStatusCd)));
     }
 
     /* 배치 로그 키조회 (단건 상세 — baseSelColumnQuery 공유) */
@@ -147,7 +147,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
             QdslUtil.FieldDef.like("batchNm", syhBatchLog.batchNm),
             QdslUtil.FieldDef.like("detail", syhBatchLog.detail),
             QdslUtil.FieldDef.like("message", syhBatchLog.message),
-            QdslUtil.FieldDef.like("runStatus", syhBatchLog.runStatus)
+            QdslUtil.FieldDef.like("runStatusCd", syhBatchLog.runStatusCd)
         ));
     }
 
@@ -178,7 +178,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         if (entity.getRunAt()      != null) { update.set(syhBatchLog.runAt,      entity.getRunAt());      hasAny = true; }
         if (entity.getEndAt()      != null) { update.set(syhBatchLog.endAt,      entity.getEndAt());      hasAny = true; }
         if (entity.getDurationMs() != null) { update.set(syhBatchLog.durationMs, entity.getDurationMs()); hasAny = true; }
-        if (entity.getRunStatus()  != null) { update.set(syhBatchLog.runStatus,  entity.getRunStatus());  hasAny = true; }
+        if (entity.getRunStatusCd()  != null) { update.set(syhBatchLog.runStatusCd,  entity.getRunStatusCd());  hasAny = true; }
         if (entity.getProcCount()  != null) { update.set(syhBatchLog.procCount,  entity.getProcCount());  hasAny = true; }
         if (entity.getErrorCount() != null) { update.set(syhBatchLog.errorCount, entity.getErrorCount()); hasAny = true; }
         if (entity.getMessage()    != null) { update.set(syhBatchLog.message,    entity.getMessage());    hasAny = true; }
