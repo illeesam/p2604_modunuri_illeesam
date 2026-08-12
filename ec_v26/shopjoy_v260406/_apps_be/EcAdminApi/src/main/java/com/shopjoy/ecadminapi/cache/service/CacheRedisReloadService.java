@@ -3,13 +3,13 @@ package com.shopjoy.ecadminapi.cache.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nMsgDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.repository.SyCodeRepository;
-import com.shopjoy.ecadminapi.base.sy.repository.SyI18nMsgRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyI18nRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyRoleMenuRepository;
@@ -75,7 +75,7 @@ public class CacheRedisReloadService {
     private final SyRoleRepository     roleRepository;
     private final SyRoleMenuRepository roleMenuRepository;
     private final SyPropRepository     propRepository;
-    private final SyI18nMsgRepository  i18nMsgRepository;
+    private final SyI18nRepository     i18nRepository;
 
     // ── EC Mapper (DB 재조회 — 카테고리만 full reload 지원) ────────
     private final PdCategoryRepository categoryRepository;
@@ -191,26 +191,40 @@ public class CacheRedisReloadService {
         return list.size();
     }
 
-    /** sy-i18n: langCd → (i18nId → i18nMsg) 중첩 맵으로 저장 */
+    /** sy-i18n: langCd → (i18nKey → 메시지) 중첩 맵으로 저장
+     *
+     *  2026-08-13 ① sy_i18n_msg(행) → sy_i18n 언어컬럼(ko/en/cn/ja) 통합
+     *             ② 캐시 키를 i18nId → **i18nKey** 로 전환
+     *
+     *  ②가 중요하다. 호출부는 t('common.bt.save') 처럼 **키로** 조회하는데
+     *  캐시가 i18nId 로 잡혀 있으면 매번 키→ID 를 다시 찾아야 해 캐시가 무의미했다.
+     *  i18n_key 는 UNIQUE 이므로 단독 식별자로 안전하다.
+     *
+     *  값이 비어 있는 언어는 담지 않는다 — 빈 문자열이 쌓이면
+     *  "번역 있음"으로 오인돼 폴백(기본 언어)이 동작하지 않는다. */
     public int reloadI18n() {
         if (!redis.isEnabled()) return 0;
         i18nCache.evictAll();
-        List<SyI18nMsgDto.Item> list = i18nMsgRepository.selectList(new SyI18nMsgDto.Request());
-        Map<String, Map<String, String>> i18nMap = list.stream()
-            .filter(dto -> dto.getLangCd() != null && dto.getI18nId() != null)
-            .collect(Collectors.groupingBy(
-                dto -> dto.getLangCd(),
-                LinkedHashMap::new,
-                Collectors.toMap(
-                    dto -> dto.getI18nId(),
-                    dto -> CmUtil.nvlStr(dto.getI18nMsg()),
-                    (a, b) -> b,
-                    LinkedHashMap::new
-                )
-            ));
+        List<SyI18nDto.Item> list = i18nRepository.selectList(new SyI18nDto.Request());
+        Map<String, Map<String, String>> i18nMap = new LinkedHashMap<>();
+        for (String lang : List.of("ko", "en", "cn", "ja")) {
+            Map<String, String> byKey = new LinkedHashMap<>();
+            for (SyI18nDto.Item it : list) {
+                if (it.getI18nKey() == null || it.getI18nKey().isBlank()) continue;
+                String msg = switch (lang) {
+                    case "ko" -> it.getI18nMsgKo();
+                    case "en" -> it.getI18nMsgEn();
+                    case "cn" -> it.getI18nMsgCn();
+                    default   -> it.getI18nMsgJa();
+                };
+                if (msg != null && !msg.isBlank()) byKey.put(it.getI18nKey(), msg);
+            }
+            if (!byKey.isEmpty()) i18nMap.put(lang, byKey);
+        }
+        int total = i18nMap.values().stream().mapToInt(Map::size).sum();
         i18nCache.saveAll(i18nMap);
-        log.info("[Cache] sy-i18n 리로드 완료 — {}건", list.size());
-        return list.size();
+        log.info("[Cache] sy-i18n 리로드 완료 — 키 {}건 / 번역 {}건", list.size(), total);
+        return total;
     }
 
     /** ec-pd-cate: 카테고리 전체 목록 reload */

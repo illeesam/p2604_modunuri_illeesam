@@ -86,9 +86,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfSummary = computed(() => ({
-      match: rows.filter(r=>r.diffStatus==='일치').length,
-      over:  rows.filter(r=>r.diffStatus==='조정과다').length,
-      under: rows.filter(r=>r.diffStatus==='조정부족').length,
+      match: rows.filter(r=>r.diffStatus==='MATCH').length,
+      over:  rows.filter(r=>r.diffStatus==='ADJ_EXCESS').length,
+      under: rows.filter(r=>r.diffStatus==='ADJ_SHORTAGE').length,
     }));
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */

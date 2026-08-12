@@ -91,9 +91,9 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfSummary = computed(() => ({
-      match:     recons.filter(r=>r.diffStatus==='일치').length,
-      diff:      recons.filter(r=>r.diffStatus==='차이').length,
-      noReflect: recons.filter(r=>r.diffStatus==='미반영').length,
+      match:     recons.filter(r=>r.diffStatus==='MATCH').length,
+      diff:      recons.filter(r=>r.diffStatus==='DIFF').length,
+      noReflect: recons.filter(r=>r.diffStatus==='NOT_APPLIED').length,
       diffAmt:   recons.reduce((s,r)=>s+Math.abs(r.diff||0),0),
     }));
 
@@ -231,7 +231,7 @@ const uiState = reactive({ loading: false, error: null, dateRange: '이번달', 
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.diffStatus!=='일치'" class="btn btn-xs btn-primary" @click="handleSelectAction('recons-rowFix', r)">
+        <button v-if="r.diffStatus!=='MATCH'" class="btn btn-xs btn-primary" @click="handleSelectAction('recons-rowFix', r)">
           조정
         </button>
       </template>

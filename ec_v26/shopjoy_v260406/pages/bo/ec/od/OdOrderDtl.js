@@ -355,7 +355,7 @@ window.OdOrderDtl = {
       return idx !== -1 ? idx : -1;
     });
 
-    const cfIsCanceled = computed(() => form.orderStatusCd === '취소됨');
+    const cfIsCanceled = computed(() => form.orderStatusCd === 'CANCELED');
 
     /* handleSave — 저장 */
     const handleSave = async () => {

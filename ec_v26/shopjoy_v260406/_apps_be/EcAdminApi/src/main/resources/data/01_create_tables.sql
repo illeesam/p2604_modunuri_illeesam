@@ -1364,6 +1364,10 @@ CREATE TABLE IF NOT EXISTS sy_i18n (
     i18n_desc       VARCHAR(200),                           -- 키 설명
     i18n_scope_cd   VARCHAR(20)     DEFAULT 'COMMON',       -- 코드: I18N_SCOPE (FO/BO/COMMON)
     i18n_category   VARCHAR(50),                            -- 키 첫 세그먼트 (common/error/link 등)
+    i18n_msg_ko     TEXT,                                   -- 한국어 메시지 ({0},{1} 플레이스홀더)
+    i18n_msg_en     TEXT,                                   -- 영어 메시지
+    i18n_msg_cn     TEXT,                                   -- 중국어 메시지
+    i18n_msg_ja     TEXT,                                   -- 일본어 메시지
     sort_ord        INTEGER         DEFAULT 0,
     use_yn          CHAR(1)         DEFAULT 'Y',
     reg_by          VARCHAR(16),
@@ -1371,10 +1375,10 @@ CREATE TABLE IF NOT EXISTS sy_i18n (
     upd_by          VARCHAR(16),
     upd_date        TIMESTAMP,
     PRIMARY KEY (i18n_id),
-    UNIQUE (i18n_key, i18n_scope_cd)
+    UNIQUE (i18n_key)
 );
 
-COMMENT ON TABLE  sy_i18n                  IS '다국어 키 마스터';
+COMMENT ON TABLE  sy_i18n                  IS '다국어';
 COMMENT ON COLUMN sy_i18n.i18n_id          IS '다국어ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN sy_i18n.site_id          IS '사이트ID (sy_site.site_id, NULL=전체 공용)';
 COMMENT ON COLUMN sy_i18n.i18n_key         IS '다국어 키 (예: common.bt.save, error.FORBIDDEN)';
@@ -1398,37 +1402,12 @@ CREATE INDEX idx_sy_i18n_site     ON sy_i18n (site_id) WHERE site_id IS NOT NULL
 -- [CODES] sy_i18n.i18n_scope_cd (적용범위) : I18N_SCOPE: FO/BO/COMMON
 
 -- 다국어 메시지 (언어별)
-CREATE TABLE IF NOT EXISTS sy_i18n_msg (
-    i18n_msg_id     VARCHAR(21)     NOT NULL,
-    i18n_id         VARCHAR(21)     NOT NULL,               -- sy_i18n.i18n_id
-    lang_cd         VARCHAR(10)     NOT NULL,               -- 코드: LANG_CODE (ko/en/ja/in)
-    i18n_msg        TEXT            NOT NULL,               -- 번역 메시지
-    reg_by          VARCHAR(16),
-    reg_date        TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
-    upd_by          VARCHAR(16),
-    upd_date        TIMESTAMP,
-    PRIMARY KEY (i18n_msg_id),
-    UNIQUE (i18n_id, lang_cd),
-    CONSTRAINT fk_sy_i18n_msg_i18n FOREIGN KEY (i18n_id) REFERENCES sy_i18n (i18n_id)
-);
 
-COMMENT ON TABLE  sy_i18n_msg              IS '다국어 메시지 (언어별)';
-COMMENT ON COLUMN sy_i18n_msg.i18n_msg_id  IS '다국어 메시지ID (YYMMDDhhmmss+rand4)';
-COMMENT ON COLUMN sy_i18n_msg.i18n_id      IS '다국어ID (sy_i18n.i18n_id)';
-COMMENT ON COLUMN sy_i18n_msg.lang_cd      IS '언어코드 (코드: LANG_CODE — ko/en/ja/in)';
-COMMENT ON COLUMN sy_i18n_msg.i18n_msg     IS '번역 메시지 (플레이스홀더: {0},{1} 지원)';
-COMMENT ON COLUMN sy_i18n_msg.reg_by       IS '등록자 (sy_user.user_id)';
-COMMENT ON COLUMN sy_i18n_msg.reg_date     IS '등록일';
-COMMENT ON COLUMN sy_i18n_msg.upd_by       IS '수정자 (sy_user.user_id)';
-COMMENT ON COLUMN sy_i18n_msg.upd_date     IS '수정일';
 
-CREATE INDEX idx_sy_i18n_msg_i18n ON sy_i18n_msg (i18n_id);
-CREATE INDEX idx_sy_i18n_msg_lang ON sy_i18n_msg (lang_cd);
 
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] sy_i18n_msg.lang_cd (언어코드) : LANG_CODE { ko:한국어, en:영어, ja:일본어, in:인도네시아어 }
 
 -- 알림 발송 이력 (수신자별)
 CREATE TABLE IF NOT EXISTS syh_alarm_send_hist (

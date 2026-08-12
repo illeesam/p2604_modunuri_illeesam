@@ -219,7 +219,7 @@ window.SyBatchHist = {
 
     /* fnHistRowStyle — 행 스타일 (실패/실행중 배경 강조) */
     const fnHistRowStyle = (log) =>
-      log.runStatusCd === '실패' ? 'background:#fff5f5;' : log.runStatusCd === '실행중' ? 'background:#f0f8ff;' : '';
+      log.runStatusCd === 'FAILED' ? 'background:#fff5f5;' : log.runStatusCd === 'RUNNING' ? 'background:#f0f8ff;' : '';
 
     const cfBatchOptions = computed(() =>
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
@@ -239,7 +239,7 @@ window.SyBatchHist = {
       { key: 'runAt',      label: '실행일시', style: 'width:128px;', cellStyle: 'color:#555;font-family:monospace;font-size:11px' },
       { key: 'durationMs', label: '소요시간', style: 'width:66px;text-align:center;', align: 'center', cellStyle: 'color:#666', fmt: (v) => fnFmtDuration(v) },
       { key: 'runStatusCd',  label: '결과',    style: 'width:66px;text-align:center;', align: 'center', badge: (row) => fnRunBadge(row.runStatusCd) },
-      { key: 'message',    label: '메시지',  style: 'width:auto;', cellStyle: (v, row) => 'font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;' + (row.runStatusCd === '실패' ? 'color:#dc2626' : 'color:#555') },
+      { key: 'message',    label: '메시지',  style: 'width:auto;', cellStyle: (v, row) => 'font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;' + (row.runStatusCd === 'FAILED' ? 'color:#dc2626' : 'color:#555') },
     ];
 
     /* histGridRowDetail — 실행이력 행 펼침 BoFormArea 컬럼 (cols=5, labelLeft) */
@@ -300,9 +300,9 @@ window.SyBatchHist = {
     empty-text="실행이력이 없습니다.">
     <template #row-expand="{ row, colspan }">
     <td :colspan="colspan"
-      :style="(row.runStatusCd==='실패' ? 'background:#fff5f5;' : 'background:#eef3fb;') + 'padding:0;border-top:2px solid ' + (row.runStatusCd==='실패' ? '#f3b4b4' : '#bcd0ee') + ';'">
-      <div :style="'margin:10px 14px 12px;padding:12px 14px;background:#fff;border-radius:8px;border:1px solid ' + (row.runStatusCd==='실패' ? '#f0c4c4' : '#d4e0f2') + ';box-shadow:inset 3px 0 0 ' + (row.runStatusCd==='실패' ? '#ef4444' : '#3b82f6') + ';'">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.3px;margin-bottom:8px;" :style="row.runStatusCd==='실패' ? 'color:#b91c1c;' : 'color:#1d4ed8;'">
+      :style="(row.runStatusCd==='FAILED' ? 'background:#fff5f5;' : 'background:#eef3fb;') + 'padding:0;border-top:2px solid ' + (row.runStatusCd==='FAILED' ? '#f3b4b4' : '#bcd0ee') + ';'">
+      <div :style="'margin:10px 14px 12px;padding:12px 14px;background:#fff;border-radius:8px;border:1px solid ' + (row.runStatusCd==='FAILED' ? '#f0c4c4' : '#d4e0f2') + ';box-shadow:inset 3px 0 0 ' + (row.runStatusCd==='FAILED' ? '#ef4444' : '#3b82f6') + ';'">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.3px;margin-bottom:8px;" :style="row.runStatusCd==='FAILED' ? 'color:#b91c1c;' : 'color:#1d4ed8;'">
         ▼ 실행 상세
       </div>
       <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
@@ -312,7 +312,7 @@ window.SyBatchHist = {
           메시지
         </div>
         <div style="flex:1;min-width:0;font-size:12px;padding:6px 10px;border-radius:5px;line-height:1.6;white-space:pre-wrap;word-break:break-all;"
-          :style="row.runStatusCd==='실패'
+          :style="row.runStatusCd==='FAILED'
             ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
             : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">
           {{ fnRowDetail(row).message }}
@@ -323,7 +323,7 @@ window.SyBatchHist = {
           상세 내용
         </div>
         <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"
-          :style="row.runStatusCd==='실패'
+          :style="row.runStatusCd==='FAILED'
             ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
             : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ fnRowDetail(row).detail }}</pre>
       </template>

@@ -510,7 +510,7 @@ window.PmDiscntDtl = {
         </template>
       </bo-form-area>
       <!-- 발급대상 목록 추가/삭제 -->
-      <div style="margin-top:12px;" v-if="form.discntTargetCd !== '전체상품'">
+      <div style="margin-top:12px;" v-if="form.discntTargetCd !== 'ALL_PROD'">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
           <span style="font-size:12px;font-weight:700;color:#555;">
             선택 대상 목록
@@ -575,10 +575,10 @@ window.PmDiscntDtl = {
   </div>
   <!-- ===== □.■. 탭 컨텐츠 =================================================== -->
 <!-- 발급대상 피커 모달 -->
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='선택상품')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='카테고리')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='브랜드')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='판매업체')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='SELECTED_PROD')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='CATEGORY')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='BRAND')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='VENDOR')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
 `

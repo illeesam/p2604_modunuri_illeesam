@@ -182,7 +182,7 @@ window.PmGiftDtl = {
         if (g) { Object.assign(form, g); }
         // Entity minOrderAmt/minOrderQty → UI 단일 condVal 매핑
         if (g) {
-          if (g.giftTypeCd === '수량조건') { form.condVal = Number(g.minOrderQty) || 0; }
+          if (g.giftTypeCd === 'QTY') { form.condVal = Number(g.minOrderQty) || 0; }
           else { form.condVal = Number(g.minOrderAmt) || 0; }
         }
         uiState.error = null;
@@ -306,7 +306,7 @@ window.PmGiftDtl = {
         try {
           const payload = { ...form };
           // UI 단일 condVal → Entity minOrderQty / minOrderAmt 매핑
-          if (form.giftTypeCd === '수량조건') { payload.minOrderQty = form.condVal; }
+          if (form.giftTypeCd === 'QTY') { payload.minOrderQty = form.condVal; }
           else { payload.minOrderAmt = form.condVal; }
           const res = isCreate
             ? await boApiSvc.pmGift.create(payload, '선물관리', '등록')
@@ -361,7 +361,7 @@ window.PmGiftDtl = {
         placeholder: '사은품명 입력' },
       { key: 'giftTypeCd',   label: '조건유형', type: 'select', options: () => codes.gift_cond_types },
       { key: 'condVal',      label: '조건값', type: 'number', placeholder: '0',
-        visible: (f) => f.giftTypeCd !== '무조건',
+        visible: (f) => f.giftTypeCd !== 'NONE',
         hint: '조건유형에 따라 단위(수량/금액) 입력' },
       { key: 'giftStock',    label: '재고', type: 'number', required: true, placeholder: '0' },
       { key: 'giftStatusCd', label: '상태', type: 'select', options: () => codes.gift_statuses },
@@ -497,10 +497,10 @@ window.PmGiftDtl = {
             조건:
             <span style="font-weight:700;color:#f59e0b;">{{ form.giftTypeCd }}</span>
           </div>
-          <div v-if="form.giftTypeCd !== '무조건'" style="font-size:13px;color:#666;margin-bottom:4px;">
+          <div v-if="form.giftTypeCd !== 'NONE'" style="font-size:13px;color:#666;margin-bottom:4px;">
             조건값:
             <span style="font-weight:700;">
-              {{ form.giftTypeCd === '금액조건' ? (form.condVal||0).toLocaleString() + '원↑' : form.giftTypeCd === '수량조건' ? (form.condVal||0) + '개↑' : form.condVal||0 }}
+              {{ form.giftTypeCd === 'AMOUNT' ? (form.condVal||0).toLocaleString() + '원↑' : form.giftTypeCd === 'QTY' ? (form.condVal||0) + '개↑' : form.condVal||0 }}
             </span>
           </div>
           <div style="font-size:13px;color:#666;margin-bottom:4px;">
@@ -516,10 +516,10 @@ window.PmGiftDtl = {
   </div>
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
 <!-- 발급대상 피커 모달 -->
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='상품')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='카테고리')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='브랜드')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='판매업체')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='PRODUCT')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='CATEGORY')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='BRAND')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='VENDOR')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 `

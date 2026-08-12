@@ -453,7 +453,7 @@ window.SyBatchMng = {
       { key: 'cronExpr',      label: 'Cron 표현식',  style: 'min-width:170px;' },
       { key: 'batchStatusCd', label: '활성',         style: 'width:74px;', align: 'center',
         edit: 'select', options: () => codes.active_statuses,
-        badge: (row) => row._row_status === 'N' ? ('badge-xs ' + (row.batchStatusCd === 'ACTIVE' || row.batchStatusCd === '활성' ? 'badge-green' : 'badge-gray')) : null },
+        badge: (row) => row._row_status === 'N' ? ('badge-xs ' + (row.batchStatusCd === 'ACTIVE' || row.batchStatusCd === 'ACTIVE' ? 'badge-green' : 'badge-gray')) : null },
       { key: 'batchDesc',     label: '설명',         style: 'min-width:130px;', edit: 'text', placeholder: '설명' },
       { key: 'batchLastRun',  label: '최종실행',     style: 'width:136px;', align: 'center',
         cellStyle: 'font-size:11px;color:#555;white-space:nowrap;font-family:monospace;',

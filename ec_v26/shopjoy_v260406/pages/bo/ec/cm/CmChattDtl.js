@@ -142,7 +142,7 @@ window.CmChattDtl = {
         } catch (_) {}
         scrollToBottom();
         // 진행 중인 채팅만 폴링 시작
-        if (uiState.chat && (uiState.chat.chattStatusCd === 'OPEN' || uiState.chat.chattStatusCd === 'PENDING' || uiState.chat.chattStatusCd === '진행중')) {
+        if (uiState.chat && (uiState.chat.chattStatusCd === 'OPEN' || uiState.chat.chattStatusCd === 'PENDING' || uiState.chat.chattStatusCd === 'IN_PROGRESS')) {
           fnStartPoll();
         }
       } catch (err) {
@@ -361,7 +361,7 @@ window.CmChattDtl = {
     columns.memberChatGrid = [
       { key: 'subject', label: '제목' },
       { key: '_status', label: '상태',
-        badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
+        badge: (row) => row.chattStatusCd === 'IN_PROGRESS' ? 'badge-green' : 'badge-gray',
         fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
@@ -371,7 +371,7 @@ window.CmChattDtl = {
     columns.userChatGrid = [
       { key: 'subject', label: '제목' },
       { key: '_status', label: '상태',
-        badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
+        badge: (row) => row.chattStatusCd === 'IN_PROGRESS' ? 'badge-green' : 'badge-gray',
         fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },

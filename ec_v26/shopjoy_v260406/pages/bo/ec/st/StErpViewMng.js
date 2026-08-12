@@ -168,7 +168,7 @@ window.StErpViewMng = {
       </template>
       <template #row-actions="{ row: r }">
         <div class="actions">
-          <button v-if="r.sendStatus!=='전송완료'" class="btn btn-xs btn-blue" @click="handleSelectAction('slips-rowResend', r)">
+          <button v-if="r.sendStatus!=='SENT'" class="btn btn-xs btn-blue" @click="handleSelectAction('slips-rowResend', r)">
             재전송
           </button>
         </div>

@@ -315,8 +315,8 @@ window.StSettleAdjMng = {
       </template>
       <template #row-actions="{ row: r }">
         <div class="actions">
-          <button v-if="r.aprvStatusCd==='대기'" class="btn btn-xs btn-green" @click="handleSelectAction('settleAdjs-rowApprove', r)">승인</button>
-          <button v-if="r.aprvStatusCd==='대기'" class="btn btn-xs btn-danger" @click="handleSelectAction('settleAdjs-rowReject', r)">반려</button>
+          <button v-if="r.aprvStatusCd==='PENDING'" class="btn btn-xs btn-green" @click="handleSelectAction('settleAdjs-rowApprove', r)">승인</button>
+          <button v-if="r.aprvStatusCd==='PENDING'" class="btn btn-xs btn-danger" @click="handleSelectAction('settleAdjs-rowReject', r)">반려</button>
           <button class="btn btn_row_edit" @click="handleSelectAction('settleAdjs-rowEdit', r)">수정</button>
           <button class="btn btn_row_delete"  @click="handleSelectAction('settleAdjs-rowDelete', r)">삭제</button>
         </div>

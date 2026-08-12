@@ -83,9 +83,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfSummary = computed(() => ({
-      match:   rows.filter(r=>r.diffStatus==='일치').length,
-      over:    rows.filter(r=>r.diffStatus==='결제과다').length,
-      under:   rows.filter(r=>r.diffStatus==='결제부족').length,
+      match:   rows.filter(r=>r.diffStatus==='MATCH').length,
+      over:    rows.filter(r=>r.diffStatus==='PAY_EXCESS').length,
+      under:   rows.filter(r=>r.diffStatus==='PAY_SHORTAGE').length,
       diffAmt: rows.reduce((s,r)=>s+Math.abs(r.diff||0),0),
     }));
 

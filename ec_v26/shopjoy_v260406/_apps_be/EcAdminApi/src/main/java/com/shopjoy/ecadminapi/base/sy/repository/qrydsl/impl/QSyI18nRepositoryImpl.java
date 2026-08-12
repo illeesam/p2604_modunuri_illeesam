@@ -42,6 +42,12 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                         syI18n.i18nDesc,       // 키 설명 (번역자 참고용)
                         syI18n.i18nScopeCd,    // 적용범위 — I18N_SCOPE {FO: '프론트', BO: '관리자', COMMON: '공통'}
                         syI18n.i18nCategory,   // 키 첫 세그먼트 (common/error/link/paging 등)
+                        /* 언어별 메시지 — 2026-08-13 sy_i18n_msg 통합.
+                           여기 빠지면 화면이 번역을 받지 못해 빈칸으로 보인다(에러는 안 난다). */
+                        syI18n.i18nMsgKo,      // 한국어 메시지
+                        syI18n.i18nMsgEn,      // 영어 메시지
+                        syI18n.i18nMsgCn,      // 중국어 메시지
+                        syI18n.i18nMsgJa,      // 일본어 메시지
                         syI18n.sortOrd,        // 정렬순서
                         syI18n.useYn,          // 사용여부 — USE_YN {Y: '사용', N: '미사용'}
                         syI18n.regBy,          // 등록자
@@ -128,6 +134,11 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
             QdslUtil.FieldDef.like("i18nDesc", syI18n.i18nDesc),
             QdslUtil.FieldDef.like("i18nId", syI18n.i18nId),
             QdslUtil.FieldDef.like("i18nKey", syI18n.i18nKey),
+            /* 번역 본문으로도 찾을 수 있게 — "저장" 으로 검색해 해당 키를 찾는 용도 */
+            QdslUtil.FieldDef.like("i18nMsgKo", syI18n.i18nMsgKo),
+            QdslUtil.FieldDef.like("i18nMsgEn", syI18n.i18nMsgEn),
+            QdslUtil.FieldDef.like("i18nMsgCn", syI18n.i18nMsgCn),
+            QdslUtil.FieldDef.like("i18nMsgJa", syI18n.i18nMsgJa),
             QdslUtil.FieldDef.like("i18nScopeCd", syI18n.i18nScopeCd),
             QdslUtil.FieldDef.like("useYn", syI18n.useYn)
         ));

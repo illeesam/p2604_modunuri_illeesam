@@ -13,8 +13,7 @@ window.SyI18nMng = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
     const i18ns     = reactive([]);             // 다국어 키 그리드 데이터
-    const i18nMsgs = reactive([]);             // 다국어 메시지 (i18nId 별 langCd 매핑)
-    const uiState  = reactive({ selectedId: null }); // UI 상태
+    const uiState  = reactive({ selectedKey: null }); // UI 상태 (선택 식별은 i18nKey — UNIQUE 이므로 단독 식별 가능)
     const codes    = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
 
@@ -37,7 +36,7 @@ window.SyI18nMng = {
         return saveMsgs();
       // 번역 편집 패널 닫기
       } else if (cmd === 'msgForm-close') {
-        uiState.selectedId = null;
+        uiState.selectedKey = null;
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -81,12 +80,12 @@ window.SyI18nMng = {
     const searchParamInit = {};
     const baseGridPager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    const LANGS       = ['ko','en','ja','in']; // 지원 언어
-    const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
+    const LANGS       = ['ko','en','cn','ja']; // 지원 언어 (sy_i18n 언어컬럼과 1:1)
+    const LANG_LABELS = { ko:'한국어', en:'English', cn:'中文', ja:'日本語' };
 
     const msgForm = reactive({});              // 번역 입력 폼
 
-    const cfSelectedKey = computed(() => (i18ns||[]).find(k => k.i18nId === uiState.selectedId) || null);
+    const cfSelectedKey = computed(() => (i18ns||[]).find(k => k.i18nKey === uiState.selectedKey) || null);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
 
@@ -100,7 +99,8 @@ window.SyI18nMng = {
           ...coUtil.cofOmitEmpty({ ...searchParam, searchValue: (searchParam.searchValue || '').trim() }),
         };
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'i18nKey,i18nDesc';
+          /* 검색대상 미선택 시 기본 범위 — 키·설명 + 4개 언어 본문 */
+          params.searchType = 'i18nKey,i18nDesc,i18nMsgKo,i18nMsgEn,i18nMsgCn,i18nMsgJa';
         }
         const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
         const d = res.data?.data;
@@ -125,11 +125,10 @@ window.SyI18nMng = {
 
     /* openDetail — 번역 편집 패널 열기 (토글) */
     const openDetail = (key) => {
-      if (uiState.selectedId === key.i18nId) { uiState.selectedId = null; return; }
-      uiState.selectedId = key.i18nId;
+      if (uiState.selectedKey === key.i18nKey) { uiState.selectedKey = null; return; }
+      uiState.selectedKey = key.i18nKey;
       const msgs = {};
-      LANGS.forEach(lang => { msgs[lang] = ''; });
-      (i18nMsgs||[]).filter(m => m.i18nId === key.i18nId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
+      LANGS.forEach(lang => { msgs[lang] = getLangMsg(key, lang); });
       Object.assign(msgForm, msgs);
     };
 
@@ -138,14 +137,10 @@ window.SyI18nMng = {
       if (!cfSelectedKey.value) { return; }
       const ok = await showConfirm('저장', '번역 메시지를 저장하시겠습니까?');
       if (!ok) { return; }
-      const src = i18nMsgs;
-      LANGS.forEach(lang => {
-        const existing = src.find(m => m.i18nId === cfSelectedKey.value.i18nId && m.langCd === lang);
-        if (existing) { existing.i18nMsg = msgForm[lang]; }
-        else if (msgForm[lang]) { src.push({ i18nMsgId: 'IM' + Date.now() + lang, i18nId: cfSelectedKey.value.i18nId, langCd: lang, i18nMsg: msgForm[lang] }); }
-      });
       try {
-        const res = await boApiSvc.syI18n.updateMsgs(cfSelectedKey.value.i18nId, { msgs: { ...msgForm } }, '다국어관리', '저장');
+        /* 목록 갱신은 저장 성공 후 재조회로만 한다 (실패 시 화면이 저장된 것처럼 보이면 안 됨) */
+        await boApiSvc.syI18n.updateMsgs(cfSelectedKey.value.i18nId, { msgs: { ...msgForm } }, '다국어관리', '저장');
+        await handleSearchData();
         if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
@@ -173,14 +168,15 @@ window.SyI18nMng = {
     /* fnYnBadge — Y/N 배지 클래스 */
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    /* getLangMsg — 언어별 메시지 조회 */
-    const getLangMsg = (i18nId, lang) => {
-      const m = (i18nMsgs||[]).find(m => m.i18nId === i18nId && m.langCd === lang);
-      return m ? m.i18nMsg : '';
+    /* getLangMsg — 행의 언어컬럼(i18nMsgKo/En/Cn/Ja)에서 직접 조회
+       2026-08-13 sy_i18n_msg 통합: 별도 조회 없이 목록 응답에 번역이 함께 온다 */
+    const getLangMsg = (row, lang) => {
+      if (!row || !lang) { return ''; }
+      return row['i18nMsg' + lang.charAt(0).toUpperCase() + lang.slice(1)] || '';
     };
 
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
-    const fnRowStyle = (row) => uiState.selectedId === row.i18nId ? 'background:#fff8f9;' : '';
+    const fnRowStyle = (row) => uiState.selectedKey === row.i18nKey ? 'background:#fff8f9;' : '';
 
     // 기본 검색
     const columns = {};
@@ -189,6 +185,10 @@ window.SyI18nMng = {
         options: [
           { value: 'i18nKey',  label: '키' },
           { value: 'i18nDesc', label: '설명' },
+          { value: 'i18nMsgKo', label: '한국어' },
+          { value: 'i18nMsgEn', label: 'English' },
+          { value: 'i18nMsgCn', label: '中文' },
+          { value: 'i18nMsgJa', label: '日本語' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
@@ -203,9 +203,10 @@ window.SyI18nMng = {
       { key: 'i18nDesc',    label: '설명', cellStyle: 'color:#666;font-size:12px' },
       { key: 'i18nScopeCd', label: '범위', align: 'center', badge: (row) => fnScopeBadge(row.i18nScopeCd) },
       { key: 'i18nCategory',label: '카테고리', cellStyle: 'font-size:12px;color:#888' },
-      { key: 'msgKo',       label: 'ko', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row.i18nId, 'ko') },
-      { key: 'msgEn',       label: 'en', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row.i18nId, 'en') },
-      { key: 'msgJa',       label: 'ja', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row.i18nId, 'ja') },
+      { key: 'i18nMsgKo',   label: 'ko', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row, 'ko') },
+      { key: 'i18nMsgEn',   label: 'en', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row, 'en') },
+      { key: 'i18nMsgCn',   label: 'cn', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row, 'cn') },
+      { key: 'i18nMsgJa',   label: 'ja', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row, 'ja') },
       { key: 'useYn',       label: '사용', align: 'center', badge: (row) => fnYnBadge(row.useYn) },
     ];
 
@@ -236,7 +237,7 @@ window.SyI18nMng = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="다국어 키 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <bo-grid bare
-      :columns="columns.baseGrid" :rows="i18ns" row-key="i18nId" :selected-key="uiState.selectedId"
+      :columns="columns.baseGrid" :rows="i18ns" row-key="i18nKey" :selected-key="uiState.selectedKey"
       :row-style="fnRowStyle"
       grid-id="i18ns-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     </bo-grid>

@@ -341,8 +341,8 @@ window.PmGiftMng = {
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'giftTypeCd',   label: '조건유형', badge: (row) => fnTypeBadge(row.giftTypeCd) },
       { key: 'condVal',      label: '조건값',
-        fmt: (v, row) => row.giftTypeCd === '금액조건' ? (row.minOrderAmt || 0).toLocaleString() + '원↑'
-          : row.giftTypeCd === '수량조건' ? (row.minOrderQty || 0) + '개↑' : '-' },
+        fmt: (v, row) => row.giftTypeCd === 'AMOUNT' ? (row.minOrderAmt || 0).toLocaleString() + '원↑'
+          : row.giftTypeCd === 'QTY' ? (row.minOrderQty || 0) + '개↑' : '-' },
       { key: 'giftStock',    label: '재고', fmt: (v) => (v || 0).toLocaleString() + '개' },
       { key: 'startDate',    label: '시작일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'endDate',      label: '종료일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
@@ -442,7 +442,7 @@ window.PmGiftMng = {
           <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <div style="font-size:12px;color:#666;line-height:1.5;">
             <div>
-              🎯 {{ g.giftTypeCd === '금액조건' ? (g.minOrderAmt||0).toLocaleString() + '원↑' : g.giftTypeCd === '수량조건' ? (g.minOrderQty||0) + '개↑' : '-' }}
+              🎯 {{ g.giftTypeCd === 'AMOUNT' ? (g.minOrderAmt||0).toLocaleString() + '원↑' : g.giftTypeCd === 'QTY' ? (g.minOrderQty||0) + '개↑' : '-' }}
             </div>
             <div>
               📅 {{ g.startDate }} ~ {{ g.endDate }}

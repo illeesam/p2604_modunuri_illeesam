@@ -234,7 +234,7 @@ window.OdDlivDtl = {
       ];
       if (['출고완료','배송중','배송완료'].includes(form.dlivStatusCd)) { rows.push({ date:d+' 10:00', user:'bo', from:'준비중', to:'출고완료', memo:(form.outboundCourierCd||'-')+' 출고' }); }
       if (['배송중','배송완료'].includes(form.dlivStatusCd)) { rows.push({ date:d+' 11:30', user:'시스템', from:'출고완료', to:'배송중', memo:'배송 중' }); }
-      if (form.dlivStatusCd === '배송완료') { rows.push({ date:d+' 15:20', user:'시스템', from:'배송중', to:'배송완료', memo:'수령 완료' }); }
+      if (form.dlivStatusCd === 'DELIVERED') { rows.push({ date:d+' 15:20', user:'시스템', from:'배송중', to:'배송완료', memo:'수령 완료' }); }
       return rows;
     });
     const cfEditHistList = computed(() => form.dlivId ? [

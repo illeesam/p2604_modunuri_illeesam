@@ -514,10 +514,10 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
   </div>
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
 <!-- 발급대상 피커 모달 -->
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='상품')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='카테고리')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='브랜드')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='판매업체')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='PRODUCT')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='CATEGORY')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='BRAND')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.targetTypeCd==='VENDOR')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 `

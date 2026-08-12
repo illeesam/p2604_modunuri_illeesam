@@ -2,13 +2,9 @@ package com.shopjoy.ecadminapi.bo.sy.service;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nMsgDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18nMsg;
-import com.shopjoy.ecadminapi.base.sy.repository.SyI18nMsgRepository;
 import com.shopjoy.ecadminapi.base.sy.service.SyI18nService;
 import com.shopjoy.ecadminapi.cache.redisstore.SyI18nRedisStore;
-import com.shopjoy.ecadminapi.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +18,6 @@ import java.util.Map;
 public class BoSyI18nService {
 
     private final SyI18nService syI18nService;
-    private final SyI18nMsgRepository syI18nMsgRepository;
     private final SyI18nRedisStore i18nCache;
 
     /* 키조회 */

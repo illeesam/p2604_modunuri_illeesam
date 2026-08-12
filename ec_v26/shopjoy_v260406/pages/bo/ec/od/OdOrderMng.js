@@ -515,7 +515,7 @@ window.OdOrderMng = {
     ];
 
     /* fnPayStatusText — 유틸 */
-    const fnPayStatusText = (o) => (o.orderStatusCd === '취소' || o.orderStatusCd === '자동취소') ? '환불완료' : o.orderStatusCd === '입금대기' ? '미결제' : '결제완료';
+    const fnPayStatusText = (o) => (o.orderStatusCd === 'CANCELED' || o.orderStatusCd === '자동취소') ? '환불완료' : o.orderStatusCd === '입금대기' ? '미결제' : '결제완료';
     // 목록 그리드
     columns.listGrid = [
       { key: 'orderId',       label: '주문ID', link: true,

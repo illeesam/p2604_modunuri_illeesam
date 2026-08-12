@@ -81,9 +81,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
 
 
     const cfSummary = computed(() => ({
-      match:   rows.filter(r => r.diffStatus==='일치').length,
-      over:    rows.filter(r => r.diffStatus==='정산과다').length,
-      under:   rows.filter(r => r.diffStatus==='정산부족').length,
+      match:   rows.filter(r => r.diffStatus==='MATCH').length,
+      over:    rows.filter(r => r.diffStatus==='SETTLE_EXCESS').length,
+      under:   rows.filter(r => r.diffStatus==='SETTLE_SHORTAGE').length,
       diffAmt: rows.reduce((s, r) => s + Math.abs(r.diff||0), 0),
     }));
 

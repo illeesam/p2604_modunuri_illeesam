@@ -640,7 +640,6 @@
   /* ── sy: i18n 다국어 ────────────────────────────────────────── */
   boApiSvc.syI18n = {
     getPage(params, uiNm, cmdNm, opt)       { return global.boApi.get(   '/bo/sy/i18n/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
-    getMsgs(_id, uiNm, cmdNm)          { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/i18n/${_id}/msgs`, hdr(uiNm, cmdNm)); },
     updateMsgs(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/sy/i18n/${_id}/msgs`, body, hdr(uiNm, cmdNm)); },
   };
 

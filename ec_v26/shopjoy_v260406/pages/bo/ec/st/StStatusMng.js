@@ -151,7 +151,7 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
       await handleSearchData('DEFAULT');
     };
     onMounted(initPage);
-    const cfVendors  = computed(() => vendors.filter(v => v.vendorTypeCd === '판매업체'));
+    const cfVendors  = computed(() => vendors.filter(v => v.vendorTypeCd === 'SALES'));
 
     const COMM_RATE = 0.10; // 수수료율 10%
 

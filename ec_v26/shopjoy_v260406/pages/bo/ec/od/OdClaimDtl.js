@@ -274,14 +274,14 @@ window.OdClaimDtl = {
     /* isExpanded — 여부 확인 */
     const isExpanded = (i) => expandedItems.has(i);
     /* fnItemExpanded — 유틸 */
-    const fnItemExpanded = (row, i) => isExpanded(i) && form.claimTypeCd === '교환';
+    const fnItemExpanded = (row, i) => isExpanded(i) && form.claimTypeCd === 'EXCHANGE';
     const cfAllExpanded = computed(() => claimItems.length > 0 && window.safeArrayUtils.safeEvery(claimItems, (_,i) => expandedItems.has(i)));
 
     watch(claimItems, (list) => { expandedItems.clear(); list.forEach((_,i) => expandedItems.add(i)); });
 
     /* getExchangedItem — 교환 요청 대상 정보 반환 (new_* 실데이터 기반) */
     const getExchangedItem = (it) => {
-      if (form.claimTypeCd !== '교환') { return {}; }
+      if (form.claimTypeCd !== 'EXCHANGE') { return {}; }
       return {
         prodNm: it.newProdNm || '-',
         prodOption: it.newProdOption || '-',
@@ -392,7 +392,7 @@ window.OdClaimDtl = {
         cellInnerStyle: () => `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af'};` },
       { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;', cellStyle: 'font-size:12px;',
         trackBoxes: {
-          items: () => form.claimTypeCd !== '교환' ? [] : [
+          items: () => form.claimTypeCd !== 'EXCHANGE' ? [] : [
             ...(form.exchangeCourierCd ? [{ label: '발송', courier: form.exchangeCourierCd, trackingNo: form.exchangeTrackingNo, colorVariant: 'blue' }] : []),
             ...(form.returnCourierCd   ? [{ label: '수거', courier: form.returnCourierCd,   trackingNo: form.returnTrackingNo,   colorVariant: 'orange' }] : []),
           ],
@@ -630,7 +630,7 @@ window.OdClaimDtl = {
     <!-- ===== ■.■. 클레임항목목록 탭 ============================================= -->
     <div v-if="showTab('items')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 클레임항목 <span class="tab-count"> {{ claimItems.length }} </span></div>
-      <div v-if="form.claimTypeCd==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+      <div v-if="form.claimTypeCd==='EXCHANGE'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('claimItems-toggleExpandAll')">
           {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
         </button>
@@ -641,7 +641,7 @@ window.OdClaimDtl = {
         empty-text="클레임 항목 정보가 없습니다.">
         <template #cell-prodNm="{ row, idx }">
           <td style="font-size:12px;">
-            <span v-if="form.claimTypeCd==='교환'" @click="handleSelectAction('claimItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
+            <span v-if="form.claimTypeCd==='EXCHANGE'" @click="handleSelectAction('claimItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
               {{ isExpanded(idx) ? '▼' : '▶' }}
             </span>
             {{ row.prodNm }}

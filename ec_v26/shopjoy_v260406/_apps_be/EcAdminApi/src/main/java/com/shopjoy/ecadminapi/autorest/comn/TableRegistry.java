@@ -45,7 +45,7 @@ public class TableRegistry {
         "st_settle_pay", "st_settle_raw", "st_settle",
         // sy
         "sy_alarm", "sy_attach_grp", "sy_attach", "sy_batch", "sy_bbm", "sy_bbs",
-        "sy_brand", "sy_code_grp", "sy_code", "sy_contact", "sy_dept", "sy_i18n_msg",
+        "sy_brand", "sy_code_grp", "sy_code", "sy_contact", "sy_dept",
         "sy_i18n", "sy_menu", "sy_notice", "sy_path", "sy_prop", "sy_role_menu",
         "sy_role", "sy_site", "sy_template", "sy_user_role", "sy_user",
         "sy_vendor_brand", "sy_vendor_content", "sy_vendor_user", "sy_vendor", "sy_voc"
@@ -258,14 +258,7 @@ public class TableRegistry {
             .pkColumn("i18n_id")
             .requiredFields(List.of("i18n_key"))
             .fkFields(Map.of("site_id", "sy_site"))
-            .childTables(List.of("sy_i18n_msg"))
             .searchFields(List.of("i18n_key"))
-            .build());
-
-        register("sy_i18n_msg", TableConfig.builder()
-            .pkColumn("i18n_msg_id")
-            .requiredFields(List.of("i18n_id", "locale", "msg"))
-            .fkFields(Map.of("i18n_id", "sy_i18n"))
             .build());
 
         register("sy_user_role", TableConfig.builder()

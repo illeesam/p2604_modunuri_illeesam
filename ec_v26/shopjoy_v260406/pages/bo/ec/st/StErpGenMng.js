@@ -52,7 +52,7 @@ window.StErpGenMng = {
 
     const orders = reactive([]);
     const vendors = reactive([]);
-    const cfVendors = computed(() => vendors.filter(v => v.vendorTypeCd === '판매업체'));
+    const cfVendors = computed(() => vendors.filter(v => v.vendorTypeCd === 'SALES'));
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
