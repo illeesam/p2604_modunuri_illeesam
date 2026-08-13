@@ -71,7 +71,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 ))
                 .from(pmSave)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(pmSave.memberId))
-                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SAVE_TYPE").and(cdSt.codeValue.eq(pmSave.saveTypeCd)));
+                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SAVE_TYPE_CD").and(cdSt.codeValue.eq(pmSave.saveTypeCd)));
     }
 
     /* 적립금 키조회 */

@@ -32,7 +32,7 @@ public class PmEventBenefit extends BaseEntity {
     @Column(name = "benefit_nm", length = 100, nullable = false)
     private String benefitNm;
 
-    @Comment("혜택유형 (코드: BENEFIT_TYPE)")
+    @Comment("혜택유형 (코드: BENEFIT_TYPE_CD)")
     @Column(name = "benefit_type_cd", length = 20)
     private String benefitTypeCd;
 

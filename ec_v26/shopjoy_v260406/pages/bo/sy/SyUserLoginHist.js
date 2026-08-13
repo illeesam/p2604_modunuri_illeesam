@@ -125,9 +125,9 @@ window.SyUserLoginHist = {
     const fnLoadCodes = async () => {
       const cs = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await cs.saLoadCodes(['LOGIN_RESULT', 'TOKEN_ACTION', 'DATE_RANGE_OPT'], {compNm: 'SyUserLoginHist'});
+      await cs.saLoadCodes(['LOGIN_RESULT', 'ACTION_CD', 'DATE_RANGE_OPT'], {compNm: 'SyUserLoginHist'});
       codes.login_results   = cs?.sgGetGrpCodes('LOGIN_RESULT')   || [];
-      codes.token_actions   = cs?.sgGetGrpCodes('TOKEN_ACTION')   || [];
+      codes.token_actions   = cs?.sgGetGrpCodes('ACTION_CD')   || [];
       codes.date_range_opts = cs?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
     };
 

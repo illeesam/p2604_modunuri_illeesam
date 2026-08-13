@@ -31,7 +31,7 @@ public class SyI18n extends BaseEntity {
     @Column(name = "i18n_desc", length = 200)
     private String i18nDesc;
 
-    @Comment("적용범위 (코드: I18N_SCOPE — FO/BO/COMMON)")
+    @Comment("적용범위 (코드: I18N_SCOPE_CD — FO/BO/COMMON)")
     @Column(name = "i18n_scope_cd", length = 20)
     private String i18nScopeCd;
 

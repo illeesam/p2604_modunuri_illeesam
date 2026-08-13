@@ -38,11 +38,11 @@ public class StErpVoucher extends BaseEntity {
     @Column(name = "settle_ym", length = 6)
     private String settleYm;
 
-    @Comment("전표유형 (코드: ERP_VOUCHER_TYPE — SETTLE/RETURN/ADJ/PAY)")
+    @Comment("전표유형 (코드: ERP_VOUCHER_TYPE_CD — SETTLE/RETURN/ADJ/PAY)")
     @Column(name = "erp_voucher_type_cd", length = 20, nullable = false)
     private String erpVoucherTypeCd;
 
-    @Comment("전표상태 (코드: ERP_VOUCHER_STATUS — DRAFT/CONFIRMED/SENT/MATCHED/MISMATCH/ERROR)")
+    @Comment("전표상태 (코드: ERP_VOUCHER_STATUS_CD — DRAFT/CONFIRMED/SENT/MATCHED/MISMATCH/ERROR)")
     @Column(name = "erp_voucher_status_cd", length = 20)
     private String erpVoucherStatusCd;
 

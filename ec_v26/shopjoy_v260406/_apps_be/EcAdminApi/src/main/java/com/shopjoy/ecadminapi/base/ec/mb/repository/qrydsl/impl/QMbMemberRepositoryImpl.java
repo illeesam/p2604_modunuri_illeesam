@@ -43,7 +43,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * GRADE_CD (코드: MEMBER_GRADE)          {BASIC: '일반', GOLD: '우수', VIP: 'VIP'}
-     * MEMBER_STATUS_CD (코드: MEMBER_STATUS) {ACTIVE: '활성', DORMANT: '휴면', SUSPENDED: '정지', WITHDRAWN: '탈퇴'}
+     * MEMBER_STATUS_CD (코드: MEMBER_STATUS_CD) {ACTIVE: '활성', DORMANT: '휴면', SUSPENDED: '정지', WITHDRAWN: '탈퇴'}
      * MEMBER_GENDER                          {M: '남성', F: '여성'}
      */
     private JPAQuery<MbMemberDto.Item> baseSelColumnQuery() {
@@ -76,7 +76,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                 ))
                 .from(mbMember)
                 .leftJoin(cdGr).on(cdGr.codeGrp.eq("MEMBER_GRADE").and(cdGr.codeValue.eq(mbMember.gradeCd)))
-                .leftJoin(cdMs).on(cdMs.codeGrp.eq("MEMBER_STATUS").and(cdMs.codeValue.eq(mbMember.memberStatusCd)));
+                .leftJoin(cdMs).on(cdMs.codeGrp.eq("MEMBER_STATUS_CD").and(cdMs.codeValue.eq(mbMember.memberStatusCd)));
     }
 
     /* 회원 키조회 */

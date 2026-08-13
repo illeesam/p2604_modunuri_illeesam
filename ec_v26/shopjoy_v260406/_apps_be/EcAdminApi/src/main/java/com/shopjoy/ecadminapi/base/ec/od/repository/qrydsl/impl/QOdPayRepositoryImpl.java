@@ -92,8 +92,8 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd)))
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd)))
-                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(odPay.payDirCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odPay.refundStatusCd)));
+                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR_CD").and(cdPd.codeValue.eq(odPay.payDirCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd)));
     }
 
     /*
@@ -144,11 +144,11 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd)))
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd)))
-                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(odPay.payDirCd)))
-                .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL").and(cdPc.codeValue.eq(odPay.payChannelCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odPay.refundStatusCd)))
+                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR_CD").and(cdPd.codeValue.eq(odPay.payDirCd)))
+                .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL_CD").and(cdPc.codeValue.eq(odPay.payChannelCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odPay.refundStatusCd)))
                 .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(odPay.vbankBankCd)))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE").and(cdCt.codeValue.eq(odPay.cardTypeCd)))
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE_CD").and(cdCt.codeValue.eq(odPay.cardTypeCd)))
                 .where(odPay.payId.eq(payId))
                 .fetchOne();
         return Optional.ofNullable(dto);

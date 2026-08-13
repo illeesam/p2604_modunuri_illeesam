@@ -53,7 +53,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
                         dpPanelItem.panelItemId,       // 패널항목ID (PK, YYMMDDhhmmss+rand4)
                         dpPanelItem.panelId,           // 패널ID (dp_panel.panel_id, FK)
                         dpPanelItem.widgetLibId,       // 위젯라이브러리ID (dp_widget_lib.widget_lib_id, 선택사항)
-                        dpPanelItem.widgetTypeCd,      // 위젯유형 — WIDGET_TYPE_CD (코드: DISP_WIDGET_TYPE, 27종)
+                        dpPanelItem.widgetTypeCd,      // 위젯유형 — WIDGET_TYPE_CD (코드: WIDGET_TYPE_CD, 27종)
                         dpPanelItem.widgetTitle,       // 위젯타이틀
                         dpPanelItem.widgetContent,     // 위젯내용 (HTML 에디터)
                         dpPanelItem.titleShowYn,       // 타이틀표시여부 — TITLE_SHOW_YN {Y: '예', N: '아니오'}

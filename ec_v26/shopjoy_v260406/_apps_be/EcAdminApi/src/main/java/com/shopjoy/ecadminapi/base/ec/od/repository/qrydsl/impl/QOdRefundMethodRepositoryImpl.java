@@ -70,7 +70,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                 .leftJoin(ord).on(ord.orderId.eq(odRefundMethod.orderId))
                 .leftJoin(pay).on(pay.payId.eq(odRefundMethod.payId))
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odRefundMethod.payMethodCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odRefundMethod.refundStatusCd)));
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS_CD").and(cdRs.codeValue.eq(odRefundMethod.refundStatusCd)));
     }
 
     /* 환불수단 키조회 */

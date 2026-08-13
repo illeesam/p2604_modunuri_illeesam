@@ -43,7 +43,7 @@ public class PdhProdSkuStockHist {
     @Column(name = "chg_qty", nullable = false)
     private Integer chgQty;
 
-    @Comment("변동사유 (코드: SKU_STOCK_CHG — SALE/PURCHASE/RETURN/EXCHANGE/ADJUST/CLAIM/ADMIN)")
+    @Comment("변동사유 (코드: CHG_REASON_CD — SALE/PURCHASE/RETURN/EXCHANGE/ADJUST/CLAIM/ADMIN)")
     @Column(name = "chg_reason_cd", length = 20, nullable = false)
     private String chgReasonCd;
 

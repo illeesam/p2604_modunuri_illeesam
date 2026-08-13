@@ -57,7 +57,7 @@ public class PmVoucherIssue extends BaseEntity {
     @Column(name = "use_amt")
     private Long useAmt;
 
-    @Comment("상태 (코드: VOUCHER_ISSUE_STATUS)")
+    @Comment("상태 (코드: VOUCHER_ISSUE_STATUS_CD)")
     @Column(name = "voucher_issue_status_cd", length = 20)
     private String voucherIssueStatusCd;
 

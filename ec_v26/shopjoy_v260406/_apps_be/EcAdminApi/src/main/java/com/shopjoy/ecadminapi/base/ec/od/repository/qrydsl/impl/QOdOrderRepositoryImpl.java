@@ -119,11 +119,11 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .from(odOrder)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
                 .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId))
-                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
+                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS_CD").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
                 .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd)))
-                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ACCESS_CHANNEL").and(cdAc.codeValue.eq(odOrder.accessChannelCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)));
+                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ACCESS_CHANNEL_CD").and(cdAc.codeValue.eq(odOrder.accessChannelCd)))
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odOrder.apprStatusCd)));
     }
 
     /*
@@ -189,12 +189,12 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odOrder)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
                 .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId))
-                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
+                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS_CD").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
                 .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
                 .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd)))
                 .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odOrder.refundBankCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)))
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET").and(cdAt.codeValue.eq(odOrder.apprTargetCd)))
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPR_STATUS_CD").and(cdAp.codeValue.eq(odOrder.apprStatusCd)))
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPR_TARGET_CD").and(cdAt.codeValue.eq(odOrder.apprTargetCd)))
                 .where(odOrder.orderId.eq(orderId))
                 .fetchOne();
         return Optional.ofNullable(dto);

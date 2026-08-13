@@ -29,7 +29,7 @@ public class PmEvent extends BaseEntity {
     @Column(name = "event_nm", length = 100, nullable = false)
     private String eventNm;
 
-    @Comment("이벤트유형 (코드: EVENT_TYPE)")
+    @Comment("이벤트유형 (코드: EVENT_TYPE_CD)")
     @Column(name = "event_type_cd", length = 20)
     private String eventTypeCd;
 
@@ -61,11 +61,11 @@ public class PmEvent extends BaseEntity {
     @Column(name = "notice_end")
     private LocalDate noticeEnd;
 
-    @Comment("상태 (코드: EVENT_STATUS)")
+    @Comment("상태 (코드: EVENT_STATUS_CD)")
     @Column(name = "event_status_cd", length = 20)
     private String eventStatusCd;
 
-    @Comment("변경 전 이벤트상태 (코드: EVENT_STATUS)")
+    @Comment("변경 전 이벤트상태 (코드: EVENT_STATUS_CD)")
     @Column(name = "event_status_cd_before", length = 20)
     private String eventStatusCdBefore;
 

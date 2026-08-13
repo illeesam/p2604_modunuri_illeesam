@@ -49,11 +49,11 @@ public class OdRefundMethod extends BaseEntity {
     @Column(name = "refund_avail_amt")
     private Long refundAvailAmt;
 
-    @Comment("수단별 환불상태 (코드: REFUND_STATUS — PENDING/COMPLT/FAILED)")
+    @Comment("수단별 환불상태 (코드: REFUND_STATUS_CD — PENDING/COMPLT/FAILED)")
     @Column(name = "refund_status_cd", length = 20)
     private String refundStatusCd;
 
-    @Comment("변경 전 환불상태 (코드: REFUND_STATUS)")
+    @Comment("변경 전 환불상태 (코드: REFUND_STATUS_CD)")
     @Column(name = "refund_status_cd_before", length = 20)
     private String refundStatusCdBefore;
 

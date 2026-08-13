@@ -33,11 +33,11 @@ public class OdhOrderItemStatusHist extends BaseEntity {
     @Column(name = "order_id", length = 21)
     private String orderId;
 
-    @Comment("변경 전 주문상품상태 (코드: ORDER_ITEM_STATUS)")
+    @Comment("변경 전 주문상품상태 (코드: ORDER_ITEM_STATUS_CD)")
     @Column(name = "order_item_status_cd_before", length = 20)
     private String orderItemStatusCdBefore;
 
-    @Comment("변경 후 주문상품상태 (코드: ORDER_ITEM_STATUS)")
+    @Comment("변경 후 주문상품상태 (코드: ORDER_ITEM_STATUS_CD)")
     @Column(name = "order_item_status_cd", length = 20)
     private String orderItemStatusCd;
 

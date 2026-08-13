@@ -34,7 +34,7 @@ public class PmCache extends BaseEntity {
     @Column(name = "member_nm", length = 50)
     private String memberNm;
 
-    @Comment("유형 (코드: CACHE_TYPE)")
+    @Comment("유형 (코드: CACHE_TYPE_CD)")
     @Column(name = "cache_type_cd", length = 20, nullable = false)
     private String cacheTypeCd;
 

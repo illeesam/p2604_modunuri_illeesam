@@ -24,7 +24,7 @@ public class SyTemplate extends BaseEntity {
     private String templateId;
 
 
-    @Comment("템플릿유형 (코드: TEMPLATE_TYPE)")
+    @Comment("템플릿유형 (코드: TEMPLATE_TYPE_CD)")
     @Column(name = "template_type_cd", length = 20, nullable = false)
     private String templateTypeCd;
 

@@ -316,13 +316,13 @@ window.PdProdDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['PRODUCT_STATUS', 'PROD_TYPE', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS', 'STOCK_FILTER'], {compNm: 'PdProdDtl'});
+        await codeStore.saLoadCodes(['PRODUCT_STATUS', 'PROD_TYPE_CD', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS', 'STOCK_FILTER'], {compNm: 'PdProdDtl'});
         if (!codeStore?.svCodes) { return; }
         codes.length = 0;
         codes.push(...codeStore.svCodes);
         if (codeStore.sgGetGrpCodes) {
           grpCodes.PRODUCT_STATUS  = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
-          grpCodes.PROD_TYPE = codeStore.sgGetGrpCodes('PROD_TYPE');
+          grpCodes.PROD_TYPE = codeStore.sgGetGrpCodes('PROD_TYPE_CD');
           grpCodes.PROD_PLAN_STATUS = codeStore.sgGetGrpCodes('PROD_PLAN_STATUS');
           grpCodes.OPT_STOCK_STATUS = codeStore.sgGetGrpCodes('OPT_STOCK_STATUS');
           grpCodes.STOCK_FILTER = codeStore.sgGetGrpCodes('STOCK_FILTER');

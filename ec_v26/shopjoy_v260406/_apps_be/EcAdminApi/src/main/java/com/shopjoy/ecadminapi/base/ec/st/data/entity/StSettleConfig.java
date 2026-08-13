@@ -33,7 +33,7 @@ public class StSettleConfig extends BaseEntity {
     @Column(name = "category_id", length = 21)
     private String categoryId;
 
-    @Comment("정산주기 (코드: SETTLE_CYCLE — DAILY/WEEKLY/MONTHLY)")
+    @Comment("정산주기 (코드: SETTLE_CYCLE_CD — DAILY/WEEKLY/MONTHLY)")
     @Column(name = "settle_cycle_cd", length = 20)
     private String settleCycleCd;
 

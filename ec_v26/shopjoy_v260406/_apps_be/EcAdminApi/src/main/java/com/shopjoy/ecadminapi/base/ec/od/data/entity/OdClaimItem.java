@@ -104,11 +104,11 @@ public class OdClaimItem extends BaseEntity {
     @Column(name = "refund_amt")
     private Long refundAmt;
 
-    @Comment("항목상태 (코드: CLAIM_ITEM_STATUS)")
+    @Comment("항목상태 (코드: CLAIM_ITEM_STATUS_CD)")
     @Column(name = "claim_item_status_cd", length = 20)
     private String claimItemStatusCd;
 
-    @Comment("변경 전 클레임상태 (코드: CLAIM_ITEM_STATUS)")
+    @Comment("변경 전 클레임상태 (코드: CLAIM_ITEM_STATUS_CD)")
     @Column(name = "claim_item_status_cd_before", length = 20)
     private String claimItemStatusCdBefore;
 

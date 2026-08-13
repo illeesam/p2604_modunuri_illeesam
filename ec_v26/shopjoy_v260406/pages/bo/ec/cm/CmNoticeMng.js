@@ -147,8 +147,8 @@ window.CmNoticeMng = {
     const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await s.saLoadCodes(['NOTICE_TYPE', 'NOTICE_STATUS', 'DATE_RANGE_OPT'], {compNm: 'CmNoticeMng'});
-      codes.noticeTypes     = s.sgGetGrpCodes('NOTICE_TYPE');
+      await s.saLoadCodes(['NOTICE_TYPE_CD', 'NOTICE_STATUS', 'DATE_RANGE_OPT'], {compNm: 'CmNoticeMng'});
+      codes.noticeTypes     = s.sgGetGrpCodes('NOTICE_TYPE_CD');
       codes.noticeStatuses  = s.sgGetGrpCodes('NOTICE_STATUS');
       codes.date_range_opts = s.sgGetGrpCodes('DATE_RANGE_OPT');
     };
@@ -225,7 +225,7 @@ window.CmNoticeMng = {
 
     columns.baseGrid = [
       { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;',
-        badge: (row) => coUtil.cofCodeBadge('NOTICE_TYPE', row.noticeTypeCd, _TYPE_FB[row.noticeTypeCd] || 'badge-gray') },
+        badge: (row) => coUtil.cofCodeBadge('NOTICE_TYPE_CD', row.noticeTypeCd, _TYPE_FB[row.noticeTypeCd] || 'badge-gray') },
       { key: 'noticeTitle',    label: '제목',     sortKey: 'nm', link: true,
         fmt: (v, row) => row.isFixed === 'Y' ? `📌 ${row.noticeTitle || ''}` : (row.noticeTitle || ''),
         cellInnerStyle: (v, row) => baseDetail.selectedId === row.noticeId ? 'color:#e8587a;font-weight:700;' : '' },

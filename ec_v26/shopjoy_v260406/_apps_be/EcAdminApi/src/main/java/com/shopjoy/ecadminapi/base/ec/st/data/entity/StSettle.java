@@ -82,7 +82,7 @@ public class StSettle extends BaseEntity {
     @Column(name = "final_settle_amt")
     private Long finalSettleAmt;
 
-    @Comment("상태 (코드: SETTLE_STATUS — DRAFT/CONFIRMED/CLOSED/PAID)")
+    @Comment("상태 (코드: SETTLE_STATUS_CD — DRAFT/CONFIRMED/CLOSED/PAID)")
     @Column(name = "settle_status_cd", length = 20)
     private String settleStatusCd;
 

@@ -75,7 +75,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
                 ))
                 .from(stSettle)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettle.vendorId))
-                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SETTLE_STATUS").and(cdSs.codeValue.eq(stSettle.settleStatusCd)));
+                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SETTLE_STATUS_CD").and(cdSs.codeValue.eq(stSettle.settleStatusCd)));
     }
 
     /* 정산 키조회 */

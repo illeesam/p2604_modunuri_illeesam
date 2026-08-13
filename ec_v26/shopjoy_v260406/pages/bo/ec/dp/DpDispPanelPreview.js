@@ -305,8 +305,8 @@ window.DpDispPanelPreview = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['DISP_WIDGET_TYPE'], {compNm: 'DpDispPanelPreview'});
-      codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
+      await codeStore.saLoadCodes(['WIDGET_TYPE_CD'], {compNm: 'DpDispPanelPreview'});
+      codes.disp_widget_types = codeStore.sgGetGrpCodes('WIDGET_TYPE_CD');
     };
 
     /* handleSearchData — dp_ui / dp_area / dp_panel 병렬 조회 + 렌더러(panelItem) 어댑터 구성 */

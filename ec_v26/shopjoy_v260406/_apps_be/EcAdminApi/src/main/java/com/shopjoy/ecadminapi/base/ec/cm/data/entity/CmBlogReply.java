@@ -44,11 +44,11 @@ public class CmBlogReply extends BaseEntity {
     @Column(name = "blog_comment_content", columnDefinition = "TEXT")
     private String blogCommentContent;
 
-    @Comment("상태 (코드: COMMENT_STATUS)")
+    @Comment("상태 (코드: COMMENT_STATUS_CD)")
     @Column(name = "comment_status_cd", length = 20)
     private String commentStatusCd;
 
-    @Comment("변경 전 댓글상태 (코드: COMMENT_STATUS)")
+    @Comment("변경 전 댓글상태 (코드: COMMENT_STATUS_CD)")
     @Column(name = "comment_status_cd_before", length = 20)
     private String commentStatusCdBefore;
 

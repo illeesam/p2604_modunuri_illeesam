@@ -11,7 +11,7 @@ import lombok.Getter;
  *
  * <p>필드 default 금지 정책: 모든 필드 null 시작.</p>
  * <ul>
- *   <li>snsChannelCd: sy_code codeGrp="SNS_CHANNEL" 코드값 (GOOGLE/KAKAO/NAVER)</li>
+ *   <li>snsChannelCd: sy_code codeGrp="SNS_CHANNEL_CD" 코드값 (GOOGLE/KAKAO/NAVER)</li>
  *   <li>snsUserId   : 제공자 플랫폼의 고유 사용자ID (mb_member_sns.sns_user_id 매칭 키)</li>
  *   <li>email/name/phone: 제공자가 내려준 프로필 (동의 범위에 따라 null 가능)</li>
  * </ul>

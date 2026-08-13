@@ -73,7 +73,7 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                 ))
                 .from(syhUserTokenLog)
                 .leftJoin(syUser).on(syUser.userId.eq(syhUserTokenLog.userId))
-                .leftJoin(cd_ta).on(cd_ta.codeGrp.eq("TOKEN_ACTION").and(cd_ta.codeValue.eq(syhUserTokenLog.actionCd)))
+                .leftJoin(cd_ta).on(cd_ta.codeGrp.eq("ACTION_CD").and(cd_ta.codeValue.eq(syhUserTokenLog.actionCd)))
                 .leftJoin(cd_tt).on(cd_tt.codeGrp.eq("TOKEN_TYPE").and(cd_tt.codeValue.eq(syhUserTokenLog.tokenTypeCd)));
     }
 

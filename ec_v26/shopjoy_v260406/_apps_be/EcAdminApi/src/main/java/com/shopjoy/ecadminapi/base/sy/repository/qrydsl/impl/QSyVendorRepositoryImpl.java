@@ -85,8 +85,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                         syVendor.updDate                     // 수정일시
                 ))
                 .from(syVendor)
-                .leftJoin(cdVc).on(cdVc.codeGrp.eq("VENDOR_CLASS").and(cdVc.codeValue.eq(syVendor.vendorClassCd)))
-                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VENDOR_STATUS").and(cdVs.codeValue.eq(syVendor.vendorStatusCd)));
+                .leftJoin(cdVc).on(cdVc.codeGrp.eq("VENDOR_CLASS_CD").and(cdVc.codeValue.eq(syVendor.vendorClassCd)))
+                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VENDOR_STATUS_CD").and(cdVs.codeValue.eq(syVendor.vendorStatusCd)));
     }
 
     /* 업체(판매자) 키조회 */

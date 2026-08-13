@@ -63,8 +63,8 @@ public class TableRegistry {
             .pkColumn("user_id")
             .requiredFields(List.of("login_id", "user_nm", "user_password"))
             .cdFields(Map.of(
-                "user_status_cd", "USER_STATUS",
-                "auth_method_cd", "AUTH_METHOD"))
+                "user_status_cd", "USER_STATUS_CD",
+                "auth_method_cd", "AUTH_METHOD_CD"))
             .fkFields(Map.of(
                 "site_id", "sy_site",
                 "dept_id", "sy_dept",
@@ -200,7 +200,7 @@ public class TableRegistry {
             .pkColumn("template_id")
             .requiredFields(List.of("template_nm", "template_type_cd"))
             .fkFields(Map.of("site_id", "sy_site"))
-            .cdFields(Map.of("template_type_cd", "TEMPLATE_TYPE"))
+            .cdFields(Map.of("template_type_cd", "TEMPLATE_TYPE_CD"))
             .searchFields(List.of("template_nm", "template_subject"))
             .build());
 
@@ -229,7 +229,7 @@ public class TableRegistry {
             .pkColumn("contact_id")
             .requiredFields(List.of("title", "content"))
             .fkFields(Map.of("site_id", "sy_site"))
-            .cdFields(Map.of("contact_status_cd", "CONTACT_STATUS"))
+            .cdFields(Map.of("contact_status_cd", "CONTACT_STATUS_CD"))
             .searchFields(List.of("title", "content", "contact_email"))
             .build());
 
@@ -274,7 +274,7 @@ public class TableRegistry {
             .pkColumn("member_id")
             .requiredFields(List.of("member_nm", "member_email"))
             .cdFields(Map.of(
-                "member_status_cd", "MEMBER_STATUS",
+                "member_status_cd", "MEMBER_STATUS_CD",
                 "member_grade_cd", "MEMBER_GRADE",
                 "member_gender_cd", "GENDER"))
             .fkFields(Map.of("site_id", "sy_site"))
@@ -338,9 +338,9 @@ public class TableRegistry {
             .pkColumn("prod_id")
             .requiredFields(List.of("prod_nm", "prod_price"))
             .cdFields(Map.of(
-                "prod_status_cd", "PROD_STATUS",
+                "prod_status_cd", "PROD_STATUS_CD",
                 "sale_status_cd", "SALE_STATUS",
-                "disp_status_cd", "DISP_STATUS"))
+                "disp_status_cd", "DISP_PANEL_STATUS_CD"))
             .fkFields(Map.of(
                 "site_id", "sy_site",
                 "brand_id", "sy_brand",
@@ -446,7 +446,7 @@ public class TableRegistry {
             .fkFields(Map.of(
                 "prod_id", "pd_prod",
                 "member_id", "mb_member"))
-            .cdFields(Map.of("review_status_cd", "REVIEW_STATUS"))
+            .cdFields(Map.of("review_status_cd", "REVIEW_STATUS_CD"))
             .childTables(List.of("pd_review_attach", "pd_review_comment"))
             .searchFields(List.of("review_content"))
             .build());
@@ -476,7 +476,7 @@ public class TableRegistry {
             .pkColumn("order_id")
             .requiredFields(List.of("member_id"))
             .cdFields(Map.of(
-                "order_status_cd", "ORDER_STATUS",
+                "order_status_cd", "ORDER_STATUS_CD",
                 "pay_status_cd", "PAY_STATUS"))
             .fkFields(Map.of(
                 "site_id", "sy_site",
@@ -489,7 +489,7 @@ public class TableRegistry {
         register("od_order_item", TableConfig.builder()
             .pkColumn("order_item_id")
             .requiredFields(List.of("order_id", "prod_id"))
-            .cdFields(Map.of("order_item_status_cd", "ORDER_ITEM_STATUS"))
+            .cdFields(Map.of("order_item_status_cd", "ORDER_ITEM_STATUS_CD"))
             .fkFields(Map.of(
                 "order_id", "od_order",
                 "prod_id", "pd_prod"))
@@ -523,7 +523,7 @@ public class TableRegistry {
         register("od_refund", TableConfig.builder()
             .pkColumn("refund_id")
             .requiredFields(List.of("order_id"))
-            .cdFields(Map.of("refund_status_cd", "REFUND_STATUS"))
+            .cdFields(Map.of("refund_status_cd", "REFUND_STATUS_CD"))
             .fkFields(Map.of("order_id", "od_order"))
             .build());
 
@@ -538,7 +538,7 @@ public class TableRegistry {
             .requiredFields(List.of("order_id"))
             .cdFields(Map.of(
                 "dliv_status_cd", "DLIV_STATUS",
-                "dliv_type_cd", "DLIV_TYPE"))
+                "dliv_type_cd", "DLIV_TYPE_CD"))
             .fkFields(Map.of("order_id", "od_order"))
             .childTables(List.of("od_dliv_item"))
             .searchFields(List.of("dliv_id", "invoice_no", "rcvr_nm"))
@@ -557,8 +557,8 @@ public class TableRegistry {
             .pkColumn("claim_id")
             .requiredFields(List.of("order_id", "claim_type_cd"))
             .cdFields(Map.of(
-                "claim_status_cd", "CLAIM_STATUS",
-                "claim_type_cd", "CLAIM_TYPE"))
+                "claim_status_cd", "CLAIM_STATUS_CD",
+                "claim_type_cd", "CLAIM_TYPE_CD"))
             .fkFields(Map.of("order_id", "od_order"))
             .childTables(List.of("od_claim_item"))
             .searchFields(List.of("claim_id", "claim_reason"))
@@ -586,7 +586,7 @@ public class TableRegistry {
             .pkColumn("coupon_id")
             .requiredFields(List.of("coupon_nm"))
             .cdFields(Map.of(
-                "coupon_status_cd", "COUPON_STATUS",
+                "coupon_status_cd", "COUPON_STATUS_CD",
                 "discnt_type_cd", "DISCNT_TYPE"))
             .fkFields(Map.of("site_id", "sy_site"))
             .childTables(List.of("pm_coupon_item"))
@@ -620,14 +620,14 @@ public class TableRegistry {
             .pkColumn("cache_id")
             .requiredFields(List.of("member_id"))
             .fkFields(Map.of("member_id", "mb_member"))
-            .cdFields(Map.of("cache_type_cd", "CACHE_TYPE"))
+            .cdFields(Map.of("cache_type_cd", "CACHE_TYPE_CD"))
             .searchFields(List.of("cache_id", "cache_remark"))
             .build());
 
         register("pm_event", TableConfig.builder()
             .pkColumn("event_id")
             .requiredFields(List.of("event_nm"))
-            .cdFields(Map.of("event_status_cd", "EVENT_STATUS"))
+            .cdFields(Map.of("event_status_cd", "EVENT_STATUS_CD"))
             .fkFields(Map.of("site_id", "sy_site"))
             .childTables(List.of("pm_event_item", "pm_event_benefit"))
             .searchFields(List.of("event_nm", "event_id"))
@@ -864,7 +864,7 @@ public class TableRegistry {
         register("st_settle", TableConfig.builder()
             .pkColumn("settle_id")
             .requiredFields(List.of("vendor_id", "settle_ym"))
-            .cdFields(Map.of("settle_status_cd", "SETTLE_STATUS"))
+            .cdFields(Map.of("settle_status_cd", "SETTLE_STATUS_CD"))
             .fkFields(Map.of("vendor_id", "sy_vendor"))
             .childTables(List.of("st_settle_item", "st_settle_pay", "st_settle_adj"))
             .searchFields(List.of("settle_id", "settle_ym"))

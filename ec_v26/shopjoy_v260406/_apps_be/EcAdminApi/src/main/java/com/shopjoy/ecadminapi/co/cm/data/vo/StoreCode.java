@@ -19,7 +19,7 @@ import java.util.List;
 public class StoreCode {
 
     // 그리드 형식: 모든 코드를 하나의 배열로 저장 (codeGrp별 구분 없이 선형 배열)
-    // 예: [{ codeGrp: "ORDER_STATUS", codeId: "...", codeNm: "...", ... }, ...]
+    // 예: [{ codeGrp: "ORDER_STATUS_CD", codeId: "...", codeNm: "...", ... }, ...]
     private List<CodeInfo> codes;
 
     @Getter

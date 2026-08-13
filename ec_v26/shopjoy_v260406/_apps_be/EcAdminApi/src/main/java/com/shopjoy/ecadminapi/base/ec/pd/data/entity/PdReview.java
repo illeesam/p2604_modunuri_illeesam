@@ -54,11 +54,11 @@ public class PdReview extends BaseEntity {
     @Column(name = "unhelpful_cnt")
     private Integer unhelpfulCnt;
 
-    @Comment("상태 (코드: REVIEW_STATUS)")
+    @Comment("상태 (코드: REVIEW_STATUS_CD)")
     @Column(name = "review_status_cd", length = 20)
     private String reviewStatusCd;
 
-    @Comment("변경 전 리뷰상태 (코드: REVIEW_STATUS)")
+    @Comment("변경 전 리뷰상태 (코드: REVIEW_STATUS_CD)")
     @Column(name = "review_status_cd_before", length = 20)
     private String reviewStatusCdBefore;
 

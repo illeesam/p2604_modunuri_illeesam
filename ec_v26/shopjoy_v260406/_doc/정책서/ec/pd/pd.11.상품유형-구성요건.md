@@ -5,7 +5,9 @@
 
 ---
 
-## 1. 상품유형 코드 (기준: `sy_code` 그룹 `PROD_TYPE`)
+## 1. 상품유형 코드 (기준: `sy_code` 그룹 `PROD_TYPE_CD`)
+
+> 2026-08-13 그룹명 `PROD_TYPE` → **`PROD_TYPE_CD`** 로 변경됨(`sy.58` §8 — 그룹명=참조 컬럼명 대문자 정책).
 
 | 코드 | 라벨 | 필수 구성요건 | 근거 테이블 |
 |---|---|---|---|
@@ -17,7 +19,7 @@
 
 > ⚠️ **코드값 주의**: 묶음상품은 `GROUP` 이다. `BUNDLE` 이 아니다.
 > 테이블·컬럼명은 `bundle`(`pd_prod_bundle_item.bundle_prod_id`)을 쓰지만 **코드값만 `GROUP`** 이다.
-> 기준은 Entity 코멘트(`PdProd.prodTypeCd` → `코드: PROD_TYPE — SINGLE/GROUP/SET`).
+> 기준은 Entity 코멘트(`PdProd.prodTypeCd` → `코드: PROD_TYPE_CD — SINGLE/GROUP/SET`).
 > 과거 정책서 `pd.05.묶음상품.md` 가 `BUNDLE` 로 잘못 표기했던 것을 2026-08-13 정정했다.
 
 ---
@@ -131,7 +133,7 @@ SELECT 'bundle_item' AS t, b.* FROM pd_prod_bundle_item b
 
 ## 7. 코드그룹명 정합 (2026-08-13)
 
-`prod_type_cd` 가 참조하는 코드그룹은 **`PROD_TYPE`** 이다. `PRODUCT_TYPE` 은 존재하지 않는다.
+`prod_type_cd` 가 참조하는 코드그룹은 **`PROD_TYPE_CD`**(2026-08-13 이전 `PROD_TYPE`) 이다. `PRODUCT_TYPE` 은 존재하지 않는다.
 
 QueryDSL 이 없는 코드그룹으로 조인하면 **에러 없이 라벨만 NULL** 이 된다(화면에 유형이 빈칸으로 보임).
 전 `Q*RepositoryImpl` 의 조인 코드그룹 92종을 `sy_code_grp` 와 대조해 **7종 불일치**를 찾아 정리했다.
@@ -140,7 +142,7 @@ QueryDSL 이 없는 코드그룹으로 조인하면 **에러 없이 라벨만 NU
 
 | 잘못된 그룹 | 올바른 그룹 | 대상 컬럼 | 조치 후 |
 |---|---|---|---|
-| `PRODUCT_TYPE` | **`PROD_TYPE`** | `pd_prod.prod_type_cd` | 옵션상품 594 / 단품 37 라벨 정상 |
+| `PRODUCT_TYPE` | **`PROD_TYPE`**(현 `PROD_TYPE_CD`) | `pd_prod.prod_type_cd` | 옵션상품 594 / 단품 37 라벨 정상 |
 | `PAY_METHOD_CD` | **`PAY_METHOD`** | `st_settle_pay`·`st_settle_raw.pay_method_cd` | 무통장입금 7건 라벨 정상 |
 | `VENDOR_MEMBER_STATUS` | **`VENDOR_USER_STATUS`** | `sy_vendor_user.vendor_user_status_cd` | 재직 36 / 정지 4 라벨 정상 |
 | `CLAIM_FAULT` | **`FAULT_TYPE`** | `od_refund.fault_type_cd` | 고객귀책 4 / 판매자귀책 2 라벨 정상 |

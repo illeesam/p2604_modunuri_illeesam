@@ -34,7 +34,7 @@ public class PmCoupon extends BaseEntity {
     @Column(name = "coupon_nm", length = 100, nullable = false)
     private String couponNm;
 
-    @Comment("쿠폰유형 (코드: COUPON_TYPE — PROD_DISCNT/ORDER_DISCNT/SHIP_DISCNT/SHIP_FREE/JOIN_GIFT/VIP/CLAIM_COMP)")
+    @Comment("쿠폰유형 (코드: COUPON_TYPE_CD — PROD_DISCNT/ORDER_DISCNT/SHIP_DISCNT/SHIP_FREE/JOIN_GIFT/VIP/CLAIM_COMP)")
     @Column(name = "coupon_type_cd", length = 20, nullable = false)
     private String couponTypeCd;
 
@@ -82,11 +82,11 @@ public class PmCoupon extends BaseEntity {
     @Column(name = "valid_to")
     private LocalDate validTo;
 
-    @Comment("상태 (코드: COUPON_STATUS)")
+    @Comment("상태 (코드: COUPON_STATUS_CD)")
     @Column(name = "coupon_status_cd", length = 20)
     private String couponStatusCd;
 
-    @Comment("변경 전 쿠폰상태 (코드: COUPON_STATUS)")
+    @Comment("변경 전 쿠폰상태 (코드: COUPON_STATUS_CD)")
     @Column(name = "coupon_status_cd_before", length = 20)
     private String couponStatusCdBefore;
 

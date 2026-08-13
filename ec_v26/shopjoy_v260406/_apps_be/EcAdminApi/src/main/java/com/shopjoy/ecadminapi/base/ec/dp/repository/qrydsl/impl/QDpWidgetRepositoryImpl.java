@@ -52,7 +52,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
                 dpWidget.widgetId,          // 위젯ID (PK, YYMMDDhhmmss+rand4)
                 dpWidget.widgetLibId,       // 위젯라이브러리ID (dp_widget_lib.widget_lib_id, 참조 선택사항)
                 dpWidget.widgetNm,          // 위젯명
-                dpWidget.widgetTypeCd,      // 위젯유형 — WIDGET_TYPE_CD (코드: DISP_WIDGET_TYPE, 27종)
+                dpWidget.widgetTypeCd,      // 위젯유형 — WIDGET_TYPE_CD (코드: WIDGET_TYPE_CD, 27종)
                 dpWidget.widgetDesc,        // 위젯설명
                 dpWidget.widgetTitle,       // 위젯타이틀
                 dpWidget.widgetContent,     // 위젯내용 (HTML 에디터)

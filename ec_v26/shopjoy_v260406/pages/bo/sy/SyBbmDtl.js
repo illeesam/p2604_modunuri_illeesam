@@ -120,12 +120,12 @@ window.SyBbmDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['BBM_TYPE', 'BBM_COMMENT_TYPE', 'BBM_ATTACH_TYPE', 'BBM_CONTENT_TYPE', 'BBM_SCOPE_TYPE', 'USE_YN', 'ALLOW_YN'], {compNm: 'SyBbmDtl'});
-        codes.BBM_TYPE = codeStore.sgGetGrpCodes('BBM_TYPE');
+        await codeStore.saLoadCodes(['BBM_TYPE_CD', 'BBM_COMMENT_TYPE', 'BBM_ATTACH_TYPE', 'BBM_CONTENT_TYPE', 'SCOPE_TYPE_CD', 'USE_YN', 'ALLOW_YN'], {compNm: 'SyBbmDtl'});
+        codes.BBM_TYPE = codeStore.sgGetGrpCodes('BBM_TYPE_CD');
         codes.BBM_COMMENT_TYPE = codeStore.sgGetGrpCodes('BBM_COMMENT_TYPE');
         codes.BBM_ATTACH_TYPE = codeStore.sgGetGrpCodes('BBM_ATTACH_TYPE');
         codes.BBM_CONTENT_TYPE = codeStore.sgGetGrpCodes('BBM_CONTENT_TYPE');
-        codes.BBM_SCOPE_TYPE = codeStore.sgGetGrpCodes('BBM_SCOPE_TYPE');
+        codes.BBM_SCOPE_TYPE = codeStore.sgGetGrpCodes('SCOPE_TYPE_CD');
         codes.USE_YN       = codeStore.sgGetGrpCodes('USE_YN');
         codes.ALLOW_YN = codeStore.sgGetGrpCodes('ALLOW_YN');
       } catch (err) {

@@ -103,7 +103,7 @@ window.OdClaimHist = {
 
     /* 클레임 유형별 단계 — parentCodeValues 기반 동적 파생 */
     const cfClaimSteps = computed(() => cfCodes.value
-      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
+      .filter(c => c.codeGrp === 'CLAIM_STATUS_CD' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd)
       .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (coConsts.CLAIM_TYPE_CD_MAP[uiState.claimType] || uiState.claimType) + '^'))
       .map(c => c.codeLabel)

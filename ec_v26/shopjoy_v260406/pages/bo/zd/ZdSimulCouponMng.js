@@ -9,7 +9,7 @@
     { cd: 'AMOUNT', label: '정액 할인 (원)', color: '#f59e0b' },
   ];
 
-  /* 쿠폰 유형 (코드: COUPON_TYPE — coupon_type_cd) */
+  /* 쿠폰 유형 (코드: COUPON_TYPE_CD — coupon_type_cd) */
   const COUPON_TYPE_ITEMS = [
     { cd: 'PROD_DISCNT',  label: '상품할인쿠폰',         color: '#3b82f6' },
     { cd: 'ORDER_DISCNT', label: '주문할인쿠폰',         color: '#a855f7' },

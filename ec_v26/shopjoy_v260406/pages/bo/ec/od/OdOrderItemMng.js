@@ -247,8 +247,8 @@ window.OdOrderItemMng = {
     const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
-        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS', 'ORDER_ITEM_DATE_TYPE', 'COURIER'], { compNm: 'OdOrderItemMng' });
-        codes.order_item_statuses = codeStore.sgGetGrpCodes('ORDER_ITEM_STATUS');
+        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS_CD', 'ORDER_ITEM_DATE_TYPE', 'COURIER'], { compNm: 'OdOrderItemMng' });
+        codes.order_item_statuses = codeStore.sgGetGrpCodes('ORDER_ITEM_STATUS_CD');
         codes.od_date_types       = codeStore.sgGetGrpCodes('ORDER_ITEM_DATE_TYPE');
         codes.couriers            = codeStore.sgGetGrpCodes('COURIER');
       } catch (_) {}

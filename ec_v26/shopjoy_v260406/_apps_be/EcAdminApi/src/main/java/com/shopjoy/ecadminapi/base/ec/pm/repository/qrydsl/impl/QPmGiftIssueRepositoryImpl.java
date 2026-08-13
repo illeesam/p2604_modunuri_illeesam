@@ -66,7 +66,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                 .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftIssue.giftId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(pmGiftIssue.memberId))
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmGiftIssue.orderId))
-                .leftJoin(cdGis).on(cdGis.codeGrp.eq("GIFT_ISSUE_STATUS").and(cdGis.codeValue.eq(pmGiftIssue.giftIssueStatusCd)));
+                .leftJoin(cdGis).on(cdGis.codeGrp.eq("GIFT_ISSUE_STATUS_CD").and(cdGis.codeValue.eq(pmGiftIssue.giftIssueStatusCd)));
     }
 
     /* 사은품 발행 이력 키조회 */

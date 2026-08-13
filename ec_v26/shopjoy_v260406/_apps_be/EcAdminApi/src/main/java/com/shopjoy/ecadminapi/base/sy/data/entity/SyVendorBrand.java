@@ -38,7 +38,7 @@ public class SyVendorBrand extends BaseEntity {
     @Column(name = "is_main", length = 1)
     private String isMain;
 
-    @Comment("계약유형 (코드: VENDOR_BRAND_CONTRACT)")
+    @Comment("계약유형 (코드: CONTRACT_CD)")
     @Column(name = "contract_cd", length = 20)
     private String contractCd;
 

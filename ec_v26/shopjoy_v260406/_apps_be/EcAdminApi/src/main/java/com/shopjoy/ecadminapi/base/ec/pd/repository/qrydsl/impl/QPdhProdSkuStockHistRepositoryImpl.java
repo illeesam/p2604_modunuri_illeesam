@@ -58,7 +58,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
                 ))
                 .from(pdhProdSkuStockHist)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pdhProdSkuStockHist.prodId))
-                .leftJoin(cd_ssc).on(cd_ssc.codeGrp.eq("SKU_STOCK_CHG").and(cd_ssc.codeValue.eq(pdhProdSkuStockHist.chgReasonCd)));
+                .leftJoin(cd_ssc).on(cd_ssc.codeGrp.eq("CHG_REASON_CD").and(cd_ssc.codeValue.eq(pdhProdSkuStockHist.chgReasonCd)));
     }
 
     /* 상품 SKU 재고 이력 키조회 */

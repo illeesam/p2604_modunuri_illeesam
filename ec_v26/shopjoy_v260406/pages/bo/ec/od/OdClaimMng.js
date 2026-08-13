@@ -247,10 +247,10 @@ window.OdClaimMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ORDER_STATUS', 'CLAIM_TYPE', 'CLAIM_STATUS', 'DLIV_STATUS', 'PAYMENT_METHOD', 'CLAIM_DATE_TYPE', 'APPROVAL_ACTION', 'REQ_TARGET', 'DATE_RANGE_OPT'], {compNm: 'OdClaimMng'});
-      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
-      codes.claim_types = codeStore.sgGetGrpCodes('CLAIM_TYPE');
-      codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
+      await codeStore.saLoadCodes(['ORDER_STATUS_CD', 'CLAIM_TYPE_CD', 'CLAIM_STATUS_CD', 'DLIV_STATUS', 'PAYMENT_METHOD', 'CLAIM_DATE_TYPE', 'APPROVAL_ACTION', 'REQ_TARGET', 'DATE_RANGE_OPT'], {compNm: 'OdClaimMng'});
+      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS_CD');
+      codes.claim_types = codeStore.sgGetGrpCodes('CLAIM_TYPE_CD');
+      codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS_CD');
       codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
       codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
       codes.claim_date_types = codeStore.sgGetGrpCodes('CLAIM_DATE_TYPE');
@@ -362,7 +362,7 @@ window.OdClaimMng = {
     const cfAllChecked = computed(() => claims.length > 0 && claims.every(c => checked.has(c.claimId)));
 
     const claimStatusCodes = (codes.claim_statuses || [])
-      .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
+      .filter(c => c.codeGrp === 'CLAIM_STATUS_CD' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
 
     /* claimStatusForType — 클레임 상태 For 유형 */

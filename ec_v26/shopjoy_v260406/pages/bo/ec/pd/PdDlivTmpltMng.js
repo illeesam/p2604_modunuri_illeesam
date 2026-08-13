@@ -188,17 +188,17 @@ window.PdDlivTmpltMng = {
 
     /* fnMethodBadge — 배송방법 배지 (sy_code DLIV_METHOD code_opt1 우선) */
     const _DLIV_METHOD_FB = { COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' };
-    const fnMethodBadge = v => coUtil.cofCodeBadge('DLIV_METHOD', v, _DLIV_METHOD_FB[v] || 'badge-gray');
+    const fnMethodBadge = v => coUtil.cofCodeBadge('DLIV_METHOD_CD', v, _DLIV_METHOD_FB[v] || 'badge-gray');
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['USE_YN', 'DLIV_METHOD', 'DLIV_PAY_TYPE', 'COURIER'], {compNm: 'PdDlivTmpltMng'});
+      await codeStore.saLoadCodes(['USE_YN', 'DLIV_METHOD_CD', 'DLIV_PAY_TYPE_CD', 'COURIER'], {compNm: 'PdDlivTmpltMng'});
       try {
         codes.USE_YN = codeStore.sgGetGrpCodes('USE_YN');
-        codes.DLIV_METHOD  = codeStore.sgGetGrpCodes('DLIV_METHOD');
-        codes.DLIV_PAY_TYPE = codeStore.sgGetGrpCodes('DLIV_PAY_TYPE');
+        codes.DLIV_METHOD  = codeStore.sgGetGrpCodes('DLIV_METHOD_CD');
+        codes.DLIV_PAY_TYPE = codeStore.sgGetGrpCodes('DLIV_PAY_TYPE_CD');
         codes.COURIER      = codeStore.sgGetGrpCodes('COURIER');
       } catch (err) {
         console.error('[fnLoadCodes]', err);

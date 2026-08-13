@@ -38,7 +38,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
-     * SNS_CHANNEL_CD (코드: SNS_CHANNEL)  {KAKAO: '카카오', NAVER: '네이버', GOOGLE: '구글', APPLE: '애플'}
+     * SNS_CHANNEL_CD (코드: SNS_CHANNEL_CD)  {KAKAO: '카카오', NAVER: '네이버', GOOGLE: '구글', APPLE: '애플'}
      */
     private JPAQuery<MbMemberSnsDto.Item> baseSelColumnQuery() {
         return queryFactory
@@ -52,7 +52,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                 ))
                 .from(mbMemberSns)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberSns.memberId))
-                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL").and(cdSc.codeValue.eq(mbMemberSns.snsChannelCd)));
+                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL_CD").and(cdSc.codeValue.eq(mbMemberSns.snsChannelCd)));
     }
 
     /* SNS 연동 회원 키조회 */

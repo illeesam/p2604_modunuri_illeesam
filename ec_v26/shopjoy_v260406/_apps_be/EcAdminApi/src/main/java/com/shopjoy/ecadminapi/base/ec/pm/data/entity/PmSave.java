@@ -29,11 +29,11 @@ public class PmSave extends BaseEntity {
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
-    @Comment("적립금유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)")
+    @Comment("적립금유형 (코드: SAVE_TYPE_CD — EARN/USE/EXPIRE/CANCEL/ADMIN)")
     @Column(name = "save_type_cd", length = 20, nullable = false)
     private String saveTypeCd;
 
-    @Comment("적립용도 (코드: SAVE_PURPOSE — PURCHASE/REVIEW/JOIN/BIRTHDAY/VIP/EVENT/ADMIN)")
+    @Comment("적립용도 (코드: SAVE_PURPOSE_CD — PURCHASE/REVIEW/JOIN/BIRTHDAY/VIP/EVENT/ADMIN)")
     @Column(name = "save_purpose_cd", length = 20)
     private String savePurposeCd;
 

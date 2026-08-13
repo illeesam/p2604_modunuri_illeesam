@@ -23,11 +23,11 @@ public class SyVoc extends BaseEntity {
     private String vocId;
 
 
-    @Comment("VOC마스터코드 (코드: VOC_MASTER)")
+    @Comment("VOC마스터코드 (코드: VOC_MASTER_CD)")
     @Column(name = "voc_master_cd", length = 20, nullable = false)
     private String vocMasterCd;
 
-    @Comment("VOC세부코드 (코드: VOC_DETAIL)")
+    @Comment("VOC세부코드 (코드: VOC_DETAIL_CD)")
     @Column(name = "voc_detail_cd", length = 20, nullable = false)
     private String vocDetailCd;
 

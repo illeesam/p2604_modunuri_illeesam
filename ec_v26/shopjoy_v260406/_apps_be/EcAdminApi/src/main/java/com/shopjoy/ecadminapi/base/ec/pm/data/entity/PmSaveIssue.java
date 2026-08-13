@@ -30,7 +30,7 @@ public class PmSaveIssue extends BaseEntity {
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
-    @Comment("지급유형 (코드: SAVE_ISSUE_TYPE — ORDER/EVENT/REVIEW/REFERRAL/ADMIN)")
+    @Comment("지급유형 (코드: SAVE_ISSUE_TYPE_CD — ORDER/EVENT/REVIEW/REFERRAL/ADMIN)")
     @Column(name = "save_issue_type_cd", length = 20, nullable = false)
     private String saveIssueTypeCd;
 
@@ -66,7 +66,7 @@ public class PmSaveIssue extends BaseEntity {
     @Column(name = "expire_date")
     private LocalDateTime expireDate;
 
-    @Comment("지급상태 (코드: SAVE_ISSUE_STATUS — PENDING/CONFIRMED/EXPIRED/CANCELED)")
+    @Comment("지급상태 (코드: ISSUE_STATUS_CD — PENDING/CONFIRMED/EXPIRED/CANCELED)")
     @Column(name = "issue_status_cd", length = 20)
     private String issueStatusCd;
 

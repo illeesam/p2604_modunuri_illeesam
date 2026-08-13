@@ -29,7 +29,7 @@ public class PmVoucher extends BaseEntity {
     @Column(name = "voucher_nm", length = 100, nullable = false)
     private String voucherNm;
 
-    @Comment("유형 (코드: VOUCHER_TYPE — AMOUNT/RATE)")
+    @Comment("유형 (코드: VOUCHER_TYPE_CD — AMOUNT/RATE)")
     @Column(name = "voucher_type_cd", length = 20, nullable = false)
     private String voucherTypeCd;
 
@@ -49,7 +49,7 @@ public class PmVoucher extends BaseEntity {
     @Column(name = "expire_month")
     private Integer expireMonth;
 
-    @Comment("상태 (코드: VOUCHER_STATUS)")
+    @Comment("상태 (코드: VOUCHER_STATUS_CD)")
     @Column(name = "voucher_status_cd", length = 20)
     private String voucherStatusCd;
 

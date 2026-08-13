@@ -253,9 +253,9 @@
       const fnLoadCodes = async () => {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['MEMBER_STATUS', 'MEMBER_GRADE'], {compNm: 'MbCustInfoMng'});
+        await codeStore.saLoadCodes(['MEMBER_STATUS_CD', 'MEMBER_GRADE'], {compNm: 'MbCustInfoMng'});
         try {
-          codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
+          codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS_CD');
           codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
         } catch (err) {
           console.error('[fnLoadCodes]', err);

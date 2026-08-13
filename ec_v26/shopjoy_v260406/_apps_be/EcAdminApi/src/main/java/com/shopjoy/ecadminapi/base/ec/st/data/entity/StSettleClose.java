@@ -29,7 +29,7 @@ public class StSettleClose extends BaseEntity {
     private String settleId;
 
 
-    @Comment("마감상태 (코드: SETTLE_CLOSE_STATUS — CLOSED/REOPENED)")
+    @Comment("마감상태 (코드: CLOSE_STATUS_CD — CLOSED/REOPENED)")
     @Column(name = "close_status_cd", length = 20, nullable = false)
     private String closeStatusCd;
 

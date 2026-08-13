@@ -95,8 +95,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 .from(syUser)
                 .leftJoin(syDept).on(syDept.deptId.eq(syUser.deptId))
                 .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId))
-                .leftJoin(syCode_userStatusCd).on(syCode_userStatusCd.codeGrp.eq("USER_STATUS").and(syCode_userStatusCd.codeValue.eq(syUser.userStatusCd)))
-                .leftJoin(syCode_authMethodCd).on(syCode_authMethodCd.codeGrp.eq("AUTH_METHOD").and(syCode_authMethodCd.codeValue.eq(syUser.authMethodCd)));
+                .leftJoin(syCode_userStatusCd).on(syCode_userStatusCd.codeGrp.eq("USER_STATUS_CD").and(syCode_userStatusCd.codeValue.eq(syUser.userStatusCd)))
+                .leftJoin(syCode_authMethodCd).on(syCode_authMethodCd.codeGrp.eq("AUTH_METHOD_CD").and(syCode_authMethodCd.codeValue.eq(syUser.authMethodCd)));
     }
 
     /* ============================================================

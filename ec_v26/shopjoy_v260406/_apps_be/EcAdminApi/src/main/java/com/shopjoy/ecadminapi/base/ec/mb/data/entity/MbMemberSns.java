@@ -28,7 +28,7 @@ public class MbMemberSns extends BaseEntity {
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
-    @Comment("SNS채널코드 (코드: SNS_CHANNEL)")
+    @Comment("SNS채널코드 (코드: SNS_CHANNEL_CD)")
     @Column(name = "sns_channel_cd", length = 20, nullable = false)
     private String snsChannelCd;
 

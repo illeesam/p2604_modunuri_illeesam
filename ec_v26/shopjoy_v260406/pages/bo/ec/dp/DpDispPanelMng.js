@@ -104,9 +104,9 @@ window.DpDispPanelMng = {
     const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await s.saLoadCodes(['DISP_TYPE', 'DISP_STATUS'], {compNm: 'DpDispPanelMng'});
-      codes.panel_types   = s.sgGetGrpCodes('DISP_TYPE');
-      codes.disp_statuses = s.sgGetGrpCodes('DISP_STATUS');
+      await s.saLoadCodes(['PANEL_TYPE_CD', 'DISP_PANEL_STATUS_CD'], {compNm: 'DpDispPanelMng'});
+      codes.panel_types   = s.sgGetGrpCodes('PANEL_TYPE_CD');
+      codes.disp_statuses = s.sgGetGrpCodes('DISP_PANEL_STATUS_CD');
     };
 
     /* initPage — 화면 로드 시퀀스.

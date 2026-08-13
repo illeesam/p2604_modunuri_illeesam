@@ -33,11 +33,11 @@ public class PmPlan extends BaseEntity {
     @Column(name = "plan_title", length = 200, nullable = false)
     private String planTitle;
 
-    @Comment("유형 (코드: PLAN_TYPE — SEASON/BRAND/THEME/COLLAB)")
+    @Comment("유형 (코드: PLAN_TYPE_CD — SEASON/BRAND/THEME/COLLAB)")
     @Column(name = "plan_type_cd", length = 20)
     private String planTypeCd;
 
-    @Comment("테마 (코드: PLAN_THEME — SPRING_NEW/SUMMER_COOL/CHUSEOK/WINTER_WARM/BLACK_FRI/LUXURY_BRAND/OUTDOOR/HOME_DECOR/HEALTH_FOOD/DIGITAL/FASHION/BEAUTY/KIDS/TRAVEL/PET/CHILDREN_DAY/CHRISTMAS/NEW_YEAR/ZOMBIE_DAY/DISABILITY/HALLOWEEN)")
+    @Comment("테마 (코드: PLAN_THEME_CD — SPRING_NEW/SUMMER_COOL/CHUSEOK/WINTER_WARM/BLACK_FRI/LUXURY_BRAND/OUTDOOR/HOME_DECOR/HEALTH_FOOD/DIGITAL/FASHION/BEAUTY/KIDS/TRAVEL/PET/CHILDREN_DAY/CHRISTMAS/NEW_YEAR/ZOMBIE_DAY/DISABILITY/HALLOWEEN)")
     @Column(name = "plan_theme_cd", length = 30)
     private String planThemeCd;
 
@@ -61,7 +61,7 @@ public class PmPlan extends BaseEntity {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @Comment("상태 (코드: PLAN_STATUS — DRAFT/ACTIVE/ENDED)")
+    @Comment("상태 (코드: PLAN_STATUS_CD — DRAFT/ACTIVE/ENDED)")
     @Column(name = "plan_status_cd", length = 20)
     private String planStatusCd;
 

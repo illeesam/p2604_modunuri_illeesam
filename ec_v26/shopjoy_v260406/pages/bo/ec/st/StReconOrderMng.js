@@ -55,9 +55,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ORDER_STATUS', 'RECON_RESULT_ORDER', 'DATE_RANGE_OPT'], {compNm: 'StReconOrderMng'});
+      await codeStore.saLoadCodes(['ORDER_STATUS_CD', 'RECON_RESULT_ORDER', 'DATE_RANGE_OPT'], {compNm: 'StReconOrderMng'});
       try {
-        codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
+        codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS_CD');
         codes.recon_results = codeStore.sgGetGrpCodes('RECON_RESULT_ORDER');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       } catch (err) {

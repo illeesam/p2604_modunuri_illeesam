@@ -28,11 +28,11 @@ public class StSettleEtcAdj extends BaseEntity {
     private String settleId;
 
 
-    @Comment("기타조정유형 (코드: SETTLE_ETC_ADJ_TYPE — SHIP/RETURN_SHIP/PENALTY/OTHER)")
+    @Comment("기타조정유형 (코드: ETC_ADJ_TYPE_CD — SHIP/RETURN_SHIP/PENALTY/OTHER)")
     @Column(name = "etc_adj_type_cd", length = 20, nullable = false)
     private String etcAdjTypeCd;
 
-    @Comment("가산/차감 (코드: ADJ_DIR — ADD/DEDUCT)")
+    @Comment("가산/차감 (코드: ETC_ADJ_DIR_CD — ADD/DEDUCT)")
     @Column(name = "etc_adj_dir_cd", length = 10, nullable = false)
     private String etcAdjDirCd;
 

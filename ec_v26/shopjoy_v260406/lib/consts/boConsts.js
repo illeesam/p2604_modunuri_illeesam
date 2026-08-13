@@ -8,7 +8,7 @@
  * 선행 로드: 없음(순수 데이터). stores/pages 보다 먼저 로드.
  *
  * 색상 표기: BO 는 badge-class(badge-green 등). 배지맵은 coUtil.cofCodeBadge 의 fallback 으로 사용.
- *   사용: coUtil.cofCodeBadge('ORDER_STATUS', s, boConsts.ORDER_STATUS_BADGE[s] || 'badge-gray')
+ *   사용: coUtil.cofCodeBadge('ORDER_STATUS_CD', s, boConsts.ORDER_STATUS_BADGE[s] || 'badge-gray')
  */
 (function (global) {
   'use strict';

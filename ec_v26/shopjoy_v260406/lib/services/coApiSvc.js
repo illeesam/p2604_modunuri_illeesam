@@ -21,8 +21,8 @@
  *   const res = await coApiSvc.cmFoAppStore.getInitData('syAuth^syCodes');
  *   const res = await coApiSvc.cmUpload.uploadMulti(formData);
  *   const res = await coApiSvc.foAuth.login(body);
- *   const res = await coApiSvc.syCode.getGrpCodes('ORDER_STATUS');
- *   const res = await coApiSvc.syCode.getGrpCodes('ORDER_STATUS', '주문관리', '상태조회');
+ *   const res = await coApiSvc.syCode.getGrpCodes('ORDER_STATUS_CD');
+ *   const res = await coApiSvc.syCode.getGrpCodes('ORDER_STATUS_CD', '주문관리', '상태조회');
  *   const res = await coApiSvc.syPath.getPage({ bizCd: 'sy_brand' });
  *   const res = await coApiSvc.sySite.getSiteList();
  */

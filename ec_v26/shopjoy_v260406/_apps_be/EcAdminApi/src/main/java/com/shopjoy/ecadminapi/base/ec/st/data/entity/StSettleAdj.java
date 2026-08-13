@@ -28,7 +28,7 @@ public class StSettleAdj extends BaseEntity {
     private String settleId;
 
 
-    @Comment("조정유형 (코드: SETTLE_ADJ_TYPE — ADD/DEDUCT)")
+    @Comment("조정유형 (코드: ADJ_TYPE_CD — ADD/DEDUCT)")
     @Column(name = "adj_type_cd", length = 20, nullable = false)
     private String adjTypeCd;
 
@@ -44,7 +44,7 @@ public class StSettleAdj extends BaseEntity {
     @Column(name = "settle_adj_memo", columnDefinition = "TEXT")
     private String settleAdjMemo;
 
-    @Comment("승인상태 (코드: SETTLE_ADJ_STATUS — 대기/승인/반려)")
+    @Comment("승인상태 (코드: APRV_STATUS_CD — 대기/승인/반려)")
     @Column(name = "aprv_status_cd", length = 20)
     private String aprvStatusCd;
 

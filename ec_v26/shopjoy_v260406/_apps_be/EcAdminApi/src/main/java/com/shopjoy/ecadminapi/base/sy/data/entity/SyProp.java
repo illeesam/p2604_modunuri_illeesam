@@ -39,7 +39,7 @@ public class SyProp extends BaseEntity {
     @Column(name = "prop_label", length = 200, nullable = false)
     private String propLabel;
 
-    @Comment("값 타입 (코드: PROP_TYPE — STRING/NUMBER/BOOLEAN/JSON)")
+    @Comment("값 타입 (코드: PROP_TYPE_CD — STRING/NUMBER/BOOLEAN/JSON)")
     @Column(name = "prop_type_cd", length = 20)
     private String propTypeCd;
 

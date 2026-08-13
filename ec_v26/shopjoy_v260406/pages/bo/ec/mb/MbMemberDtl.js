@@ -56,9 +56,9 @@ window.MbMemberDtl = {
     const initPage = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['MEMBER_GRADE', 'MEMBER_STATUS'], {compNm: 'MbMemberDtl'});
+      await codeStore.saLoadCodes(['MEMBER_GRADE', 'MEMBER_STATUS_CD'], {compNm: 'MbMemberDtl'});
       codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
-      codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
+      codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS_CD');
     };
     onMounted(initPage);
 

@@ -69,7 +69,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                 .from(syVendorBrand)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorBrand.vendorId))
                 .leftJoin(syBrand).on(syBrand.brandId.eq(syVendorBrand.brandId))
-                .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("VENDOR_BRAND_CONTRACT").and(cdVbc.codeValue.eq(syVendorBrand.contractCd)));
+                .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("CONTRACT_CD").and(cdVbc.codeValue.eq(syVendorBrand.contractCd)));
     }
 
     /* 업체별 브랜드 키조회 */

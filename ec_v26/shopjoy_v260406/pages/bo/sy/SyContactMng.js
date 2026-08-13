@@ -166,8 +166,8 @@ window.SyContactMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['CONTACT_STATUS', 'CONTACT_CATEGORY_KR', 'DATE_RANGE_OPT'], {compNm: 'SyContactMng'});
-      codes.contact_status = codeStore.sgGetGrpCodes('CONTACT_STATUS');
+      await codeStore.saLoadCodes(['CONTACT_STATUS_CD', 'CONTACT_CATEGORY_KR', 'DATE_RANGE_OPT'], {compNm: 'SyContactMng'});
+      codes.contact_status = codeStore.sgGetGrpCodes('CONTACT_STATUS_CD');
       codes.contact_categories = codeStore.sgGetGrpCodes('CONTACT_CATEGORY_KR');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
     };

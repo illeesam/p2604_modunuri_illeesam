@@ -77,8 +77,8 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmSaveIssue.orderId))
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(pmSaveIssue.orderItemId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmSaveIssue.prodId))
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ISSUE_TYPE").and(cdSit.codeValue.eq(pmSaveIssue.saveIssueTypeCd)))
-                .leftJoin(cdSis).on(cdSis.codeGrp.eq("SAVE_ISSUE_STATUS").and(cdSis.codeValue.eq(pmSaveIssue.issueStatusCd)));
+                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ISSUE_TYPE_CD").and(cdSit.codeValue.eq(pmSaveIssue.saveIssueTypeCd)))
+                .leftJoin(cdSis).on(cdSis.codeGrp.eq("ISSUE_STATUS_CD").and(cdSis.codeValue.eq(pmSaveIssue.issueStatusCd)));
     }
 
     /* 적립금 지급 이력 키조회 */

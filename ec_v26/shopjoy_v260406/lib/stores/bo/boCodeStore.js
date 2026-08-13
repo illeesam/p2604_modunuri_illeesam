@@ -37,8 +37,8 @@ window.useBoCodeStore = Pinia.defineStore('boCode', {
      *
      * <pre>
      * const fnLoadCodes = async () => {
-     *   await codeStore.saLoadCodes(['PROD_TYPE', 'PRODUCT_STATUS']);
-     *   codes.prod_types = codeStore.sgGetGrpCodes('PROD_TYPE');
+     *   await codeStore.saLoadCodes(['PROD_TYPE_CD', 'PRODUCT_STATUS']);
+     *   codes.prod_types = codeStore.sgGetGrpCodes('PROD_TYPE_CD');
      * };
      * </pre>
      *

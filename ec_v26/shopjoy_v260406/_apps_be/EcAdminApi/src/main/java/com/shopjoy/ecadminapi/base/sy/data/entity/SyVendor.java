@@ -53,7 +53,7 @@ public class SyVendor extends BaseEntity {
     @Column(name = "vendor_item", length = 100)
     private String vendorItem;
 
-    @Comment("판매/배송업체구분 (코드: VENDOR_CLASS)")
+    @Comment("판매/배송업체구분 (코드: VENDOR_CLASS_CD)")
     @Column(name = "vendor_class_cd", length = 20)
     private String vendorClassCd;
 
@@ -109,7 +109,7 @@ public class SyVendor extends BaseEntity {
     @Column(name = "contract_date")
     private LocalDate contractDate;
 
-    @Comment("상태 (코드: VENDOR_STATUS)")
+    @Comment("상태 (코드: VENDOR_STATUS_CD)")
     @Column(name = "vendor_status_cd", length = 20)
     private String vendorStatusCd;
 

@@ -146,8 +146,8 @@ window.OdOrderItemDtl = {
     const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
-        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS'], { compNm: 'OdOrderItemDtl' });
-        codes.order_item_statuses = codeStore.sgGetGrpCodes('ORDER_ITEM_STATUS');
+        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS_CD'], { compNm: 'OdOrderItemDtl' });
+        codes.order_item_statuses = codeStore.sgGetGrpCodes('ORDER_ITEM_STATUS_CD');
       } catch (_) {}
     };
 

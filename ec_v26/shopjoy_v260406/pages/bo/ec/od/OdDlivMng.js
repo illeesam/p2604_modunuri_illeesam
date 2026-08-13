@@ -238,10 +238,10 @@ window.OdDlivMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ORDER_STATUS', 'DLIV_STATUS', 'DLIV_TYPE', 'PAYMENT_METHOD', 'COURIER', 'DLIV_DATE_TYPE', 'APPROVAL_ACTION', 'REQ_TARGET', 'DATE_RANGE_OPT'], {compNm: 'OdDlivMng'});
-      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
+      await codeStore.saLoadCodes(['ORDER_STATUS_CD', 'DLIV_STATUS', 'DLIV_TYPE_CD', 'PAYMENT_METHOD', 'COURIER', 'DLIV_DATE_TYPE', 'APPROVAL_ACTION', 'REQ_TARGET', 'DATE_RANGE_OPT'], {compNm: 'OdDlivMng'});
+      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS_CD');
       codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
-      codes.dliv_types = codeStore.sgGetGrpCodes('DLIV_TYPE');
+      codes.dliv_types = codeStore.sgGetGrpCodes('DLIV_TYPE_CD');
       codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
       codes.courier_codes = codeStore.sgGetGrpCodes('COURIER');
       codes.dliv_date_types = codeStore.sgGetGrpCodes('DLIV_DATE_TYPE');

@@ -33,7 +33,7 @@ public class DpPanel extends BaseEntity {
     @Column(name = "panel_nm", length = 100, nullable = false)
     private String panelNm;
 
-    @Comment("표시유형 (코드: DISP_TYPE)")
+    @Comment("표시유형 (코드: PANEL_TYPE_CD)")
     @Column(name = "panel_type_cd", length = 30)
     private String panelTypeCd;
 
@@ -41,7 +41,7 @@ public class DpPanel extends BaseEntity {
     @Column(name = "path_id", length = 21)
     private String pathId;
 
-    @Comment("공개대상 (코드: VISIBILITY_TARGET, ^CODE^CODE^ 형식)")
+    @Comment("공개대상 (코드: VISIBILITY_TARGETS, ^CODE^CODE^ 형식)")
     @Column(name = "visibility_targets", length = 200)
     private String visibilityTargets;
 
@@ -57,11 +57,11 @@ public class DpPanel extends BaseEntity {
     @Column(name = "use_end_date")
     private LocalDate useEndDate;
 
-    @Comment("상태 (코드: DISP_STATUS)")
+    @Comment("상태 (코드: DISP_PANEL_STATUS_CD)")
     @Column(name = "disp_panel_status_cd", length = 20)
     private String dispPanelStatusCd;
 
-    @Comment("변경 전 패널상태 (코드: DISP_STATUS)")
+    @Comment("변경 전 패널상태 (코드: DISP_PANEL_STATUS_CD)")
     @Column(name = "disp_panel_status_cd_before", length = 20)
     private String dispPanelStatusCdBefore;
 

@@ -182,8 +182,8 @@ window.StConfigMng = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['SETTLE_CYCLE', 'USE_YN'], {compNm: 'StConfigMng'});
-        codes.settle_cycles = codeStore.sgGetGrpCodes('SETTLE_CYCLE');
+        await codeStore.saLoadCodes(['SETTLE_CYCLE_CD', 'USE_YN'], {compNm: 'StConfigMng'});
+        codes.settle_cycles = codeStore.sgGetGrpCodes('SETTLE_CYCLE_CD');
         codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       } catch (err) {
         console.error('[fnLoadCodes]', err);

@@ -66,14 +66,14 @@ window.StSettleAdjMng = {
 
     /* fnLoadCodes — 공통코드 로드
        ⚠ 'SETTLE_ADJ_TYPE_KR' 는 DB 에 존재하지 않는 그룹이었다(오타/미정의).
-          실제 그룹은 'SETTLE_ADJ_TYPE'(PENALTY/BONUS/ERROR_FIX/OTHER, 영문 코드값). */
+          실제 그룹은 'ADJ_TYPE_CD'(PENALTY/BONUS/ERROR_FIX/OTHER, 영문 코드값). */
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['SETTLE_ADJ_TYPE', 'SETTLE_ADJ_STATUS'], {compNm: 'StSettleAdjMng'});
+      await codeStore.saLoadCodes(['ADJ_TYPE_CD', 'APRV_STATUS_CD'], {compNm: 'StSettleAdjMng'});
       try {
-        codes.settle_adj_types = codeStore.sgGetGrpCodes('SETTLE_ADJ_TYPE');
-        codes.settle_adj_statuses = codeStore.sgGetGrpCodes('SETTLE_ADJ_STATUS');
+        codes.settle_adj_types = codeStore.sgGetGrpCodes('ADJ_TYPE_CD');
+        codes.settle_adj_statuses = codeStore.sgGetGrpCodes('APRV_STATUS_CD');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -236,7 +236,7 @@ window.StSettleAdjMng = {
 
     /* fnAprvBadge — 승인상태 배지. SETTLE_ADJ_STATUS 는 sy_code.code_opt1 에 배지색이
        이미 지정돼 있다(대기=badge-blue/승인=badge-green/반려=badge-red). */
-    const fnAprvBadge = s => coUtil.cofCodeBadge('SETTLE_ADJ_STATUS', s, { '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');
+    const fnAprvBadge = s => coUtil.cofCodeBadge('APRV_STATUS_CD', s, { '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' }[s] || 'badge-gray');
 
     /* fnTypeBadge — 조정유형 배지 (SETTLE_ADJ_TYPE 실 코드값 기준) */
     const fnTypeBadge = t => ({ PENALTY:'badge-red', BONUS:'badge-green', ERROR_FIX:'badge-orange', OTHER:'badge-gray' }[t] || 'badge-gray');

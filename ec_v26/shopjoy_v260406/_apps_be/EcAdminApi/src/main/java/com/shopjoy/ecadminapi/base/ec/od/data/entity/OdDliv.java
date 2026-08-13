@@ -65,15 +65,15 @@ public class OdDliv extends BaseEntity {
     @Column(name = "recv_addr_detail", length = 200)
     private String recvAddrDetail;
 
-    @Comment("입출고구분 (코드: DLIV_DIV — OUTBOUND/INBOUND)")
+    @Comment("입출고구분 (코드: DLIV_DIV_CD — OUTBOUND/INBOUND)")
     @Column(name = "dliv_div_cd", length = 20)
     private String dlivDivCd;
 
-    @Comment("배송유형 (코드: DLIV_TYPE — NORMAL/RETURN/EXCHANGE/EXCHANGE_OUT)")
+    @Comment("배송유형 (코드: DLIV_TYPE_CD — NORMAL/RETURN/EXCHANGE/EXCHANGE_OUT)")
     @Column(name = "dliv_type_cd", length = 20)
     private String dlivTypeCd;
 
-    @Comment("배송비결제방식 (코드: DLIV_PAY_TYPE — PREPAY/COD)")
+    @Comment("배송비결제방식 (코드: DLIV_PAY_TYPE_CD — PREPAY/COD)")
     @Column(name = "dliv_pay_type_cd", length = 20)
     private String dlivPayTypeCd;
 
@@ -125,7 +125,7 @@ public class OdDliv extends BaseEntity {
     @Column(name = "shipping_discount_amt")
     private Long shippingDiscountAmt;
 
-    @Comment("배송료 구분 (코드: SHIPPING_FEE_TYPE — OUTBOUND/RETURN/INBOUND/EXCHANGE)")
+    @Comment("배송료 구분 (코드: SHIPPING_FEE_TYPE_CD — OUTBOUND/RETURN/INBOUND/EXCHANGE)")
     @Column(name = "shipping_fee_type_cd", length = 20)
     private String shippingFeeTypeCd;
 
@@ -133,11 +133,11 @@ public class OdDliv extends BaseEntity {
     @Column(name = "parent_dliv_id", length = 21)
     private String parentDlivId;
 
-    @Comment("결재상태 (코드: APPR_STATUS)")
+    @Comment("결재상태 (코드: APPR_STATUS_CD)")
     @Column(name = "appr_status_cd", length = 20)
     private String apprStatusCd;
 
-    @Comment("변경 전 결재상태 (코드: APPR_STATUS)")
+    @Comment("변경 전 결재상태 (코드: APPR_STATUS_CD)")
     @Column(name = "appr_status_cd_before", length = 20)
     private String apprStatusCdBefore;
 
@@ -145,7 +145,7 @@ public class OdDliv extends BaseEntity {
     @Column(name = "appr_amt")
     private Long apprAmt;
 
-    @Comment("결재대상 구분 (코드: APPR_TARGET)")
+    @Comment("결재대상 구분 (코드: APPR_TARGET_CD)")
     @Column(name = "appr_target_cd", length = 30)
     private String apprTargetCd;
 

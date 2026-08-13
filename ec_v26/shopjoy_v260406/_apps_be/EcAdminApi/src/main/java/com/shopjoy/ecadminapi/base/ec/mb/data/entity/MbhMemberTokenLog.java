@@ -36,7 +36,7 @@ public class MbhMemberTokenLog extends BaseEntity {
     @Column(name = "login_log_id", length = 21)
     private String loginLogId;
 
-    @Comment("토큰 액션 (코드: TOKEN_ACTION — ISSUE/REFRESH/REVOKE/EXPIRE)")
+    @Comment("토큰 액션 (코드: ACTION_CD — ISSUE/REFRESH/REVOKE/EXPIRE)")
     @Column(name = "action_cd", length = 20, nullable = false)
     private String actionCd;
 

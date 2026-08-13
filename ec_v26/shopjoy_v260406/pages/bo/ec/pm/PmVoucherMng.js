@@ -122,9 +122,9 @@ window.PmVoucherMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['VOUCHER_STATUS', 'PROMO_STATUS', 'DATE_RANGE_OPT'], {compNm: 'PmVoucherMng'});
+      await codeStore.saLoadCodes(['VOUCHER_STATUS_CD', 'PROMO_STATUS', 'DATE_RANGE_OPT'], {compNm: 'PmVoucherMng'});
       try {
-        codes.voucher_statuses = codeStore.sgGetGrpCodes('VOUCHER_STATUS');
+        codes.voucher_statuses = codeStore.sgGetGrpCodes('VOUCHER_STATUS_CD');
         codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       } catch (err) {

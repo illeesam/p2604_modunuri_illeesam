@@ -32,7 +32,7 @@ public class DpWidgetLib extends BaseEntity {
     @Column(name = "widget_nm", length = 100, nullable = false)
     private String widgetNm;
 
-    @Comment("위젯유형 (코드: DISP_WIDGET_TYPE — BANNER/PRODUCT/CATEGORY/HTML/SLIDER)")
+    @Comment("위젯유형 (코드: WIDGET_TYPE_CD — BANNER/PRODUCT/CATEGORY/HTML/SLIDER)")
     @Column(name = "widget_type_cd", length = 30, nullable = false)
     private String widgetTypeCd;
 

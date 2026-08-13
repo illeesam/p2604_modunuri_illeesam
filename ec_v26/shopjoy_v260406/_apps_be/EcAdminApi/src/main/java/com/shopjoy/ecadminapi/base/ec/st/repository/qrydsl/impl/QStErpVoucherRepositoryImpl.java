@@ -74,8 +74,8 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                 ))
                 .from(stErpVoucher)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stErpVoucher.vendorId))
-                .leftJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd)))
-                .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd)));
+                .leftJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE_CD").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd)))
+                .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS_CD").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd)));
     }
 
     /* ERP 전표 키조회 */

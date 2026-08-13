@@ -75,7 +75,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                         syRole.pathId          // 점(.) 구분 표시경로 (트리 빌드용)
                 ))
                 .from(syRole)
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("ROLE_TYPE").and(cdRt.codeValue.eq(syRole.roleTypeCd)));
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("ROLE_TYPE_CD").and(cdRt.codeValue.eq(syRole.roleTypeCd)));
     }
 
     /* 역할(권한) 키조회 */

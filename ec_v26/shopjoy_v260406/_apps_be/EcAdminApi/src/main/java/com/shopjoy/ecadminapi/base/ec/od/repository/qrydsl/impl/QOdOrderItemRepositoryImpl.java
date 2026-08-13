@@ -126,7 +126,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .leftJoin(pdProdSku).on(pdProdSku.prodSkuId.eq(odOrderItem.prodSkuId))
                 .leftJoin(oi1).on(oi1.prodOptId.eq(odOrderItem.prodOptId1))
                 .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOptId2))
-                .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd)))
+                .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd)))
                 .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd)));
     }
 

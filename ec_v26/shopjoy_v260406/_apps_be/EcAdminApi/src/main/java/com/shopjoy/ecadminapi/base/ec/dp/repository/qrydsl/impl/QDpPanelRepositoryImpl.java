@@ -56,7 +56,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 dpPanel.panelId,                  // 패널ID (PK, YYMMDDhhmmss+rand4)
                 dpPanel.areaId,                   // 영역ID (dp_area.area_id, FK)
                 dpPanel.panelNm,                  // 패널명
-                dpPanel.panelTypeCd,               // 표시유형 — PANEL_TYPE_CD (코드: DISP_TYPE)
+                dpPanel.panelTypeCd,               // 표시유형 — PANEL_TYPE_CD (코드: PANEL_TYPE_CD)
                 dpPanel.pathId,                   // 점(.) 구분 표시경로
                 dpPanel.visibilityTargets,        // 공개대상 — VISIBILITY_TARGET (^CODE^CODE^ 형식)
                 dpPanel.useYn,                    // 사용여부 — USE_YN {Y: '사용', N: '미사용'}

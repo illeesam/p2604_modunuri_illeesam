@@ -62,8 +62,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                         cdAd.codeLabel.as("etcAdjDirCdNm")            // 가산/차감명 (sy_code 조인)
                 ))
                 .from(stSettleEtcAdj)
-                .leftJoin(cdSeat).on(cdSeat.codeGrp.eq("SETTLE_ETC_ADJ_TYPE").and(cdSeat.codeValue.eq(stSettleEtcAdj.etcAdjTypeCd)))
-                .leftJoin(cdAd).on(cdAd.codeGrp.eq("ADJ_DIR").and(cdAd.codeValue.eq(stSettleEtcAdj.etcAdjDirCd)));
+                .leftJoin(cdSeat).on(cdSeat.codeGrp.eq("ETC_ADJ_TYPE_CD").and(cdSeat.codeValue.eq(stSettleEtcAdj.etcAdjTypeCd)))
+                .leftJoin(cdAd).on(cdAd.codeGrp.eq("ETC_ADJ_DIR_CD").and(cdAd.codeValue.eq(stSettleEtcAdj.etcAdjDirCd)));
     }
 
     /* 정산 기타 조정 키조회 */

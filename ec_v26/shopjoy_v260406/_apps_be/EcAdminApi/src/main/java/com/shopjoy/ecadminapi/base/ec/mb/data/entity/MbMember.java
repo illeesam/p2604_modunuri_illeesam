@@ -54,11 +54,11 @@ public class MbMember extends BaseEntity {
     @Column(name = "grade_cd", length = 20)
     private String gradeCd;
 
-    @Comment("상태 (코드: MEMBER_STATUS)")
+    @Comment("상태 (코드: MEMBER_STATUS_CD)")
     @Column(name = "member_status_cd", length = 20)
     private String memberStatusCd;
 
-    @Comment("변경 전 회원상태 (코드: MEMBER_STATUS)")
+    @Comment("변경 전 회원상태 (코드: MEMBER_STATUS_CD)")
     @Column(name = "member_status_cd_before", length = 20)
     private String memberStatusCdBefore;
 

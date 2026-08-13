@@ -29,7 +29,7 @@ public class SyNotice extends BaseEntity {
     @Column(name = "notice_title", length = 200, nullable = false)
     private String noticeTitle;
 
-    @Comment("공지유형 (코드: NOTICE_TYPE)")
+    @Comment("공지유형 (코드: NOTICE_TYPE_CD)")
     @Column(name = "notice_type_cd", length = 30)
     private String noticeTypeCd;
 

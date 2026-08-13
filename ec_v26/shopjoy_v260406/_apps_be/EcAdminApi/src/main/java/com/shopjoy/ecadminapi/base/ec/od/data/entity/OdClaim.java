@@ -37,19 +37,19 @@ public class OdClaim extends BaseEntity {
     @Column(name = "member_nm", length = 50)
     private String memberNm;
 
-    @Comment("클레임유형 (코드: CLAIM_TYPE)")
+    @Comment("클레임유형 (코드: CLAIM_TYPE_CD)")
     @Column(name = "claim_type_cd", length = 20, nullable = false)
     private String claimTypeCd;
 
-    @Comment("클레임상태 (코드: CLAIM_STATUS)")
+    @Comment("클레임상태 (코드: CLAIM_STATUS_CD)")
     @Column(name = "claim_status_cd", length = 20)
     private String claimStatusCd;
 
-    @Comment("변경 전 클레임상태 (코드: CLAIM_STATUS)")
+    @Comment("변경 전 클레임상태 (코드: CLAIM_STATUS_CD)")
     @Column(name = "claim_status_cd_before", length = 20)
     private String claimStatusCdBefore;
 
-    @Comment("사유코드 (코드: CANCEL_REASON/RETURN_REASON/EXCHANGE_REASON)")
+    @Comment("사유코드 (코드: REASON_CD/RETURN_REASON/EXCHANGE_REASON)")
     @Column(name = "reason_cd", length = 50)
     private String reasonCd;
 
@@ -81,7 +81,7 @@ public class OdClaim extends BaseEntity {
     @Column(name = "claim_cancel_reason_detail", length = 300)
     private String claimCancelReasonDetail;
 
-    @Comment("환불수단 (코드: REFUND_METHOD)")
+    @Comment("환불수단 (코드: REFUND_METHOD_CD)")
     @Column(name = "refund_method_cd", length = 20)
     private String refundMethodCd;
 
@@ -261,11 +261,11 @@ public class OdClaim extends BaseEntity {
     @Column(name = "shipping_fee_memo", length = 300)
     private String shippingFeeMemo;
 
-    @Comment("결재상태 (코드: APPR_STATUS)")
+    @Comment("결재상태 (코드: APPR_STATUS_CD)")
     @Column(name = "appr_status_cd", length = 20)
     private String apprStatusCd;
 
-    @Comment("변경 전 결재상태 (코드: APPR_STATUS)")
+    @Comment("변경 전 결재상태 (코드: APPR_STATUS_CD)")
     @Column(name = "appr_status_cd_before", length = 20)
     private String apprStatusCdBefore;
 
@@ -273,7 +273,7 @@ public class OdClaim extends BaseEntity {
     @Column(name = "appr_amt")
     private Long apprAmt;
 
-    @Comment("결재대상 구분 (코드: APPR_TARGET)")
+    @Comment("결재대상 구분 (코드: APPR_TARGET_CD)")
     @Column(name = "appr_target_cd", length = 30)
     private String apprTargetCd;
 

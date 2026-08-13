@@ -35,7 +35,7 @@ public class SyDept extends BaseEntity {
     @Column(name = "parent_dept_id", length = 21)
     private String parentDeptId;
 
-    @Comment("부서유형 (코드: DEPT_TYPE)")
+    @Comment("부서유형 (코드: DEPT_TYPE_CD)")
     @Column(name = "dept_type_cd", length = 20)
     private String deptTypeCd;
 

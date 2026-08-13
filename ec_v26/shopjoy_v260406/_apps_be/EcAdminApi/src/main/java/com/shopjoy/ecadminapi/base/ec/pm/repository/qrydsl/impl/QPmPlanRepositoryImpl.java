@@ -73,8 +73,8 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                         pmPlan.useYn, pmPlan.regBy, pmPlan.regDate, pmPlan.updBy, pmPlan.updDate
                 ))
                 .from(pmPlan)
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PLAN_TYPE").and(cdPt.codeValue.eq(pmPlan.planTypeCd)))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PLAN_STATUS").and(cdPs.codeValue.eq(pmPlan.planStatusCd)));
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PLAN_TYPE_CD").and(cdPt.codeValue.eq(pmPlan.planTypeCd)))
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PLAN_STATUS_CD").and(cdPs.codeValue.eq(pmPlan.planStatusCd)));
     }
 
     /* 프로모션 플랜 키조회 */

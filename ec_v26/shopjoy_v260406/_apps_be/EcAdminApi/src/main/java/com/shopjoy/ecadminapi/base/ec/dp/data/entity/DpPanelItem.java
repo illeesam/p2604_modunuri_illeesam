@@ -33,7 +33,7 @@ public class DpPanelItem extends BaseEntity {
     @Column(name = "widget_lib_id", length = 21)
     private String widgetLibId;
 
-    @Comment("위젯유형 (코드: DISP_WIDGET_TYPE)")
+    @Comment("위젯유형 (코드: WIDGET_TYPE_CD)")
     @Column(name = "widget_type_cd", length = 30)
     private String widgetTypeCd;
 
@@ -65,7 +65,7 @@ public class DpPanelItem extends BaseEntity {
     @Column(name = "widget_config_json", columnDefinition = "TEXT")
     private String widgetConfigJson;
 
-    @Comment("공개대상 (코드: VISIBILITY_TARGET, ^CODE^CODE^ 형식)")
+    @Comment("공개대상 (코드: VISIBILITY_TARGETS, ^CODE^CODE^ 형식)")
     @Column(name = "visibility_targets", length = 200)
     private String visibilityTargets;
 

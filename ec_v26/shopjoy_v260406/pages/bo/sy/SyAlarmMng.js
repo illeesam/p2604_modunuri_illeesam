@@ -332,8 +332,8 @@ window.SyAlarmMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ALARM_TYPE', 'ALARM_STATUS', 'DATE_RANGE_OPT'], {compNm: 'SyAlarmMng'});
-      codes.alarm_type = codeStore.sgGetGrpCodes('ALARM_TYPE');
+      await codeStore.saLoadCodes(['ALARM_TYPE_CD', 'ALARM_STATUS', 'DATE_RANGE_OPT'], {compNm: 'SyAlarmMng'});
+      codes.alarm_type = codeStore.sgGetGrpCodes('ALARM_TYPE_CD');
       codes.alarm_status = codeStore.sgGetGrpCodes('ALARM_STATUS');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
     };
@@ -363,7 +363,7 @@ window.SyAlarmMng = {
     /* 알람 fnTypeBadge */
     const _ALARM_TYPE_FB = { '푸시': 'badge-blue', '이메일': 'badge-orange', 'SMS': 'badge-green', '인앱': 'badge-gray' };
     /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge = t => coUtil.cofCodeBadge('ALARM_TYPE', t, _ALARM_TYPE_FB[t] || 'badge-gray');
+    const fnTypeBadge = t => coUtil.cofCodeBadge('ALARM_TYPE_CD', t, _ALARM_TYPE_FB[t] || 'badge-gray');
 
     /* 알람 fnTargetBadge */
     const _ALARM_TARGET_TYPE_FB = { '전체': 'badge-red', 'VIP': 'badge-orange', '우수': 'badge-blue', '일반': 'badge-gray' };

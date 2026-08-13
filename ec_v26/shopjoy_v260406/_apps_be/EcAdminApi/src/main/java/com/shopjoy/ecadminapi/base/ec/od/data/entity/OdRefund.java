@@ -33,7 +33,7 @@ public class OdRefund extends BaseEntity {
     @Column(name = "claim_id", length = 21)
     private String claimId;
 
-    @Comment("환불유형코드 (코드: REFUND_TYPE — CANCEL/RETURN/PARTIAL/EXTRA)")
+    @Comment("환불유형코드 (코드: REFUND_TYPE_CD — CANCEL/RETURN/PARTIAL/EXTRA)")
     @Column(name = "refund_type_cd", length = 20, nullable = false)
     private String refundTypeCd;
 
@@ -61,11 +61,11 @@ public class OdRefund extends BaseEntity {
     @Column(name = "total_refund_amt")
     private Long totalRefundAmt;
 
-    @Comment("환불상태 (코드: REFUND_STATUS — PENDING/COMPLT/FAILED/PARTIAL)")
+    @Comment("환불상태 (코드: REFUND_STATUS_CD — PENDING/COMPLT/FAILED/PARTIAL)")
     @Column(name = "refund_status_cd", length = 20)
     private String refundStatusCd;
 
-    @Comment("변경 전 환불상태 (코드: REFUND_STATUS)")
+    @Comment("변경 전 환불상태 (코드: REFUND_STATUS_CD)")
     @Column(name = "refund_status_cd_before", length = 20)
     private String refundStatusCdBefore;
 
@@ -77,7 +77,7 @@ public class OdRefund extends BaseEntity {
     @Column(name = "refund_complt_date")
     private LocalDateTime refundCompltDate;
 
-    @Comment("귀책유형코드 (코드: FAULT_TYPE — CUST/VENDOR/PLATFORM)")
+    @Comment("귀책유형코드 (코드: FAULT_TYPE_CD — CUST/VENDOR/PLATFORM)")
     @Column(name = "fault_type_cd", length = 20)
     private String faultTypeCd;
 

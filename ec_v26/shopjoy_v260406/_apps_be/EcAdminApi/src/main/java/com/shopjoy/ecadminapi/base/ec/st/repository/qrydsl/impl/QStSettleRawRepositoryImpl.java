@@ -186,10 +186,10 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .leftJoin(pmDiscnt).on(pmDiscnt.discntId.eq(stSettleRaw.discntId))
                 .leftJoin(pmVoucher).on(pmVoucher.voucherId.eq(stSettleRaw.voucherId))
                 .leftJoin(pmGift).on(pmGift.giftId.eq(stSettleRaw.giftId))
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RAW_TYPE").and(cdRt.codeValue.eq(stSettleRaw.rawTypeCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RAW_STATUS").and(cdRs.codeValue.eq(stSettleRaw.rawStatusCd)))
-                .leftJoin(cdOis).on(cdOis.codeGrp.eq("ORDER_ITEM_STATUS").and(cdOis.codeValue.eq(stSettleRaw.orderItemStatusCd)))
-                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE").and(cdVt.codeValue.eq(stSettleRaw.vendorTypeCd)))
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RAW_TYPE_CD").and(cdRt.codeValue.eq(stSettleRaw.rawTypeCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RAW_STATUS_CD").and(cdRs.codeValue.eq(stSettleRaw.rawStatusCd)))
+                .leftJoin(cdOis).on(cdOis.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdOis.codeValue.eq(stSettleRaw.orderItemStatusCd)))
+                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE_CD").and(cdVt.codeValue.eq(stSettleRaw.vendorTypeCd)))
                 .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD").and(cdPmc.codeValue.eq(stSettleRaw.payMethodCd)));
     }
 

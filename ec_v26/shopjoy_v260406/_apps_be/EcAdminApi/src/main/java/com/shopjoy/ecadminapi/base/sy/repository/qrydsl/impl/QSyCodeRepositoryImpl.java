@@ -39,7 +39,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * USE_YN {Y: '사용', N: '미사용'}
      * (sy_code 자체가 전체 공통코드 메타 테이블 — code_grp 로 도메인 구분, code_value/code_label 이 실제 코드값/라벨.
-     *  예: code_grp='SITE_STATUS' 인 행의 code_value 는 ACTIVE/MAINTENANCE/INACTIVE)
+     *  예: code_grp='SITE_STATUS_CD' 인 행의 code_value 는 ACTIVE/MAINTENANCE/INACTIVE)
      */
     private JPAQuery<SyCodeDto.Item> baseSelColumnQuery() {
         return queryFactory

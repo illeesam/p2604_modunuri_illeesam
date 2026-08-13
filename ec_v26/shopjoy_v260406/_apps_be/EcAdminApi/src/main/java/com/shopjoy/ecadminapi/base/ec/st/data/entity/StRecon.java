@@ -29,11 +29,11 @@ public class StRecon extends BaseEntity {
     @Column(name = "vendor_id", length = 21)
     private String vendorId;
 
-    @Comment("대사유형 (코드: RECON_TYPE — ORDER/PAY/CLAIM/VENDOR)")
+    @Comment("대사유형 (코드: RECON_TYPE_CD — ORDER/PAY/CLAIM/VENDOR)")
     @Column(name = "recon_type_cd", length = 20, nullable = false)
     private String reconTypeCd;
 
-    @Comment("대사상태 (코드: RECON_STATUS — MATCHED/MISMATCH/RESOLVED)")
+    @Comment("대사상태 (코드: RECON_STATUS_CD — MATCHED/MISMATCH/RESOLVED)")
     @Column(name = "recon_status_cd", length = 20)
     private String reconStatusCd;
 

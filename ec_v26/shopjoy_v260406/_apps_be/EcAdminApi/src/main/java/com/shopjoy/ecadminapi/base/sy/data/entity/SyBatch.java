@@ -41,7 +41,7 @@ public class SyBatch extends BaseEntity {
     @Column(name = "cron_expr", length = 100)
     private String cronExpr;
 
-    @Comment("주기유형 (코드: BATCH_CYCLE)")
+    @Comment("주기유형 (코드: BATCH_CYCLE_CD)")
     @Column(name = "batch_cycle_cd", length = 20)
     private String batchCycleCd;
 

@@ -36,7 +36,7 @@ public class SyVendorUser extends BaseEntity {
     @Column(name = "member_nm", length = 50, nullable = false)
     private String memberNm;
 
-    @Comment("직위/직책 (코드: POSITION)")
+    @Comment("직위/직책 (코드: POSITION_CD)")
     @Column(name = "position_cd", length = 20)
     private String positionCd;
 
@@ -76,7 +76,7 @@ public class SyVendorUser extends BaseEntity {
     @Column(name = "leave_date")
     private LocalDate leaveDate;
 
-    @Comment("상태 (코드: VENDOR_USER_STATUS)")
+    @Comment("상태 (코드: VENDOR_USER_STATUS_CD)")
     @Column(name = "vendor_user_status_cd", length = 20)
     private String vendorUserStatusCd;
 

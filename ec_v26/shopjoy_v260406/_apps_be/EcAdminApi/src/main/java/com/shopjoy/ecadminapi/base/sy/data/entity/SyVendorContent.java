@@ -77,7 +77,7 @@ public class SyVendorContent extends BaseEntity {
     @Column(name = "sort_ord")
     private Integer sortOrd;
 
-    @Comment("상태 (코드: VENDOR_CONTENT_STATUS)")
+    @Comment("상태 (코드: VENDOR_CONTENT_STATUS_CD)")
     @Column(name = "vendor_content_status_cd", length = 20)
     private String vendorContentStatusCd;
 

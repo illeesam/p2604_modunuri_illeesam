@@ -119,11 +119,11 @@ public class OdOrderItem extends BaseEntity {
     @Column(name = "save_schd_amt")
     private Long saveSchdAmt;
 
-    @Comment("품목 주문 상태 (코드: ORDER_ITEM_STATUS — ORDERED/PAID/PREPARING/SHIPPING/DELIVERED/CONFIRMED/CANCELLED)")
+    @Comment("품목 주문 상태 (코드: ORDER_ITEM_STATUS_CD — ORDERED/PAID/PREPARING/SHIPPING/DELIVERED/CONFIRMED/CANCELLED)")
     @Column(name = "order_item_status_cd", length = 20)
     private String orderItemStatusCd;
 
-    @Comment("변경 전 품목상태 (코드: ORDER_ITEM_STATUS)")
+    @Comment("변경 전 품목상태 (코드: ORDER_ITEM_STATUS_CD)")
     @Column(name = "order_item_status_cd_before", length = 20)
     private String orderItemStatusCdBefore;
 

@@ -9,7 +9,7 @@
     { value: 'ENDED',  label: '종료'   },
     { value: 'PAUSE',  label: '일시정지' },
   ];
-  /* 기획전 유형 (코드: PLAN_TYPE — plan_type_cd) */
+  /* 기획전 유형 (코드: PLAN_TYPE_CD — plan_type_cd) */
   const PLAN_TYPE_ITEMS = [
     { cd: 'SPRING_NEW',   label: '봄 신상품 기획전',    w: 10 },
     { cd: 'SUMMER_COOL',  label: '여름 쿨링 기획전',    w: 10 },

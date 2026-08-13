@@ -26,7 +26,7 @@ public class SySite extends BaseEntity {
     @Column(name = "site_code", length = 50, nullable = false)
     private String siteCode;
 
-    @Comment("사이트유형 (코드: SITE_TYPE — EC/ADMIN/API)")
+    @Comment("사이트유형 (코드: SITE_TYPE_CD — EC/ADMIN/API)")
     @Column(name = "site_type_cd", length = 20)
     private String siteTypeCd;
 
@@ -74,7 +74,7 @@ public class SySite extends BaseEntity {
     @Column(name = "site_ceo", length = 50)
     private String siteCeo;
 
-    @Comment("상태 (코드: SITE_STATUS)")
+    @Comment("상태 (코드: SITE_STATUS_CD)")
     @Column(name = "site_status_cd", length = 20)
     private String siteStatusCd;
 

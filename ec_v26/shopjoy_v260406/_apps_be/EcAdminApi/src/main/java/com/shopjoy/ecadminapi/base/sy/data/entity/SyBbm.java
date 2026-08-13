@@ -35,7 +35,7 @@ public class SyBbm extends BaseEntity {
     @Column(name = "path_id", length = 21)
     private String pathId;
 
-    @Comment("게시판유형 (코드: BBM_TYPE — NORMAL/FAQ/REVIEW/QNA)")
+    @Comment("게시판유형 (코드: BBM_TYPE_CD — NORMAL/FAQ/REVIEW/QNA)")
     @Column(name = "bbm_type_cd", length = 20)
     private String bbmTypeCd;
 
@@ -55,7 +55,7 @@ public class SyBbm extends BaseEntity {
     @Column(name = "content_type_cd", length = 20)
     private String contentTypeCd;
 
-    @Comment("접근범위 (코드: BBM_SCOPE_TYPE — ALL/MEMBER/ADMIN)")
+    @Comment("접근범위 (코드: SCOPE_TYPE_CD — ALL/MEMBER/ADMIN)")
     @Column(name = "scope_type_cd", length = 20)
     private String scopeTypeCd;
 

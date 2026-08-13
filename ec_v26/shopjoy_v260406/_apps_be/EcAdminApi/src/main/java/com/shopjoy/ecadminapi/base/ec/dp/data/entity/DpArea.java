@@ -37,7 +37,7 @@ public class DpArea extends BaseEntity {
     @Column(name = "area_nm", length = 100, nullable = false)
     private String areaNm;
 
-    @Comment("영역유형 (코드: DISP_AREA_TYPE)")
+    @Comment("영역유형 (코드: AREA_TYPE_CD)")
     @Column(name = "area_type_cd", length = 30)
     private String areaTypeCd;
 

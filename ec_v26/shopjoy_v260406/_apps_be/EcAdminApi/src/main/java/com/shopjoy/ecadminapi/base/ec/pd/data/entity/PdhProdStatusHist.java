@@ -29,11 +29,11 @@ public class PdhProdStatusHist extends BaseEntity {
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
 
-    @Comment("이전상태 (코드: PROD_STATUS)")
+    @Comment("이전상태 (코드: PROD_STATUS_CD)")
     @Column(name = "before_status_cd", length = 20)
     private String beforeStatusCd;
 
-    @Comment("변경상태 (코드: PROD_STATUS)")
+    @Comment("변경상태 (코드: PROD_STATUS_CD)")
     @Column(name = "after_status_cd", length = 20, nullable = false)
     private String afterStatusCd;
 

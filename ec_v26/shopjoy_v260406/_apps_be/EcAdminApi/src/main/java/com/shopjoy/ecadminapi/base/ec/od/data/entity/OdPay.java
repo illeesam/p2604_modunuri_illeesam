@@ -34,15 +34,15 @@ public class OdPay extends BaseEntity {
     @Column(name = "claim_id", length = 21)
     private String claimId;
 
-    @Comment("주문/클레임 구분 (코드: PAY_DIV — ORDER/CLAIM)")
+    @Comment("주문/클레임 구분 (코드: PAY_DIV_CD — ORDER/CLAIM)")
     @Column(name = "pay_div_cd", length = 20)
     private String payDivCd;
 
-    @Comment("입금/환불 방향 (코드: PAY_DIR — DEPOSIT/REFUND)")
+    @Comment("입금/환불 방향 (코드: PAY_DIR_CD — DEPOSIT/REFUND)")
     @Column(name = "pay_dir_cd", length = 20)
     private String payDirCd;
 
-    @Comment("결제발생유형 (코드: PAY_OCCUR_TYPE — ORDER/CLAIM_EXTRA/EXCHANGE_EXTRA)")
+    @Comment("결제발생유형 (코드: PAY_OCCUR_TYPE_CD — ORDER/CLAIM_EXTRA/EXCHANGE_EXTRA)")
     @Column(name = "pay_occur_type_cd", length = 20)
     private String payOccurTypeCd;
 
@@ -50,7 +50,7 @@ public class OdPay extends BaseEntity {
     @Column(name = "pay_method_cd", length = 20, nullable = false)
     private String payMethodCd;
 
-    @Comment("결제채널 (코드: PAY_CHANNEL — TOSS만: CARD/ACCOUNT/KAKAO/NAVER)")
+    @Comment("결제채널 (코드: PAY_CHANNEL_CD — TOSS만: CARD/ACCOUNT/KAKAO/NAVER)")
     @Column(name = "pay_channel_cd", length = 20)
     private String payChannelCd;
 
@@ -126,7 +126,7 @@ public class OdPay extends BaseEntity {
     @Column(name = "card_issuer_nm", length = 50)
     private String cardIssuerNm;
 
-    @Comment("카드 타입 (코드: CARD_TYPE — CREDIT/DEBIT/CHECK)")
+    @Comment("카드 타입 (코드: CARD_TYPE_CD — CREDIT/DEBIT/CHECK)")
     @Column(name = "card_type_cd", length = 20)
     private String cardTypeCd;
 
@@ -138,11 +138,11 @@ public class OdPay extends BaseEntity {
     @Column(name = "refund_amt")
     private Long refundAmt;
 
-    @Comment("환불 상태 (코드: REFUND_STATUS)")
+    @Comment("환불 상태 (코드: REFUND_STATUS_CD)")
     @Column(name = "refund_status_cd", length = 20)
     private String refundStatusCd;
 
-    @Comment("변경 전 환불상태 (코드: REFUND_STATUS)")
+    @Comment("변경 전 환불상태 (코드: REFUND_STATUS_CD)")
     @Column(name = "refund_status_cd_before", length = 20)
     private String refundStatusCdBefore;
 

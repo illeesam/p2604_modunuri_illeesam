@@ -57,7 +57,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                         dpUi.uiCd,          // UI코드 (예: MOBILE_MAIN, PC_MAIN)
                         dpUi.uiNm,          // UI명
                         dpUi.uiDesc,        // UI설명
-                        dpUi.deviceTypeCd,  // 디바이스유형 — DEVICE_TYPE_CD (코드: DEVICE_TYPE)
+                        dpUi.deviceTypeCd,  // 디바이스유형 — DEVICE_TYPE_CD (코드: DEVICE_TYPE_CD)
                         dpUi.pathId,        // 페이지경로
                         dpUi.sortOrd,       // 정렬순서
                         dpUi.useYn,         // 사용여부 — USE_YN {Y: '사용', N: '미사용'}

@@ -49,7 +49,7 @@ public class SyContact extends BaseEntity {
     @Column(name = "content_attach_grp_id", length = 21)
     private String contentAttachGrpId;
 
-    @Comment("처리상태 (코드: CONTACT_STATUS)")
+    @Comment("처리상태 (코드: CONTACT_STATUS_CD)")
     @Column(name = "contact_status_cd", length = 20)
     private String contactStatusCd;
 

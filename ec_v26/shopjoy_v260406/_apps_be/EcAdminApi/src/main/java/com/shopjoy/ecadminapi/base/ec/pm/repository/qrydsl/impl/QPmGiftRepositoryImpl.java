@@ -85,8 +85,8 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmGift.prodId))
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
                 .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
-                .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE").and(cdGt.codeValue.eq(pmGift.giftTypeCd)))
-                .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS").and(cdGs.codeValue.eq(pmGift.giftStatusCd)))
+                .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE_CD").and(cdGt.codeValue.eq(pmGift.giftTypeCd)))
+                .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS_CD").and(cdGs.codeValue.eq(pmGift.giftStatusCd)))
                 .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(pmGift.memGradeCd)));
     }
 

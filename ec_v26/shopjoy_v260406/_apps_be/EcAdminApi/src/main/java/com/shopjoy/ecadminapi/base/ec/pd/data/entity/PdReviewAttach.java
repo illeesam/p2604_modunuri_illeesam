@@ -32,7 +32,7 @@ public class PdReviewAttach extends BaseEntity {
     @Column(name = "attach_id", length = 21, nullable = false)
     private String attachId;
 
-    @Comment("미디어유형 (코드: MEDIA_TYPE)")
+    @Comment("미디어유형 (코드: MEDIA_TYPE_CD)")
     @Column(name = "media_type_cd", length = 20)
     private String mediaTypeCd;
 

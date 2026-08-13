@@ -289,9 +289,9 @@ window.MbMemberMng = {
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
-      await codeStore.saLoadCodes(['MEMBER_GRADE', 'MEMBER_STATUS'], { compNm: 'MbMemberMng' });
+      await codeStore.saLoadCodes(['MEMBER_GRADE', 'MEMBER_STATUS_CD'], { compNm: 'MbMemberMng' });
       codes.MEMBER_GRADE = codeStore.sgGetGrpCodes('MEMBER_GRADE');
-      codes.MEMBER_STATUS = codeStore.sgGetGrpCodes('MEMBER_STATUS');
+      codes.MEMBER_STATUS = codeStore.sgGetGrpCodes('MEMBER_STATUS_CD');
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -319,7 +319,7 @@ window.MbMemberMng = {
 
     /* fnStatusBadge — 상태 배지 */
     const _MEMBER_STATUS_FB = { '활성': 'badge-green', '정지': 'badge-red' };
-    const fnStatusBadge = s => coUtil.cofCodeBadge('MEMBER_STATUS', s, _MEMBER_STATUS_FB[s] || 'badge-gray');
+    const fnStatusBadge = s => coUtil.cofCodeBadge('MEMBER_STATUS_CD', s, _MEMBER_STATUS_FB[s] || 'badge-gray');
 
     /* fnGridRowClass — 그리드 행 클래스 */
     const fnGridRowClass = (row) => (detailPanel.dtlId === row.memberId ? 'active' : '');

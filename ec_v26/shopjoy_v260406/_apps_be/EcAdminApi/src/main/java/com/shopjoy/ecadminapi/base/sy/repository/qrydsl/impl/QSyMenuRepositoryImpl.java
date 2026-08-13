@@ -73,7 +73,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                         syMenu.updDate        // 수정일시
                 ))
                 .from(syMenu)
-                .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE").and(cdMt.codeValue.eq(syMenu.menuTypeCd)));
+                .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE_CD").and(cdMt.codeValue.eq(syMenu.menuTypeCd)));
     }
 
     /* 메뉴 키조회 */

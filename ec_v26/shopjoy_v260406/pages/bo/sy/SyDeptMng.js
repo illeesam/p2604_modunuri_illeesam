@@ -253,9 +253,9 @@ window.SyDeptMng = {
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
-      await codeStore.saLoadCodes(['USE_YN', 'DEPT_TYPE'], { compNm: 'SyDeptMng' });
+      await codeStore.saLoadCodes(['USE_YN', 'DEPT_TYPE_CD'], { compNm: 'SyDeptMng' });
       codes.USE_YN     = codeStore.sgGetGrpCodes('USE_YN');
-      codes.DEPT_TYPE  = codeStore.sgGetGrpCodes('DEPT_TYPE');
+      codes.DEPT_TYPE  = codeStore.sgGetGrpCodes('DEPT_TYPE_CD');
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 트리 + 그리드 조회

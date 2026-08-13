@@ -159,7 +159,7 @@ window.DpDispWidgetLibPreview = {
     const codes = reactive({ widget_status_opts: [{value:'활성',label:'활성'},{value:'비활성',label:'비활성'}], need_yn_opts: [{codeValue:'Y',codeLabel:'필요'},{codeValue:'N',codeLabel:'불필요'}], condition_opts: ['항상 표시','로그인 필요','로그인+VIP','로그인+우수','비로그인 전용'], auth_grade_opts: ['일반','우수','VIP'] });
     const cfDispWidgetTypes = computed(() => {
       const codeStore = window.sfGetBoCodeStore();
-      return codeStore?.sgGetGrpCodes?.('DISP_WIDGET_TYPE') || [];
+      return codeStore?.sgGetGrpCodes?.('WIDGET_TYPE_CD') || [];
     });
     const widgetLibs = reactive([]);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());

@@ -70,7 +70,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                 .from(stSettleConfig)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettleConfig.vendorId))
                 .leftJoin(pdCategory).on(pdCategory.categoryId.eq(stSettleConfig.categoryId))
-                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SETTLE_CYCLE").and(cdSc.codeValue.eq(stSettleConfig.settleCycleCd)));
+                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SETTLE_CYCLE_CD").and(cdSc.codeValue.eq(stSettleConfig.settleCycleCd)));
     }
 
     /* 정산 설정 키조회 */

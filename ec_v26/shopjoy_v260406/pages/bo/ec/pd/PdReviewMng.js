@@ -98,9 +98,9 @@ window.PdReviewMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['REVIEW_STATUS', 'REVIEW_RATING'], {compNm: 'PdReviewMng'});
+      await codeStore.saLoadCodes(['REVIEW_STATUS_CD', 'REVIEW_RATING'], {compNm: 'PdReviewMng'});
       try {
-        codes.REVIEW_STATUS = codeStore.sgGetGrpCodes('REVIEW_STATUS');
+        codes.REVIEW_STATUS = codeStore.sgGetGrpCodes('REVIEW_STATUS_CD');
         codes.REVIEW_RATING = codeStore.sgGetGrpCodes('REVIEW_RATING');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -177,7 +177,7 @@ window.PdReviewMng = {
     /* 상품 리뷰 fnStatusBadge — sy_code REVIEW_STATUS code_opt1 우선, 없으면 FB */
     const _REVIEW_STATUS_FB = { ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' };
     /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge  = s => coUtil.cofCodeBadge('REVIEW_STATUS', s, _REVIEW_STATUS_FB[s] || 'badge-gray');
+    const fnStatusBadge  = s => coUtil.cofCodeBadge('REVIEW_STATUS_CD', s, _REVIEW_STATUS_FB[s] || 'badge-gray');
 
     /* getProdNm — 조회 */
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id || p.prodId === id); return p ? (p.prodNm || p.productName) : ''; };

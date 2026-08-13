@@ -142,9 +142,9 @@ window.PmSaveMng = {
       /* PROMO_STATUS 는 검색 select 용 codes.promo_statuses 로는 안 쓰지만(제거됨 — pm_save 에
          상태 컬럼 자체가 없다), fnStatusBadge() 가 coUtil.cofCodeBadge('PROMO_STATUS', ...) 로
          스토어에서 직접 조회하므로 로드는 유지한다. */
-      await codeStore.saLoadCodes(['SAVE_ISSUE_TYPE', 'PROMO_STATUS', 'DATE_RANGE_OPT'], {compNm: 'PmSaveMng'});
+      await codeStore.saLoadCodes(['SAVE_ISSUE_TYPE_CD', 'PROMO_STATUS', 'DATE_RANGE_OPT'], {compNm: 'PmSaveMng'});
       try {
-        codes.save_issue_types = codeStore.sgGetGrpCodes('SAVE_ISSUE_TYPE');
+        codes.save_issue_types = codeStore.sgGetGrpCodes('SAVE_ISSUE_TYPE_CD');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       } catch (err) {
         console.error('[fnLoadCodes]', err);

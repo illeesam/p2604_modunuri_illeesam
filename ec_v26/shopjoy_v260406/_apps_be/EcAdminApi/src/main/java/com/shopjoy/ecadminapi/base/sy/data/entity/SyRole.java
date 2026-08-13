@@ -35,7 +35,7 @@ public class SyRole extends BaseEntity {
     @Column(name = "parent_role_id", length = 21)
     private String parentRoleId;
 
-    @Comment("역할유형 (코드: ROLE_TYPE — SYSTEM/CUSTOM)")
+    @Comment("역할유형 (코드: ROLE_TYPE_CD — SYSTEM/CUSTOM)")
     @Column(name = "role_type_cd", length = 20)
     private String roleTypeCd;
 

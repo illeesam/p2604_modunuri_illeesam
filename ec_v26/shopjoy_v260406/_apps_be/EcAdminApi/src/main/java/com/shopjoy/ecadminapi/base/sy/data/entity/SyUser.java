@@ -53,7 +53,7 @@ public class SyUser extends BaseEntity {
     @Column(name = "role_id", length = 21)
     private String roleId;
 
-    @Comment("상태 (코드: USER_STATUS)")
+    @Comment("상태 (코드: USER_STATUS_CD)")
     @Column(name = "user_status_cd", length = 20)
     private String userStatusCd;
 
@@ -69,7 +69,7 @@ public class SyUser extends BaseEntity {
     @Column(name = "user_memo", columnDefinition = "TEXT")
     private String userMemo;
 
-    @Comment("인증방식 (코드: AUTH_METHOD)")
+    @Comment("인증방식 (코드: AUTH_METHOD_CD)")
     @Column(name = "auth_method_cd", length = 20)
     private String authMethodCd;
 

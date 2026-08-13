@@ -102,8 +102,8 @@ window.DpDispUiMng = {
     const fnLoadCodes = async () => {
       const s = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await s.saLoadCodes(['DEVICE_TYPE'], {compNm: 'DpDispUiMng'});
-      codes.device_types = s.sgGetGrpCodes('DEVICE_TYPE');
+      await s.saLoadCodes(['DEVICE_TYPE_CD'], {compNm: 'DpDispUiMng'});
+      codes.device_types = s.sgGetGrpCodes('DEVICE_TYPE_CD');
     };
 
     /* initPage — 화면 로드 시퀀스.

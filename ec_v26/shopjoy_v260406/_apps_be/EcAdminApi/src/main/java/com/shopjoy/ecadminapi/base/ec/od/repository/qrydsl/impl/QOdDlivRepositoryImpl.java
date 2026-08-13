@@ -98,8 +98,8 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 .leftJoin(odOrder).on(odOrder.orderId.eq(odDliv.orderId))
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(odDliv.vendorId))
                 .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odDliv.dlivStatusCd)))
-                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DLIV_TYPE").and(cdDt.codeValue.eq(odDliv.dlivTypeCd)))
-                .leftJoin(cdDd).on(cdDd.codeGrp.eq("DLIV_DIV").and(cdDd.codeValue.eq(odDliv.dlivDivCd)))
+                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DLIV_TYPE_CD").and(cdDt.codeValue.eq(odDliv.dlivTypeCd)))
+                .leftJoin(cdDd).on(cdDd.codeGrp.eq("DLIV_DIV_CD").and(cdDd.codeValue.eq(odDliv.dlivDivCd)))
                 .leftJoin(cdOc).on(cdOc.codeGrp.eq("COURIER").and(cdOc.codeValue.eq(odDliv.outboundCourierCd)))
                 .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(odDliv.inboundCourierCd)));
     }

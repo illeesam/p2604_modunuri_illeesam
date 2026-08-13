@@ -41,7 +41,7 @@ public class PdProdQna extends BaseEntity {
     @Column(name = "order_id", length = 21)
     private String orderId;
 
-    @Comment("문의유형코드 (코드: PROD_QNA_TYPE)")
+    @Comment("문의유형코드 (코드: PROD_QNA_TYPE_CD)")
     @Column(name = "prod_qna_type_cd", length = 20)
     private String prodQnaTypeCd;
 

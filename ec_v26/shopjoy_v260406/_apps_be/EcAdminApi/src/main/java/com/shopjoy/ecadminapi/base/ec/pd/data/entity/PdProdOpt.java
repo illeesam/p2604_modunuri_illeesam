@@ -36,7 +36,7 @@ public class PdProdOpt extends BaseEntity {
     @Column(name = "prod_opt_val", length = 50)
     private String prodOptVal;
 
-    @Comment("표준 코드값 (코드: OPT_VAL — BLACK/WHITE/SIZE_M 등). 프리셋 선택 시 자동 세팅, 직접입력 시 NULL. 통계·필터 기준 컬럼")
+    @Comment("표준 코드값 (코드: PROD_OPT_STD_CD — BLACK/WHITE/SIZE_M 등). 프리셋 선택 시 자동 세팅, 직접입력 시 NULL. 통계·필터 기준 컬럼")
     @Column(name = "prod_opt_std_cd", length = 20)
     private String prodOptStdCd;
 

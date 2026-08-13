@@ -58,7 +58,7 @@ public class PdProdHistQueryRepository {
                         orderItem.orderQty.as("orderQty")))
                 .from(orderItem)
                 .join(order).on(order.orderId.eq(orderItem.orderId))
-                .leftJoin(syCode1).on(syCode1.codeGrp.eq("ORDER_STATUS").and(syCode1.codeValue.eq(order.orderStatusCd)))
+                .leftJoin(syCode1).on(syCode1.codeGrp.eq("ORDER_STATUS_CD").and(syCode1.codeValue.eq(order.orderStatusCd)))
                 .where(orderItem.prodId.eq(req.getProdId()),
                        dateBetween(req, "order_date", order.orderDate))
                 .orderBy(order.orderDate.desc());
@@ -82,7 +82,7 @@ public class PdProdHistQueryRepository {
                         stockHist.chgReason.as("stockMemo")))
                 .from(stockHist)
                 .leftJoin(syUser).on(syUser.userId.eq(stockHist.chgBy))
-                .leftJoin(syCode1).on(syCode1.codeGrp.eq("SKU_STOCK_CHG").and(syCode1.codeValue.eq(stockHist.chgReasonCd)))
+                .leftJoin(syCode1).on(syCode1.codeGrp.eq("CHG_REASON_CD").and(syCode1.codeValue.eq(stockHist.chgReasonCd)))
                 .where(stockHist.prodId.eq(req.getProdId()),
                        dateBetween(req, "chg_date", stockHist.chgDate))
                 .orderBy(stockHist.chgDate.desc());

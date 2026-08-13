@@ -78,8 +78,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                         cdSs.codeLabel.as("siteStatusCdNm")    // 상태 라벨 (sy_code SITE_STATUS 조인)
                 ))
                 .from(sySite)
-                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SITE_TYPE").and(cdSt.codeValue.eq(sySite.siteTypeCd)))
-                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SITE_STATUS").and(cdSs.codeValue.eq(sySite.siteStatusCd)));
+                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SITE_TYPE_CD").and(cdSt.codeValue.eq(sySite.siteTypeCd)))
+                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SITE_STATUS_CD").and(cdSs.codeValue.eq(sySite.siteStatusCd)));
     }
 
     /* 사이트 키조회 */

@@ -72,7 +72,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                 .from(pmCouponIssue)
                 .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(pmCouponIssue.couponId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(pmCouponIssue.memberId))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd)));
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE_CD").and(cdCt.codeValue.eq(pmCoupon.couponTypeCd)));
     }
 
     /* 쿠폰 발행 키조회 */

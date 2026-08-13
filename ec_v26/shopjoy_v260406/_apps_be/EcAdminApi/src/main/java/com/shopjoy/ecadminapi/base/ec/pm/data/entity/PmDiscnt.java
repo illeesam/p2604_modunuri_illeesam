@@ -34,11 +34,11 @@ public class PmDiscnt extends BaseEntity {
     @Column(name = "discnt_type_cd", length = 20, nullable = false)
     private String discntTypeCd;
 
-    @Comment("할인방식 (코드: DISCNT_VAL_TYPE — RATE/AMOUNT, SHIP_FREE 유형은 해당없음)")
+    @Comment("할인방식 (코드: DISCNT_VAL_TYPE_CD — RATE/AMOUNT, SHIP_FREE 유형은 해당없음)")
     @Column(name = "discnt_val_type_cd", length = 20)
     private String discntValTypeCd;
 
-    @Comment("할인대상 (코드: DISCNT_TARGET — ALL/CATEGORY/PRODUCT/MEMBER_GRADE)")
+    @Comment("할인대상 (코드: DISCNT_TARGET_CD — ALL/CATEGORY/PRODUCT/MEMBER_GRADE)")
     @Column(name = "discnt_target_cd", length = 20)
     private String discntTargetCd;
 
@@ -66,7 +66,7 @@ public class PmDiscnt extends BaseEntity {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @Comment("상태 (코드: DISCNT_STATUS)")
+    @Comment("상태 (코드: DISCNT_STATUS_CD)")
     @Column(name = "discnt_status_cd", length = 20)
     private String discntStatusCd;
 

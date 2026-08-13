@@ -66,7 +66,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                 .from(pmVoucherIssue)
                 .leftJoin(pmVoucher).on(pmVoucher.voucherId.eq(pmVoucherIssue.voucherId))
                 .leftJoin(odOrder).on(odOrder.orderId.eq(pmVoucherIssue.orderId))
-                .leftJoin(cdVis).on(cdVis.codeGrp.eq("VOUCHER_ISSUE_STATUS").and(cdVis.codeValue.eq(pmVoucherIssue.voucherIssueStatusCd)));
+                .leftJoin(cdVis).on(cdVis.codeGrp.eq("VOUCHER_ISSUE_STATUS_CD").and(cdVis.codeValue.eq(pmVoucherIssue.voucherIssueStatusCd)));
     }
 
     /* 바우처(상품권) 발행 이력 키조회 */

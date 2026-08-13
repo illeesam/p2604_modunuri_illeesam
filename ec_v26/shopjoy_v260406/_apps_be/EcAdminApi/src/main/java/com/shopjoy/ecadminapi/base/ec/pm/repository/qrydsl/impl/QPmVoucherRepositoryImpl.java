@@ -67,8 +67,8 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                         pmVoucher.useYn, pmVoucher.regBy, pmVoucher.regDate, pmVoucher.updBy, pmVoucher.updDate
                 ))
                 .from(pmVoucher)
-                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VOUCHER_TYPE").and(cdVt.codeValue.eq(pmVoucher.voucherTypeCd)))
-                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VOUCHER_STATUS").and(cdVs.codeValue.eq(pmVoucher.voucherStatusCd)));
+                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VOUCHER_TYPE_CD").and(cdVt.codeValue.eq(pmVoucher.voucherTypeCd)))
+                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VOUCHER_STATUS_CD").and(cdVs.codeValue.eq(pmVoucher.voucherStatusCd)));
     }
 
     /* 바우처(상품권) 키조회 */

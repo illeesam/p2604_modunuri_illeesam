@@ -45,7 +45,7 @@ public class OdOrder extends BaseEntity {
     @Column(name = "order_date")
     private LocalDateTime orderDate;
 
-    @Comment("주문유입경로 (코드: ACCESS_CHANNEL — WEB_PC/WEB_MOBILE/APP_IOS/APP_ANDROID)")
+    @Comment("주문유입경로 (코드: ACCESS_CHANNEL_CD — WEB_PC/WEB_MOBILE/APP_IOS/APP_ANDROID)")
     @Column(name = "access_channel_cd", length = 20)
     private String accessChannelCd;
 
@@ -105,11 +105,11 @@ public class OdOrder extends BaseEntity {
     @Column(name = "pay_date")
     private LocalDateTime payDate;
 
-    @Comment("주문상태 (코드: ORDER_STATUS)")
+    @Comment("주문상태 (코드: ORDER_STATUS_CD)")
     @Column(name = "order_status_cd", length = 20)
     private String orderStatusCd;
 
-    @Comment("변경 전 주문상태 (코드: ORDER_STATUS)")
+    @Comment("변경 전 주문상태 (코드: ORDER_STATUS_CD)")
     @Column(name = "order_status_cd_before", length = 20)
     private String orderStatusCdBefore;
 
@@ -181,11 +181,11 @@ public class OdOrder extends BaseEntity {
     @Column(name = "dliv_ship_date")
     private LocalDateTime dlivShipDate;
 
-    @Comment("결재상태 (코드: APPR_STATUS)")
+    @Comment("결재상태 (코드: APPR_STATUS_CD)")
     @Column(name = "appr_status_cd", length = 20)
     private String apprStatusCd;
 
-    @Comment("변경 전 결재상태 (코드: APPR_STATUS)")
+    @Comment("변경 전 결재상태 (코드: APPR_STATUS_CD)")
     @Column(name = "appr_status_cd_before", length = 20)
     private String apprStatusCdBefore;
 
@@ -193,7 +193,7 @@ public class OdOrder extends BaseEntity {
     @Column(name = "appr_amt")
     private Long apprAmt;
 
-    @Comment("결재대상 구분 (코드: APPR_TARGET)")
+    @Comment("결재대상 구분 (코드: APPR_TARGET_CD)")
     @Column(name = "appr_target_cd", length = 30)
     private String apprTargetCd;
 

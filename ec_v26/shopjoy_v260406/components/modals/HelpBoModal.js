@@ -33,14 +33,14 @@ window.HelpBoModal = {
     /* 상태코드 표준 — sy_code 기준. 여기 없는 값을 저장하면 라벨이 안 붙고
        상태 기반 화면(주문 칸반 등)에서 항목이 아예 안 보인다. */
     const STATUS_GROUPS = [
-      { grp: 'ORDER_STATUS',      col: 'od_order.order_status_cd',            codes: 'PENDING(입금대기) · PAID(결제완료) · PREPARING(상품준비) · SHIPPED(배송중) · DELIVERED(배송완료) · COMPLT(구매확정) · CANCELLED(주문취소) · AUTO_CANCELLED(자동취소)' },
-      { grp: 'ORDER_ITEM_STATUS', col: 'od_order_item.order_item_status_cd',  codes: 'ORDERED(주문완료) · PAID(결제완료) · PREPARING(준비중) · SHIPPING(배송중) · DELIVERED(배송완료) · CONFIRMED(구매확정) · CANCELLED(취소)' },
-      { grp: 'CLAIM_STATUS',      col: 'od_claim.claim_status_cd',            codes: 'REQUESTED(요청) · ACCEPTED/APPROVED(승인) · REJECTED(반려) · IN_PICKUP(수거중) · PROCESSING(처리중) · REFUND_WAIT(환불대기) · COMPLT(처리완료) · CANCELLED(철회)' },
+      { grp: 'ORDER_STATUS_CD',      col: 'od_order.order_status_cd',            codes: 'PENDING(입금대기) · PAID(결제완료) · PREPARING(상품준비) · SHIPPED(배송중) · DELIVERED(배송완료) · COMPLT(구매확정) · CANCELLED(주문취소) · AUTO_CANCELLED(자동취소)' },
+      { grp: 'ORDER_ITEM_STATUS_CD', col: 'od_order_item.order_item_status_cd',  codes: 'ORDERED(주문완료) · PAID(결제완료) · PREPARING(준비중) · SHIPPING(배송중) · DELIVERED(배송완료) · CONFIRMED(구매확정) · CANCELLED(취소)' },
+      { grp: 'CLAIM_STATUS_CD',      col: 'od_claim.claim_status_cd',            codes: 'REQUESTED(요청) · ACCEPTED/APPROVED(승인) · REJECTED(반려) · IN_PICKUP(수거중) · PROCESSING(처리중) · REFUND_WAIT(환불대기) · COMPLT(처리완료) · CANCELLED(철회)' },
       { grp: 'DLIV_STATUS',       col: 'od_dliv.dliv_status_cd',              codes: 'READY(준비중) · SHIPPED(출고완료) · IN_TRANSIT(배송중) · DELIVERED(배송완료) · FAILED(배송실패)' },
-      { grp: 'PROD_STATUS',       col: 'pd_prod.prod_status_cd',              codes: 'ACTIVE(판매중) · INACTIVE(중지) · SOLDOUT(품절) · DRAFT(임시저장)' },
-      { grp: 'EVENT_STATUS',      col: 'pm_event.event_status_cd',            codes: 'PENDING(대기) · ACTIVE(진행중) · INACTIVE(비활성) · ENDED(종료)' },
-      { grp: 'SETTLE_STATUS',     col: 'st_settle.settle_status_cd',          codes: 'OPEN(진행중) · CONFIRMED(정산확정) · CLOSED(마감완료) · PAID(지급완료) · CANCELLED(마감취소)' },
-      { grp: 'CONTACT_STATUS',    col: 'sy_contact.contact_status_cd',        codes: 'RECEIVED(접수) · IN_PROGRESS(처리중) · DONE(완료) · ON_HOLD(보류)' },
+      { grp: 'PROD_STATUS_CD',       col: 'pd_prod.prod_status_cd',              codes: 'ACTIVE(판매중) · INACTIVE(중지) · SOLDOUT(품절) · DRAFT(임시저장)' },
+      { grp: 'EVENT_STATUS_CD',      col: 'pm_event.event_status_cd',            codes: 'PENDING(대기) · ACTIVE(진행중) · INACTIVE(비활성) · ENDED(종료)' },
+      { grp: 'SETTLE_STATUS_CD',     col: 'st_settle.settle_status_cd',          codes: 'OPEN(진행중) · CONFIRMED(정산확정) · CLOSED(마감완료) · PAID(지급완료) · CANCELLED(마감취소)' },
+      { grp: 'CONTACT_STATUS_CD',    col: 'sy_contact.contact_status_cd',        codes: 'RECEIVED(접수) · IN_PROGRESS(처리중) · DONE(완료) · ON_HOLD(보류)' },
       { grp: 'CHATT_STATUS',      col: 'cm_chatt.chatt_status_cd',            codes: 'WAITING(대기) · ACTIVE(진행중) · DONE(완료)' },
     ];
 
@@ -63,15 +63,15 @@ window.HelpBoModal = {
     /* 코드그룹명이 낡은 쪽을 가리키던 컬럼 — 정본으로 교체 (2026-07-31 2차 정비) */
     const STATUS_GRP_FIX = [
       { was: 'WIDGET_TYPE(20종)',   now: 'DISP_WIDGET_TYPE(27종)', note: '전시 위젯. 지침서 명시값' },
-      { was: 'PRODUCT_STATUS',      now: 'PROD_STATUS',            note: '상품 상태' },
-      { was: 'PRODUCT_TYPE',        now: 'PROD_TYPE',              note: '상품 유형' },
-      { was: 'CLAIM_FAULT',         now: 'FAULT_TYPE',             note: '귀책 구분' },
+      { was: 'PRODUCT_STATUS',      now: 'PROD_STATUS_CD',            note: '상품 상태' },
+      { was: 'PRODUCT_TYPE',        now: 'PROD_TYPE_CD',              note: '상품 유형' },
+      { was: 'CLAIM_FAULT',         now: 'FAULT_TYPE_CD',             note: '귀책 구분' },
       { was: 'APPROVAL_STATUS/TARGET', now: 'APPR_STATUS/APPR_TARGET', note: '조인이 안 맞아 결재 라벨이 항상 비어 있었음' },
-      { was: 'USE_YN (카테고리)',   now: 'CATEGORY_STATUS',        note: '상태 컬럼인데 Y/N 그룹을 참조' },
+      { was: 'USE_YN (카테고리)',   now: 'CATEGORY_STATUS_CD',        note: '상태 컬럼인데 Y/N 그룹을 참조' },
       { was: 'TOKEN_TYPE',          now: 'APP_TYPE',               note: '값이 BO/FO — 앱 구분' },
       { was: 'PAY_METHOD_CD',       now: 'PAY_METHOD',             note: '그룹명 오타' },
       { was: 'COUPON/DISCNT/EVENT_ITEM_TARGET', now: 'PROMO_TARGET_TYPE', note: '프로모션 타깃 정본' },
-      { was: 'VENDOR_MEMBER_STATUS', now: 'VENDOR_USER_STATUS',    note: '' },
+      { was: 'VENDOR_MEMBER_STATUS', now: 'VENDOR_USER_STATUS_CD',    note: '' },
     ];
 
     const OPT_SUB_TABS = [

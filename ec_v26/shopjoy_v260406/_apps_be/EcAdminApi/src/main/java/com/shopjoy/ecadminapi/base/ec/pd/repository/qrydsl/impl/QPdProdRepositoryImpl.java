@@ -120,7 +120,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
                 .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd)))
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE").and(cdPt.codeValue.eq(pdProd.prodTypeCd)));
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd)));
     }
 
     /** 단건 조회 — selectById 와 동일 컬럼 셋 (size_info_cd_nm 포함) */
@@ -196,8 +196,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
                 .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd)))
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE").and(cdPt.codeValue.eq(pdProd.prodTypeCd)))
-                .leftJoin(cdSz).on(cdSz.codeGrp.eq("PRODUCT_SIZE").and(cdSz.codeValue.eq(pdProd.sizeInfoCd)))
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PROD_TYPE_CD").and(cdPt.codeValue.eq(pdProd.prodTypeCd)))
+                .leftJoin(cdSz).on(cdSz.codeGrp.eq("SIZE_INFO_CD").and(cdSz.codeValue.eq(pdProd.sizeInfoCd)))
                 .where(pdProd.prodId.eq(prodId))
                 .fetchOne();
         return Optional.ofNullable(dto);

@@ -41,7 +41,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
 
     /*
      * baseSelColumnQuery — 코드성 필드 예시 코드값
-     * ACTION_CD (코드: TOKEN_ACTION)      {ISSUE: '발급', REFRESH: '갱신', REVOKE: '강제폐기', EXPIRE: '만료'}
+     * ACTION_CD (코드: ACTION_CD)      {ISSUE: '발급', REFRESH: '갱신', REVOKE: '강제폐기', EXPIRE: '만료'}
      * TOKEN_TYPE_CD (코드: TOKEN_TYPE)    {ACCESS: '액세스', REFRESH: '리프레시', TEMP: '임시'}
      */
     private JPAQuery<MbhMemberTokenLogDto.Item> baseSelColumnQuery() {
@@ -72,7 +72,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
                 ))
                 .from(mbhMemberTokenLog)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberTokenLog.memberId))
-                .leftJoin(cdTa).on(cdTa.codeGrp.eq("TOKEN_ACTION").and(cdTa.codeValue.eq(mbhMemberTokenLog.actionCd)))
+                .leftJoin(cdTa).on(cdTa.codeGrp.eq("ACTION_CD").and(cdTa.codeValue.eq(mbhMemberTokenLog.actionCd)))
                 .leftJoin(cdTt).on(cdTt.codeGrp.eq("TOKEN_TYPE").and(cdTt.codeValue.eq(mbhMemberTokenLog.tokenTypeCd)));
     }
 

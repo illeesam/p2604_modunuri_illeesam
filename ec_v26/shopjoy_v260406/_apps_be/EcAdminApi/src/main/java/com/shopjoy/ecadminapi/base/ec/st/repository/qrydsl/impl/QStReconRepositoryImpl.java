@@ -80,8 +80,8 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                 .from(stRecon)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(stRecon.vendorId))
                 .leftJoin(stSettleRaw).on(stSettleRaw.settleRawId.eq(stRecon.settleRawId))
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE").and(cdRt.codeValue.eq(stRecon.reconTypeCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS").and(cdRs.codeValue.eq(stRecon.reconStatusCd)));
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE_CD").and(cdRt.codeValue.eq(stRecon.reconTypeCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS_CD").and(cdRs.codeValue.eq(stRecon.reconStatusCd)));
     }
 
     /* 정산 대사(Reconciliation) 키조회 */

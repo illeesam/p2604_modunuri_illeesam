@@ -47,7 +47,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 dpArea.uiId,          // UIID (dp_ui.ui_id, FK)
                 dpArea.areaCd,        // 영역코드 (예: MAIN_TOP, SIDEBAR_MID)
                 dpArea.areaNm,        // 영역명
-                dpArea.areaTypeCd,    // 영역유형 — AREA_TYPE_CD (코드: DISP_AREA_TYPE)
+                dpArea.areaTypeCd,    // 영역유형 — AREA_TYPE_CD (코드: AREA_TYPE_CD)
                 dpArea.areaDesc,      // 영역설명
                 dpArea.pathId,        // 점(.) 구분 표시경로
                 dpArea.useYn,         // 사용여부 — USE_YN {Y: '사용', N: '미사용'}

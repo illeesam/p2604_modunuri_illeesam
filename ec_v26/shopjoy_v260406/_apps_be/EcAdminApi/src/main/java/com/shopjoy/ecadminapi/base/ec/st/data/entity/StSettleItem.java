@@ -46,7 +46,7 @@ public class StSettleItem extends BaseEntity {
     @Column(name = "prod_id", length = 21)
     private String prodId;
 
-    @Comment("항목유형 (코드: SETTLE_ITEM_TYPE — SALE/CANCEL/RETURN)")
+    @Comment("항목유형 (코드: SETTLE_ITEM_TYPE_CD — SALE/CANCEL/RETURN)")
     @Column(name = "settle_item_type_cd", length = 20)
     private String settleItemTypeCd;
 

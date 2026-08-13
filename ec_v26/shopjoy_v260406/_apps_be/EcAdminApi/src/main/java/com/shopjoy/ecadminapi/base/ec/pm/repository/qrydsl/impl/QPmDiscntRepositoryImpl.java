@@ -52,7 +52,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
      * baseSelColumnQuery — 코드성 필드 예시 코드값
      * DISCNT_TYPE      {PROD: '상품할인', ORDER: '주문할인', SHIP: '배송비할인', SHIP_FREE: '무료배송'}
      * DISCNT_TARGET    {ALL: '전체', CATEGORY: '카테고리', PRODUCT: '상품', MEMBER_GRADE: '회원등급'}
-     * discntStatusCd   {ACTIVE: '활성', INACTIVE: '비활성', EXPIRED: '만료'} (코드: DISCNT_STATUS)
+     * discntStatusCd   {ACTIVE: '활성', INACTIVE: '비활성', EXPIRED: '만료'} (코드: DISCNT_STATUS_CD)
      */
     private JPAQuery<PmDiscntDto.Item> baseSelColumnQuery() {
         return queryFactory
@@ -67,7 +67,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                         pmDiscnt.maxDiscntAmt,            // 최대할인한도 (NULL=무제한)
                         pmDiscnt.startDate,               // 할인 시작일시
                         pmDiscnt.endDate,                 // 할인 종료일시
-                        pmDiscnt.discntStatusCd,         // 상태 — ACTIVE: '활성' / INACTIVE: '비활성' / EXPIRED: '만료' (코드: DISCNT_STATUS)
+                        pmDiscnt.discntStatusCd,         // 상태 — ACTIVE: '활성' / INACTIVE: '비활성' / EXPIRED: '만료' (코드: DISCNT_STATUS_CD)
                         pmDiscnt.discntStatusCdBefore,   // 변경 전 상태
                         pmDiscnt.discntDesc,              // 할인 설명
                         pmDiscnt.memGradeCd,              // 적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)

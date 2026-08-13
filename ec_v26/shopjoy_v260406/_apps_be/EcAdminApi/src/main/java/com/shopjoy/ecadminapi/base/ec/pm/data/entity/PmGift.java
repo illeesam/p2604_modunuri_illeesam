@@ -30,7 +30,7 @@ public class PmGift extends BaseEntity {
     @Column(name = "gift_nm", length = 100, nullable = false)
     private String giftNm;
 
-    @Comment("사은품유형 (코드: GIFT_TYPE — PRODUCT/SAMPLE/ETC)")
+    @Comment("사은품유형 (코드: GIFT_TYPE_CD — PRODUCT/SAMPLE/ETC)")
     @Column(name = "gift_type_cd", length = 20)
     private String giftTypeCd;
 
@@ -54,7 +54,7 @@ public class PmGift extends BaseEntity {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @Comment("상태 (코드: GIFT_STATUS)")
+    @Comment("상태 (코드: GIFT_STATUS_CD)")
     @Column(name = "gift_status_cd", length = 20)
     private String giftStatusCd;
 

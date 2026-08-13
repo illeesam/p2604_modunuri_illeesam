@@ -75,8 +75,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                 .from(syVendorUser)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorUser.vendorId))
                 .leftJoin(syUser).on(syUser.userId.eq(syVendorUser.userId))
-                .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION").and(cdP.codeValue.eq(syVendorUser.positionCd)))
-                .leftJoin(cdVms).on(cdVms.codeGrp.eq("VENDOR_USER_STATUS").and(cdVms.codeValue.eq(syVendorUser.vendorUserStatusCd)));
+                .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION_CD").and(cdP.codeValue.eq(syVendorUser.positionCd)))
+                .leftJoin(cdVms).on(cdVms.codeGrp.eq("VENDOR_USER_STATUS_CD").and(cdVms.codeValue.eq(syVendorUser.vendorUserStatusCd)));
     }
 
     /* 업체 사용자 키조회 */

@@ -41,7 +41,7 @@ public class PmGiftIssue extends BaseEntity {
     @Column(name = "issue_date")
     private LocalDateTime issueDate;
 
-    @Comment("상태 (코드: GIFT_ISSUE_STATUS)")
+    @Comment("상태 (코드: GIFT_ISSUE_STATUS_CD)")
     @Column(name = "gift_issue_status_cd", length = 20)
     private String giftIssueStatusCd;
 

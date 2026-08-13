@@ -67,10 +67,10 @@ window.StSettleEtcAdjMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['SETTLE_ETC_ADJ_TYPE', 'ADJ_DIR'], {compNm: 'StSettleEtcAdjMng'});
+      await codeStore.saLoadCodes(['ETC_ADJ_TYPE_CD', 'ETC_ADJ_DIR_CD'], {compNm: 'StSettleEtcAdjMng'});
       try {
-        codes.settle_etc_adj_types = codeStore.sgGetGrpCodes('SETTLE_ETC_ADJ_TYPE');
-        codes.adj_dirs = codeStore.sgGetGrpCodes('ADJ_DIR');
+        codes.settle_etc_adj_types = codeStore.sgGetGrpCodes('ETC_ADJ_TYPE_CD');
+        codes.adj_dirs = codeStore.sgGetGrpCodes('ETC_ADJ_DIR_CD');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }

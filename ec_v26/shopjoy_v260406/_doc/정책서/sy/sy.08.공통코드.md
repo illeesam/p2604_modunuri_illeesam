@@ -155,6 +155,10 @@ COMMENT ON COLUMN pm_save.save_issue_type_cd IS '지급유형';
 | `COUPON_TARGET` / `COUPON_ITEM_TARGET` / `DISCNT_ITEM_TARGET` / `EVENT_ITEM_TARGET` | `PROMO_TARGET_TYPE` | 프로모션 타깃 정본 그룹 |
 | `VENDOR_MEMBER_STATUS` | `VENDOR_USER_STATUS` | |
 
+> ⚠️ 2026-08-13 추가 변경: 위 표의 "정본 그룹" 상당수가 **"그룹명=참조 컬럼명 대문자" 정책**(`sy.58` §8)에 따라 한 번 더 바뀌었다.
+> `PROD_TYPE`→`PROD_TYPE_CD`, `PROD_STATUS`→`PROD_STATUS_CD`, `FAULT_TYPE`→`FAULT_TYPE_CD`,
+> `APPR_STATUS`→`APPR_STATUS_CD`, `CATEGORY_STATUS`→`CATEGORY_STATUS_CD` 등. 최신 그룹명은 `sy.58` §8 표를 확인할 것.
+
 **② 데이터 정규화** — `sy_bbm.content_type_cd` 의 `htmleditor`→`HTMLEDITOR`, `textarea`→`TEXTAREA`(표기 드리프트) /
 `od_order.pay_method_cd` 의 `TRANSFER`→`BANK_TRANSFER`(동의어, 하드코딩 없음 확인)
 

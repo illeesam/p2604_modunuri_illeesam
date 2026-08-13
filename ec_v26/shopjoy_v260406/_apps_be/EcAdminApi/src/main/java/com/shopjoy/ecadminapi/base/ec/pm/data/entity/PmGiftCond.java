@@ -28,7 +28,7 @@ public class PmGiftCond extends BaseEntity {
     private String giftId;
 
 
-    @Comment("조건유형 (코드: GIFT_COND_TYPE)")
+    @Comment("조건유형 (코드: COND_TYPE_CD)")
     @Column(name = "cond_type_cd", length = 20, nullable = false)
     private String condTypeCd;
 

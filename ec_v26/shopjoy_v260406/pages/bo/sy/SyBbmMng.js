@@ -243,8 +243,8 @@ window.SyBbmMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['BBM_TYPE', 'USE_YN'], {compNm: 'SyBbmMng'});
-      codes.bbm_type = codeStore.sgGetGrpCodes('BBM_TYPE');
+      await codeStore.saLoadCodes(['BBM_TYPE_CD', 'USE_YN'], {compNm: 'SyBbmMng'});
+      codes.bbm_type = codeStore.sgGetGrpCodes('BBM_TYPE_CD');
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
     };
 
@@ -264,7 +264,7 @@ window.SyBbmMng = {
     /* 게시판 마스터 fnTypeBadge */
     const _BBM_TYPE_FB = { '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' };
     /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge = t => coUtil.cofCodeBadge('BBM_TYPE', t, _BBM_TYPE_FB[t] || 'badge-gray');
+    const fnTypeBadge = t => coUtil.cofCodeBadge('BBM_TYPE_CD', t, _BBM_TYPE_FB[t] || 'badge-gray');
 
     /* fnYnBadge — Y/N 배지 */
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';

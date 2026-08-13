@@ -51,13 +51,13 @@ public final class ExcelMetaBuilder {
     ));
 
     /**
-     * {@code @Comment("...(코드: USER_STATUS)")} 안의 공통코드 그룹 마커 패턴.
+     * {@code @Comment("...(코드: USER_STATUS_CD)")} 안의 공통코드 그룹 마커 패턴.
      * <p>기존 Entity 컨벤션({@code (코드: XXX)})을 그대로 인식.
      *   - 한글 "코드" 또는 영문 "code" / "gcd" 모두 허용
      *   - 대소문자/공백 변형 허용
      *   - 그룹명은 영문 대문자/숫자/언더스코어만
-     * <p>예: "(코드: USER_STATUS)", "(코드:ROLE_TYPE)", "(code: USE_YN)", "(gcd: AUTH_METHOD)"
-     * <p>설명이 뒤따라오는 경우도 매칭: "(코드: ROLE_TYPE — SYSTEM/CUSTOM)" → "ROLE_TYPE" 추출
+     * <p>예: "(코드: USER_STATUS_CD)", "(코드:ROLE_TYPE_CD)", "(code: USE_YN)", "(gcd: AUTH_METHOD)"
+     * <p>설명이 뒤따라오는 경우도 매칭: "(코드: ROLE_TYPE_CD — SYSTEM/CUSTOM)" → "ROLE_TYPE_CD" 추출
      */
     private static final Pattern CODE_GRP_MARKER = Pattern.compile(
         "\\(\\s*(?:코드|code|gcd)\\s*[:：]\\s*([A-Za-z][A-Za-z0-9_]*)\\b[^)]*\\)",
@@ -67,7 +67,7 @@ public final class ExcelMetaBuilder {
     /** 마커 추출 결과 — 라벨에서 마커 제거된 깨끗한 텍스트 + 추출된 codeGrp */
     private record LabelParse(String cleanLabel, String codeGrp) {}
 
-    /** "역할유형 (gcd: ROLE_TYPE)" → LabelParse("역할유형", "ROLE_TYPE") */
+    /** "역할유형 (gcd: ROLE_TYPE)" → LabelParse("역할유형", "ROLE_TYPE_CD") */
     private static LabelParse parseLabel(String raw) {
         if (raw == null || raw.isBlank()) return new LabelParse(raw, "");
         Matcher m = CODE_GRP_MARKER.matcher(raw);

@@ -75,7 +75,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                 .from(stSettleItem)
                 .leftJoin(odOrder).on(odOrder.orderId.eq(stSettleItem.orderId))
                 .leftJoin(odOrderItem).on(odOrderItem.orderItemId.eq(stSettleItem.orderItemId))
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE").and(cdSit.codeValue.eq(stSettleItem.settleItemTypeCd)));
+                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE_CD").and(cdSit.codeValue.eq(stSettleItem.settleItemTypeCd)));
     }
 
     /* 정산 항목 키조회 */

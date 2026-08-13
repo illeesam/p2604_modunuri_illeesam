@@ -39,7 +39,7 @@ public class SyMenu extends BaseEntity {
     @Column(name = "menu_url", length = 200)
     private String menuUrl;
 
-    @Comment("메뉴유형 (코드: MENU_TYPE — PAGE/FOLDER/LINK)")
+    @Comment("메뉴유형 (코드: MENU_TYPE_CD — PAGE/FOLDER/LINK)")
     @Column(name = "menu_type_cd", length = 20)
     private String menuTypeCd;
 

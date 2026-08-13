@@ -320,13 +320,13 @@ window.PdProdMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'OPT_TYPE', 'CATEGORY_DEPTH', 'PROD_DATE_TYPE', 'DATE_RANGE_OPT', 'PROD_TYPE'], {compNm: 'PdProdMng'});
+      await codeStore.saLoadCodes(['PRODUCT_STATUS', 'OPT_TYPE', 'CATEGORY_DEPTH', 'PROD_DATE_TYPE', 'DATE_RANGE_OPT', 'PROD_TYPE_CD'], {compNm: 'PdProdMng'});
       codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
       codes.option_types = codeStore.sgGetGrpCodes('OPT_TYPE');
       codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
       codes.prod_date_types = codeStore.sgGetGrpCodes('PROD_DATE_TYPE');
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      codes.prod_types = codeStore.sgGetGrpCodes('PROD_TYPE');
+      codes.prod_types = codeStore.sgGetGrpCodes('PROD_TYPE_CD');
     };
 
     /* fnLoadVendorsAndMdUsers — 검색조건 판매업체 select 목록 로드 */

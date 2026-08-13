@@ -16,7 +16,7 @@ public class TableConfig {
     @Builder.Default
     private List<String> requiredFields = List.of();
 
-    /** Maps column name -> code group, e.g. "user_status_cd" -> "USER_STATUS" */
+    /** Maps column name -> code group, e.g. "user_status_cd" -> "USER_STATUS_CD" */
     @Builder.Default
     private Map<String, String> cdFields = Map.of();
 

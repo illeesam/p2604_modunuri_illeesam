@@ -26,11 +26,11 @@ public class StSettleRaw extends BaseEntity {
     private String settleRawId;
 
 
-    @Comment("수집유형 (코드: RAW_TYPE — ORDER/CLAIM)")
+    @Comment("수집유형 (코드: RAW_TYPE_CD — ORDER/CLAIM)")
     @Column(name = "raw_type_cd", length = 20, nullable = false)
     private String rawTypeCd;
 
-    @Comment("수집상태 (코드: RAW_STATUS)")
+    @Comment("수집상태 (코드: RAW_STATUS_CD)")
     @Column(name = "raw_status_cd", length = 20)
     private String rawStatusCd;
 
@@ -54,7 +54,7 @@ public class StSettleRaw extends BaseEntity {
     @Column(name = "order_date")
     private LocalDateTime orderDate;
 
-    @Comment("수집 시점 주문상태 스냅샷 (코드: ORDER_ITEM_STATUS)")
+    @Comment("수집 시점 주문상태 스냅샷 (코드: ORDER_ITEM_STATUS_CD)")
     @Column(name = "order_item_status_cd", length = 20)
     private String orderItemStatusCd;
 
@@ -74,7 +74,7 @@ public class StSettleRaw extends BaseEntity {
     @Column(name = "vendor_id", length = 21)
     private String vendorId;
 
-    @Comment("업체구분 (코드: VENDOR_TYPE — SALE/DLIV/EXTERNAL)")
+    @Comment("업체구분 (코드: VENDOR_TYPE_CD — SALE/DLIV/EXTERNAL)")
     @Column(name = "vendor_type_cd", length = 20)
     private String vendorTypeCd;
 

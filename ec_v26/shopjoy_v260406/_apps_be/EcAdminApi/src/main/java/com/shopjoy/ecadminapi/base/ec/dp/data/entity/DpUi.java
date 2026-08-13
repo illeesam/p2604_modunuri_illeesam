@@ -37,7 +37,7 @@ public class DpUi extends BaseEntity {
     @Column(name = "ui_desc", length = 300)
     private String uiDesc;
 
-    @Comment("디바이스유형 (코드: DEVICE_TYPE)")
+    @Comment("디바이스유형 (코드: DEVICE_TYPE_CD)")
     @Column(name = "device_type_cd", length = 30)
     private String deviceTypeCd;
 

@@ -57,7 +57,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 ))
                 .from(pmGiftCond)
                 .leftJoin(pmGift).on(pmGift.giftId.eq(pmGiftCond.giftId))
-                .leftJoin(cdGct).on(cdGct.codeGrp.eq("GIFT_COND_TYPE").and(cdGct.codeValue.eq(pmGiftCond.condTypeCd)));
+                .leftJoin(cdGct).on(cdGct.codeGrp.eq("COND_TYPE_CD").and(cdGct.codeValue.eq(pmGiftCond.condTypeCd)));
     }
 
     /* 사은품 지급 조건 키조회 */

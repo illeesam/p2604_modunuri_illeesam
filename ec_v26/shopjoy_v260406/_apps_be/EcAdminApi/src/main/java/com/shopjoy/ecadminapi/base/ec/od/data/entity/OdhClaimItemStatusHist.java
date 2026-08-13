@@ -37,11 +37,11 @@ public class OdhClaimItemStatusHist extends BaseEntity {
     @Column(name = "order_item_id", length = 21)
     private String orderItemId;
 
-    @Comment("변경 전 클레임상품상태 (코드: CLAIM_ITEM_STATUS)")
+    @Comment("변경 전 클레임상품상태 (코드: CLAIM_ITEM_STATUS_CD)")
     @Column(name = "claim_item_status_cd_before", length = 20)
     private String claimItemStatusCdBefore;
 
-    @Comment("변경 후 클레임상품상태 (코드: CLAIM_ITEM_STATUS)")
+    @Comment("변경 후 클레임상품상태 (코드: CLAIM_ITEM_STATUS_CD)")
     @Column(name = "claim_item_status_cd", length = 20)
     private String claimItemStatusCd;
 

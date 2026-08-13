@@ -147,12 +147,12 @@
     /* 라벨 조회용 */
     label(code) {
       const c = (window.sfGetBoCodeStore?.()?.svCodes || [])
-        .find(x => x.codeGrp === 'VISIBILITY_TARGET' && x.codeValue === code);
+        .find(x => x.codeGrp === 'VISIBILITY_TARGETS' && x.codeValue === code);
       return c?.codeLabel || code;
     },
     allOptions() {
       return (window.sfGetBoCodeStore?.()?.svCodes || [])
-        .filter(x => x.codeGrp === 'VISIBILITY_TARGET' && x.useYn === 'Y')
+        .filter(x => x.codeGrp === 'VISIBILITY_TARGETS' && x.useYn === 'Y')
         .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
     },
   };

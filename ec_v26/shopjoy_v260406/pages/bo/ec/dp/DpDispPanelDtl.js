@@ -193,10 +193,10 @@ window.DpDispPanelDtl = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['LAYOUT_TYPE', 'DISP_WIDGET_TYPE', 'DISP_STATUS'], {compNm: 'DpDispPanelDtl'});
+      await codeStore.saLoadCodes(['LAYOUT_TYPE', 'WIDGET_TYPE_CD', 'DISP_PANEL_STATUS_CD'], {compNm: 'DpDispPanelDtl'});
       codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
-      codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      codes.active_statuses = codeStore.sgGetGrpCodes('DISP_STATUS');
+      codes.disp_widget_types = codeStore.sgGetGrpCodes('WIDGET_TYPE_CD');
+      codes.active_statuses = codeStore.sgGetGrpCodes('DISP_PANEL_STATUS_CD');
     };
 
     // 코드 주입

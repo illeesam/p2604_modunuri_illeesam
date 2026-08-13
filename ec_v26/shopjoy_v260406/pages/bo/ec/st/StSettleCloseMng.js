@@ -50,9 +50,9 @@ window.StSettleCloseMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['SETTLE_STATUS'], {compNm: 'StSettleCloseMng'});
+      await codeStore.saLoadCodes(['SETTLE_STATUS_CD'], {compNm: 'StSettleCloseMng'});
       try {
-        codes.settle_statuses = codeStore.sgGetGrpCodes('SETTLE_STATUS');
+        codes.settle_statuses = codeStore.sgGetGrpCodes('SETTLE_STATUS_CD');
       } catch (err) {
         console.error('[fnLoadCodes]', err);
       }
@@ -148,8 +148,8 @@ window.StSettleCloseMng = {
     };
 
     /* fnStatusBadge — 마감상태 배지 (SETTLE_STATUS 코드값 기준: CLOSED/OPEN) */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('SETTLE_STATUS', s, { CLOSED:'badge-green', OPEN:'badge-blue' }[s] || 'badge-gray');
-    const fnSettleStatusBadge = s => coUtil.cofCodeBadge('SETTLE_STATUS', s, { CONFIRMED:'badge-blue', PAID:'badge-green', CLOSED:'badge-gray', CANCELLED:'badge-red', OPEN:'badge-orange' }[s] || 'badge-gray');
+    const fnStatusBadge = s => coUtil.cofCodeBadge('SETTLE_STATUS_CD', s, { CLOSED:'badge-green', OPEN:'badge-blue' }[s] || 'badge-gray');
+    const fnSettleStatusBadge = s => coUtil.cofCodeBadge('SETTLE_STATUS_CD', s, { CONFIRMED:'badge-blue', PAID:'badge-green', CLOSED:'badge-gray', CANCELLED:'badge-red', OPEN:'badge-orange' }[s] || 'badge-gray');
 
     /* fmtW — 포맷 W */
     const fmtW = coUtil.cofWon;

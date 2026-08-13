@@ -263,8 +263,8 @@ window.OdOrderMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ORDER_STATUS', 'PAYMENT_METHOD', 'DLIV_STATUS', 'ORDER_DATE_TYPE', 'APPROVAL_ACTION', 'REQ_TARGET', 'DATE_RANGE_OPT'], {compNm: 'OdOrderMng'});
-      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
+      await codeStore.saLoadCodes(['ORDER_STATUS_CD', 'PAYMENT_METHOD', 'DLIV_STATUS', 'ORDER_DATE_TYPE', 'APPROVAL_ACTION', 'REQ_TARGET', 'DATE_RANGE_OPT'], {compNm: 'OdOrderMng'});
+      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS_CD');
       codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
       codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
       codes.order_date_types = codeStore.sgGetGrpCodes('ORDER_DATE_TYPE');
@@ -316,7 +316,7 @@ window.OdOrderMng = {
     /* 주문 fnStatusBadge — 공통코드 ORDER_STATUS code_opt1 우선, 미매칭 시 로컬 fallback */
     const _ORDER_STATUS_FB = boConsts.ORDER_STATUS_BADGE;
     /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('ORDER_STATUS', s, _ORDER_STATUS_FB[s] || 'badge-gray');
+    const fnStatusBadge = s => coUtil.cofCodeBadge('ORDER_STATUS_CD', s, _ORDER_STATUS_FB[s] || 'badge-gray');
 
     /* 주문 fnPayStatusBadge */
     const _PAY_STATUS_FB = boConsts.PAY_STATUS_BADGE;

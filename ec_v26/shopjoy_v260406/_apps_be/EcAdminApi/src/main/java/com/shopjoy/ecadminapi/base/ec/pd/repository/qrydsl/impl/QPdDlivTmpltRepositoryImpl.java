@@ -73,8 +73,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 ))
                 .from(pdDlivTmplt)
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(pdDlivTmplt.vendorId))
-                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD").and(cdDm.codeValue.eq(pdDlivTmplt.dlivMethodCd)))
-                .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE").and(cdDpt.codeValue.eq(pdDlivTmplt.dlivPayTypeCd)));
+                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD_CD").and(cdDm.codeValue.eq(pdDlivTmplt.dlivMethodCd)))
+                .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE_CD").and(cdDpt.codeValue.eq(pdDlivTmplt.dlivPayTypeCd)));
     }
 
     /* 배송 템플릿 키조회 */

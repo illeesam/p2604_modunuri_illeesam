@@ -69,7 +69,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 ))
                 .from(syDept)
                 .leftJoin(syUser).on(syUser.userId.eq(syDept.managerId))
-                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE").and(cdDt.codeValue.eq(syDept.deptTypeCd)));
+                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE_CD").and(cdDt.codeValue.eq(syDept.deptTypeCd)));
     }
 
     /* 부서 키조회 */

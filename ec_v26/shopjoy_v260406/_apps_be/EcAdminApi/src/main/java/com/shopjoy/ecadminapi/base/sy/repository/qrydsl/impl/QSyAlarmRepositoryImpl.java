@@ -74,7 +74,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                         cdAtt.codeLabel.as("targetTypeCdNm")      // 대상유형 라벨 (sy_code ALARM_TARGET_TYPE 조인)
                 ))
                 .from(syAlarm)
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd)))
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE_CD").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd)))
                 .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(syAlarm.channelCd)))
                 .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(syAlarm.targetTypeCd)));
     }

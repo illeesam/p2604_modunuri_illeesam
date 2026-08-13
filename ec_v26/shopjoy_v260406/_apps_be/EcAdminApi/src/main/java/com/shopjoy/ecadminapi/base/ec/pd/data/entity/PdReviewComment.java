@@ -32,7 +32,7 @@ public class PdReviewComment extends BaseEntity {
     @Column(name = "parent_reply_id", length = 21)
     private String parentReplyId;
 
-    @Comment("작성자유형 (코드: REVIEW_WRITER_TYPE — MEMBER/SELLER/ADMIN)")
+    @Comment("작성자유형 (코드: WRITER_TYPE_CD — MEMBER/SELLER/ADMIN)")
     @Column(name = "writer_type_cd", length = 20)
     private String writerTypeCd;
 

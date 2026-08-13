@@ -75,7 +75,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                 .leftJoin(syVendor).on(syVendor.vendorId.eq(syVendorContent.vendorId))
                 // sySite·syAttachGrp 은 SELECT 대상 없는 dead JOIN → 제거됨
                 .leftJoin(cdVct).on(cdVct.codeGrp.eq("VENDOR_CONTENT_TYPE").and(cdVct.codeValue.eq(syVendorContent.contentTypeCd)))
-                .leftJoin(cdVcs).on(cdVcs.codeGrp.eq("VENDOR_CONTENT_STATUS").and(cdVcs.codeValue.eq(syVendorContent.vendorContentStatusCd)));
+                .leftJoin(cdVcs).on(cdVcs.codeGrp.eq("VENDOR_CONTENT_STATUS_CD").and(cdVcs.codeValue.eq(syVendorContent.vendorContentStatusCd)));
     }
 
     /* 업체 콘텐츠 키조회 */

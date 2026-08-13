@@ -29,7 +29,7 @@ public class SyAlarm extends BaseEntity {
     @Column(name = "alarm_title", length = 200, nullable = false)
     private String alarmTitle;
 
-    @Comment("알림유형 (코드: ALARM_TYPE)")
+    @Comment("알림유형 (코드: ALARM_TYPE_CD)")
     @Column(name = "alarm_type_cd", length = 30)
     private String alarmTypeCd;
 

@@ -13,7 +13,7 @@ package com.shopjoy.ecadminapi.common.excel;
  * @param dbColumnName  DB 컬럼명 (snake_case). 디버깅/스키마 추적용. 없으면 빈 문자열.
  * @param label         한글 라벨 (Entity {@code @Comment} 에서 마커 제거된 깨끗한 텍스트).
  * @param comment       상세 설명 (없으면 label 과 동일).
- * @param codeGrp       공통코드 그룹코드 (예: "USER_STATUS"). {@code @Comment("...(gcd: USER_STATUS)")} 마커에서 추출. 없으면 빈 문자열.
+ * @param codeGrp       공통코드 그룹코드 (예: "USER_STATUS_CD"). {@code @Comment("...(gcd: USER_STATUS)")} 마커에서 추출. 없으면 빈 문자열.
  * @param isKey         PK/upsert 키 컬럼 여부. true 면 헤더에 (key) 마커 표시.
  * @param readOnly      업로드 시 무시할 컬럼 (예: regDate, updDate 등 시스템 컬럼).
  */

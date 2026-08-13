@@ -144,9 +144,9 @@ window.PmGiftMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['GIFT_STATUS', 'GIFT_COND_KR', 'DATE_RANGE_OPT'], {compNm: 'PmGiftMng'});
+      await codeStore.saLoadCodes(['GIFT_STATUS_CD', 'GIFT_COND_KR', 'DATE_RANGE_OPT'], {compNm: 'PmGiftMng'});
       try {
-        codes.gift_statuses = codeStore.sgGetGrpCodes('GIFT_STATUS');
+        codes.gift_statuses = codeStore.sgGetGrpCodes('GIFT_STATUS_CD');
         codes.gift_cond_types = codeStore.sgGetGrpCodes('GIFT_COND_KR');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
       } catch (err) {

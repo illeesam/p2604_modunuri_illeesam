@@ -320,6 +320,121 @@ BE 35파일 + FE 18파일 반영. `gradlew clean compileJava` **BUILD SUCCESSFUL
 
 ---
 
+## 8. 코드그룹명 = 참조 컬럼명 대문자 (2026-08-13 3차)
+
+### 결정
+
+`sy_code_grp.code_grp` 의 값을 **해당 그룹을 참조하는 DB 컬럼명의 대문자형**과 일치시킨다.
+예: `pd_prod.prod_type_cd` 를 참조하는 그룹은 `PROD_TYPE` 이 아니라 **`PROD_TYPE_CD`**.
+
+목적은 그룹명만 보고 "어느 컬럼이 이 코드를 쓰는지" 역추적 가능하게 하는 것이다.
+
+### 적용 범위 판단 — 왜 전체(247개)가 아니라 105개인가
+
+컬럼 코멘트(`(코드: X)`)를 근거로 전수 조사한 결과, **이 규칙이 성립하는 그룹은 전체의 43%뿐**이었다.
+
+| 구분 | 건수 | 처리 |
+|---|---|---|
+| 컬럼 1개와 1:1 매핑 | 91개 | **적용** — 대문자 그대로 |
+| 컬럼 여러 개가 공유(본값+`_before`/`_after` 이력값 패턴) | 14개 | **적용** — 본값 컬럼을 대표로 |
+| 컬럼 여러 개가 공유(진짜 다른 개념) | 7개 | **제외** — 대표를 못 정함 |
+| **신규 이름이 다른 그룹과 충돌** | 20개 | **제외** — 아래 §8-2 |
+| 대응 컬럼 코멘트 없음(범용 재사용 목록) | 114개 | **제외** — "해당 컬럼"이 없음 |
+
+**적용 105건**(91+14, 충돌 발견분 재조정 포함). 나머지는 그룹명을 그대로 유지한다.
+
+### 8-1. 대표 컬럼으로 해소한 14개 (본값 + 이력값 패턴)
+
+`appr_status_cd` / `appr_status_cd_before` 처럼 "본값 + 변경 전 이력값" 짝인 경우 본값 컬럼을 대표로 삼는다.
+
+`APPR_STATUS`→`APPR_STATUS_CD`, `CLAIM_ITEM_STATUS`→`CLAIM_ITEM_STATUS_CD`, `CLAIM_STATUS`→`CLAIM_STATUS_CD`,
+`COMMENT_STATUS`→`COMMENT_STATUS_CD`, `COUPON_STATUS`→`COUPON_STATUS_CD`,
+`DISP_STATUS`→**`DISP_PANEL_STATUS_CD`**(대표 컬럼이 `disp_panel_status_cd` 라 그룹명과 어긋나 보이지만 컬럼명 그대로),
+`EVENT_STATUS`→`EVENT_STATUS_CD`, `MEMBER_STATUS`→`MEMBER_STATUS_CD`,
+`ORDER_ITEM_STATUS`→`ORDER_ITEM_STATUS_CD`, `ORDER_STATUS`→`ORDER_STATUS_CD`, `PAY_STATUS`→`PAY_STATUS_CD`,
+`PROD_STATUS`→`PROD_STATUS_CD`, `REFUND_STATUS`→`REFUND_STATUS_CD`, `REVIEW_STATUS`→`REVIEW_STATUS_CD`
+
+### 8-2. 제외 — 대표를 정할 수 없는 7개 (진짜 다른 개념 공유)
+
+| 그룹 | 공유 컬럼 (서로 다른 개념) |
+|---|---|
+| `COURIER` | 배송·반품·교환·입고·출고 택배사 — 5개 |
+| `DLIV_STATUS` | 배송상태 / 반품상태 / 배송품목상태 — 3개+이력 |
+| `PAY_METHOD` | 결제수단 / 결제수단유형 — 2개 |
+| `MEMBER_GRADE` | 등급 / 주문등급 / 회원등급 — 3개 |
+| `APP_TYPE` | 토큰유형 / 앱유형 — 2개 (진짜 다른 의미) |
+| `BANK_CODE` | 환불계좌은행 / 가상계좌은행 — 2개 (범용 은행 목록) |
+| `BATCH_STATUS` | **오염된 그룹** — 아래 참조 |
+
+**`BATCH_STATUS` 부수 발견**: 정의상태(`ACTIVE`/`INACTIVE`)와 실행결과(`PENDING`/`RUNNING`/`DONE`/`FAILED`)가
+**한 그룹에 섞여** 있다. 별도로 존재하는 `BATCH_RUN_STATUS`(`SUCCESS`/`FAILED`/`RUNNING`/`IDLE`) 그룹이
+실행결과의 정본으로 보인다. 게다가 `sy_batch.batch_run_status_cd` 실제 저장값에 **`FAIL`**(오타, 두 그룹 모두 `FAILED`)이
+있어 그 값은 항상 라벨이 빈칸이다. **이번 작업 범위 밖이라 손대지 않았다** — 어느 컬럼을 어느 그룹으로 재배정할지는 업무 판단 필요.
+
+### 8-3. 제외 — 이름 충돌 20건 (7클러스터)
+
+**컬럼명이 도메인마다 로컬하게 재사용되는 것**(`content_type_cd`, `channel_cd` 등)과
+**그룹명은 전역에서 유일해야 하는 것**이 충돌한다. 강제로 합치면 서로 다른 코드 목록이 하나로 뭉개진다.
+
+| 충돌 후보 이름 | 원래 그룹들 (전부 다른 코드 목록) |
+|---|---|
+| `CHANNEL_CD` | `ALARM_CHANNEL`, `MSG_CHANNEL`, `PUSH_CHANNEL` |
+| `CHG_TYPE_CD` | `PAYMENT_CHG_TYPE`, `SKU_CHG_TYPE` |
+| `CONTENT_TYPE_CD` | `BBM_CONTENT_TYPE`, `PROD_CONTENT_TYPE`, `VENDOR_CONTENT_TYPE` |
+| `DISCNT_TYPE_CD` | `DISCNT_TYPE`, `ORDER_DISCNT_TYPE`, `ORDER_ITEM_DISCNT_TYPE` |
+| `PAY_STATUS_CD` | `PAY_STATUS`, `SETTLE_PAY_STATUS` |
+| `RESULT_CD` | `LOGIN_RESULT`, `PUSH_RESULT`, `SEND_RESULT` |
+| `TARGET_TYPE_CD` | `ALARM_TARGET_TYPE`, `EVENT_TARGET`, `LIKE_TARGET_TYPE`, `PROMO_TARGET_TYPE` |
+
+**이 20개는 그룹명을 그대로 유지한다.**
+
+### 8-4. ⚠️ 실제로 사고가 났던 지점 — `USE_YN`
+
+자동화 1차 적용에서 **`USE_YN` → `CATEGORY_STATUS_CD_BEFORE`** 로 잘못 rename 되어
+**DB `sy_code_grp`·소스코드 23개 파일·`sy_i18n` 키까지 실제로 반영됐다.**
+
+원인: `pd_category.category_status_cd_before`(이력 컬럼)의 **낡은 코멘트**가 `(코드: USE_YN)` 이라고 잘못 남아 있었다.
+`USE_YN`은 전사에서 광범위하게 재사용되는 범용 Y/N 그룹인데, 이 낡은 코멘트 하나가 "1:1 매핑"으로 오판되게 만들었다.
+
+**감지 방법**: 적용 후 화면(`SyI18nMng.js`)에서 `sgGetGrpCodes('USE_YN')` 호출이
+엉뚱한 그룹명으로 바뀐 것을 발견 → 즉시 DB 재확인 → 실제 반영 확인 → 롤백.
+
+**전수 재검사 결과**: 적용된 106건 중 "근거 컬럼이 전부 `_before`/`_after` 뿐인 경우"는 **`USE_YN` 1건뿐**이었다.
+나머지는 안전.
+
+**교훈**: 컬럼 코멘트를 근거로 삼을 때, **그 컬럼이 `_before`/`_after` 이력 컬럼뿐이고 그룹명이
+범용적으로 들리면(YN/STATUS/TYPE 등 흔한 단어) 반드시 실사용 범위를 먼저 확인**할 것.
+이력 컬럼의 코멘트는 원본 컬럼 마이그레이션 시 갱신이 누락되기 쉽다.
+
+### 실행 결과
+
+- DB: `sy_code_grp` 105건 rename, `sy_i18n.i18n_key` 366건 동기화 (`syCode.{OLD}.` → `syCode.{NEW}.`)
+- 소스: 백엔드 Java 106개 파일 + 프론트 JS 114개 파일, 총 500곳 치환 (`codeGrp.eq("X")`, `saLoadCodes(['X'])`, `sgGetGrpCodes('X')`, Entity 코멘트 `코드: X`)
+- 검증: `sy_code_grp` 총 행수 247(불변) / 고유값 247(중복 rename 없음) / `sy_i18n` 총 행수 1530(불변, UPDATE만 수행) / 한글 키 0건
+- `gradlew clean compileJava` **BUILD SUCCESSFUL**, 변경 JS `node --check` 전체 통과
+
+### 재현 방법
+
+```bash
+# ① DB 컬럼 코멘트 "(코드: X)" 전수 스캔 → 그룹별 컬럼 매핑
+# c:/tmp/GrpColMap.java 참조
+
+# ② 다중공유 그룹의 실제 코드값 확인(대표 판단용)
+# c:/tmp/MultiChk.java 참조
+
+# ③ rename 맵 생성 + 충돌 검사(신규이름 중복 / 기존 그룹명과 충돌)
+# c:/tmp/BuildMap.java → c:/tmp/rename_map.txt
+
+# ④ DB 적용(sy_code_grp + sy_i18n.i18n_key 동기화, 한 트랜잭션)
+# c:/tmp/ApplyRename.java
+
+# ⑤ 소스 문자열 리터럴 치환(백엔드+프론트)
+# c:/tmp/ferename.js
+
+# ⑥ 위험군 재검사 — _before/_after 단독 근거 그룹 여부
+# c:/tmp/AuditRisk.java
+```
+
 ## 관련 문서
 
 - [`sy.52.ddl단어사전규칙.md`](sy.52.ddl단어사전규칙.md) — DDL 컬럼 명명 전반

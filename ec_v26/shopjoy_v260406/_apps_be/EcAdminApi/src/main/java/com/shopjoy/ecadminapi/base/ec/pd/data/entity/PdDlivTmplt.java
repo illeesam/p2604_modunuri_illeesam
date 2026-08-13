@@ -32,11 +32,11 @@ public class PdDlivTmplt extends BaseEntity {
     @Column(name = "dliv_tmplt_nm", length = 100, nullable = false)
     private String dlivTmpltNm;
 
-    @Comment("배송방법코드 (코드: DLIV_METHOD)")
+    @Comment("배송방법코드 (코드: DLIV_METHOD_CD)")
     @Column(name = "dliv_method_cd", length = 20)
     private String dlivMethodCd;
 
-    @Comment("배송비결제유형 (코드: DLIV_PAY_TYPE) PREPAY:선결제/COD:착불")
+    @Comment("배송비결제유형 (코드: DLIV_PAY_TYPE_CD) PREPAY:선결제/COD:착불")
     @Column(name = "dliv_pay_type_cd", length = 20)
     private String dlivPayTypeCd;
 

@@ -58,7 +58,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                         cdScs.codeLabel.as("closeStatusCdNm")         // 마감상태명 (sy_code 조인)
                 ))
                 .from(stSettleClose)
-                .leftJoin(cdScs).on(cdScs.codeGrp.eq("SETTLE_CLOSE_STATUS").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd)));
+                .leftJoin(cdScs).on(cdScs.codeGrp.eq("CLOSE_STATUS_CD").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd)));
     }
 
     /* 정산 마감 키조회 */

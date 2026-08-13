@@ -15,7 +15,7 @@
   var coConsts = {};
 
   /* ── 클레임 유형 (취소/반품/교환) — FO·BO 공통 ──
-   * { codeValue, codeLabel } 형식 (sy_code code_grp='CLAIM_TYPE' 과 동일: CANCEL/RETURN/EXCHANGE).
+   * { codeValue, codeLabel } 형식 (sy_code code_grp='CLAIM_TYPE_CD' 과 동일: CANCEL/RETURN/EXCHANGE).
    *   향후 sy_code 이관 시 codes 로 대체, 이 상수는 fallback. 라벨만 필요하면 .map(c=>c.codeLabel). */
   coConsts.CLAIM_TYPES = [
     { codeValue: 'CANCEL',   codeLabel: '취소' },
