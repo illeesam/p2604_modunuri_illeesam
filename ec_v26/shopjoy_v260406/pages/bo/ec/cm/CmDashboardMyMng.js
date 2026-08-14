@@ -526,8 +526,11 @@ window.CmDashboardMyMng = {
        (대시보드 항목배치 화면과 동일 규칙) */
     const GRID_GAP = 12;
     const ROW_H    = 150;
+    const KPI_ROW_H = 56;   /* KPI 카드는 내용이 얇아 일반 행 단위(150) 대신 축소 단위 사용 */
     const resizeState = reactive({ idx: null });
     let   _rs = null;   /* 드래그 중 임시값 (반응성 불필요) */
+
+    const fnRowH = (c) => { const w = fnWidget(c); return (w && w.kind === 'kpi') ? KPI_ROW_H : ROW_H; };
 
     const onResizeStart = (idx, ev) => {
       if (!cfCanEdit.value) return;   /* 보기 모드·공유받은 대시보드는 크기 조절 불가 */
@@ -540,7 +543,7 @@ window.CmDashboardMyMng = {
       const cols = (cfCur.value ? cfCur.value.layoutCols : 4) || 4;
       const w0 = Math.min(c.panelWidth || 1, cols);
       const cellW = w0 > 0 ? (rect.width - (w0 - 1) * GRID_GAP) / w0 : rect.width;
-      _rs = { idx, x0: ev.clientX, y0: ev.clientY, w0, h0: c.panelHeight || 1, cellW, cols };
+      _rs = { idx, x0: ev.clientX, y0: ev.clientY, w0, h0: c.panelHeight || 1, cellW, cols, rowH: fnRowH(c) };
       resizeState.idx = idx;
       window.addEventListener('mousemove', onResizeMove);
       window.addEventListener('mouseup', onResizeEnd);
@@ -552,7 +555,7 @@ window.CmDashboardMyMng = {
       const c = cards[_rs.idx];
       if (!c) return;
       const stepW = _rs.cellW + GRID_GAP;
-      const stepH = ROW_H + GRID_GAP;
+      const stepH = _rs.rowH + GRID_GAP;
       const dw = stepW > 0 ? Math.round((ev.clientX - _rs.x0) / stepW) : 0;
       const dh = stepH > 0 ? Math.round((ev.clientY - _rs.y0) / stepH) : 0;
       const w = Math.min(_rs.cols, Math.max(1, _rs.w0 + dw));
@@ -583,10 +586,11 @@ window.CmDashboardMyMng = {
       const cols = (cfCur.value ? cfCur.value.layoutCols : 4) || 4;
       const w = Math.min(c.panelWidth || 1, cols);
       const h = c.panelHeight || 1;
+      const rowH = fnRowH(c);
       return {
         gridColumn: 'span ' + w,
         gridRow: 'span ' + h,
-        minHeight: (h * 150 + (h - 1) * 12) + 'px',
+        minHeight: (h * rowH + (h - 1) * 12) + 'px',
         outline: dragState.overIdx === idx ? '2px dashed #e8587a'
           : (dragState.type === 'card' && dragState.idx === idx ? '2px solid #c7d2fe' : 'none'),
       };

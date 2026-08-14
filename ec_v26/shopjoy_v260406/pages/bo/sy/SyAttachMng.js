@@ -272,8 +272,10 @@ window.SyAttachMng = {
       if (!grpForm.attachGrpNm || !grpForm.attachGrpCode) { showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       if (!(await showConfirm('저장', '그룹을 저장하시겠습니까?'))) return;
       try {
+        let newGrpId = null;
         if (uiState.grpEditId === null) {
-          await boApi.post('/bo/sy/attach-grp', { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹등록'));
+          const res = await boApi.post('/bo/sy/attach-grp', { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹등록'));
+          newGrpId = res.data?.data?.attachGrpId || null;
           showToast('그룹이 등록되었습니다.', 'success');
         } else {
           await boApi.put(`/bo/sy/attach-grp/${uiState.grpEditId}`, { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹수정'));
@@ -281,6 +283,8 @@ window.SyAttachMng = {
         }
         uiState.grpEditMode = false;
         await handleLoadGrps();
+        // 신규 등록 직후 새 그룹을 바로 선택 → 우측 첨부파일목록이 그 그룹으로 열려 바로 파일 첨부 가능
+        if (newGrpId) { selectGrp(newGrpId); }
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
@@ -300,15 +304,19 @@ window.SyAttachMng = {
       }
     };
 
-    /* openFileNew — 열기 */
+    /* openFileNew — 열기 (좌측 그룹 선택 해제 → 첨부란이 특정 그룹에 잠기지 않고 전체 목록 위에서 등록) */
     const openFileNew = () => {
+      uiState.selectedGrpId = null;
+      searchParam.attachGrpId = '';
       uiState.fileEditId = null; uiState.fileEditMode = true;
       Object.assign(fileForm, {
-        attachGrpId: uiState.selectedGrpId, fileNm: '', fileSize: 0, fileExt: '', mimeTypeCd: '',
+        attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', mimeTypeCd: '',
         storedNm: '', storageTypeCd: 'LOCAL', storagePath: '', attachUrl: '', cdnHost: '', cdnImgUrl: '',
         thumbFileNm: '', thumbStoredNm: '', thumbUrl: '', thumbCdnUrl: '', thumbGeneratedYn: 'N',
         sortOrd: 0, attachMemo: '', refId: '',
       });
+      fileGridPager.pageNo = 1;
+      handleSearchData();
     };
 
     /* openFileEdit — 열기 */
@@ -490,6 +498,12 @@ window.SyAttachMng = {
             취소
           </button>
         </div>
+        <!-- ===== ■.■.■.■. 목록첨부 (기존 그룹 수정 시에만 — 신규는 저장 후 attachGrpId 확정) ===== -->
+        <div v-if="uiState.grpEditId" style="margin-top:12px;border-top:1px solid #e5e7eb;padding-top:10px;">
+          <base-attach-grp :model-value="uiState.grpEditId" :show-toast="showToast"
+            :ref-id="'SY_ATTACH-' + uiState.grpEditId" :grp-code="grpForm.attachGrpCode" :grp-nm="grpForm.attachGrpNm"
+            :max-count="grpForm.maxFileCount" :max-size-mb="grpForm.maxFileSize" :allow-ext="grpForm.fileExtAllow" />
+        </div>
       </div>
       <!-- ===== ■.■.■. 그룹 목록 (서버 페이징 — grpPager.pageSize 만큼 1페이지에 표시) ===== -->
       <div style="border:1px solid #eef0f3;border-radius:6px;background:#fff;">
@@ -550,7 +564,7 @@ window.SyAttachMng = {
           @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
       </bo-container>
       <!-- ===== ■.■.■. 목록 영역 (별도 컨테이너) ================================= -->
-      <bo-container title="첨부파일목록" :count-text="fileGridPager.pageTotalCount + '건'">
+      <bo-container title="첨부파일목록" :title-id="uiState.selectedGrpId" :count-text="fileGridPager.pageTotalCount + '건'">
         <template #toolbar-actions>
           <button class="btn btn_new" @click="handleBtnAction('attaches-add')">
             + 신규

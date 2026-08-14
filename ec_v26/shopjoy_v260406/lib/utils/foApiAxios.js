@@ -31,7 +31,7 @@
 
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[fo]';
-  var TIMEOUT          = 15000;
+  var TIMEOUT          = 8000;
 
   var inst = global.axios.create({ timeout: TIMEOUT });
 

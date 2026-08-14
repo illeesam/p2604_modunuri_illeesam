@@ -661,13 +661,11 @@ window.FoGrid = {
               </span>
             </th>
           </slot>
-          <th v-if="rowActions" style="width:44px;text-align:center;">
+          <th v-if="rowActions || $slots['head-actions']" style="width:44px;text-align:center;">
             <slot name="head-actions">
               관리
             </slot>
           </th>
-          <slot v-else name="head-actions">
-          </slot>
         </tr>
       </thead>
       <tbody>

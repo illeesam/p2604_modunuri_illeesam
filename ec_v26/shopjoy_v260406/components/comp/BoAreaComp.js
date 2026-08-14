@@ -965,13 +965,11 @@ window.BoGrid = {
                 @mousedown.stop="onResizeStart($event, col)"></div>
             </th>
           </slot>
-          <th v-if="rowActions" :style="'min-width:40px;text-align:center;white-space:nowrap;' + pinRightStyle(6, true)">
+          <th v-if="rowActions || $slots['head-actions']" :style="'min-width:40px;text-align:center;white-space:nowrap;' + pinRightStyle(6, true)">
             <slot name="head-actions">
               관리
             </slot>
           </th>
-          <slot v-else name="head-actions">
-          </slot>
         </tr>
       </thead>
       <tbody>

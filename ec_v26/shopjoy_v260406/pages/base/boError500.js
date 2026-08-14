@@ -6,7 +6,7 @@ window.boError500 = {
     /* _mountTime — 화면이 뜬 시점을 한 번만 고정. fnRowStyle 이 매번 Date.now() 를 읽으면
        펼치기 클릭 등 재렌더링될 때마다 "최근" 여부가 달라져 강조가 깜빡이므로,
        기준 시각을 여기서 스냅샷 떠서 이후로는 절대 다시 계산하지 않는다. */
-    return { showErrorList: false, expandedIds: new Set(), allExpanded: false, _mountTime: Date.now() };
+    return { showErrorList: true, expandedIds: new Set(), allExpanded: false, _mountTime: Date.now() };
   },
   computed: {
     /* cfErrorList — 최근 4xx/5xx/네트워크 에러 목록 (최신순, 최대 20건은 boAppBase 에서 이미 보장) */
