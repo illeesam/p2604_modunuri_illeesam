@@ -59,6 +59,10 @@ public class PmCouponDto {
         private String dvcMwebYn;
         private String dvcMappYn;
         private String memo;
+        private String vendorId;
+        private String chargeStaff;
+        private String visibilityTargets;
+        private String mdUserId;
         private String regBy;
         private LocalDateTime regDate;
         private String regSiteId;

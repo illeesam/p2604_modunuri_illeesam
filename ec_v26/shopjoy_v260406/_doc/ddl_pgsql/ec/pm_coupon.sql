@@ -31,6 +31,10 @@ CREATE TABLE shopjoy_2604.pm_coupon (
     dvc_mweb_yn             VARCHAR(1)   DEFAULT 'Y'::bpchar,
     dvc_mapp_yn             VARCHAR(1)   DEFAULT 'Y'::bpchar,
     memo                    TEXT        ,
+    vendor_id               VARCHAR(21) ,
+    charge_staff            VARCHAR(50) ,
+    visibility_targets      VARCHAR(200) DEFAULT '^PUBLIC^',
+    md_user_id              VARCHAR(21) ,
     reg_by                  VARCHAR(30) ,
     reg_date                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by                  VARCHAR(30) ,
@@ -68,6 +72,10 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon.dvc_pc_yn IS 'PC 채널 적용여부 Y/
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.dvc_mweb_yn IS '모바일WEB 적용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.dvc_mapp_yn IS '모바일APP 적용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.memo IS '메모';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon.vendor_id IS '판매업체 (sy_vendor.vendor_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon.charge_staff IS '판매담당자명 (업체 선택 시 자동 채움, 수정 가능)';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon.visibility_targets IS '공개대상 (^코드^코드^ 형식, 예: ^PUBLIC^)';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon.md_user_id IS '담당MD (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.reg_by IS '등록자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.upd_by IS '수정자 (sy_user.user_id, mb_member.member_id)';

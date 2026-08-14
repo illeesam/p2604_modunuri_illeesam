@@ -42,6 +42,12 @@ window.SyApiLogMng = {
     const errorLogs  = reactive([]);
     const tabCounts  = reactive({ access: 0, error: 0 });
 
+    /* tabs — 탭 정의 (BoTabBar 데이터) */
+    const tabs = reactive([
+      { id: 'access', label: 'API요청로그', icon: '📋', get count() { return tabCounts.access; } },
+      { id: 'error',  label: 'API오류로그', icon: '🚨', get count() { return tabCounts.error; } },
+    ]);
+
     // 컬럼 정의 모음 (정적 — reactive 불필요). template: columns.baseSearch 등으로 접근
     const columns = {};
 
@@ -479,7 +485,7 @@ window.SyApiLogMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, accessGridPager, tabCounts, allExpanded,                     // 상태 / 데이터
+      uiState, accessGridPager, tabCounts, tabs, allExpanded,                     // 상태 / 데이터
       columns,                                                                              // 컬럼 정의 모음 (baseSearch/moreSearch/accessGrid/errorGrid/accessGridRowDetail/errorGridRowDetail)
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCurrentList, // computed
@@ -517,20 +523,8 @@ window.SyApiLogMng = {
     :count-text="cofCountText(accessGridPager.pageTotalCount, cfCurrentList.length)">
     <!-- 탭 버튼 (영역 안 상단) -->
     <template #top>
-      <div class="tab-nav" style="margin-bottom:12px">
-        <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="handleSelectAction('tabs-select', 'access')">
-          📋 API요청로그
-          <span class="tab-count">
-            {{ tabCounts.access }}
-          </span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="handleSelectAction('tabs-select', 'error')">
-          🚨 API오류로그
-          <span class="tab-count">
-            {{ tabCounts.error }}
-          </span>
-        </button>
-      </div>
+      <bo-tab-bar :tabs="tabs" :tab="uiState.activeTab" :show-modes="false" bg="#f0fdf4"
+        @tab-select="id => handleSelectAction('tabs-select', id)" />
     </template>
     <template #toolbar-actions>
       <span style="font-size:11px;color:#aaa;">

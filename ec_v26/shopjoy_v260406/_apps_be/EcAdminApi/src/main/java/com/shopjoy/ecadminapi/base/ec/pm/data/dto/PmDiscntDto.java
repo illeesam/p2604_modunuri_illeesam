@@ -53,6 +53,10 @@ public class PmDiscntDto {
         private String dvcMwebYn;
         private String dvcMappYn;
         private String useYn;
+        private String vendorId;
+        private String chargeStaff;
+        private String visibilityTargets;
+        private String mdUserId;
         private String regBy;
         private LocalDateTime regDate;
         private String regSiteId;

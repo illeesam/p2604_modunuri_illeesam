@@ -207,6 +207,12 @@ window.PmPlanDtl = {
       { id: 'content', label: '내용입력', icon: '📝' },
       { id: 'preview', label: '미리보기', icon: '👁' },
     ]);
+    /* contentTabs — 내용입력 탭 안의 서브탭(주요내용/특징/혜택) 정의 */
+    const contentTabs = [
+      { id: 1, label: '주요내용', icon: '🎯' },
+      { id: 2, label: '특징',     icon: '✨' },
+      { id: 3, label: '혜택',     icon: '🎁' },
+    ];
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -382,7 +388,7 @@ window.PmPlanDtl = {
 
     return {
       columns,
-      vendors, products, form, errors, VISIBILITY_OPTIONS, tabs,                // 상태 / 데이터
+      vendors, products, form, errors, VISIBILITY_OPTIONS, tabs, contentTabs,                // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSaveDisabled, cfDtlMode, cfSelectedProducts, cfSelectedVendorNm,                          // computed
       tab, tabMode2, activeContentTab, showProdPopup, showVendorModal,            // toRef
@@ -471,13 +477,8 @@ window.PmPlanDtl = {
     <div class="dtl-pane" v-show="showTab('content')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 내용입력</div>
       <div style="margin-bottom:12px;">
-        <div style="display:flex;gap:2px;margin-bottom:12px;">
-          <button v-for="i in 3" :key="Math.random()" @click="handleBtnAction('content-tab', i)"
-            class="tab-btn" :class="{active:activeContentTab===i}"
-            style="font-size:12px;padding:6px 14px;">
-            {{ i===1 ? '🎯 주요내용' : (i===2 ? '✨ 특징' : '🎁 혜택') }}
-          </button>
-        </div>
+        <bo-tab-bar :tabs="contentTabs" :tab="activeContentTab" :show-modes="false" bg="#f0fdf4"
+          @tab-select="i => handleBtnAction('content-tab', i)" />
       </div>
       <template v-if="activeContentTab===1">
         <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content1 || '<span style=color:#bbb>-</span>'"></div>

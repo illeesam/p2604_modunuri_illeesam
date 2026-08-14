@@ -125,7 +125,6 @@ window.boRegisterComponents = function (app) {
     .component('CmDashboardMenuMng', window.CmDashboardMenuMng)
     .component('CmDashboardSysMenuMng', window.CmDashboardSysMenuMng)
     .component('CmPopupMng', window.CmPopupMng)
-    .component('CmPopupItemMng', window.CmPopupItemMng)
     /* ── pages/bo/ec/ — 채팅/고객 ── */
     .component('CmChattMng', window.CmChattMng)
     .component('CmChattDtl', window.CmChattDtl)

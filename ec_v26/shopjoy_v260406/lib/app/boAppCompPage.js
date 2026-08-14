@@ -109,7 +109,6 @@
     cmDashboardMenuMng: 'cm-dashboard-menu-mng',
     cmDashboardSysMenuMng: 'cm-dashboard-sys-menu-mng',
     cmPopupMng: 'cm-popup-mng',
-    cmPopupItemMng: 'cm-popup-item-mng',
     syAlarmMng: 'sy-alarm-mng',
     syPropMng: 'sy-prop-mng',
     syPathMng: 'sy-path-mng',

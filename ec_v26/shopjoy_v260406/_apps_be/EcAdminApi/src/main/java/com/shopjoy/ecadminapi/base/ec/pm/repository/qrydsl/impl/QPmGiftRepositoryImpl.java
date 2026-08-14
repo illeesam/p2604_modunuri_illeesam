@@ -79,7 +79,10 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                         pmGift.minOrderQty,          // 최소주문수량 (NULL=제한없음)
                         pmGift.selfCdivRate,         // 자사(사이트) 분담율 (%) — 기본 100%
                         pmGift.sellerCdivRate,       // 판매자(업체) 분담율 (%) — 기본 0%
-                        pmGift.useYn, pmGift.regBy, pmGift.regDate, pmGift.updBy, pmGift.updDate
+                        pmGift.useYn, pmGift.regBy, pmGift.regDate, pmGift.updBy, pmGift.updDate,
+                        pmGift.vendorId,            // 판매업체 (sy_vendor.vendor_id)
+                        pmGift.chargeStaff,         // 판매담당자명
+                        pmGift.visibilityTargets    // 공개대상
                 ))
                 .from(pmGift)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(pmGift.prodId))
@@ -245,6 +248,9 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         if (entity.getSelfCdivRate()       != null) { update.set(pmGift.selfCdivRate,       entity.getSelfCdivRate());       hasAny = true; }
         if (entity.getSellerCdivRate()     != null) { update.set(pmGift.sellerCdivRate,     entity.getSellerCdivRate());     hasAny = true; }
         if (entity.getUseYn()              != null) { update.set(pmGift.useYn,              entity.getUseYn());              hasAny = true; }
+        if (entity.getVendorId()           != null) { update.set(pmGift.vendorId,           entity.getVendorId());           hasAny = true; }
+        if (entity.getChargeStaff()        != null) { update.set(pmGift.chargeStaff,        entity.getChargeStaff());        hasAny = true; }
+        if (entity.getVisibilityTargets()  != null) { update.set(pmGift.visibilityTargets,  entity.getVisibilityTargets());  hasAny = true; }
         if (entity.getUpdBy()              != null) { update.set(pmGift.updBy,              entity.getUpdBy());              hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(pmGift.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));

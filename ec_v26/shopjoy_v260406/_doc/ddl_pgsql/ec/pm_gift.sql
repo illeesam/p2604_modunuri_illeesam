@@ -19,10 +19,13 @@ CREATE TABLE shopjoy_2604.pm_gift (
     self_cdiv_rate        NUMERIC(5,2) DEFAULT 100,
     seller_cdiv_rate      NUMERIC(5,2) DEFAULT 0,
     use_yn                VARCHAR(1)   DEFAULT 'Y'::bpchar,
+    vendor_id             VARCHAR(21) ,
+    charge_staff          VARCHAR(50) ,
+    visibility_targets    VARCHAR(200) DEFAULT '^PUBLIC^',
     reg_by                VARCHAR(30) ,
     reg_date              TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by                VARCHAR(30) ,
-    upd_date              TIMESTAMP   
+    upd_date              TIMESTAMP
 );
 
 COMMENT ON TABLE  shopjoy_2604.pm_gift IS '사은품';
@@ -43,6 +46,9 @@ COMMENT ON COLUMN shopjoy_2604.pm_gift.min_order_qty IS '최소주문수량 (NUL
 COMMENT ON COLUMN shopjoy_2604.pm_gift.self_cdiv_rate IS '자사(사이트) 분담율 (%) — 기본 100%';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.seller_cdiv_rate IS '판매자(업체) 분담율 (%) — 기본 0%';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.use_yn IS '사용여부 Y/N';
+COMMENT ON COLUMN shopjoy_2604.pm_gift.vendor_id IS '판매업체 (sy_vendor.vendor_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_gift.charge_staff IS '판매담당자명 (업체 선택 시 자동 채움, 수정 가능)';
+COMMENT ON COLUMN shopjoy_2604.pm_gift.visibility_targets IS '공개대상 (^코드^코드^ 형식, 예: ^PUBLIC^)';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.reg_by IS '등록자';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.pm_gift.upd_by IS '수정자';

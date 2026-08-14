@@ -88,6 +88,10 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                         pmCoupon.dvcMwebYn,              // 모바일WEB 적용여부 Y/N
                         pmCoupon.dvcMappYn,              // 모바일APP 적용여부 Y/N
                         pmCoupon.memo,                   // 메모
+                        pmCoupon.vendorId,               // 판매업체
+                        pmCoupon.chargeStaff,             // 판매담당자명
+                        pmCoupon.visibilityTargets,       // 공개대상
+                        pmCoupon.mdUserId,                // 담당MD
                         pmCoupon.regBy, pmCoupon.regDate, pmCoupon.updBy, pmCoupon.updDate,
                         cdCt.codeLabel.as("couponTypeCdNm"),     // 쿠폰유형 코드라벨 (조인)
                         cdCs.codeLabel.as("couponStatusCdNm"),   // 쿠폰상태 코드라벨 (조인)
@@ -265,6 +269,10 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         if (entity.getValidTo()              != null) { update.set(pmCoupon.validTo,              entity.getValidTo());              hasAny = true; }
         if (entity.getIssueCnt()             != null) { update.set(pmCoupon.issueCnt,             entity.getIssueCnt());             hasAny = true; }
         if (entity.getMemo()                 != null) { update.set(pmCoupon.memo,                 entity.getMemo());                 hasAny = true; }
+        if (entity.getVendorId()             != null) { update.set(pmCoupon.vendorId,             entity.getVendorId());             hasAny = true; }
+        if (entity.getChargeStaff()          != null) { update.set(pmCoupon.chargeStaff,          entity.getChargeStaff());          hasAny = true; }
+        if (entity.getVisibilityTargets()    != null) { update.set(pmCoupon.visibilityTargets,    entity.getVisibilityTargets());    hasAny = true; }
+        if (entity.getMdUserId()             != null) { update.set(pmCoupon.mdUserId,             entity.getMdUserId());             hasAny = true; }
         if (entity.getUpdBy()                != null) { update.set(pmCoupon.updBy,                entity.getUpdBy());                hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(pmCoupon.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));

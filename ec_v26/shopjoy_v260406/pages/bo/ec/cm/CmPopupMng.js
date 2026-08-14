@@ -17,7 +17,7 @@ window.CmPopupMng = {
     const { showToast, showConfirm } = window.boApp;
 
     const popups = reactive([]);   /* cm_popup 목록 */
-    const uiState = reactive({ loading: false });
+    const uiState = reactive({ loading: false, itemLoading: false, tab: 'info' });
     const codes = reactive({});
 
     const searchParam = reactive({ searchValue: '', popupPattern: '' });
@@ -37,6 +37,25 @@ window.CmPopupMng = {
     });
     const baseForm = reactive(_initBaseForm());
     const baseErrors = reactive({});
+
+    /* 탭 정의 — 기본정보(cm_popup) / 항목정보(cm_popup_item, 신규 미저장 시 비활성) */
+    const tabs = reactive([
+      { id: 'info',  label: '기본정보', icon: '📋' },
+      { id: 'items', label: '항목정보', icon: '📑', get count() { return items.length; } },
+    ]);
+
+    /* 항목정보(cm_popup_item) — 선택한 팝업의 항목 목록 + 인라인 항목 폼 */
+    const items    = reactive([]);   /* 선택 팝업의 항목 */
+    const codeGrps = reactive([]);   /* CODE 유형 항목의 코드그룹 선택지 */
+    const itemDetail = reactive({ selectedId: null, isNew: false, show: false });
+    const _initItemForm = () => ({
+      popupItemId: null, fieldNm: '', fieldLabel: '', fieldTypeCd: 'TEXT', codeGrp: '',
+      selectExpr: '', sessionCondField: '', requiredYn: 'N', searchYn: 'N', searchTypeCd: 'LIKE', listYn: 'Y', treeLabelYn: 'N',
+      colWidth: '', colAlign: '', linkYn: 'N', sortOrd: 10, useYn: 'Y',
+    });
+    const itemForm = reactive(_initItemForm());
+    const itemErrors = reactive({});
+    const FIELD_TYPES = ['TEXT', 'NUMBER', 'DATE', 'CODE', 'BADGE'];
 
     /* 미리보기 모달 */
     /* 미리보기 — 실제 팝업을 띄우고, 어떤 파라미터로 조회했는지와 무엇이 선택됐는지 남긴다 */
@@ -69,6 +88,10 @@ window.CmPopupMng = {
       if (cmd === 'popups-add')        return openPopupNew();
       if (cmd === 'baseForm-save')     return handleSavePopup();
       if (cmd === 'baseForm-close')    return resetPopupDetail();
+      if (cmd === 'tab-select')        { uiState.tab = param; return; }
+      if (cmd === 'items-add')         return openItemNew();
+      if (cmd === 'itemForm-save')     return handleSaveItem();
+      if (cmd === 'itemForm-close')    { itemDetail.show = false; itemDetail.selectedId = null; return; }
       if (cmd === 'popups-preview' || cmd === 'popups-previewMulti') {
         /* param 이 있으면 그 행, 없으면(다시 열기) 직전에 보던 팝업 */
         previewModal.popupCode = (param ? param.popupCode : previewModal.popupCode) || baseForm.popupCode;
@@ -81,7 +104,6 @@ window.CmPopupMng = {
       }
       if (cmd === 'preview-apiLog')    { previewModal.logs.unshift(param); if (previewModal.logs.length > 20) previewModal.logs.pop(); return; }
       if (cmd === 'preview-clear')     { previewModal.logs.splice(0, previewModal.logs.length); previewModal.cbArgs = null; return; }
-      if (cmd === 'popup-goItems')     return props.navigate('cmPopupItemMng', { id: baseDetail.selectedId });
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -94,6 +116,12 @@ window.CmPopupMng = {
         if ((e.col ? e.col.link : false) || colKey === '__no__') return openPopupEdit(row);
         return;
       }
+      if (cmd === 'items-cellClick') {
+        if (colKey === 'btn_row_edit')   return openItemEdit(row);
+        if (colKey === 'btn_row_delete') return handleDeleteItem(row);
+        if ((e.col ? e.col.link : false) || colKey === '__no__') return openItemEdit(row);
+        return;
+      }
       console.warn('[handleGridCellAction] unknown cmd:', cmd);
     };
 
@@ -103,6 +131,7 @@ window.CmPopupMng = {
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
       handleSearchList();
+      handleSearchCodeGrps();
     };
     onMounted(initPage);
 
@@ -128,10 +157,20 @@ window.CmPopupMng = {
       }
     };
 
+    /* _resetItemsPane — 팝업 선택/해제가 바뀔 때마다 항목 목록·항목 폼·탭을 초기화
+       (부모 선택이 바뀌면 자식 선택도 초기화하는 정책 — 다른 팝업의 항목이 남아있지 않도록) */
+    const _resetItemsPane = () => {
+      items.splice(0, items.length);
+      itemDetail.show = false;
+      itemDetail.selectedId = null;
+      uiState.tab = 'info';
+    };
+
     const openPopupNew = () => {
       baseDetail.selectedId = null;
       baseDetail.isNew = true;
       Object.assign(baseForm, _initBaseForm());
+      _resetItemsPane();
     };
 
     const openPopupEdit = (row) => {
@@ -147,12 +186,17 @@ window.CmPopupMng = {
         modalWidth: row.modalWidth || '900px', applyUiMemo: row.applyUiMemo || '', useYn: row.useYn || 'Y',
         sortOrd: row.sortOrd || 10, remark: row.remark || '',
       });
+      itemDetail.show = false;
+      itemDetail.selectedId = null;
+      uiState.tab = 'info';
+      handleSearchItems();
     };
 
     const resetPopupDetail = () => {
       baseDetail.selectedId = null;
       baseDetail.isNew = false;
       Object.assign(baseForm, _initBaseForm());
+      _resetItemsPane();
     };
 
     const handleSavePopup = async () => {
@@ -190,6 +234,7 @@ window.CmPopupMng = {
         }
         showToast('저장되었습니다.', 'success');
         await handleSearchList();
+        await handleSearchItems();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
       }
@@ -202,6 +247,94 @@ window.CmPopupMng = {
         showToast('삭제되었습니다.', 'success');
         if (baseDetail.selectedId === row.popupId) resetPopupDetail();
         await handleSearchList();
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+      }
+    };
+
+    /* ── 항목정보(cm_popup_item) — 선택한 팝업(baseDetail.selectedId)의 항목 목록 + 인라인 폼 ── */
+
+    const handleSearchCodeGrps = async () => {
+      try {
+        const res = await boApiSvc.syCodeGrp.getAll({ siteId: cfSiteId.value }, '공통팝업관리', '코드그룹조회');
+        codeGrps.splice(0, codeGrps.length, ...(res.data?.data || []));
+      } catch (err) {
+        codeGrps.splice(0, codeGrps.length);   /* 실패해도 화면은 유지 */
+      }
+    };
+
+    const handleSearchItems = async () => {
+      if (!baseDetail.selectedId) { items.splice(0, items.length); return; }
+      uiState.itemLoading = true;
+      try {
+        const res = await boApiSvc.cmPopupPick.getPopupItems(baseDetail.selectedId, '공통팝업관리', '항목조회');
+        items.splice(0, items.length, ...(res.data?.data || []));
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '항목 조회 오류', 'error', 0);
+      } finally {
+        uiState.itemLoading = false;
+      }
+    };
+
+    const openItemNew = () => {
+      if (!baseDetail.selectedId) return showToast('팝업을 먼저 저장하세요.', 'error');
+      itemDetail.selectedId = null;
+      itemDetail.isNew = true;
+      itemDetail.show = true;
+      const maxOrd = items.reduce((m, p) => Math.max(m, p.sortOrd || 0), 0);
+      Object.assign(itemForm, _initItemForm(), { sortOrd: maxOrd + 10 });
+    };
+
+    const openItemEdit = (row) => {
+      itemDetail.selectedId = row.popupItemId;
+      itemDetail.isNew = false;
+      itemDetail.show = true;
+      Object.assign(itemForm, {
+        popupItemId: row.popupItemId, fieldNm: row.fieldNm, fieldLabel: row.fieldLabel,
+        fieldTypeCd: row.fieldTypeCd || 'TEXT', codeGrp: row.codeGrp || '',
+        selectExpr: row.selectExpr || '', sessionCondField: row.sessionCondField || '', requiredYn: row.requiredYn || 'N', searchYn: row.searchYn || 'N', searchTypeCd: row.searchTypeCd || 'LIKE',
+        listYn: row.listYn || 'Y', treeLabelYn: row.treeLabelYn || 'N',
+        colWidth: row.colWidth || '', colAlign: row.colAlign || '',
+        linkYn: row.linkYn || 'N', sortOrd: row.sortOrd || 10, useYn: row.useYn || 'Y',
+      });
+    };
+
+    const handleSaveItem = async () => {
+      Object.keys(itemErrors).forEach(k => delete itemErrors[k]);
+      if (!itemForm.fieldNm)    { itemErrors.fieldNm = '필드명을 입력하세요.'; return showToast('입력 내용을 확인해주세요.', 'error'); }
+      if (!itemForm.fieldLabel) { itemErrors.fieldLabel = '라벨을 입력하세요.'; return showToast('입력 내용을 확인해주세요.', 'error'); }
+      /* CODE 유형은 codeGrp 가 있어야 라벨 변환·검색 드롭다운을 만들 수 있다 */
+      if (itemForm.fieldTypeCd === 'CODE' && !itemForm.codeGrp) {
+        itemErrors.codeGrp = '공통코드 그룹을 선택하세요.';
+        return showToast('CODE 유형은 공통코드 그룹이 필요합니다.', 'error');
+      }
+      if (!(await showConfirm('저장', '항목을 저장하시겠습니까?'))) return;
+      try {
+        await boApiSvc.cmPopupPick.itemSave({
+          popupItemId: itemDetail.isNew ? null : itemForm.popupItemId,
+          siteId: cfSiteId.value, popupId: baseDetail.selectedId,
+          fieldNm: itemForm.fieldNm, fieldLabel: itemForm.fieldLabel,
+          fieldTypeCd: itemForm.fieldTypeCd, codeGrp: itemForm.codeGrp || null,
+          selectExpr: itemForm.selectExpr || null, sessionCondField: itemForm.sessionCondField || null, requiredYn: itemForm.requiredYn, searchYn: itemForm.searchYn, searchTypeCd: itemForm.searchTypeCd,
+          listYn: itemForm.listYn, treeLabelYn: itemForm.treeLabelYn,
+          colWidth: itemForm.colWidth || null, colAlign: itemForm.colAlign || null,
+          linkYn: itemForm.linkYn, sortOrd: Number(itemForm.sortOrd) || 10, useYn: itemForm.useYn,
+        }, '공통팝업관리', '항목저장');
+        showToast('저장되었습니다.', 'success');
+        itemDetail.show = false;
+        await handleSearchItems();
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
+      }
+    };
+
+    const handleDeleteItem = async (row) => {
+      if (!(await showConfirm('삭제', `[${row.fieldLabel}] 항목을 삭제하시겠습니까?`))) return;
+      try {
+        await boApiSvc.cmPopupPick.itemRemove(row.popupItemId, '공통팝업관리', '항목삭제');
+        showToast('삭제되었습니다.', 'success');
+        if (itemDetail.selectedId === row.popupItemId) itemDetail.show = false;
+        await handleSearchItems();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
       }
@@ -347,18 +480,99 @@ window.CmPopupMng = {
       { key: 'remark', label: '비고', type: 'textarea', colSpan: 3 },
     ];
 
+    /* 항목정보(cm_popup_item) 그리드 + 인라인 폼 컬럼 */
+    columns.items = [
+      { key: 'fieldNm', label: '필드명', style: 'width:150px;', link: true,
+        cellStyle: 'font-family:monospace;font-size:11px;' },
+      { key: 'fieldLabel', label: '라벨',
+        cellInnerStyle: (v, row) => itemDetail.selectedId === row.popupItemId ? 'color:#e8587a;font-weight:700;' : '' },
+      { key: 'fieldTypeCd', label: '유형', style: 'width:80px;', align: 'center' },
+      { key: 'codeGrp', label: '코드그룹', style: 'width:150px;',
+        cellStyle: 'font-family:monospace;font-size:11px;',
+        fmt: (v, row) => row.fieldTypeCd === 'CODE' ? (v || '⚠ 미지정') : '-' },
+      { key: 'searchYn', label: '조회항목', style: 'width:80px;',
+        badge: (row) => row.searchYn === 'Y' ? 'badge-blue' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '조회' : '-' },
+      { key: 'searchTypeCd', label: '연산', style: 'width:70px;', align: 'center',
+        fmt: (v, row) => row.searchYn === 'Y' ? (v || 'LIKE') : '-' },
+      { key: 'listYn', label: '목록항목', style: 'width:80px;',
+        badge: (row) => row.listYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '목록' : '-' },
+      { key: 'treeLabelYn', label: '트리라벨', style: 'width:80px;',
+        badge: (row) => row.treeLabelYn === 'Y' ? 'badge-orange' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '트리' : '-' },
+      { key: 'linkYn', label: '선택', style: 'width:60px;', align: 'center',
+        fmt: (v) => v === 'Y' ? '✔' : '-' },
+      { key: 'selectExpr', label: '출력식', style: 'width:110px;', align: 'center',
+        cellStyle: 'font-family:monospace;font-size:11px;color:#0369a1;',
+        cellTitle: (v) => v ? ('조인 컬럼: ' + v) : '',
+        fmt: (v) => v || '-' },
+      { key: 'sessionCondField', label: '세션조건', style: 'width:100px;', align: 'center',
+        badge: (row) => row.sessionCondField ? 'badge-red' : 'badge-gray',
+        cellTitle: (v) => v ? ('로그인 정보의 ' + v + ' 로 서버가 강제') : '',
+        fmt: (v) => v || '-' },
+      { key: 'requiredYn', label: '필수', style: 'width:60px;', align: 'center',
+        fmt: (v) => v === 'Y' ? '✔' : '-' },
+      { key: 'sortOrd', label: '정렬', style: 'width:60px;', align: 'center' },
+    ];
+
+    columns.itemForm = [
+      { key: 'fieldNm', label: '엔티티 필드명', type: 'text', required: true, mono: true, placeholder: 'userNm' },
+      { key: 'fieldLabel', label: '화면 라벨', type: 'text', required: true },
+      { key: 'fieldTypeCd', label: '필드유형', type: 'select',
+        options: () => FIELD_TYPES.map(v => ({ value: v, label: v })),
+        hint: 'CODE 선택 시 공통코드 그룹 필수' },
+      /* CODE 유형만 코드그룹 지정 — 목록은 코드 라벨로 표시되고 검색은 드롭다운이 된다 */
+      { key: 'codeGrp', label: '공통코드 그룹', type: 'select', required: true, mono: true,
+        visible: (f) => f.fieldTypeCd === 'CODE',
+        nullLabel: '(코드그룹 선택)',
+        options: () => codeGrps.map(g => ({
+          value: g.codeGrp,
+          label: g.codeGrp + (g.grpNm ? ' — ' + g.grpNm : ''),
+        })) },
+      /* 세션 자동값 — 지정하면 서버가 로그인 정보로 조건을 강제한다(클라이언트 조작 불가) */
+      /* 조인 컬럼 출력 — cm_popup.join_clause 의 별칭을 써서 다른 테이블 값을 목록에 표시 */
+      { key: 'selectExpr', label: '출력식 (조인 컬럼)', type: 'text', mono: true,
+        placeholder: 'b.deptNm (비우면 a.필드명)',
+        hint: '팝업의 조인절 별칭 사용 · 결과는 위 필드명 키로 내려감' },
+      { key: 'sessionCondField', label: '세션조건 (자동 주입)', type: 'select',
+        options: () => ['', 'memberId', 'userId', 'vendorId', 'deptId', 'siteId', 'roleId', 'memberGrade'].map(v => ({ value: v, label: v || '(사용 안함)' })),
+        hint: '지정 시 필수로 강제 · 미로그인이면 조회 거절 · 조회영역에 표시 안 됨' },
+      { key: 'requiredYn', label: '필수 조회조건', type: 'select',
+        visible: (fm) => !fm.sessionCondField,
+        options: () => [{ value: 'N', label: '선택' }, { value: 'Y', label: '필수 (없으면 조회 거절)' }] },
+      { key: 'searchYn', label: '조회항목 여부', type: 'select',
+        options: () => [{ value: 'N', label: '미사용' }, { value: 'Y', label: '조회조건으로 사용' }] },
+      { key: 'searchTypeCd', label: '검색연산', type: 'select',
+        visible: (f) => f.searchYn === 'Y',
+        options: () => [{ value: 'LIKE', label: 'LIKE (부분일치)' }, { value: 'EQ', label: 'EQ (정확히·드롭다운)' }, { value: 'RANGE', label: 'RANGE (범위)' }] },
+      { key: 'listYn', label: '목록항목 여부', type: 'select',
+        options: () => [{ value: 'Y', label: '목록에 표시' }, { value: 'N', label: '표시 안함' }] },
+      { key: 'treeLabelYn', label: '트리 라벨', type: 'select',
+        options: () => [{ value: 'N', label: '미사용' }, { value: 'Y', label: '트리 노드 라벨로 사용' }] },
+      { key: 'linkYn', label: '선택 트리거', type: 'select',
+        options: () => [{ value: 'N', label: '일반 컬럼' }, { value: 'Y', label: '클릭 시 선택' }] },
+      { key: 'colWidth', label: '컬럼 폭', type: 'text', placeholder: '120px' },
+      { key: 'colAlign', label: '정렬', type: 'select',
+        options: () => [{ value: '', label: '기본' }, { value: 'left', label: 'left' }, { value: 'center', label: 'center' }, { value: 'right', label: 'right' }] },
+      { key: 'sortOrd', label: '정렬순서', type: 'number' },
+      { key: 'useYn', label: '사용여부', type: 'select',
+        options: () => [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] },
+    ];
+
     /* ##### [06] return ############################################################ */
 
     return {
       popups, uiState, codes, searchParam, baseGridPager,
-      baseDetail, baseForm, baseErrors,
+      baseDetail, baseForm, baseErrors, tabs,
+      items, codeGrps, itemDetail, itemForm, itemErrors,
       previewModal, cfPreviewRequest, cfPreviewSample, cfPreviewArgs, fnPreviewCallback, columns, PATTERN_LABELS, PATTERN_OPTS, fnPretty,
       handleBtnAction, handleGridCellAction,
     };
   },
   template: /* html */`
-<bo-page title="팝업관리"
-  desc-summary="공통 선택/조회 팝업의 정의(cm_popup)를 관리합니다. 각 팝업의 조회·목록 항목은 [팝업항목관리]에서 설정합니다.">
+<bo-page title="공통팝업관리"
+  desc-summary="공통 선택/조회 팝업의 정의(cm_popup)를 관리합니다. 각 팝업의 조회·목록 항목은 [항목관리]에서 설정합니다.">
   <!-- ===== ■. 검색 =========================================================== -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"
@@ -391,20 +605,69 @@ window.CmPopupMng = {
       :on-size-change="() => handleBtnAction('baseGrid-sizeChange')" />
   </bo-container>
 
-  <!-- ===== ■. 팝업 상세 ====================================================== -->
+  <!-- ===== ■. 팝업 상세 (기본정보/항목정보 탭) ================================= -->
   <bo-container :title="baseDetail.isNew ? '팝업 신규 등록' : '팝업 상세'"
     :title-id="baseDetail.selectedId ? baseDetail.selectedId : ''">
-    <template #toolbar-actions>
-      <button v-if="baseDetail.selectedId" class="btn btn_detail"
-        @click="handleBtnAction('popup-goItems')">항목관리</button>
-    </template>
-    <div v-if="baseDetail.selectedId || baseDetail.isNew" style="padding:12px;">
-      <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="baseErrors"
-        :cols="3" :show-actions="false" />
-      <div class="form-actions">
-        <button class="btn btn_save" @click="handleBtnAction('baseForm-save')">저장</button>
-        <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
+    <div v-if="baseDetail.selectedId || baseDetail.isNew">
+      <bo-tab-bar :tabs="tabs" :tab="uiState.tab" :show-modes="false"
+        @tab-select="id => handleBtnAction('tab-select', id)" />
+      <!-- ===== ■.■. 기본정보 탭 ============================================== -->
+      <div v-show="uiState.tab==='info'" style="padding:12px;">
+        <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="baseErrors"
+          :cols="3" compact :show-actions="false" />
+        <div class="form-actions">
+          <button class="btn btn_save" @click="handleBtnAction('baseForm-save')">저장</button>
+          <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
+        </div>
       </div>
+      <!-- ===== □.□. 기본정보 탭 ============================================== -->
+      <!-- ===== ■.■. 항목정보 탭 (cm_popup_item) ============================== -->
+      <div v-show="uiState.tab==='items'" style="padding:12px;">
+        <div v-if="!baseDetail.selectedId" style="padding:32px;text-align:center;color:#aaa;">
+          먼저 [기본정보] 탭에서 저장해야 항목을 추가할 수 있습니다.
+        </div>
+        <template v-else>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span class="list-title" style="font-size:12px;">
+              항목 목록 <span style="color:#e8587a;margin-left:4px;">{{ items.length }}개</span>
+            </span>
+            <button class="btn btn_new btn-sm" style="margin-left:auto;"
+              @click="handleBtnAction('items-add')">+ 항목 추가</button>
+          </div>
+          <bo-grid bare :columns="columns.items" :rows="items" row-key="popupItemId"
+            :selected-key="itemDetail.selectedId"
+            :row-class="row => itemDetail.selectedId === row.popupItemId ? 'active' : ''"
+            empty-text="항목이 없습니다. [+ 항목 추가]로 등록하세요."
+            grid-id="items-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+            <template #row-actions="{ row, gridId }">
+              <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+                <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
+                <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
+              </div>
+            </template>
+          </bo-grid>
+          <div style="margin-top:16px;border-top:1px solid #eee;padding-top:12px;">
+            <div class="list-title" style="font-size:12px;margin-bottom:8px;">
+              {{ itemDetail.show ? (itemDetail.isNew ? '항목 신규 등록' : '항목 상세 / 수정') : '항목 상세' }}
+              <span v-if="itemDetail.show && !itemDetail.isNew" style="font-size:11px;color:#999;margin-left:6px;font-weight:400;">
+                #{{ itemForm.popupItemId }}
+              </span>
+            </div>
+            <template v-if="itemDetail.show">
+              <bo-form-area :columns="columns.itemForm" :form="itemForm" :errors="itemErrors"
+                :cols="3" compact :show-actions="false" />
+              <div class="form-actions">
+                <button class="btn btn_save" @click="handleBtnAction('itemForm-save')">저장</button>
+                <button class="btn btn_close" @click="handleBtnAction('itemForm-close')">닫기</button>
+              </div>
+            </template>
+            <div v-else style="padding:20px;text-align:center;color:#aaa;font-size:12px;">
+              항목을 선택하거나 [+ 항목 추가]를 클릭하세요.
+            </div>
+          </div>
+        </template>
+      </div>
+      <!-- ===== □.□. 항목정보 탭 ============================================== -->
     </div>
     <div v-else style="padding:32px;text-align:center;color:#aaa;">목록에서 팝업을 선택하거나 [+ 신규]를 클릭하세요.</div>
   </bo-container>

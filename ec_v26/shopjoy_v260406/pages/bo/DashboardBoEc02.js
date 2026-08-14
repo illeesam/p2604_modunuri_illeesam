@@ -52,30 +52,22 @@ window.DashboardBoEc02 = {
     });
 
     const TABS = [
-      { key:'sales',       label:'월별 매출',       icon:'💰' },
-      { key:'member',      label:'가입/탈퇴',        icon:'👥' },
-      { key:'click',       label:'상품상세 클릭',    icon:'🖱' },
-      { key:'order',       label:'주문완료',         icon:'📋' },
-      { key:'channel',     label:'판매채널별 매출',  icon:'📺' },
-      { key:'kpi',         label:'핵심지표',         icon:'🎯' },
-      { key:'topProducts', label:'상품 TOP 7',       icon:'📦' },
-      { key:'channelMix',  label:'채널 비중',        icon:'📱' },
-      { key:'deviceMix',   label:'디바이스 비중',    icon:'💻' },
-      { key:'timeMix',     label:'시간대 비중',      icon:'⏰' },
-      { key:'region',      label:'지역별',           icon:'🗺' },
-      { key:'hourly',      label:'시간대 추이',      icon:'⏱' },
-      { key:'radar',       label:'영업지표',         icon:'⚡' },
-      { key:'economy',     label:'경제 수준별',      icon:'💼' },
-      { key:'shipping',    label:'배송 조건',        icon:'🚚' },
-      { key:'xview',       label:'X-View',           icon:'🔥' },
-    ];
-
-    const VIEW_MODES = [
-      { key:'tab',  icon:'📑', label:'탭' },
-      { key:'1col', icon:'▭',  label:'1열' },
-      { key:'2col', icon:'▭▭', label:'2열' },
-      { key:'3col', icon:'▭▭▭', label:'3열' },
-      { key:'4col', icon:'▭▭▭▭', label:'4열' },
+      { id:'sales',       label:'월별 매출',       icon:'💰' },
+      { id:'member',      label:'가입/탈퇴',        icon:'👥' },
+      { id:'click',       label:'상품상세 클릭',    icon:'🖱' },
+      { id:'order',       label:'주문완료',         icon:'📋' },
+      { id:'channel',     label:'판매채널별 매출',  icon:'📺' },
+      { id:'kpi',         label:'핵심지표',         icon:'🎯' },
+      { id:'topProducts', label:'상품 TOP 7',       icon:'📦' },
+      { id:'channelMix',  label:'채널 비중',        icon:'📱' },
+      { id:'deviceMix',   label:'디바이스 비중',    icon:'💻' },
+      { id:'timeMix',     label:'시간대 비중',      icon:'⏰' },
+      { id:'region',      label:'지역별',           icon:'🗺' },
+      { id:'hourly',      label:'시간대 추이',      icon:'⏱' },
+      { id:'radar',       label:'영업지표',         icon:'⚡' },
+      { id:'economy',     label:'경제 수준별',      icon:'💼' },
+      { id:'shipping',    label:'배송 조건',        icon:'🚚' },
+      { id:'xview',       label:'X-View',           icon:'🔥' },
     ];
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -756,7 +748,7 @@ window.DashboardBoEc02 = {
       uiState, filters, dash,
       handleBtnAction, handleSelectAction,
       cfBaseGridColumns, showPanel, isSel, xviewDrillColumns, attrsGridColumns,
-      TABS, VIEW_MODES, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
+      TABS, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
       fmt, pct,
       cfMonthLabels, cfTotalSales, cfTotalQtyComp, marginRate, cfAvgOrderValue,
       cfOpt0101, cfOpt0102, cfOpt0103, cfOpt0104,
@@ -806,23 +798,9 @@ window.DashboardBoEc02 = {
   </bo-container>
 
   <!-- 탭 바 + 뷰모드 -->
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-    <div class="tab-nav" style="margin-bottom:0;flex:1;flex-wrap:wrap;">
-      <button v-for="t in TABS" :key="t.key" class="tab-btn"
-        :class="{active: uiState.tabMode==='tab' ? uiState.activeTab===t.key : false}"
-        :disabled="uiState.tabMode!=='tab'"
-        @click="handleSelectAction('tabs-select', t.key)"
-        :style="uiState.tabMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
-        <span style="margin-right:4px;">{{ t.icon }}</span>{{ t.label }}
-      </button>
-    </div>
-    <div style="display:flex;gap:4px;background:#fff;padding:4px;border:1px solid #eef0f3;border-radius:8px;flex-shrink:0;">
-      <button v-for="vm in VIEW_MODES" :key="vm.key" @click="handleSelectAction('tabMode-set',vm.key)" :title="vm.label+'로 보기'"
-        :style="{fontSize:'11px',padding:'4px 8px',borderRadius:'5px',border:'none',cursor:'pointer',minWidth:'34px',background:uiState.tabMode===vm.key?'#fff0f4':'transparent',color:uiState.tabMode===vm.key?'#e8587a':'#888',fontWeight:uiState.tabMode===vm.key?700:400}">
-        {{ vm.icon }}
-      </button>
-    </div>
-  </div>
+  <bo-tab-bar :tabs="TABS" :tab="uiState.activeTab" :tab-mode="uiState.tabMode" bg="#f0fdf4"
+    @tab-select="id => handleSelectAction('tabs-select', id)"
+    @mode-select="m => handleSelectAction('tabMode-set', m)" />
 
   <!-- 차트 그리드 -->
   <div :style="{display:'grid',gridTemplateColumns:cfBaseGridColumns,gap:'12px'}">

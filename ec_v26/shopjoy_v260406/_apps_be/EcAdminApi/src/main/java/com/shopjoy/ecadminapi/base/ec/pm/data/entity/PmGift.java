@@ -86,4 +86,16 @@ public class PmGift extends BaseEntity {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
+    @Comment("판매업체 (sy_vendor.vendor_id)")
+    @Column(name = "vendor_id", length = 21)
+    private String vendorId;
+
+    @Comment("판매담당자명 (업체 선택 시 자동 채움, 수정 가능)")
+    @Column(name = "charge_staff", length = 50)
+    private String chargeStaff;
+
+    @Comment("공개대상 (^코드^코드^ 형식, 예: ^PUBLIC^)")
+    @Column(name = "visibility_targets", length = 200)
+    private String visibilityTargets;
+
 }

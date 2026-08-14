@@ -178,12 +178,12 @@ public class CmDashboardDataSourceRegistry {
         SQL.put("PM_COUPON_DIST",
             "SELECT c.coupon_nm AS col1_nm, "
           + "       COALESCE(c.issue_cnt, 0) AS col1_num, "
-          + "       COUNT(i.issue_id) FILTER (WHERE i.use_yn = 'Y') AS col2_num, "
-          + "       COUNT(i.issue_id) AS col3_num "
+          + "       COUNT(i.coupon_issue_id) FILTER (WHERE i.use_yn = 'Y') AS col2_num, "
+          + "       COUNT(i.coupon_issue_id) AS col3_num "
           + "FROM shopjoy_2604.pm_coupon c "
           + "LEFT JOIN shopjoy_2604.pm_coupon_issue i ON i.coupon_id = c.coupon_id "
           + "GROUP BY c.coupon_id, c.coupon_nm, c.issue_cnt "
-          + "ORDER BY COUNT(i.issue_id) DESC LIMIT " + LIST_LIMIT);
+          + "ORDER BY COUNT(i.coupon_issue_id) DESC LIMIT " + LIST_LIMIT);
 
         SQL.put("PM_CACHE_RECENT",
             "SELECT COALESCE(h.member_nm, '-') AS col1_nm, COALESCE(h.cache_type_cd, '-') AS col2_nm, "
@@ -339,7 +339,7 @@ public class CmDashboardDataSourceRegistry {
 
         SQL.put("PM_ISSUE_TREND",
             "SELECT TO_CHAR(d.day, 'MM-DD') AS col1_nm, "
-          + "       COUNT(i.issue_id) AS col1_num, COUNT(u.issue_id) AS col2_num "
+          + "       COUNT(i.coupon_issue_id) AS col1_num, COUNT(u.coupon_issue_id) AS col2_num "
           + "FROM generate_series(CURRENT_DATE - 6, CURRENT_DATE, INTERVAL '1 day') d(day) "
           + "LEFT JOIN shopjoy_2604.pm_coupon_issue i ON CAST(i.issue_date AS date) = d.day "
           + "LEFT JOIN shopjoy_2604.pm_coupon_issue u "

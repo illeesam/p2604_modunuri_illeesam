@@ -1539,11 +1539,12 @@ window.BoTabBar = {
   name: 'BoTabBar',
   props: {
     tabs:        { type: Array,   default: () => [] },
-    tab:         { type: String,  default: '' },
+    tab:         { type: [String, Number], default: '' },
     tabMode:     { type: String,  default: 'tab' },
     showModes:   { type: Boolean, default: true },
     maxCols:     { type: Number,  default: 4 },          // 뷰모드 최대 열 수 (4 또는 5)
     orientation: { type: String,  default: 'horizontal' }, // 'horizontal' (default) | 'vertical'
+    bg:          { type: String,  default: '#f2f3f5' },   // 탭/뷰모드 묶음 배경색 (화면별 팔레트에 맞춰 override 가능)
   },
   emits: ['tab-select', 'mode-select'],
   setup(props, { emit }) {
@@ -1568,9 +1569,9 @@ window.BoTabBar = {
 <div :style="orientation==='vertical'
   ? 'display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;flex-direction:column;width:max-content;'
   : 'display:flex;gap:8px;margin-bottom:10px;align-items:stretch;'">
-  <div :style="orientation==='vertical'
-    ? 'display:flex;flex-direction:column;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #f2a8bb;box-shadow:0 2px 6px rgba(232,88,122,.1);min-width:160px;'
-    : 'flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #f2a8bb;box-shadow:0 2px 6px rgba(232,88,122,.1);'">
+  <div :style="(orientation==='vertical'
+    ? 'display:flex;flex-direction:column;gap:4px;padding:5px;border-radius:12px;min-width:160px;'
+    : 'flex:1;display:flex;gap:4px;padding:5px;border-radius:12px;') + 'background:' + bg + ';'">
     <template v-for="t in tabs" :key="t?.id">
       <button v-if="t.visible===undefined || t.visible" class="bo-tabbar-btn" :class="{ 'is-active': isTabMode() && tab===t.id }" @click="onTab(t.id)" :disabled="!isTabMode()"
         :style="{
@@ -1602,7 +1603,7 @@ window.BoTabBar = {
       </button>
     </template>
   </div>
-  <div v-if="showModes" style="display:flex;gap:2px;background:#fff;padding:5px;border-radius:12px;border:1px solid #f2a8bb;box-shadow:0 2px 6px rgba(232,88,122,.1);flex-shrink:0;">
+  <div v-if="showModes" :style="'display:flex;gap:2px;padding:5px;border-radius:12px;flex-shrink:0;background:' + bg + ';'">
     <button v-for="v in VIEW_MODES" :key="v?.id" class="bo-tabbar-btn" :class="{ 'is-active': tabMode===v.id }" @click="onMode(v.id)" :title="v.label+'로 보기'"
       :style="{
         padding:'3px 6px',

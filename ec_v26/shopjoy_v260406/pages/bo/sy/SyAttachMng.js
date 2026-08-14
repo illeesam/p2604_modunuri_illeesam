@@ -270,6 +270,7 @@ window.SyAttachMng = {
     /* handleSaveGrp — 그룹 저장 */
     const handleSaveGrp = async () => {
       if (!grpForm.attachGrpNm || !grpForm.attachGrpCode) { showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
+      if (!(await showConfirm('저장', '그룹을 저장하시겠습니까?'))) return;
       try {
         if (uiState.grpEditId === null) {
           await boApi.post('/bo/sy/attach-grp', { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹등록'));
@@ -319,6 +320,7 @@ window.SyAttachMng = {
     /* handleSaveFile — 저장 */
     const handleSaveFile = async () => {
       if (!fileForm.fileNm || !fileForm.attachGrpId) { showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
+      if (!(await showConfirm('저장', '파일 정보를 저장하시겠습니까?'))) return;
       try {
         if (uiState.fileEditId === null) {
           await boApi.post('/bo/sy/attach', { ...fileForm }, coUtil.cofApiHdr('첨부파일관리', '파일등록'));

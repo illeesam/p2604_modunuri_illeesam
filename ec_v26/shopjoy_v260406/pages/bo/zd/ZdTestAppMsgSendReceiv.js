@@ -32,6 +32,12 @@ window.ZdTestAppMsgSendReceiv = {
 
     // 탭
     const tab = ref('send'); // send | devices | history | receive
+    const TABS = [
+      { id: 'send',     label: '✉️ 메시지 발송' },
+      { id: 'devices',  label: '📱 디바이스 목록' },
+      { id: 'history',  label: '📋 발송 이력' },
+      { id: 'receive',  label: '📡 실시간 수신' },
+    ];
 
     // ── 설정 ──────────────────────────────────────────────
     const cfg = reactive({
@@ -546,7 +552,7 @@ window.ZdTestAppMsgSendReceiv = {
     };
 
     return {
-      codes, tab, cfg, baseForm, devices, hist, recvLog, result,
+      codes, tab, TABS, cfg, baseForm, devices, hist, recvLog, result,
       cfActiveChannels, fnChannelBadge, fnPlatformBadge, fnStatusBadge,
       isDeviceSelected, handleBtnAction,
       targetFormColumns, pushFormColumns, kakaoFormColumns,
@@ -561,13 +567,8 @@ window.ZdTestAppMsgSendReceiv = {
   <div class="page-title">Android / iOS 앱 메시지 발송 &amp; 수신 확인</div>
 
   <!-- 탭 바 -->
-  <div class="tab-nav">
-    <button v-for="t in [{id:'send',label:'✉️ 메시지 발송'},{id:'devices',label:'📱 디바이스 목록'},{id:'history',label:'📋 발송 이력'},{id:'receive',label:'📡 실시간 수신'}]"
-      :key="t.id" class="tab-btn" :class="{active: tab===t.id}"
-      @click="handleBtnAction('tab', t.id)">
-      {{ t.label }}
-    </button>
-  </div>
+  <bo-tab-bar :tabs="TABS" :tab="tab" :show-modes="false" bg="#f0fdf4"
+    @tab-select="id => handleBtnAction('tab', id)" />
 
   <!-- ════════════════════════════════════════════════════
        탭 1: 메시지 발송

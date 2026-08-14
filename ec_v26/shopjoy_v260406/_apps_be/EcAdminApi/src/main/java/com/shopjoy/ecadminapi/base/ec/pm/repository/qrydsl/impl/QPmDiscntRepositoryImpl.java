@@ -76,7 +76,12 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                         pmDiscnt.dvcPcYn,                 // PC 채널 적용여부 Y/N
                         pmDiscnt.dvcMwebYn,               // 모바일WEB 적용여부 Y/N
                         pmDiscnt.dvcMappYn,               // 모바일APP 적용여부 Y/N
-                        pmDiscnt.useYn, pmDiscnt.regBy, pmDiscnt.regDate, pmDiscnt.updBy, pmDiscnt.updDate
+                        pmDiscnt.useYn,
+                        pmDiscnt.vendorId,             // 판매업체
+                        pmDiscnt.chargeStaff,          // 판매담당자명
+                        pmDiscnt.visibilityTargets,    // 공개대상
+                        pmDiscnt.mdUserId,             // 담당MD
+                        pmDiscnt.regBy, pmDiscnt.regDate, pmDiscnt.updBy, pmDiscnt.updDate
                 ))
                 .from(pmDiscnt);
     }
@@ -268,6 +273,10 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         if (entity.getDvcMwebYn()            != null) { update.set(pmDiscnt.dvcMwebYn,            entity.getDvcMwebYn());            hasAny = true; }
         if (entity.getDvcMappYn()            != null) { update.set(pmDiscnt.dvcMappYn,            entity.getDvcMappYn());            hasAny = true; }
         if (entity.getUseYn()                != null) { update.set(pmDiscnt.useYn,                entity.getUseYn());                hasAny = true; }
+        if (entity.getVendorId()             != null) { update.set(pmDiscnt.vendorId,             entity.getVendorId());             hasAny = true; }
+        if (entity.getChargeStaff()          != null) { update.set(pmDiscnt.chargeStaff,          entity.getChargeStaff());          hasAny = true; }
+        if (entity.getVisibilityTargets()    != null) { update.set(pmDiscnt.visibilityTargets,    entity.getVisibilityTargets());    hasAny = true; }
+        if (entity.getMdUserId()             != null) { update.set(pmDiscnt.mdUserId,             entity.getMdUserId());             hasAny = true; }
         if (entity.getUpdBy()                != null) { update.set(pmDiscnt.updBy,                entity.getUpdBy());                hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(pmDiscnt.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));

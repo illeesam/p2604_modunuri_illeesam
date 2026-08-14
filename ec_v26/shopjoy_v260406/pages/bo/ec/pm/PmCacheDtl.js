@@ -40,28 +40,6 @@ window.PmCacheDtl = {
       } else if (cmd === 'tab-mode') {
         uiState.tabMode2 = param;
         return;
-      // 판매업체 모달 열기
-      } else if (cmd === 'vendorModal-open') {
-        uiState.showVendorModal = true;
-        return;
-      // 판매업체 모달 닫기
-      } else if (cmd === 'vendorModal-close') {
-        uiState.showVendorModal = false;
-        return;
-      // 판매업체 초기화
-      } else if (cmd === 'form-vendorClear') {
-        form.vendorId = '';
-        form.chargeStaff = '';
-        return;
-      // 담당MD 모달 열기
-      } else if (cmd === 'mdModal-open') {
-        uiState.showMdModal = true;
-        return;
-      // 담당MD 초기화
-      } else if (cmd === 'form-mdClear') {
-        form.mdUserId = '';
-        form.mdUserNm = '';
-        return;
       // 회원ID 변경
       } else if (cmd === 'form-memberChange') {
         return onUserIdChange();
@@ -76,30 +54,9 @@ window.PmCacheDtl = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PmCacheDtl.js : handleSelectAction -> ', cmd, param);
-      // 판매업체 선택
-      if (cmd === 'vendorModal-select') {
-        return selectVendor(param.vendorId, param.vendorNm);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
-    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
-    const fnCallbackModal = (popCmd, param, result) => {
-      console.log(' ■■ PmCacheDtl : fnCallbackModal -> ', popCmd, param, result);
-      if (popCmd === 'cmPopup-vendor-pick') {
-        if (result == null) { uiState.showVendorModal = false; return; }
-        return selectVendor(result.selId, result.selName);
-      } else if (popCmd === 'cmPopup-userMd-pick') {
-        if (result == null) { uiState.showMdModal = false; return; }
-        form.mdUserId = result.selId || '';
-        form.mdUserNm = result.selName || '';
-        uiState.showMdModal = false;
-        return;
-      } else {
-        console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
-      }
-    };
     // ===== Vue Composition API / boApp 전역 의존 ===========================
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
@@ -108,24 +65,13 @@ window.PmCacheDtl = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
 
     // ===== 상태(reactive) 선언 =============================================
-    const vendors = reactive([]);
-    const uiState = reactive({ loading: false, showVendorModal: false, showMdModal: false, error: null, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
+    const uiState = reactive({ loading: false, error: null, tab: window._pmCacheDtlState.tab || 'info', tabMode2: window._pmCacheDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ cache_trans_types: [] });
 
-    // ===== 업체 목록 로드 / 단건 상세 조회 =================================
-    /* loadVendors — 로드 */
-    const loadVendors = async () => {
-      try {
-        const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
-        vendors.splice(0, vendors.length, ...(_vr.data?.data?.pageList || _vr.data?.data?.list || []));
-      } catch (e) { console.warn('[PmCacheDtl.js] vendor load failed', e); }
-    };
-
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
-      await loadVendors();
       if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
@@ -249,29 +195,10 @@ window.PmCacheDtl = {
       if (m) { form.memberNm = m.memberNm; }
     };
 
-    const cfSelectedVendorNm = computed(() => {
-      if (!form.vendorId) { return '소속업체 선택'; }
-      const v = vendors.find(x => x.vendorId === form.vendorId);
-      return v ? v.vendorNm : '소속업체 선택';
-    });
-
-    /* selectVendor — 선택 */
-    const selectVendor = (vendorId, vendorNm) => {
-      form.vendorId = vendorId;
-      // 판매업체 선택 시 판매담당자(대표자명) 자동 적용
-      const v = vendors.find(x => x.vendorId === vendorId);
-      if (v) { form.chargeStaff = v.chargeStaff || v.ceoNm || v.vendorNm || ''; }
-      uiState.showVendorModal = false;
-    };
-
     // ===== 배지(badge) 헬퍼 ================================================
     /* fnTypeBadge — CACHE_TRANS_TYPE code_opt1 배지클래스 우선, 없으면 한글 값 기반 fallback */
     const _CACHE_TYPE_FB = { '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' };
     const fnTypeBadge = t => coUtil.cofCodeBadge('CACHE_TRANS_TYPE', t, _CACHE_TYPE_FB[t] || 'badge-gray');
-
-    // ===== 모달 토글 / 읽기전용 판정 =======================================
-    const showVendorModal   = Vue.toRef(uiState, 'showVendorModal');
-    const showMdModal       = Vue.toRef(uiState, 'showMdModal');
 
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
@@ -304,10 +231,6 @@ window.PmCacheDtl = {
       { key: 'balanceAmt',  label: '처리 후 잔액', type: 'number' },
       { key: 'cacheDesc',   label: '내용', type: 'text', required: true,
         placeholder: '내용 입력', colSpan: 2 },
-      { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
-      { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
-      { key: 'mdUserId', label: '담당MD', type: 'pick', display: (f) => f.mdUserNm, placeholder: 'MD 선택', nameKey: 'mdUserNm',
-        onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('form-mdClear') },
     ];
 
     // ===== setup() return =================================================
@@ -317,10 +240,10 @@ window.PmCacheDtl = {
     return {
       coUtil,  // 템플릿 cofAnd 접근용
       columns,
-      vendors, uiState, codes, form, errors,                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, // computed
-      tabs, tab, tabMode2, showVendorModal, showMdModal,                          // toRef
+      uiState, codes, form, errors,                                        // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, // computed
+      tabs, tab, tabMode2,                          // toRef
       showTab, fnTypeBadge,                                                          // 헬퍼
       coUtil,                                                                        // 템플릿 내 cofAnd 사용
     };
@@ -358,23 +281,6 @@ window.PmCacheDtl = {
           <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
             보기
           </span>
-        </div>
-      </template>
-      <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
-      <template #vendor>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
-            <span style="padding:4px 10px;flex:1;">
-              {{ cfSelectedVendorNm }}
-            </span>
-            <span style="padding:4px 10px;color:#999;font-size:12px;">
-              ▼
-            </span>
-          </div>
-          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
-            style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
-            x
-          </button>
         </div>
       </template>
     </bo-form-area>
@@ -427,8 +333,5 @@ window.PmCacheDtl = {
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
-<!-- ===== ■. 판매업체 선택 모달 (카드 밖) ====================================== -->
-<bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
-<bo-cm-popup-modal popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :show="showMdModal" :on-callback="fnCallbackModal" />
 `
 };

@@ -13,7 +13,7 @@ CREATE TABLE shopjoy_2604.pm_save_prod (
 
 COMMENT ON TABLE  shopjoy_2604.pm_save_prod IS '적립금 적용 상품 전개 (배치 생성)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_prod.save_prod_id IS '적립상품ID (PK)';
-COMMENT ON COLUMN shopjoy_2604.pm_save_prod.save_id  IS '적립금ID (pm_save.save_id)';
+COMMENT ON COLUMN shopjoy_2604.pm_save_prod.save_id  IS '적립금정책ID (pm_save_policy.save_policy_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_prod.prod_id  IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_prod.reg_site_id  IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_prod.reg_date IS '배치 생성일시';

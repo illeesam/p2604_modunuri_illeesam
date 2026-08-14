@@ -358,11 +358,20 @@ window.CmDashboardLayoutMng = {
         <div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;">
           <template v-if="simState.on">
             <template v-if="fnWidget(c)">
-              <div v-if="fnWidget(c).kind === 'kpi'" style="text-align:center;">
-                <div style="font-size:26px;font-weight:800;color:#333;">{{ fnWidget(c).value }}</div>
-                <div style="font-size:11px;color:#888;margin-top:4px;">{{ fnWidget(c).label }}</div>
-                <div v-if="fnWidget(c).delta !== null" :style="{ fontSize:'11px', marginTop:'2px', color: fnWidget(c).delta >= 0 ? '#10b981' : '#ef4444' }">
-                  {{ fnWidget(c).delta >= 0 ? '▲' : '▼' }} {{ Math.abs(fnWidget(c).delta).toLocaleString() }}
+              <div v-if="fnWidget(c).kind === 'kpi'"
+                :style="{ background: util.kpiColorOf(idx).bg }"
+                style="display:flex;align-items:center;gap:8px;width:100%;height:100%;padding:10px 12px;box-sizing:border-box;">
+                <div style="font-size:18px;width:32px;height:32px;border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  {{ util.itemTypeIcon(util.itemTypeOf(c)) }}
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:10px;color:#666;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ fnWidget(c).label }}</div>
+                  <div :style="{ color: util.kpiColorOf(idx).color }" style="font-size:14px;font-weight:800;margin-top:2px;">
+                    {{ fnWidget(c).value }}
+                    <span v-if="fnWidget(c).delta !== null" :style="{ fontSize:'10px', marginLeft:'4px', fontWeight:700, color: fnWidget(c).delta >= 0 ? '#10b981' : '#ef4444' }">
+                      {{ fnWidget(c).delta >= 0 ? '▲' : '▼' }} {{ Math.abs(fnWidget(c).delta).toLocaleString() }}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div v-else-if="fnWidget(c).kind === 'realtime'" style="text-align:center;color:#aaa;font-size:11px;">

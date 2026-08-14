@@ -10,13 +10,12 @@ CREATE TABLE shopjoy_2604.pm_save_item (
     reg_by         VARCHAR(30),
     reg_date       TIMESTAMP   DEFAULT now(),
     upd_by         VARCHAR(30),
-    upd_date       TIMESTAMP  ,
-    CONSTRAINT pm_save_item_fk_save_id FOREIGN KEY (save_id) REFERENCES shopjoy_2604.pm_save (save_id)
+    upd_date       TIMESTAMP
 );
 
-COMMENT ON TABLE  shopjoy_2604.pm_save_item IS '적립금 대상 상품 (pm_save 하위 항목)';
+COMMENT ON TABLE  shopjoy_2604.pm_save_item IS '적립금 정책 대상 상품 (pm_save_policy 하위 항목)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_item.save_item_id IS 'PK: SAI+yyMMddHHmmss+rand4';
-COMMENT ON COLUMN shopjoy_2604.pm_save_item.save_id IS 'FK: pm_save.save_id (적립금 ID)';
+COMMENT ON COLUMN shopjoy_2604.pm_save_item.save_id IS '적립금정책ID (pm_save_policy.save_policy_id) — FK 미적용, 형제 테이블(pm_coupon_item 등)과 동일 관례';
 COMMENT ON COLUMN shopjoy_2604.pm_save_item.reg_site_id IS 'FK: sy_site.site_id (NULL=전사 공통)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_item.target_type_cd IS '대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)';
 COMMENT ON COLUMN shopjoy_2604.pm_save_item.target_id IS '대상 ID (상품·카테고리·브랜드 등)';

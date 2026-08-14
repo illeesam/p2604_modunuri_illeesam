@@ -40,6 +40,13 @@
   };
 
   const PALETTE = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+  /* PALETTE 와 같은 순서의 옅은 배경색 — KPI 카드 배경(§어제의 현황 톤과 동일한 파스텔) */
+  const PALETTE_BG = ['#f0f0ff', '#f0fdf4', '#fffbeb', '#fff5f5', '#eff6ff', '#f5f0ff', '#fdf2f8', '#f0fdfa', '#fff7ed'];
+  /* kpiColorOf(idx) → KPI 카드 순번 기준 {color, bg} 팔레트 매칭 (색상+파스텔 배경 고정 페어) */
+  const kpiColorOf = (idx) => ({
+    color: PALETTE[(idx || 0) % PALETTE.length],
+    bg:    PALETTE_BG[(idx || 0) % PALETTE_BG.length],
+  });
 
   const _fmtYmd = (s) => {
     if (!s || s.length !== 8) return s || '';
@@ -194,5 +201,6 @@
     ITEM_TYPES, itemTypeIcon, itemTypeLabel, itemTypeOf,
     CHART_TYPES, chartTypeIcon, chartTypeLabel,
     filterRows, buildWidget,
+    PALETTE, PALETTE_BG, kpiColorOf,
   };
 })(window);

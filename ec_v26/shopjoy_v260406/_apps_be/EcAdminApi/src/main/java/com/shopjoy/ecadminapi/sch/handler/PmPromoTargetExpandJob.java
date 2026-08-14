@@ -52,6 +52,10 @@ public class PmPromoTargetExpandJob implements SchBatchJobHandler {
         int[] c = expandCoupon(today);
         int[] d = expandDiscnt(today);
         int[] e = expandEvent(today);
+        /* 적립금(pm_save)은 회원별 적립/사용 이력(원장)이라 use_yn·end_date 같은 캠페인 유효기간
+           컬럼이 없었다 — pm_save_item/pm_save_prod(target_type_cd 기반 상품 전개)가 기대하는
+           "적립금 정책 마스터" 개념은 신설한 pm_save_policy 로 분리했다(원장 pm_save 는 그대로 유지,
+           ZdSimulController 등 기존 소비자 영향 없음). */
         int[] s = expandSave(today);
 
         log.info("[{}] 완료 — 쿠폰: {}건/{}행 | 할인: {}건/{}행 | 이벤트: {}건/{}행 | 적립금: {}건/{}행",
@@ -79,23 +83,27 @@ public class PmPromoTargetExpandJob implements SchBatchJobHandler {
 
         int inserted = em.createNativeQuery("""
                 INSERT /* sch :: PromoTargetExpandJob :: expandCoupon-insert */
-                INTO %s.pm_coupon_prod (coupon_id, prod_id, site_id, reg_date)
-                SELECT DISTINCT ci.coupon_id, p.prod_id, ci.site_id, NOW()
-                FROM %s.pm_coupon_item ci
-                JOIN %s.pm_coupon c ON c.coupon_id = ci.coupon_id
-                JOIN %s.pd_prod   p ON (
-                    (ci.target_type_cd = 'PRODUCT'  AND p.prod_id    = ci.target_id)
-                 OR (ci.target_type_cd = 'BRAND'    AND p.brand_id   = ci.target_id)
-                 OR (ci.target_type_cd = 'VENDOR'   AND p.vendor_id  = ci.target_id)
-                 OR (ci.target_type_cd = 'CATEGORY' AND p.prod_id IN (
-                        SELECT cp2.prod_id FROM %s.pd_category_prod cp2
-                        WHERE cp2.category_id = ci.target_id
-                    ))
-                )
-                WHERE c.use_yn = 'Y'
-                  AND c.coupon_status_cd <> 'EXPIRED'
-                  AND (c.valid_to IS NULL OR c.valid_to >= :today)
-                  AND p.use_yn = 'Y'
+                INTO %s.pm_coupon_prod (coupon_prod_id, coupon_id, prod_id, reg_site_id, reg_date)
+                SELECT 'CPP' || TO_CHAR(NOW(), 'YYMMDDHH24MISS') || LPAD((ROW_NUMBER() OVER())::text, 6, '0'),
+                       coupon_id, prod_id, reg_site_id, reg_date
+                FROM (
+                    SELECT DISTINCT ci.coupon_id, p.prod_id, ci.reg_site_id, NOW() AS reg_date
+                    FROM %s.pm_coupon_item ci
+                    JOIN %s.pm_coupon c ON c.coupon_id = ci.coupon_id
+                    JOIN %s.pd_prod   p ON (
+                        (ci.target_type_cd = 'PRODUCT'  AND p.prod_id    = ci.target_id)
+                     OR (ci.target_type_cd = 'BRAND'    AND p.brand_id   = ci.target_id)
+                     OR (ci.target_type_cd = 'VENDOR'   AND p.vendor_id  = ci.target_id)
+                     OR (ci.target_type_cd = 'CATEGORY' AND p.prod_id IN (
+                            SELECT cp2.prod_id FROM %s.pd_category_prod cp2
+                            WHERE cp2.category_id = ci.target_id
+                        ))
+                    )
+                    WHERE c.use_yn = 'Y'
+                      AND c.coupon_status_cd <> 'EXPIRED'
+                      AND (c.valid_to IS NULL OR c.valid_to >= :today)
+                      AND p.use_yn = 'Y'
+                ) x
                 ON CONFLICT (coupon_id, prod_id) DO NOTHING
                 """.formatted(S, S, S, S, S))
             .setParameter("today", today)
@@ -130,22 +138,26 @@ public class PmPromoTargetExpandJob implements SchBatchJobHandler {
 
         int inserted = em.createNativeQuery("""
                 INSERT /* sch :: PromoTargetExpandJob :: expandDiscnt-insert */
-                INTO %s.pm_discnt_prod (discnt_id, prod_id, site_id, reg_date)
-                SELECT DISTINCT di.discnt_id, p.prod_id, di.site_id, NOW()
-                FROM %s.pm_discnt_item di
-                JOIN %s.pm_discnt d ON d.discnt_id = di.discnt_id
-                JOIN %s.pd_prod   p ON (
-                    (di.target_type_cd = 'PRODUCT'  AND p.prod_id    = di.target_id)
-                 OR (di.target_type_cd = 'BRAND'    AND p.brand_id   = di.target_id)
-                 OR (di.target_type_cd = 'VENDOR'   AND p.vendor_id  = di.target_id)
-                 OR (di.target_type_cd = 'CATEGORY' AND p.prod_id IN (
-                        SELECT cp2.prod_id FROM %s.pd_category_prod cp2
-                        WHERE cp2.category_id = di.target_id
-                    ))
-                )
-                WHERE d.use_yn = 'Y'
-                  AND (d.end_date IS NULL OR d.end_date >= :today)
-                  AND p.use_yn = 'Y'
+                INTO %s.pm_discnt_prod (discnt_prod_id, discnt_id, prod_id, reg_site_id, reg_date)
+                SELECT 'DCP' || TO_CHAR(NOW(), 'YYMMDDHH24MISS') || LPAD((ROW_NUMBER() OVER())::text, 6, '0'),
+                       discnt_id, prod_id, reg_site_id, reg_date
+                FROM (
+                    SELECT DISTINCT di.discnt_id, p.prod_id, di.reg_site_id, NOW() AS reg_date
+                    FROM %s.pm_discnt_item di
+                    JOIN %s.pm_discnt d ON d.discnt_id = di.discnt_id
+                    JOIN %s.pd_prod   p ON (
+                        (di.target_type_cd = 'PRODUCT'  AND p.prod_id    = di.target_id)
+                     OR (di.target_type_cd = 'BRAND'    AND p.brand_id   = di.target_id)
+                     OR (di.target_type_cd = 'VENDOR'   AND p.vendor_id  = di.target_id)
+                     OR (di.target_type_cd = 'CATEGORY' AND p.prod_id IN (
+                            SELECT cp2.prod_id FROM %s.pd_category_prod cp2
+                            WHERE cp2.category_id = di.target_id
+                        ))
+                    )
+                    WHERE d.use_yn = 'Y'
+                      AND (d.end_date IS NULL OR d.end_date >= :today)
+                      AND p.use_yn = 'Y'
+                ) x
                 ON CONFLICT (discnt_id, prod_id) DO NOTHING
                 """.formatted(S, S, S, S, S))
             .setParameter("today", today)
@@ -180,23 +192,27 @@ public class PmPromoTargetExpandJob implements SchBatchJobHandler {
 
         int inserted = em.createNativeQuery("""
                 INSERT /* sch :: PromoTargetExpandJob :: expandEvent-insert */
-                INTO %s.pm_event_prod (event_id, prod_id, site_id, reg_date)
-                SELECT DISTINCT ei.event_id, p.prod_id, ei.site_id, NOW()
-                FROM %s.pm_event_item ei
-                JOIN %s.pm_event e ON e.event_id = ei.event_id
-                JOIN %s.pd_prod  p ON (
-                    (ei.target_type_cd = 'PRODUCT'  AND p.prod_id    = ei.target_id)
-                 OR (ei.target_type_cd = 'BRAND'    AND p.brand_id   = ei.target_id)
-                 OR (ei.target_type_cd = 'VENDOR'   AND p.vendor_id  = ei.target_id)
-                 OR (ei.target_type_cd = 'CATEGORY' AND p.prod_id IN (
-                        SELECT cp2.prod_id FROM %s.pd_category_prod cp2
-                        WHERE cp2.category_id = ei.target_id
-                    ))
-                )
-                WHERE e.use_yn = 'Y'
-                  AND e.event_status_cd IN ('PENDING', 'ACTIVE')
-                  AND (e.end_date IS NULL OR e.end_date >= :today)
-                  AND p.use_yn = 'Y'
+                INTO %s.pm_event_prod (event_prod_id, event_id, prod_id, reg_site_id, reg_date)
+                SELECT 'EVP' || TO_CHAR(NOW(), 'YYMMDDHH24MISS') || LPAD((ROW_NUMBER() OVER())::text, 6, '0'),
+                       event_id, prod_id, reg_site_id, reg_date
+                FROM (
+                    SELECT DISTINCT ei.event_id, p.prod_id, ei.reg_site_id, NOW() AS reg_date
+                    FROM %s.pm_event_item ei
+                    JOIN %s.pm_event e ON e.event_id = ei.event_id
+                    JOIN %s.pd_prod  p ON (
+                        (ei.target_type_cd = 'PRODUCT'  AND p.prod_id    = ei.target_id)
+                     OR (ei.target_type_cd = 'BRAND'    AND p.brand_id   = ei.target_id)
+                     OR (ei.target_type_cd = 'VENDOR'   AND p.vendor_id  = ei.target_id)
+                     OR (ei.target_type_cd = 'CATEGORY' AND p.prod_id IN (
+                            SELECT cp2.prod_id FROM %s.pd_category_prod cp2
+                            WHERE cp2.category_id = ei.target_id
+                        ))
+                    )
+                    WHERE e.use_yn = 'Y'
+                      AND e.event_status_cd IN ('PENDING', 'ACTIVE')
+                      AND (e.end_date IS NULL OR e.end_date >= :today)
+                      AND p.use_yn = 'Y'
+                ) x
                 ON CONFLICT (event_id, prod_id) DO NOTHING
                 """.formatted(S, S, S, S, S))
             .setParameter("today", today)
@@ -216,11 +232,12 @@ public class PmPromoTargetExpandJob implements SchBatchJobHandler {
 
     /** @return [promoCount, prodRowCount] */
     private int[] expandSave(LocalDate today) {
+        // 활성 적립금정책 (use_yn=Y, 유효기간 내 또는 기간 미설정) — pm_save_policy 기준
         int deleted = em.createNativeQuery("""
                 DELETE /* sch :: PromoTargetExpandJob :: expandSave-delete */
                 FROM %s.pm_save_prod sp
                 WHERE sp.save_id IN (
-                    SELECT sv.save_id FROM %s.pm_save sv
+                    SELECT sv.save_policy_id FROM %s.pm_save_policy sv
                     WHERE sv.use_yn = 'Y'
                       AND (sv.end_date IS NULL OR sv.end_date >= :today)
                 )
@@ -230,22 +247,26 @@ public class PmPromoTargetExpandJob implements SchBatchJobHandler {
 
         int inserted = em.createNativeQuery("""
                 INSERT /* sch :: PromoTargetExpandJob :: expandSave-insert */
-                INTO %s.pm_save_prod (save_id, prod_id, site_id, reg_date)
-                SELECT DISTINCT si.save_id, p.prod_id, si.site_id, NOW()
-                FROM %s.pm_save_item si
-                JOIN %s.pm_save  sv ON sv.save_id = si.save_id
-                JOIN %s.pd_prod   p ON (
-                    (si.target_type_cd = 'PRODUCT'  AND p.prod_id    = si.target_id)
-                 OR (si.target_type_cd = 'BRAND'    AND p.brand_id   = si.target_id)
-                 OR (si.target_type_cd = 'VENDOR'   AND p.vendor_id  = si.target_id)
-                 OR (si.target_type_cd = 'CATEGORY' AND p.prod_id IN (
-                        SELECT cp2.prod_id FROM %s.pd_category_prod cp2
-                        WHERE cp2.category_id = si.target_id
-                    ))
-                )
-                WHERE sv.use_yn = 'Y'
-                  AND (sv.end_date IS NULL OR sv.end_date >= :today)
-                  AND p.use_yn = 'Y'
+                INTO %s.pm_save_prod (save_prod_id, save_id, prod_id, reg_site_id, reg_date)
+                SELECT 'SVP' || TO_CHAR(NOW(), 'YYMMDDHH24MISS') || LPAD((ROW_NUMBER() OVER())::text, 6, '0'),
+                       save_id, prod_id, reg_site_id, reg_date
+                FROM (
+                    SELECT DISTINCT si.save_id, p.prod_id, si.reg_site_id, NOW() AS reg_date
+                    FROM %s.pm_save_item si
+                    JOIN %s.pm_save_policy sv ON sv.save_policy_id = si.save_id
+                    JOIN %s.pd_prod   p ON (
+                        (si.target_type_cd = 'PRODUCT'  AND p.prod_id    = si.target_id)
+                     OR (si.target_type_cd = 'BRAND'    AND p.brand_id   = si.target_id)
+                     OR (si.target_type_cd = 'VENDOR'   AND p.vendor_id  = si.target_id)
+                     OR (si.target_type_cd = 'CATEGORY' AND p.prod_id IN (
+                            SELECT cp2.prod_id FROM %s.pd_category_prod cp2
+                            WHERE cp2.category_id = si.target_id
+                        ))
+                    )
+                    WHERE sv.use_yn = 'Y'
+                      AND (sv.end_date IS NULL OR sv.end_date >= :today)
+                      AND p.use_yn = 'Y'
+                ) x
                 ON CONFLICT (save_id, prod_id) DO NOTHING
                 """.formatted(S, S, S, S, S))
             .setParameter("today", today)

@@ -1976,6 +1976,10 @@ window.BoExcelUploadModal = {
     /* ##### [01] 초기 변수 정의 #################################################### */
 
     const tab = ref('upload');               // 'upload' | 'desc'
+    const TABS = [
+      { id: 'upload', label: '업로드' },
+      { id: 'desc',   label: '설명' },
+    ];
     const rows = ref([]);                    // 미리보기 행 [{ ...col, _exists, _err }]
     const fileName = ref('');                // 선택된 파일명
     const loading = ref(false);              // 업로드/체크 진행중
@@ -2803,7 +2807,7 @@ window.BoExcelUploadModal = {
     ];
 
     return {
-      tab, rows, fileName, loading, codesMap, summary, inspect,            // 상태 / 데이터
+      tab, TABS, rows, fileName, loading, codesMap, summary, inspect,            // 상태 / 데이터
       cfCols, cfKeyField, cfHasRows, cfValidRows, cfTitle, cfLabel,        // computed
       cfDescCols, cfDescKeyField, domainMetaLoading,                       // 설명 탭 전용
       cfDomains, cfDomain, selectedDomainKey,                              // 도메인 select
@@ -2815,7 +2819,6 @@ window.BoExcelUploadModal = {
   },
   template: `
 <bo-modal :title="cfTitle" width="1100px" height="auto" max-height="95vh" body-pad="0" @close="$emit('close')">
-if (props.onCallback) props.onCallback(props.modalName, null, null);
   <!-- bodyPad=0 → BoModal body 의 padding 제거 → wrapper 가 body 영역을 정확히 100% 채움.
         wrapper 내부 padding 은 직접 관리. 모달 body 자체 스크롤은 절대 활성화되지 않도록
         모든 자식이 wrapper 안에서 flex 로 줄어들도록 구성. -->
@@ -2855,10 +2858,8 @@ if (props.onCallback) props.onCallback(props.modalName, null, null);
   </div>
 
   <!-- 탭 헤더 -->
-  <div class="tab-nav" style="margin-bottom:12px;">
-    <button class="tab-btn" :class="{active: tab==='upload'}" @click="handleBtnAction('tab-change','upload')">업로드</button>
-    <button class="tab-btn" :class="{active: tab==='desc'}"   @click="handleBtnAction('tab-change','desc')">설명</button>
-  </div>
+  <bo-tab-bar :tabs="TABS" :tab="tab" :show-modes="false" bg="#f0fdf4"
+    @tab-select="id => handleBtnAction('tab-change', id)" />
 
   <!-- 업로드 탭의 액션 바 (상단 고정 영역에 포함) -->
   <div v-show="tab==='upload'" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">

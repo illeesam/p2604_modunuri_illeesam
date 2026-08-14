@@ -2566,7 +2566,6 @@
             <cm-dashboard-menu-mng  v-else-if="page==='cmDashboardMenuMng'"  :navigate="navigate" />
             <cm-dashboard-sys-menu-mng v-else-if="page==='cmDashboardSysMenuMng'" :navigate="navigate" />
             <cm-popup-mng  v-else-if="page==='cmPopupMng'"  :navigate="navigate" />
-            <cm-popup-item-mng  v-else-if="page==='cmPopupItemMng'"  :navigate="navigate" :dtl-id="dtlId" />
             <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" />
             <sy-prop-mng  v-else-if="page==='syPropMng'"  :navigate="navigate" />
             <sy-path-mng  v-else-if="page==='syPathMng'"  :navigate="navigate" />

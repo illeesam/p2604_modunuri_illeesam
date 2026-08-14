@@ -47,6 +47,9 @@ public class PmGiftDto {
         private BigDecimal selfCdivRate;
         private BigDecimal sellerCdivRate;
         private String useYn;
+        private String vendorId;
+        private String chargeStaff;
+        private String visibilityTargets;
         private String regBy;
         private LocalDateTime regDate;
         private String regSiteId;

@@ -35,6 +35,13 @@ window.SySendMsgLogMng = {
     const alarmLogs = reactive([]);
     const tabCounts = reactive({ email: 0, msg: 0, alarm: 0 });
 
+    /* tabs — 탭 정의 (BoTabBar 데이터) */
+    const tabs = reactive([
+      { id: 'email', label: '메일', icon: '📧', get count() { return tabCounts.email; } },
+      { id: 'msg',   label: '메시지(SMS·카카오)', icon: '💬', get count() { return tabCounts.msg; } },
+      { id: 'alarm', label: '시스템알림', icon: '🔔', get count() { return tabCounts.alarm; } },
+    ]);
+
     const columns = {};
 
     // 행 펼침
@@ -377,7 +384,7 @@ window.SySendMsgLogMng = {
     return {
       onScrollEnd,                       // 무한 스크롤 (하단 도달 시 다음 100건)
       cofCountText: coUtil.cofCountText, // 하단 건수 문구
-      uiState, baseGridPager, tabCounts, allExpanded, codes,                 // 상태 / 데이터
+      uiState, baseGridPager, tabCounts, tabs, allExpanded, codes,                 // 상태 / 데이터
       columns,                                                                // 컬럼 정의 모음
       handleBtnAction, handleSelectAction, handleGridCellAction,              // dispatch
       cfCurrentList, cfCurDetailCols, cfCurGridCols, cfCurRowKey, cfTabTitle, // computed
@@ -410,20 +417,8 @@ window.SySendMsgLogMng = {
   <bo-container :title="cfTabTitle"
     :count-text="cofCountText(baseGridPager.pageTotalCount, cfCurrentList.length)">
     <template #top>
-      <div class="tab-nav" style="margin-bottom:12px">
-        <button class="tab-btn" :class="{active:uiState.activeTab==='email'}" @click="handleSelectAction('tabs-select', 'email')">
-          📧 메일
-          <span class="tab-count">{{ tabCounts.email }}</span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.activeTab==='msg'}" @click="handleSelectAction('tabs-select', 'msg')">
-          💬 메시지(SMS·카카오)
-          <span class="tab-count">{{ tabCounts.msg }}</span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.activeTab==='alarm'}" @click="handleSelectAction('tabs-select', 'alarm')">
-          🔔 시스템알림
-          <span class="tab-count">{{ tabCounts.alarm }}</span>
-        </button>
-      </div>
+      <bo-tab-bar :tabs="tabs" :tab="uiState.activeTab" :show-modes="false" bg="#f0fdf4"
+        @tab-select="id => handleSelectAction('tabs-select', id)" />
     </template>
     <template #toolbar-actions>
       <span style="font-size:11px;color:#aaa;">행 클릭 시 발송 내용 펼침</span>

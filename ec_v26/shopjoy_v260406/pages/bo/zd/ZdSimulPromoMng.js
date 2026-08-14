@@ -4,10 +4,10 @@
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const PROMO_TYPES = [
-    { value: 'coupon', label: '쿠폰',          badge: 'badge-purple' },
-    { value: 'discnt', label: '할인정책',       badge: 'badge-blue'   },
-    { value: 'save',   label: '적립금정책',     badge: 'badge-green'  },
-    { value: 'both',   label: '쿠폰+할인 혼합', badge: 'badge-orange' },
+    { id: 'coupon', label: '쿠폰' },
+    { id: 'discnt', label: '할인정책' },
+    { id: 'save',   label: '적립금정책' },
+    { id: 'both',   label: '쿠폰+할인 혼합' },
   ];
   const DISC_TYPES  = [{ value: 'RATE', label: '% 할인' }, { value: 'AMOUNT', label: '정액 할인' }];
   const COUPON_SCOPES = [
@@ -356,14 +356,9 @@
     @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" />
 
   <!-- 프로모션 유형 탭 (별도 카드) -->
-  <div class="card" style="margin-top:12px;">
-    <div class="tab-bar-row" style="padding:0 4px;">
-      <div class="tab-nav">
-        <button v-for="t in PROMO_TYPES" :key="t.value"
-          :class="'tab-btn' + (domCfg.promoType===t.value ? ' active' : '')"
-          @click="domCfg.promoType=t.value">{{ t.label }}</button>
-      </div>
-    </div>
+  <div class="card" style="margin-top:12px;padding:4px;">
+    <bo-tab-bar :tabs="PROMO_TYPES" :tab="domCfg.promoType" :show-modes="false" bg="#f0fdf4"
+      @tab-select="v => domCfg.promoType = v" />
 
     <!-- 쿠폰 설정 -->
     <div v-if="domCfg.promoType==='coupon' || domCfg.promoType==='both'" style="padding:14px 16px;">
