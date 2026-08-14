@@ -16,7 +16,8 @@ CREATE TABLE shopjoy_2604.sy_attach_grp (
     reg_date          TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by            VARCHAR(30) ,
     upd_date          TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-    reg_site_id           VARCHAR(21)  NOT NULL
+    reg_site_id           VARCHAR(21)  NOT NULL,
+    CONSTRAINT sy_attach_grp_uk_attach_grp_code UNIQUE (attach_grp_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_attach_grp IS '첨부파일 그룹 - 여러 파일을 한 번에 관리하기 위한 그룹 단위';

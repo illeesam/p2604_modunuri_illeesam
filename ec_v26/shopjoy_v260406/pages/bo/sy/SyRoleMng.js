@@ -204,7 +204,7 @@ window.SyRoleMng = {
       } else if (popCmd === 'cmPopup-parent-pick') {
         if (result == null) { roleTreeModal.show = false; return; }
         if (roleTreeModal.targetRow) {
-          roleTreeModal.targetRow.parentRoleId = result.roleId;
+          roleTreeModal.targetRow.parentRoleId = result.selId;
           roleTreeModal.targetRow._depth = 0;
           onCellChange(roleTreeModal.targetRow);
         }

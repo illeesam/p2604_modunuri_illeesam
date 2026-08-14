@@ -16,7 +16,7 @@ CREATE TABLE shopjoy_2604.sy_template (
     upd_by           VARCHAR(30) ,
     upd_date         TIMESTAMP   ,
     path_id          VARCHAR(21) ,
-    CONSTRAINT sy_template_uk_template_type_cd_template_code_x2 UNIQUE (template_type_cd, template_code)
+    CONSTRAINT sy_template_uk_template_code UNIQUE (template_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_template IS '발송 템플릿';

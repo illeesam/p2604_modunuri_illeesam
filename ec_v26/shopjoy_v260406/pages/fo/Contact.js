@@ -55,7 +55,7 @@ window.Contact = {
       // 주문 선택 공통팝업 (result==null: 닫기, result=주문행: 선택)
       if (popCmd === 'cmPopup-myMemberOrder-pick') {
         modals.isOrderModal = false;
-        if (result) form.orderNo = result.orderId;
+        if (result) form.orderNo = result.selId;
         return;
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);

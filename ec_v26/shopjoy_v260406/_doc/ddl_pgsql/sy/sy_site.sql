@@ -22,8 +22,10 @@ CREATE TABLE shopjoy_2604.sy_site (
     reg_date         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by           VARCHAR(30) ,
     upd_date         TIMESTAMP   ,
-    path_id          VARCHAR(21) ,
-    CONSTRAINT sy_site_uk_site_code UNIQUE (site_code)
+    path_id          VARCHAR(21) 
+,
+    CONSTRAINT sy_site_uk_site_code UNIQUE (site_code),
+    CONSTRAINT sy_site_uk_site_business_no UNIQUE (site_business_no)
 );
 
 COMMENT ON TABLE  shopjoy_2604.sy_site IS '사이트';

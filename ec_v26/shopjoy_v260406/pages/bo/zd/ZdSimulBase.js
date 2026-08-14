@@ -387,7 +387,6 @@
 
   /* ── BoGrid 로그 컬럼 정의 ──────────────────────────────── */
   const logGridColumns = () => [
-    { key: '_no',    label: '번호', width: '36px',  align: 'center', fmt: (v, row, i) => i + 1 },
     { key: 'ts',     label: '시각', width: '86px',  cellStyle: 'color:#94a3b8;font-family:monospace;' },
     { key: 'mode',   label: '유형', width: '44px',  align: 'center',
       badge: (row) => row.mode === '생성' ? 'badge-blue' : 'badge-orange' },
@@ -567,7 +566,6 @@
 
   /* ── logCols 생성 함수 (각 컴포넌트 setup에서 호출) ─────── */
   const makeLogCols = () => [
-    { key: '_rowNo', label: '번호', width: '36px',  align: 'center' },
     { key: 'ts',     label: '등록일시', width: '140px',
       cellStyle: 'color:#64748b;font-family:monospace;font-size:10px;' },
     { key: 'uiNm',   label: '화면명', width: '110px',

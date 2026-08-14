@@ -146,13 +146,13 @@ window.PmDiscntDtl = {
 
 
     /* _addTarget — 발급대상 추가 공통 헬퍼 */
-    const _addTarget = (row, idKey, nmKey) => {
+    const _addTarget = (row) => {
       uiState.showTargetPicker = false;
       if (!row) return;
-      const id = String(row[idKey] || '');
+      const id = String(row.selId || '');
       if (!id) return;
       if (form.issueTargets.some(t => t.targetId === id)) { showToast('이미 추가된 대상입니다.', 'error'); return; }
-      form.issueTargets.push({ targetId: id, targetNm: row[nmKey] || id });
+      form.issueTargets.push({ targetId: id, targetNm: row.selName || id });
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
@@ -160,21 +160,21 @@ window.PmDiscntDtl = {
       console.log(' ■■ PmDiscntDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-vendor-pick') {
         if (result == null) { uiState.showVendorModal = false; return; }
-        return selectVendor(result.vendorId, result.vendorNm);
+        return selectVendor(result.selId, result.selName);
       } else if (popCmd === 'cmPopup-userMd-pick') {
         if (result == null) { uiState.showMdModal = false; return; }
-        form.mdUserId = result.userId || '';
-        form.mdUserNm = result.userNm || '';
+        form.mdUserId = result.selId || '';
+        form.mdUserNm = result.selName || '';
         uiState.showMdModal = false;
         return;
       } else if (popCmd === 'cmPopup-target-prod-pick') {
-        return _addTarget(result, 'prodId', 'prodNm');
+        return _addTarget(result);
       } else if (popCmd === 'cmPopup-target-brand-pick') {
-        return _addTarget(result, 'brandId', 'brandNm');
+        return _addTarget(result);
       } else if (popCmd === 'cmPopup-target-category-pick') {
-        return _addTarget(result, 'categoryId', 'categoryNm');
+        return _addTarget(result);
       } else if (popCmd === 'cmPopup-vendor-target-pick') {
-        return _addTarget(result, 'vendorId', 'vendorNm');
+        return _addTarget(result);
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
@@ -347,7 +347,6 @@ window.PmDiscntDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
     const cfIssueTargetsColumns = computed(() => [
-      { key: '_no', label: '번호', style: 'width:36px;', align: 'center', fmt: (v, row, idx) => idx + 1 },
       { key: 'targetId', label: '대상 ID', mono: true, cellStyle: 'font-size:11px;' },
       { key: 'targetNm', label: '대상명', fmt: v => v || '-' },
       ...(!cfDtlMode.value ? [{ key: '_del', label: '삭제', style: 'width:60px;', align: 'center',

@@ -32,7 +32,7 @@ window.PmCouponDtl = {
       couponId: null, couponTypeCd: '', couponCd: '', couponNm: '',
       discountType: '', discountVal: '', discountRate: null, discountAmt: null, minOrderAmt: '', maxDiscountAmt: '',
       couponStatusCd: '', validFrom: '', validTo: '', issueLimit: '', useLimit: '',
-      targetTypeCd: '', issueTargets: [],
+      targetTypeCd: 'PRODUCT', issueTargets: [],
       issueMethods: '', issueCondition: '', memGradeCd: '', issueGrades: [],
       useScope: '', useExclude: '', useRemark: '',
       memo: '',
@@ -44,7 +44,7 @@ window.PmCouponDtl = {
         couponTypeCd: '상품할인쿠폰', discountType: 'amount', discountVal: 0,
         minOrderAmt: 0, maxDiscountAmt: 0, couponStatusCd: '활성',
         validFrom: DEFAULT_START, validTo: DEFAULT_END, issueLimit: 0, useLimit: 'unlimited',
-        targetTypeCd: '상품', issueMethods: 'auto', issueCondition: 'all', useScope: 'all',
+        targetTypeCd: 'PRODUCT', issueMethods: 'auto', issueCondition: 'all', useScope: 'all',
       });
     };
     const errors = reactive({});
@@ -66,7 +66,8 @@ window.PmCouponDtl = {
     const cfIsNew = computed(() => !props.dtlId);
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // view 모드 = 읽기전용 플래그
     const cfIssueTargetsColumns = computed(() => [
-      { key: '_no', label: '번호', style: 'width:36px;', align: 'center', fmt: (v, row, idx) => idx + 1 },
+      { key: 'targetTypeCd', label: '구분', style: 'width:70px;', align: 'center',
+        fmt: v => (codes.PM_PROD_TARGET.find(c => c.codeValue === v) || {}).codeLabel || v || '-' },
       { key: 'targetId', label: '대상 ID', mono: true, cellStyle: 'font-size:11px;' },
       { key: 'targetNm', label: '대상명', fmt: v => v || '-' },
       ...(!cfDtlMode.value ? [{ key: '_del', label: '삭제', style: 'width:60px;', align: 'center',
@@ -138,8 +139,7 @@ window.PmCouponDtl = {
         return;
       // 발급대상 삭제
       } else if (cmd === 'target-remove') {
-        form.issueTargets.splice(param, 1);
-        return;
+        return _removeTarget(param);
       // 발급대상 피커 닫기
       } else if (cmd === 'target-close') {
         uiState.showTargetPicker = false;
@@ -166,14 +166,39 @@ window.PmCouponDtl = {
     };
 
 
-    /* _addTarget — 발급대상 추가 공통 헬퍼 (idKey/nmKey 지정) */
-    const _addTarget = (row, idKey, nmKey) => {
+    /* _addTarget — 발급대상 추가 공통 헬퍼 (pm_coupon_item 즉시 저장, targetTypeCd 함께 기록) */
+    const _addTarget = async (row) => {
       uiState.showTargetPicker = false;
       if (!row) return;
-      const id = String(row[idKey] || '');
+      const id = String(row.selId || '');
       if (!id) return;
-      if (form.issueTargets.some(t => t.targetId === id)) { showToast('이미 추가된 대상입니다.', 'error'); return; }
-      form.issueTargets.push({ targetId: id, targetNm: row[nmKey] || id });
+      if (form.issueTargets.some(t => t.targetId === id && t.targetTypeCd === form.targetTypeCd)) {
+        showToast('이미 추가된 대상입니다.', 'error');
+        return;
+      }
+      try {
+        const res = await boApiSvc.pmCouponItem.create(
+          { couponId: cfCurId.value, targetTypeCd: form.targetTypeCd, targetId: id },
+          '쿠폰관리', '발급대상추가');
+        const saved = res.data?.data || res.data;
+        form.issueTargets.push({
+          couponItemId: saved.couponItemId, targetId: id, targetNm: row.selName || id, targetTypeCd: form.targetTypeCd,
+        });
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
+    /* _removeTarget — 발급대상 삭제 (pm_coupon_item 즉시 삭제) */
+    const _removeTarget = async (idx) => {
+      const row = form.issueTargets[idx];
+      if (!row) return;
+      try {
+        await boApiSvc.pmCouponItem.remove(row.couponItemId, '쿠폰관리', '발급대상삭제');
+        form.issueTargets.splice(idx, 1);
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
@@ -181,21 +206,21 @@ window.PmCouponDtl = {
       console.log(' ■■ PmCouponDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-vendor-pick') {
         if (result == null) { uiState.showVendorModal = false; return; }
-        return selectVendor(result.vendorId, result.vendorNm);
+        return selectVendor(result.selId, result.selName);
       } else if (popCmd === 'cmPopup-userMd-pick') {
         if (result == null) { uiState.showMdModal = false; return; }
-        form.mdUserId = result.userId || '';
-        form.mdUserNm = result.userNm || '';
+        form.mdUserId = result.selId || '';
+        form.mdUserNm = result.selName || '';
         uiState.showMdModal = false;
         return;
       } else if (popCmd === 'cmPopup-target-prod-pick') {
-        return _addTarget(result, 'prodId', 'prodNm');
+        return _addTarget(result);
       } else if (popCmd === 'cmPopup-target-brand-pick') {
-        return _addTarget(result, 'brandId', 'brandNm');
+        return _addTarget(result);
       } else if (popCmd === 'cmPopup-target-category-pick') {
-        return _addTarget(result, 'categoryId', 'categoryNm');
+        return _addTarget(result);
       } else if (popCmd === 'cmPopup-vendor-target-pick') {
-        return _addTarget(result, 'vendorId', 'vendorNm');
+        return _addTarget(result);
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
@@ -225,6 +250,14 @@ window.PmCouponDtl = {
         }
         if (!form.validFrom) { form.validFrom = DEFAULT_START; }
         if (!form.validTo) { form.validTo = DEFAULT_END; }
+        // 발급대상(pm_coupon_item) 별도 로드 — targetNm은 백엔드가 조인해주지 않아 targetId로 대체
+        try {
+          const cr = await boApiSvc.pmCouponItem.getList({ couponId: props.dtlId }, '쿠폰관리', '발급대상조회');
+          const list = cr.data?.data || cr.data || [];
+          form.issueTargets = list.map(t => ({
+            couponItemId: t.couponItemId, targetId: t.targetId, targetNm: t.targetId, targetTypeCd: t.targetTypeCd,
+          }));
+        } catch (e) { console.warn('[PmCouponDtl.js] coupon-item load failed', e); }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

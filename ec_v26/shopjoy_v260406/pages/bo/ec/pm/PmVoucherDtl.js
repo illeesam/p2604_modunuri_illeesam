@@ -97,7 +97,7 @@ window.PmVoucherDtl = {
             uiState.showVendorModal = false;
             return;
         }
-        return selectVendor(result.vendorId, result.vendorNm);
+        return selectVendor(result.selId, result.selName);
       } else if (popCmd === 'sns') {
         if (result == null) {
             snsModal.show = false;

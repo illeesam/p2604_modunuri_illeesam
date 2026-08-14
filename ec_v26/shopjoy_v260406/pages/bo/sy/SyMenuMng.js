@@ -108,7 +108,7 @@ window.SyMenuMng = {
           return;
         }
         if (parentModal.targetRow) {
-          parentModal.targetRow.parentMenuId = result.menuId;
+          parentModal.targetRow.parentMenuId = result.selId;
           parentModal.targetRow._depth = 0;
           onCellChange(parentModal.targetRow);
         }

@@ -117,7 +117,7 @@ window.SyDeptMng = {
           return;
         }
         if (parentModal.targetRow) {
-          parentModal.targetRow.parentDeptId = result.deptId;
+          parentModal.targetRow.parentDeptId = result.selId;
           parentModal.targetRow._depth = 0;
           onCellChange(parentModal.targetRow);
         }

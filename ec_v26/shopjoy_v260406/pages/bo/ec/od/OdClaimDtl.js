@@ -135,8 +135,9 @@ window.OdClaimDtl = {
       if (popCmd === 'cmPopup-order-pick') {
         orderPick.open = false;
         if (result) {
-          form.orderId  = result.orderId || '';
-          // 주문에서 회원정보 자동 채움
+          form.orderId  = result.selId || '';
+          /* 주문에서 회원정보 자동 채움 — order 팝업은 nm_field=orderId 라 selName 은 주문ID다.
+             회원명은 order 팝업이 조인해 얹어준 별도 필드(memberNm/userNm)에서 읽어야 한다. */
           if (result.memberNm || result.userNm) { form.memberNm = result.memberNm || result.userNm || ''; }
         }
         return;
@@ -144,8 +145,8 @@ window.OdClaimDtl = {
       } else if (popCmd === 'cmPopup-member-pick') {
         memberPick.open = false;
         if (result) {
-          form.memberId = result.memberId || '';
-          form.memberNm = result.memberNm || result.loginId || result.memberId || '';
+          form.memberId = result.selId || '';
+          form.memberNm = result.selName || result.loginId || result.selId || '';
         }
         return;
       }

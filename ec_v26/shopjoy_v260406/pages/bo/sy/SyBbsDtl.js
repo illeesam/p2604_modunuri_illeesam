@@ -125,9 +125,9 @@ window.SyBbsDtl = {
     /* onBbmSelect — 게시판 선택 결과 적용 */
     const onBbmSelect = (b) => {
       showBbmModal.value = false;
-      if (uiState.selectedBbm && uiState.selectedBbm.bbmId === b.bbmId) { return; }
+      if (uiState.selectedBbm && uiState.selectedBbm.bbmId === b.selId) { return; }
       uiState.selectedBbm = b;
-      form.bbmId = b.bbmId;
+      form.bbmId = b.selId;
       // 게시판 변경 시 레이아웃 초기화
       form.bbsTitle    = '';
       form.authorNm    = '';

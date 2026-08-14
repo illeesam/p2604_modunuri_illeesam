@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS shopjoy_2604.cm_popup (
     upd_by          VARCHAR(30),
     upd_date        TIMESTAMP,
     CONSTRAINT cm_popup_pk_popup_id PRIMARY KEY (popup_id),
-    CONSTRAINT cm_popup_uk_site UNIQUE (site_id, popup_code)
+    CONSTRAINT cm_popup_uk_popup_code UNIQUE (popup_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.cm_popup IS '공통 선택/조회 팝업 정의';

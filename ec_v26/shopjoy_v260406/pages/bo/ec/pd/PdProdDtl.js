@@ -1113,9 +1113,9 @@ window.PdProdDtl = {
 
     /* addCategory — 추가 */
     const addCategory = (cat) => {
-      const id = cat.categoryId||cat.id;
+      const id = cat.selId||cat.id;
       if (window.safeArrayUtils.safeSome(prodCategories, c => String(c.categoryId) === String(id))) { return; }
-      prodCategories.push({ categoryId: id, categoryNm: cat.categoryNm||cat.nm||String(id), depth: cat.depth||cat.categoryDepth||cat.level||1 });
+      prodCategories.push({ categoryId: id, categoryNm: cat.selName||cat.nm||String(id), depth: cat.depth||cat.categoryDepth||cat.level||1 });
       uiState.catPickerOpen = false;
     };
 
@@ -1182,7 +1182,7 @@ window.PdProdDtl = {
     const openMdModal  = () => { uiState.mdSearch = ''; uiState.mdModalOpen = true; };
 
     /* selectMdUser — 선택 */
-    const selectMdUser = (u) => { form.mdUserId = u.userId; uiState.mdModalOpen = false; };
+    const selectMdUser = (u) => { form.mdUserId = u.selId; uiState.mdModalOpen = false; };
 
     /* handleInitForm — 처리 */
     const handleInitForm = async () => {
@@ -1528,9 +1528,9 @@ window.PdProdDtl = {
       if (!prod) {
         tabData.bundleItems.push({ _id: _bundleSeq++, itemProdId: null, itemProdNm: '', itemQty: 1, priceRate: 0, sortOrd: tabData.bundleItems.length + 1 });
       } else {
-        const already = tabData.bundleItems.some(b => b.itemProdId === prod.prodId);
+        const already = tabData.bundleItems.some(b => b.itemProdId === prod.selId);
         if (already) { showToast('이미 추가된 상품입니다.', 'error'); return; }
-        tabData.bundleItems.push({ _id: _bundleSeq++, itemProdId: prod.prodId, itemProdNm: prod.prodNm || '', itemQty: 1, priceRate: 0, sortOrd: tabData.bundleItems.length + 1 });
+        tabData.bundleItems.push({ _id: _bundleSeq++, itemProdId: prod.selId, itemProdNm: prod.selName || '', itemQty: 1, priceRate: 0, sortOrd: tabData.bundleItems.length + 1 });
       }
       bundlePickerOpen.value = false;
     };
@@ -1551,7 +1551,7 @@ window.PdProdDtl = {
       if (!prod) {
         tabData.setItems.push({ _id: _setSeq++, itemProdId: null, itemProdNm: '', itemQty: 1, itemDesc: '', sortOrd: tabData.setItems.length + 1 });
       } else {
-        tabData.setItems.push({ _id: _setSeq++, itemProdId: prod.prodId, itemProdNm: prod.prodNm || '', itemQty: 1, itemDesc: '', sortOrd: tabData.setItems.length + 1 });
+        tabData.setItems.push({ _id: _setSeq++, itemProdId: prod.selId, itemProdNm: prod.selName || '', itemQty: 1, itemDesc: '', sortOrd: tabData.setItems.length + 1 });
       }
       setPickerOpen.value = false;
     };
@@ -1748,8 +1748,6 @@ window.PdProdDtl = {
     columns.singleStockForm = [];
     // 프로모션 탭 — 쿠폰 목록 그리드 (pm_coupon_item 행)
     columns.promoCouponGrid = [
-      { key: '_no',          label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
-        fmt: (v, row, idx) => idx + 1 },
       { key: 'couponId',     label: '쿠폰 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
       { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
@@ -1758,8 +1756,6 @@ window.PdProdDtl = {
     ];
     // 프로모션 탭 — 적립금 목록 그리드 (pm_save_item 행)
     columns.promoSaveGrid = [
-      { key: '_no',        label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
-        fmt: (v, row, idx) => idx + 1 },
       { key: 'saveId',     label: '적립금 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
       { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
@@ -1768,8 +1764,6 @@ window.PdProdDtl = {
     ];
     // 프로모션 탭 — 할인 목록 그리드 (pm_discnt_item 행)
     columns.promoDiscntGrid = [
-      { key: '_no',          label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
-        fmt: (v, row, idx) => idx + 1 },
       { key: 'discntId',     label: '할인 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
       { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-blue', fmt: v => v || 'PRODUCT' },
@@ -1778,8 +1772,6 @@ window.PdProdDtl = {
     ];
     // 프로모션 탭 — 사은품 조건 그리드 (pm_gift_cond 행)
     columns.promoGiftGrid = [
-      { key: '_no',          label: '번호', style: 'width:36px;', align: 'center', cellStyle: 'color:#aaa;font-size:11px;',
-        fmt: (v, row, idx) => idx + 1 },
       { key: 'giftId',       label: '사은품 ID', style: 'width:180px;', cellStyle: 'font-family:monospace;font-size:11px;color:#555;' },
       { key: 'targetTypeCd', label: '대상유형', style: 'width:90px;', align: 'center',
         badge: () => 'badge-green', fmt: v => v || 'PRODUCT' },

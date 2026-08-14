@@ -138,8 +138,8 @@ window.PdProdMng = {
         return onCatSelect(result);
       } else if (popCmd === 'cmPopup-userMd-pick') {
         if (result == null) { modals.isMdPick = false; return; }
-        searchParam.mdUserId = result.userId || '';
-        searchParam.mdUserNm = result.userNm || '';
+        searchParam.mdUserId = result.selId || '';
+        searchParam.mdUserNm = result.selName || '';
         modals.isMdPick = false;
         return;
       } else {

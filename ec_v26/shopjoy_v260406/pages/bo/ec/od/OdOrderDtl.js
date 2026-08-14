@@ -161,8 +161,8 @@ window.OdOrderDtl = {
 
     /* onMemberPicked — 회원 선택 모달 결과 반영 */
     const onMemberPicked = (m) => {
-      form.memberId = m.memberId || m.userId || '';
-      form.memberNm = m.memberNm || m.memberName || m.name || '';
+      form.memberId = m.selId || m.userId || '';
+      form.memberNm = m.selName || m.memberName || m.name || '';
       showToast('회원이 선택되었습니다.', 'success');
     };
 

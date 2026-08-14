@@ -103,7 +103,8 @@ window.PmVoucherMng = {
 
     const fnCallbackModal = (popCmd, param, result) => {
       if (popCmd === 'cmPopup-member-pick') {
-        searchParam.memberId = result ? result.memberId || '' : ''; searchParam.memberNm = result ? result.memberNm || '' : '';
+        searchParam.memberId = result?.selId || '';
+        searchParam.memberNm = result?.selName || '';
         modals.isMemberPick = false;
       }
     };

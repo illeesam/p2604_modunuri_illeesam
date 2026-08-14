@@ -146,7 +146,7 @@ window.PmPlanDtl = {
             uiState.showVendorModal = false;
             return;
         }
-        return selectVendor(result.vendorId, result.vendorNm);
+        return selectVendor(result.selId, result.selName);
       } else if (popCmd === 'cmPopup-prod-pick') {
         if (result == null) {
             uiState.showProdPopup = false;

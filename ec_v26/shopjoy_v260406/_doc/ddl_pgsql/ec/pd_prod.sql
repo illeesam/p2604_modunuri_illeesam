@@ -46,7 +46,8 @@ CREATE TABLE shopjoy_2604.pd_prod (
     upd_date              TIMESTAMP    ,
     platform_fee_rate     NUMERIC(5,2) ,
     platform_fee_amount   BIGINT       ,
-    prod_opt_type_level1_cd VARCHAR(20)
+    prod_opt_type_level1_cd VARCHAR(20),
+    CONSTRAINT pd_prod_uk_prod_code UNIQUE (prod_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod IS '상품';

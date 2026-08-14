@@ -1195,7 +1195,7 @@ window.SyPostman = {
           </button>
         </div>
         <div style="max-height:120px;overflow-y:auto;">
-          <bo-grid bare :columns="historyGridColumns" :rows="history" row-key="id"
+          <bo-grid bare :show-row-no="false" :columns="historyGridColumns" :rows="history" row-key="id"
             :row-class="(row, i) => histSelIdx===i ? 'selected-row' : ''"
             empty-text="전송 이력이 없습니다"
             style="font-size:11px;"

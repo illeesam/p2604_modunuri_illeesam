@@ -59,15 +59,24 @@ window.OdOrderItemMng = {
     const fnCallbackModal = (popCmd, param, result) => {
       if (result == null) { picks.member = picks.order = picks.vendor = picks.brand = picks.md = false; return; }
       if (popCmd === 'cmPopup-member-pick') {
-        searchParam.memberId = result.memberId || ''; searchParam.memberNm = result.memberNm || result.loginId || result.memberId || ''; picks.member = false;
+        searchParam.memberId = result?.selId || '';
+        searchParam.memberNm = result?.selName || result?.loginId || result?.selId || '';
+        picks.member = false;
       } else if (popCmd === 'cmPopup-order-pick') {
-        searchParam.orderId = result.orderId || ''; picks.order = false;
+        searchParam.orderId = result?.selId || '';
+        picks.order = false;
       } else if (popCmd === 'cmPopup-vendor-pick') {
-        searchParam.vendorId = result.vendorId || ''; searchParam.vendorNm = result.vendorNm || result.vendorId || ''; picks.vendor = false;
+        searchParam.vendorId = result?.selId || '';
+        searchParam.vendorNm = result?.selName || result?.selId || '';
+        picks.vendor = false;
       } else if (popCmd === 'cmPopup-brand-pick') {
-        searchParam.brandId = result.brandId || ''; searchParam.brandNm = result.brandNm || result.brandId || ''; picks.brand = false;
+        searchParam.brandId = result?.selId || '';
+        searchParam.brandNm = result?.selName || result?.selId || '';
+        picks.brand = false;
       } else if (popCmd === 'cmPopup-md-pick') {
-        searchParam.mdUserId = result.userId || ''; searchParam.mdUserNm = result.userNm || result.loginId || result.userId || ''; picks.md = false;
+        searchParam.mdUserId = result?.selId || '';
+        searchParam.mdUserNm = result?.selName || result?.loginId || result?.selId || '';
+        picks.md = false;
       }
     };
 

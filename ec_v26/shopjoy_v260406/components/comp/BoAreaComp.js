@@ -653,6 +653,7 @@ window.BoGrid = {
                                                                    // 셀 내부 button/select/input/checkbox 등은 @click.stop 자동 보호 — 행이벤트 미전파
     gridId:       { type: String,  default: '' },                // 그리드 식별자(=셀 클릭 라우터 cmd, 예: 'members-cellClick'). @cell-click emit 의 e.cmd + #row-actions 슬롯 gridId 로 전달 → cmd 한 곳 정의
     selectedKey: { type: [String, Number], default: null },      // 선택된 행의 rowKey 값. 일치하는 행에 .bo-row-selected (파란 테두리) 자동 부여
+    showRowNo:  { type: Boolean, default: true },                 // 번호 컬럼 표시. false=columns 배열에 직접 정의한 커스텀 번호 컬럼(예: 역순 카운트) 사용 시 끔 — 중복 방지
   },
   emits: ['scroll-end', 'sort', 'row-click', 'row-dblclick', 'cell-click', 'save', 'row-remove', 'reorder', 'cell-change',
           'toggle-check', 'toggle-check-all', 'ref-click'],
@@ -666,7 +667,7 @@ window.BoGrid = {
     /* 드래그 정렬 — rows 를 in-place splice 후 reorder emit */
     const dragSrc = Vue.ref(null);
     /* 빈행 colspan = 데이터컬럼 + 번호 + (체크/드래그/행액션) */
-    const cfColspan = Vue.computed(() => props.columns.length + 1
+    const cfColspan = Vue.computed(() => props.columns.length + (props.showRowNo ? 1 : 0)
       + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
 
     /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
@@ -795,7 +796,7 @@ window.BoGrid = {
     /* ── ▼ 좌/우 고정(pin) 컬럼 — 번호(+체크/드래그) 항상 좌측 고정, 첫 데이터 컬럼(id/제목류) 좌측 고정,
        관리(rowActions) 항상 우측 고정. 가로스크롤 없는 그리드는 시각적 변화 없음(안전). */
     const cfPinNoLeft    = Vue.computed(() => (props.selectable ? 36 : 0) + (props.draggable ? 28 : 0));
-    const cfPinFirstLeft = Vue.computed(() => cfPinNoLeft.value + 36);
+    const cfPinFirstLeft = Vue.computed(() => cfPinNoLeft.value + (props.showRowNo ? 36 : 0));
     /* 선택행(.bo-row-selected) 은 tr 에 outline 을 그리는데, sticky(고정) 셀은 그 위에 자기 배경을 덧칠해
        outline 이 지나가는 상/하단(과 고정영역 좌우 끝) 구간을 가려버린다. selected=true 인 고정 셀에는
        inset box-shadow 로 같은 파란 테두리를 직접 그려 넣어 끊김 없이 이어지게 한다. */
@@ -942,7 +943,7 @@ window.BoGrid = {
           </th>
           <th v-if="draggable" :style="'width:28px;' + pinLeftStyle(selectable ? 36 : 0, 6)">
           </th>
-          <th :style="'width:36px;text-align:center;' + pinLeftStyle(cfPinNoLeft, 6)">
+          <th v-if="showRowNo" :style="'width:36px;text-align:center;' + pinLeftStyle(cfPinNoLeft, 6)">
             번호
           </th>
           <slot name="head">
@@ -989,7 +990,7 @@ window.BoGrid = {
             <td v-if="draggable" :style="'text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none;' + pinLeftStyle(selectable ? 36 : 0, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
               ≡
             </td>
-            <td :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfPinNoLeft, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'" title="보기"
+            <td v-if="showRowNo" :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfPinNoLeft, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'" title="보기"
             @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__', link: true }, ci: -1, idx })">
               {{ rowNo(idx) }}
             </td>

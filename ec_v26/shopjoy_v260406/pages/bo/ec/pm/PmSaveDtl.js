@@ -73,8 +73,7 @@ window.PmSaveDtl = {
         return;
       // 발급대상 삭제
       } else if (cmd === 'target-remove') {
-        form.issueTargets.splice(param, 1);
-        return;
+        return _removeTarget(param);
       // 발급대상 피커 닫기
       } else if (cmd === 'target-close') {
         uiState.showTargetPicker = false;
@@ -101,14 +100,39 @@ window.PmSaveDtl = {
     };
 
 
-    /* _addTarget — 발급대상 추가 공통 헬퍼 */
-    const _addTarget = (row, idKey, nmKey) => {
+    /* _addTarget — 발급대상 추가 공통 헬퍼 (pm_save_item 즉시 저장, targetTypeCd 함께 기록) */
+    const _addTarget = async (row) => {
       uiState.showTargetPicker = false;
       if (!row) return;
-      const id = String(row[idKey] || '');
+      const id = String(row.selId || '');
       if (!id) return;
-      if (form.issueTargets.some(t => t.targetId === id)) { showToast('이미 추가된 대상입니다.', 'error'); return; }
-      form.issueTargets.push({ targetId: id, targetNm: row[nmKey] || id });
+      if (form.issueTargets.some(t => t.targetId === id && t.targetTypeCd === form.targetTypeCd)) {
+        showToast('이미 추가된 대상입니다.', 'error');
+        return;
+      }
+      try {
+        const res = await boApiSvc.pmSaveItem.create(
+          { saveId: cfCurId.value, targetTypeCd: form.targetTypeCd, targetId: id },
+          '적립금관리', '발급대상추가');
+        const saved = res.data?.data || res.data;
+        form.issueTargets.push({
+          saveItemId: saved.saveItemId, targetId: id, targetNm: row.selName || id, targetTypeCd: form.targetTypeCd,
+        });
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
+    /* _removeTarget — 발급대상 삭제 (pm_save_item 즉시 삭제) */
+    const _removeTarget = async (idx) => {
+      const row = form.issueTargets[idx];
+      if (!row) return;
+      try {
+        await boApiSvc.pmSaveItem.remove(row.saveItemId, '적립금관리', '발급대상삭제');
+        form.issueTargets.splice(idx, 1);
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
@@ -116,15 +140,15 @@ window.PmSaveDtl = {
       console.log(' ■■ PmSaveDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-vendor-pick') {
         if (result == null) { uiState.showVendorModal = false; return; }
-        return selectVendor(result.vendorId, result.vendorNm);
+        return selectVendor(result.selId, result.selName);
       } else if (popCmd === 'cmPopup-target-prod-pick') {
-        return _addTarget(result, 'prodId', 'prodNm');
+        return _addTarget(result);
       } else if (popCmd === 'cmPopup-target-brand-pick') {
-        return _addTarget(result, 'brandId', 'brandNm');
+        return _addTarget(result);
       } else if (popCmd === 'cmPopup-target-category-pick') {
-        return _addTarget(result, 'categoryId', 'categoryNm');
+        return _addTarget(result);
       } else if (popCmd === 'cmPopup-vendor-target-pick') {
-        return _addTarget(result, 'vendorId', 'vendorNm');
+        return _addTarget(result);
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);
       }
@@ -145,6 +169,14 @@ window.PmSaveDtl = {
         const res = await boApiSvc.pmSave.getById(props.dtlId, '적립금관리', '상세조회');
         const s = res.data?.data || res.data;
         if (s) { Object.assign(form, s); }
+        // 발급대상(pm_save_item) 별도 로드 — targetNm은 백엔드가 조인해주지 않아 targetId로 대체
+        try {
+          const cr = await boApiSvc.pmSaveItem.getList({ saveId: props.dtlId }, '적립금관리', '발급대상조회');
+          const list = cr.data?.data || cr.data || [];
+          form.issueTargets = list.map(c => ({
+            saveItemId: c.saveItemId, targetId: c.targetId, targetNm: c.targetId, targetTypeCd: c.targetTypeCd,
+          }));
+        } catch (e) { console.warn('[PmSaveDtl.js] save-item load failed', e); }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -202,7 +234,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       expireDay: '', minOrderAmt: '', remark: '',
       visibilityTargets: '^PUBLIC^',
       vendorId: '', chargeStaff: '',
-      targetTypeCd: '상품', issueTargets: [], issueGrades: [],
+      targetTypeCd: 'PRODUCT', issueTargets: [], issueGrades: [],
     });
     /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
     const _applyNewDefaults = () => {
@@ -333,7 +365,8 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
     const cfIssueTargetsColumns = computed(() => [
-      { key: '_no', label: '번호', style: 'width:36px;', align: 'center', fmt: (v, row, idx) => idx + 1 },
+      { key: 'targetTypeCd', label: '구분', style: 'width:70px;', align: 'center',
+        fmt: v => (codes.pm_prod_targets.find(c => c.codeValue === v) || {}).codeLabel || v || '-' },
       { key: 'targetId', label: '대상 ID', mono: true, cellStyle: 'font-size:11px;' },
       { key: 'targetNm', label: '대상명', fmt: v => v || '-' },
       ...(!cfDtlMode.value ? [{ key: '_del', label: '삭제', style: 'width:60px;', align: 'center',

@@ -149,8 +149,8 @@ window.OdClaimMng = {
       console.log(' ■■ OdClaimMng : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-member-pick') {
         if (result == null) { memberPick.open = false; return; }
-        searchParam.memberId = result.memberId;
-        searchParam.memberNm = result.memberNm || result.loginId || result.memberId;
+        searchParam.memberId = result.selId;
+        searchParam.memberNm = result.selName || result.loginId || result.selId;
         return;
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);

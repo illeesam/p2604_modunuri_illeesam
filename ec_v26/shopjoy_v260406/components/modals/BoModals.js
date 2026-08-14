@@ -2779,8 +2779,6 @@ window.BoExcelUploadModal = {
       { key: 'label', label: '코드명' },
     ];
     const descColsColumns = [
-      { key: '_no',       label: '#',       style: 'width:36px;', align: 'center',
-        fmt: (v, row, i) => i + 1, cellStyle: 'color:#999;' },
       { key: 'field',     label: '필드명',  style: 'width:160px;',
         cellStyle: 'font-family:monospace;font-size:11px;' },
       { key: 'label',     label: '한글명' },

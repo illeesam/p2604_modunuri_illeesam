@@ -115,13 +115,16 @@ window.PmEventMng = {
     /* fnCallbackModal — 모달 callback dispatch */
     const fnCallbackModal = (popCmd, param, result) => {
       if (popCmd === 'cmPopup-userMd-pick') {
-        searchParam.mdUserId = result ? result.userId || '' : ''; searchParam.mdUserNm = result ? result.userNm || '' : '';
+        searchParam.mdUserId = result?.selId || '';
+        searchParam.mdUserNm = result?.selName || '';
         modals.isMdPick = false;
       } else if (popCmd === 'cmPopup-prod-pick') {
-        searchParam.prodId = result ? result.prodId || '' : ''; searchParam.prodNm = result ? result.prodNm || '' : '';
+        searchParam.prodId = result?.selId || '';
+        searchParam.prodNm = result?.selName || '';
         modals.isProdPick = false;
       } else if (popCmd === 'cmPopup-vendor-pick') {
-        searchParam.vendorId = result ? result.vendorId || '' : ''; searchParam.vendorNm = result ? result.vendorNm || '' : '';
+        searchParam.vendorId = result?.selId || '';
+        searchParam.vendorNm = result?.selName || '';
         modals.isVendorPick = false;
       }
     };

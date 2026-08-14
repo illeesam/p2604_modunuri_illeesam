@@ -13,7 +13,8 @@ CREATE TABLE shopjoy_2604.pd_prod_sku (
     reg_by         VARCHAR(30),
     reg_date       TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     upd_by         VARCHAR(30),
-    upd_date       TIMESTAMP
+    upd_date       TIMESTAMP,
+    CONSTRAINT pd_prod_sku_uk_prod_sku_code UNIQUE (prod_sku_code)
 );
 
 COMMENT ON TABLE  shopjoy_2604.pd_prod_sku IS '상품 옵션 SKU (조합별 재고/가격)';

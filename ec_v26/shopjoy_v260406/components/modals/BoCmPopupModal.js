@@ -89,13 +89,20 @@ window.BoCmPopupModal = {
     /* 어떤 파라미터로 무엇을 조회했는지 부모에게만 알린다(팝업관리 미리보기 패널).
        모달 자체에는 표시하지 않는다 — 실제 사용 화면에서 보일 이유가 없다. */
     /** 호출부가 기대하는 형태로 결과를 변환 (resultType) */
+    /* fnAddSelAlias — 팝업 종류 무관 공통 필드명 부여.
+       백엔드가 이미 id/nm 으로 정규화해 내려주지만(원본 필드명과 함께),
+       화면마다 vendorId/prodId/userId 처럼 팝업별 원본 필드명에 의존해 호출부가 제각각이었다.
+       selId/selName 하나로 통일해 어떤 팝업이든 같은 이름으로 꺼내 쓸 수 있게 한다.
+       원본 필드는 그대로 두어(하위호환) 부작용 없이 추가만 한다. */
+    const fnAddSelAlias = (r) => (r == null ? r : { ...r, selId: r.id, selName: r.nm });
+
     const fnToPayload = (rowOrRows) => {
       const t = props.resultType;
-      const one = (r) => (r == null ? null : (t === 'id' ? r.id : r));
+      const one = (r) => (r == null ? null : (t === 'id' ? r.id : fnAddSelAlias(r)));
       if (Array.isArray(rowOrRows)) {
-        return (t === 'id' || t === 'idArray') ? rowOrRows.map(r => r.id) : rowOrRows;
+        return (t === 'id' || t === 'idArray') ? rowOrRows.map(r => r.id) : rowOrRows.map(fnAddSelAlias);
       }
-      if (t === 'array')   return rowOrRows == null ? [] : [rowOrRows];
+      if (t === 'array')   return rowOrRows == null ? [] : [fnAddSelAlias(rowOrRows)];
       if (t === 'idArray') return rowOrRows == null ? [] : [rowOrRows.id];
       return one(rowOrRows);
     };

@@ -93,8 +93,8 @@ window.SyUserDtl = {
       console.log(' ■■ SyUserDtl : fnCallbackModal -> ', popCmd, param, result);
       if (popCmd === 'cmPopup-dept-pick') {
         if (result == null) { modals.isDeptModal = false; return; }
-        form.deptId = result.deptId;
-        form.deptNm = result.deptNm;
+        form.deptId = result.selId;
+        form.deptNm = result.selName;
         modals.isDeptModal = false;
         return;
       // 주소검색 모달 콜백 → 우편번호/주소 반영
