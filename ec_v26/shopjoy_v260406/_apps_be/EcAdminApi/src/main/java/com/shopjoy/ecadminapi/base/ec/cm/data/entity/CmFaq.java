@@ -10,6 +10,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachChangeItem;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 
 import java.util.List;
 
@@ -55,4 +56,8 @@ public class CmFaq extends BaseEntity {
      *  create()/update() 가 faqId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다. */
     @Transient
     private List<SyAttachChangeItem> attachChanges;
+
+    /** DB 컬럼 아님(응답 전용) — 저장 직후 최신 첨부파일 목록(SyAttachService.getBriefsByRef). */
+    @Transient
+    private List<SyAttachDto.Brief> attachFiles;
 }

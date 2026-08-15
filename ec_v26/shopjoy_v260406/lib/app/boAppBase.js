@@ -908,6 +908,7 @@
       const fnHmsToMs          = window.boAppFunc.hmsToMs;
       const getRelativeTime    = window.boAppFunc.relativeTime;
       const getApiStatusColor  = window.boAppFunc.apiStatusColor;
+      const getApiMethodColor  = window.boAppFunc.apiMethodColor;
 
       /* boApi 인터셉터로 로그 수집 */
 
@@ -1983,6 +1984,7 @@
         onApiLogDetailEnter,
         onApiLogDetailLeave,
         getApiStatusColor,
+        getApiMethodColor,
         formatJsonData,
         isWithin60Seconds,
         getRelativeTime,
@@ -2743,7 +2745,7 @@
               :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }">
               <!-- 1줄: 메서드(첫글자) + URL(/api.. 축약) + status(200 숨김) — FO 동일 형태, 좌우 공백 활용 -->
               <div style="display:flex;align-items:center;gap:4px;">
-                <span :style="{ color: log.method === 'GET' ? '#3b82f6' : log.method === 'POST' ? '#8b5cf6' : '#f59e0b', fontWeight:'700' }" style="flex-shrink:0;" :title="log.method">{{ (log.method || '-').charAt(0) }}</span>
+                <span :style="{ color: getApiMethodColor(log.method), fontWeight:'700' }" style="flex-shrink:0;" :title="log.method">{{ (log.method || '-').charAt(0) }}</span>
                 <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :style="{ color: log.hasError ? '#ef4444' : '#1a5276' }" :title="log.url">{{ fnShortUrl(log.url) }}</span>
                 <span v-if="log.status ? (Number(log.status) !== 200) : false" :style="{ color: getApiStatusColor(log.status), fontWeight:'700' }" style="flex-shrink:0;" :title="log.status">{{ log.status }}</span>
               </div>
@@ -2767,7 +2769,7 @@
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
               <div style="flex: 1; overflow: hidden;">
                 <div style="color: #374151; font-size: 11px; word-break: break-all; line-height: 1.5;">
-                  <span style="color: #6b7280; font-weight: 600;">{{ (apiLogLockedDetail || apiLogHoverDetail).method }}</span>
+                  <span :style="{ color: getApiMethodColor((apiLogLockedDetail || apiLogHoverDetail).method), fontWeight: '700' }">{{ (apiLogLockedDetail || apiLogHoverDetail).method }}</span>
                   <span style="color: #6b7280; margin: 0 4px;">:</span>
                   <span style="color: #374151;">{{ (apiLogLockedDetail || apiLogHoverDetail).url }}</span>
                 </div>

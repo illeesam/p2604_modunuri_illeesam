@@ -7,25 +7,30 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import com.shopjoy.ecadminapi.common.util.VoUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SyAttachService {
 
     private final SyAttachRepository syAttachRepository;
+    private final FileUploadUtil fileUploadUtil;
 
     @PersistenceContext
     private EntityManager em;
@@ -131,14 +136,13 @@ public class SyAttachService {
      * <p>rowStatus 'I' = ref_table_nm/ref_id 주입(연계), 'D' = 연계 삭제(물리 삭제 포함).
      * 'U'(부가정보 수정)는 아직 처리 항목이 없다 — 추후 보완.</p>
      *
-     * @return 새로 연계된('I') 항목들을 fileSize/fileExt/storagePath/refTableNm/refId 까지 채워 반환.
-     *         메일/카카오 알림톡 발송처럼 첨부 리소스 정보가 바로 필요한 후속 로직이 attachId 로
-     *         다시 조회하지 않고 그대로 사용할 수 있다. 'D' 항목은 삭제되어 반환하지 않는다.
+     * <p>이 메서드는 DB 반영만 한다 — 저장 응답에 첨부 리소스 정보(파일명/URL/크기 등)를 실어 보내려면
+     * 호출 직후 {@link #getBriefsByRef} 로 최신 목록을 다시 읽어 응답 DTO 의 {@code attachFiles}
+     * (2번째 슬롯은 {@code attach2Files}) 필드에 담는다. §10-A/§10-C.</p>
      */
     @Transactional
-    public List<SyAttachChangeItem> applyChanges(List<SyAttachChangeItem> changes, String refTableNm, String refId) {
-        List<SyAttachChangeItem> linked = new ArrayList<>();
-        if (changes == null || changes.isEmpty()) return linked;
+    public void applyChanges(List<SyAttachChangeItem> changes, String refTableNm, String refId) {
+        if (changes == null || changes.isEmpty()) return;
         if (refTableNm == null || refTableNm.isBlank() || refId == null || refId.isBlank())
             throw new CmBizException("refTableNm/refId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
         for (SyAttachChangeItem c : changes) {
@@ -146,32 +150,61 @@ public class SyAttachService {
             if ("I".equals(c.getRowStatus())) {
                 SyAttach patch = SyAttach.builder().attachId(c.getAttachId()).refTableNm(refTableNm).refId(refId).build();
                 updateSelective(patch);
-                SyAttach saved = findById(c.getAttachId());
-                SyAttachChangeItem enriched = new SyAttachChangeItem();
-                enriched.setAttachId(saved.getAttachId());
-                enriched.setRowStatus("I");
-                enriched.setFileSize(saved.getFileSize());
-                enriched.setFileExt(saved.getFileExt());
-                enriched.setStoragePath(saved.getStoragePath());
-                enriched.setRefTableNm(refTableNm);
-                enriched.setRefId(refId);
-                linked.add(enriched);
             } else if ("D".equals(c.getRowStatus())) {
                 delete(c.getAttachId());
             }
             // 'U' 예약 — 향후 부가정보(설명/정렬순서 등) 수정
         }
-        return linked;
     }
 
-    /* 첨부파일 삭제 */
+    /**
+     * refTableNm/refId 로 연계된 첨부파일들을 {@link SyAttachDto.Brief} 목록으로 반환.
+     * 다른 도메인 Service 가 저장 후 응답 DTO 의 {@code attachFiles} 필드에 그대로 싣는 용도(§10-A) —
+     * 목록/상세 조회의 {@code fnFillAttachFiles} 패턴(§10)과 동일한 매핑을 공유한다.
+     */
+    public List<SyAttachDto.Brief> getBriefsByRef(String refTableNm, String refId) {
+        if (refTableNm == null || refTableNm.isBlank() || refId == null || refId.isBlank()) return List.of();
+        return syAttachRepository
+            .findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc(refTableNm, List.of(refId))
+            .stream().map(this::toBrief).toList();
+    }
+
+    /** SyAttach → 화면이 쓰는 축약 항목 (필드명은 sy_attach 컬럼 그대로) */
+    public SyAttachDto.Brief toBrief(SyAttach a) {
+        SyAttachDto.Brief b = new SyAttachDto.Brief();
+        b.setAttachId(a.getAttachId());
+        b.setFileNm(a.getFileNm());
+        b.setFileExt(a.getFileExt());
+        b.setFileSize(a.getFileSize());
+        b.setAttachUrl(a.getAttachUrl());
+        b.setThumbUrl(a.getThumbUrl());
+        b.setCdnImgUrl(a.getCdnImgUrl());
+        b.setThumbCdnUrl(a.getThumbCdnUrl());
+        b.setStoragePath(a.getStoragePath());
+        b.setSortOrd(a.getSortOrd());
+        return b;
+    }
+
+    /**
+     * 첨부파일 삭제 — DB 행 + 실제 물리 파일.
+     * DB 행만 지우고 물리 파일을 남겨두면 attach_id 를 잃어버려 다시는 못 지우는 완전한 고아 파일이
+     * 된다(ATTACH_CLEANUP 배치도 sy_attach 행을 기준으로 스캔하므로 대상에서도 빠진다) — 2026-08-15.
+     */
     @Transactional
     public void delete(String id) {
         CmUtil.requireId(id, "id", this);
         SyAttach entity = findById(id);
+        String storagePath = entity.getStoragePath();
         syAttachRepository.delete(entity);
         em.flush();
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        if (storagePath != null) {
+            try {
+                Files.deleteIfExists(Paths.get(fileUploadUtil.toPhysicalPath(storagePath)));
+            } catch (Exception e) {
+                log.warn("실제 파일 삭제 실패 (계속 진행): {}", storagePath, e);
+            }
+        }
     }
 
     

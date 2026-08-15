@@ -120,6 +120,16 @@
     return '#6b7280';
   };
 
+  /* HTTP 메서드 → hex 색상. GET=파랑 / POST=보라 / PUT·PATCH=주황(수정 계열이라 같은 색) / DELETE=빨강 */
+  const apiMethodColor = (method) => {
+    const m = String(method || '').toUpperCase();
+    if (m === 'GET') return '#3b82f6';
+    if (m === 'POST') return '#8b5cf6';
+    if (m === 'PUT' || m === 'PATCH') return '#f59e0b';
+    if (m === 'DELETE') return '#ef4444';
+    return '#6b7280';
+  };
+
   window.boAppFunc = {
     fmtXHeaders,
     fmtJson,
@@ -129,5 +139,6 @@
     hmsToMs,
     relativeTime,
     apiStatusColor,
+    apiMethodColor,
   };
 })();

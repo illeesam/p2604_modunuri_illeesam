@@ -87,6 +87,8 @@ public class SyContactService {
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getContentAttachChanges(), SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId());
         syAttachService.applyChanges(body.getAnswerAttachChanges(), SyAttachRefTableConst.SY_CONTACT_ANSWER, saved.getContactId());
+        saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId()));
+        saved.setAttach2Files(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_CONTACT_ANSWER, saved.getContactId()));
         em.flush();
         return saved;
     }
@@ -105,6 +107,8 @@ public class SyContactService {
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getContentAttachChanges(), SyAttachRefTableConst.SY_CONTACT_CONTENT, id);
         syAttachService.applyChanges(body.getAnswerAttachChanges(), SyAttachRefTableConst.SY_CONTACT_ANSWER, id);
+        saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_CONTACT_CONTENT, id));
+        saved.setAttach2Files(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_CONTACT_ANSWER, id));
         em.flush();
         return saved;
     }

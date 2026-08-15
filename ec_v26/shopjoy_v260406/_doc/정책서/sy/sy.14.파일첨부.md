@@ -383,7 +383,7 @@ private void fnFillAttachFiles(List<CmChattMsgDto.Item> items) {
     if (msgIds.isEmpty()) return;
     Map<String, List<SyAttachDto.Brief>> byMsg = new LinkedHashMap<>();
     for (SyAttach a : syAttachRepository.findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc(SyAttachRefTableConst.CM_CHATT_MSG, msgIds)) {
-        byMsg.computeIfAbsent(a.getRefId(), k -> new ArrayList<>()).add(fnToBrief(a));
+        byMsg.computeIfAbsent(a.getRefId(), k -> new ArrayList<>()).add(syAttachService.toBrief(a));  // 매핑은 SyAttachService.toBrief 로 통일(§10-A) — 도메인마다 복제 금지
     }
     items.forEach(it -> { ... it.setAttachFiles(byMsg.get(it.getChattMsgId())); });
 }
@@ -393,6 +393,8 @@ private void fnFillAttachFiles(List<CmChattMsgDto.Item> items) {
   한 곳만 빠뜨리면 그 경로에서만 첨부가 사라져 원인을 찾기 어렵다
 - 리포지토리에 `findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc` 를 둔다
   (`SyAttachRepository` 에 이미 정의돼 있음 — 새 도메인도 재사용)
+- `SyAttach → Brief` 매핑 자체는 `SyAttachService.toBrief(SyAttach)` 하나로 통일한다 — 각 도메인
+  Service 가 사설로 복제하지 않는다(2026-08-15, `CmChattMsgService` 도 이 방식으로 정리)
 
 > **주의** — DTO 에 `attachFiles` 필드만 선언하고 **채우는 코드를 안 넣는 사고가 실제로 있었다**
 > (`CmChattMsgDto`, 2026-07-28 수정 전). 프론트는 렌더 코드를 갖고 있는데 값이 늘 비어
@@ -400,38 +402,58 @@ private void fnFillAttachFiles(List<CmChattMsgDto.Item> items) {
 
 ---
 
-## 10-A. 부모 레코드 저장과 원자적으로 연계 — `SyAttachService.applyChanges` (2026-08-15)
+## 10-A. 부모 레코드 저장과 원자적으로 연계 — `SyAttachService.applyChanges` (2026-08-15, 응답 필드 정정)
 
 첨부의 실제 `ref_table_nm`/`ref_id` 연계는, 그 첨부를 소유하는 **대상 레코드를 저장하는 업무
 Service** 가 `create()`/`update()` 안에서 직접 반영한다. 별도 API 호출(2차 콜)에 의존하지 않는다 —
 그 콜이 누락되거나 실패하면 파일이 영구 미연계로 남는 문제가 실제로 있었기 때문이다.
 
+**요청 필드(`attachChanges`)와 응답 필드(`attachFiles`)는 타입도 이름도 분리한다** — 처음엔
+`applyChanges()` 가 연계 처리와 동시에 값을 채워 요청 타입(`SyAttachChangeItem`)째로 되돌려주는
+방식으로 시작했으나, 그러면 응답 JSON 의 `attachChanges` 항목 대부분이 `fileSize`/`fileExt`/
+`storagePath`/`refTableNm`/`refId` 전부 null 로 찍혀 나갔다(요청 시 프론트가 `attachId`/`rowStatus`
+둘만 채워 보내고, `applyChanges()` 의 반환값을 엔티티에 되싣는 코드가 없었기 때문). 지금은:
+
 ```java
 // base/sy/service/SyAttachService.java
 @Transactional
-public List<SyAttachChangeItem> applyChanges(List<SyAttachChangeItem> changes, String refTableNm, String refId) {
+public void applyChanges(List<SyAttachChangeItem> changes, String refTableNm, String refId) {
     // rowStatus 'I' → ref_table_nm/ref_id 주입(연계). 'D' → 연계 삭제(물리 삭제 포함).
-    // 새로 연계된('I') 항목은 fileSize/fileExt/storagePath/refTableNm/refId 까지 채워 반환 —
-    // 메일/카카오 알림톡 발송처럼 첨부 리소스 정보가 바로 필요한 후속 로직이 attachId 로
-    // 다시 조회하지 않고 그대로 쓸 수 있게 하기 위함.
+    // DB 반영만 한다 — 응답용 정보는 이 메서드가 만들지 않는다.
 }
+
+/** refTableNm/refId 로 연계된 첨부파일을 Brief 로 반환 — 저장 후 응답의 attachFiles 에 그대로 싣는 용도 */
+public List<SyAttachDto.Brief> getBriefsByRef(String refTableNm, String refId) { ... }
+
+/** SyAttach → Brief 매핑 — 도메인마다 복제 금지, 이 메서드 하나로 통일 */
+public SyAttachDto.Brief toBrief(SyAttach a) { ... }
 ```
 
 ```java
 // base/sy/service/SyNoticeService.java (create) — 다른 도메인도 동일 패턴
 SyNotice saved = syNoticeRepository.save(body);
 syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_NOTICE, saved.getNoticeId());
+saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_NOTICE, saved.getNoticeId()));
 em.flush();
 ```
 
-- 엔티티는 `@Transient private List<SyAttachChangeItem> attachChanges;` 를 요청 전용 필드로 둔다
-  (DB 컬럼 아님, JSON 역직렬화만 됨). Request DTO 를 직접 쓰는 화면(FO 문의 등)은 DTO 에 둔다.
+- **요청** — 엔티티는 `@Transient private List<SyAttachChangeItem> attachChanges;` 를 요청 전용
+  필드로 둔다(DB 컬럼 아님, JSON 역직렬화만 됨. `attachId`/`rowStatus` 둘뿐). Request DTO 를 직접
+  쓰는 화면(FO 문의 등)은 DTO 에 둔다.
+- **응답** — 같은 엔티티에 `@Transient private List<SyAttachDto.Brief> attachFiles;` 를 별도로 둔다
+  (`Brief` 는 `attachId`/`fileNm`/`fileExt`/`fileSize`/`attachUrl`/`thumbUrl`/`cdnImgUrl`/
+  `thumbCdnUrl`/`storagePath`/`sortOrd` — sy_attach 컬럼 그대로라 항상 값이 있다). `applyChanges()`
+  직후 `getBriefsByRef()` 로 다시 채워 넣는다 — 이 요청에서 새로 연계된 것뿐 아니라 **그 시점의
+  전체 첨부 목록**을 담아 돌려준다(부분이 아니라 전체 상태를 응답하는 게 더 안전하고 이해하기 쉽다).
 - **create() 뿐 아니라 update() 에도** 걸어야 한다 — 기존 레코드를 수정하며 첨부를 추가/삭제하는
   경우도 있다. create() 만 걸고 update() 를 빠뜨리는 실수가 있었다(2026-08-15 수정).
-- 여러 첨부 슬롯을 가진 도메인(`SyContact` 의 문의내용/답변)은 슬롯별로 `@Transient` 필드를 따로 둔다
-  (`contentAttachChanges` / `answerAttachChanges`) — `ref_table_nm` 값으로 구분.
-- 적용 도메인: `SyNoticeService` / `SyBbsService` / `CmFaqService` / `SyContactService`(2개 슬롯) /
-  `FoCmContactService`.
+- **여러 첨부 슬롯을 가진 도메인** — 요청 필드는 슬롯별 의미있는 이름(`SyContact` 의
+  `contentAttachChanges`/`answerAttachChanges`)을 쓰지만, **응답 필드는 번호로 구분한다**:
+  1번째 슬롯 = `attachFiles`, 2번째 슬롯 = `attach2Files`(3번째가 생기면 `attach3Files`). 슬롯마다
+  의미있는 응답 필드명을 새로 짓지 않고 숫자로 통일해, 슬롯이 늘어난 새 도메인에서도 프론트가
+  같은 규칙으로 바로 알아볼 수 있게 한다.
+- 적용 도메인: `SyNoticeService` / `SyBbsService` / `CmFaqService` / `SyContactService`(`attachFiles`
+  = 문의내용, `attach2Files` = 답변) / `FoCmContactService`(`attachFiles` = 문의내용).
 
 ## 10-B. 도메인 자체 테이블이 sy_attach 를 정방향 참조하는 경우 — `pd_prod_img` (2026-08-15)
 
@@ -478,7 +500,8 @@ syAttachService.updateSelective(SyAttach.builder()
 | 동영상 변환 | VideoConvertUtil |
 | 단일 업로드 | CmUploadOneController |
 | 다중 업로드 / 단건조회 / ref 목록조회 / ref 옵션목록조회 / 삭제 / 정렬 | CmUploadMultiController → CmUploadService |
-| 연계 변경 반영(rowStatus I/D) | SyAttachService.applyChanges |
+| 연계 변경 반영(rowStatus I/D, 요청 전용) | SyAttachService.applyChanges |
+| 응답용 첨부 목록 조회(Brief) | SyAttachService.getBriefsByRef / toBrief |
 | `ref_table_nm` 값 상수 (문자열 리터럴 금지) | SyAttachRefTableConst / SyAttachRefTableOption(record) |
 | 프론트 옵션 캐시 (세션당 1회 fetch) | coUtil.cofGetAttachRefTableOptions |
 | 동영상 재생 | CmVideoPlayController |
@@ -499,4 +522,4 @@ syAttachService.updateSelective(SyAttach.builder()
 | | - 동영상 자동 변환 & 썸네일 생성 |
 | | - HTTP Range 요청 스트리밍 지원 |
 | 2026-06-08 | §9 프론트 공통 컴포넌트(BaseAttachGrp/One) props + `readonly` 보기/수정 모드 분리 추가 |
-| 2026-08-15 | ⭐ 전면 개편 — `sy_attach_grp`/`attach_grp_id` 폐기, `ref_table_nm`/`ref_id` 로 통일. `BaseAttachGrp` 를 `pendingChanges`(rowStatus I/D) + `SyAttachService.applyChanges`(부모 저장과 원자적 반영) 모델로 재설계. §6·데이터베이스 테이블·§9·§10 전면 갱신, §10-A/§10-B 신설(applyChanges 표준 패턴 / 도메인 자체 첨부행 pd_prod_img 사례). PdProd 이미지 첨부의 base64 저장 방식도 실제 업로드로 전환(정방향 `attach_id` + 역방향 `ref_table_nm`/`ref_id` 둘 다 연계). 상품설명(`pd_prod_content`)은 처음엔 `ref_id=prod_id` 로 연계 시도했으나, 정리 코드가 없는 상태에서 연계까지 하면 `ATTACH_CLEANUP` 배치 대상에서도 영구히 빠지는 게 드러나 **연계를 아예 하지 않는 쪽으로 정정**. `ref_table_nm` 문자열 리터럴을 `SyAttachRefTableConst` 상수로 전면 치환(저장·조회 양쪽) — 이어서 프론트도 값을 다시 타이핑하지 않도록 `GET /co/cm/upload/ref/table-options` + `coUtil.cofGetAttachRefTableOptions()` 신설, `<base-attach-grp :ref-table-nm>` 동적 바인딩 9개 사이트 전환(`BaseAttachGrp` 는 `refTableNm` 늦게 채워지는 걸 놓치지 않도록 `watch(cfHasRef, ..., {immediate:true})` 로 교체) |
+| 2026-08-15 | ⭐ 전면 개편 — `sy_attach_grp`/`attach_grp_id` 폐기, `ref_table_nm`/`ref_id` 로 통일. `BaseAttachGrp` 를 `pendingChanges`(rowStatus I/D) + `SyAttachService.applyChanges`(부모 저장과 원자적 반영) 모델로 재설계. §6·데이터베이스 테이블·§9·§10 전면 갱신, §10-A/§10-B 신설(applyChanges 표준 패턴 / 도메인 자체 첨부행 pd_prod_img 사례). PdProd 이미지 첨부의 base64 저장 방식도 실제 업로드로 전환(정방향 `attach_id` + 역방향 `ref_table_nm`/`ref_id` 둘 다 연계). 상품설명(`pd_prod_content`)은 처음엔 `ref_id=prod_id` 로 연계 시도했으나, 정리 코드가 없는 상태에서 연계까지 하면 `ATTACH_CLEANUP` 배치 대상에서도 영구히 빠지는 게 드러나 **연계를 아예 하지 않는 쪽으로 정정**. `ref_table_nm` 문자열 리터럴을 `SyAttachRefTableConst` 상수로 전면 치환(저장·조회 양쪽) — 이어서 프론트도 값을 다시 타이핑하지 않도록 `GET /co/cm/upload/ref/table-options` + `coUtil.cofGetAttachRefTableOptions()` 신설, `<base-attach-grp :ref-table-nm>` 동적 바인딩 9개 사이트 전환(`BaseAttachGrp` 는 `refTableNm` 늦게 채워지는 걸 놓치지 않도록 `watch(cfHasRef, ..., {immediate:true})` 로 교체). **당일 추가 수정**: 저장 응답의 `attachChanges` 항목 대부분이 null 로 나가던 문제 발견 — `applyChanges()` 는 DB 반영만 하도록 되돌리고(반환값 삭제), 응답은 별도 `attachFiles`(2번째 슬롯은 `attach2Files`) 필드에 `SyAttachDto.Brief`(항상 값 있음)로 채워 보내도록 `getBriefsByRef`/`toBrief` 신설 — `SyNotice`/`SyBbs`/`CmFaq`/`SyContact`/`FoCmContactService` 전부 적용, `CmChattMsgService` 의 중복 매핑도 `toBrief` 로 통합 |

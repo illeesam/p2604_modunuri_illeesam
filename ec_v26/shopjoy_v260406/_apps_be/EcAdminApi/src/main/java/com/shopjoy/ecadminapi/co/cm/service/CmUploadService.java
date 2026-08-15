@@ -379,21 +379,10 @@ public class CmUploadService {
         return files;
     }
 
-    /** 첨부 파일 단건 삭제 — DB + 실제 파일 */
+    /** 첨부 파일 단건 삭제 — DB + 실제 파일. 실제 처리는 SyAttachService.delete() 로 위임(단일 구현) */
     @Transactional
     public void deleteAttach(String attachId) {
-        SyAttachDto.Item dto = syAttachService.getById(attachId);
-        if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId + "::" + CmUtil.svcCallerInfo(this));
-
         syAttachService.delete(attachId);
-
-        if (dto.getStoragePath() != null) {
-            try {
-                Files.deleteIfExists(Paths.get(fileUploadUtil.toPhysicalPath(dto.getStoragePath())));
-            } catch (Exception e) {
-                log.warn("실제 파일 삭제 실패 (계속 진행): {}", dto.getStoragePath(), e);
-            }
-        }
     }
 
     /** 첨부 파일 정렬 순서 변경 */

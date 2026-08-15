@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachChangeItem;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import org.hibernate.annotations.Comment;
 
 @Entity
@@ -77,5 +78,13 @@ public class SyContact extends BaseEntity {
      *  update() 가 같은 트랜잭션에서 sy_attach("sy_contact_answer")에 반영한다. */
     @Transient
     private List<SyAttachChangeItem> answerAttachChanges;
+
+    /** DB 컬럼 아님(응답 전용) — 저장 직후 최신 문의 내용 첨부파일 목록(1번째 슬롯). */
+    @Transient
+    private List<SyAttachDto.Brief> attachFiles;
+
+    /** DB 컬럼 아님(응답 전용) — 저장 직후 최신 답변 첨부파일 목록(2번째 슬롯 → attach2Files). */
+    @Transient
+    private List<SyAttachDto.Brief> attach2Files;
 
 }

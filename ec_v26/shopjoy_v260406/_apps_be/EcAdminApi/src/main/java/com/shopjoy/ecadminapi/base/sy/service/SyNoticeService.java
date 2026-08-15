@@ -86,6 +86,7 @@ public class SyNoticeService {
         SyNotice saved = syNoticeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_NOTICE, saved.getNoticeId());
+        saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_NOTICE, saved.getNoticeId()));
         em.flush();
         return saved;
     }
@@ -103,6 +104,7 @@ public class SyNoticeService {
         SyNotice saved = syNoticeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_NOTICE, id);
+        saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_NOTICE, id));
         em.flush();
         return saved;
     }

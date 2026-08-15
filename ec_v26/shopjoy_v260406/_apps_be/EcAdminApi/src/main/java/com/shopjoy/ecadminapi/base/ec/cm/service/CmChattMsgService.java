@@ -8,6 +8,7 @@ import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
+import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
@@ -32,6 +33,7 @@ public class CmChattMsgService {
 
     private final CmChattMsgRepository cmChattMsgRepository;
     private final SyAttachRepository syAttachRepository;
+    private final SyAttachService syAttachService;
 
     @PersistenceContext
     private EntityManager em;
@@ -103,31 +105,16 @@ public class CmChattMsgService {
             .distinct().toList();
         if (msgIds.isEmpty()) return;
 
+        /* SyAttach → Brief 매핑은 SyAttachService.toBrief 로 통일(도메인마다 각자 복제 금지, §10-A) */
         Map<String, List<SyAttachDto.Brief>> byMsg = new LinkedHashMap<>();
         for (SyAttach a : syAttachRepository
                 .findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc(SyAttachRefTableConst.CM_CHATT_MSG, msgIds)) {
-            byMsg.computeIfAbsent(a.getRefId(), k -> new ArrayList<>()).add(fnToBrief(a));
+            byMsg.computeIfAbsent(a.getRefId(), k -> new ArrayList<>()).add(syAttachService.toBrief(a));
         }
         for (CmChattMsgDto.Item it : items) {
             String g = it.getChattMsgId();
             if (g != null && byMsg.containsKey(g)) it.setAttachFiles(byMsg.get(g));
         }
-    }
-
-    /** SyAttach → 화면이 쓰는 축약 항목 (필드명은 sy_attach 컬럼 그대로) */
-    private SyAttachDto.Brief fnToBrief(SyAttach a) {
-        SyAttachDto.Brief b = new SyAttachDto.Brief();
-        b.setAttachId(a.getAttachId());
-        b.setFileNm(a.getFileNm());
-        b.setFileExt(a.getFileExt());
-        b.setFileSize(a.getFileSize());
-        b.setAttachUrl(a.getAttachUrl());
-        b.setThumbUrl(a.getThumbUrl());
-        b.setCdnImgUrl(a.getCdnImgUrl());
-        b.setThumbCdnUrl(a.getThumbCdnUrl());
-        b.setStoragePath(a.getStoragePath());
-        b.setSortOrd(a.getSortOrd());
-        return b;
     }
 
     /* 채팅 메시지 등록 */
