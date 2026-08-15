@@ -108,7 +108,6 @@ public class FoCmChattService {
             .senderNm(memberId)
             .msgText(body.getMsgText())
             .msgTypeCd(body.getMsgTypeCd() != null ? body.getMsgTypeCd() : "TEXT")
-            .attachGrpId(body.getAttachGrpId())
             .refTypeCd(body.getRefTypeCd())
             .refId(body.getRefId())
             .readYn("N")

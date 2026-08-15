@@ -4,11 +4,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.util.List;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachChangeItem;
 import org.hibernate.annotations.Comment;
 
 @Entity
@@ -41,10 +44,6 @@ public class SyNotice extends BaseEntity {
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
 
-    @Comment("첨부파일그룹ID")
-    @Column(name = "attach_grp_id", length = 21)
-    private String attachGrpId;
-
     @Comment("노출시작일")
     @Column(name = "start_date")
     private LocalDate startDate;
@@ -60,5 +59,10 @@ public class SyNotice extends BaseEntity {
     @Comment("조회수")
     @Column(name = "view_count")
     private Integer viewCount;
+
+    /** DB 컬럼 아님(요청 전용) — 첨부파일 연계 변경 목록(추가 rowStatus:'I' / 삭제 rowStatus:'D').
+     *  create()/update() 가 noticeId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다. */
+    @Transient
+    private List<SyAttachChangeItem> attachChanges;
 
 }

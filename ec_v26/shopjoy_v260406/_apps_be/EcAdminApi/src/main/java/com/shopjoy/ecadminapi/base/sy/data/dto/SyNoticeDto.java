@@ -29,7 +29,6 @@ public class SyNoticeDto {
         private String noticeTypeCd;
         private String isFixed;
         private String contentHtml;
-        private String attachGrpId;
         private LocalDate startDate;
         private LocalDate endDate;
         private String noticeStatusCd;

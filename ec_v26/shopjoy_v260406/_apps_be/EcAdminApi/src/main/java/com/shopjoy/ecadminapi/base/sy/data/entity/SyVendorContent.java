@@ -57,9 +57,6 @@ public class SyVendorContent extends BaseEntity {
     @Column(name = "link_url", length = 500)
     private String linkUrl;
 
-    @Comment("첨부파일그룹ID (sy_attach_grp.attach_grp_id)")
-    @Column(name = "attach_grp_id", length = 21)
-    private String attachGrpId;
 
     @Comment("언어코드 (ko/en/ja)")
     @Column(name = "lang_cd", length = 10)

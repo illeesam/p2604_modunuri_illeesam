@@ -24,6 +24,7 @@ import java.util.List;
 public class SyBbsService {
 
     private final SyBbsRepository syBbsRepository;
+    private final SyAttachService syAttachService;
 
     @PersistenceContext
     private EntityManager em;
@@ -83,11 +84,12 @@ public class SyBbsService {
         body.setUpdDate(LocalDateTime.now());
         SyBbs saved = syBbsRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachChanges(), "sy_bbs", saved.getBbsId());
         em.flush();
         return saved;
     }
 
-    
+
 
     /* 게시판 게시물 수정 */
     @Transactional
@@ -99,6 +101,7 @@ public class SyBbsService {
         entity.setUpdDate(LocalDateTime.now());
         SyBbs saved = syBbsRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachChanges(), "sy_bbs", id);
         em.flush();
         return saved;
     }

@@ -329,11 +329,9 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     category:           q.categoryCd || '',
     title:              q.contactTitle || '',
     content:            q.contactContent || '',
-    contentAttachGrpId: q.contentAttachGrpId || null,
     status:             _contactStatusKor(q),
     date:               _fmtDate(q.contactDate),
     answer:             q.contactAnswer || '',
-    answerAttachGrpId:  q.answerAttachGrpId || null,
   });
 
   /* loadInquiriesPage — 서버사이드 페이징 조회 (상태/기간 검색 params + pager) */

@@ -1350,16 +1350,16 @@
       const profileImg = reactive({ attachId: null, cdnImgUrl: '' }); // 표시용 이미지 상태
       const profileImgUploading = ref(false);
 
-      /* _loadProfileImg */
-      const _loadProfileImg = async (grpId) => {
-        if (!grpId) {
+      /* _loadProfileImg — attachId 로 첨부 파일 단건 조회(그룹 없음) */
+      const _loadProfileImg = async (attachId) => {
+        if (!attachId) {
           profileImg.attachId = null;
           profileImg.cdnImgUrl = '';
           return;
         }
         try {
-          const res = await window.coApiSvc.cmAttach.getFiles(grpId);
-          const f = (res.data?.data || [])[0];
+          const res = await window.coApiSvc.cmAttach.getById(attachId);
+          const f = res.data?.data;
           profileImg.attachId = f?.attachId || null;
           profileImg.cdnImgUrl = f?.cdnImgUrl || '';
         } catch (e) {
@@ -1413,16 +1413,14 @@
           const fd = new FormData();
           fd.append('files', f);
           fd.append('businessCode', 'USER_PROFILE');
-          fd.append('grpNm', '사용자 프로필');
-          if (profileForm.profileAttachId) fd.append('attachGrpId', profileForm.profileAttachId);
           const res = await window.boApi.post('co/cm/upload/multi', fd, window.coUtil.cofApiHdr('프로필', '사진변경'));
           const d = res.data?.data;
           const uploaded = (d?.files || [])[0];
           if (uploaded) {
             profileImg.attachId = uploaded.attachId;
             profileImg.cdnImgUrl = uploaded.cdnImgUrl || '';
+            profileForm.profileAttachId = uploaded.attachId;
           }
-          if (!profileForm.profileAttachId && d?.attachGrpId) profileForm.profileAttachId = d.attachGrpId;
           showToast('사진이 변경되었습니다.', 'success');
         } catch (err) {
           showToast(err.response?.data?.message || '업로드 중 오류가 발생했습니다.', 'error');

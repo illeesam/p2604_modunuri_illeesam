@@ -24,6 +24,7 @@ import java.util.List;
 public class SyContactService {
 
     private final SyContactRepository syContactRepository;
+    private final SyAttachService syAttachService;
 
     @PersistenceContext
     private EntityManager em;
@@ -83,11 +84,13 @@ public class SyContactService {
         body.setUpdDate(LocalDateTime.now());
         SyContact saved = syContactRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getContentAttachChanges(), "sy_contact_content", saved.getContactId());
+        syAttachService.applyChanges(body.getAnswerAttachChanges(), "sy_contact_answer", saved.getContactId());
         em.flush();
         return saved;
     }
 
-    
+
 
     /* 문의 수정 */
     @Transactional
@@ -99,6 +102,8 @@ public class SyContactService {
         entity.setUpdDate(LocalDateTime.now());
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getContentAttachChanges(), "sy_contact_content", id);
+        syAttachService.applyChanges(body.getAnswerAttachChanges(), "sy_contact_answer", id);
         em.flush();
         return saved;
     }

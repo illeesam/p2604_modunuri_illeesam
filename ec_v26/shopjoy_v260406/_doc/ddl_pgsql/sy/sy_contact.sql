@@ -9,10 +9,8 @@ CREATE TABLE shopjoy_2604.sy_contact (
     category_cd             VARCHAR(30) ,
     contact_title           VARCHAR(200) NOT NULL,
     contact_content         TEXT         NOT NULL,
-    content_attach_grp_id   VARCHAR(21) ,
     contact_status_cd       VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     contact_answer          TEXT        ,
-    answer_attach_grp_id    VARCHAR(21) ,
     answer_user_id          VARCHAR(21) ,
     answer_date             TIMESTAMP   ,
     contact_date            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -30,10 +28,8 @@ COMMENT ON COLUMN shopjoy_2604.sy_contact.member_nm IS '문의자명';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.category_cd IS '문의유형';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.contact_title IS '제목';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.contact_content IS '문의내용';
-COMMENT ON COLUMN shopjoy_2604.sy_contact.content_attach_grp_id IS '문의 내용 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=CONTACT_CONTENT_ATTACH)';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.contact_status_cd IS '처리상태 (코드: CONTACT_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.contact_answer IS '답변내용';
-COMMENT ON COLUMN shopjoy_2604.sy_contact.answer_attach_grp_id IS '답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=CONTACT_ANSWER_ATTACH)';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.answer_user_id IS '답변자 (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.answer_date IS '답변일시';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.contact_date IS '문의일시';
@@ -42,7 +38,5 @@ COMMENT ON COLUMN shopjoy_2604.sy_contact.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_contact.upd_date IS '수정일';
 
-CREATE INDEX sy_contact_ix01_answer_attach_grp_id ON shopjoy_2604.sy_contact USING btree (answer_attach_grp_id);
 CREATE INDEX sy_contact_ix02_answer_user_id ON shopjoy_2604.sy_contact USING btree (answer_user_id);
-CREATE INDEX sy_contact_ix03_content_attach_grp_id ON shopjoy_2604.sy_contact USING btree (content_attach_grp_id);
 CREATE INDEX sy_contact_ix04_member_id ON shopjoy_2604.sy_contact USING btree (member_id);

@@ -4,7 +4,6 @@
 CREATE TABLE shopjoy_2604.sy_attach (
     attach_id          VARCHAR(21)  NOT NULL CONSTRAINT sy_attach_pk_attach_id PRIMARY KEY,
     reg_site_id            VARCHAR(21)  NOT NULL,
-    attach_grp_id      VARCHAR(21)  ,
     file_nm            VARCHAR(300) NOT NULL,
     file_size          BIGINT      ,
     file_ext           VARCHAR(20) ,
@@ -34,8 +33,7 @@ CREATE TABLE shopjoy_2604.sy_attach (
 
 COMMENT ON TABLE  shopjoy_2604.sy_attach IS '첨부파일 정보 - 모든 도메인에서 업로드된 파일의 메타데이터 중앙 관리';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.attach_id IS '첨부파일 ID (YYMMDDhhmmss+random(4)+seq)';
-COMMENT ON COLUMN shopjoy_2604.sy_attach.attach_grp_id IS '파일 그룹 ID (sy_attach_grp과 연계). ref_table_nm/ref_id 방식 사용 시 NULL';
-COMMENT ON COLUMN shopjoy_2604.sy_attach.ref_table_nm IS '관련 테이블명 (예: sy_attach_grp) - attach_grp_id 없이 임의 엔티티에 직접 연계할 때 사용';
+COMMENT ON COLUMN shopjoy_2604.sy_attach.ref_table_nm IS '관련 테이블명 (예: sy_notice) - 대상 엔티티에 직접 연계';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.ref_id IS '관련 ID - ref_table_nm 과 조합해 대상 레코드를 식별';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.file_nm IS '원본 파일명';
 COMMENT ON COLUMN shopjoy_2604.sy_attach.stored_nm IS '저장된 파일명 (YYYYMMDD_hhmmss_seq_random.ext)';
@@ -45,7 +43,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_attach.thumb_generated_yn IS '썸네일 생성
 COMMENT ON COLUMN shopjoy_2604.sy_attach.physical_path IS '실제 물리 저장 전체 경로 (서버 절대경로, 예: src/main/resources/static/cdn/attch/NOTICE_ATTACH/2026/202605/20260503/파일명.png)';
 
 CREATE INDEX sy_attach_ix02_file_ext ON shopjoy_2604.sy_attach USING btree (file_ext);
-CREATE INDEX sy_attach_ix01_attach_grp_id ON shopjoy_2604.sy_attach USING btree (attach_grp_id);
 CREATE INDEX sy_attach_ix03_reg_date ON shopjoy_2604.sy_attach USING btree (reg_date);
 CREATE INDEX sy_attach_ix04_storage_type_cd ON shopjoy_2604.sy_attach USING btree (storage_type_cd);
 CREATE INDEX idx_sy_attach_ref ON shopjoy_2604.sy_attach USING btree (ref_table_nm, ref_id);

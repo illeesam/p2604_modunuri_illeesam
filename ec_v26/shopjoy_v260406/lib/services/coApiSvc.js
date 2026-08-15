@@ -114,10 +114,11 @@
 
   /* ── cm: 첨부파일 조회/삭제 (/co/cm/upload) ─────────────── */
   coApiSvc.cmAttach = {
-    getFiles(attachGrpId, uiNm = '첨부파일', cmdNm = '목록조회') {
-      return chkId(attachGrpId, uiNm, cmdNm) || client().get(`/co/cm/upload/attach-grp/${attachGrpId}/files`, hdr(uiNm, cmdNm));
+    /* getById — 첨부 파일 단건 조회. 그룹/ref 없이 attachId 하나만 직접 참조하는 화면용(예: 프로필 이미지) */
+    getById(attachId, uiNm = '첨부파일', cmdNm = '단건조회') {
+      return chkId(attachId, uiNm, cmdNm) || client().get(`/co/cm/upload/attach/${attachId}`, hdr(uiNm, cmdNm));
     },
-    /* getFilesByRef — attach_grp_id 없이 관련테이블명+관련ID 로 직접 연계된 첨부 조회 */
+    /* getFilesByRef — 관련테이블명+관련ID 로 직접 연계된 첨부 조회 */
     getFilesByRef(refTableNm, refId, uiNm = '첨부파일', cmdNm = '목록조회') {
       return client().get('/co/cm/upload/ref/files', { params: { refTableNm, refId }, ...hdr(uiNm, cmdNm) });
     },

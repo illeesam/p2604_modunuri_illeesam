@@ -88,28 +88,28 @@ public class CmChattMsgService {
     }
 
     /**
-     * 메시지 목록에 첨부(sy_attach)를 attachGrpId 기준으로 일괄 주입.
+     * 메시지 목록에 첨부(sy_attach)를 ref_table_nm='cm_chatt_msg' + ref_id=chattMsgId 기준으로 일괄 주입.
      *
      * <p>메시지 조회 쿼리(Projections.bean)는 스칼라 컬럼만 담을 수 있어 첨부를 함께 못 가져온다.
-     * 행마다 조회하면 N+1 이 되므로 그룹ID 를 모아 한 번에 읽고 메모리에서 붙인다
+     * 행마다 조회하면 N+1 이 되므로 메시지ID 를 모아 한 번에 읽고 메모리에서 붙인다
      * (CmBlogService.attachFiles 와 같은 방식).</p>
      */
     private void fnFillAttachFiles(List<CmChattMsgDto.Item> items) {
         if (items == null || items.isEmpty()) return;
-        List<String> grpIds = items.stream()
-            .map(CmChattMsgDto.Item::getAttachGrpId)
+        List<String> msgIds = items.stream()
+            .map(CmChattMsgDto.Item::getChattMsgId)
             .filter(g -> g != null && !g.isBlank())
             .distinct().toList();
-        if (grpIds.isEmpty()) return;
+        if (msgIds.isEmpty()) return;
 
-        Map<String, List<SyAttachDto.Brief>> byGrp = new LinkedHashMap<>();
+        Map<String, List<SyAttachDto.Brief>> byMsg = new LinkedHashMap<>();
         for (SyAttach a : syAttachRepository
-                .findByAttachGrpIdInOrderByAttachGrpIdAscSortOrdAscAttachIdAsc(grpIds)) {
-            byGrp.computeIfAbsent(a.getAttachGrpId(), k -> new ArrayList<>()).add(fnToBrief(a));
+                .findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc("cm_chatt_msg", msgIds)) {
+            byMsg.computeIfAbsent(a.getRefId(), k -> new ArrayList<>()).add(fnToBrief(a));
         }
         for (CmChattMsgDto.Item it : items) {
-            String g = it.getAttachGrpId();
-            if (g != null && byGrp.containsKey(g)) it.setAttachFiles(byGrp.get(g));
+            String g = it.getChattMsgId();
+            if (g != null && byMsg.containsKey(g)) it.setAttachFiles(byMsg.get(g));
         }
     }
 
@@ -117,7 +117,6 @@ public class CmChattMsgService {
     private SyAttachDto.Brief fnToBrief(SyAttach a) {
         SyAttachDto.Brief b = new SyAttachDto.Brief();
         b.setAttachId(a.getAttachId());
-        b.setAttachGrpId(a.getAttachGrpId());
         b.setFileNm(a.getFileNm());
         b.setFileExt(a.getFileExt());
         b.setFileSize(a.getFileSize());

@@ -327,7 +327,6 @@ window.SyBbsMng = {
       { key: 'authorNm',     label: '작성자' },
       { key: 'viewCount',    label: '조회수', align: 'center' },
       { key: 'commentCount', label: '댓글', align: 'center' },
-      { key: 'attachGrpId',  label: '첨부그룹', cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'bbsStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.bbsStatusCd) },
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: 'regDate',      label: '등록일', sortKey: 'reg', fmt: (v) => coUtil.cofYmd(v) },

@@ -56,7 +56,6 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                         syVendorContent.thumbUrl,                     // 썸네일 URL
                         syVendorContent.imageUrl,                     // 대표 이미지 URL
                         syVendorContent.linkUrl,                      // 링크 URL
-                        syVendorContent.attachGrpId,                  // 첨부파일그룹ID (sy_attach_grp.attach_grp_id)
                         syVendorContent.langCd,                       // 언어코드 (ko/en/ja)
                         syVendorContent.startDate,                    // 노출 시작일시
                         syVendorContent.endDate,                      // 노출 종료일시
@@ -156,7 +155,6 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("attachGrpId", syVendorContent.attachGrpId),
             QdslUtil.FieldDef.like("contentHtml", syVendorContent.contentHtml),
             QdslUtil.FieldDef.like("contentTypeCd", syVendorContent.contentTypeCd),
             QdslUtil.FieldDef.like("imageUrl", syVendorContent.imageUrl),
@@ -204,7 +202,6 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         if (entity.getThumbUrl()              != null) { update.set(syVendorContent.thumbUrl,              entity.getThumbUrl());              hasAny = true; }
         if (entity.getImageUrl()              != null) { update.set(syVendorContent.imageUrl,              entity.getImageUrl());              hasAny = true; }
         if (entity.getLinkUrl()               != null) { update.set(syVendorContent.linkUrl,               entity.getLinkUrl());               hasAny = true; }
-        if (entity.getAttachGrpId()           != null) { update.set(syVendorContent.attachGrpId,           entity.getAttachGrpId());           hasAny = true; }
         if (entity.getLangCd()                != null) { update.set(syVendorContent.langCd,                entity.getLangCd());                hasAny = true; }
         if (entity.getStartDate()             != null) { update.set(syVendorContent.startDate,             entity.getStartDate());             hasAny = true; }
         if (entity.getEndDate()               != null) { update.set(syVendorContent.endDate,               entity.getEndDate());               hasAny = true; }

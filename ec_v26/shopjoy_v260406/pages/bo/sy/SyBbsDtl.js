@@ -23,7 +23,7 @@ window.SyBbsDtl = {
 
     const form = reactive({                        // 게시글 폼 데이터
       bbsId: null, bbmId: null, bbsTitle: '', authorNm: '', bbsStatusCd: '',
-      attachGrpId: null, contentHtml: '', viewCount: '', commentCount: '',
+      contentHtml: '', viewCount: '', commentCount: '',
     });
     // 신규 진입 시에만 채울 기본값 (미선택/inactive 시 빈 폼 유지)
     const _applyNewDefaults = () => {
@@ -47,6 +47,9 @@ window.SyBbsDtl = {
     });
     const selectedBbm = computed(() => uiState.selectedBbm);
     const dtlId = computed(() => props.dtlId);
+    /* attachGrpRef — pendingChanges(추가/삭제 변경 목록)를 create/update 요청에 attachChanges 로 담아 보내기 위한 template ref.
+       실제 sy_attach 반영은 백엔드(SyBbsService.create/update)가 같은 트랜잭션에서 원자적으로 처리한다. */
+    const attachGrpRef = ref(null);
     const showBbmDetail = Vue.toRef(uiState, 'showBbmDetail');
     const showBbmModal = ref(false);
 
@@ -132,7 +135,6 @@ window.SyBbsDtl = {
       form.bbsTitle    = '';
       form.authorNm    = '';
       form.bbsStatusCd = 'PUBLISH';
-      form.attachGrpId = null;
       form.contentHtml = '';
     };
 
@@ -170,9 +172,12 @@ window.SyBbsDtl = {
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = await (cfIsNew.value
-          ? boApiSvc.syBbs.create({ ...form }, '게시판관리', '등록')
-          : boApiSvc.syBbs.update(form.bbsId, { ...form }, '게시판관리', '저장'));
+        // 첨부파일 추가/삭제 변경 목록을 함께 전송 — 백엔드(SyBbsService.create/update)가
+        // bbsId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다.
+        const attachChanges = attachGrpRef.value?.pendingChanges || [];
+        await (cfIsNew.value
+          ? boApiSvc.syBbs.create({ ...form, attachChanges }, '게시판관리', '등록')
+          : boApiSvc.syBbs.update(form.bbsId, { ...form, attachChanges }, '게시판관리', '저장'));
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('syBbsMng', { reload: true }); }
       } catch (err) {
@@ -261,7 +266,7 @@ window.SyBbsDtl = {
 
     return {
       columns,
-      form, errors, showBbmModal, dtlId,                // 상태 / 데이터
+      form, errors, showBbmModal, dtlId, attachGrpRef,  // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfAllowAttach, cfAttachMaxCount,                         // computed
       selectedBbm, showBbmDetail,                                                    // computed (ref)
@@ -313,7 +318,7 @@ window.SyBbsDtl = {
       <div v-if="cfAttachMaxCount > 0">
         <span style="font-size:11px;color:#bbb;margin-bottom:6px;display:block;">({{ cfAllowAttach }})</span>
         <base-attach-grp
-          :model-value="form.attachGrpId" @update:model-value="form.attachGrpId = $event"
+          ref="attachGrpRef" ref-table-nm="sy_bbs" :ref-key-id="dtlId"
           :ref-id="dtlId ? 'BBS-'+dtlId : ''" :show-toast="showToast" :readonly="cfDtlMode"
           grp-code="BBS_ATTACH" grp-nm="게시글 첨부파일"
           :max-count="cfAttachMaxCount" :max-size-mb="10" allow-ext="*" />

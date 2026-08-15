@@ -57,7 +57,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
                         cmFaq.pathId,            // FAQ 분류 표시경로 (sy_path.path_id, biz_cd=cm_faq)
                         cmFaq.faqQuestion,       // 질문
                         cmFaq.faqAnswer,         // 답변(HTML)
-                        cmFaq.answerAttachGrpId, // 답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=FAQ_ANSWER_ATTACH)
                         cmFaq.sortOrd,           // 정렬순서
                         cmFaq.useYn,             // 노출여부 — USE_YN {Y: '노출', N: '숨김'}
                         cmFaq.viewCount,         // 조회수
@@ -176,7 +175,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         if (entity.getPathId()      != null) { update.set(cmFaq.pathId,      entity.getPathId());      hasAny = true; }
         if (entity.getFaqQuestion() != null) { update.set(cmFaq.faqQuestion, entity.getFaqQuestion()); hasAny = true; }
         if (entity.getFaqAnswer()   != null) { update.set(cmFaq.faqAnswer,   entity.getFaqAnswer());   hasAny = true; }
-        if (entity.getAnswerAttachGrpId() != null) { update.set(cmFaq.answerAttachGrpId, entity.getAnswerAttachGrpId()); hasAny = true; }
         if (entity.getSortOrd()     != null) { update.set(cmFaq.sortOrd,     entity.getSortOrd());     hasAny = true; }
         if (entity.getUseYn()       != null) { update.set(cmFaq.useYn,       entity.getUseYn());       hasAny = true; }
         if (entity.getViewCount()   != null) { update.set(cmFaq.viewCount,   entity.getViewCount());   hasAny = true; }

@@ -14,7 +14,6 @@ public class SyAttachDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String attachId;
-        @Size(max = 21) private String attachGrpId;
         @Size(max = 50) private String mimeTypeCd;
         @Size(max = 100) private String refTableNm;
         @Size(max = 21) private String refId;
@@ -33,7 +32,6 @@ public class SyAttachDto {
     @Getter @Setter @NoArgsConstructor
     public static class Brief {
         private String  attachId;
-        private String  attachGrpId;
         private String  fileNm;
         private String  fileExt;
         private Long    fileSize;
@@ -53,7 +51,6 @@ public class SyAttachDto {
 
         // ── sy_attach ──────────────────────────────────────────
         private String attachId;
-        private String attachGrpId;
         private String refTableNm;
         private String refId;
         private String fileNm;

@@ -555,11 +555,6 @@
     getPage(params, uiNm, cmdNm, opt) { return global.boApi.get(   '/bo/sy/attach/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
   };
 
-  /* ── sy: 첨부파일그룹 ───────────────────────────────────────── */
-  boApiSvc.syAttachGrp = {
-    getPage(params, uiNm, cmdNm, opt) { return global.boApi.get(   '/bo/sy/attach-grp/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
-  };
-
   /* ── sy: 배치 ───────────────────────────────────────────────── */
   boApiSvc.syBatch = {
     getPathTreeNodeCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/batch/path-counts', { params, ...hdr(uiNm, cmdNm) }); },

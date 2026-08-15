@@ -12,7 +12,6 @@ CREATE TABLE shopjoy_2604.sy_vendor_content (
     thumb_url                VARCHAR(500),
     image_url                VARCHAR(500),
     link_url                 VARCHAR(500),
-    attach_grp_id            VARCHAR(21) ,
     lang_cd                  VARCHAR(10)  DEFAULT 'ko'::character varying,
     start_date               TIMESTAMP   ,
     end_date                 TIMESTAMP   ,
@@ -38,7 +37,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.content_html IS '본문 (HTML)'
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.thumb_url IS '썸네일 URL';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.image_url IS '대표 이미지 URL';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.link_url IS '링크 URL';
-COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.attach_grp_id IS '첨부파일그룹ID (sy_attach_grp.attach_grp_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.lang_cd IS '언어코드 (ko/en/ja)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.start_date IS '노출 시작일시';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor_content.end_date IS '노출 종료일시';
@@ -56,4 +54,3 @@ CREATE INDEX sy_vendor_content_ix03_start_date_end_date_x2 ON shopjoy_2604.sy_ve
 CREATE INDEX sy_vendor_content_ix05_vendor_content_status_cd ON shopjoy_2604.sy_vendor_content USING btree (vendor_content_status_cd);
 CREATE INDEX sy_vendor_content_ix02_content_type_cd ON shopjoy_2604.sy_vendor_content USING btree (content_type_cd);
 CREATE INDEX sy_vendor_content_ix04_vendor_id ON shopjoy_2604.sy_vendor_content USING btree (vendor_id);
-CREATE INDEX sy_vendor_content_ix01_attach_grp_id ON shopjoy_2604.sy_vendor_content USING btree (attach_grp_id);

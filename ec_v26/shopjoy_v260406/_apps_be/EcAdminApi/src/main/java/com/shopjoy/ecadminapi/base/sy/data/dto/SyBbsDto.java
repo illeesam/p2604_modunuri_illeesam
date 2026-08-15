@@ -30,7 +30,6 @@ public class SyBbsDto {
         private String authorNm;
         private String bbsTitle;
         private String contentHtml;
-        private String attachGrpId;
         private Integer viewCount;
         private Integer likeCount;
         private Integer commentCount;

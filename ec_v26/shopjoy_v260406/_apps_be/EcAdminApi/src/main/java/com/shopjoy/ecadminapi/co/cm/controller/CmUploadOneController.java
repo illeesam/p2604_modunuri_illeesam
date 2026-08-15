@@ -17,14 +17,13 @@ public class CmUploadOneController {
 
     private final CmUploadService cmUploadService;
 
-    /// 단일 파일 업로드 (확장자/용량 검증, 썸네일 옵션, DB 저장)
+    /// 단일 파일 업로드 (확장자/용량 검증, 썸네일 옵션, DB 저장. 그룹/ref 연계 없음)
     @PostMapping("/one")
     public ResponseEntity<ApiResponse<Map<String, Object>>> uploadOne(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "businessCode", defaultValue = "common") String businessCode,
-            @RequestParam(value = "createThumbnail", defaultValue = "false") boolean createThumbnail,
-            @RequestParam(value = "attachGrpId", required = false) String attachGrpId) {
-        Map<String, Object> result = cmUploadService.uploadOne(file, businessCode, createThumbnail, attachGrpId);
+            @RequestParam(value = "createThumbnail", defaultValue = "false") boolean createThumbnail) {
+        Map<String, Object> result = cmUploadService.uploadOne(file, businessCode, createThumbnail);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 }

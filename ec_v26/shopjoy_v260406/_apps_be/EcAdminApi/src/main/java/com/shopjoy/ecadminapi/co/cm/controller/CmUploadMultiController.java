@@ -20,28 +20,25 @@ public class CmUploadMultiController {
 
     private final CmUploadService cmUploadService;
 
-    /// 다중 파일 업로드 (확장자/용량 검증, 썸네일 옵션, DB 저장)
-    /// refTableNm/refId 를 주면(attachGrpId 미지정 시) attach_grp_id 없이 관련테이블명+관련ID 로 직접 연계 저장
+    /// 다중 파일 업로드 (확장자/용량 검증, 썸네일 옵션, DB 저장). 항상 미연계 상태로 업로드된다 —
+    /// 실제 연계(ref_table_nm/ref_id)는 대상 레코드를 저장하는 업무 API(create/update)의
+    /// attachChanges 로 함께 반영된다.
     @PostMapping("/multi")
     public ResponseEntity<ApiResponse<Map<String, Object>>> uploadMulti(
             @RequestParam("files") MultipartFile[] files,
-            @RequestParam(value = "businessCode", defaultValue = "common") String businessCode,
-            @RequestParam(value = "grpNm", defaultValue = "") String grpNm,
-            @RequestParam(value = "attachGrpId", required = false) String attachGrpId,
-            @RequestParam(value = "refTableNm", required = false) String refTableNm,
-            @RequestParam(value = "refId", required = false) String refId) {
-        Map<String, Object> result = cmUploadService.uploadMulti(files, businessCode, grpNm, attachGrpId, refTableNm, refId);
+            @RequestParam(value = "businessCode", defaultValue = "common") String businessCode) {
+        Map<String, Object> result = cmUploadService.uploadMulti(files, businessCode);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
-    /// 첨부 그룹 ID로 파일 목록 조회
-    @GetMapping("/attach-grp/{attachGrpId}/files")
-    public ResponseEntity<ApiResponse<List<SyAttachDto.Item>>> getAttachGrpFiles(
-            @PathVariable("attachGrpId") String attachGrpId) {
-        return ResponseEntity.ok(ApiResponse.ok(cmUploadService.getAttachGrpFiles(attachGrpId)));
+    /// 첨부 파일 단건 조회 — 그룹/ref 없이 attachId 하나만 직접 참조하는 화면용(예: 프로필 이미지)
+    @GetMapping("/attach/{attachId}")
+    public ResponseEntity<ApiResponse<SyAttachDto.Item>> getAttachById(
+            @PathVariable("attachId") String attachId) {
+        return ResponseEntity.ok(ApiResponse.ok(cmUploadService.getAttachById(attachId)));
     }
 
-    /// 관련테이블명/관련ID로 파일 목록 조회 (attach_grp_id 없이 직접 연계된 첨부용)
+    /// 관련테이블명/관련ID로 파일 목록 조회
     @GetMapping("/ref/files")
     public ResponseEntity<ApiResponse<List<SyAttachDto.Item>>> getRefFiles(
             @RequestParam("refTableNm") String refTableNm,

@@ -2,8 +2,6 @@ package com.shopjoy.ecadminapi.co.cm.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
-import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttachGrp;
-import com.shopjoy.ecadminapi.base.sy.service.SyAttachGrpService;
 import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
@@ -34,7 +32,6 @@ public class CmUploadService {
 
     private final FileUploadUtil fileUploadUtil;
     private final VideoConvertUtil videoConvertUtil;
-    private final SyAttachGrpService syAttachGrpService;
     private final SyAttachService syAttachService;
     private final com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository syPropRepository;
     private final org.springframework.core.env.Environment environment;
@@ -71,10 +68,10 @@ public class CmUploadService {
         return propProfile.contains("^" + activeProfile + "^");
     }
 
-    /** 단일 파일 업로드 — 확장자/용량 검증, 썸네일 옵션, DB 저장 */
+    /** 단일 파일 업로드 — 확장자/용량 검증, 썸네일 옵션, DB 저장 (그룹/ref 연계 없음) */
     @Transactional
     public Map<String, Object> uploadOne(MultipartFile file, String businessCode,
-                                         boolean createThumbnail, String attachGrpId) {
+                                         boolean createThumbnail) {
         fileUploadUtil.validate(file);
 
         try {
@@ -127,7 +124,6 @@ public class CmUploadService {
             }
 
             SyAttach syAttach = SyAttach.builder()
-                    .attachGrpId(CmUtil.nvlStr(attachGrpId))
                     .fileNm(originalName)
                     .fileSize(file.getSize())
                     .fileExt(fileUploadUtil.isVideo(ext) ? "mp4" : ext)
@@ -189,31 +185,17 @@ public class CmUploadService {
         }
     }
 
-    /** 다중 파일 업로드 — 확장자/용량 검증, 썸네일 옵션, DB 저장 */
-    @Transactional
-    public Map<String, Object> uploadMulti(MultipartFile[] files, String businessCode,
-                                            String grpNm, String attachGrpId) {
-        return uploadMulti(files, businessCode, grpNm, attachGrpId, null, null);
-    }
-
     /**
-     * 다중 파일 업로드 (ref 방식 지원) — refTableNm/refId 가 주어지면 attach_grp_id 를 만들지 않고
-     * sy_attach 행에 ref_table_nm/ref_id 만 채운다(attach_grp_id NULL). attachGrpId 를 함께 넘기지 않는
-     * 화면에서만 사용 — 두 방식은 상호 배타적이다(attachGrpId 우선).
+     * 다중 파일 업로드 — 확장자/용량 검증, 썸네일 옵션, DB 저장.
+     * 항상 미연계(ref_table_nm/ref_id NULL) 상태로 업로드한다 — 실제 연계는 대상 레코드를
+     * 저장하는 업무 Service 가 {@link SyAttachService#applyChanges} 로 같은 트랜잭션에서 반영한다.
      */
     @Transactional
-    public Map<String, Object> uploadMulti(MultipartFile[] files, String businessCode,
-                                            String grpNm, String attachGrpId,
-                                            String refTableNm, String refId) {
+    public Map<String, Object> uploadMulti(MultipartFile[] files, String businessCode) {
         if (files == null || files.length == 0) throw new CmBizException("업로드할 파일을 선택해주세요." + "::" + CmUtil.svcCallerInfo(this));
         if (files.length > 10) throw new CmBizException("한 번에 최대 10개 파일만 업로드 가능합니다." + "::" + CmUtil.svcCallerInfo(this));
 
-        boolean refMode = (attachGrpId == null || attachGrpId.isBlank())
-                && refTableNm != null && !refTableNm.isBlank() && refId != null && !refId.isBlank();
-
         try {
-            SyAttachGrp savedGrp = refMode ? null : resolveAttachGrp(businessCode, grpNm, attachGrpId);
-
             List<Map<String, Object>> uploadedFiles = new ArrayList<>();
             List<String> failedFiles = new ArrayList<>();
             List<String> attachIds = new ArrayList<>();
@@ -278,9 +260,6 @@ public class CmUploadService {
                     String cdnImgUrl = cdnBase + "/" + storageFilePath;
 
                     SyAttach syAttach = SyAttach.builder()
-                            .attachGrpId(refMode ? null : savedGrp.getAttachGrpId())
-                            .refTableNm(refMode ? refTableNm : null)
-                            .refId(refMode ? refId : null)
                             .fileNm(originalName)
                             .fileSize(file.getSize())
                             .fileExt(fileUploadUtil.isVideo(ext) ? "mp4" : ext)
@@ -355,7 +334,6 @@ public class CmUploadService {
             }
 
             Map<String, Object> result = new HashMap<>();
-            result.put("attachGrpId", refMode ? null : savedGrp.getAttachGrpId());
             result.put("uploadedCount", uploadedFiles.size());
             result.put("failedCount", failedFiles.size());
             result.put("totalSize", totalSize);
@@ -371,22 +349,19 @@ public class CmUploadService {
         }
     }
 
-    /** 첨부 그룹 ID로 파일 목록 조회 (CDN URL 보정 포함) */
-    public List<SyAttachDto.Item> getAttachGrpFiles(String attachGrpId) {
-        String cdnHost = fnCdnHost();
-        String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
-        SyAttachDto.Request req = new SyAttachDto.Request();
-        req.setAttachGrpId(attachGrpId);
-        List<SyAttachDto.Item> files = syAttachService.getList(req);
-        files.forEach(f -> {
-            if (f.getThumbUrl() != null && !f.getThumbUrl().isBlank()) {
-                f.setThumbCdnUrl(cdnBase + "/" + f.getThumbUrl());
-            }
-        });
-        return files;
+    /** 첨부 파일 단건 조회 (CDN URL 보정 포함) — 그룹/ref 없이 attachId 하나만 직접 참조하는 화면용(예: 프로필 이미지) */
+    public SyAttachDto.Item getAttachById(String attachId) {
+        SyAttachDto.Item f = syAttachService.getByIdOrNull(attachId);
+        if (f == null) return null;
+        if (f.getThumbUrl() != null && !f.getThumbUrl().isBlank()) {
+            String cdnHost = fnCdnHost();
+            String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
+            f.setThumbCdnUrl(cdnBase + "/" + f.getThumbUrl());
+        }
+        return f;
     }
 
-    /** 관련 테이블명/ID 로 파일 목록 조회 (CDN URL 보정 포함) — attach_grp_id 없이 직접 연계된 첨부용 */
+    /** 관련 테이블명/ID 로 파일 목록 조회 (CDN URL 보정 포함) */
     public List<SyAttachDto.Item> getRefFiles(String refTableNm, String refId) {
         if (refTableNm == null || refTableNm.isBlank() || refId == null || refId.isBlank())
             throw new CmBizException("refTableNm/refId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
@@ -428,26 +403,6 @@ public class CmUploadService {
         if (dto == null) throw new CmBizException("존재하지 않는 첨부파일입니다: " + attachId + "::" + CmUtil.svcCallerInfo(this));
         SyAttach entity = SyAttach.builder().attachId(attachId).sortOrd(sortOrd).build();
         syAttachService.updateSelective(entity);
-    }
-
-    /** resolveAttachGrp — 결정 */
-    private SyAttachGrp resolveAttachGrp(String businessCode, String grpNm, String attachGrpId) {
-        if (attachGrpId != null && !attachGrpId.isBlank()) {
-            com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachGrpDto.Item existing = syAttachGrpService.getById(attachGrpId);
-            if (existing == null) throw new CmBizException("존재하지 않는 첨부 그룹입니다: " + attachGrpId + "::" + CmUtil.svcCallerInfo(this));
-            return SyAttachGrp.builder()
-                    .attachGrpId(existing.getAttachGrpId())
-                    .attachGrpCode(existing.getAttachGrpCode())
-                    .attachGrpNm(existing.getAttachGrpNm())
-                    .useYn(existing.getUseYn())
-                    .build();
-        }
-        SyAttachGrp attachGrp = SyAttachGrp.builder()
-                .attachGrpCode(businessCode + "_" + System.currentTimeMillis())
-                .attachGrpNm(grpNm == null || grpNm.isEmpty() ? businessCode + " 파일 그룹" : grpNm)
-                .useYn("Y")
-                .build();
-        return syAttachGrpService.create(attachGrp);
     }
 
 }

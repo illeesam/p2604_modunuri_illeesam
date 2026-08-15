@@ -4,11 +4,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachChangeItem;
 import org.hibernate.annotations.Comment;
 
 @Entity
@@ -45,10 +48,6 @@ public class SyContact extends BaseEntity {
     @Column(name = "contact_content", columnDefinition = "TEXT")
     private String contactContent;
 
-    @Comment("문의 내용 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=CONTACT_CONTENT_ATTACH)")
-    @Column(name = "content_attach_grp_id", length = 21)
-    private String contentAttachGrpId;
-
     @Comment("처리상태 (코드: CONTACT_STATUS_CD)")
     @Column(name = "contact_status_cd", length = 20)
     private String contactStatusCd;
@@ -56,10 +55,6 @@ public class SyContact extends BaseEntity {
     @Comment("답변내용")
     @Column(name = "contact_answer", columnDefinition = "TEXT")
     private String contactAnswer;
-
-    @Comment("답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=CONTACT_ANSWER_ATTACH)")
-    @Column(name = "answer_attach_grp_id", length = 21)
-    private String answerAttachGrpId;
 
     @Comment("답변자 (sy_user.user_id)")
     @Column(name = "answer_user_id", length = 21)
@@ -72,5 +67,15 @@ public class SyContact extends BaseEntity {
     @Comment("문의일시")
     @Column(name = "contact_date")
     private LocalDateTime contactDate;
+
+    /** DB 컬럼 아님(요청 전용) — 문의 내용 첨부파일 연계 변경 목록(추가 rowStatus:'I' / 삭제 rowStatus:'D').
+     *  create()/update() 가 contactId 확정 직후 같은 트랜잭션에서 sy_attach("sy_contact_content")에 반영한다. */
+    @Transient
+    private List<SyAttachChangeItem> contentAttachChanges;
+
+    /** DB 컬럼 아님(요청 전용) — 답변 첨부파일 연계 변경 목록(추가 rowStatus:'I' / 삭제 rowStatus:'D').
+     *  update() 가 같은 트랜잭션에서 sy_attach("sy_contact_answer")에 반영한다. */
+    @Transient
+    private List<SyAttachChangeItem> answerAttachChanges;
 
 }

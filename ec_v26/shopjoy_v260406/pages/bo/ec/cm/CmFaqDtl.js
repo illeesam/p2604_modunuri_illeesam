@@ -25,10 +25,12 @@ window.CmFaqDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // view=읽기전용
     // 첨부 ref-id: 신규는 빈값(저장 후 부여), 기존은 FAQ-{faqId}
     const cfAttachRefId = computed(() => props.dtlId ? ('FAQ-' + props.dtlId) : '');
+    /* attachGrpRef — pendingChanges(추가/삭제 변경 목록)를 create/update 요청에 attachChanges 로 담아 보내기 위한 template ref.
+       실제 sy_attach 반영은 백엔드(CmFaqService.create/update)가 같은 트랜잭션에서 원자적으로 처리한다. */
+    const attachGrpRef = ref(null);
 
     const form = reactive({
       faqId: null, pathId: null, faqQuestion: '', faqAnswer: '',
-      answerAttachGrpId: null,
       sortOrd: '', useYn: '',
     });
     // 신규 진입 시에만 채울 기본값
@@ -158,7 +160,10 @@ window.CmFaqDtl = {
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        await (cfIsNew.value ? boApiSvc.cmFaq.create({ ...form }, 'FAQ관리', '등록') : boApiSvc.cmFaq.update(form.faqId, { ...form }, 'FAQ관리', '저장'));
+        // 첨부파일 추가/삭제 변경 목록을 함께 전송 — 백엔드(CmFaqService.create/update)가
+        // faqId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다.
+        const attachChanges = attachGrpRef.value?.pendingChanges || [];
+        await (cfIsNew.value ? boApiSvc.cmFaq.create({ ...form, attachChanges }, 'FAQ관리', '등록') : boApiSvc.cmFaq.update(form.faqId, { ...form, attachChanges }, 'FAQ관리', '저장'));
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('cmFaqMng', { reload: true }); }
       } catch (err) {
@@ -180,7 +185,7 @@ window.CmFaqDtl = {
       { key: 'useYn',       label: '노출여부',  type: 'select', options: () => codes.use_yn },
       { key: 'faqQuestion', label: '질문',      type: 'text', required: true, colSpan: 3, placeholder: '질문을 입력하세요' },
       { key: 'faqAnswer',        label: '답변',          type: 'slot', name: 'answer',    colSpan: 3 },
-      { key: 'answerAttachGrpId', label: '답변 첨부파일', type: 'slot', name: 'attachGrp', colSpan: 3 },
+      { key: 'answerAttachFiles', label: '답변 첨부파일', type: 'slot', name: 'attachGrp', colSpan: 3 },
       { key: 'sortOrd',          label: '정렬순서',       type: 'number', min: 1 },
     ];
 
@@ -191,7 +196,7 @@ window.CmFaqDtl = {
       modals,   // 모달 표시 상태 모음
       columns,
       form, errors, handleBtnAction, handleSelectAction, fnCallbackModal,
-      cfIsNew, cfDtlMode, cfAttachRefId,
+      cfIsNew, cfDtlMode, cfAttachRefId, attachGrpRef,
       showToast,
     };
   },
@@ -210,7 +215,7 @@ window.CmFaqDtl = {
       <base-html-editor v-else v-model="form.faqAnswer" height="260px" />
     </template>
     <template #attachGrp>
-      <base-attach-grp :model-value="form.answerAttachGrpId" @update:model-value="form.answerAttachGrpId = $event"
+      <base-attach-grp ref="attachGrpRef" ref-table-nm="cm_faq" :ref-key-id="dtlId"
         :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
         grp-code="FAQ_ANSWER_ATTACH" grp-nm="FAQ 답변 첨부파일"
         :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />

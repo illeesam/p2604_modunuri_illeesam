@@ -43,7 +43,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                         syNotice.noticeTypeCd,    // 공지유형 — NOTICE_TYPE {NORMAL: '일반', URGENT: '긴급'}
                         syNotice.isFixed,         // 상단고정 — IS_FIXED {Y: '상단고정', N: '일반'}
                         syNotice.contentHtml,     // 내용 (HTML)
-                        syNotice.attachGrpId,     // 첨부파일그룹ID
                         syNotice.startDate,       // 노출시작일
                         syNotice.endDate,         // 노출종료일
                         syNotice.noticeStatusCd,  // 상태 — NOTICE_STATUS_CD {ACTIVE: '활성', INACTIVE: '비활성'}
@@ -131,7 +130,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("attachGrpId", syNotice.attachGrpId),
             QdslUtil.FieldDef.like("contentHtml", syNotice.contentHtml),
             QdslUtil.FieldDef.like("isFixed", syNotice.isFixed),
             QdslUtil.FieldDef.like("noticeId", syNotice.noticeId),
@@ -167,7 +165,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         if (entity.getNoticeTypeCd()   != null) { update.set(syNotice.noticeTypeCd,   entity.getNoticeTypeCd());   hasAny = true; }
         if (entity.getIsFixed()        != null) { update.set(syNotice.isFixed,        entity.getIsFixed());        hasAny = true; }
         if (entity.getContentHtml()    != null) { update.set(syNotice.contentHtml,    entity.getContentHtml());    hasAny = true; }
-        if (entity.getAttachGrpId()    != null) { update.set(syNotice.attachGrpId,    entity.getAttachGrpId());    hasAny = true; }
         if (entity.getStartDate()      != null) { update.set(syNotice.startDate,      entity.getStartDate());      hasAny = true; }
         if (entity.getEndDate()        != null) { update.set(syNotice.endDate,        entity.getEndDate());        hasAny = true; }
         if (entity.getNoticeStatusCd() != null) { update.set(syNotice.noticeStatusCd, entity.getNoticeStatusCd()); hasAny = true; }

@@ -24,7 +24,11 @@ window.CmNoticeDtl = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { reactive, computed, onMounted, watch } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
+    /* 첨부 추가/삭제는 화면에서 즉시 물리 반영되지만 sy_attach 연계 자체는 미반영 상태로 남는다 —
+       template ref 로 pendingChanges 를 읽어 저장 요청 바디에 attachChanges 로 함께 보내면
+       SyNoticeService.create()/update() 가 noticeId 확정 직후 같은 트랜잭션에서 원자적으로 반영한다. */
+    const attachGrpRef = ref(null);
     const { showToast, showConfirm } = window.boApp;
     const uiState = reactive({ loading: false, error: null });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
@@ -36,7 +40,6 @@ window.CmNoticeDtl = {
     const baseForm = reactive({
       noticeId: null, noticeTitle: '', noticeTypeCd: '', isFixed: '',
       startDate: '', endDate: '', noticeStatusCd: '', contentHtml: '',
-      attachGrpId: null,
     });
     /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
     const _applyNewDefaults = () => {
@@ -117,9 +120,12 @@ window.CmNoticeDtl = {
       const isNew = cfIsNew.value;
       if (!(await showConfirm(isNew ? '등록' : '저장', isNew ? '등록하시겠습니까?' : '저장하시겠습니까?'))) return;
       try {
-        const res = await (isNew
-          ? boApiSvc.cmNotice.create({ ...baseForm }, '공지사항관리', '등록')
-          : boApiSvc.cmNotice.update(props.dtlId, { ...baseForm }, '공지사항관리', '저장'));
+        // 첨부파일 추가/삭제 변경 목록을 함께 전송 — 백엔드(SyNoticeService.create/update)가
+        // noticeId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다.
+        const attachChanges = attachGrpRef.value?.pendingChanges || [];
+        await (isNew
+          ? boApiSvc.cmNotice.create({ ...baseForm, attachChanges }, '공지사항관리', '등록')
+          : boApiSvc.cmNotice.update(props.dtlId, { ...baseForm, attachChanges }, '공지사항관리', '저장'));
         showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
         props.navigate('cmNoticeMng', { reload: true });
       } catch (err) {
@@ -140,7 +146,7 @@ window.CmNoticeDtl = {
         checkboxLabel: '상단고정', hideLabel: true,
         checkedValue: 'Y', uncheckedValue: 'N' },
       { key: 'contentHtml',    label: '내용',    type: 'slot', name: 'content', colSpan: 3 },
-      { key: 'attachGrpId',   label: '첨부파일', type: 'slot', name: 'attachGrp', colSpan: 3 },
+      { key: 'attachFiles',   label: '첨부파일', type: 'slot', name: 'attachGrp', colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -149,7 +155,7 @@ window.CmNoticeDtl = {
       columns,
       uiState, codes, baseForm, errors,
       handleBtnAction,
-      cfIsNew, cfReadonly, cfAttachRefId,
+      cfIsNew, cfReadonly, cfAttachRefId, attachGrpRef,
       showToast,
     };
   },
@@ -169,7 +175,7 @@ window.CmNoticeDtl = {
       <base-html-editor v-else v-model="baseForm.contentHtml" height="280px" />
     </template>
     <template #attachGrp>
-      <base-attach-grp :model-value="baseForm.attachGrpId" @update:model-value="baseForm.attachGrpId = $event"
+      <base-attach-grp ref="attachGrpRef" ref-table-nm="sy_notice" :ref-key-id="dtlId"
         :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfReadonly"
         grp-code="NOTICE_ATTACH" grp-nm="공지 첨부파일"
         :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />

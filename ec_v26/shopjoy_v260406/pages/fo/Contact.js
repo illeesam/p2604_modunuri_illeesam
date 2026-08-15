@@ -10,7 +10,7 @@ window.Contact = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { reactive, computed, watch, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const modals = reactive({ isOrderModal: false });
     const uiState = reactive({ loading: false, error: null });
@@ -85,8 +85,14 @@ window.Contact = {
       coUtil.cofCodesByGroup(window.SITE_CONFIG || {}, 'shopjoy_contact_inquiry')
     );
 
-    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '', contentAttachGrpId: null });
+    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     const errors = reactive({});
+    /* 문의 작성은 contactId 가 저장 전에는 없다 — 첨부 추가/삭제는 화면에서 즉시 물리 반영되지만,
+       attachGrpRef.pendingChanges 를 제출 요청의 attachChanges 로 함께 보내야 실제 sy_attach 연계가
+       반영된다(백엔드 FoCmContactService.submit 이 contactId 확정 직후 같은 트랜잭션에서 처리).
+       attachResetKey 는 다음 문의 작성을 위해 첨부 위젯을 완전히 새로 마운트(초기화)하는 용도. */
+    const attachGrpRef = ref(null);
+    const attachResetKey = ref(0);
 
     /* fnPrefillUser — 로그인 사용자 정보로 이름/이메일/연락처 자동 초기값 (비어있을 때만).
        svAuthUser 는 getUser(StoreMember) 로 덮어써지므로 그 필드명(memberEmail/memberHpNo)도 fallback. */
@@ -128,6 +134,7 @@ window.Contact = {
       }
       uiState.loading = true;
       try {
+        const attachChanges = attachGrpRef.value?.pendingChanges || [];
         await foApiSvc.myInquiry.create({
           inquiryType:        form.inquiryType,
           name:               form.name,
@@ -136,11 +143,12 @@ window.Contact = {
           orderNo:            form.orderNo,
           message:            form.desc,                // 백엔드 DTO 필드명은 message (프론트 desc)
           blogAuthor:         form.name,                // 작성자명 = 문의자 이름
-          contentAttachGrpId: form.contentAttachGrpId,  // 첨부파일 그룹 연결
+          attachChanges,                                 // 첨부 추가/삭제 변경 목록 → 백엔드가 저장 트랜잭션 안에서 반영
           // siteId 는 foApiAxios 가 X-Site-Id 헤더로 전달 → 백엔드 fallback 처리
         }, '문의', '저장');
         showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
-        Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '', contentAttachGrpId: null });
+        Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
+        attachResetKey.value++;   // 다음 문의 작성을 위해 첨부 위젯을 완전히 새로 마운트(초기화)
       } catch (err) {
         const msg = err.response?.data?.message || err.message || '문의 접수 중 오류가 발생했습니다.';
         showToast(msg, 'error', 0);
@@ -175,6 +183,7 @@ window.Contact = {
       uiState, showToast,       // 상태
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       form, errors, // 폼
+      attachGrpRef, attachResetKey,                    // 첨부 연계용 상태
       handleSubmit,                                    // 이벤트 (호환)
     };
   },
@@ -216,8 +225,8 @@ window.Contact = {
         <label class="form-label">
           첨부파일
         </label>
-        <base-attach-grp :model-value="form.contentAttachGrpId"
-          @update:model-value="form.contentAttachGrpId = $event"
+        <base-attach-grp :key="attachResetKey" ref="attachGrpRef"
+          ref-table-nm="sy_contact_content"
           :show-toast="showToast"
           grp-code="CONTACT_CONTENT_ATTACH"
           grp-nm="문의 첨부파일"

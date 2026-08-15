@@ -32,7 +32,6 @@ public class CmChattMsgDto {
         private String senderNm;
         private String msgText;
         private String msgTypeCd;
-        private String attachGrpId;
         private String refTypeCd;
         private String refId;
         private String readYn;
@@ -43,7 +42,7 @@ public class CmChattMsgDto {
         private String updBy;
         private LocalDateTime updDate;
         /* 첨부는 공통 축약 DTO 를 쓴다 — sy_attach 컬럼명 그대로라 도메인마다 키가 갈리지 않는다.
-           attachGrpId 기준으로 CmChattMsgService 가 일괄 주입한다(N+1 회피). */
+           ref_table_nm='cm_chatt_msg' + ref_id=chattMsgId 기준으로 CmChattMsgService 가 일괄 주입한다(N+1 회피). */
         private List<SyAttachDto.Brief> attachFiles;
     }
 
@@ -51,7 +50,6 @@ public class CmChattMsgDto {
     public static class SendRequest {
         private String msgText;
         private String msgTypeCd;
-        private String attachGrpId;
         private String refTypeCd;
         private String refId;
         private String senderTypeCd;

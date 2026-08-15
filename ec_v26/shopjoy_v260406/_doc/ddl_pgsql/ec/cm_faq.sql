@@ -7,7 +7,6 @@ CREATE TABLE shopjoy_2604.cm_faq (
     path_id       VARCHAR(21) ,
     faq_question  VARCHAR(500) NOT NULL,
     faq_answer    TEXT,
-    answer_attach_grp_id VARCHAR(21),
     sort_ord      INTEGER      DEFAULT 0,
     use_yn        VARCHAR(1)   DEFAULT 'Y',
     view_count    INTEGER      DEFAULT 0,
@@ -23,7 +22,6 @@ COMMENT ON COLUMN shopjoy_2604.cm_faq.reg_site_id IS '사이트ID (sy_site.site_
 COMMENT ON COLUMN shopjoy_2604.cm_faq.path_id IS 'FAQ 분류 표시경로 (sy_path.path_id, biz_cd=cm_faq)';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.faq_question IS '질문';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.faq_answer IS '답변(HTML)';
-COMMENT ON COLUMN shopjoy_2604.cm_faq.answer_attach_grp_id IS '답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=FAQ_ANSWER_ATTACH)';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.sort_ord IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.use_yn IS '노출여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.view_count IS '조회수';
@@ -34,4 +32,3 @@ COMMENT ON COLUMN shopjoy_2604.cm_faq.upd_date IS '수정일';
 
 CREATE INDEX cm_faq_ix02_path_id ON shopjoy_2604.cm_faq USING btree (path_id);
 CREATE INDEX cm_faq_ix03_sort_ord ON shopjoy_2604.cm_faq USING btree (sort_ord);
-CREATE INDEX cm_faq_ix01_answer_attach_grp_id ON shopjoy_2604.cm_faq USING btree (answer_attach_grp_id);

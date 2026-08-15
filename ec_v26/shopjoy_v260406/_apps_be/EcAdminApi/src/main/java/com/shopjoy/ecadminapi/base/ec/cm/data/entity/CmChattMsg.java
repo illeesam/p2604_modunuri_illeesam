@@ -48,10 +48,6 @@ public class CmChattMsg extends BaseEntity {
     @Column(name = "msg_type_cd", length = 20)
     private String msgTypeCd;
 
-    @Comment("첨부그룹ID (sy_attach_grp.attach_grp_id)")
-    @Column(name = "attach_grp_id", length = 21)
-    private String attachGrpId;
-
     @Comment("참조유형 (ORDER/PRODUCT/CLAIM)")
     @Column(name = "ref_type_cd", length = 20)
     private String refTypeCd;

@@ -7,6 +7,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogReplyService;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
+import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -36,6 +37,7 @@ public class FoCmContactService {
     private final CmBlogRepository cmBlogRepository;
     private final CmBlogReplyService cmBlogReplyService;
     private final SyContactRepository syContactRepository;
+    private final SyAttachService syAttachService;
     private final com.shopjoy.ecadminapi.co.cm.service.CmMsgSendService cmMsgSendService;
 
     /** getById — 조회 */
@@ -74,7 +76,6 @@ public class FoCmContactService {
             .categoryCd(req.getInquiryType())
             .contactTitle("[문의] " + (req.getInquiryType() != null ? req.getInquiryType() : "일반"))
             .contactContent(buildContent(req))
-            .contentAttachGrpId(req.getContentAttachGrpId())
             .contactStatusCd(CONTACT_STATUS_NEW)
             .contactDate(LocalDateTime.now())
             .regBy(authId)
@@ -82,6 +83,7 @@ public class FoCmContactService {
             .build();
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("문의 접수에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(req.getAttachChanges(), "sy_contact_content", saved.getContactId());
 
         // 접수 완료 알림 발송 (메일/카카오/시스템알림) — 비동기(fire-and-forget).
         // 메일 SMTP 발송이 응답을 지연시키지 않도록 별도 스레드풀에서 처리. 발송 결과는 이력 테이블에만 기록.

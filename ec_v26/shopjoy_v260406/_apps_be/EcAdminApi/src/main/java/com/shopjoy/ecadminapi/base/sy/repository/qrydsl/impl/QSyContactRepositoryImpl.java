@@ -46,10 +46,8 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                         syContact.categoryCd,           // 문의유형
                         syContact.contactTitle,         // 제목
                         syContact.contactContent,       // 문의내용
-                        syContact.contentAttachGrpId,   // 문의 내용 첨부파일그룹ID (sy_attach_grp.attach_grp_id)
                         syContact.contactStatusCd,      // 처리상태 — CONTACT_STATUS {RECEIVED: '접수', IN_PROGRESS: '처리중', DONE: '완료', ON_HOLD: '보류'}
                         syContact.contactAnswer,        // 답변내용
-                        syContact.answerAttachGrpId,    // 답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id)
                         syContact.answerUserId,         // 답변자 (sy_user.user_id)
                         syContact.answerDate,           // 답변일시
                         syContact.contactDate,          // 문의일시
@@ -157,8 +155,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("answerUserId", syContact.answerUserId),
-            QdslUtil.FieldDef.like("contentAttachGrpId", syContact.contentAttachGrpId),
-            QdslUtil.FieldDef.like("answerAttachGrpId", syContact.answerAttachGrpId),
             QdslUtil.FieldDef.like("categoryCd", syContact.categoryCd),
             QdslUtil.FieldDef.like("contactAnswer", syContact.contactAnswer),
             QdslUtil.FieldDef.like("contactContent", syContact.contactContent),
@@ -197,10 +193,8 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         if (entity.getCategoryCd()      != null) { update.set(syContact.categoryCd,      entity.getCategoryCd());      hasAny = true; }
         if (entity.getContactTitle()    != null) { update.set(syContact.contactTitle,    entity.getContactTitle());    hasAny = true; }
         if (entity.getContactContent()  != null) { update.set(syContact.contactContent,  entity.getContactContent());  hasAny = true; }
-        if (entity.getContentAttachGrpId() != null) { update.set(syContact.contentAttachGrpId, entity.getContentAttachGrpId()); hasAny = true; }
         if (entity.getContactStatusCd() != null) { update.set(syContact.contactStatusCd, entity.getContactStatusCd()); hasAny = true; }
         if (entity.getContactAnswer()   != null) { update.set(syContact.contactAnswer,   entity.getContactAnswer());   hasAny = true; }
-        if (entity.getAnswerAttachGrpId() != null) { update.set(syContact.answerAttachGrpId, entity.getAnswerAttachGrpId()); hasAny = true; }
         if (entity.getAnswerUserId()    != null) { update.set(syContact.answerUserId,    entity.getAnswerUserId());    hasAny = true; }
         if (entity.getAnswerDate()      != null) { update.set(syContact.answerDate,      entity.getAnswerDate());      hasAny = true; }
         if (entity.getContactDate()     != null) { update.set(syContact.contactDate,     entity.getContactDate());     hasAny = true; }

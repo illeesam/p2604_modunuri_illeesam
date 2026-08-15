@@ -1,9 +1,12 @@
 package com.shopjoy.ecadminapi.base.ec.cm.data.dto;
 
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachChangeItem;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 /**
  * 문의 접수(고객센터) Request DTO.
@@ -24,7 +27,8 @@ public class CmContactSubmitDto {
         @Size(max = 4000) private String message;
         /** 작성자(로그인 회원 nm) */
         @Size(max = 100) private String blogAuthor;
-        /** 문의 내용 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=CONTACT_CONTENT_ATTACH) */
-        @Size(max = 21) private String contentAttachGrpId;
+        /** 문의 내용 첨부파일 연계 변경 목록(추가 rowStatus:'I' / 삭제 rowStatus:'D') —
+         *  submit() 이 contactId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다. */
+        private List<SyAttachChangeItem> attachChanges;
     }
 }

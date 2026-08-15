@@ -8,7 +8,6 @@ CREATE TABLE shopjoy_2604.sy_notice (
     notice_type_cd   VARCHAR(30) ,
     is_fixed         VARCHAR(1)   DEFAULT 'N'::bpchar,
     content_html     TEXT        ,
-    attach_grp_id    VARCHAR(21) ,
     start_date       TIMESTAMP   ,
     end_date         TIMESTAMP   ,
     notice_status_cd VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
@@ -26,7 +25,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_title IS '제목';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_type_cd IS '공지유형 (코드: NOTICE_TYPE)';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.is_fixed IS '상단고정 Y/N';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.content_html IS '내용 (HTML)';
-COMMENT ON COLUMN shopjoy_2604.sy_notice.attach_grp_id IS '첨부파일그룹ID';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.start_date IS '노출시작일';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.end_date IS '노출종료일';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.notice_status_cd IS '상태 (ACTIVE/INACTIVE)';
@@ -36,4 +34,3 @@ COMMENT ON COLUMN shopjoy_2604.sy_notice.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_notice.upd_date IS '수정일';
 
-CREATE INDEX sy_notice_ix01_attach_grp_id ON shopjoy_2604.sy_notice USING btree (attach_grp_id);

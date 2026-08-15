@@ -1,4 +1,9 @@
-/* ShopJoy Admin - 첨부관리 (좌30% 그룹 + 우70% 파일) */
+/* ShopJoy Admin - 첨부파일 통합조회
+ * (2026-08-15 전면개편) sy_attach_grp 폐지 → ref_table_nm/ref_id 로 통일됨에 따라
+ * "첨부그룹관리"(그룹 CRUD) 화면을 폐기하고, 전체 sy_attach 를 관련테이블명/관련ID 조건으로
+ * 검색·조회하고 문제 있는(고아) 파일을 삭제할 수 있는 조회/감사 화면으로 재구성했다.
+ * 파일 등록/수정(수기 입력)은 실제 업로드가 아니므로 함께 제거 — 업로드는 각 도메인 화면의
+ * <base-attach-grp> 를 통해서만 이뤄진다. */
 window.SyAttachMng = {
   name: 'SyAttachMng',
   props: {
@@ -8,47 +13,21 @@ window.SyAttachMng = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { ref, reactive, computed, onMounted } = Vue;
+    const { reactive, computed, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const attaches = reactive([]);
-    const attachGrps = reactive([]);
-    const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, selectedGrpId: null, grpEditId: null, fileEditId: null });
-    const codes = reactive({ active_statuses: [], use_yns: [], storage_types: [], date_range_opts: [] });
-    const grpSearchParam = reactive({ searchType: '', searchValue: '' });
+    const uiState = reactive({ loading: false, error: null });
+    const codes = reactive({ date_range_opts: [] });
 
     const fileGridPager = reactive({
-      pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
-      pageNums: [], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500],
-    });
-    /* 첨부그룹 페이저 (좌측 영역 페이징) */
-    const grpPager = reactive({
-      pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
-      pageNums: [], pageSizes: [5, 10, 20, 50],
+      pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
+      pageNums: [], pageSizes: [10, 20, 30, 50, 100, 200, 500],
     });
 
-    const searchParam = reactive({ searchType: '', searchValue: '', attachGrpId: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
+    const searchParam = reactive({ refTableNm: '', refId: '', searchType: '', searchValue: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
     /* searchParamInit — [초기화] 기준값 (initPage 끝에서 스냅샷) */
     const searchParamInit = {};
-
-    /* -- 첨부그룹 -- */
-    const grpForm = reactive({ attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
-
-    /* -- 그룹 등록(신규) 임시 목록첨부 --
-       attachGrpId 가 아직 없는 신규 등록 단계라 서버에 즉시 업로드하지 못한다.
-       브라우저 메모리에 File 객체만 쌓아두고(newGrpFiles), 그룹 저장(POST) 이 성공해
-       실제 attachGrpId 가 확정된 직후 refTableNm='sy_attach_grp' + refId=<신규 attachGrpId> 로
-       한 번에 업로드한다 — attachGrpId 방식이 아닌 관련테이블명/관련ID 방식. */
-    const newGrpFiles = ref([]);
-    const newGrpFileInputRef = ref(null);
-
-    /* -- 첨부파일 -- */
-    const fileForm = reactive({
-      attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', mimeTypeCd: '',
-      storedNm: '', storageTypeCd: '', storagePath: '', attachUrl: '', cdnHost: '', cdnImgUrl: '',
-      thumbFileNm: '', thumbStoredNm: '', thumbUrl: '', thumbCdnUrl: '', thumbGeneratedYn: 'N',
-      sortOrd: 0, attachMemo: '', refId: '',
-    });
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
@@ -57,45 +36,16 @@ window.SyAttachMng = {
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyAttachMng.js : handleBtnAction -> ', cmd, param);
-      // 첨부파일 검색조건으로 목록 조회
+      // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
         return onSearch();
-      // 첨부파일 검색조건 초기화
+      // 검색조건 초기화
       } else if (cmd === 'searchParam-reset') {
         return onReset();
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return onDateRangeChange();
-      // 첨부그룹 검색조건으로 그룹 조회
-      } else if (cmd === 'attachGrps-search') {
-        return onGrpSearch();
-      // 첨부그룹 신규 등록 폼 열기
-      } else if (cmd === 'attachGrps-add') {
-        return openGrpNew();
-      // 첨부그룹 폼 저장
-      } else if (cmd === 'attachGrps-save') {
-        return handleSaveGrp();
-      // 첨부그룹 폼 닫기
-      } else if (cmd === 'attachGrps-formClose') {
-        uiState.grpEditMode = false;
-        return;
-      // 그룹 등록(신규) 목록첨부 파일선택 열기
-      } else if (cmd === 'grpForm-fileNew') {
-        return openNewGrpFilePicker();
-      // 첨부파일 신규 등록 폼 열기
-      } else if (cmd === 'attaches-add') {
-        return openFileNew();
-      // 첨부파일 폼 저장
-      } else if (cmd === 'attaches-save') {
-        return handleSaveFile();
-      // 첨부파일 폼 닫기
-      } else if (cmd === 'attaches-formClose') {
-        uiState.fileEditMode = false;
-        return;
-      // 첨부그룹 페이지 번호 클릭
-      } else if (cmd === 'attachGrps-pager-setPage') {
-        return setGrpPage(param);
-      // 첨부파일 페이지 번호 클릭
+      // 페이지 번호 클릭
       } else if (cmd === 'attaches-pager-setPage') {
         return setPage(param);
       } else {
@@ -103,31 +53,13 @@ window.SyAttachMng = {
       }
     };
 
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    /* handleSelectAction — 그리드 행/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyAttachMng.js : handleSelectAction -> ', cmd, param);
-      // 첨부그룹 카드 선택 (좌측 패널)
-      if (cmd === 'attachGrps-rowSelect') {
-        return selectGrp(param);
-      // 첨부그룹 수정 버튼
-      } else if (cmd === 'attachGrps-rowEdit') {
-        return openGrpEdit(param);
-      // 첨부그룹 삭제 버튼
-      } else if (cmd === 'attachGrps-rowDelete') {
-        return handleDeleteGrp(param);
-      // 첨부그룹 페이지 크기 변경
-      } else if (cmd === 'attachGrps-pager-sizeChange') {
-        return onGrpSizeChange();
-      // 그룹 등록(신규) 목록첨부 스테이징 파일 제거
-      } else if (cmd === 'grpForm-fileRemove') {
-        return removeNewGrpFile(param);
-      // 첨부파일 수정 버튼
-      } else if (cmd === 'attaches-rowEdit') {
-        return openFileEdit(param);
       // 첨부파일 삭제 버튼
-      } else if (cmd === 'attaches-rowDelete') {
+      if (cmd === 'attaches-rowDelete') {
         return handleDeleteFile(param);
-      // 첨부파일 페이지 크기 변경
+      // 페이지 크기 변경
       } else if (cmd === 'attaches-pager-sizeChange') {
         return onSizeChange();
       } else {
@@ -143,47 +75,11 @@ window.SyAttachMng = {
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       fileGridPager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
-    /* fnBuildGrpPageNums — 유틸 */
-    const fnBuildGrpPageNums = () => {
-      const c = grpPager.pageNo, l = grpPager.pageTotalPage;
-      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      grpPager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
 
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
     };
-
-    // 그룹 목록 로드 (서버사이드 페이징 — grpPager 사용)
-    /* handleLoadGrps — 처리 */
-    const handleLoadGrps = async () => {
-      try {
-        const p = { pageNo: grpPager.pageNo, pageSize: grpPager.pageSize };
-        const sv = (grpSearchParam.searchValue || '').trim();
-        if (sv) {
-          p.searchValue = sv;
-          p.searchType = grpSearchParam.searchType || 'attachGrpNm,attachGrpCode';
-        }
-        const grpRes = await boApiSvc.syAttachGrp.getPage(p, '첨부파일관리', '그룹조회');
-        const data = grpRes.data?.data;
-        const list = data?.pageList || data?.list || [];
-        attachGrps.splice(0, attachGrps.length, ...list);
-        grpPager.pageTotalCount = data?.pageTotalCount ?? data?.totalCount ?? data?.total ?? list.length ?? 0;
-        grpPager.pageTotalPage  = data?.pageTotalPage  || coUtil.cofTotalPage(grpPager);
-        fnBuildGrpPageNums();
-      } catch (err) {
-        console.error('[catch-info]', err);
-      }
-    };
-
-    /* onGrpSearch — 이벤트 */
-    const onGrpSearch = async () => { grpPager.pageNo = 1; await handleLoadGrps(); };
-
-    /* setGrpPage — 설정 */
-    const setGrpPage      = n => { if (n >= 1 && n <= grpPager.pageTotalPage) { grpPager.pageNo = n; handleLoadGrps(); } };
-    /* onGrpSizeChange — 이벤트 */
-    const onGrpSizeChange = () => { grpPager.pageNo = 1; handleLoadGrps(); };
 
     // 파일 목록 조회 (서버사이드 페이징)
     /* handleSearchData — 처리 */
@@ -195,11 +91,9 @@ window.SyAttachMng = {
           pageSize: fileGridPager.pageSize,
           ...coUtil.cofOmitEmpty(searchParam),
         };
-        // 좌측 그룹 클릭 선택이 우선, 없으면 검색 조건 attachGrpId 사용
-        if (uiState.selectedGrpId) { p.attachGrpId = uiState.selectedGrpId; }
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (p.searchValue && !p.searchType) {
-          p.searchType = 'fileNm,refId';
+          p.searchType = 'fileNm,attachMemo';
         }
         const attachRes = await boApiSvc.syAttach.getPage(p, '첨부파일관리', '조회');
         const data = attachRes.data?.data;
@@ -221,10 +115,7 @@ window.SyAttachMng = {
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
       /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-      await codeStore.saLoadCodes(['ACTIVE_STATUS', 'USE_YN', 'STORAGE_TYPE', 'DATE_RANGE_OPT'], {compNm: 'SyAttachMng'});
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
-      codes.use_yns = codeStore.sgGetGrpCodes('USE_YN');
-      codes.storage_types = codeStore.sgGetGrpCodes('STORAGE_TYPE');
+      await codeStore.saLoadCodes(['DATE_RANGE_OPT'], {compNm: 'SyAttachMng'});
       codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
     };
 
@@ -234,7 +125,6 @@ window.SyAttachMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
-      await handleLoadGrps();
       await handleSearchData();
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -246,164 +136,15 @@ window.SyAttachMng = {
     /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, searchParamInit);   // 검색어/검색대상까지 함께 초기화
-      uiState.selectedGrpId = null;
       fileGridPager.pageNo = 1;
       handleSearchData();
     };
 
     /* setPage — 설정 */
-    const setPage      = n => { if (n >= 1 && n <= fileGridPager.pageTotalPage) { fileGridPager.pageNo = n; handleSearchData(); } };
+    const setPage = n => { if (n >= 1 && n <= fileGridPager.pageTotalPage) { fileGridPager.pageNo = n; handleSearchData(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { fileGridPager.pageNo = 1; handleSearchData(); };
-
-    /* selectGrp — 선택 (그룹 전환 시 우측 첨부파일 수정폼/선택행 초기화) */
-    const selectGrp = (id) => {
-      uiState.selectedGrpId = uiState.selectedGrpId === id ? null : id;
-      searchParam.attachGrpId = '';
-      uiState.grpEditMode = false;
-      uiState.fileEditMode = false;   // 첨부파일 수정 폼 닫기 (수정정보 초기화)
-      uiState.fileEditId = null;      // 첨부파일 선택행(파란 테두리) 해제 (선택정보 초기화)
-      fileGridPager.pageNo = 1;
-      fileGridPager.pageTotalCount = 0; fileGridPager.pageTotalPage = 1;
-      handleSearchData();
-    };
-
-    /* openGrpNew — 열기 */
-    const openGrpNew = () => {
-      uiState.grpEditId = null; uiState.grpEditMode = true;
-      Object.assign(grpForm, { attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
-      newGrpFiles.value = [];
-    };
-
-    /* openGrpEdit — 열기 */
-    const openGrpEdit = (g) => {
-      uiState.grpEditId = g.attachGrpId; uiState.grpEditMode = true;
-      Object.assign(grpForm, { ...g });
-      newGrpFiles.value = [];
-    };
-
-    /* openNewGrpFilePicker — 신규 등록 목록첨부 파일선택 열기 */
-    const openNewGrpFilePicker = () => {
-      if (newGrpFiles.value.length >= grpForm.maxFileCount) {
-        showToast(`최대 ${grpForm.maxFileCount}개까지 첨부 가능합니다.`, 'warning');
-        return;
-      }
-      newGrpFileInputRef.value && newGrpFileInputRef.value.click();
-    };
-
-    /* onNewGrpFileChange — 신규 등록 목록첨부 파일선택 (즉시 업로드하지 않고 브라우저에 스테이징만) */
-    const onNewGrpFileChange = (e) => {
-      const selected = Array.from(e.target.files || []);
-      e.target.value = '';
-      if (!selected.length) return;
-      const maxBytes = (grpForm.maxFileSize || 5) * 1024 * 1024;
-      const allowed = (grpForm.fileExtAllow || '*') === '*' ? null
-        : grpForm.fileExtAllow.split(',').map(x => x.trim().toLowerCase());
-      const remaining = grpForm.maxFileCount - newGrpFiles.value.length;
-      for (const file of selected.slice(0, remaining)) {
-        const ext = file.name.split('.').pop().toLowerCase();
-        if (allowed && !allowed.includes(ext)) { showToast(`허용되지 않는 확장자입니다: .${ext}`, 'error'); continue; }
-        if (file.size > maxBytes) { showToast(`파일 크기가 ${grpForm.maxFileSize}MB를 초과합니다: ${file.name}`, 'error'); continue; }
-        newGrpFiles.value.push(file);
-      }
-    };
-
-    /* removeNewGrpFile — 신규 등록 목록첨부 스테이징 파일 제거 */
-    const removeNewGrpFile = (idx) => { newGrpFiles.value.splice(idx, 1); };
-
-    /* handleSaveGrp — 그룹 저장 */
-    const handleSaveGrp = async () => {
-      if (!grpForm.attachGrpNm || !grpForm.attachGrpCode) { showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
-      if (!(await showConfirm('저장', '그룹을 저장하시겠습니까?'))) return;
-      try {
-        let newGrpId = null;
-        if (uiState.grpEditId === null) {
-          const res = await boApi.post('/bo/sy/attach-grp', { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹등록'));
-          newGrpId = res.data?.data?.attachGrpId || null;
-          // 목록첨부 스테이징 파일 업로드 — attachGrpId 대신 관련테이블명(sy_attach_grp)+관련ID(신규 attachGrpId) 방식
-          if (newGrpId && newGrpFiles.value.length) {
-            const fd = new FormData();
-            newGrpFiles.value.forEach(f => fd.append('files', f));
-            fd.append('businessCode', 'sy_attach_grp');
-            fd.append('grpNm', grpForm.attachGrpNm);
-            fd.append('refTableNm', 'sy_attach_grp');
-            fd.append('refId', newGrpId);
-            try {
-              await coApiSvc.cmUpload.uploadMulti(fd, '첨부파일관리', '목록첨부업로드');
-            } catch (upErr) {
-              showToast(upErr.response?.data?.message || upErr.message || '목록첨부 업로드 중 오류가 발생했습니다.', 'error', 0);
-            }
-            newGrpFiles.value = [];
-          }
-          showToast('그룹이 등록되었습니다.', 'success');
-        } else {
-          await boApi.put(`/bo/sy/attach-grp/${uiState.grpEditId}`, { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹수정'));
-          showToast('저장되었습니다.', 'success');
-        }
-        uiState.grpEditMode = false;
-        await handleLoadGrps();
-        // 신규 등록 직후 새 그룹을 바로 선택 → 우측 첨부파일목록이 그 그룹으로 열려 바로 파일 첨부 가능
-        if (newGrpId) { selectGrp(newGrpId); }
-      } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
-      }
-    };
-
-    /* handleDeleteGrp — 그룹 삭제 */
-    const handleDeleteGrp = async (g) => {
-      const ok = await showConfirm('그룹 삭제', `[${g.attachGrpNm}] 그룹을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      try {
-        await boApi.delete(`/bo/sy/attach-grp/${g.attachGrpId}`, coUtil.cofApiHdr('첨부파일관리', '그룹삭제'));
-        if (uiState.selectedGrpId === g.attachGrpId) { uiState.selectedGrpId = null; attaches.splice(0, attaches.length); fileGridPager.totalCount = 0; }
-        showToast('삭제되었습니다.', 'success');
-        await handleLoadGrps();
-      } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
-      }
-    };
-
-    /* openFileNew — 열기 (좌측 그룹 선택 해제 → 첨부란이 특정 그룹에 잠기지 않고 전체 목록 위에서 등록) */
-    const openFileNew = () => {
-      uiState.selectedGrpId = null;
-      searchParam.attachGrpId = '';
-      uiState.fileEditId = null; uiState.fileEditMode = true;
-      Object.assign(fileForm, {
-        attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', mimeTypeCd: '',
-        storedNm: '', storageTypeCd: 'LOCAL', storagePath: '', attachUrl: '', cdnHost: '', cdnImgUrl: '',
-        thumbFileNm: '', thumbStoredNm: '', thumbUrl: '', thumbCdnUrl: '', thumbGeneratedYn: 'N',
-        sortOrd: 0, attachMemo: '', refId: '',
-      });
-      fileGridPager.pageNo = 1;
-      handleSearchData();
-    };
-
-    /* openFileEdit — 열기 */
-    const openFileEdit = (a) => {
-      uiState.fileEditId = a.attachId; uiState.fileEditMode = true;
-      Object.assign(fileForm, { ...a });
-    };
-
-    /* handleSaveFile — 저장 */
-    const handleSaveFile = async () => {
-      if (!fileForm.fileNm || !fileForm.attachGrpId) { showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
-      if (!(await showConfirm('저장', '파일 정보를 저장하시겠습니까?'))) return;
-      try {
-        if (uiState.fileEditId === null) {
-          await boApi.post('/bo/sy/attach', { ...fileForm }, coUtil.cofApiHdr('첨부파일관리', '파일등록'));
-          showToast('파일이 등록되었습니다.', 'success');
-        } else {
-          await boApi.put(`/bo/sy/attach/${uiState.fileEditId}`, { ...fileForm }, coUtil.cofApiHdr('첨부파일관리', '파일수정'));
-          showToast('저장되었습니다.', 'success');
-        }
-        uiState.fileEditMode = false;
-        fileGridPager.pageNo = 1;
-        await handleSearchData();
-      } catch (err) {
-        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
-      }
-    };
 
     /* handleDeleteFile — 삭제 */
     const handleDeleteFile = async (a) => {
@@ -426,87 +167,45 @@ window.SyAttachMng = {
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
 
-    /* 첨부파일 fnStatusBadge */
-
-
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
+    /* REF_TABLE_OPTS — 검색 select 및 그리드 라벨 표시에 공용으로 쓰는 관련테이블명 사전 */
+    const REF_TABLE_OPTS = [
+      { value: 'sy_notice',           label: '공지사항' },
+      { value: 'sy_bbs',              label: '게시글' },
+      { value: 'sy_contact_content',  label: '문의 내용' },
+      { value: 'sy_contact_answer',   label: '문의 답변' },
+      { value: 'cm_faq',              label: 'FAQ 답변' },
+      { value: 'cm_chatt_msg',        label: '채팅 메시지' },
+      { value: 'sy_vendor_content',   label: '업체 콘텐츠' },
+      { value: 'sy_attach_grp_legacy', label: '레거시 첨부그룹' },
+    ];
+    /* fnRefTableNm — 관련테이블명 코드값 → 한글 라벨 */
+    const fnRefTableNm = (v) => REF_TABLE_OPTS.find(o => o.value === v)?.label || v || '-';
 
     // 파일 그리드
     const columns = {};
     columns.fileGrid = [
-      { key: 'attachGrpId', label: '그룹', cellStyle: 'color:#666;',
-        fmt: (v, row) => {
-          const nm = row.attachGrpNm || attachGrps.find(g => g.attachGrpId === v)?.attachGrpNm || '';
-          return `${nm} #${v}`;
-        } },
+      { key: 'refTableNm', label: '연계 대상', cellStyle: 'color:#666;',
+        fmt: (v, row) => v ? `${fnRefTableNm(v)} #${row.refId}` : '(미연계)' },
       { key: 'fileNm', label: '파일명', style: 'word-break:break-all;' },
       { key: 'fileSize', label: '크기', style: 'width:70px;', fmt: v => fnFmtSize(v) },
       { key: 'fileExt', label: '확장자', style: 'width:55px;',
         cellInnerStyle: 'background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;' },
-      { key: 'refId', label: '참조ID', style: 'width:100px;', cellStyle: 'color:#666;' },
-      { key: 'memo', label: '메모', cellStyle: 'color:#888;' },
+      { key: 'attachMemo', label: '메모', cellStyle: 'color:#888;' },
       { key: 'regDate', label: '등록일', style: 'width:145px;', fmt: v => coUtil.cofYmdHms(v || '') },
       { key: 'siteNm', label: '사이트명', style: 'width:70px;',
         cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
-    // 그룹 폼
-    columns.grpForm = [
-      { key: 'attachGrpNm',   label: '그룹명',   type: 'text', required: true, placeholder: '그룹명', colSpan: 2 },
-      { type: 'rowBreak' },
-      { key: 'attachGrpCode', label: '그룹코드', type: 'text', required: true, placeholder: 'PRODUCT_IMG', mono: true, colSpan: 2 },
-      { type: 'rowBreak' },
-      { key: 'fileExtAllow',  label: '허용확장자', type: 'text', placeholder: 'jpg,png,pdf', colSpan: 2 },
-      { type: 'rowBreak' },
-      { key: 'maxFileCount',  label: '최대개수', type: 'number', min: 1 },
-      { key: 'maxFileSize',   label: '최대크기(MB)', type: 'number', min: 1 },
-      { type: 'rowBreak' },
-      { type: 'slot', name: 'attachList', label: '목록첨부', colSpan: 2 },
-      { type: 'rowBreak' },
-      { key: 'useYn',         label: '상태', type: 'select', options: () => codes.use_yns, colSpan: 2 },
-    ];
-    // 파일 폼
-    columns.fileForm = [
-      { key: 'attachGrpId',      label: '첨부그룹ID', type: 'text', required: true, placeholder: 'ATG...' },
-      { key: 'fileNm',           label: '파일명', type: 'text', required: true, placeholder: '파일명.jpg' },
-      { key: 'mimeTypeCd',       label: 'MIME타입', type: 'text', placeholder: 'image/jpeg' },
-      { key: 'fileExt',          label: '확장자', type: 'text', placeholder: 'jpg' },
-      { key: 'fileSize',         label: '파일크기(byte)', type: 'number', placeholder: '0' },
-      { key: 'refId',            label: '참조ID', type: 'text', placeholder: 'PROD-001' },
-      { key: 'sortOrd',          label: '정렬순서', type: 'number' },
-      { key: 'storageTypeCd',      label: '스토리지타입', type: 'select', options: () => codes.storage_types },
-      { key: 'storagePath',      label: '저장경로', type: 'text', placeholder: '/cdn/{업무명}/YYYY/MM/DD/' },
-      { key: 'storedNm',         label: '저장파일명', type: 'text', placeholder: 'YYYYMMDD_hhmmss_seq_random' },
-      { key: 'attachUrl',        label: '첨부URL', type: 'text', placeholder: '/uploads/...' },
-      { key: 'cdnHost',          label: 'CDN Host', type: 'text', placeholder: 'https://cdn.shopjoy.com' },
-      { key: 'cdnImgUrl',        label: 'CDN 이미지URL', type: 'text' },
-      { key: 'thumbGeneratedYn', label: '썸네일생성', type: 'select', options: () => codes.use_yns },
-      { key: 'thumbFileNm',      label: '썸네일파일명', type: 'text' },
-      { key: 'thumbStoredNm',    label: '썸네일저장명', type: 'text' },
-      { key: 'thumbUrl',         label: '썸네일URL', type: 'text' },
-      { key: 'thumbCdnUrl',      label: '썸네일CDN URL', type: 'text' },
-      { key: 'attachMemo',       label: '메모', type: 'text' },
-    ];
-
-    /* grpSearchColumns — 첨부그룹 검색 영역 컬럼 */
-    columns.grpSearch = [
-      { key: 'searchType', type: 'multiCheck',
-        options: [
-          { value: 'attachGrpNm',   label: '그룹명' },
-          { value: 'attachGrpCode', label: '코드' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '100%' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-    ];
-
     /* fileSearchColumns — 첨부파일 검색 영역 컬럼 */
     columns.fileSearch = [
-      { key: 'attachGrpId', type: 'text', placeholder: '첨부그룹ID', width: '130px' },
+      { key: 'refTableNm', type: 'select', options: REF_TABLE_OPTS, nullLabel: '연계 대상 전체', width: '150px' },
+      { key: 'refId', type: 'text', placeholder: '관련 ID', width: '130px' },
       { key: 'searchType', type: 'multiCheck',
         options: [
           { value: 'fileNm', label: '파일명' },
-          { value: 'refId',  label: 'RefID' },
+          { value: 'attachMemo', label: '메모' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
       { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '150px' },
@@ -521,204 +220,45 @@ window.SyAttachMng = {
 
     return {
       columns,
-      attaches, attachGrps, uiState, searchParam, fileGridPager, grpPager, grpSearchParam, grpForm, fileForm,       // 상태 / 데이터
-      newGrpFiles, newGrpFileInputRef,                                                                              // 신규 그룹 목록첨부 스테이징
-      handleBtnAction, handleSelectAction,                                                                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      onNewGrpFileChange, showToast,                                                                                 // 직접 핸들러 / base-attach-grp 전달용
-      cfSiteNm, fnFmtSize, // computed / 헬퍼
+      attaches, uiState, searchParam, fileGridPager,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSiteNm, fnFmtSize, fnRefTableNm,                    // computed / 헬퍼
     };
   },
   template: /* html */`
-<bo-page title="첨부관리">
-  <!-- ===== ■. 본문 영역 (트리없는 2열: 좌 그룹 30% + 우 파일 70%) ============== -->
-  <div class="bo-2col" style="grid-template-columns:minmax(260px,30%) 1fr;">
-    <!-- ===== ■.■. 좌: 첨부그룹관리 (30%) ======================================= -->
-    <bo-container title="첨부그룹관리" :count-text="grpPager.pageTotalCount + '건'">
-      <template #toolbar-actions>
-        <button class="btn btn_new" @click="handleBtnAction('attachGrps-add')">
-          + 신규
-        </button>
-      </template>
-      <div style="padding:0 0 10px 0;">
-        <bo-search-area :columns="columns.grpSearch" :param="grpSearchParam" :show-reset="false"
-          @search="handleBtnAction('attachGrps-search')" />
-      </div>
-      <!-- ===== ■.■.■. 그룹 폼 (BoFormArea 자동 렌더) =========================== -->
-      <div v-if="uiState.grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">
-          {{ uiState.grpEditId===null ? '그룹 등록' : '그룹 수정' }}
-          <span v-if="uiState.grpEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">
-            #{{ uiState.grpEditId }}
-          </span>
-        </div>
-        <!-- ===== ■.■.■.■. 폼 영역 ============================================ -->
-        <bo-form-area :columns="columns.grpForm" :form="grpForm" :errors="{}"
-          :cols="2" compact :show-actions="false">
-          <!-- 목록첨부 — attach_grp_id 가 아닌 관련테이블명(sy_attach_grp)+관련ID 방식 (2026-08-15) -->
-          <!-- 신규 등록: attachGrpId 가 없어 즉시 업로드 불가 → 브라우저에 스테이징만 하고 그룹 저장 시 일괄 업로드 -->
-          <template v-if="uiState.grpEditId===null" #attachList>
-            <input ref="newGrpFileInputRef" type="file" multiple style="display:none;" @change="onNewGrpFileChange" />
-            <div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:10px 12px;">
-              <div v-for="(f, idx) in newGrpFiles" :key="idx"
-                style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;">
-                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ f.name }}</span>
-                <span style="color:#999;">{{ fnFmtSize(f.size) }}</span>
-                <button type="button" class="btn btn_row_delete" style="font-size:11px;padding:1px 6px;"
-                  @click="handleSelectAction('grpForm-fileRemove', idx)">✕</button>
-              </div>
-              <div v-if="!newGrpFiles.length" style="font-size:12px;color:#aaa;padding:2px 0 6px;">
-                첨부된 파일이 없습니다. 그룹 저장 시 함께 등록됩니다.
-              </div>
-              <button type="button" class="btn btn-secondary btn-sm" style="margin-top:4px;"
-                @click="handleBtnAction('grpForm-fileNew')">
-                + 파일선택
-              </button>
-            </div>
-          </template>
-          <!-- 수정: attachGrpId(신규 uiState.grpEditId) 가 이미 있어 바로 업로드/조회 가능 -->
-          <template v-else #attachList>
-            <base-attach-grp :show-toast="showToast" ref-table-nm="sy_attach_grp" :ref-key-id="uiState.grpEditId"
-              grp-code="sy_attach_grp" :grp-nm="grpForm.attachGrpNm"
-              :max-count="grpForm.maxFileCount" :max-size-mb="grpForm.maxFileSize" :allow-ext="grpForm.fileExtAllow" />
-          </template>
-        </bo-form-area>
-        <div style="display:flex;gap:6px;margin-top:8px;justify-content:center;">
-          <button class="btn btn_save" @click="handleBtnAction('attachGrps-save')">
-            저장
-          </button>
-          <button class="btn btn_cancel" @click="handleBtnAction('attachGrps-formClose')">
-            취소
-          </button>
-        </div>
-        <!-- ===== ■.■.■.■. 목록첨부 (기존 그룹 수정 시에만 — 신규는 저장 후 attachGrpId 확정) ===== -->
-        <div v-if="uiState.grpEditId" style="margin-top:12px;border-top:1px solid #e5e7eb;padding-top:10px;">
-          <base-attach-grp :model-value="uiState.grpEditId" :show-toast="showToast"
-            :ref-id="'SY_ATTACH-' + uiState.grpEditId" :grp-code="grpForm.attachGrpCode" :grp-nm="grpForm.attachGrpNm"
-            :max-count="grpForm.maxFileCount" :max-size-mb="grpForm.maxFileSize" :allow-ext="grpForm.fileExtAllow" />
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 그룹 목록 (서버 페이징 — grpPager.pageSize 만큼 1페이지에 표시) ===== -->
-      <div style="border:1px solid #eef0f3;border-radius:6px;background:#fff;">
-        <div v-for="g in attachGrps" :key="g.attachGrpId"
-          style="padding:10px 12px;border-bottom:1px solid #f0f0f0;transition:background .15s;"
-          :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#eff6ff;outline:2px solid #2563eb;outline-offset:-2px;position:relative;z-index:1;' : ''"
-          @click="handleSelectAction('attachGrps-rowSelect', g.attachGrpId)">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-size:13px;font-weight:600;color:#333;">
-                {{ g.attachGrpNm }}
-              </div>
-              <div style="font-size:11px;color:#888;margin-top:2px;">
-                {{ g.attachGrpCode }} | 최대 {{ g.maxFileCount }}개 / {{ g.maxFileSize }}MB
-              </div>
-              <div style="font-size:10px;color:#bbb;margin-top:1px;">
-                #{{ g.attachGrpId }}
-              </div>
-            </div>
-            <div style="display:flex;gap:4px;" @click.stop>
-              <button class="btn btn_row_edit" @click="handleSelectAction('attachGrps-rowEdit', g)">
-                수정
-              </button>
-              <button class="btn btn_row_delete" @click="handleSelectAction('attachGrps-rowDelete', g)">
-                삭제
-              </button>
-            </div>
+<bo-page title="첨부파일 통합조회">
+  <!-- ===== ■. 조회 영역 ===================================================== -->
+  <bo-container>
+    <bo-search-area :columns="columns.fileSearch" :param="searchParam"
+      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+  </bo-container>
+  <!-- ===== ■. 목록 영역 ===================================================== -->
+  <bo-container title="첨부파일목록" :count-text="fileGridPager.pageTotalCount + '건'">
+    <!-- ===== ■.■. 파일 그리드 (기본 20개 페이지 + 화면 높이에 따라 반응형으로 확장, 초과 시 내부 스크롤) ===== -->
+    <div style="max-height:calc(100vh - 280px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
+      <bo-grid
+        bare
+        :columns="columns.fileGrid"
+        :rows="attaches"
+        row-key="attachId"
+        :loading="uiState.loading"
+        :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
+        row-actions>
+        <template #row-actions="{ row }">
+          <div class="actions">
+            <button class="btn btn_row_delete" @click="handleSelectAction('attaches-rowDelete', row)">
+              삭제
+            </button>
           </div>
-          <div style="margin-top:4px;">
-            <span class="badge" :class="g.useYn==='Y' ? 'badge-green' : 'badge-gray'" style="font-size:10px;">
-              {{ g.useYn==='Y' ? '사용' : '미사용' }}
-            </span>
-            <span style="font-size:11px;color:#aaa;margin-left:6px;">
-              {{ g.fileExtAllow }}
-            </span>
-            <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">
-              {{ cfSiteNm }}
-            </span>
-          </div>
-        </div>
-        <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-          {{ grpSearchParam.searchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}
-        </div>
-      </div>
-      <!-- ===== ■.■.■. /그룹 목록 박스 ========================================= -->
-      <!-- ===== ■.■.■. 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ====================== -->
-      <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-        <bo-pager :pager="grpPager" :on-set-page="n => handleBtnAction('attachGrps-pager-setPage', n)" :on-size-change="() => handleSelectAction('attachGrps-pager-sizeChange')"
-          style="margin-top:0;min-height:34px;" />
-      </div>
-    </bo-container>
-    <!-- ===== □.□. 좌: 첨부그룹관리 (30%) ======================================= -->
-    <!-- ===== ■.■. 우: 첨부파일관리 (70%) ======================================= -->
-    <div>
-      <!-- ===== ■.■.■. 조회 영역 (별도 컨테이너) ================================= -->
-      <bo-container>
-        <bo-search-area :columns="columns.fileSearch" :param="searchParam"
-          @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-      </bo-container>
-      <!-- ===== ■.■.■. 목록 영역 (별도 컨테이너) ================================= -->
-      <bo-container title="첨부파일목록" :title-id="uiState.selectedGrpId" :count-text="fileGridPager.pageTotalCount + '건'">
-        <template #toolbar-actions>
-          <button class="btn btn_new" @click="handleBtnAction('attaches-add')">
-            + 신규
-          </button>
         </template>
-        <!-- ===== ■.■.■.■. 파일 폼 ============================================== -->
-        <div v-if="uiState.fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px 12px;margin-bottom:10px;">
-          <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#444;">
-            {{ uiState.fileEditId===null ? '파일 등록' : '파일 수정' }}
-            <span v-if="uiState.fileEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">
-              #{{ uiState.fileEditId }}
-            </span>
-          </div>
-          <!-- ===== ■.■.■.■.■. 파일 폼 (BoFormArea 자동 렌더, 4컬럼) ==================== -->
-          <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.fileForm" :form="fileForm" :errors="{}"
-            :cols="3" compact :show-actions="false" />
-          <!-- ===== ■.■.■.■.■. 저장/취소 가운데 정렬 ==================================== -->
-          <div style="display:flex;gap:8px;justify-content:center;">
-            <button class="btn btn_save" @click="handleBtnAction('attaches-save')">
-              저장
-            </button>
-            <button class="btn btn_cancel" @click="handleBtnAction('attaches-formClose')">
-              취소
-            </button>
-          </div>
-        </div>
-        <!-- ===== ■.■.■.■. 파일 그리드 (기본 10개 페이지 + 화면 높이에 따라 반응형으로 확장, 초과 시 내부 스크롤) ===== -->
-        <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
-          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
-          <bo-grid
-            bare
-            :columns="columns.fileGrid"
-            :rows="attaches"
-            row-key="attachId"
-            :selected-key="uiState.fileEditId"
-            :loading="uiState.loading"
-            :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
- row-actions>
-            <template #row-actions="{ row }">
-              <div class="actions">
-                <button class="btn btn_row_edit" @click="handleSelectAction('attaches-rowEdit', row)">
-                  수정
-                </button>
-                <button class="btn btn_row_delete" @click="handleSelectAction('attaches-rowDelete', row)">
-                  삭제
-                </button>
-              </div>
-            </template>
-          </bo-grid>
-        </div>
-        <!-- ===== ■.■.■.■. /파일 그리드 스크롤 컨테이너 ================================== -->
-        <!-- ===== ■.■.■.■. 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) ===== -->
-        <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-          <bo-pager :pager="fileGridPager" :on-set-page="n => handleBtnAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
-            style="margin-top:0;min-height:34px;" />
-        </div>
-      </bo-container>
+      </bo-grid>
     </div>
-  </div>
-  <!-- ===== □.□. 우: 첨부파일관리 (70%) ======================================= -->
-  <!-- ===== □. 본문 영역 =================================================== -->
+    <!-- ===== ■.■. 페이저 ===================================================== -->
+    <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
+      <bo-pager :pager="fileGridPager" :on-set-page="n => handleBtnAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
+        style="margin-top:0;min-height:34px;" />
+    </div>
+  </bo-container>
 </bo-page>
 `
 };

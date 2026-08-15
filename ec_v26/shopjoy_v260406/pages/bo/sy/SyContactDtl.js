@@ -27,6 +27,13 @@ window.SyContactDtl = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view'이면 읽기전용
 
+    /* contentAttachRef/answerAttachRef — 각 탭 첨부 위젯의 pendingChanges(추가/삭제 변경 목록)를
+       읽어 저장 요청에 attachChanges 로 담아 보내기 위한 template ref. 이 화면은 저장 후에도
+       같은 화면에 머무르므로(navigate 로 unmount 되지 않음), 저장 성공 후 reload() 를 호출해
+       pendingChanges 를 비우고 최신 목록으로 재조회해야 한다(재저장 시 중복 반영 방지). */
+    const contentAttachRef = ref(null);
+    const answerAttachRef  = ref(null);
+
     watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     watch(() => uiState.tabMode2, v => { window._syContactDtlState.tabMode = v; });
 
@@ -84,8 +91,6 @@ window.SyContactDtl = {
     const form = reactive({
       contactId: null, memberId: '', memberNm: '', contactDate: '', categoryCd: '배송 문의',
       contactTitle: '', contactContent: '', contactStatusCd: '요청', contactAnswer: '',
-      contentAttachGrpId: null,  // 문의내용 첨부그룹 ID
-      answerAttachGrpId: null,   // 답변 첨부그룹 ID
     });
 
     /* cfContentAttachRefId / cfAnswerAttachRefId — 첨부 ref ID (contactId) */
@@ -200,7 +205,7 @@ window.SyContactDtl = {
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
         if (!ok) { return; }
         try {
-          const payload = { ...form };
+          const payload = { ...form, contentAttachChanges: contentAttachRef.value?.pendingChanges || [] };
           const res = isCreate
             ? await boApiSvc.syContact.create(payload, '문의관리', '등록')
             : await boApiSvc.syContact.update(cfCurId.value, payload, '문의관리', '문의내용저장');
@@ -208,6 +213,7 @@ window.SyContactDtl = {
             const newId = res.data?.data?.contactId || res.data?.contactId || null;
             if (newId) { form.contactId = newId; }
           }
+          if (contentAttachRef.value) { await contentAttachRef.value.reload(); }
           _afterApiOk(res, isCreate ? '등록되었습니다. 답변 탭에서 답변을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
         return;
@@ -226,7 +232,11 @@ window.SyContactDtl = {
       const ok = await showConfirm('답변 저장', '답변을 저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = await boApiSvc.syContact.update(cfCurId.value, { contactAnswer: form.contactAnswer, contactStatusCd: form.contactStatusCd }, '문의관리', '답변저장');
+        const answerAttachChanges = answerAttachRef.value?.pendingChanges || [];
+        const res = await boApiSvc.syContact.update(cfCurId.value,
+          { contactAnswer: form.contactAnswer, contactStatusCd: form.contactStatusCd, answerAttachChanges },
+          '문의관리', '답변저장');
+        if (answerAttachRef.value) { await answerAttachRef.value.reload(); }
         _afterApiOk(res, '답변이 저장되었습니다.');
       } catch (err) { _afterApiErr(err); }
     };
@@ -246,13 +256,13 @@ window.SyContactDtl = {
       { key: 'contactStatusCd', label: '상태',     type: 'select', options: () => codes.contact_statuses },
       { key: 'contactTitle',    label: '제목', type: 'text', required: true, colSpan: 2 },
       { key: 'contactContent',      label: '문의 내용', type: 'slot', name: 'contactContent', colSpan: 3 },
-      { key: 'contentAttachGrpId',  label: '첨부파일',  type: 'slot', name: 'contentAttach', colSpan: 3,
+      { key: 'contentAttachFiles',  label: '첨부파일',  type: 'slot', name: 'contentAttach', colSpan: 3,
         visible: () => !cfIsNew.value },
     ];
     // answer 탭 영역
     columns.answerForm = [
       { key: 'contactAnswer',    label: '답변 내용', type: 'slot', name: 'answerContent', colSpan: 3 },
-      { key: 'answerAttachGrpId', label: '첨부파일', type: 'slot', name: 'answerAttach',  colSpan: 3,
+      { key: 'answerAttachFiles', label: '첨부파일', type: 'slot', name: 'answerAttach',  colSpan: 3,
         visible: () => !cfIsNew.value },
     ];
 
@@ -263,6 +273,8 @@ window.SyContactDtl = {
       form, errors, tab, tabMode2,                // 상태 / 데이터
       handleBtnAction, handleSelectAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfSiteNm, cfDtlMode, tabs,  // computed / reactive(tabs)
+      cfCurId, cfContentAttachRefId, cfAnswerAttachRefId,           // 첨부 연계용 computed
+      contentAttachRef, answerAttachRef,                            // 첨부 위젯 template ref
       showTab,               // 헬퍼
     };
   },
@@ -299,8 +311,7 @@ window.SyContactDtl = {
           <span v-if="errors.contactContent" class="field-error">{{ errors.contactContent }}</span>
         </template>
         <template #contentAttach>
-          <base-attach-grp :model-value="form.contentAttachGrpId"
-            @update:model-value="form.contentAttachGrpId = $event"
+          <base-attach-grp ref="contentAttachRef" ref-table-nm="sy_contact_content" :ref-key-id="cfCurId"
             :ref-id="cfContentAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
             grp-code="CONTACT_CONTENT_ATTACH" grp-nm="문의 내용 첨부파일"
             :max-count="5" :max-size-mb="10" allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
@@ -337,8 +348,7 @@ window.SyContactDtl = {
           <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
         </template>
         <template #answerAttach>
-          <base-attach-grp :model-value="form.answerAttachGrpId"
-            @update:model-value="form.answerAttachGrpId = $event"
+          <base-attach-grp ref="answerAttachRef" ref-table-nm="sy_contact_answer" :ref-key-id="cfCurId"
             :ref-id="cfAnswerAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
             grp-code="CONTACT_ANSWER_ATTACH" grp-nm="문의 답변 첨부파일"
             :max-count="5" :max-size-mb="10" allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />

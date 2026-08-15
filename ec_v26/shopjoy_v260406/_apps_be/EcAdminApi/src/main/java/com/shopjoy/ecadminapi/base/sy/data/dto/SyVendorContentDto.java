@@ -32,7 +32,6 @@ public class SyVendorContentDto {
         private String thumbUrl;
         private String imageUrl;
         private String linkUrl;
-        private String attachGrpId;
         private String langCd;
         private LocalDateTime startDate;
         private LocalDateTime endDate;

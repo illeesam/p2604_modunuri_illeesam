@@ -24,6 +24,7 @@ import java.util.List;
 public class SyNoticeService {
 
     private final SyNoticeRepository syNoticeRepository;
+    private final SyAttachService syAttachService;
 
     @PersistenceContext
     private EntityManager em;
@@ -83,11 +84,12 @@ public class SyNoticeService {
         body.setUpdDate(LocalDateTime.now());
         SyNotice saved = syNoticeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachChanges(), "sy_notice", saved.getNoticeId());
         em.flush();
         return saved;
     }
 
-    
+
 
     /* 공지사항 수정 */
     @Transactional
@@ -99,6 +101,7 @@ public class SyNoticeService {
         entity.setUpdDate(LocalDateTime.now());
         SyNotice saved = syNoticeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachChanges(), "sy_notice", id);
         em.flush();
         return saved;
     }

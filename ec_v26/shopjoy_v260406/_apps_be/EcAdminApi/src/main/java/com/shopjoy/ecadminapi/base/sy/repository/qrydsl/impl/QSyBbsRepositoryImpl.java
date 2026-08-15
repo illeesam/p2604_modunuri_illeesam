@@ -48,7 +48,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                         syBbs.authorNm,       // 작성자명
                         syBbs.bbsTitle,       // 제목
                         syBbs.contentHtml,    // 내용 (HTML)
-                        syBbs.attachGrpId,    // 첨부파일그룹ID
                         syBbs.viewCount,      // 조회수
                         syBbs.likeCount,      // 좋아요수
                         syBbs.commentCount,   // 댓글수
@@ -156,7 +155,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("attachGrpId", syBbs.attachGrpId),
             QdslUtil.FieldDef.like("authorNm", syBbs.authorNm),
             QdslUtil.FieldDef.like("bbmId", syBbs.bbmId),
             QdslUtil.FieldDef.like("bbsId", syBbs.bbsId),
@@ -198,7 +196,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         if (entity.getAuthorNm()     != null) { update.set(syBbs.authorNm,     entity.getAuthorNm());     hasAny = true; }
         if (entity.getBbsTitle()     != null) { update.set(syBbs.bbsTitle,     entity.getBbsTitle());     hasAny = true; }
         if (entity.getContentHtml()  != null) { update.set(syBbs.contentHtml,  entity.getContentHtml());  hasAny = true; }
-        if (entity.getAttachGrpId()  != null) { update.set(syBbs.attachGrpId,  entity.getAttachGrpId());  hasAny = true; }
         if (entity.getViewCount()    != null) { update.set(syBbs.viewCount,    entity.getViewCount());    hasAny = true; }
         if (entity.getLikeCount()    != null) { update.set(syBbs.likeCount,    entity.getLikeCount());    hasAny = true; }
         if (entity.getCommentCount() != null) { update.set(syBbs.commentCount, entity.getCommentCount()); hasAny = true; }

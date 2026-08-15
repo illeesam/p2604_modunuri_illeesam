@@ -10,7 +10,6 @@ CREATE TABLE shopjoy_2604.sy_bbs (
     author_nm     VARCHAR(50) ,
     bbs_title     VARCHAR(200) NOT NULL,
     content_html  TEXT        ,
-    attach_grp_id VARCHAR(21) ,
     view_count    INTEGER      DEFAULT 0,
     like_count    INTEGER      DEFAULT 0,
     comment_count INTEGER      DEFAULT 0,
@@ -32,7 +31,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_bbs.member_id IS '작성자 회원ID';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.author_nm IS '작성자명';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.bbs_title IS '제목';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.content_html IS '내용 (HTML)';
-COMMENT ON COLUMN shopjoy_2604.sy_bbs.attach_grp_id IS '첨부파일그룹ID';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.view_count IS '조회수';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.like_count IS '좋아요수';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.comment_count IS '댓글수';
@@ -44,7 +42,6 @@ COMMENT ON COLUMN shopjoy_2604.sy_bbs.upd_by IS '수정자 (sy_user.user_id, ec_
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.upd_date IS '수정일';
 COMMENT ON COLUMN shopjoy_2604.sy_bbs.path_id IS '점(.) 구분 표시경로 (트리 빌드용)';
 
-CREATE INDEX sy_bbs_ix01_attach_grp_id ON shopjoy_2604.sy_bbs USING btree (attach_grp_id);
 CREATE INDEX sy_bbs_ix02_bbm_id ON shopjoy_2604.sy_bbs USING btree (bbm_id);
 CREATE INDEX sy_bbs_ix03_member_id ON shopjoy_2604.sy_bbs USING btree (member_id);
 CREATE INDEX sy_bbs_ix04_parent_bbs_id ON shopjoy_2604.sy_bbs USING btree (parent_bbs_id);

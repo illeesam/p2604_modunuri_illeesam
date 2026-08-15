@@ -2,8 +2,8 @@
  * ─────────────────────────────────────────────────────────────────────────
  * 정의된 컴포넌트 (3개) — FO/BO 공용. 태그는 kebab-case (예: <base-attach-grp>)
  *
- *   BaseAttachGrp   — 첨부파일 그룹 (다중, attachGrpId v-model, 업로드/삭제/썸네일)
- *   BaseAttachOne   — 단일 첨부파일 (이미지 1개 등)
+ *   BaseAttachGrp   — 첨부파일 그룹 (다중, ref-table-nm/ref-key-id 로 연계, 업로드/삭제/썸네일)
+ *   BaseAttachOne   — 단일 첨부파일 (이미지 1개 등, attachId v-model)
  *   BaseHtmlEditor  — Quill 기반 리치텍스트 에디터
  *
  * 부가:
@@ -15,28 +15,42 @@
    attach_grp : 첨부파일 그룹 컴포넌트
    ─────────────────────────────────────────
    Props:
-     modelValue  : attachGrpId (String|null) — v-model 바인딩
-     refId       : 참조 ID 문자열 (e.g. 'NOTICE-1')
+     refTableNm  : 관련 테이블명 (예: 'sy_notice') — 대상 엔티티에 직접 연계
+     refKeyId    : 관련 ID. 대상 레코드가 아직 저장 전(ID 미확정)이면 null 로 둔다 —
+                   이 상태에서도 업로드는 가능(미연계)하다
+     refId       : 표시용 배지 문자열(e.g. 'NOTICE-1') — DB 연계와 무관
      showToast   : 토스트 함수
-     grpCode     : 업무 코드 (businessCode, 기본 'common')
-     grpNm       : 그룹 이름 (기본 '첨부파일')
+     grpCode     : 업무 코드 (businessCode, 저장 폴더 경로 구성용, 기본 'common')
+     grpNm       : 그룹 이름 (표시용, 기본 '첨부파일')
      maxCount    : 최대 첨부 개수 (기본 10)
      maxSizeMb   : 파일당 최대 크기 MB (기본 10)
      allowExt    : 허용 확장자 문자열, 쉼표 구분 (기본 '*' = 전체)
      readonly    : 보기(view) 모드 (Boolean, 기본 false) — 파일첨부/삭제(✕)/드래그정렬 숨김, 다운로드·미리보기 보기 액션만 노출
-   Emits:
-     update:modelValue : 최초 첨부 시 생성된 attachGrpId 반환
+
+   ⭐ 연계 모델 (2026-08-15 개편) — 업로드/삭제는 항상 즉시 물리 반영되지만, sy_attach 의
+   ref_table_nm/ref_id "연계" 자체는 즉시 반영하지 않는다. 부모 화면(Dtl)이 실제 저장(등록/수정)
+   버튼을 누르는 시점에, 이 컴포넌트가 노출하는 pendingChanges([{attachId, rowStatus:'I'|'D'}])를
+   읽어 create/update 요청 바디에 attachChanges(또는 도메인별 필드명)로 함께 실어 보내고,
+   백엔드가 부모 레코드 저장과 같은 트랜잭션 안에서 원자적으로 반영한다.
+     - 업로드(추가) → 항상 미연계 상태로 즉시 업로드, pendingChanges 에 {attachId,'I'} 적재
+     - 삭제(✕) 클릭 → 이번 세션에 추가만 되고 아직 미연계인 파일(pendingChanges 의 'I' 항목)은
+       저장을 기다릴 필요가 없으므로 즉시 물리 삭제. 이미 연계되어 있던(서버에서 불러온) 기존
+       파일은 즉시 삭제하지 않고 pendingChanges 에 {attachId,'D'} 로 적재 → 부모가 저장할 때만 반영
+       (취소/미저장 시 원래 연계 상태 그대로 보존됨)
+     - 부모는 저장 성공 후 reload() 를 호출해 pendingChanges 를 비우고 최신 목록을 다시 조회해야 한다
+       (화면이 그대로 남아 재저장이 반복되는 패턴 — 예: SyContactDtl). 저장 직후 다른 화면으로
+       navigate(unmount)하는 패턴은 호출 불필요.
  ─────────────────────────────────────────── */
 window.BaseAttachGrp = {
   name: 'BaseAttachGrp',
   props: {
-    modelValue: { default: null },
-    refId:      { default: '' },     // 표시용 배지 문자열(예: 'NOTICE-1'). DB 연계와 무관 — refTableNm/refKeyId 와 다른 prop
-    refTableNm: { default: null },   // ref 모드: 관련 테이블명 (예: 'sy_attach_grp'). attach_grp_id 없이 직접 연계
-    refKeyId:   { default: null },   // ref 모드: 관련 ID. refTableNm 과 함께 주면 modelValue(attachGrpId) 대신 이 방식 사용
+    refTableNm: { default: null },   // 관련 테이블명 (예: 'sy_notice') — 대상 엔티티에 직접 연계
+    refKeyId:   { default: null },   // 관련 ID. 대상 레코드가 아직 저장 전(ID 미확정)이면 null —
+                                      // 이 상태에서도 업로드는 가능하고(미연계), refKeyId 가 나중에 채워지면 자동 연계된다
+    refId:      { default: '' },     // 표시용 배지 문자열(예: 'NOTICE-1'). DB 연계와 무관 — refKeyId 와 다른 prop
     showToast:  { type: Function, default: () => {} },
-    grpCode:    { default: 'common' },
-    grpNm:      { default: '첨부파일' },
+    grpCode:    { default: 'common' },  // businessCode — 저장 폴더 경로 구성용
+    grpNm:      { default: '첨부파일' },  // 표시용 라벨 (서버로 전송되지 않음)
     maxCount:   { default: 10 },
     maxSizeMb:  { default: 10 },
     allowExt:   { default: '*' },
@@ -45,13 +59,16 @@ window.BaseAttachGrp = {
     width:      { default: '120px' },  // displayMode='image' 일 때 박스 폭
     height:     { default: '120px' },  // displayMode='image' 일 때 박스 높이
   },
-  emits: ['update:modelValue'],
+  emits: [],
   setup(props, { emit }) {
     const { computed, ref, reactive, watch, onMounted } = Vue;
     const uiState = reactive({ uploading: false, loading: false });
 
     /* 업로드된 파일 목록 (로컬 상태) */
     const files = reactive([]);
+    /* 아직 부모 저장에 반영되지 않은 연계 변경 항목들. {attachId, rowStatus:'I'|'D'}
+       부모가 저장 시 이 배열을 그대로 attachChanges 로 요청 바디에 실어 보낸다. */
+    const pendingChanges = ref([]);
 
     // ===== [02] 액션 모음 (dispatch) ==============================================
 
@@ -83,11 +100,12 @@ window.BaseAttachGrp = {
       }
     };
 
-    /* cfRefMode — refTableNm/refKeyId 가 둘 다 있으면 attach_grp_id 대신 관련테이블명+관련ID 로 연계
-       (그룹이 아직 없는 신규 등록 화면 등, attachGrpId 를 전제할 수 없는 경우) */
-    const cfRefMode = computed(() => !!(props.refTableNm && props.refKeyId));
+    /* cfHasRef — refTableNm/refKeyId 가 둘 다 있어야 실제 연계 조회/업로드가 가능하다.
+       대상 레코드가 아직 저장 전(신규 등록 폼)이면 refKeyId 가 없어 false — 이때도 업로드 자체는
+       허용하되(미연계), 서버에는 refTableNm/refId 를 보내지 않는다. */
+    const cfHasRef = computed(() => !!(props.refTableNm && props.refKeyId));
 
-    /* fnMapFile — 서버 응답 → 화면 files 행 매핑 (attachGrpId/ref 모드 공통) */
+    /* fnMapFile — 서버 응답 → 화면 files 행 매핑 */
     const fnMapFile = (f) => ({
       attachId:   f.attachId,
       fileNm:     f.fileNm,
@@ -100,12 +118,12 @@ window.BaseAttachGrp = {
       thumbCdnUrl: f.thumbCdnUrl || '',
     });
 
-    /* loadFiles — attachGrpId 방식 */
-    const loadFiles = async (attachGrpId) => {
-      if (!attachGrpId) return;
+    /* loadFiles — refTableNm/refKeyId 로 첨부 목록 조회 */
+    const loadFiles = async () => {
+      if (!cfHasRef.value) return;
       uiState.loading = true;
       try {
-        const res = await window.coApiSvc.cmAttach.getFiles(attachGrpId);
+        const res = await window.coApiSvc.cmAttach.getFilesByRef(props.refTableNm, props.refKeyId);
         const list = res.data?.data || [];
         files.splice(0, files.length, ...list.map(fnMapFile));
       } catch (err) {
@@ -115,35 +133,16 @@ window.BaseAttachGrp = {
       }
     };
 
-    /* loadFilesByRef — refTableNm/refKeyId 방식 */
-    const loadFilesByRef = async () => {
-      if (!props.refTableNm || !props.refKeyId) return;
-      uiState.loading = true;
-      try {
-        const res = await window.coApiSvc.cmAttach.getFilesByRef(props.refTableNm, props.refKeyId);
-        const list = res.data?.data || [];
-        files.splice(0, files.length, ...list.map(fnMapFile));
-      } catch (err) {
-        console.error('[BaseAttachGrp] ref 파일 목록 조회 실패', err);
-      } finally {
-        uiState.loading = false;
-      }
-    };
+    onMounted(() => { if (cfHasRef.value) loadFiles(); });
 
-    /* 자기 emit 으로 인한 watch 재진입 차단 (업로드 직후 깜빡임/리프레시 방지) */
-    let _lastEmittedGrpId = null;
-    onMounted(() => {
-      if (cfRefMode.value) loadFilesByRef();
-      else if (props.modelValue) loadFiles(props.modelValue);
-    });
-    watch(() => props.modelValue, (val) => {
-      if (cfRefMode.value) return;
-      if (val === _lastEmittedGrpId) { _lastEmittedGrpId = null; return; }
-      if (val) loadFiles(val);
-    });
-    watch(() => props.refKeyId, (val) => {
-      if (cfRefMode.value && val) loadFilesByRef();
-    });
+    /* reload — 부모가 pendingChanges 를 저장 요청에 실어 보내 성공한 직후 호출.
+       pendingChanges 를 비우고 서버 최신 상태로 목록을 다시 불러온다.
+       (화면이 그대로 남아 재저장이 반복되는 패턴에서만 필요 — 저장 직후 다른 화면으로
+       navigate(unmount)하는 패턴은 호출 불필요) */
+    const reload = async () => {
+      pendingChanges.value = [];
+      await loadFiles();
+    };
 
     /* 허용 확장자 accept 문자열 변환 */
     const cfAcceptAttr = computed(() => {
@@ -191,19 +190,15 @@ window.BaseAttachGrp = {
       }
       if (!validFiles.length) return;
 
-      /* FormData 구성 → /api/co/cm/upload/multi */
+      /* FormData 구성 → /api/co/cm/upload/multi
+         refTableNm/refId 는 절대 전송하지 않는다 — 업로드는 항상 미연계 상태로 즉시 이루어지고,
+         실제 연계(ref_table_nm/ref_id 반영)는 부모가 저장할 때 pendingChanges(rowStatus:'I')를
+         attachChanges 로 함께 보내면 백엔드가 부모 레코드 저장과 같은 트랜잭션에서 반영한다. */
       uiState.uploading = true;
       try {
         const fd = new FormData();
         validFiles.forEach(f => fd.append('files', f));
         fd.append('businessCode', props.grpCode);
-        fd.append('grpNm', props.grpNm);
-        if (cfRefMode.value) {
-          fd.append('refTableNm', props.refTableNm);
-          fd.append('refId', props.refKeyId);
-        } else if (props.modelValue) {
-          fd.append('attachGrpId', props.modelValue);
-        }
 
         // Content-Type은 axios가 FormData boundary 포함해서 자동 설정
         // coApiSvc.cmUpload 는 client()(boApi||foApi)로 FO·BO 모두 동작 — FO 에는 boApi 미로드라 직접 호출 시 크래시
@@ -213,12 +208,7 @@ window.BaseAttachGrp = {
         if (!d) throw new Error('업로드 응답이 없습니다.');
         console.log('[BaseAttachGrp] upload response:', JSON.stringify(d));
 
-        /* attachGrpId emit (첫 업로드 or 기존 그룹에 추가) — ref 모드는 attachGrpId 개념이 없어 emit 없음 */
-        if (!cfRefMode.value && !props.modelValue) {
-          const grpId = d.attachGrpId;
-          _lastEmittedGrpId = grpId;
-          emit('update:modelValue', grpId);
-        }
+        (d.attachIds || []).forEach(id => pendingChanges.value.push({ attachId: id, rowStatus: 'I' }));
 
         /* 파일 목록 추가 */
         (d.files || []).forEach(f => {
@@ -255,19 +245,27 @@ window.BaseAttachGrp = {
       }
     };
 
-    /* removeFile */
+    /* removeFile — 이번 세션에 추가만 되고 아직 미연계인 파일(pendingChanges 의 'I' 항목)은
+       저장을 기다릴 필요가 없어 즉시 물리 삭제한다. 이미 연계되어 있던(서버에서 불러온) 기존
+       파일은 즉시 삭제하지 않고 pendingChanges 에 {attachId,'D'} 로 적재만 해두고, 부모가
+       실제로 저장할 때 백엔드가 같은 트랜잭션에서 삭제를 반영한다(취소 시 원상 보존). */
     const removeFile = async (attachId) => {
       if (props.readonly) return;
-      try {
-        await window.coApiSvc.cmAttach.deleteFile(attachId);
-      } catch (err) {
-        console.error('[BaseAttachGrp] 파일 삭제 실패', err);
-        props.showToast(err.response?.data?.message || '파일 삭제 중 오류가 발생했습니다.', 'error', 0);
-        return;
+      const iIdx = pendingChanges.value.findIndex(c => c.attachId === attachId && c.rowStatus === 'I');
+      if (iIdx !== -1) {
+        pendingChanges.value.splice(iIdx, 1);
+        try {
+          await window.coApiSvc.cmAttach.deleteFile(attachId);
+        } catch (err) {
+          console.error('[BaseAttachGrp] 파일 삭제 실패', err);
+          props.showToast(err.response?.data?.message || '파일 삭제 중 오류가 발생했습니다.', 'error', 0);
+          return;
+        }
+      } else {
+        pendingChanges.value.push({ attachId, rowStatus: 'D' });
       }
       const idx = files.findIndex(f => f.attachId === attachId);
       if (idx !== -1) files.splice(idx, 1);
-      if (files.length === 0 && !cfRefMode.value) { _lastEmittedGrpId = null; emit('update:modelValue', null); }
     };
 
     /* fnFmtSize */
@@ -345,11 +343,13 @@ window.BaseAttachGrp = {
     };
 
     return {
-      uiState, files, cfAcceptAttr, fileInputRef, cfRefMode, // 상태 / computed
+      uiState, files, cfAcceptAttr, fileInputRef, cfHasRef, // 상태 / computed
       thumbState, hoverState, dragState,                    // UI 상태
       handleBtnAction, handleSelectAction,                  // dispatch
       onFileChange, onDragStart, onDragOver, onDrop,        // 직접 핸들러 (param 다양)
       fnFmtSize, fnExtIcon, fnIsImage,                      // 헬퍼
+      reload,          // ⭐ 부모가 저장 성공 후 호출 — pendingChanges 를 비우고 최신 목록 재조회
+      pendingChanges,  // ⭐ 부모가 저장 요청(attachChanges)에 그대로 실어 보냄 — 백엔드가 원자적 반영
     };
   },
   template: /* html */`
@@ -399,12 +399,12 @@ window.BaseAttachGrp = {
       </span>
       <code style="font-family:monospace;color:#7c5cbf;background:#f7f4ff;padding:0 4px;border-radius:3px;font-size:9px;">{{ grpCode }}</code>
       <code v-if="refId" style="font-family:monospace;color:#4a90d9;background:#eff6fc;padding:0 4px;border-radius:3px;font-size:9px;">{{ refId }}</code>
-      <code v-if="modelValue" style="font-family:monospace;color:#999;background:#f5f5f5;padding:0 4px;border-radius:3px;font-size:9px;">{{ modelValue }}</code>
+      <code v-if="refKeyId" style="font-family:monospace;color:#999;background:#f5f5f5;padding:0 4px;border-radius:3px;font-size:9px;">{{ refKeyId }}</code>
     </div>
   </template>
   <!-- ============= [list 모드] 기본 파일 목록 UI ============= -->
   <template v-else>
-  <!-- 저장 기준정보 (businessCode / grpNm / refId / attachGrpId) -->
+  <!-- 저장 기준정보 (businessCode / grpNm / refId / refTableNm+refKeyId) -->
   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:11px;color:#888;margin-bottom:8px;padding:6px 8px;background:#fff;border:1px solid #f0f0f0;border-radius:4px;">
     <span style="display:inline-flex;align-items:center;gap:3px;">
       <span style="color:#bbb;">📂</span>
@@ -420,10 +420,10 @@ window.BaseAttachGrp = {
       <span style="color:#bbb;">참조</span>
       <code style="font-family:monospace;color:#4a90d9;background:#eff6fc;padding:1px 5px;border-radius:3px;">{{ refId }}</code>
     </span>
-    <span v-if="modelValue" style="color:#e0e0e0;">|</span>
-    <span v-if="modelValue" style="display:inline-flex;align-items:center;gap:3px;">
-      <span style="color:#bbb;">그룹ID</span>
-      <code style="font-family:monospace;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ modelValue }}</code>
+    <span v-if="refKeyId" style="color:#e0e0e0;">|</span>
+    <span v-if="refKeyId" style="display:inline-flex;align-items:center;gap:3px;">
+      <span style="color:#bbb;">연계ID</span>
+      <code style="font-family:monospace;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ refKeyId }}</code>
     </span>
   </div>
   <!-- 파일 목록 -->
@@ -567,7 +567,7 @@ window.BaseAttachGrp = {
 window.BaseAttachOne = {
   name: 'BaseAttachOne',
   props: {
-    modelValue:  { default: null },          // attachGrpId
+    modelValue:  { default: null },          // attachId
     showToast:   { type: Function, default: () => {} },
     grpCode:     { default: 'common' },
     grpNm:       { default: '첨부파일' },
@@ -602,14 +602,13 @@ window.BaseAttachOne = {
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
-    /* loadFile */
-    const loadFile = async (grpId) => {
-      if (!grpId) return;
+    /* loadFile — attachId 로 첨부 파일 단건 조회 */
+    const loadFile = async (attachId) => {
+      if (!attachId) return;
       uiState.loading = true;
       try {
-        const res = await window.coApiSvc.cmAttach.getFiles(grpId);
-        const list = res.data?.data || [];
-        const f = list[0];
+        const res = await window.coApiSvc.cmAttach.getById(attachId);
+        const f = res.data?.data;
         if (f) { file.attachId = f.attachId; file.cdnImgUrl = f.cdnImgUrl || ''; file.thumbCdnUrl = f.thumbCdnUrl || ''; file.fileNm = f.fileNm || ''; }
         else   { file.attachId = null; file.cdnImgUrl = ''; file.thumbCdnUrl = ''; file.fileNm = ''; }
       } catch(e) { console.error('[BaseAttachOne] load fail', e); }
@@ -640,11 +639,10 @@ window.BaseAttachOne = {
           await window.coApiSvc.cmAttach.deleteFile(file.attachId);
           file.attachId = null; file.cdnImgUrl = ''; file.thumbCdnUrl = '';
         }
+        /* 그룹/ref 없이 단일 파일만 올린다(uploadMulti 를 파일 1개로 호출 — cdnImgUrl 즉시 계산됨) */
         const fd = new FormData();
         fd.append('files', f);
         fd.append('businessCode', props.grpCode);
-        fd.append('grpNm', props.grpNm);
-        if (props.modelValue) fd.append('attachGrpId', props.modelValue);
         const res = await window.coApiSvc.cmUpload.uploadMulti(fd, '첨부파일', '업로드');
         const d = res.data?.data;
         if (!d) throw new Error('업로드 응답 없음');
@@ -655,7 +653,7 @@ window.BaseAttachOne = {
           file.thumbCdnUrl = uploaded.thumbCdnUrl || uploaded.cdnImgUrl || '';
           file.fileNm     = uploaded.originalName || '';
         }
-        if (!props.modelValue) emit('update:modelValue', d.attachGrpId);
+        emit('update:modelValue', uploaded ? uploaded.attachId : null);
         props.showToast('업로드되었습니다.', 'success');
       } catch(err) {
         props.showToast(err.response?.data?.message || err.message || '업로드 오류', 'error', 0);
@@ -717,7 +715,7 @@ window.BaseAttachOne = {
   <span v-if="!readonly" style="font-size:10px;color:#bbb;">
     {{ allowExt }} / 최대 {{ maxSizeMb }}MB
   </span>
-  <!-- 저장 기준정보 (그룹명/businessCode/attachGrpId) -->
+  <!-- 저장 기준정보 (그룹명/businessCode/attachId) -->
   <div style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#aaa;line-height:1.4;margin-top:2px;">
     <span style="display:inline-flex;align-items:center;gap:3px;">
       <span style="color:#bbb;">📂</span>

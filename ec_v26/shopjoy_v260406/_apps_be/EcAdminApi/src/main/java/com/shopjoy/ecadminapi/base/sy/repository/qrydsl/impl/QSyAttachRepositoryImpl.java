@@ -40,8 +40,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         return queryFactory
                 .select(Projections.bean(SyAttachDto.Item.class,
                         syAttach.attachId,           // 첨부파일 ID (YYMMDDhhmmss+random(4)+seq)
-                        syAttach.attachGrpId,        // 파일 그룹 ID (sy_attach_grp 과 연계)
-                        syAttach.refTableNm,         // 관련 테이블명 (attach_grp_id 없이 직접 연계할 때)
+                        syAttach.refTableNm,         // 관련 테이블명
                         syAttach.refId,              // 관련 ID
                         syAttach.fileNm,             // 원본 파일명
                         syAttach.fileSize,           // 파일 크기
@@ -87,7 +86,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
-                    QdslUtil.strEq(syAttach.attachGrpId, search.getAttachGrpId()),
                     QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
                     QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()),
                     QdslUtil.strEq(syAttach.refId, search.getRefId()),
@@ -115,7 +113,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
-                QdslUtil.strEq(syAttach.attachGrpId, search.getAttachGrpId()),
                 QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
                 QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()),
                 QdslUtil.strEq(syAttach.refId, search.getRefId()),
@@ -147,7 +144,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("attachGrpId", syAttach.attachGrpId),
             QdslUtil.FieldDef.like("attachId", syAttach.attachId),
             QdslUtil.FieldDef.like("attachMemo", syAttach.attachMemo),
             QdslUtil.FieldDef.like("attachUrl", syAttach.attachUrl),
@@ -214,7 +210,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         JPAUpdateClause update = queryFactory.update(syAttach);
         boolean hasAny = false;
 
-        if (entity.getAttachGrpId()  != null) { update.set(syAttach.attachGrpId,  entity.getAttachGrpId());  hasAny = true; }
+        if (entity.getRefTableNm()   != null) { update.set(syAttach.refTableNm,   entity.getRefTableNm());   hasAny = true; }
+        if (entity.getRefId()        != null) { update.set(syAttach.refId,        entity.getRefId());        hasAny = true; }
         if (entity.getFileNm()       != null) { update.set(syAttach.fileNm,       entity.getFileNm());       hasAny = true; }
         if (entity.getFileSize()     != null) { update.set(syAttach.fileSize,     entity.getFileSize());     hasAny = true; }
         if (entity.getFileExt()      != null) { update.set(syAttach.fileExt,      entity.getFileExt());      hasAny = true; }

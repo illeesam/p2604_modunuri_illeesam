@@ -162,7 +162,7 @@
       { id: 'syVendorUserMng', label: '업체사용자' },
       { id: 'syVendorInfoMng', label: '업체정보' },
       { group: '시스템' },
-      { id: 'syAttachMng', label: '첨부관리' },
+      { id: 'syAttachMng', label: '첨부파일 통합조회' },
       { id: 'syTemplateMng', label: '템플릿관리' },
       { id: 'syBatchMng', label: '배치스케즐관리' },
       { id: 'syAlarmMng', label: '알림관리' },

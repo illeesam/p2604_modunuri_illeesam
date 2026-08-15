@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachChangeItem;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -115,6 +117,51 @@ public class SyAttachService {
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
         return entity;
+    }
+
+    /**
+     * 첨부파일 연계 변경사항(등록 시 추가 / 목록에서 삭제) 일괄 반영.
+     *
+     * <p>업로드·삭제 버튼 클릭은 화면에서 즉시 물리 반영되지만, sy_attach 의 ref_table_nm/ref_id
+     * "연계" 자체는 이 메서드를 통해서만 반영된다 — 대상 레코드(공지/게시글/문의 등)를 저장하는
+     * 업무 Service 의 create()/update() 가, 레코드 저장이 확정된 직후 같은 트랜잭션 안에서 호출해야
+     * 한다. 별도 API 호출에 의존하면 그 호출이 누락되거나 실패했을 때 연계가 영구히 어긋나는 문제가
+     * 있어(2026-08-15), 저장 주체가 되는 업무 Service 가 직접 호출하는 것을 표준으로 한다.</p>
+     *
+     * <p>rowStatus 'I' = ref_table_nm/ref_id 주입(연계), 'D' = 연계 삭제(물리 삭제 포함).
+     * 'U'(부가정보 수정)는 아직 처리 항목이 없다 — 추후 보완.</p>
+     *
+     * @return 새로 연계된('I') 항목들을 fileSize/fileExt/storagePath/refTableNm/refId 까지 채워 반환.
+     *         메일/카카오 알림톡 발송처럼 첨부 리소스 정보가 바로 필요한 후속 로직이 attachId 로
+     *         다시 조회하지 않고 그대로 사용할 수 있다. 'D' 항목은 삭제되어 반환하지 않는다.
+     */
+    @Transactional
+    public List<SyAttachChangeItem> applyChanges(List<SyAttachChangeItem> changes, String refTableNm, String refId) {
+        List<SyAttachChangeItem> linked = new ArrayList<>();
+        if (changes == null || changes.isEmpty()) return linked;
+        if (refTableNm == null || refTableNm.isBlank() || refId == null || refId.isBlank())
+            throw new CmBizException("refTableNm/refId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        for (SyAttachChangeItem c : changes) {
+            if (c == null || c.getAttachId() == null || c.getAttachId().isBlank()) continue;
+            if ("I".equals(c.getRowStatus())) {
+                SyAttach patch = SyAttach.builder().attachId(c.getAttachId()).refTableNm(refTableNm).refId(refId).build();
+                updateSelective(patch);
+                SyAttach saved = findById(c.getAttachId());
+                SyAttachChangeItem enriched = new SyAttachChangeItem();
+                enriched.setAttachId(saved.getAttachId());
+                enriched.setRowStatus("I");
+                enriched.setFileSize(saved.getFileSize());
+                enriched.setFileExt(saved.getFileExt());
+                enriched.setStoragePath(saved.getStoragePath());
+                enriched.setRefTableNm(refTableNm);
+                enriched.setRefId(refId);
+                linked.add(enriched);
+            } else if ("D".equals(c.getRowStatus())) {
+                delete(c.getAttachId());
+            }
+            // 'U' 예약 — 향후 부가정보(설명/정렬순서 등) 수정
+        }
+        return linked;
     }
 
     /* 첨부파일 삭제 */

@@ -44,7 +44,7 @@ public class TableRegistry {
         "st_settle_close", "st_settle_config", "st_settle_etc_adj", "st_settle_item",
         "st_settle_pay", "st_settle_raw", "st_settle",
         // sy
-        "sy_alarm", "sy_attach_grp", "sy_attach", "sy_batch", "sy_bbm", "sy_bbs",
+        "sy_alarm", "sy_attach", "sy_batch", "sy_bbm", "sy_bbs",
         "sy_brand", "sy_code_grp", "sy_code", "sy_contact", "sy_dept",
         "sy_i18n", "sy_menu", "sy_notice", "sy_path", "sy_prop", "sy_role_menu",
         "sy_role", "sy_site", "sy_template", "sy_user_role", "sy_user",
@@ -145,18 +145,10 @@ public class TableRegistry {
             .searchFields(List.of("title", "content"))
             .build());
 
-        register("sy_attach_grp", TableConfig.builder()
-            .pkColumn("attach_grp_id")
-            .requiredFields(List.of("attach_grp_nm"))
-            .childTables(List.of("sy_attach"))
-            .searchFields(List.of("attach_grp_nm", "attach_grp_remark"))
-            .build());
-
         register("sy_attach", TableConfig.builder()
             .pkColumn("attach_id")
-            .requiredFields(List.of("attach_grp_id", "attach_url"))
-            .fkFields(Map.of("attach_grp_id", "sy_attach_grp"))
-            .searchFields(List.of("attach_url", "attach_memo"))
+            .requiredFields(List.of("attach_url"))
+            .searchFields(List.of("attach_url", "attach_memo", "ref_table_nm"))
             .build());
 
         register("sy_brand", TableConfig.builder()
