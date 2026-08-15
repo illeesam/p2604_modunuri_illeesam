@@ -922,6 +922,20 @@ window.PdProdDtl = {
       }
     };
 
+    /* syncImagesFromTabData — tabData.images(서버 최신 상태)를 화면 바인딩용 images 로 반영.
+       handleLoadData() 는 tabData만 갱신하고 images 는 건드리지 않으므로, 서버 반영 결과를
+       화면에 실제로 비추려면(저장 직후 재조회, 부모 reloadTrigger 재조회) 반드시 별도 호출해야 한다. */
+    const syncImagesFromTabData = () => {
+      if (tabData.images.length) {
+        images.splice(0, images.length, ...tabData.images);
+        if (!images.some(i => i.isMain)) { safeFirst(images).isMain = true; }
+      } else {
+        const p = products[0] || null;
+        if (p?.mainImage) { images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, prodOptId1: '', prodOptId2: '', _persisted: true }); }
+        else { images.splice(0, images.length); }
+      }
+    };
+
     /* setMain — 설정 */
     const setMain = (id) => window.safeArrayUtils.safeForEach(images, img => { img.isMain = img.id === id; });
 
@@ -1276,12 +1290,7 @@ window.PdProdDtl = {
           form.isBest         = p.isBest || 'N';
           form.contentHtml    = p.contentHtml || p.description || '';
           // 이미지 — tabData에서 채움 (handleLoadData에서 이미 로드)
-          if (tabData.images.length) {
-            images.splice(0, images.length, ...tabData.images);
-            // 대표가 하나도 없으면 첫 번째 자동 지정
-            if (!images.some(i => i.isMain)) { safeFirst(images).isMain = true; }
-          }
-          else if (p.mainImage) { images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, prodOptId1: '', prodOptId2: '', _persisted: true }); }
+          syncImagesFromTabData();
 
           // 상품설명 — tabData.content에서 채움
           // DB contentTypeCd (HTML/FILE/URL/IMAGE) → 클라이언트 type (html/file/url) 매핑
@@ -1367,6 +1376,7 @@ window.PdProdDtl = {
       if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleLoadData();
+      syncImagesFromTabData();
     });
     onBeforeUnmount(() => {
       if (_divMoveH) { document.removeEventListener('mousemove', _divMoveH); }
@@ -1536,6 +1546,7 @@ window.PdProdDtl = {
         }
         /* UX-bo §18: 저장한 탭의 데이터를 다시 가져와 화면 동기화 */
         await handleLoadData();
+        if (tabId === 'image') { syncImagesFromTabData(); }
         _afterApiOk(res, `${TAB_LABEL[tabId] || ''} 저장되었습니다.`);
       } catch (err) { _afterApiErr(err); }
     };
