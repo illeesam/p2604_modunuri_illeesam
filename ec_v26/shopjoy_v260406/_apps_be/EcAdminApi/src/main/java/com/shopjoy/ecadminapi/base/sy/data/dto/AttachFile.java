@@ -17,12 +17,12 @@ import lombok.Setter;
  * 돌려준다 — attachId 외 나머지 필드(fileNm/fileExt/fileSize/attachUrl/thumbUrl/cdnImgUrl/
  * thumbCdnUrl/storagePath/sortOrd, sy_attach 컬럼 그대로)가 항상 채워져 있어, 화면이나
  * 메일/카카오 알림톡 발송처럼 첨부 리소스 정보가 바로 필요한 후속 로직이 attachId 로 다시
- * 조회하지 않고 그대로 쓸 수 있다. 이때 rowStatus 는 의미 없어 null.</p>
+ * 조회하지 않고 그대로 쓸 수 있다. 이때 rowStatus 는 연계 변경 요청이 아니므로 기본값 "N".</p>
  */
 @Getter @Setter @NoArgsConstructor
 public class AttachFile {
     private String attachId;
-    private String rowStatus; /** 요청 전용 — I(연계) / D(연계 삭제). 응답에서는 null. */
+    private String rowStatus; /** 요청 전용 — I(연계) / D(연계 삭제). 응답 조회 시점엔 기본값 "N". */
     private String refTableNm;
     private String refId;
 

@@ -2746,12 +2746,12 @@
               <!-- 1줄: 메서드(첫글자) + URL(/api.. 축약) + status(200 숨김) — FO 동일 형태, 좌우 공백 활용 -->
               <div style="display:flex;align-items:center;gap:4px;">
                 <span :style="{ color: getApiMethodColor(log.method), fontWeight:'700' }" style="flex-shrink:0;" :title="log.method">{{ (log.method || '-').charAt(0) }}</span>
-                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :style="{ color: log.hasError ? '#ef4444' : '#1a5276' }" :title="log.url">{{ fnShortUrl(log.url) }}</span>
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :style="{ color: log.hasError ? '#ef4444' : getApiMethodColor(log.method) }" :title="log.url">{{ fnShortUrl(log.url) }}</span>
                 <span v-if="log.status ? (Number(log.status) !== 200) : false" :style="{ color: getApiStatusColor(log.status), fontWeight:'700' }" style="flex-shrink:0;" :title="log.status">{{ log.status }}</span>
               </div>
               <!-- 2줄: uiLabel + duration(초) + 시각(분:초) -->
               <div style="display:flex;align-items:center;gap:6px;margin-top:1px;">
-                <span v-if="log.uiLabel" :style="{ fontWeight: log._isRecent ? '700' : '400' }" style="font-size:9px;color:#7c3aed;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.2px;">{{ log.uiLabel }}</span>
+                <span v-if="log.uiLabel" :style="{ fontWeight: log._isRecent ? '700' : '400', color: getApiMethodColor(log.method) }" style="font-size:9px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.2px;">{{ log.uiLabel }}</span>
                 <span v-else style="flex:1;"></span>
                 <span v-if="log.duration" style="font-size:9px;color:#aaa;flex-shrink:0;" :title="log.duration + 'ms'">{{ fnFmtSec(log.duration) }}</span>
                 <span style="font-size:9px;color:#ccc;flex-shrink:0;" :title="log.time">{{ fnHmsToMs(log.time) }}</span>

@@ -168,10 +168,12 @@ public class SyAttachService {
             .stream().map(this::toAttachFile).toList();
     }
 
-    /** SyAttach → 요청/응답 공유용 축약 항목 (필드명은 sy_attach 컬럼 그대로). rowStatus 는 응답 전용이라 null. */
+    /** SyAttach → 요청/응답 공유용 축약 항목 (필드명은 sy_attach 컬럼 그대로).
+     *  rowStatus 는 응답 조회 시점엔 의미가 없어(연계 변경 요청이 아니므로) 기본값 "N" 으로 채운다. */
     public AttachFile toAttachFile(SyAttach a) {
         AttachFile f = new AttachFile();
         f.setAttachId(a.getAttachId());
+        f.setRowStatus("N");
         f.setRefTableNm(a.getRefTableNm());
         f.setRefId(a.getRefId());
         f.setFileNm(a.getFileNm());
