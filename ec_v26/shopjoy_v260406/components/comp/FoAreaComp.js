@@ -1012,6 +1012,7 @@ window.FoModal = {
     width:           { type: String,  default: '600px' },
     maxWidth:        { type: String,  default: '95vw' },
     height:          { type: String,  default: 'auto' },
+    minHeight:       { type: String,  default: '' },    // 목록형 팝업의 높이 출렁임 방지 (건수에 따라 커졌다 작아지는 것)
     maxHeight:       { type: String,  default: '90vh' },
     zIndex:          { type: Number,  default: 1500 },
     boxPad:          { type: String,  default: '24px' },  // .modal-box 자체 padding (인라인 디자인 모달은 '0')
@@ -1028,6 +1029,7 @@ window.FoModal = {
     const cfBoxStyle = Vue.computed(() =>
       'width:' + props.width + ';max-width:' + props.maxWidth + ';'
       + 'height:' + props.height + ';max-height:' + props.maxHeight + ';'
+      + (props.minHeight ? ('min-height:' + props.minHeight + ';') : '')
       + 'text-align:left;padding:' + props.boxPad + ';');
     const cfBodyStyle = Vue.computed(() =>
       'flex:1;overflow-y:auto;' + (props.bodyPad !== '0' ? ('padding:' + props.bodyPad + ';') : ''));

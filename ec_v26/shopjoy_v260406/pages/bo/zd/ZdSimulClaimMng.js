@@ -312,6 +312,11 @@
         }
       };
 
+      /* 회원 지정 기본값 — 같은 브라우저에 FO 로그인된 회원이 있으면 자동 지정.
+         내가 로그인한 회원으로 클레임 데이터를 만들면 FO 마이페이지에서 바로 확인할 수 있다.
+         (기본값일 뿐 ✕ 로 해제 가능) */
+      onMounted(() => { window.ZdSimulBase.fnSeedFixedMember(domCfg); });
+
       return {
         coUtil,                        // template 에서 coUtil.cofAnd 직접 호출 → return 필수
         fnCmPopupCallback,

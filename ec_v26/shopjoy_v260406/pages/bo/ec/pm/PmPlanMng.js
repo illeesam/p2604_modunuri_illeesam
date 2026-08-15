@@ -365,7 +365,8 @@ window.PmPlanMng = {
       :columns="columns.baseGrid" :rows="plans" row-key="planId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('plans-sort', key)" grid-id="plans-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('plans-sort', key)" grid-id="plans-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

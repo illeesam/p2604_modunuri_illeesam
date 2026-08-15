@@ -491,7 +491,8 @@ window.PdProdMng = {
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
       @sort="key => handleBtnAction('prods-sort', key)"
-      grid-id="prods-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      grid-id="prods-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

@@ -355,7 +355,8 @@ window.PmVoucherMng = {
       :columns="columns.baseGrid" :rows="vouchers" row-key="voucherId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(v) => detailPanel.selectedId===v.voucherId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('vouchers-sort', key)" grid-id="vouchers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      :row-style="(v) => detailPanel.selectedId===v.voucherId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('vouchers-sort', key)" grid-id="vouchers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

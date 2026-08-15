@@ -610,7 +610,8 @@ window.OdDlivMng = {
         grid-id="dlivs-cellClick" @cell-click="e => { if (e.col?.link) handleSelectAction('dlivs-rowEdit', e.row.dlivId); }"
         @toggle-check="id => handleSelectAction('dlivs-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('dlivs-rowToggleCheckAll')"
-        @ref-click="({type,id}) => handleSelectAction('dlivs-rowRefClick', {type, id})" row-actions>
+        @ref-click="({type,id}) => handleSelectAction('dlivs-rowRefClick', {type, id})" row-actions
+            table-max-height="540px">
         <template #row-actions="{ row }">
           <div class="actions">
             <button class="btn btn_row_edit" @click="handleSelectAction('dlivs-rowEdit', row.dlivId)">

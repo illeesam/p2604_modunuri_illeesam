@@ -397,7 +397,8 @@ window.PmSaveMng = {
       :columns="columns.baseGrid" :rows="saves" row-key="saveId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(s) => detailPanel.selectedId===s.saveId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('saves-sort', key)" grid-id="saves-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      :row-style="(s) => detailPanel.selectedId===s.saveId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('saves-sort', key)" grid-id="saves-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

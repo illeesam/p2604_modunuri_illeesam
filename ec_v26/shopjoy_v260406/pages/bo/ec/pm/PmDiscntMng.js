@@ -425,7 +425,8 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"
       @sort="onSort"
-      grid-id="discnts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      grid-id="discnts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

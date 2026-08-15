@@ -79,7 +79,8 @@ window.MbMemberDtl = {
     // 기본 폼
     const columns = {};
     columns.baseForm = [
-      { key: 'loginId',        label: '이메일',    type: 'text', required: true, placeholder: '이메일 주소' },
+      { key: 'loginId',        label: '로그인ID', type: 'text', required: true, placeholder: '로그인ID (이메일 형식)' },
+      { key: 'memberEmail',    label: '이메일',   type: 'text', placeholder: '수신용 이메일' },
       { key: 'memberNm',       label: '이름',      type: 'text', required: true, placeholder: '이름' },
       { key: 'memberPhone',    label: '연락처',    type: 'text', placeholder: '010-0000-0000' },
       { key: 'gradeCd',        label: '등급',      type: 'select', options: () => codes.member_grades },

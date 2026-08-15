@@ -740,7 +740,8 @@ window.OdClaimMng = {
         grid-id="claims-cellClick" @cell-click="e => { if (e.col?.link) handleSelectAction('claims-rowEdit', e.row.claimId); }"
         @toggle-check="id => handleSelectAction('claims-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('claims-rowToggleCheckAll')"
-        @ref-click="({type,id}) => handleSelectAction('claims-rowRefClick', {type, id})" row-actions>
+        @ref-click="({type,id}) => handleSelectAction('claims-rowRefClick', {type, id})" row-actions
+            table-max-height="540px">
         <template #row-actions="{ row }">
           <div class="actions">
             <button class="btn btn_row_edit" @click="handleSelectAction('claims-rowEdit', row.claimId)">

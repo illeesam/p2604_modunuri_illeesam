@@ -361,7 +361,8 @@ window.SyBbmMng = {
       <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="bbms" row-key="bbmId" :selected-key="detailModal.dtlId"
         :row-style="fnRowStyle"
-        grid-id="bbms-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        grid-id="bbms-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
         <template #head-actions>
           관리
         </template>

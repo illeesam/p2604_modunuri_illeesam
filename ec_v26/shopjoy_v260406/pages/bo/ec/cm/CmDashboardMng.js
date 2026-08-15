@@ -242,7 +242,8 @@ window.CmDashboardMng = {
       :selected-key="baseDetail.selectedId"
       :row-class="row => baseDetail.selectedId === row.dashboardId ? 'active' : ''"
       empty-text="대시보드가 없습니다."
-      grid-id="dashboards-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      grid-id="dashboards-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+            table-max-height="540px">
       <template #row-actions="{ row, gridId }">
         <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
           <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>

@@ -340,7 +340,8 @@ window.SyContactMng = {
       :sort-state="uiState" :row-style="fnRowStyle"
       @sort="key => handleBtnAction('contacts-sort', key)"
       @ref-click="({type,id}) => handleSelectAction('contacts-rowRef', {type, id})"
-      grid-id="contacts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      grid-id="contacts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

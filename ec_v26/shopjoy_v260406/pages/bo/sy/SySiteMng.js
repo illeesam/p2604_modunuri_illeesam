@@ -461,7 +461,8 @@ window.SySiteMng = {
         :columns="columns.baseGrid" :rows="sites" row-key="siteId" :selected-key="detailModal.dtlId"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('sites-sort', key)"
-        grid-id="sites-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        grid-id="sites-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
         <template #head-actions>
           관리
         </template>

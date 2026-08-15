@@ -571,7 +571,8 @@ window.DpDispWidgetMng = {
         :sort-state="uiState" :row-style="fnRowStyle"
         empty-text="등록된 위젯이 없습니다."
         @sort="key => handleBtnAction('widgets-sort', key)"
-        grid-id="widgets-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+        grid-id="widgets-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+            table-max-height="540px">
         <template #cell-widgetInfo="{ row }">
           <td style="padding:10px 12px;vertical-align:top;">
             <div style="margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">

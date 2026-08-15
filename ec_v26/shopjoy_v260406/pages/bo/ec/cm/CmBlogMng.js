@@ -497,7 +497,8 @@ window.CmBlogMng = {
       :sort-state="uiState"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('blogs-sort', key)"
-      grid-id="blogs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      grid-id="blogs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+            table-max-height="540px">
       <template #cell-_thumb="{ row }">
         <img v-if="fnRowThumb(row)" :src="fnRowThumb(row)" :alt="row.blogTitle"
           style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid #eee;" />

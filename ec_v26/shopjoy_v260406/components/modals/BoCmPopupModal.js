@@ -711,6 +711,7 @@ window.BoCmPopupModal = {
   },
   template: /* html */`
 <bo-modal :show="show" :title="cfTitle" :width="cfg.modalWidth" max-width="96vw"
+  min-height="560px"
   @close="handleBtnAction('modal-close')">
   <template #title>
     <span :title="cfPopupTooltip" style="cursor:help;margin-right:4px;line-height:1;">🧩</span>{{ cfTitle }}

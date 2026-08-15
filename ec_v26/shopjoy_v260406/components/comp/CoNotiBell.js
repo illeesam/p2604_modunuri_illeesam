@@ -76,6 +76,15 @@
       '.co-noti-body{padding:8px 12px 10px 26px;border-bottom:1px solid #f2f4f7;background:#fbfbfd;',
       ' font-size:11.5px;color:#4b5563;white-space:pre-wrap;word-break:break-word;line-height:1.6;max-height:180px;overflow-y:auto;}',
       '.co-noti-body-err{background:#fff5f5;color:#c62828;font-family:monospace;font-size:11px;}',
+      /* 자체 버튼 스타일 — FO 전역 CSS 에는 .btn-secondary/.btn-xs/.btn-primary 가 없어
+         BO 클래스에 기대면 FO 알림함 버튼이 무스타일로 렌더된다. 두 컨텍스트 공통으로 여기서 정의. */
+      '.co-noti-b{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;',
+      ' border:1px solid #d8dce3;background:#fff;color:#4b5563;font-size:11px;font-weight:600;',
+      ' cursor:pointer;line-height:1.7;white-space:nowrap;}',
+      '.co-noti-b:hover{background:#f3f5f8;}',
+      '.co-noti-b.is-on{background:#2563eb;border-color:#2563eb;color:#fff;}',
+      '.co-noti-b.is-danger{border-color:#f0b4b4;color:#dc2626;}',
+      '.co-noti-b.is-danger:hover{background:#fef2f2;}',
     ].join('\n');
     document.head.appendChild(st);
   }
@@ -253,10 +262,10 @@
       <span style="font-size:12px;font-weight:700;color:#374151;">알림</span>
       <span style="font-size:11px;color:#9ca3af;">{{ cfCounts.all }}건 · 안읽음 {{ cfUnread }}</span>
       <span style="flex:1;"></span>
-      <button class="btn btn-secondary btn-xs" title="새로고침" @click="handleBtnAction('noti-reload')">↻</button>
-      <button v-if="cfUnread" class="btn btn-secondary btn-xs" title="모두 읽음 처리"
+      <button class="co-noti-b" title="새로고침" @click="handleBtnAction('noti-reload')">↻</button>
+      <button v-if="cfUnread" class="co-noti-b" title="모두 읽음 처리"
         @click="handleBtnAction('noti-markAllRead')">모두읽음</button>
-      <button class="btn btn-secondary btn-xs" title="알림함 전체보기"
+      <button class="co-noti-b" title="알림함 전체보기"
         @click="handleBtnAction('list-open')">⛶ 전체보기</button>
     </div>
     <div style="max-height:400px;overflow-y:auto;">
@@ -293,20 +302,20 @@
   </div>
 
   <!-- ===== ■. 알림함 모달 (전체보기) ====================================== -->
-  <component :is="cfModalTag" :show="uiState.listShow" title="알림함" width="1000px" max-height="86vh"
+  <component :is="cfModalTag" :show="uiState.listShow" title="알림함" width="1000px" min-height="520px" max-height="86vh"
     @close="handleBtnAction('list-close')">
     <!-- ===== ■.■. 유형 필터 + 툴바 ======================================== -->
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-      <button v-for="t in cfTabs" :key="t.key" class="btn btn-xs"
-        :class="uiState.filter === t.key ? 'btn-primary' : 'btn-secondary'"
+      <button v-for="t in cfTabs" :key="t.key" class="co-noti-b"
+        :class="uiState.filter === t.key ? 'is-on' : ''"
         @click="handleSelectAction('filter-select', t.key)">
         {{ t.icon }} {{ t.label }} <span style="opacity:.75;">{{ cfCounts[t.key] || 0 }}</span>
       </button>
       <span style="flex:1;"></span>
       <span style="font-size:11px;color:#9ca3af;">총 {{ cfCounts.all }}건 · 안읽음 {{ cfUnread }}건</span>
-      <button class="btn btn-secondary btn-xs" title="새로고침" @click="handleBtnAction('noti-reload')">↻</button>
-      <button v-if="cfUnread" class="btn btn-secondary btn-xs" @click="handleBtnAction('noti-markAllRead')">모두읽음</button>
-      <button class="btn btn_row_delete" @click="handleBtnAction('noti-clear')">전체삭제</button>
+      <button class="co-noti-b" title="새로고침" @click="handleBtnAction('noti-reload')">↻</button>
+      <button v-if="cfUnread" class="co-noti-b" @click="handleBtnAction('noti-markAllRead')">모두읽음</button>
+      <button class="co-noti-b is-danger" @click="handleBtnAction('noti-clear')">전체삭제</button>
     </div>
 
     <!-- ===== ■.■. 알림 목록 =============================================== -->
@@ -354,11 +363,11 @@
           {{ fnMeta(cfSelected.type).icon }} {{ cfSelected.title }}
         </span>
         <span style="flex:1;"></span>
-        <button v-if="fnCanGo(cfSelected)" class="btn btn-secondary btn-xs"
+        <button v-if="fnCanGo(cfSelected)" class="co-noti-b"
           @click="handleSelectAction('noti-rowGo', cfSelected)">상세화면으로 이동 ↗</button>
-        <button class="btn btn-secondary btn-xs" title="안읽음으로 되돌리기"
+        <button class="co-noti-b" title="안읽음으로 되돌리기"
           @click="handleBtnAction('detail-markUnread')">안읽음</button>
-        <button class="btn btn_close" @click="handleBtnAction('detail-close')">닫기</button>
+        <button class="co-noti-b" @click="handleBtnAction('detail-close')">닫기</button>
       </div>
 
       <!-- 오류: 다크 URL 바 + 화면>기능 + 빨간 메시지 본문 -->

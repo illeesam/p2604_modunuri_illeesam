@@ -704,6 +704,7 @@ window.FoCmPopupModal = {
   },
   template: /* html */`
 <fo-modal :show="show" :title="cfHeadTitle" :width="cfg.modalWidth" max-width="96vw"
+  min-height="560px"
   @close="handleBtnAction('modal-close')">
   <div v-if="uiState.errorMsg" style="padding:24px;text-align:center;color:#dc2626;">
     {{ uiState.errorMsg }}

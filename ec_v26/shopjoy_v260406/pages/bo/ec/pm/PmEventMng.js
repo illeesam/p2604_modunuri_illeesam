@@ -369,7 +369,8 @@ window.PmEventMng = {
       :columns="columns.baseGrid" :rows="events" row-key="eventId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(e) => detailPanel.selectedId===e.eventId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('events-sort', key)" grid-id="events-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      :row-style="(e) => detailPanel.selectedId===e.eventId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('events-sort', key)" grid-id="events-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

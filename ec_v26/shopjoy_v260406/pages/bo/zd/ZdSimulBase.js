@@ -686,8 +686,31 @@
       </template>`;
   };
 
+  /* fnLoginMember — 같은 브라우저에 FO 로그인된 회원을 반환 (없으면 null).
+     시뮬 화면의 '회원 지정' 기본값으로 쓴다 — 내가 로그인한 회원으로 데이터를 만들면
+     FO 마이페이지에서 바로 결과를 확인할 수 있다. */
+  const fnLoginMember = () => {
+    try {
+      const u = JSON.parse(localStorage.getItem('modu-fo-auth-authUser') || 'null');
+      if (!u) return null;
+      const id = u.memberId || u.authId || '';
+      if (!id) return null;
+      return { memberId: String(id), memberNm: _sanitize(u.authNm || u.memberNm || u.name || String(id)) };
+    } catch (_) { return null; }
+  };
+
+  /* fnSeedFixedMember — domCfg.fixedMemberId 가 비어 있을 때만 로그인 회원으로 채운다 */
+  const fnSeedFixedMember = (domCfg) => {
+    if (!domCfg || domCfg.fixedMemberId) return;
+    const me = fnLoginMember();
+    if (!me) return;
+    domCfg.fixedMemberId = me.memberId;
+    domCfg.fixedMemberNm = me.memberNm;
+  };
+
   window.ZdSimulBase = {
     useSimulSetup,
+    fnLoginMember, fnSeedFixedMember,
     /* 템플릿 헬퍼 (legacy) */
     logPanelHtml,
     statCardHtml,

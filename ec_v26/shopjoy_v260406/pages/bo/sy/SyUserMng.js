@@ -465,7 +465,8 @@ window.SyUserMng = {
         :columns="columns.baseGrid" :rows="users" row-key="userId" :selected-key="detailPanel.selectedId"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('users-sort', key)"
-        grid-id="users-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        grid-id="users-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
         <template #head-actions>
           관리
         </template>

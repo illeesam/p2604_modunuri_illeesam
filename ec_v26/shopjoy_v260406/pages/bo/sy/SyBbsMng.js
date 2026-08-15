@@ -369,7 +369,8 @@ window.SyBbsMng = {
       :columns="columns.baseGrid" :rows="bbsList" row-key="bbsId" :selected-key="detailModal.dtlId"
       :sort-state="uiState" :row-style="fnRowStyle"
       @sort="key => handleBtnAction('bbsList-sort', key)"
-      grid-id="bbsList-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      grid-id="bbsList-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

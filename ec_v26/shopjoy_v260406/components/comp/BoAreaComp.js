@@ -1860,6 +1860,7 @@ window.BoModal = {
     width:           { type: String,  default: '600px' },
     maxWidth:        { type: String,  default: '95vw' },
     height:          { type: String,  default: 'auto' },
+    minHeight:       { type: String,  default: '' },    // 목록형 팝업의 높이 출렁임 방지 (건수에 따라 커졌다 작아지는 것)
     maxHeight:       { type: String,  default: '90vh' },
     zIndex:          { type: Number,  default: 9000 },
     boxPad:          { type: String,  default: '20px' },  // .modal-box 자체 padding (인라인 디자인 모달은 '0')
@@ -1879,6 +1880,7 @@ window.BoModal = {
     const cfBoxStyle = Vue.computed(() =>
       'background:#fff;width:' + props.width + ';max-width:' + props.maxWidth + ';'
       + 'height:' + props.height + ';max-height:' + props.maxHeight + ';'
+      + (props.minHeight ? ('min-height:' + props.minHeight + ';') : '')
       + 'display:flex;flex-direction:column;padding:' + props.boxPad + ';overflow:hidden;');
     /* boxPad 가 0 이면 body wrapper 음수 마진/안쪽 padding 도 0 (인라인 디자인 모달) */
     const cfBodyOuterStyle = Vue.computed(() => {

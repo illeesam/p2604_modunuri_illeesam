@@ -311,7 +311,8 @@ window.CmFaqMng = {
       <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="faqs" row-key="faqId" :selected-key="detailModal.dtlId"
         :row-style="fnRowStyle"
-        grid-id="faqs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        grid-id="faqs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
         <template #head-actions>
           관리
         </template>

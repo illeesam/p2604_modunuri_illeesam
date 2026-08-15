@@ -89,7 +89,7 @@
       const { reactive, computed, onMounted } = Vue;
       const store = global.boNotiStore;
 
-      const uiState = reactive({ sending: false, pickModal: '', tplLoading: false, tplId: null, recvTab: 'member' });
+      const uiState = reactive({ sending: false, pickModal: '', tplLoading: false, tplId: null, recvTab: 'user' });
       const codes   = reactive({});
 
       /* 발송 폼 */
@@ -333,6 +333,32 @@
         baseForm.content = s.body;
       };
 
+      /* fnSeedLoginRecipients — 현재 로그인된 주체를 수신자 기본값으로 넣는다.
+         BO 로그인 사용자(사용자 탭) + 같은 브라우저에 FO 로그인 회원이 있으면 회원 탭에도.
+         "나에게 보내보기" 가 시뮬레이션의 기본 동작이라 매번 직접 고르지 않아도 되게 한다.
+         (기본값일 뿐 ✕ 로 뺄 수 있다) */
+      const fnSeedLoginRecipients = () => {
+        const seed = (storeKey, toType) => {
+          let u = null;
+          try { u = JSON.parse(localStorage.getItem(storeKey) || 'null'); } catch (_) { u = null; }
+          if (!u) return;
+          const toId = toType === 'member'
+            ? (u.memberId || u.authId || '')
+            : (u.userId   || u.authId || '');
+          if (!toId) return;
+          if (recipients.some((r) => r.toType === toType ? (r.toId === String(toId)) : false)) return;
+          recipients.push({
+            toType: toType,
+            toId:   String(toId),
+            toNm:   (u.authNm || u.name || u.userNm || u.memberNm || String(toId)),
+            toEmail: u.email || u.userEmail || u.memberEmail || '',
+            toPhone: u.phone || u.userPhone || u.memberPhone || '',
+          });
+        };
+        seed('modu-bo-auth-authUser', 'user');
+        seed('modu-fo-auth-authUser', 'member');
+      };
+
       /* fnFillVars — {orderNo}/{amount}/{invoiceNo}/{authCode} 치환 */
       const fnFillVars = (txt) => String(txt || '')
         .replace(/\{orderNo\}/g,   baseForm.orderNo)
@@ -385,6 +411,7 @@
       const initPage = async () => {
         if (props.mode === 'notice') { fnApplyScenario('NOTICE'); }
         else if (!cfIsError.value)   { fnApplyScenario('ORDER_DONE'); }
+        if (!cfIsError.value) { fnSeedLoginRecipients(); }   /* 오류생성은 수신자 개념이 없다 */
         if (cfHasTpl.value) { await handleLoadTemplates(); }
       };
       onMounted(initPage);

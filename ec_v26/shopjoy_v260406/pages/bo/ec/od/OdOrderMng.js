@@ -632,7 +632,8 @@ window.OdOrderMng = {
         @toggle-check="id => handleSelectAction('orders-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('orders-rowToggleCheckAll')"
         grid-id="orders-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
-        @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions>
+        @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions
+            table-max-height="540px">
         <template #row-actions="{ row, gridId }">
           <div class="actions">
             <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>

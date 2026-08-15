@@ -99,7 +99,7 @@ window.MbMemberMng = {
 
     /* ===== 상세 인라인 패널 ===== */
     /* _emptyForm — 빈(신규) 폼 기본값 */
-    const _emptyForm = () => ({ memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: '', memberMemo: '' });
+    const _emptyForm = () => ({ memberId: null, loginId: '', memberEmail: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: '', memberMemo: '' });
     const detailPanel = reactive({                 // 인라인 Dtl 패널 상태
       show: true,                                  // 상세영역 항상 표시 (진입 시 빈 신규 폼)
       isNew: false, dtlId: null, reloadTrigger: 0,
@@ -139,7 +139,7 @@ window.MbMemberMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'memberId,memberNm,loginId';
+          params.searchType = 'memberId,memberNm,loginId,memberEmail';
         }
         const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
@@ -160,7 +160,7 @@ window.MbMemberMng = {
     /* fnApplyForm — 폼 데이터 적용 */
     const fnApplyForm = (d) => {
       Object.assign(detailPanel.form, {
-        memberId: d.memberId, loginId: d.loginId || '', memberNm: d.memberNm || '',
+        memberId: d.memberId, loginId: d.loginId || '', memberEmail: d.memberEmail || '', memberNm: d.memberNm || '',
         memberPhone: d.memberPhone || '', gradeCd: d.gradeCd || '', memberStatusCd: d.memberStatusCd || '',
         joinDate: fnFmtDate(d.joinDate), memberMemo: d.memberMemo || ''
       });
@@ -217,7 +217,7 @@ window.MbMemberMng = {
 
     /* handleSave — 저장 */
     const handleSave = async () => {
-      if (!detailPanel.form.loginId) { showToast('이메일은 필수입니다.', 'error'); return; }
+      if (!detailPanel.form.loginId) { showToast('로그인ID는 필수입니다.', 'error'); return; }
       if (!detailPanel.form.memberNm) { showToast('이름은 필수입니다.', 'error'); return; }
       const isNewMember = detailPanel.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
@@ -331,7 +331,8 @@ window.MbMemberMng = {
         options: [
           { value: 'memberId', label: 'ID' },
           { value: 'memberNm', label: '이름' },
-          { value: 'loginId',  label: '이메일' },
+          { value: 'loginId',     label: '로그인ID' },
+          { value: 'memberEmail', label: '이메일' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
@@ -343,7 +344,8 @@ window.MbMemberMng = {
     columns.baseGrid = [
       { key: 'memberNm',         label: '이름',     sortKey: 'nm',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
-      { key: 'loginId',          label: '이메일' },
+      { key: 'loginId',          label: '로그인ID' },
+      { key: 'memberEmail',      label: '이메일' },
       { key: 'memberPhone',      label: '연락처' },
       { key: 'gradeCd',          label: '등급',     align: 'center', badge: (row) => fnGradeBadge(row.gradeCd) },
       { key: 'memberStatusCd',   label: '상태',     align: 'center', badge: (row) => fnStatusBadge(row.memberStatusCd) },
@@ -381,7 +383,8 @@ window.MbMemberMng = {
       :sort-state="uiState"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('members-sort', key)"
-      grid-id="members-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      grid-id="members-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+            table-max-height="540px">
       <template #row-actions="{ row }">
         <button class="btn btn_row_edit" @click.stop="handleSelectAction('members-rowEdit', row)">
           수정

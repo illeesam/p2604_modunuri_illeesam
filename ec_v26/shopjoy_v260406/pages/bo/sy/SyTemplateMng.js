@@ -447,7 +447,8 @@ window.SyTemplateMng = {
         :columns="columns.baseGrid" :rows="templates" row-key="templateId" :selected-key="detailPanel.selectedId"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('templates-sort', key)"
-        grid-id="templates-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        grid-id="templates-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
         <template #head-actions>
           관리
         </template>

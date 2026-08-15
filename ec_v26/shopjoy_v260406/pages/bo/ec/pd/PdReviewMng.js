@@ -429,7 +429,8 @@ window.PdReviewMng = {
     <bo-grid bare :columns="columns.listGrid" :rows="reviews" :pager="listGridPager" row-key="reviewId" :selected-key="selectedId"
       :sort-state="uiState"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-actions
-      @sort="key => handleBtnAction('reviews-sort', key)" grid-id="reviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      @sort="key => handleBtnAction('reviews-sort', key)" grid-id="reviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #row-actions="{ row }">
         <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="handleSelectAction('reviews-rowPreview', row.prodId)">
           👁

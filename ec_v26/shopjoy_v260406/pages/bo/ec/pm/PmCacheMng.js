@@ -357,7 +357,8 @@ window.PmCacheMng = {
       :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
       @sort="key => handleBtnAction('caches-sort', key)"
       @ref-click="({type,id}) => handleSelectAction('caches-ref', {type, id})"
-      grid-id="caches-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      grid-id="caches-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

@@ -401,7 +401,8 @@ window.PmGiftMng = {
       :columns="columns.baseGrid" :rows="gifts" row-key="giftId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(g) => detailPanel.selectedId===g.giftId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('gifts-sort', key)" grid-id="gifts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      :row-style="(g) => detailPanel.selectedId===g.giftId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('gifts-sort', key)" grid-id="gifts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

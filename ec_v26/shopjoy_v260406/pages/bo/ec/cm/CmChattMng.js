@@ -337,7 +337,8 @@ window.CmChattMng = {
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('chatts-sort', key)"
       @ref-click="ref => handleSelectAction('chatts-rowRef', ref)"
-      grid-id="chatts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      grid-id="chatts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+            table-max-height="540px">
       <template #row-actions="{ row, gridId }">
         <div class="actions">
           <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">

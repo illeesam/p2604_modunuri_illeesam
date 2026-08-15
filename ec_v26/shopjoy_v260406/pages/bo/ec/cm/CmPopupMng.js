@@ -588,7 +588,8 @@ window.CmPopupMng = {
       :selected-key="baseDetail.selectedId"
       :row-class="row => baseDetail.selectedId === row.popupId ? 'active' : ''"
       empty-text="등록된 팝업이 없습니다."
-      grid-id="popups-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      grid-id="popups-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+            table-max-height="540px">
       <template #row-actions="{ row, gridId }">
         <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
           <button class="btn btn_preview btn-xs" title="단일선택으로 미리보기"

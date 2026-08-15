@@ -2,6 +2,10 @@
 (function () {
   const { ref, reactive, computed, onMounted } = Vue;
 
+  /* 테스트 수신처 — 전 회원/사용자 공통 고정값 (정책 sy.17 테스트 수신처 통일) */
+  const TEST_EMAIL = 'illeesam@gmail.com';
+  const TEST_PHONE = '010-3805-0206';
+
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, logPanelHtml, statCardHtml } = window.ZdSimulBase;
 
   /* ── 도메인 상수 ───────────────────────────────────────── */
@@ -186,7 +190,9 @@
           const fn = pick(FIRST_NAMES);
           if (mode === 'create') {
             const seq      = String(Date.now()).slice(-5);
-            const loginId  = 'sim_' + seq;
+            /* 로그인ID 는 실제 회원처럼 이메일 형식 — 도메인 분포 설정(fixedDomain/domainWeights)을 여기서 쓴다.
+               수신용 이메일(member_email)은 테스트 통일값이라 도메인이 반영되지 않는다. */
+            const loginId  = 'sim_' + seq + '@' + _pickDomain();
             const grade    = _pickGrade();
             const gender   = _pickGender();
             const ageGrp   = _pickAgeGroup();
@@ -196,8 +202,10 @@
             const buyType  = _pickBuyType();
             const empType  = _pickEmpType();
             const snsType  = _pickSnsType();
-            const email    = loginId + '@' + _pickDomain();
-            const phone    = '010-' + String(randInt(1000, 9999)) + '-' + String(randInt(1000, 9999));
+            /* 테스트 수신처 통일 (정책 sy.17) — 실제 수신 가능한 값으로 고정.
+               랜덤 주소로 만들면 메일/SMS 시뮬 발송이 실존하지 않는 곳으로 나간다. */
+            const email    = TEST_EMAIL;
+            const phone    = TEST_PHONE;
             const nm       = (namePrefix || '시뮬') + ln + fn;
             const empLabel = EMP_TYPES.find(e => e.cd === empType)?.label || empType;
             const snsLabel = SNS_TYPES.find(s => s.cd === snsType)?.label || snsType;
@@ -235,7 +243,7 @@
             } else if (type === 'status') {
               const s = _pick(STATUSES_UPD); body.memberStatusCd = s.cd; desc = '상태→' + s.label;
             } else if (type === 'phone') {
-              body.memberPhone = '010-' + String(randInt(1000, 9999)) + '-' + String(randInt(1000, 9999));
+              body.memberPhone = TEST_PHONE;   /* 테스트 수신처 통일 (정책 sy.17) */
               desc = '전화번호 변경';
             } else {
               body.memberMemo = '[시뮬수정] ' + new Date().toLocaleTimeString('ko-KR');

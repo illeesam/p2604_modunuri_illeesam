@@ -409,7 +409,8 @@ window.DpDispWidgetLibMng = {
       :sort-state="uiState"
       empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('widgetLibs-sort', key)"
-      grid-id="widgetLibs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      grid-id="widgetLibs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+            table-max-height="540px">
         <template #row-actions="{ row, gridId }">
           <div class="actions">
             <button class="btn btn_preview btn-icon" title="미리보기" @click.stop="handleGridCellAction(gridId, 'btn_row_preview', row)">👁</button>

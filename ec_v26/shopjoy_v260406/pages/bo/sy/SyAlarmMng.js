@@ -455,7 +455,8 @@ window.SyAlarmMng = {
         :columns="columns.baseGrid" :rows="alarms" row-key="alarmId" :selected-key="detailModal.dtlId"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('alarms-sort', key)"
-        grid-id="alarms-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        grid-id="alarms-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
         <template #head-actions>
           관리
         </template>

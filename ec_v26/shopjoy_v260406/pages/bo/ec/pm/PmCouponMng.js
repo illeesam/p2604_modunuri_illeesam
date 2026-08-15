@@ -398,7 +398,8 @@ window.PmCouponMng = {
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"
       @sort="key => handleBtnAction('coupons-sort', key)"
-      grid-id="coupons-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      grid-id="coupons-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+            table-max-height="540px">
       <template #head-actions>
         관리
       </template>

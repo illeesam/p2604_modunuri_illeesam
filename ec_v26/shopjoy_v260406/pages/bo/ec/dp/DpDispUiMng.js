@@ -212,7 +212,8 @@ window.DpDispUiMng = {
       :sort-state="baseGrid"
       :row-class="row => baseDetail.selectedId === row.uiId ? 'active' : ''" empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('uis-sort', key)"
-      grid-id="uis-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      grid-id="uis-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+            table-max-height="540px">
       <template #row-actions="{ row, gridId }">
         <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
           <button class="btn btn_preview btn-icon" title="미리보기" @click.stop="handleGridCellAction(gridId, 'btn_row_preview', row)">👁</button>
