@@ -10,8 +10,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachChangeItem;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.AttachFile;
 import org.hibernate.annotations.Comment;
 
 @Entity
@@ -77,13 +76,10 @@ public class SyBbs extends BaseEntity {
     @Column(name = "path_id", length = 21)
     private String pathId;
 
-    /** DB 컬럼 아님(요청 전용) — 첨부파일 연계 변경 목록(추가 rowStatus:'I' / 삭제 rowStatus:'D').
-     *  create()/update() 가 bbsId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다. */
+    /** DB 컬럼 아님 — 첨부파일 목록. 요청 시엔 attachId/rowStatus(I/D) 만 채워 보내고,
+     *  create()/update() 가 bbsId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한 뒤,
+     *  같은 필드를 SyAttachService.getAttachFilesByRef() 결과로 덮어써 응답에 되돌려준다. */
     @Transient
-    private List<SyAttachChangeItem> attachChanges;
-
-    /** DB 컬럼 아님(응답 전용) — 저장 직후 최신 첨부파일 목록(SyAttachService.getBriefsByRef). */
-    @Transient
-    private List<SyAttachDto.Brief> attachFiles;
+    private List<AttachFile> attachFiles;
 
 }

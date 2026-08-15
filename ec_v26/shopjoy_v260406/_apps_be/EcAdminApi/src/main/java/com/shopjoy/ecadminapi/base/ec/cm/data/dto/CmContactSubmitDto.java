@@ -1,6 +1,6 @@
 package com.shopjoy.ecadminapi.base.ec.cm.data.dto;
 
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachChangeItem;
+import com.shopjoy.ecadminapi.base.sy.data.dto.AttachFile;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,8 +27,8 @@ public class CmContactSubmitDto {
         @Size(max = 4000) private String message;
         /** 작성자(로그인 회원 nm) */
         @Size(max = 100) private String blogAuthor;
-        /** 문의 내용 첨부파일 연계 변경 목록(추가 rowStatus:'I' / 삭제 rowStatus:'D') —
+        /** 문의 내용 첨부파일 목록 — 요청 시엔 attachId/rowStatus(I/D) 만 채워 보낸다.
          *  submit() 이 contactId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다. */
-        private List<SyAttachChangeItem> attachChanges;
+        private List<AttachFile> attachFiles;
     }
 }

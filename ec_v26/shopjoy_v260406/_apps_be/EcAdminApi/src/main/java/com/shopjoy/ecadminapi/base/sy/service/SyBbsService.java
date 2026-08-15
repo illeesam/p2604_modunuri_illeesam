@@ -85,8 +85,8 @@ public class SyBbsService {
         body.setUpdDate(LocalDateTime.now());
         SyBbs saved = syBbsRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_BBS, saved.getBbsId());
-        saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_BBS, saved.getBbsId()));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.SY_BBS, saved.getBbsId());
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.SY_BBS, saved.getBbsId()));
         em.flush();
         return saved;
     }
@@ -103,8 +103,8 @@ public class SyBbsService {
         entity.setUpdDate(LocalDateTime.now());
         SyBbs saved = syBbsRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_BBS, id);
-        saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_BBS, id));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.SY_BBS, id);
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.SY_BBS, id));
         em.flush();
         return saved;
     }

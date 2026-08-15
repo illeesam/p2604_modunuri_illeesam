@@ -84,8 +84,8 @@ public class FoCmContactService {
             .build();
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("문의 접수에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(req.getAttachChanges(), SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId());
-        saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId()));
+        syAttachService.applyChanges(req.getAttachFiles(), SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId());
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId()));
 
         // 접수 완료 알림 발송 (메일/카카오/시스템알림) — 비동기(fire-and-forget).
         // 메일 SMTP 발송이 응답을 지연시키지 않도록 별도 스레드풀에서 처리. 발송 결과는 이력 테이블에만 기록.

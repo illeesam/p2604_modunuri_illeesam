@@ -439,7 +439,10 @@ em.flush();
 
 - **요청** — 엔티티는 `@Transient private List<SyAttachChangeItem> attachChanges;` 를 요청 전용
   필드로 둔다(DB 컬럼 아님, JSON 역직렬화만 됨. `attachId`/`rowStatus` 둘뿐). Request DTO 를 직접
-  쓰는 화면(FO 문의 등)은 DTO 에 둔다.
+  쓰는 화면(FO 문의 등)은 DTO 에 둔다. **`@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)`
+  를 반드시 붙인다** — 안 붙이면 응답 JSON 에도 그대로 echo 되어 저장 응답에 `attachChanges` 와
+  `attachFiles` 가 중복으로 실린다(실제로 있었던 문제, 2026-08-15). WRITE_ONLY 는 "요청 역직렬화는
+  받되 응답 직렬화는 하지 않는다"는 뜻 — 엔티티 자체는 그대로 두고 JSON 노출만 막는다.
 - **응답** — 같은 엔티티에 `@Transient private List<SyAttachDto.Brief> attachFiles;` 를 별도로 둔다
   (`Brief` 는 `attachId`/`fileNm`/`fileExt`/`fileSize`/`attachUrl`/`thumbUrl`/`cdnImgUrl`/
   `thumbCdnUrl`/`storagePath`/`sortOrd` — sy_attach 컬럼 그대로라 항상 값이 있다). `applyChanges()`
@@ -522,4 +525,4 @@ syAttachService.updateSelective(SyAttach.builder()
 | | - 동영상 자동 변환 & 썸네일 생성 |
 | | - HTTP Range 요청 스트리밍 지원 |
 | 2026-06-08 | §9 프론트 공통 컴포넌트(BaseAttachGrp/One) props + `readonly` 보기/수정 모드 분리 추가 |
-| 2026-08-15 | ⭐ 전면 개편 — `sy_attach_grp`/`attach_grp_id` 폐기, `ref_table_nm`/`ref_id` 로 통일. `BaseAttachGrp` 를 `pendingChanges`(rowStatus I/D) + `SyAttachService.applyChanges`(부모 저장과 원자적 반영) 모델로 재설계. §6·데이터베이스 테이블·§9·§10 전면 갱신, §10-A/§10-B 신설(applyChanges 표준 패턴 / 도메인 자체 첨부행 pd_prod_img 사례). PdProd 이미지 첨부의 base64 저장 방식도 실제 업로드로 전환(정방향 `attach_id` + 역방향 `ref_table_nm`/`ref_id` 둘 다 연계). 상품설명(`pd_prod_content`)은 처음엔 `ref_id=prod_id` 로 연계 시도했으나, 정리 코드가 없는 상태에서 연계까지 하면 `ATTACH_CLEANUP` 배치 대상에서도 영구히 빠지는 게 드러나 **연계를 아예 하지 않는 쪽으로 정정**. `ref_table_nm` 문자열 리터럴을 `SyAttachRefTableConst` 상수로 전면 치환(저장·조회 양쪽) — 이어서 프론트도 값을 다시 타이핑하지 않도록 `GET /co/cm/upload/ref/table-options` + `coUtil.cofGetAttachRefTableOptions()` 신설, `<base-attach-grp :ref-table-nm>` 동적 바인딩 9개 사이트 전환(`BaseAttachGrp` 는 `refTableNm` 늦게 채워지는 걸 놓치지 않도록 `watch(cfHasRef, ..., {immediate:true})` 로 교체). **당일 추가 수정**: 저장 응답의 `attachChanges` 항목 대부분이 null 로 나가던 문제 발견 — `applyChanges()` 는 DB 반영만 하도록 되돌리고(반환값 삭제), 응답은 별도 `attachFiles`(2번째 슬롯은 `attach2Files`) 필드에 `SyAttachDto.Brief`(항상 값 있음)로 채워 보내도록 `getBriefsByRef`/`toBrief` 신설 — `SyNotice`/`SyBbs`/`CmFaq`/`SyContact`/`FoCmContactService` 전부 적용, `CmChattMsgService` 의 중복 매핑도 `toBrief` 로 통합 |
+| 2026-08-15 | ⭐ 전면 개편 — `sy_attach_grp`/`attach_grp_id` 폐기, `ref_table_nm`/`ref_id` 로 통일. `BaseAttachGrp` 를 `pendingChanges`(rowStatus I/D) + `SyAttachService.applyChanges`(부모 저장과 원자적 반영) 모델로 재설계. §6·데이터베이스 테이블·§9·§10 전면 갱신, §10-A/§10-B 신설(applyChanges 표준 패턴 / 도메인 자체 첨부행 pd_prod_img 사례). PdProd 이미지 첨부의 base64 저장 방식도 실제 업로드로 전환(정방향 `attach_id` + 역방향 `ref_table_nm`/`ref_id` 둘 다 연계). 상품설명(`pd_prod_content`)은 처음엔 `ref_id=prod_id` 로 연계 시도했으나, 정리 코드가 없는 상태에서 연계까지 하면 `ATTACH_CLEANUP` 배치 대상에서도 영구히 빠지는 게 드러나 **연계를 아예 하지 않는 쪽으로 정정**. `ref_table_nm` 문자열 리터럴을 `SyAttachRefTableConst` 상수로 전면 치환(저장·조회 양쪽) — 이어서 프론트도 값을 다시 타이핑하지 않도록 `GET /co/cm/upload/ref/table-options` + `coUtil.cofGetAttachRefTableOptions()` 신설, `<base-attach-grp :ref-table-nm>` 동적 바인딩 9개 사이트 전환(`BaseAttachGrp` 는 `refTableNm` 늦게 채워지는 걸 놓치지 않도록 `watch(cfHasRef, ..., {immediate:true})` 로 교체). **당일 추가 수정**: 저장 응답의 `attachChanges` 항목 대부분이 null 로 나가던 문제 발견 — `applyChanges()` 는 DB 반영만 하도록 되돌리고(반환값 삭제), 응답은 별도 `attachFiles`(2번째 슬롯은 `attach2Files`) 필드에 `SyAttachDto.Brief`(항상 값 있음)로 채워 보내도록 `getBriefsByRef`/`toBrief` 신설 — `SyNotice`/`SyBbs`/`CmFaq`/`SyContact`/`FoCmContactService` 전부 적용, `CmChattMsgService` 의 중복 매핑도 `toBrief` 로 통합. 이어서 `attachChanges` 가 응답에도 그대로 echo 되는 것도 발견 — 4개 엔티티의 요청 필드에 `@JsonProperty(access = WRITE_ONLY)` 를 붙여 응답엔 `attachFiles`/`attach2Files` 만 나가도록 정리 |

@@ -87,8 +87,8 @@ public class CmFaqService {
         body.setUpdDate(LocalDateTime.now());
         CmFaq saved = cmFaqRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.CM_FAQ, saved.getFaqId());
-        saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.CM_FAQ, saved.getFaqId()));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.CM_FAQ, saved.getFaqId());
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.CM_FAQ, saved.getFaqId()));
         em.flush();
         return saved;
     }
@@ -103,8 +103,8 @@ public class CmFaqService {
         entity.setUpdDate(LocalDateTime.now());
         CmFaq saved = cmFaqRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.CM_FAQ, id);
-        saved.setAttachFiles(syAttachService.getBriefsByRef(SyAttachRefTableConst.CM_FAQ, id));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.CM_FAQ, id);
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.CM_FAQ, id));
         em.flush();
         return saved;
     }

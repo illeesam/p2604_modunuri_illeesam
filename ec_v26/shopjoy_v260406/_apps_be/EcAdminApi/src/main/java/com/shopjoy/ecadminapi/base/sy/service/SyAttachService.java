@@ -1,7 +1,7 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
-import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachChangeItem;
+import com.shopjoy.ecadminapi.base.sy.data.dto.AttachFile;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
@@ -137,15 +137,15 @@ public class SyAttachService {
      * 'U'(부가정보 수정)는 아직 처리 항목이 없다 — 추후 보완.</p>
      *
      * <p>이 메서드는 DB 반영만 한다 — 저장 응답에 첨부 리소스 정보(파일명/URL/크기 등)를 실어 보내려면
-     * 호출 직후 {@link #getBriefsByRef} 로 최신 목록을 다시 읽어 응답 DTO 의 {@code attachFiles}
-     * (2번째 슬롯은 {@code attach2Files}) 필드에 담는다. §10-A/§10-C.</p>
+     * 호출 직후 {@link #getAttachFilesByRef} 로 최신 목록을 다시 읽어 같은 필드({@code attachFiles},
+     * 2번째 슬롯은 {@code attach2Files})를 덮어쓴다. 요청/응답이 같은 필드 하나를 공유한다. §10-A/§10-B.</p>
      */
     @Transactional
-    public void applyChanges(List<SyAttachChangeItem> changes, String refTableNm, String refId) {
+    public void applyChanges(List<AttachFile> changes, String refTableNm, String refId) {
         if (changes == null || changes.isEmpty()) return;
         if (refTableNm == null || refTableNm.isBlank() || refId == null || refId.isBlank())
             throw new CmBizException("refTableNm/refId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
-        for (SyAttachChangeItem c : changes) {
+        for (AttachFile c : changes) {
             if (c == null || c.getAttachId() == null || c.getAttachId().isBlank()) continue;
             if ("I".equals(c.getRowStatus())) {
                 SyAttach patch = SyAttach.builder().attachId(c.getAttachId()).refTableNm(refTableNm).refId(refId).build();
@@ -158,18 +158,40 @@ public class SyAttachService {
     }
 
     /**
-     * refTableNm/refId 로 연계된 첨부파일들을 {@link SyAttachDto.Brief} 목록으로 반환.
-     * 다른 도메인 Service 가 저장 후 응답 DTO 의 {@code attachFiles} 필드에 그대로 싣는 용도(§10-A) —
-     * 목록/상세 조회의 {@code fnFillAttachFiles} 패턴(§10)과 동일한 매핑을 공유한다.
+     * refTableNm/refId 로 연계된 첨부파일들을 {@link AttachFile} 목록으로 반환.
+     * 다른 도메인 Service 가 저장 후 응답의 {@code attachFiles} 필드에 그대로 싣는 용도(§10-A).
      */
-    public List<SyAttachDto.Brief> getBriefsByRef(String refTableNm, String refId) {
+    public List<AttachFile> getAttachFilesByRef(String refTableNm, String refId) {
         if (refTableNm == null || refTableNm.isBlank() || refId == null || refId.isBlank()) return List.of();
         return syAttachRepository
             .findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc(refTableNm, List.of(refId))
-            .stream().map(this::toBrief).toList();
+            .stream().map(this::toAttachFile).toList();
     }
 
-    /** SyAttach → 화면이 쓰는 축약 항목 (필드명은 sy_attach 컬럼 그대로) */
+    /** SyAttach → 요청/응답 공유용 축약 항목 (필드명은 sy_attach 컬럼 그대로). rowStatus 는 응답 전용이라 null. */
+    public AttachFile toAttachFile(SyAttach a) {
+        AttachFile f = new AttachFile();
+        f.setAttachId(a.getAttachId());
+        f.setRefTableNm(a.getRefTableNm());
+        f.setRefId(a.getRefId());
+        f.setFileNm(a.getFileNm());
+        f.setFileExt(a.getFileExt());
+        f.setFileSize(a.getFileSize());
+        f.setAttachUrl(a.getAttachUrl());
+        f.setThumbUrl(a.getThumbUrl());
+        f.setCdnImgUrl(a.getCdnImgUrl());
+        f.setThumbCdnUrl(a.getThumbCdnUrl());
+        f.setStoragePath(a.getStoragePath());
+        f.setSortOrd(a.getSortOrd());
+        return f;
+    }
+
+    /**
+     * SyAttach → {@link SyAttachDto.Brief} (다른 도메인 DTO 가 읽기 전용 목록/상세 조회에서 물고 가는
+     * 축약 항목, §10). {@link #toAttachFile} 과 필드는 거의 같지만 rowStatus 개념이 없는 순수
+     * 읽기용이라 별도로 둔다 — 저장 요청/응답을 공유하는 {@code attachFiles} 필드에는 {@link AttachFile}
+     * 을 쓴다(§10-A).
+     */
     public SyAttachDto.Brief toBrief(SyAttach a) {
         SyAttachDto.Brief b = new SyAttachDto.Brief();
         b.setAttachId(a.getAttachId());

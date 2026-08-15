@@ -98,16 +98,14 @@ tasks.register<JavaCompile>("generateQueryDsl") {
     group = "build"
     description = "QueryDSL Q-클래스 생성"
     // @Entity 클래스 + 의존 공통 파일 (EntitySaveListener → SecurityUtil → AuthPrincipal)
-    // + 엔티티의 @Transient 필드가 참조하는 DTO (SyAttachChangeItem, SyAttachDto)
+    // + 엔티티의 @Transient 필드가 참조하는 DTO (AttachFile)
     source = fileTree("src/main/java") {
         include(
             "**/entity/*.java",
             "**/data/entity/*.java",
             "**/common/util/SecurityUtil.java",
             "**/co/auth/security/AuthPrincipal.java",
-            "**/base/sy/data/dto/SyAttachChangeItem.java",
-            "**/base/sy/data/dto/SyAttachDto.java",
-            "**/common/data/BaseRequest.java"
+            "**/base/sy/data/dto/AttachFile.java"
         )
     }
     classpath = configurations.compileClasspath.get()
