@@ -23,6 +23,13 @@ window.Faq = {
     const _viewedFaqIds = new Set();
     /* 페이저 (클라이언트 페이징, 최대 10건/페이지) */
     const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50] });
+    /* refTableNm — sy_attach.ref_table_nm 실제 값. 백엔드 SyAttachRefTableConst.OPTIONS 에서
+       key='FAQ' 항목을 찾아 채운다(coUtil.cofGetAttachRefTableOptions, initPage 에서 로드). */
+    const refTableNm = ref('');
+    const fnLoadRefTableNm = async () => {
+      const opts = await coUtil.cofGetAttachRefTableOptions();
+      refTableNm.value = opts.find(o => o.key === 'FAQ')?.value || '';
+    };
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -150,6 +157,7 @@ window.Faq = {
     // ★ onMounted — 진입 시 코드 로드 + 분류 트리 + 카운트(전체) + FAQ(선택분류) 조회
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
+      fnLoadRefTableNm();
       handleLoadTree();
       handleLoadFaqCounts();
       handleLoadFaqs();
@@ -204,7 +212,7 @@ window.Faq = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, faqs, selectedPathId, pager,
+      uiState, faqs, selectedPathId, pager, refTableNm,
       cfTree, cfTotalCount,
       handleBtnAction, handleSelectAction,
     };
@@ -274,7 +282,7 @@ window.Faq = {
               <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;">
                 📎 첨부파일
               </div>
-              <base-attach-grp ref-table-nm="cm_faq" :ref-key-id="faq.faqId" :ref-id="'FAQ-' + faq.faqId"
+              <base-attach-grp :ref-table-nm="refTableNm" :ref-key-id="faq.faqId" :ref-id="faq.faqId"
                 grp-code="FAQ_ANSWER_ATTACH" grp-nm="FAQ 답변 첨부파일"
                 display-mode="list" :readonly="true" />
             </div>

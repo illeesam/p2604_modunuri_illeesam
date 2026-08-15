@@ -33,6 +33,16 @@ window.SyContactDtl = {
        pendingChanges 를 비우고 최신 목록으로 재조회해야 한다(재저장 시 중복 반영 방지). */
     const contentAttachRef = ref(null);
     const answerAttachRef  = ref(null);
+    /* contentRefTableNm/answerRefTableNm — sy_attach.ref_table_nm 실제 값. 백엔드
+       SyAttachRefTableConst.OPTIONS 에서 각각 key='CONTACT_CONTENT'/'CONTACT_ANSWER' 항목을
+       찾아 채운다(coUtil.cofGetAttachRefTableOptions, initPage 에서 로드). */
+    const contentRefTableNm = ref('');
+    const answerRefTableNm  = ref('');
+    const fnLoadRefTableNm = async () => {
+      const opts = await coUtil.cofGetAttachRefTableOptions();
+      contentRefTableNm.value = opts.find(o => o.key === 'CONTACT_CONTENT')?.value || '';
+      answerRefTableNm.value  = opts.find(o => o.key === 'CONTACT_ANSWER')?.value || '';
+    };
 
     watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     watch(() => uiState.tabMode2, v => { window._syContactDtlState.tabMode = v; });
@@ -150,6 +160,7 @@ window.SyContactDtl = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      await fnLoadRefTableNm();
       if (!cfIsNew.value) { await handleLoadDetail(); }
     };
     onMounted(initPage);
@@ -275,6 +286,7 @@ window.SyContactDtl = {
       cfIsNew, cfHasId, cfSaveDisabled, cfSiteNm, cfDtlMode, tabs,  // computed / reactive(tabs)
       cfCurId, cfContentAttachRefId, cfAnswerAttachRefId,           // 첨부 연계용 computed
       contentAttachRef, answerAttachRef,                            // 첨부 위젯 template ref
+      contentRefTableNm, answerRefTableNm,                          // 첨부 ref_table_nm 값
       showTab,               // 헬퍼
     };
   },
@@ -311,7 +323,7 @@ window.SyContactDtl = {
           <span v-if="errors.contactContent" class="field-error">{{ errors.contactContent }}</span>
         </template>
         <template #contentAttach>
-          <base-attach-grp ref="contentAttachRef" ref-table-nm="sy_contact_content" :ref-key-id="cfCurId"
+          <base-attach-grp ref="contentAttachRef" :ref-table-nm="contentRefTableNm" :ref-key-id="cfCurId"
             :ref-id="cfContentAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
             grp-code="CONTACT_CONTENT_ATTACH" grp-nm="문의 내용 첨부파일"
             :max-count="5" :max-size-mb="10" allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
@@ -348,7 +360,7 @@ window.SyContactDtl = {
           <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
         </template>
         <template #answerAttach>
-          <base-attach-grp ref="answerAttachRef" ref-table-nm="sy_contact_answer" :ref-key-id="cfCurId"
+          <base-attach-grp ref="answerAttachRef" :ref-table-nm="answerRefTableNm" :ref-key-id="cfCurId"
             :ref-id="cfAnswerAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
             grp-code="CONTACT_ANSWER_ATTACH" grp-nm="문의 답변 첨부파일"
             :max-count="5" :max-size-mb="10" allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />

@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmFaq;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmFaqRepository;
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
 import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -86,7 +87,7 @@ public class CmFaqService {
         body.setUpdDate(LocalDateTime.now());
         CmFaq saved = cmFaqRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), "cm_faq", saved.getFaqId());
+        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.CM_FAQ,saved.getFaqId());
         em.flush();
         return saved;
     }
@@ -101,7 +102,7 @@ public class CmFaqService {
         entity.setUpdDate(LocalDateTime.now());
         CmFaq saved = cmFaqRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), "cm_faq", id);
+        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.CM_FAQ,id);
         em.flush();
         return saved;
     }

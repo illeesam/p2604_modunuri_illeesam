@@ -125,6 +125,7 @@ window.SyAttachMng = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      await fnLoadRefTableOpts();
       await handleSearchData();
       Object.assign(searchParamInit, searchParam);   // [초기화] 기준값 스냅샷
     };
@@ -169,17 +170,18 @@ window.SyAttachMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    /* REF_TABLE_OPTS — 검색 select 및 그리드 라벨 표시에 공용으로 쓰는 관련테이블명 사전 */
-    const REF_TABLE_OPTS = [
-      { value: 'sy_notice',           label: '공지사항' },
-      { value: 'sy_bbs',              label: '게시글' },
-      { value: 'sy_contact_content',  label: '문의 내용' },
-      { value: 'sy_contact_answer',   label: '문의 답변' },
-      { value: 'cm_faq',              label: 'FAQ 답변' },
-      { value: 'cm_chatt_msg',        label: '채팅 메시지' },
-      { value: 'sy_vendor_content',   label: '업체 콘텐츠' },
-      { value: 'sy_attach_grp_legacy', label: '레거시 첨부그룹' },
-    ];
+    /* REF_TABLE_OPTS — 검색 select 및 그리드 라벨 표시에 공용으로 쓰는 관련테이블명 사전.
+       백엔드 SyAttachRefTableConst.OPTIONS 를 그대로 받아온다(coUtil.cofGetAttachRefTableOptions,
+       initPage 에서 채움) — 값을 프론트에 손으로 다시 타이핑하지 않기 위함. '레거시 첨부그룹'만
+       예외로 프론트에서 덧붙인다 — 2026-08-15 마이그레이션 시 대상 특정 불가했던 과거 데이터를
+       조회하기 위한 항목일 뿐, 앞으로 코드가 이 값으로 연계하는 일이 없어 백엔드 상수 목록엔 없다. */
+    const REF_TABLE_OPTS = reactive([]);
+    const fnLoadRefTableOpts = async () => {
+      const opts = await coUtil.cofGetAttachRefTableOptions();
+      REF_TABLE_OPTS.splice(0, REF_TABLE_OPTS.length,
+        ...opts.map(o => ({ value: o.value, label: o.label })),
+        { value: 'sy_attach_grp_legacy', label: '레거시 첨부그룹' });
+    };
     /* fnRefTableNm — 관련테이블명 코드값 → 한글 라벨 */
     const fnRefTableNm = (v) => REF_TABLE_OPTS.find(o => o.value === v)?.label || v || '-';
 

@@ -50,6 +50,13 @@ window.SyBbsDtl = {
     /* attachGrpRef — pendingChanges(추가/삭제 변경 목록)를 create/update 요청에 attachChanges 로 담아 보내기 위한 template ref.
        실제 sy_attach 반영은 백엔드(SyBbsService.create/update)가 같은 트랜잭션에서 원자적으로 처리한다. */
     const attachGrpRef = ref(null);
+    /* refTableNm — sy_attach.ref_table_nm 실제 값. 백엔드 SyAttachRefTableConst.OPTIONS 에서
+       key='BBS' 항목을 찾아 채운다(coUtil.cofGetAttachRefTableOptions, initPage 에서 로드). */
+    const refTableNm = ref('');
+    const fnLoadRefTableNm = async () => {
+      const opts = await coUtil.cofGetAttachRefTableOptions();
+      refTableNm.value = opts.find(o => o.key === 'BBS')?.value || '';
+    };
     const showBbmDetail = Vue.toRef(uiState, 'showBbmDetail');
     const showBbmModal = ref(false);
 
@@ -205,6 +212,7 @@ window.SyBbsDtl = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      await fnLoadRefTableNm();
       if (!cfIsNew.value) { await handleLoadDetail(); }
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     };
@@ -266,7 +274,7 @@ window.SyBbsDtl = {
 
     return {
       columns,
-      form, errors, showBbmModal, dtlId, attachGrpRef,  // 상태 / 데이터
+      form, errors, showBbmModal, dtlId, attachGrpRef, refTableNm,  // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfAllowAttach, cfAttachMaxCount,                         // computed
       selectedBbm, showBbmDetail,                                                    // computed (ref)
@@ -318,7 +326,7 @@ window.SyBbsDtl = {
       <div v-if="cfAttachMaxCount > 0">
         <span style="font-size:11px;color:#bbb;margin-bottom:6px;display:block;">({{ cfAllowAttach }})</span>
         <base-attach-grp
-          ref="attachGrpRef" ref-table-nm="sy_bbs" :ref-key-id="dtlId"
+          ref="attachGrpRef" :ref-table-nm="refTableNm" :ref-key-id="dtlId"
           :ref-id="dtlId ? 'BBS-'+dtlId : ''" :show-toast="showToast" :readonly="cfDtlMode"
           grp-code="BBS_ATTACH" grp-nm="게시글 첨부파일"
           :max-count="cfAttachMaxCount" :max-size-mb="10" allow-ext="*" />

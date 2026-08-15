@@ -53,6 +53,14 @@ window.CmNoticeDtl = {
     const cfIsNew       = computed(() => props.dtlId == null);
     const cfReadonly    = computed(() => props.dtlMode === 'view');
     const cfAttachRefId = computed(() => props.dtlId ? ('NOTICE-' + props.dtlId) : '');
+    /* refTableNm — sy_attach.ref_table_nm 실제 값. 백엔드 SyAttachRefTableConst.OPTIONS 에서
+       key='NOTICE' 항목을 찾아 채운다(coUtil.cofGetAttachRefTableOptions, initPage 에서 로드) —
+       문자열을 프론트에 직접 다시 타이핑하지 않기 위함. */
+    const refTableNm = ref('');
+    const fnLoadRefTableNm = async () => {
+      const opts = await coUtil.cofGetAttachRefTableOptions();
+      refTableNm.value = opts.find(o => o.key === 'NOTICE')?.value || '';
+    };
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -81,6 +89,7 @@ window.CmNoticeDtl = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      await fnLoadRefTableNm();
       // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
       if (props.active && cfIsNew.value) _applyNewDefaults();
       await handleSearchDetail();
@@ -155,7 +164,7 @@ window.CmNoticeDtl = {
       columns,
       uiState, codes, baseForm, errors,
       handleBtnAction,
-      cfIsNew, cfReadonly, cfAttachRefId, attachGrpRef,
+      cfIsNew, cfReadonly, cfAttachRefId, attachGrpRef, refTableNm,
       showToast,
     };
   },
@@ -175,7 +184,7 @@ window.CmNoticeDtl = {
       <base-html-editor v-else v-model="baseForm.contentHtml" height="280px" />
     </template>
     <template #attachGrp>
-      <base-attach-grp ref="attachGrpRef" ref-table-nm="sy_notice" :ref-key-id="dtlId"
+      <base-attach-grp ref="attachGrpRef" :ref-table-nm="refTableNm" :ref-key-id="dtlId"
         :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfReadonly"
         grp-code="NOTICE_ATTACH" grp-nm="공지 첨부파일"
         :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />

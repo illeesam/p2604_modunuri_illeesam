@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
@@ -84,8 +85,8 @@ public class SyContactService {
         body.setUpdDate(LocalDateTime.now());
         SyContact saved = syContactRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getContentAttachChanges(), "sy_contact_content", saved.getContactId());
-        syAttachService.applyChanges(body.getAnswerAttachChanges(), "sy_contact_answer", saved.getContactId());
+        syAttachService.applyChanges(body.getContentAttachChanges(), SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId());
+        syAttachService.applyChanges(body.getAnswerAttachChanges(), SyAttachRefTableConst.SY_CONTACT_ANSWER, saved.getContactId());
         em.flush();
         return saved;
     }
@@ -102,8 +103,8 @@ public class SyContactService {
         entity.setUpdDate(LocalDateTime.now());
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getContentAttachChanges(), "sy_contact_content", id);
-        syAttachService.applyChanges(body.getAnswerAttachChanges(), "sy_contact_answer", id);
+        syAttachService.applyChanges(body.getContentAttachChanges(), SyAttachRefTableConst.SY_CONTACT_CONTENT, id);
+        syAttachService.applyChanges(body.getAnswerAttachChanges(), SyAttachRefTableConst.SY_CONTACT_ANSWER, id);
         em.flush();
         return saved;
     }

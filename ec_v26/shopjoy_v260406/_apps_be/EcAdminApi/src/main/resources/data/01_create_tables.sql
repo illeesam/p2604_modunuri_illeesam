@@ -2,6 +2,14 @@
 -- ShopJoy 2604 — 전체 테이블 DDL
 -- 생성일: 2026-04-19
 -- Schema: shopjoy_2604
+--
+-- ⚠️ DEPRECATED (2026-08-15 확인) — 이 파일은 2026-04-19 시점 스냅샷 이후 갱신되지 않았다.
+--   Spring 설정(application*.yml) 어디에도 자동 실행 연결이 없어(spring.sql.init.* 미설정)
+--   현재 실행 중인 앱/DB 에는 영향을 주지 않지만, 내용이 실제 스키마와 크게 어긋나 있다
+--   (예: site_id→reg_site_id 리네이밍 반영 안 됨, sy_attach_grp/attach_grp_id 는 2026-08-15
+--   전체 폐기되어 ref_table_nm/ref_id 로 대체됨, sy_attach 의 storage_type_cd/physical_path/
+--   thumb_* 컬럼들 누락). **새 DB를 이 파일로 셋업하지 말 것** — 현재 스키마의 단일 소스는
+--   `_doc/ddl_pgsql/{ec,sy}/*.sql` (테이블당 1파일, 실 DB에서 자동 추출) 이다.
 -- ============================================================
 
 CREATE SCHEMA IF NOT EXISTS shopjoy_2604;

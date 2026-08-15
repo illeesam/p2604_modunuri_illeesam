@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmChattMsgRepository;
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
@@ -104,7 +105,7 @@ public class CmChattMsgService {
 
         Map<String, List<SyAttachDto.Brief>> byMsg = new LinkedHashMap<>();
         for (SyAttach a : syAttachRepository
-                .findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc("cm_chatt_msg", msgIds)) {
+                .findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc(SyAttachRefTableConst.CM_CHATT_MSG, msgIds)) {
             byMsg.computeIfAbsent(a.getRefId(), k -> new ArrayList<>()).add(fnToBrief(a));
         }
         for (CmChattMsgDto.Item it : items) {

@@ -122,6 +122,10 @@
     getFilesByRef(refTableNm, refId, uiNm = '첨부파일', cmdNm = '목록조회') {
       return client().get('/co/cm/upload/ref/files', { params: { refTableNm, refId }, ...hdr(uiNm, cmdNm) });
     },
+    /* getRefTableOptions — ref_table_nm 값+라벨 목록(SyAttachRefTableConst.OPTIONS). coUtil.cofGetAttachRefTableOptions() 로 캐싱해서 쓸 것 — 여기 직접 호출 금지 */
+    getRefTableOptions(uiNm = '첨부파일', cmdNm = '연계대상목록조회') {
+      return client().get('/co/cm/upload/ref/table-options', hdr(uiNm, cmdNm));
+    },
     deleteFile(attachId, uiNm = '첨부파일', cmdNm = '삭제') {
       return chkId(attachId, uiNm, cmdNm) || client().delete(`/co/cm/upload/attach/${attachId}`, hdr(uiNm, cmdNm));
     },

@@ -1,5 +1,7 @@
 package com.shopjoy.ecadminapi.co.cm.controller;
 
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableOption;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachSortDto;
 import com.shopjoy.ecadminapi.co.cm.service.CmUploadService;
@@ -36,6 +38,13 @@ public class CmUploadMultiController {
     public ResponseEntity<ApiResponse<SyAttachDto.Item>> getAttachById(
             @PathVariable("attachId") String attachId) {
         return ResponseEntity.ok(ApiResponse.ok(cmUploadService.getAttachById(attachId)));
+    }
+
+    /// ref_table_nm 값+라벨 목록 — SyAttachRefTableConst.OPTIONS 그대로 반환.
+    /// 프론트가 <base-attach-grp :ref-table-nm> 에 꽂을 값을 문자열로 다시 타이핑하지 않도록 한다.
+    @GetMapping("/ref/table-options")
+    public ResponseEntity<ApiResponse<List<SyAttachRefTableOption>>> getRefTableOptions() {
+        return ResponseEntity.ok(ApiResponse.ok(SyAttachRefTableConst.OPTIONS));
     }
 
     /// 관련테이블명/관련ID로 파일 목록 조회

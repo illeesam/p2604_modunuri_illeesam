@@ -15,6 +15,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdSkuRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdStockRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -248,7 +249,7 @@ public class BoPdProdTabController {
             if (r.getAttachId() != null && !r.getAttachId().isBlank()) {
                 keptAttachIds.add(r.getAttachId());
                 syAttachService.updateSelective(SyAttach.builder()
-                    .attachId(r.getAttachId()).refTableNm("pd_prod_img").refId(prodImgId).build());
+                    .attachId(r.getAttachId()).refTableNm(SyAttachRefTableConst.PD_PROD_IMG).refId(prodImgId).build());
             }
             idx++;
         }
@@ -376,12 +377,14 @@ public class BoPdProdTabController {
     /**
      * 상품설명 블록 일괄 저장.
      * 프론트가 보낸 contentBlocks 를 기준으로 기존 데이터 전체 삭제 후 재등록.
-     * body 예: { "contentBlocks": [{ "type":"file", "content":"https://cdn/...", "attachId":"ATT..." }, ...] }
-     * attachId 가 있는 file 타입 블록은 sy_attach 에 ref_table_nm=pd_prod_content / ref_id=prodId 로 연계한다
-     * (pd_prod_content 는 저장마다 행이 새 ID로 재생성되어 행 단위 연계가 무의미 — 상품 단위로 연계).
-     * ⚠️ 제거/교체된 기존 블록의 첨부는 여기서 정리하지 않는다 — 행에 attach_id 를 저장하지 않아 "이전에
-     *    어떤 파일이 쓰였는지"를 신뢰성 있게 추적할 수 없기 때문(잘못 지우면 실사용 파일 유실 위험이
-     *    더 크다). 장기 미참조 정리는 ATTACH_CLEANUP 배치에 위임한다.
+     * body 예: { "contentBlocks": [{ "type":"file", "content":"https://cdn/..." }, ...] }
+     * ⚠️ file 타입 블록이 올린 sy_attach 는 **의도적으로 ref_table_nm/ref_id 를 연계하지 않는다.**
+     *    pd_prod_content 는 저장마다 행이 새 ID로 재생성돼 어떤 파일이 "지금 쓰이는 것"인지
+     *    행 단위로 신뢰성 있게 추적할 수 없어(§10-B), 제거/교체된 옛 첨부를 여기서 정리(delete)할
+     *    방법이 없다. 이 상태에서 ref_table_nm 을 채워버리면 오히려 더 나쁘다 — "연계됨(미참조 아님)"
+     *    으로 보여서 향후 ATTACH_CLEANUP 배치(30일 이상 미참조 정리)의 스윕 대상에서도 영원히
+     *    제외되어 버린다(정리하는 코드도 없고, 배치도 못 건드리는 상태로 영구 방치). 그래서 이 파일들은
+     *    **처음부터 미연계 상태로 남겨** ATTACH_CLEANUP 배치가 유일한 정리 주체가 되도록 한다.
      */
     @PutMapping("/contents")
     @Transactional
@@ -394,7 +397,7 @@ public class BoPdProdTabController {
         // 1) 기존 데이터 전체 삭제 (단순 전체 갱신 패턴)
         pdProdContentRepository.deleteByProdId(prodId);
 
-        // 2) 새 블록 INSERT + attach 연계
+        // 2) 새 블록 INSERT (첨부 연계는 하지 않음 — 위 설명 참조)
         int order = 1;
         for (PdProdContentUpdateDto.Block blk : blocks) {
             String type = blk.getType() != null ? blk.getType() : "html";
@@ -410,11 +413,6 @@ public class BoPdProdTabController {
                 .useYn("Y")
                 .build();
             pdProdContentRepository.save(entity);
-
-            if (blk.getAttachId() != null && !blk.getAttachId().isBlank()) {
-                syAttachService.updateSelective(SyAttach.builder()
-                    .attachId(blk.getAttachId()).refTableNm("pd_prod_content").refId(prodId).build());
-            }
         }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }

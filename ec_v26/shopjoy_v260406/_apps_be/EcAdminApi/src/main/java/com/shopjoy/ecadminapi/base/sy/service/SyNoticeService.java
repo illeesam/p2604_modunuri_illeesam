@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.base.sy.repository.SyNoticeRepository;
@@ -84,7 +85,7 @@ public class SyNoticeService {
         body.setUpdDate(LocalDateTime.now());
         SyNotice saved = syNoticeRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), "sy_notice", saved.getNoticeId());
+        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_NOTICE, saved.getNoticeId());
         em.flush();
         return saved;
     }
@@ -101,7 +102,7 @@ public class SyNoticeService {
         entity.setUpdDate(LocalDateTime.now());
         SyNotice saved = syNoticeRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), "sy_notice", id);
+        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_NOTICE, id);
         em.flush();
         return saved;
     }

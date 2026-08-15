@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.base.sy.service;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbsDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbs;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBbsRepository;
@@ -84,7 +85,7 @@ public class SyBbsService {
         body.setUpdDate(LocalDateTime.now());
         SyBbs saved = syBbsRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), "sy_bbs", saved.getBbsId());
+        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_BBS, saved.getBbsId());
         em.flush();
         return saved;
     }
@@ -101,7 +102,7 @@ public class SyBbsService {
         entity.setUpdDate(LocalDateTime.now());
         SyBbs saved = syBbsRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(body.getAttachChanges(), "sy_bbs", id);
+        syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_BBS, id);
         em.flush();
         return saved;
     }

@@ -304,6 +304,27 @@
   }
 
   /**
+   * cofGetAttachRefTableOptions — sy_attach.ref_table_nm 값+라벨 목록(SyAttachRefTableConst.OPTIONS)을
+   * 조회해 캐싱한다. 여러 화면이 각자 부르더라도 네트워크 호출은 세션당 1회만 나간다.
+   * 화면은 반환된 배열에서 `key`(예: 'NOTICE')로 자기 항목을 찾아 `value` 를
+   * `<base-attach-grp :ref-table-nm>` 에 그대로 꽂는다 — 문자열을 직접 다시 타이핑하지 않기 위함.
+   * @returns {Promise<Array<{key:string,value:string,label:string}>>}
+   */
+  let _attachRefTableOptionsPromise = null;
+  function cofGetAttachRefTableOptions() {
+    if (!_attachRefTableOptionsPromise) {
+      _attachRefTableOptionsPromise = window.coApiSvc.cmAttach.getRefTableOptions()
+        .then(res => res.data?.data || [])
+        .catch(err => {
+          console.error('[cofGetAttachRefTableOptions] 조회 실패', err);
+          _attachRefTableOptionsPromise = null;
+          return [];
+        });
+    }
+    return _attachRefTableOptionsPromise;
+  }
+
+  /**
    * cofInvalidateCodeGrps — 코드그룹 캐시를 창 경계를 넘어 무효화.
    *
    * 코드는 화면 단위 지연 로딩(saLoadCodes)으로 스토어에 누적되므로, 공통코드를
@@ -1118,6 +1139,7 @@
   global.coUtil.cofChkId = global.coUtil.cofChkId || cofChkId;
   global.coUtil.cofChkRowIds = global.coUtil.cofChkRowIds || cofChkRowIds;
   global.coUtil.cofSha256 = global.coUtil.cofSha256 || cofSha256;
+  global.coUtil.cofGetAttachRefTableOptions = global.coUtil.cofGetAttachRefTableOptions || cofGetAttachRefTableOptions;
   global.coUtil.cofInvalidateCodeGrps = global.coUtil.cofInvalidateCodeGrps || cofInvalidateCodeGrps;
   // 코드 그룹 헬퍼 (FO/BO 공통)
   global.coUtil.cofCodesByGroup = global.coUtil.cofCodesByGroup || cofCodesByGroup;

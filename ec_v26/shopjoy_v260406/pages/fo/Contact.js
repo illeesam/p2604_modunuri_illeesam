@@ -93,6 +93,13 @@ window.Contact = {
        attachResetKey 는 다음 문의 작성을 위해 첨부 위젯을 완전히 새로 마운트(초기화)하는 용도. */
     const attachGrpRef = ref(null);
     const attachResetKey = ref(0);
+    /* refTableNm — sy_attach.ref_table_nm 실제 값. 백엔드 SyAttachRefTableConst.OPTIONS 에서
+       key='CONTACT_CONTENT' 항목을 찾아 채운다(coUtil.cofGetAttachRefTableOptions, initPage 에서 로드). */
+    const refTableNm = ref('');
+    const fnLoadRefTableNm = async () => {
+      const opts = await coUtil.cofGetAttachRefTableOptions();
+      refTableNm.value = opts.find(o => o.key === 'CONTACT_CONTENT')?.value || '';
+    };
 
     /* fnPrefillUser — 로그인 사용자 정보로 이름/이메일/연락처 자동 초기값 (비어있을 때만).
        svAuthUser 는 getUser(StoreMember) 로 덮어써지므로 그 필드명(memberEmail/memberHpNo)도 fallback. */
@@ -108,6 +115,7 @@ window.Contact = {
     /* initPage — 화면 로드 시퀀스. 마운트 시 실행한다. */
     const initPage = async () => {
       await fnPrefillUser();
+      await fnLoadRefTableNm();
     };
     onMounted(initPage);
 
@@ -183,7 +191,7 @@ window.Contact = {
       uiState, showToast,       // 상태
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       form, errors, // 폼
-      attachGrpRef, attachResetKey,                    // 첨부 연계용 상태
+      attachGrpRef, attachResetKey, refTableNm,         // 첨부 연계용 상태
       handleSubmit,                                    // 이벤트 (호환)
     };
   },
@@ -226,7 +234,7 @@ window.Contact = {
           첨부파일
         </label>
         <base-attach-grp :key="attachResetKey" ref="attachGrpRef"
-          ref-table-nm="sy_contact_content"
+          :ref-table-nm="refTableNm"
           :show-toast="showToast"
           grp-code="CONTACT_CONTENT_ATTACH"
           grp-nm="문의 첨부파일"

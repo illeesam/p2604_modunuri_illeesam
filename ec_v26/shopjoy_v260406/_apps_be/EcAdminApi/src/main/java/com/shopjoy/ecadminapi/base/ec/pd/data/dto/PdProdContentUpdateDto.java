@@ -25,8 +25,5 @@ public class PdProdContentUpdateDto {
         private String content;
         /** 첨부 파일 원본명 (표시용, DB 미저장) */
         private String fileName;
-        /** 첨부파일ID (sy_attach.attach_id) — coApiSvc.cmUpload 업로드 결과, file 타입 블록만.
-         *  DB 컬럼으로 저장되진 않고, sy_attach 연계(ref_table_nm=pd_prod_content, ref_id=prodId)에만 사용 */
-        private String attachId;
     }
 }

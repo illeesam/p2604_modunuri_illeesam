@@ -28,6 +28,13 @@ window.CmFaqDtl = {
     /* attachGrpRef — pendingChanges(추가/삭제 변경 목록)를 create/update 요청에 attachChanges 로 담아 보내기 위한 template ref.
        실제 sy_attach 반영은 백엔드(CmFaqService.create/update)가 같은 트랜잭션에서 원자적으로 처리한다. */
     const attachGrpRef = ref(null);
+    /* refTableNm — sy_attach.ref_table_nm 실제 값. 백엔드 SyAttachRefTableConst.OPTIONS 에서
+       key='FAQ' 항목을 찾아 채운다(coUtil.cofGetAttachRefTableOptions, initPage 에서 로드). */
+    const refTableNm = ref('');
+    const fnLoadRefTableNm = async () => {
+      const opts = await coUtil.cofGetAttachRefTableOptions();
+      refTableNm.value = opts.find(o => o.key === 'FAQ')?.value || '';
+    };
 
     const form = reactive({
       faqId: null, pathId: null, faqQuestion: '', faqAnswer: '',
@@ -135,6 +142,7 @@ window.CmFaqDtl = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
+      await fnLoadRefTableNm();
       if (!cfIsNew.value) { await handleLoadDetail(); }
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     };
@@ -196,7 +204,7 @@ window.CmFaqDtl = {
       modals,   // 모달 표시 상태 모음
       columns,
       form, errors, handleBtnAction, handleSelectAction, fnCallbackModal,
-      cfIsNew, cfDtlMode, cfAttachRefId, attachGrpRef,
+      cfIsNew, cfDtlMode, cfAttachRefId, attachGrpRef, refTableNm,
       showToast,
     };
   },
@@ -215,7 +223,7 @@ window.CmFaqDtl = {
       <base-html-editor v-else v-model="form.faqAnswer" height="260px" />
     </template>
     <template #attachGrp>
-      <base-attach-grp ref="attachGrpRef" ref-table-nm="cm_faq" :ref-key-id="dtlId"
+      <base-attach-grp ref="attachGrpRef" :ref-table-nm="refTableNm" :ref-key-id="dtlId"
         :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
         grp-code="FAQ_ANSWER_ATTACH" grp-nm="FAQ 답변 첨부파일"
         :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />

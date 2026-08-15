@@ -133,7 +133,10 @@ window.BaseAttachGrp = {
       }
     };
 
-    onMounted(() => { if (cfHasRef.value) loadFiles(); });
+    /* refTableNm 은 부모가 coUtil.cofGetAttachRefTableOptions() 를 비동기로 조회해 채우는 경우가
+       있어(§sy.14.파일첨부.md), 마운트 시점엔 아직 빈 값일 수 있다 — onMounted 1회성 체크 대신
+       cfHasRef 자체를 감시해 나중에 값이 채워져도 놓치지 않는다. */
+    watch(cfHasRef, (v) => { if (v) loadFiles(); }, { immediate: true });
 
     /* reload — 부모가 pendingChanges 를 저장 요청에 실어 보내 성공한 직후 호출.
        pendingChanges 를 비우고 서버 최신 상태로 목록을 다시 불러온다.

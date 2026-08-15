@@ -8,12 +8,22 @@ window.MyContact = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { reactive, computed, onMounted, watch } = Vue;
+    const { reactive, computed, ref, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
     const cart                 = window.foApp.cart;  // 장바구니
 
     const uiState = reactive({ loading: false, error: null });
+    /* contentRefTableNm/answerRefTableNm — sy_attach.ref_table_nm 실제 값. 백엔드
+       SyAttachRefTableConst.OPTIONS 에서 각각 key='CONTACT_CONTENT'/'CONTACT_ANSWER' 항목을
+       찾아 채운다(coUtil.cofGetAttachRefTableOptions, initPage 에서 로드). */
+    const contentRefTableNm = ref('');
+    const answerRefTableNm  = ref('');
+    const fnLoadRefTableNm = async () => {
+      const opts = await coUtil.cofGetAttachRefTableOptions();
+      contentRefTableNm.value = opts.find(o => o.key === 'CONTACT_CONTENT')?.value || '';
+      answerRefTableNm.value  = opts.find(o => o.key === 'CONTACT_ANSWER')?.value || '';
+    };
 
 
     const myStore = window.useFoMyStore();
@@ -90,6 +100,7 @@ window.MyContact = {
     const onSizeChange = async () => { await handleLoadPage(); };
     /* initPage — 화면 로드 시퀀스. 마운트 시 초기 조회를 실행한다. */
     const initPage = async () => {
+      await fnLoadRefTableNm();
       await handleSearchData();
     };
     onMounted(initPage);
@@ -102,6 +113,7 @@ window.MyContact = {
       handleBtnAction, handleSelectAction, // dispatch
       myStore, inquiries, expandedInquiry,
       inquiryPager, onPageChange, onSizeChange, cartCount,
+      contentRefTableNm, answerRefTableNm,
     };
   },
   template: /* html */ `
@@ -149,7 +161,7 @@ window.MyContact = {
         <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;">
           📎 첨부파일
         </div>
-        <base-attach-grp ref-table-nm="sy_contact_content" :ref-key-id="q.inquiryId" :ref-id="q.inquiryId"
+        <base-attach-grp :ref-table-nm="contentRefTableNm" :ref-key-id="q.inquiryId" :ref-id="q.inquiryId"
           grp-code="CONTACT_CONTENT_ATTACH" grp-nm="문의 첨부파일"
           display-mode="list" :readonly="true" />
       </div>
@@ -164,7 +176,7 @@ window.MyContact = {
         <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;">
           📎 답변 첨부파일
         </div>
-        <base-attach-grp ref-table-nm="sy_contact_answer" :ref-key-id="q.inquiryId" :ref-id="q.inquiryId"
+        <base-attach-grp :ref-table-nm="answerRefTableNm" :ref-key-id="q.inquiryId" :ref-id="q.inquiryId"
           grp-code="CONTACT_ANSWER_ATTACH" grp-nm="답변 첨부파일"
           display-mode="list" :readonly="true" />
       </div>

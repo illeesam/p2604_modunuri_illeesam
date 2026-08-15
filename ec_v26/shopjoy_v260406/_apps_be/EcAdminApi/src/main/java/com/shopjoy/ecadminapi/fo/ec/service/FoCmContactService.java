@@ -5,6 +5,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmContactSubmitDto;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogReplyService;
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
 import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
@@ -83,7 +84,7 @@ public class FoCmContactService {
             .build();
         SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("문의 접수에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        syAttachService.applyChanges(req.getAttachChanges(), "sy_contact_content", saved.getContactId());
+        syAttachService.applyChanges(req.getAttachChanges(), SyAttachRefTableConst.SY_CONTACT_CONTENT, saved.getContactId());
 
         // 접수 완료 알림 발송 (메일/카카오/시스템알림) — 비동기(fire-and-forget).
         // 메일 SMTP 발송이 응답을 지연시키지 않도록 별도 스레드풀에서 처리. 발송 결과는 이력 테이블에만 기록.

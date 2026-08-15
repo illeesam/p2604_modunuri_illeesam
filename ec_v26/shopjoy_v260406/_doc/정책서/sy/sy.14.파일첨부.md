@@ -96,30 +96,34 @@ YYYYMMDD + "_" + hhmmss + "_" + 순서번호(2자) + "_" + random(4자) + .확�
 
 ### 6. 단일 파일 vs 다중 파일
 
+⭐ **2026-08-15 전면 개편** — `sy_attach_grp` 테이블 및 `attach_grp_id` 개념 전체 폐기.
+모든 업로드는 **항상 미연계(unlinked) 상태로 즉시 물리 저장**되고, 실제 "이 파일이 무엇에 속하는지"는
+`sy_attach.ref_table_nm`/`ref_id` 로 연계한다. 연계는 업로드 시점이 아니라, 대상 레코드를 저장하는
+**업무 Service 의 create()/update() 트랜잭션 안**에서 반영한다 (`SyAttachService.applyChanges`, §10-A).
+
 | 항목 | 단일 파일 | 다중 파일 |
 |------|---------|---------|
-| 엔드포인트 | POST /api/cm/upload/one | POST /api/cm/upload/multi |
+| 엔드포인트 | POST /api/co/cm/upload/one | POST /api/co/cm/upload/multi |
 | 파일 개수 | 1개 | 최대 10개 |
-| 그룹 생성 | ❌ (선택사항) | ✅ (자동) |
-| 반환 데이터 | attachId 1개 | attachGrpId + attachIds 배열 |
+| 반환 데이터 | attachId 1개 | attachIds 배열 + files[] (attachId·cdnImgUrl·fileSize 등) |
+| 연계(ref) | 없음(항상 미연계) | 없음(항상 미연계) — 부모 저장 시 별도 반영 |
 
 #### 단일 파일 업로드
 ```
-POST /api/cm/upload/one
+POST /api/co/cm/upload/one
 - file: 업로드 파일
 - businessCode: 업무 코드 (기본값: "common")
 - createThumbnail: 이미지 썸네일 생성 여부 (기본값: false)
-- attachGrpId: 파일 그룹 ID (선택, 기존 그룹에 파일 추가)
 ```
 
 #### 다중 파일 업로드
 ```
-POST /api/cm/upload/multi
+POST /api/co/cm/upload/multi
 - files: 파일 배열 (최대 10개)
 - businessCode: 업무 코드 (기본값: "common")
-- grpNm: 그룹 이름 (선택, 기본값: "{businessCode} 파일 그룹")
-- createThumbnail: 이미지 썸네일 생성 여부 (기본값: false, 동영상은 자동)
 ```
+응답 `data.files[]` 항목: `attachId`, `originalName`, `fileSize`, `fileExt`, `cdnImgUrl`, `thumbUrl`, `thumbCdnUrl` 등 —
+`cdnImgUrl` 은 업로드 즉시 확정되므로 별도 조회 없이 바로 사용 가능.
 
 ### 7. HTTP Range 요청 (동영상 스트리밍)
 
@@ -168,10 +172,15 @@ GET /api/cm/download/secure/{fileId}
 
 ## 데이터베이스 테이블
 
-### sy_attach (첨부파일 정보)
+### sy_attach (첨부파일 정보) — 단일 테이블, 그룹 테이블 없음
+
 ```
 PK: attach_id (YYMMDDhhmmss+random+seq)
-FK: attach_grp_id → sy_attach_grp.attach_grp_id
+
+연계 컬럼 (2026-08-15 전면 개편 — attach_grp_id 폐기):
+- ref_table_nm: 관련 테이블명 (예: 'sy_notice', 'pd_prod_img') — 대상 엔티티에 직접 연계
+- ref_id:       관련 ID. ref_table_nm 과 조합해 대상 레코드를 식별. 대상이 아직 저장 전(ID 미확정)이면
+                둘 다 NULL(미연계) — 업로드는 되지만 어디에도 속하지 않은 상태
 
 주요 컬럼:
 - file_nm: 원본 파일명
@@ -184,18 +193,56 @@ FK: attach_grp_id → sy_attach_grp.attach_grp_id
 - thumb_url: 썸네일 경로
 ```
 
-### sy_attach_grp (파일 그룹)
-```
-PK: attach_grp_id (ATG + timestamp + random)
+### ref_table_nm 명명 규칙
 
-주요 컬럼:
-- attach_grp_code: 그룹 코드
-- attach_grp_nm: 그룹 이름
-- file_ext_allow: 허용 확장자
-- max_file_size: 최대 파일 크기
-- max_file_count: 최대 파일 개수
-- use_yn: 사용 여부 (Y/N)
+⭐ 백엔드에서 `ref_table_nm` 값은 항상 **`SyAttachRefTableConst`**
+([base/sy/constant/SyAttachRefTableConst.java](../../../_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/constant/SyAttachRefTableConst.java))
+상수로 참조한다 — 문자열 리터럴 직접 타이핑 금지. 첨부 저장(연계 반영, `applyChanges`/`updateSelective`
+호출부)뿐 아니라 목록/상세 조회에서 첨부 목록을 함께 내려줄 때(`findByRefTableNmAndRefIdIn...` 조회부,
+§10 `fnFillAttachFiles` 패턴)도 동일하게 이 상수를 쓴다. 오타로 인한 연계 불일치(저장은
+`"sy_notice"`, 조회는 `"sy_Notice"` 처럼 미묘하게 다른 문자열을 써서 조용히 빈 목록이 나오는 사고)를
+컴파일 타임에 막기 위함.
+
+⭐ **프론트도 이 값을 손으로 다시 타이핑하지 않는다** — `GET /co/cm/upload/ref/table-options`
+(`SyAttachRefTableConst.OPTIONS` 그대로 반환) 를 `coUtil.cofGetAttachRefTableOptions()` 로 조회한다
+(세션당 1회만 네트워크 호출, Promise 캐싱). 각 화면은 반환된 `[{key, value, label}]` 에서
+`key`(예: `'NOTICE'`)로 자기 항목을 찾아 `value` 를 `<base-attach-grp :ref-table-nm>` 에 동적 바인딩한다.
+
+```js
+const refTableNm = ref('');
+const fnLoadRefTableNm = async () => {
+  const opts = await coUtil.cofGetAttachRefTableOptions();
+  refTableNm.value = opts.find(o => o.key === 'NOTICE')?.value || '';
+};
+// initPage() 안에서 await fnLoadRefTableNm() 호출
 ```
+```html
+<base-attach-grp ref="attachGrpRef" :ref-table-nm="refTableNm" :ref-key-id="dtlId" ... />
+```
+- `refTableNm` 이 처음엔 빈 문자열이라 `BaseAttachGrp` 마운트 시점엔 `cfHasRef` 가 false 일 수 있다 —
+  `BaseAttachGrp` 는 `onMounted` 1회성 체크가 아니라 `watch(cfHasRef, ..., {immediate:true})` 로
+  감시하므로, `refTableNm` 이 나중에 채워져도 자동으로 `loadFiles()` 가 걸린다(2026-08-15, 놓치지 않게
+  수정됨)
+- `key` 값은 `SyAttachRefTableConst.OPTIONS` 에 정의된 것만 쓴다: `NOTICE`/`BBS`/`CONTACT_CONTENT`/
+  `CONTACT_ANSWER`/`FAQ`/`CHATT_MSG`/`PROD_IMG`
+- 적용 화면: `CmNoticeDtl`/`SyBbsDtl`/`CmFaqDtl`/`SyContactDtl`(2개)/`Contact.js`(FO)/`Faq.js`(FO)/
+  `MyContact.js`(FO, 2개) — `SyAttachMng.js` 의 검색 select 도 동일하게 이 목록을 그대로 씀
+  (+ 프론트 전용 `sy_attach_grp_legacy` 항목만 별도 부착, §구현 참조)
+
+| 값 | 대상 | 비고 |
+|---|---|---|
+| `sy_notice` / `sy_bbs` / `cm_faq` / `cm_chatt_msg` | 실제 테이블명 1:1 | 레코드 1건 = 첨부 목록 N건. `SyAttachRefTableConst` 에 상수 있음 |
+| `sy_contact_content` / `sy_contact_answer` | `sy_contact` 의 논리 슬롯 | 실제 테이블명 아님 — 한 레코드가 첨부 슬롯 2개(문의내용/답변)를 가질 때의 관례. `ref_id`=`contact_id` 공용. `SyAttachRefTableConst` 에 상수 있음 |
+| `pd_prod_img` | `pd_prod_img` 1행 = 첨부 1건(1:1) | `ref_id`=해당 `prod_img_id`. **행 자체도 `pd_prod_img.attach_id` 로 정방향 참조**(1:1 특화 — §10-B). `SyAttachRefTableConst` 에 상수 있음 |
+| `sy_vendor_content` / `sy_attach_grp_legacy` | 문서화만 됨, 실 연계 코드 없음 | 아직 어떤 Service 도 이 값으로 연계하지 않아 상수화 안 함(사용처 없는 상수 금지) — 실제로 연계하는 코드를 작성할 때 상수를 추가한다 |
+
+⚠️ `pd_prod_content`(상품설명 file 타입 블록)는 **의도적으로 ref_table_nm 을 쓰지 않는다** — §10-B 참조.
+저장마다 행이 재생성돼 행 단위 추적이 안 되고, 그렇다고 `ref_id`=`prod_id` 로 걸어버리면 제거/교체된
+옛 파일이 "연계됨"으로 보여 오히려 `ATTACH_CLEANUP` 배치(§10-B)의 정리 대상에서도 영구히 빠져버린다.
+그래서 이 파일들은 업로드 후 끝까지 미연계 상태로 두고, 유일한 정리 주체를 `ATTACH_CLEANUP` 배치로
+한정한다.
+
+새 도메인 추가 시 이 표에 항목을 추가한다. `SyAttachMng.js`(첨부관리 화면)의 `REF_TABLE_OPTS` 상수도 함께 갱신.
 
 ## 제약사항 & 주의
 
@@ -225,23 +272,55 @@ PK: attach_grp_id (ATG + timestamp + random)
 
 | 컴포넌트 | 태그 | 용도 |
 |---|---|---|
-| `BaseAttachGrp` | `<base-attach-grp>` | 다중 첨부(목록형) — `attachGrpId` v-model, 업로드/삭제/드래그정렬/썸네일 |
-| `BaseAttachOne` | `<base-attach-one>` | 단일 이미지(프로필 등) — 박스형 미리보기 + 변경/삭제 |
+| `BaseAttachGrp` | `<base-attach-grp>` | 다중 첨부(목록형) — `refTableNm`/`refKeyId` 로 연계, 업로드/삭제/드래그정렬/썸네일 |
+| `BaseAttachOne` | `<base-attach-one>` | 단일 이미지(프로필 등) — `attachId` 를 직접 다룸(그룹/연계 개념 없음), 박스형 미리보기 + 변경/삭제 |
 
-### 9.1 주요 props
+### 9.1 주요 props (BaseAttachGrp, 2026-08-15 개편)
 
 | prop | 타입 | 기본 | 설명 |
 |---|---|---|---|
-| `modelValue` | String\|null | null | attachGrpId(grp) / attachGrpId(one) — v-model |
-| `refId` | String | '' | 참조 ID 표시(예: `NOTICE-1`) — grp 전용 |
+| `refTableNm` | String\|null | null | 관련 테이블명(§ref_table_nm 명명 규칙 표 참조) |
+| `refKeyId` | String\|null | null | 관련 ID. 대상 레코드가 아직 저장 전(ID 미확정)이면 null — 이 상태에서도 업로드는 허용(미연계) |
+| `refId` | String | '' | **표시용 배지 문자열**(예: `NOTICE-1`). DB 연계와 무관 — `refKeyId` 와 다른 prop이니 혼동 주의 |
 | `showToast` | Function | noop | 토스트 함수 |
-| `grpCode` | String | 'common' | 업무 코드(businessCode) |
-| `grpNm` | String | '첨부파일' | 그룹 이름 |
-| `maxCount` | Number | 10 | 최대 첨부 개수 — grp 전용 |
-| `maxSizeMb` | Number | 10(grp)/5(one) | 파일당 최대 MB |
-| `allowExt` | String | '*'(grp) | 허용 확장자(쉼표 구분) |
+| `grpCode` | String | 'common' | 업무 코드(businessCode) — 저장 폴더 경로 구성용 |
+| `grpNm` | String | '첨부파일' | 표시용 라벨(서버로 전송되지 않음) |
+| `maxCount` | Number | 10 | 최대 첨부 개수 |
+| `maxSizeMb` | Number | 10 | 파일당 최대 MB |
+| `allowExt` | String | '*' | 허용 확장자(쉼표 구분) |
 | `readonly` | Boolean | false | **보기(view) 모드 — 업로드/삭제/정렬 컨트롤 숨김** ⭐ |
-| `displayMode` | String | 'list' | grp: 'list'\|'image' |
+| `displayMode` | String | 'list' | 'list'\|'image' |
+
+### 9.1-A 연계(link) 모델 — `pendingChanges` (2026-08-15)
+
+업로드/삭제 버튼은 **항상 즉시 물리 반영**되지만(파일 자체는 그 자리에서 생기거나 없어짐),
+`sy_attach.ref_table_nm`/`ref_id` **연계** 자체는 즉시 반영되지 않는다. 부모 화면(Dtl)이 실제
+저장(등록/수정) 버튼을 누르는 시점에, 컴포넌트가 노출하는 `pendingChanges`
+(`[{attachId, rowStatus:'I'|'D'}]`)를 읽어 저장 요청 바디에 `attachChanges`(또는 도메인별 필드명,
+예: `contentAttachChanges`)로 함께 실어 보내고, 백엔드가 부모 레코드 저장과 **같은 트랜잭션**
+안에서 원자적으로 반영한다(§10-A `SyAttachService.applyChanges`).
+
+- **업로드(추가)** → 항상 미연계 상태로 즉시 업로드, `pendingChanges` 에 `{attachId,'I'}` 적재
+- **삭제(✕) 클릭** → 이번 세션에 추가만 되고 아직 미연계인 파일(`pendingChanges` 의 `'I'` 항목)은
+  저장을 기다릴 필요가 없어 **즉시 물리 삭제**. 이미 연계돼 있던(서버에서 불러온) 기존 파일은
+  즉시 삭제하지 않고 `pendingChanges` 에 `{attachId,'D'}` 로만 적재 → 부모가 저장할 때만 반영
+  (취소/미저장 이탈 시 원래 연계 상태 그대로 보존됨)
+- 부모는 저장 성공 후 `template ref` 로 `reload()` 를 호출해 `pendingChanges` 를 비우고 최신 목록을
+  다시 조회해야 한다 — **화면이 그대로 남아 재저장이 반복되는 패턴**(예: `SyContactDtl`)에서 필수.
+  저장 직후 다른 화면으로 `navigate()`(unmount)하는 패턴은 호출 불필요(컴포넌트 자체가 사라짐).
+
+```html
+<base-attach-grp ref="attachGrpRef" ref-table-nm="sy_notice" :ref-key-id="dtlId" ... />
+```
+```js
+const attachChanges = attachGrpRef.value?.pendingChanges || [];
+await boApiSvc.cmNotice.create({ ...baseForm, attachChanges }, '공지사항관리', '등록');
+// (수정 화면이 계속 열려 있는 패턴이면) await attachGrpRef.value.reload();
+```
+
+⚠️ 폐기된 과거 메서드: `linkNow()` / `PATCH /co/cm/upload/ref/link` / `coApiSvc.cmAttach.linkRef` —
+저장 API 호출과 별개의 2차 API 콜에 의존해 그 콜이 누락되면 파일이 영구 미연계로 남는 문제가 있어
+2026-08-15 폐기. 지금은 저장 API 자체가 연계까지 원자적으로 처리한다.
 
 ### 9.2 `readonly` (보기/수정 모드 분리) ⭐ (2026-06-08)
 
@@ -284,8 +363,9 @@ private List<SyAttachDto.Brief> attachFiles;
 ```
 
 `SyAttachDto.Brief` — 화면이 파일을 띄우는 데 필요한 것만 담은 공통 투영.
-**필드명은 `sy_attach` 컬럼 그대로**: `attachId` `attachGrpId` `fileNm` `fileExt`
-`fileSize` `attachUrl` `thumbUrl` `sortOrd`.
+**필드명은 `sy_attach` 컬럼 그대로**: `attachId` `fileNm` `fileExt` `fileSize`
+`attachUrl` `thumbUrl` `cdnImgUrl` `thumbCdnUrl` `storagePath` `sortOrd`.
+(2026-08-15 `attachGrpId` 필드 제거 — 연계는 `ref_table_nm`/`ref_id` 로만 한다)
 
 - `SyAttachDto.Item`(27필드)은 **첨부관리 화면 전용** — 본문 DTO 에 물리지 않는다
 - 첨부 목록이 필요한 새 DTO 는 `Brief` 를 쓴다. 필드가 모자라면 `Brief` 에 더한다(도메인 클래스를 새로 만들지 않는다)
@@ -293,25 +373,100 @@ private List<SyAttachDto.Brief> attachFiles;
 ### 채우는 쪽 — N+1 회피 일괄 주입
 
 조회 쿼리(`Projections.bean`)는 스칼라 컬럼만 담을 수 있어 첨부를 함께 못 가져온다.
-행마다 조회하면 N+1 이므로 **그룹ID 를 모아 한 번에 읽고 메모리에서 붙인다**.
+행마다 조회하면 N+1 이므로 **부모 ID 들을 모아 한 번에 읽고 메모리에서 붙인다**
+(2026-08-15 이후: `ref_table_nm`/`ref_id` 기준. 과거 `attachGrpId` 기준은 폐기).
 
 ```java
 private void fnFillAttachFiles(List<CmChattMsgDto.Item> items) {
-    List<String> grpIds = items.stream().map(CmChattMsgDto.Item::getAttachGrpId)
+    List<String> msgIds = items.stream().map(CmChattMsgDto.Item::getChattMsgId)
         .filter(g -> g != null && !g.isBlank()).distinct().toList();
-    if (grpIds.isEmpty()) return;
-    Map<String, List<SyAttachDto.Brief>> byGrp = ...;   // findByAttachGrpIdIn... 1회
-    items.forEach(it -> { ... it.setAttachFiles(byGrp.get(it.getAttachGrpId())); });
+    if (msgIds.isEmpty()) return;
+    Map<String, List<SyAttachDto.Brief>> byMsg = new LinkedHashMap<>();
+    for (SyAttach a : syAttachRepository.findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc(SyAttachRefTableConst.CM_CHATT_MSG, msgIds)) {
+        byMsg.computeIfAbsent(a.getRefId(), k -> new ArrayList<>()).add(fnToBrief(a));
+    }
+    items.forEach(it -> { ... it.setAttachFiles(byMsg.get(it.getChattMsgId())); });
 }
 ```
 
 - 조회 메서드 **전부**(`getById` / `getByIdOrNull` / `getList` / `getPageData`)에 걸어야 한다.
   한 곳만 빠뜨리면 그 경로에서만 첨부가 사라져 원인을 찾기 어렵다
-- 리포지토리에 `findByAttachGrpIdInOrderByAttachGrpIdAscSortOrdAscAttachIdAsc` 를 둔다
+- 리포지토리에 `findByRefTableNmAndRefIdInOrderByRefIdAscSortOrdAscAttachIdAsc` 를 둔다
+  (`SyAttachRepository` 에 이미 정의돼 있음 — 새 도메인도 재사용)
 
 > **주의** — DTO 에 `attachFiles` 필드만 선언하고 **채우는 코드를 안 넣는 사고가 실제로 있었다**
 > (`CmChattMsgDto`, 2026-07-28 수정 전). 프론트는 렌더 코드를 갖고 있는데 값이 늘 비어
 > "원래 첨부가 없는 화면"처럼 보였다. 필드를 추가하면 producer 까지 같이 넣는다.
+
+---
+
+## 10-A. 부모 레코드 저장과 원자적으로 연계 — `SyAttachService.applyChanges` (2026-08-15)
+
+첨부의 실제 `ref_table_nm`/`ref_id` 연계는, 그 첨부를 소유하는 **대상 레코드를 저장하는 업무
+Service** 가 `create()`/`update()` 안에서 직접 반영한다. 별도 API 호출(2차 콜)에 의존하지 않는다 —
+그 콜이 누락되거나 실패하면 파일이 영구 미연계로 남는 문제가 실제로 있었기 때문이다.
+
+```java
+// base/sy/service/SyAttachService.java
+@Transactional
+public List<SyAttachChangeItem> applyChanges(List<SyAttachChangeItem> changes, String refTableNm, String refId) {
+    // rowStatus 'I' → ref_table_nm/ref_id 주입(연계). 'D' → 연계 삭제(물리 삭제 포함).
+    // 새로 연계된('I') 항목은 fileSize/fileExt/storagePath/refTableNm/refId 까지 채워 반환 —
+    // 메일/카카오 알림톡 발송처럼 첨부 리소스 정보가 바로 필요한 후속 로직이 attachId 로
+    // 다시 조회하지 않고 그대로 쓸 수 있게 하기 위함.
+}
+```
+
+```java
+// base/sy/service/SyNoticeService.java (create) — 다른 도메인도 동일 패턴
+SyNotice saved = syNoticeRepository.save(body);
+syAttachService.applyChanges(body.getAttachChanges(), SyAttachRefTableConst.SY_NOTICE, saved.getNoticeId());
+em.flush();
+```
+
+- 엔티티는 `@Transient private List<SyAttachChangeItem> attachChanges;` 를 요청 전용 필드로 둔다
+  (DB 컬럼 아님, JSON 역직렬화만 됨). Request DTO 를 직접 쓰는 화면(FO 문의 등)은 DTO 에 둔다.
+- **create() 뿐 아니라 update() 에도** 걸어야 한다 — 기존 레코드를 수정하며 첨부를 추가/삭제하는
+  경우도 있다. create() 만 걸고 update() 를 빠뜨리는 실수가 있었다(2026-08-15 수정).
+- 여러 첨부 슬롯을 가진 도메인(`SyContact` 의 문의내용/답변)은 슬롯별로 `@Transient` 필드를 따로 둔다
+  (`contentAttachChanges` / `answerAttachChanges`) — `ref_table_nm` 값으로 구분.
+- 적용 도메인: `SyNoticeService` / `SyBbsService` / `CmFaqService` / `SyContactService`(2개 슬롯) /
+  `FoCmContactService`.
+
+## 10-B. 도메인 자체 테이블이 sy_attach 를 정방향 참조하는 경우 — `pd_prod_img` (2026-08-15)
+
+`sy_bbs`/`sy_notice` 처럼 도메인에 "첨부 행" 개념이 아예 없는 경우는 §10-A 로 충분하다. 하지만
+`pd_prod_img` 처럼 **도메인 자체가 이미 1:1 첨부 행 테이블**이고(`is_thumb`/`sort_ord`/
+`prod_opt_id_1·2` 같은 그 행 고유 메타데이터가 있음) 정밀한 "이 행이 정확히 어떤 파일인지"
+식별이 필요하면, **정방향(도메인 행 → `attach_id`) + 역방향(`sy_attach.ref_table_nm`/`ref_id`)
+을 둘 다** 채운다:
+
+```java
+PdProdImg img = PdProdImg.builder()
+    .prodImgId(prodImgId).attachId(r.getAttachId())   // 정방향 — 정밀 식별
+    .build();
+pdProdImgRepository.save(img);
+syAttachService.updateSelective(SyAttach.builder()
+    .attachId(r.getAttachId()).refTableNm(SyAttachRefTableConst.PD_PROD_IMG).refId(prodImgId).build());  // 역방향 — 청소 안전
+```
+
+역방향(`ref_table_nm`/`ref_id`)을 빠뜨리면, 향후 `ATTACH_CLEANUP` 배치(§구현 참조)가 "미참조"로
+오인해 **실사용 중인 파일을 삭제**할 위험이 있다 — 정방향 참조만으로는 청소 배치가 알 수 없다.
+
+반대로 `pd_prod_content` 처럼 도메인 행이 **저장마다 새 ID 로 재생성**되는 구조는, 행 단위 연계도
+`ref_id`=상위 ID(`prod_id`) 연계도 **둘 다 하지 않는다** — 처음엔 "신규 컬럼 없이 `ref_id=prod_id`
+로 상품 단위 연계"를 시도했으나(2026-08-15 1차), 곧바로 더 나쁜 결과라는 게 드러나 제거했다(2026-08-15
+2차, 이 문서 §ref_table_nm 명명 규칙 표 참조):
+
+- 어차피 제거/교체된 옛 첨부를 행 단위로 추적 못 해 **정리(cleanup)는 하지 않기로** 이미 결정했다
+- 그 상태에서 `ref_table_nm`/`ref_id` 를 채워버리면, 옛 파일이 "연계됨(=미참조 아님)"으로 보여
+  향후 `ATTACH_CLEANUP` 배치(30일 이상 **미참조** 파일 정리)의 스윕 대상에서도 영구히 제외된다 —
+  정리하는 코드도 없고 배치도 못 건드리는 상태로 **영구 방치**되어 버리는, 처음 의도한 것보다
+  더 나쁜 결과다
+- 그래서 `pd_prod_content` 의 file 타입 블록이 올리는 파일은 **업로드 후 끝까지 미연계 상태로
+  둔다**(`sy_attach.ref_table_nm`/`ref_id` 항상 NULL) — 그래야 오래된 미사용 파일이 `ATTACH_CLEANUP`
+  배치의 정상적인 "미참조" 판정 대상에 들어가 자연스럽게 정리된다. 유일한 정리 주체를 그 배치
+  하나로 고정하는 것이 핵심.
 
 ---
 
@@ -322,9 +477,13 @@ private void fnFillAttachFiles(List<CmChattMsgDto.Item> items) {
 | 파일 검증 | FileUploadUtil |
 | 동영상 변환 | VideoConvertUtil |
 | 단일 업로드 | CmUploadOneController |
-| 다중 업로드 | CmUploadMultiController |
+| 다중 업로드 / 단건조회 / ref 목록조회 / ref 옵션목록조회 / 삭제 / 정렬 | CmUploadMultiController → CmUploadService |
+| 연계 변경 반영(rowStatus I/D) | SyAttachService.applyChanges |
+| `ref_table_nm` 값 상수 (문자열 리터럴 금지) | SyAttachRefTableConst / SyAttachRefTableOption(record) |
+| 프론트 옵션 캐시 (세션당 1회 fetch) | coUtil.cofGetAttachRefTableOptions |
 | 동영상 재생 | CmVideoPlayController |
 | 파일 다운로드 | CmDownloadController |
+| 미참조 첨부 정리(30일 이상, 매주 일요일 03:00) | SyAttachCleanupJob(`ATTACH_CLEANUP`) — 현재 TODO 스텁, 미구현 |
 
 ## 관련 설정 파일
 
@@ -340,3 +499,4 @@ private void fnFillAttachFiles(List<CmChattMsgDto.Item> items) {
 | | - 동영상 자동 변환 & 썸네일 생성 |
 | | - HTTP Range 요청 스트리밍 지원 |
 | 2026-06-08 | §9 프론트 공통 컴포넌트(BaseAttachGrp/One) props + `readonly` 보기/수정 모드 분리 추가 |
+| 2026-08-15 | ⭐ 전면 개편 — `sy_attach_grp`/`attach_grp_id` 폐기, `ref_table_nm`/`ref_id` 로 통일. `BaseAttachGrp` 를 `pendingChanges`(rowStatus I/D) + `SyAttachService.applyChanges`(부모 저장과 원자적 반영) 모델로 재설계. §6·데이터베이스 테이블·§9·§10 전면 갱신, §10-A/§10-B 신설(applyChanges 표준 패턴 / 도메인 자체 첨부행 pd_prod_img 사례). PdProd 이미지 첨부의 base64 저장 방식도 실제 업로드로 전환(정방향 `attach_id` + 역방향 `ref_table_nm`/`ref_id` 둘 다 연계). 상품설명(`pd_prod_content`)은 처음엔 `ref_id=prod_id` 로 연계 시도했으나, 정리 코드가 없는 상태에서 연계까지 하면 `ATTACH_CLEANUP` 배치 대상에서도 영구히 빠지는 게 드러나 **연계를 아예 하지 않는 쪽으로 정정**. `ref_table_nm` 문자열 리터럴을 `SyAttachRefTableConst` 상수로 전면 치환(저장·조회 양쪽) — 이어서 프론트도 값을 다시 타이핑하지 않도록 `GET /co/cm/upload/ref/table-options` + `coUtil.cofGetAttachRefTableOptions()` 신설, `<base-attach-grp :ref-table-nm>` 동적 바인딩 9개 사이트 전환(`BaseAttachGrp` 는 `refTableNm` 늦게 채워지는 걸 놓치지 않도록 `watch(cfHasRef, ..., {immediate:true})` 로 교체) |
