@@ -1605,17 +1605,23 @@ window.AuthUserPickModal = {
       };
     });
 
-    /* userGridColumns — BoGrid 컬럼 정의 */
+    /* userGridColumns — BoGrid 컬럼 정의.
+       ⛔ 이전에는 html:true + 인라인 <span> 문자열로 배지를 그렸으나 실제 화면에서 태그가
+       이스케이프된 텍스트로 그대로 노출되는 문제가 있었다(원인 불명확) — 프로젝트 전역에서
+       이미 검증된 표준 badge 속성(coUtil 배지 패턴)으로 교체해 근본적으로 우회한다.
+       siteNm 컬럼은 SyUserDto.Item 에 없는 필드라 항상 '-' 만 찍혀 제거했다(죽은 컬럼). */
     const userGridColumns = [
       { key: 'userNm',       label: '이름', cellStyle: 'font-weight:700;color:#1a1a2e;', fmt: (v, row) => v || row.label || '-' },
       { key: 'loginId',      label: '로그인ID', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
-      { key: 'siteNm',       label: '사이트', cellStyle: 'color:#777;', fmt: (v) => v || '-' },
-      { key: 'deptNm',       label: '부서', cellStyle: 'color:#777;', fmt: (v) => v || '-' },
-      { key: 'roleNm',       label: '권한', html: true, fmt: (v) => v ? `<span style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;">${v}</span>` : '<span style="color:#ddd;">—</span>' },
-      { key: 'userStatusCd', label: '상태', align: 'center', html: true, fmt: (v, row) => v === 'ACTIVE'
-        ? `<span style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">활성</span>`
-        : `<span style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">${row.userStatusCdNm || '비활성'}</span>` },
       { key: 'userEmail',    label: '이메일', cellStyle: 'color:#999;font-size:11px;', fmt: (v) => v || '-' },
+      { key: 'userPhone',    label: '연락처', cellStyle: 'color:#999;font-size:11px;', fmt: (v) => v || '-' },
+      { key: 'deptNm',       label: '부서', cellStyle: 'color:#777;', fmt: (v) => v || '-' },
+      { key: 'roleNm',       label: '권한', align: 'center',
+        badge: (row) => row.roleNm ? 'badge-purple' : 'badge-gray',
+        fmt: (v) => v || '—' },
+      { key: 'userStatusCd', label: '상태', align: 'center',
+        badge: (row) => row.userStatusCd === 'ACTIVE' ? 'badge-green' : 'badge-red',
+        fmt: (v, row) => v === 'ACTIVE' ? '활성' : (row.userStatusCdNm || '비활성') },
     ];
 
     /* baseSearchColumns — 검색 영역 컬럼 */
@@ -1629,7 +1635,7 @@ window.AuthUserPickModal = {
     };
   },
   template: /* html */`
-<bo-modal :show="modal.show" width="820px" max-width="96vw" box-pad="0" body-pad="0"
+<bo-modal :show="modal.show" width="960px" max-width="96vw" box-pad="0" body-pad="0"
   :z-index="9100" @close="handleBtnAction('modal-close')">
   <div style="display:flex;flex-direction:column;max-height:90vh;">
     <!-- 모달 헤더 -->

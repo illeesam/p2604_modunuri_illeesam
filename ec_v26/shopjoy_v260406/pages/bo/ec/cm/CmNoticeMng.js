@@ -4,8 +4,7 @@
  *   - setup() 6섹션 [01]~[06] 마커 (dispatch=[02] / init=[03] / 핸들러=[04] / 헬퍼·컬럼=[05])
  *   - cmd 라우팅: '{영역명}-{기능명}' (baseDetail-close, baseGrid-sort, notices-rowEdit)
  *   - 검색: <bo-search-area :columns="columns.baseSearch">
- *   - 목록: <bo-grid :columns="columns.baseGrid" :pager="baseGrid.pager" :sort-state="baseGrid"
-            table-max-height="540px">
+ *   - 목록: <bo-grid :columns="columns.baseGrid" :pager="baseGrid.pager" :sort-state="baseGrid">
  *   - 인라인 Dtl: baseDetail.panelKey / editId / dtlMode 바인딩
  *   - 정책: _doc/정책서/sy/sy.51.프로그램설계정책.md §4.8, sy.54.네이밍규칙.md §coUtil 표준 캡슐 변수 명명
  */
@@ -268,7 +267,8 @@ window.CmNoticeMng = {
       :sort-state="baseGrid"
       :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('notices-sort', key)"
-      grid-id="notices-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      grid-id="notices-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions
+      table-max-height="540px">
       <template #row-actions="{ row, gridId }">
         <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
           <button class="btn btn_row_edit" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
