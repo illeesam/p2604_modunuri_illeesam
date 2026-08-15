@@ -58,8 +58,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                         odCart.sessionKey,  // 비회원 세션키
                         odCart.prodId,      // 상품ID (pd_prod.prod_id)
                         odCart.prodSkuId,   // SKU ID (pd_prod_sku.prod_sku_id)
-                        odCart.prodOptId1,  // 옵션1 값ID (pd_prod_opt.opt_id, 예: 색상)
-                        odCart.prodOptId2,  // 옵션2 값ID (pd_prod_opt.opt_id, 예: 사이즈)
+                        odCart.prodOpt1Id,  // 옵션1 값ID (pd_prod_opt.opt_id, 예: 색상)
+                        odCart.prodOpt2Id,  // 옵션2 값ID (pd_prod_opt.opt_id, 예: 사이즈)
                         odCart.unitPrice,   // 단가 (담을 시점 가격)
                         odCart.orderQty,    // 수량
                         odCart.itemPrice,   // 소계 (단가 × 수량)
@@ -73,8 +73,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 .from(odCart)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId))
-                .leftJoin(oi1).on(oi1.prodOptId.eq(odCart.prodOptId1))
-                .leftJoin(oi2).on(oi2.prodOptId.eq(odCart.prodOptId2));
+                .leftJoin(oi1).on(oi1.prodOptId.eq(odCart.prodOpt1Id))
+                .leftJoin(oi2).on(oi2.prodOptId.eq(odCart.prodOpt2Id));
     }
 
     /* 장바구니 키조회 */
@@ -165,8 +165,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
             QdslUtil.FieldDef.like("cartId", odCart.cartId),
             QdslUtil.FieldDef.like("isChecked", odCart.isChecked),
             QdslUtil.FieldDef.like("memberId", odCart.memberId),
-            QdslUtil.FieldDef.like("prodOptId1", odCart.prodOptId1),
-            QdslUtil.FieldDef.like("prodOptId2", odCart.prodOptId2),
+            QdslUtil.FieldDef.like("prodOpt1Id", odCart.prodOpt1Id),
+            QdslUtil.FieldDef.like("prodOpt2Id", odCart.prodOpt2Id),
             QdslUtil.FieldDef.like("prodId", odCart.prodId),
             QdslUtil.FieldDef.like("sessionKey", odCart.sessionKey),
             QdslUtil.FieldDef.like("prodSkuId", odCart.prodSkuId)
@@ -197,8 +197,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         if (entity.getSessionKey()  != null) { update.set(odCart.sessionKey,  entity.getSessionKey());  hasAny = true; }
         if (entity.getProdId()      != null) { update.set(odCart.prodId,      entity.getProdId());      hasAny = true; }
         if (entity.getProdSkuId()   != null) { update.set(odCart.prodSkuId,   entity.getProdSkuId());   hasAny = true; }
-        if (entity.getProdOptId1()  != null) { update.set(odCart.prodOptId1,  entity.getProdOptId1());  hasAny = true; }
-        if (entity.getProdOptId2()  != null) { update.set(odCart.prodOptId2,  entity.getProdOptId2());  hasAny = true; }
+        if (entity.getProdOpt1Id()  != null) { update.set(odCart.prodOpt1Id,  entity.getProdOpt1Id());  hasAny = true; }
+        if (entity.getProdOpt2Id()  != null) { update.set(odCart.prodOpt2Id,  entity.getProdOpt2Id());  hasAny = true; }
         if (entity.getUnitPrice()   != null) { update.set(odCart.unitPrice,   entity.getUnitPrice());   hasAny = true; }
         if (entity.getOrderQty()    != null) { update.set(odCart.orderQty,    entity.getOrderQty());    hasAny = true; }
         if (entity.getItemPrice()   != null) { update.set(odCart.itemPrice,   entity.getItemPrice());   hasAny = true; }

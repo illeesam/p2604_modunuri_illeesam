@@ -5,8 +5,8 @@ CREATE TABLE shopjoy_2604.pd_prod_sku (
     prod_sku_id    VARCHAR(21) NOT NULL CONSTRAINT pd_prod_sku_pk_prod_sku_id PRIMARY KEY,
     reg_site_id        VARCHAR(21) NOT NULL,
     prod_id        VARCHAR(21) NOT NULL,
-    prod_opt_id_1  VARCHAR(21),
-    prod_opt_id_2  VARCHAR(21),
+    prod_opt1_id  VARCHAR(21),
+    prod_opt2_id  VARCHAR(21),
     prod_sku_code  VARCHAR(50),
     add_price      BIGINT      DEFAULT 0,
     use_yn         VARCHAR(1)  DEFAULT 'Y'::bpchar,
@@ -21,8 +21,8 @@ COMMENT ON TABLE  shopjoy_2604.pd_prod_sku IS '상품 옵션 SKU (조합별 재�
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_sku_id IS 'SKU ID';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.reg_site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_id IS '상품ID';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_opt_id_1 IS '옵션1 값ID (pd_prod_opt.prod_opt_id)';
-COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_opt_id_2 IS '옵션2 값ID (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_opt1_id IS '옵션1 값ID (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_opt2_id IS '옵션2 값ID (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.prod_sku_code IS '자체 SKU 코드';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.add_price IS '옵션 추가금액 (기본가 대비)';
 COMMENT ON COLUMN shopjoy_2604.pd_prod_sku.use_yn IS '사용여부 Y/N';

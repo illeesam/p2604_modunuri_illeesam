@@ -47,13 +47,13 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                         odClaimItem.prodId,                   // 상품ID
                         odClaimItem.prodNm,                   // 상품명 (주문시점 스냅샷)
                         odClaimItem.prodSkuId,                // SKU ID (pd_prod_sku.prod_sku_id, 주문시점 스냅샷)
-                        odClaimItem.prodOptId1,               // 옵션1 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)
-                        odClaimItem.prodOptId2,               // 옵션2 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)
+                        odClaimItem.prodOpt1Id,               // 옵션1 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)
+                        odClaimItem.prodOpt2Id,               // 옵션2 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)
                         odClaimItem.prodOption,               // 옵션 (색상/사이즈 스냅샷)
                         odClaimItem.newProdId,                // [교환] 교환 요청 상품ID (claim_type_cd=EXCHANGE 시에만 사용)
                         odClaimItem.newProdSkuId,             // [교환] 교환 요청 SKU ID
-                        odClaimItem.newProdOptId1,            // [교환] 교환 요청 옵션1 값ID
-                        odClaimItem.newProdOptId2,            // [교환] 교환 요청 옵션2 값ID
+                        odClaimItem.newProdOpt1Id,            // [교환] 교환 요청 옵션1 값ID
+                        odClaimItem.newProdOpt2Id,            // [교환] 교환 요청 옵션2 값ID
                         odClaimItem.newProdNm,                 // [교환] 교환 요청 상품명
                         odClaimItem.newProdOption,            // [교환] 교환 요청 옵션 텍스트
                         odClaimItem.newQty,                    // [교환] 교환 요청 수량
@@ -190,13 +190,13 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         if (entity.getProdId()                  != null) { update.set(odClaimItem.prodId,                  entity.getProdId());                  hasAny = true; }
         if (entity.getProdNm()                  != null) { update.set(odClaimItem.prodNm,                  entity.getProdNm());                  hasAny = true; }
         if (entity.getProdSkuId()               != null) { update.set(odClaimItem.prodSkuId,               entity.getProdSkuId());               hasAny = true; }
-        if (entity.getProdOptId1()              != null) { update.set(odClaimItem.prodOptId1,              entity.getProdOptId1());              hasAny = true; }
-        if (entity.getProdOptId2()              != null) { update.set(odClaimItem.prodOptId2,              entity.getProdOptId2());              hasAny = true; }
+        if (entity.getProdOpt1Id()              != null) { update.set(odClaimItem.prodOpt1Id,              entity.getProdOpt1Id());              hasAny = true; }
+        if (entity.getProdOpt2Id()              != null) { update.set(odClaimItem.prodOpt2Id,              entity.getProdOpt2Id());              hasAny = true; }
         if (entity.getProdOption()              != null) { update.set(odClaimItem.prodOption,              entity.getProdOption());              hasAny = true; }
         if (entity.getNewProdId()               != null) { update.set(odClaimItem.newProdId,               entity.getNewProdId());               hasAny = true; }
         if (entity.getNewProdSkuId()            != null) { update.set(odClaimItem.newProdSkuId,            entity.getNewProdSkuId());            hasAny = true; }
-        if (entity.getNewProdOptId1()           != null) { update.set(odClaimItem.newProdOptId1,           entity.getNewProdOptId1());           hasAny = true; }
-        if (entity.getNewProdOptId2()           != null) { update.set(odClaimItem.newProdOptId2,           entity.getNewProdOptId2());           hasAny = true; }
+        if (entity.getNewProdOpt1Id()           != null) { update.set(odClaimItem.newProdOpt1Id,           entity.getNewProdOpt1Id());           hasAny = true; }
+        if (entity.getNewProdOpt2Id()           != null) { update.set(odClaimItem.newProdOpt2Id,           entity.getNewProdOpt2Id());           hasAny = true; }
         if (entity.getNewProdNm()               != null) { update.set(odClaimItem.newProdNm,               entity.getNewProdNm());               hasAny = true; }
         if (entity.getNewProdOption()           != null) { update.set(odClaimItem.newProdOption,           entity.getNewProdOption());           hasAny = true; }
         if (entity.getNewQty()                  != null) { update.set(odClaimItem.newQty,                  entity.getNewQty());                  hasAny = true; }

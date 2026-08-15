@@ -302,8 +302,8 @@
                     skuPreview.push({
                       prodSkuId: 'tmp-sku-' + _pad2(skuIdx++),
                       skuNm: o1.prodOptNm + ' / ' + o2.prodOptNm,
-                      prodOptId1: o1.prodOptId,
-                      prodOptId2: o2.prodOptId,
+                      prodOpt1Id: o1.prodOptId,
+                      prodOpt2Id: o2.prodOptId,
                       addPrice: addP,
                       prodOptStock: randInt(domCfg.stockMin, domCfg.stockMax),
                       useYn: 'Y',
@@ -321,7 +321,7 @@
                     for (let j = 0; j < perColor; j++) {
                       imgPreview.push({
                         prodImgId: 'tmp-img-' + _pad2(imgIdx++),
-                        prodOptId1: o1.prodOptId,
+                        prodOpt1Id: o1.prodOptId,
                         prodOptNm: o1.prodOptNm,
                         cdnImgUrl: 'https://picsum.photos/seed/' + (200 + imgIdx * 37) + '/400/400',
                         isThumb: imgIdx === 1 ? 'Y' : 'N',
@@ -351,7 +351,7 @@
                           body.prodImgs.push({
                             prodImgId: 'tmp-img-' + _pad2(imgIdx++),
                             cdnImgUrl: url,
-                            prodOptId1: o1.prodOptId,
+                            prodOpt1Id: o1.prodOptId,
                             isThumb: imgIdx === 1 ? 'Y' : 'N',
                             sortOrd: imgIdx,
                           });

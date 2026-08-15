@@ -1180,7 +1180,7 @@ const refreshList = () => {
 ### 7.1 배경
 
 시뮬레이터(`pages/bo/zd/ZdSimul*.js`)는 백엔드 API를 실제 호출하기 전에 **부모-자식 관계가 연결된 body를 미리 구성**해야 한다.
-예: 상품 옵션값 ID → SKU `prodOptId1/2` + 이미지 `prodOptId1` 에서 동시 참조.
+예: 상품 옵션값 ID → SKU `prodOpt1Id/2` + 이미지 `prodOpt1Id` 에서 동시 참조.
 
 백엔드가 항목 INSERT 후 생성한 ID를 후속 항목에 다시 써주는 구조라면 프론트 사전 할당이 불필요하지만,
 **단일 요청 body** 안에서 ID 참조가 교차하는 경우 프론트에서 ID를 미리 만들어 보내는 것이 더 명확하다.
@@ -1253,8 +1253,8 @@ opt2Items = opt2List.map((nm, i) => ({ prodOptId: 'tmp-opt2-' + _pad2(i), ... })
 |---|---|
 | `prodId` | 상품 임시 ID (body에 포함, 백엔드 prodId로 그대로 INSERT) |
 | `prodOptId` | 옵션값 임시 ID (pd_prod_opt의 PK, prodOpts[] 배열 내) |
-| `prodOptId1` | SKU/이미지에서 1유형 옵션값 참조 |
-| `prodOptId2` | SKU에서 2유형 옵션값 참조 |
+| `prodOpt1Id` | SKU/이미지에서 1유형 옵션값 참조 |
+| `prodOpt2Id` | SKU에서 2유형 옵션값 참조 |
 
 ```java
 // 백엔드 ZdSimulController: tmpOptItemId 로 읽음

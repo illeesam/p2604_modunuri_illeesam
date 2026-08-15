@@ -39,8 +39,8 @@ public class OdOrderItemDto {
         private String orderId;
         private String prodId;
         private String prodSkuId;
-        private String prodOptId1;
-        private String prodOptId2;
+        private String prodOpt1Id;
+        private String prodOpt2Id;
         private String prodNm;
         private String brandNm;
         private String dlivTmpltId;

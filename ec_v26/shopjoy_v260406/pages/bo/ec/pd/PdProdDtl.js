@@ -408,8 +408,8 @@ window.PdProdDtl = {
             id:          imgIdSeq++,
             previewUrl:  img.cdnImgUrl || img.cdnThumbUrl || '',
             isMain:      img.isThumb === 'Y',
-            prodOptId1:  img.prodOptId1 || '',
-            prodOptId2:  img.prodOptId2 || '',
+            prodOpt1Id:  img.prodOpt1Id || '',
+            prodOpt2Id:  img.prodOpt2Id || '',
             _persisted:  true,   // 서버에서 이미 저장된 이미지 — 제거 시 즉시 물리삭제 대상 아님(저장 시 정리)
           })));
 
@@ -896,7 +896,7 @@ window.PdProdDtl = {
     const triggerFileInput = () => fileInputRef.value?.click();
 
     /* addImageByUrl — 추가 */
-    const addImageByUrl = () => images.push({ id: imgIdSeq++, previewUrl: '', isMain: images.length === 0, prodOptId1: '', prodOptId2: '' });
+    const addImageByUrl = () => images.push({ id: imgIdSeq++, previewUrl: '', isMain: images.length === 0, prodOpt1Id: '', prodOpt2Id: '' });
 
     /* onFileChange — 이벤트. base64 인코딩 대신 실제 업로드(coApiSvc.cmUpload)로 CDN URL 확보 —
        sy_attach 에 물리 저장되고, attachId 는 저장 시 pd_prod_img.attach_id 로 연계된다. */
@@ -913,7 +913,7 @@ window.PdProdDtl = {
         uploaded.forEach(f => {
           images.push({
             id: imgIdSeq++, attachId: f.attachId, _persisted: false,
-            previewUrl: f.cdnImgUrl || '', prodOptId1: '', prodOptId2: '',
+            previewUrl: f.cdnImgUrl || '', prodOpt1Id: '', prodOpt2Id: '',
             isMain: images.length === 0,
           });
         });
@@ -931,7 +931,7 @@ window.PdProdDtl = {
         if (!images.some(i => i.isMain)) { safeFirst(images).isMain = true; }
       } else {
         const p = products[0] || null;
-        if (p?.mainImage) { images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, prodOptId1: '', prodOptId2: '', _persisted: true }); }
+        if (p?.mainImage) { images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, prodOpt1Id: '', prodOpt2Id: '', _persisted: true }); }
         else { images.splice(0, images.length); }
       }
     };
@@ -2609,7 +2609,7 @@ window.PdProdDtl = {
               <!-- ===== ■.■.■.■.■.■.■. opt_id_1: 옵션 1단 select ================= -->
               <div style="flex:1;min-width:140px;margin-bottom:4px;">
                 <label class="form-label" style="font-size:11px;">opt_id_1 <span style="color:#aaa;"> (NULL=공통) </span></label>
-                <select class="form-control" v-model="img.prodOptId1" style="font-size:12px;" @change="img.prodOptId2=''" :disabled="cfDtlMode">
+                <select class="form-control" v-model="img.prodOpt1Id" style="font-size:12px;" @change="img.prodOpt2Id=''" :disabled="cfDtlMode">
                   <option value="">-- 공통 (NULL) --</option>
                   <option v-if="!safeFirst(optGroups)||safeFirst(optGroups).items.length===0" disabled value="">
                     옵션설정 탭에서 1단 옵션을 먼저 추가하세요
@@ -2622,7 +2622,7 @@ window.PdProdDtl = {
               <!-- ===== ■.■.■.■.■.■.■. opt_id_2: 옵션 2단 select (1단 선택 후 연동) ===== -->
               <div style="flex:1;min-width:140px;margin-bottom:4px;">
                 <label class="form-label" style="font-size:11px;">opt_id_2 <span style="color:#aaa;"> (NULL=옵션1 공통) </span></label>
-                <select class="form-control" v-model="img.prodOptId2" style="font-size:12px;" :disabled="cfDtlMode || (!img.prodOptId1 ? optGroups.length<2 : false)">
+                <select class="form-control" v-model="img.prodOpt2Id" style="font-size:12px;" :disabled="cfDtlMode || (!img.prodOpt1Id ? optGroups.length<2 : false)">
                   <option value="">-- 공통 (NULL) --</option>
                   <option v-if="!optGroups[1]||optGroups[1].items.length===0" disabled value="">2단 옵션 없음</option>
                   <option v-for="item in (optGroups[1]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">

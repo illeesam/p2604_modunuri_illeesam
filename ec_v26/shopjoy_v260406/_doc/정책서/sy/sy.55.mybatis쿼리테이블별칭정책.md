@@ -187,8 +187,8 @@ MyBatis XML 매퍼의 SQL 쿼리에서 JOIN 조건과 WHERE 절의 컬럼 참조
           , oi1.prod_opt_nm AS prod_opt_nm_1
           , oi2.prod_opt_nm AS prod_opt_nm_2
     FROM pd_prod_sku sk
-        LEFT JOIN pd_prod_opt oi1 ON oi1.prod_opt_id = sk.prod_opt_id_1
-        LEFT JOIN pd_prod_opt oi2 ON oi2.prod_opt_id = sk.prod_opt_id_2
+        LEFT JOIN pd_prod_opt oi1 ON oi1.prod_opt_id = sk.prod_opt1_id
+        LEFT JOIN pd_prod_opt oi2 ON oi2.prod_opt_id = sk.prod_opt2_id
     WHERE sk.prod_id = #{prodId}
 </select>
 

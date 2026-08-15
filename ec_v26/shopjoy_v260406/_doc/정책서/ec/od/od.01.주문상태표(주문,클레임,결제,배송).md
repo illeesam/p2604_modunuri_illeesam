@@ -87,7 +87,7 @@ order_item 상태의 집계 요약. 빠른 목록 조회·필터 전용이며 �
 - `order_item_id` — 주문상품ID (YYMMDDhhmmss+rand4)
 - `order_id` — 주문ID (od_order 참조)
 - `prod_id` / `prod_sku_id` — 상품ID · SKU ID (무옵션 시 NULL)
-- `prod_opt_id_1` / `prod_opt_id_2` — 옵션1·옵션2 값ID (pd_prod_opt 참조)
+- `prod_opt1_id` / `prod_opt2_id` — 옵션1·옵션2 값ID (pd_prod_opt 참조)
 - `unit_price` — 판매가 단가 (옵션 추가금액 포함)
 - `order_qty` — 주문수량
 - `item_order_amt` — 주문금액 (unit_price × order_qty)

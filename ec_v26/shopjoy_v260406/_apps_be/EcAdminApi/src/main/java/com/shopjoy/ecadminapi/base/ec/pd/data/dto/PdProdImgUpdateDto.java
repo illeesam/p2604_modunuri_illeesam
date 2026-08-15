@@ -20,8 +20,8 @@ public class PdProdImgUpdateDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Row {
-        private String prodOptId1;
-        private String prodOptId2;
+        private String prodOpt1Id;
+        private String prodOpt2Id;
         /** 업로드된 CDN 이미지 URL (coApiSvc.cmUpload 업로드 결과) 또는 직접 입력 URL */
         private String previewUrl;
         private String cdnThumbUrl;

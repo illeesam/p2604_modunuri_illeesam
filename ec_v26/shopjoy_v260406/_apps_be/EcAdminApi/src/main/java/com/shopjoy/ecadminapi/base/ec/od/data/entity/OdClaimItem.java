@@ -45,12 +45,12 @@ public class OdClaimItem extends BaseEntity {
     private String prodSkuId;
 
     @Comment("옵션1 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)")
-    @Column(name = "prod_opt_id_1", length = 21)
-    private String prodOptId1;
+    @Column(name = "prod_opt1_id", length = 21)
+    private String prodOpt1Id;
 
     @Comment("옵션2 값ID (pd_prod_opt.prod_opt_id, 주문시점 스냅샷)")
-    @Column(name = "prod_opt_id_2", length = 21)
-    private String prodOptId2;
+    @Column(name = "prod_opt2_id", length = 21)
+    private String prodOpt2Id;
 
     @Comment("옵션 (색상/사이즈 스냅샷)")
     @Column(name = "prod_option", length = 500)
@@ -65,12 +65,12 @@ public class OdClaimItem extends BaseEntity {
     private String newProdSkuId;
 
     @Comment("[교환] 교환 요청 옵션1 값ID")
-    @Column(name = "new_prod_opt_id_1", length = 21)
-    private String newProdOptId1;
+    @Column(name = "new_prod_opt1_id", length = 21)
+    private String newProdOpt1Id;
 
     @Comment("[교환] 교환 요청 옵션2 값ID")
-    @Column(name = "new_prod_opt_id_2", length = 21)
-    private String newProdOptId2;
+    @Column(name = "new_prod_opt2_id", length = 21)
+    private String newProdOpt2Id;
 
     @Comment("[교환] 교환 요청 상품명")
     @Column(name = "new_prod_nm", length = 200)

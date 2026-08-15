@@ -372,7 +372,7 @@ window.Prod01View = {
           if (sel.val) { colorKeys.add(String(sel.val)); }
           if (sel.name) { colorKeys.add(String(sel.name)); }
         }
-        // 옵션값 → 표시명 매핑 (image.prodOptId1 가 무엇이든 라벨 만들 수 있도록)
+        // 옵션값 → 표시명 매핑 (image.prodOpt1Id 가 무엇이든 라벨 만들 수 있도록)
         const opt1ById = new Map();
         (p.opt1s || []).forEach(c => {
           if (c.optId) { opt1ById.set(String(c.optId), c); }
@@ -385,10 +385,10 @@ window.Prod01View = {
           if (c.val) { opt2ById.set(String(c.val), c); }
           if (c.name) { opt2ById.set(String(c.name), c); }
         });
-        // 색상 무관 공통 이미지(prodOptId1 빈값)는 어떤 색상이든 항상 표시.
+        // 색상 무관 공통 이미지(prodOpt1Id 빈값)는 어떤 색상이든 항상 표시.
         // 선택 색상 전용 이미지가 있을 때만 다른 색상 전용을 제외한다.
-        const isCommon = (im) => !im.prodOptId1 || String(im.prodOptId1).trim() === '';
-        const matchesColor = (im) => colorKeys.has(String(im.prodOptId1));
+        const isCommon = (im) => !im.prodOpt1Id || String(im.prodOpt1Id).trim() === '';
+        const matchesColor = (im) => colorKeys.has(String(im.prodOpt1Id));
         const filtered = colorKeys.size
           ? (real.some(matchesColor)
               ? real.filter(im => isCommon(im) || matchesColor(im))
@@ -398,8 +398,8 @@ window.Prod01View = {
           ((b.isThumb === 'Y') - (a.isThumb === 'Y')) || ((a.sortOrd||0) - (b.sortOrd||0))
         );
         return list.map((im, i) => {
-          const c1 = im.prodOptId1 != null ? opt1ById.get(String(im.prodOptId1)) : null;
-          const c2 = im.prodOptId2 != null ? opt2ById.get(String(im.prodOptId2)) : null;
+          const c1 = im.prodOpt1Id != null ? opt1ById.get(String(im.prodOpt1Id)) : null;
+          const c2 = im.prodOpt2Id != null ? opt2ById.get(String(im.prodOpt2Id)) : null;
           // hover 시 표시할 옵션 라벨 — "색상: 블랙 / 사이즈: M" 형태
           const parts = [];
           if (c1) { parts.push((p.opt1Nm || '색상') + ': ' + c1.name); }

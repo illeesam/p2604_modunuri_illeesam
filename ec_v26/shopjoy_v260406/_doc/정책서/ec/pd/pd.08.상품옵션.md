@@ -21,11 +21,11 @@ pd_prod (상품)
 
 | 단계 | pd_prod_opt_type 행 수 | 예시 | SKU 생성 방식 |
 |---|---|---|---|
-| 옵션 없음 | 0 | 단일 상품 | SKU 1개 (prod_opt_id_1=NULL) |
+| 옵션 없음 | 0 | 단일 상품 | SKU 1개 (prod_opt1_id=NULL) |
 | 1단 옵션 | 1 | 용량만 | prod_opt_type_level=1 값 수만큼 SKU |
 | 2단 옵션 | 2 | 색상 + 사이즈 | prod_opt_type_level=1 × prod_opt_type_level=2 조합만큼 SKU |
 
-> 현재 DDL 기준 최대 2단 (pd_prod_sku.prod_opt_id_1, prod_opt_id_2)
+> 현재 DDL 기준 최대 2단 (pd_prod_sku.prod_opt1_id, prod_opt2_id)
 
 ---
 
@@ -82,8 +82,8 @@ OPT006 (L, parent=OPT001)    → 블랙 선택 시에만 노출
 |---|---|
 | `prod_sku_id` | SKU ID (PK) |
 | `prod_id` | 상품ID |
-| `prod_opt_id_1` | 옵션1 값ID (pd_prod_opt.prod_opt_id, NULL=옵션없음) |
-| `prod_opt_id_2` | 옵션2 값ID (pd_prod_opt.prod_opt_id, NULL=1단 옵션) |
+| `prod_opt1_id` | 옵션1 값ID (pd_prod_opt.prod_opt_id, NULL=옵션없음) |
+| `prod_opt2_id` | 옵션2 값ID (pd_prod_opt.prod_opt_id, NULL=1단 옵션) |
 | `prod_sku_code` | 자체 SKU 코드 (바코드·ERP 연동용) |
 | `add_price` | 옵션 추가금액 (기본 0원) |
 | `prod_opt_stock` | 해당 조합 재고수량 |
@@ -105,9 +105,9 @@ pd_prod_opt (prod_opt_type_id='OPTT001')
   prod_opt_id='OPT003'  prod_opt_nm='500ml'  prod_opt_val='V_500ML'
 
 pd_prod_sku (SKU 3개)
-  SKU001  prod_opt_id_1='OPT001'  add_price=0      stock=20
-  SKU002  prod_opt_id_1='OPT002'  add_price=3,000  stock=15
-  SKU003  prod_opt_id_1='OPT003'  add_price=8,000  stock=10
+  SKU001  prod_opt1_id='OPT001'  add_price=0      stock=20
+  SKU002  prod_opt1_id='OPT002'  add_price=3,000  stock=15
+  SKU003  prod_opt1_id='OPT003'  add_price=8,000  stock=10
 ```
 
 ### 2단 옵션 (색상 + 사이즈)
@@ -132,13 +132,13 @@ pd_prod_opt (prod_opt_type_id='OPTT002' — 사이즈)
   prod_opt_id='OPT006'  prod_opt_nm='L'  prod_opt_val='L'
 
 pd_prod_sku (SKU 9개 = 3색상 × 3사이즈)
-  SKU001  prod_opt_id_1='OPT001'(블랙)     prod_opt_id_2='OPT004'(S)  stock=20  add_price=0
-  SKU002  prod_opt_id_1='OPT001'(블랙)     prod_opt_id_2='OPT005'(M)  stock=30  add_price=0
-  SKU003  prod_opt_id_1='OPT001'(블랙)     prod_opt_id_2='OPT006'(L)  stock=15  add_price=0
+  SKU001  prod_opt1_id='OPT001'(블랙)     prod_opt2_id='OPT004'(S)  stock=20  add_price=0
+  SKU002  prod_opt1_id='OPT001'(블랙)     prod_opt2_id='OPT005'(M)  stock=30  add_price=0
+  SKU003  prod_opt1_id='OPT001'(블랙)     prod_opt2_id='OPT006'(L)  stock=15  add_price=0
   ...
-  SKU007  prod_opt_id_1='OPT003'(딥네이비) prod_opt_id_2='OPT004'(S)  stock=5   add_price=2,000
-  SKU008  prod_opt_id_1='OPT003'(딥네이비) prod_opt_id_2='OPT005'(M)  stock=12  add_price=2,000
-  SKU009  prod_opt_id_1='OPT003'(딥네이비) prod_opt_id_2='OPT006'(L)  stock=0   add_price=2,000  ← 품절
+  SKU007  prod_opt1_id='OPT003'(딥네이비) prod_opt2_id='OPT004'(S)  stock=5   add_price=2,000
+  SKU008  prod_opt1_id='OPT003'(딥네이비) prod_opt2_id='OPT005'(M)  stock=12  add_price=2,000
+  SKU009  prod_opt1_id='OPT003'(딥네이비) prod_opt2_id='OPT006'(L)  stock=0   add_price=2,000  ← 품절
 ```
 
 ---
@@ -148,7 +148,7 @@ pd_prod_sku (SKU 9개 = 3색상 × 3사이즈)
 ### 구매자 선택 → SKU 조회
 ```
 1. 구매자: 색상="블랙", 사이즈="M" 선택
-2. 조회: prod_opt_id_1='OPT001' AND prod_opt_id_2='OPT005' → SKU002 조회
+2. 조회: prod_opt1_id='OPT001' AND prod_opt2_id='OPT005' → SKU002 조회
 3. 재고 확인: prod_opt_stock = 30 → 구매 가능
 4. 판매가 계산: pd_prod.sale_price + SKU002.add_price
 ```
@@ -157,8 +157,8 @@ pd_prod_sku (SKU 9개 = 3색상 × 3사이즈)
 ```
 od_order_item
   prod_sku_id     : SKU002           ← SKU 참조
-  prod_opt_id_1   : OPT001          ← 옵션1 값 ID 스냅샷
-  prod_opt_id_2   : OPT005          ← 옵션2 값 ID 스냅샷
+  prod_opt1_id   : OPT001          ← 옵션1 값 ID 스냅샷
+  prod_opt2_id   : OPT005          ← 옵션2 값 ID 스냅샷
   unit_price      : 25,000원         ← sale_price + add_price 스냅샷
   qty             : 1
 ```
@@ -167,15 +167,15 @@ od_order_item
 
 ## 옵션 이미지 연동
 
-`pd_prod_img.prod_opt_id_1` / `prod_opt_id_2`로 옵션에 따른 이미지 자동 전환:
+`pd_prod_img.prod_opt1_id` / `prod_opt2_id`로 옵션에 따른 이미지 자동 전환:
 
-| prod_opt_id_1 | prod_opt_id_2 | 이미지 적용 범위 |
+| prod_opt1_id | prod_opt2_id | 이미지 적용 범위 |
 |---|---|---|
 | NULL | NULL | 상품 공통 대표이미지 |
 | 색상값 | NULL | 해당 색상의 모든 사이즈 공통 |
 | 색상값 | 사이즈값 | 특정 색상+사이즈 전용 이미지 |
 
-> 구매자가 색상을 선택하면 해당 prod_opt_id_1에 연결된 이미지로 자동 교체
+> 구매자가 색상을 선택하면 해당 prod_opt1_id에 연결된 이미지로 자동 교체
 
 ---
 
@@ -352,9 +352,9 @@ prodOpts[1] (유형: 사이즈)
   prodOpts[0].prodOptId = 'tmp-opt2-01' ← 2유형 1번째 옵션값
   prodOpts[1].prodOptId = 'tmp-opt2-02' ← 2유형 2번째 옵션값
   ↓ 참조
-_preview_[prodSkus][*].prodOptId1 = 'tmp-opt1-01'
-_preview_[prodSkus][*].prodOptId2 = 'tmp-opt2-01'
-prodImages[0].prodOptId1 = 'tmp-opt1-01'
+_preview_[prodSkus][*].prodOpt1Id = 'tmp-opt1-01'
+_preview_[prodSkus][*].prodOpt2Id = 'tmp-opt2-01'
+prodImages[0].prodOpt1Id = 'tmp-opt1-01'
 ```
 
 ---
@@ -369,12 +369,12 @@ prodImages[0].prodOptId1 = 'tmp-opt1-01'
 - `pd_prod` — `prod_opt_type_level1_cd` (옵션 1단 분류)
 - `pd_prod_opt_type` — 옵션 유형 (prod_opt_type_id PK, prod_opt_type_level, prod_opt_type_level1_cd, prod_opt_type_level2_cd)
 - `pd_prod_opt` — 옵션 값 (prod_opt_id PK, prod_opt_type_id FK, prod_opt_val, prod_opt_style, prod_opt_type_level1_cd, prod_opt_type_level2_cd, parent_prod_opt_id)
-- `pd_prod_sku` — SKU (prod_sku_id PK, prod_opt_id_1/2 참조)
-- `pd_prod_img` — 상품 이미지 (prod_opt_id_1/2 연동)
+- `pd_prod_sku` — SKU (prod_sku_id PK, prod_opt1_id/2 참조)
+- `pd_prod_img` — 상품 이미지 (prod_opt1_id/2 연동)
 - `pdh_prod_sku_price_hist` — SKU 가격 변경 이력
 - `pdh_prod_sku_stock_hist` — SKU 재고 변경 이력
 - `pdh_prod_sku_chg_hist` — SKU 상태 변경 이력
-- `od_order_item` — 주문 시 prod_sku_id + prod_opt_id_1/2 스냅샷
+- `od_order_item` — 주문 시 prod_sku_id + prod_opt1_id/2 스냅샷
 
 ## 관련 화면
 | pageId | 라벨 |

@@ -74,8 +74,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         odOrderItem.orderId,                 // 주문ID (od_order.)
                         odOrderItem.prodId,                  // 상품ID (pd_prod.)
                         odOrderItem.prodSkuId,               // SKU ID (pd_prod_sku.prod_sku_id, 무옵션 시 NULL)
-                        odOrderItem.prodOptId1,              // 옵션1 값ID (pd_prod_opt.opt_id)
-                        odOrderItem.prodOptId2,              // 옵션2 값ID (pd_prod_opt.opt_id)
+                        odOrderItem.prodOpt1Id,              // 옵션1 값ID (pd_prod_opt.opt_id)
+                        odOrderItem.prodOpt2Id,              // 옵션2 값ID (pd_prod_opt.opt_id)
                         odOrderItem.prodNm,                  // 상품명 (주문 시점 스냅샷)
                         odOrderItem.brandNm,                 // 브랜드명 (주문 시점 스냅샷)
                         odOrderItem.dlivTmpltId,             // 배송비 템플릿ID 스냅샷
@@ -124,8 +124,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .from(odOrderItem)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId))
                 .leftJoin(pdProdSku).on(pdProdSku.prodSkuId.eq(odOrderItem.prodSkuId))
-                .leftJoin(oi1).on(oi1.prodOptId.eq(odOrderItem.prodOptId1))
-                .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOptId2))
+                .leftJoin(oi1).on(oi1.prodOptId.eq(odOrderItem.prodOpt1Id))
+                .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOpt2Id))
                 .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd)))
                 .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd)));
     }
@@ -286,8 +286,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
             QdslUtil.FieldDef.like("dlivTmpltId",             odOrderItem.dlivTmpltId),
             QdslUtil.FieldDef.like("dlivTrackingNo",          odOrderItem.dlivTrackingNo),
             QdslUtil.FieldDef.like("giftId",                  odOrderItem.giftId),
-            QdslUtil.FieldDef.like("prodOptId1",              odOrderItem.prodOptId1),
-            QdslUtil.FieldDef.like("prodOptId2",              odOrderItem.prodOptId2),
+            QdslUtil.FieldDef.like("prodOpt1Id",              odOrderItem.prodOpt1Id),
+            QdslUtil.FieldDef.like("prodOpt2Id",              odOrderItem.prodOpt2Id),
             QdslUtil.FieldDef.like("orderId",                 odOrderItem.orderId),
             QdslUtil.FieldDef.like("orderItemId",             odOrderItem.orderItemId),
             QdslUtil.FieldDef.like("orderItemStatusCd",       odOrderItem.orderItemStatusCd),

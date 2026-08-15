@@ -116,7 +116,7 @@ public class BoPdProdTabController {
      * SKU 저장 (전체 교체).
      * body 예: {
      *   "skus": [
-     *     { "prodOptId1": "PI...", "prodOptId2": "PI...", "addPrice": 0, "stockQty": 100, "prodSkuCode": "", "useYn": "Y" },
+     *     { "prodOpt1Id": "PI...", "prodOpt2Id": "PI...", "addPrice": 0, "stockQty": 100, "prodSkuCode": "", "useYn": "Y" },
      *     ...
      *   ]
      * }
@@ -156,8 +156,8 @@ public class BoPdProdTabController {
             PdProdSku sku = PdProdSku.builder()
                 .prodSkuId(skuId)
                 .prodId(prodId)
-                .prodOptId1(row.get("prodOptId1") != null ? String.valueOf(row.get("prodOptId1")) : null)
-                .prodOptId2(row.get("prodOptId2") != null ? String.valueOf(row.get("prodOptId2")) : null)
+                .prodOpt1Id(row.get("prodOpt1Id") != null ? String.valueOf(row.get("prodOpt1Id")) : null)
+                .prodOpt2Id(row.get("prodOpt2Id") != null ? String.valueOf(row.get("prodOpt2Id")) : null)
                 .prodSkuCode(skuCode.isBlank() ? prodId + "-" + String.format("%03d", idx + 1) : skuCode)
                 .addPrice(addPriceObj != null ? Long.parseLong(String.valueOf(addPriceObj)) : 0L)
                 .useYn(useYn.isBlank() ? "Y" : useYn)
@@ -193,8 +193,8 @@ public class BoPdProdTabController {
      * 이미지 저장 (전체 교체).
      * body 예: {
      *   "images": [
-     *     { "previewUrl": "https://cdn/.../a.jpg", "attachId": "ATT...", "isMain": true,  "prodOptId1": "", "prodOptId2": "", "imgAltText": "" },
-     *     { "previewUrl": "https://ext/.../b.jpg", "attachId": null,     "isMain": false, "prodOptId1": "VAL_OCOL_BLACK", "prodOptId2": "VAL_OSIZ_M" },
+     *     { "previewUrl": "https://cdn/.../a.jpg", "attachId": "ATT...", "isMain": true,  "prodOpt1Id": "", "prodOpt2Id": "", "imgAltText": "" },
+     *     { "previewUrl": "https://ext/.../b.jpg", "attachId": null,     "isMain": false, "prodOpt1Id": "VAL_OCOL_BLACK", "prodOpt2Id": "VAL_OSIZ_M" },
      *     ...
      *   ]
      * }
@@ -235,8 +235,8 @@ public class BoPdProdTabController {
             PdProdImg img = PdProdImg.builder()
                 .prodImgId(prodImgId)
                 .prodId(prodId)
-                .prodOptId1(r.getProdOptId1())
-                .prodOptId2(r.getProdOptId2())
+                .prodOpt1Id(r.getProdOpt1Id())
+                .prodOpt2Id(r.getProdOpt2Id())
                 .attachId(r.getAttachId())
                 .cdnImgUrl(imgUrl)
                 .cdnThumbUrl(thumbUrl != null ? thumbUrl : imgUrl)

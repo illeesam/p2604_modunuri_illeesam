@@ -27,8 +27,8 @@ public class OdCartDto {
         private String sessionKey;
         private String prodId;
         private String prodSkuId;
-        private String prodOptId1;
-        private String prodOptId2;
+        private String prodOpt1Id;
+        private String prodOpt2Id;
         private Long unitPrice;
         private Integer orderQty;
         private Long itemPrice;

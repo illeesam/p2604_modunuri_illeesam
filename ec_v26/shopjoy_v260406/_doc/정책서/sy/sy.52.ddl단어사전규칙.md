@@ -129,7 +129,7 @@ JPA 스키마 검증(`sy.56`) 통과 기준. 신규 DDL 작성 시 반드시 따
 | `*_id` (PK 자체) | `VARCHAR(21)` | `prefix(1~5) + YYMMDDhhmmss(12) + rand4(4)` |
 | `*_id` (FK 참조) | `VARCHAR(21)` | PK 와 동일 길이로 통일 |
 | `category_id_1~5` | `VARCHAR(21)` | 정산 등 5단계 카테고리 참조 |
-| `prod_opt_id_1~2` | `VARCHAR(21)` | 1/2단 옵션값 참조 (pd_prod_opt.prod_opt_id) |
+| `prod_opt1_id~2` | `VARCHAR(21)` | 1/2단 옵션값 참조 (pd_prod_opt.prod_opt_id) |
 | `bundle_group_id` | `VARCHAR(36)` | UUID 호환 (예외) |
 | `login_id` | `VARCHAR(50)` | 사용자 입력 로그인 식별자 |
 | `sns_user_id` | `VARCHAR(200)` | 외부 SNS 시스템 ID |

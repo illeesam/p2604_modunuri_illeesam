@@ -29,12 +29,12 @@ public class PdProdSku extends BaseEntity {
     private String prodId;
 
     @Comment("옵션1 값ID (pd_prod_opt.prod_opt_id)")
-    @Column(name = "prod_opt_id_1", length = 21)
-    private String prodOptId1;
+    @Column(name = "prod_opt1_id", length = 21)
+    private String prodOpt1Id;
 
     @Comment("옵션2 값ID (pd_prod_opt.prod_opt_id)")
-    @Column(name = "prod_opt_id_2", length = 21)
-    private String prodOptId2;
+    @Column(name = "prod_opt2_id", length = 21)
+    private String prodOpt2Id;
 
     @Comment("자체 SKU 코드")
     @Column(name = "prod_sku_code", length = 50)

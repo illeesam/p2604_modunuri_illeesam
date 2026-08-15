@@ -500,7 +500,7 @@
     useYn: '사용여부',
     /* SKU (백엔드 자동생성 참고용) — pd_prod_sku */
     prodSkuId: 'SKU ID', skuNm: 'SKU명',
-    prodOptId1: '옵션1 값ID', prodOptId2: '옵션2 값ID',
+    prodOpt1Id: '옵션1 값ID', prodOpt2Id: '옵션2 값ID',
     addPrice: '추가금액', prodOptStock: '재고수량',
     /* prodImgs — pd_prod_img */
     prodImgId: '이미지ID', cdnImgUrl: '이미지URL', prodOptNm: '옵션항목명',

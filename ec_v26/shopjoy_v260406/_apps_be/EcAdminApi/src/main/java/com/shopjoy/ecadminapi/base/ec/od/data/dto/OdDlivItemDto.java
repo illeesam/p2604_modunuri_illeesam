@@ -25,8 +25,8 @@ public class OdDlivItemDto {
         private String dlivId;
         private String orderItemId;
         private String prodId;
-        private String prodOptId1;
-        private String prodOptId2;
+        private String prodOpt1Id;
+        private String prodOpt2Id;
         private String dlivTypeCd;
         private Long unitPrice;
         private Integer dlivQty;

@@ -199,8 +199,8 @@ window.OdClaimDtl = {
           // 교환 대상 필드 (new_* 컬럼)
           newProdId: x.newProdId || null,
           newProdSkuId: x.newProdSkuId || null,
-          newProdOptId1: x.newProdOptId1 || null,
-          newProdOptId2: x.newProdOptId2 || null,
+          newProdOpt1Id: x.newProdOpt1Id || null,
+          newProdOpt2Id: x.newProdOpt2Id || null,
           newProdNm: x.newProdNm || null,
           newProdOption: x.newProdOption || null,
           newQty: x.newQty || null,
@@ -290,8 +290,8 @@ window.OdClaimDtl = {
         unitPrice: it.newUnitPrice != null ? it.newUnitPrice : null,
         prodId: it.newProdId || null,
         prodSkuId: it.newProdSkuId || null,
-        prodOptId1: it.newProdOptId1 || null,
-        prodOptId2: it.newProdOptId2 || null,
+        prodOpt1Id: it.newProdOpt1Id || null,
+        prodOpt2Id: it.newProdOpt2Id || null,
         courier: form.exchangeCourierCd || null,
         trackingNo: form.exchangeTrackingNo || null,
       };

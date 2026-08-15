@@ -1002,7 +1002,7 @@
       if (!nm) { return; }
       var style = (it.prodOptStyle || '').trim();
       var hex = cofHexColor(style);
-      var optImgs = imgs.filter(function (im) { return im.prodOptId1 === it.prodOptId; });
+      var optImgs = imgs.filter(function (im) { return im.prodOpt1Id === it.prodOptId; });
       var hasStyle = !!hex;
       var hasImgs = optImgs.length > 0;
       var prev = opt1ByNm[nm];
@@ -1041,7 +1041,7 @@
 
     var opt2Prices = {};
     lv2Items.forEach(function (it) {
-      var matchedSkus = skus.filter(function (s) { return (s.prodOptId2 === it.prodOptId) || (s.prodOptNm2 === it.prodOptNm); });
+      var matchedSkus = skus.filter(function (s) { return (s.prodOpt2Id === it.prodOptId) || (s.prodOptNm2 === it.prodOptNm); });
       if (!matchedSkus.length) { return; }
       var avg = Math.round(matchedSkus.reduce(function (a, s) { return a + (Number(s.addPrice) || 0); }, 0) / matchedSkus.length);
       if (avg) { opt2Prices[it.prodOptNm || it.prodOptVal] = avg; }

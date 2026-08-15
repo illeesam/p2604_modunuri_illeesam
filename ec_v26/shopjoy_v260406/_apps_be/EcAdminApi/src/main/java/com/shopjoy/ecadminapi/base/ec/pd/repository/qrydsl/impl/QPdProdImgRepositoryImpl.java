@@ -42,8 +42,8 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                 .select(Projections.bean(PdProdImgDto.Item.class,
                         pdProdImg.prodImgId,     // 상품이미지ID (PK)
                         pdProdImg.prodId,         // 상품ID (pd_prod.prod_id)
-                        pdProdImg.prodOptId1,     // 옵션1 값ID (색상 등, NULL이면 공통 이미지)
-                        pdProdImg.prodOptId2,     // 옵션2 값ID (사이즈 등, NULL이면 색상 공통)
+                        pdProdImg.prodOpt1Id,     // 옵션1 값ID (색상 등, NULL이면 공통 이미지)
+                        pdProdImg.prodOpt2Id,     // 옵션2 값ID (사이즈 등, NULL이면 색상 공통)
                         pdProdImg.attachId,        // 첨부파일ID (sy_attach.attach_id, 원본 파일 보관용)
                         pdProdImg.cdnHost,        // CDN 호스트명
                         pdProdImg.cdnImgUrl,      // CDN 원본 이미지 URL (상세 페이지용)
@@ -140,8 +140,8 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
             QdslUtil.FieldDef.like("cdnThumbUrl", pdProdImg.cdnThumbUrl),
             QdslUtil.FieldDef.like("imgAltText", pdProdImg.imgAltText),
             QdslUtil.FieldDef.like("isThumb", pdProdImg.isThumb),
-            QdslUtil.FieldDef.like("prodOptId1", pdProdImg.prodOptId1),
-            QdslUtil.FieldDef.like("prodOptId2", pdProdImg.prodOptId2),
+            QdslUtil.FieldDef.like("prodOpt1Id", pdProdImg.prodOpt1Id),
+            QdslUtil.FieldDef.like("prodOpt2Id", pdProdImg.prodOpt2Id),
             QdslUtil.FieldDef.like("prodId", pdProdImg.prodId),
             QdslUtil.FieldDef.like("prodImgId", pdProdImg.prodImgId)
         ));
@@ -171,8 +171,8 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         boolean hasAny = false;
 
         if (entity.getProdId()      != null) { update.set(pdProdImg.prodId,      entity.getProdId());      hasAny = true; }
-        if (entity.getProdOptId1()  != null) { update.set(pdProdImg.prodOptId1,  entity.getProdOptId1());  hasAny = true; }
-        if (entity.getProdOptId2()  != null) { update.set(pdProdImg.prodOptId2,  entity.getProdOptId2());  hasAny = true; }
+        if (entity.getProdOpt1Id()  != null) { update.set(pdProdImg.prodOpt1Id,  entity.getProdOpt1Id());  hasAny = true; }
+        if (entity.getProdOpt2Id()  != null) { update.set(pdProdImg.prodOpt2Id,  entity.getProdOpt2Id());  hasAny = true; }
         if (entity.getAttachId()    != null) { update.set(pdProdImg.attachId,    entity.getAttachId());    hasAny = true; }
         if (entity.getCdnHost()     != null) { update.set(pdProdImg.cdnHost,     entity.getCdnHost());     hasAny = true; }
         if (entity.getCdnImgUrl()   != null) { update.set(pdProdImg.cdnImgUrl,   entity.getCdnImgUrl());   hasAny = true; }

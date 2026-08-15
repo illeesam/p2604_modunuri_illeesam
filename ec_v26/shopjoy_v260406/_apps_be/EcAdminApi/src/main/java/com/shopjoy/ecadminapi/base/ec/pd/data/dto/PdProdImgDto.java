@@ -23,8 +23,8 @@ public class PdProdImgDto {
     public static class Item {
         private String prodImgId;
         private String prodId;
-        private String prodOptId1;
-        private String prodOptId2;
+        private String prodOpt1Id;
+        private String prodOpt2Id;
         private String attachId;
         private String cdnHost;
         private String cdnImgUrl;

@@ -42,8 +42,8 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                 .select(Projections.bean(PdProdSkuDto.Item.class,
                         pdProdSku.prodSkuId,     // SKU ID (PK)
                         pdProdSku.prodId,         // 상품ID
-                        pdProdSku.prodOptId1,     // 옵션1 값ID (pd_prod_opt.prod_opt_id)
-                        pdProdSku.prodOptId2,     // 옵션2 값ID (pd_prod_opt.prod_opt_id)
+                        pdProdSku.prodOpt1Id,     // 옵션1 값ID (pd_prod_opt.prod_opt_id)
+                        pdProdSku.prodOpt2Id,     // 옵션2 값ID (pd_prod_opt.prod_opt_id)
                         pdProdSku.prodSkuCode,    // 자체 SKU 코드
                         pdProdSku.addPrice,       // 옵션 추가금액 (기본가 대비)
                         pdProdSku.useYn,           // 사용여부 — {Y: '사용', N: '미사용'}
@@ -130,8 +130,8 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
-            QdslUtil.FieldDef.like("prodOptId1", pdProdSku.prodOptId1),
-            QdslUtil.FieldDef.like("prodOptId2", pdProdSku.prodOptId2),
+            QdslUtil.FieldDef.like("prodOpt1Id", pdProdSku.prodOpt1Id),
+            QdslUtil.FieldDef.like("prodOpt2Id", pdProdSku.prodOpt2Id),
             QdslUtil.FieldDef.like("prodId", pdProdSku.prodId),
             QdslUtil.FieldDef.like("prodSkuCode", pdProdSku.prodSkuCode),
             QdslUtil.FieldDef.like("prodSkuId", pdProdSku.prodSkuId),
@@ -161,8 +161,8 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         boolean hasAny = false;
 
         if (entity.getProdId()       != null) { update.set(pdProdSku.prodId,       entity.getProdId());       hasAny = true; }
-        if (entity.getProdOptId1()   != null) { update.set(pdProdSku.prodOptId1,   entity.getProdOptId1());   hasAny = true; }
-        if (entity.getProdOptId2()   != null) { update.set(pdProdSku.prodOptId2,   entity.getProdOptId2());   hasAny = true; }
+        if (entity.getProdOpt1Id()   != null) { update.set(pdProdSku.prodOpt1Id,   entity.getProdOpt1Id());   hasAny = true; }
+        if (entity.getProdOpt2Id()   != null) { update.set(pdProdSku.prodOpt2Id,   entity.getProdOpt2Id());   hasAny = true; }
         if (entity.getProdSkuCode()  != null) { update.set(pdProdSku.prodSkuCode,  entity.getProdSkuCode());  hasAny = true; }
         if (entity.getAddPrice()     != null) { update.set(pdProdSku.addPrice,     entity.getAddPrice());     hasAny = true; }
         if (entity.getUseYn()        != null) { update.set(pdProdSku.useYn,        entity.getUseYn());        hasAny = true; }

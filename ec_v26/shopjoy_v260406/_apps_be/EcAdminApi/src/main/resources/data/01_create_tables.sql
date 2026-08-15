@@ -2554,15 +2554,15 @@ COMMENT ON COLUMN pd_prod.upd_date      IS '수정일';
 -- [CODES] pd_prod.size_info_cd (사이즈) : 상품사이즈 { FREE:FREE, XS:XS, S:S, M:M, L:L, XL:XL, XXL:XXL }
 
 -- 상품 이미지 (다중)
--- prod_opt_id_1 만 있으면 해당 색상 공통, prod_opt_id_2 도 있으면 특정 사이즈 전용
+-- prod_opt1_id 만 있으면 해당 색상 공통, prod_opt2_id 도 있으면 특정 사이즈 전용
 -- 둘 다 NULL이면 상품 대표(공통) 이미지
 -- attach_id: 파일 관리 시스템(sy_attach)과 연계 시 사용
 CREATE TABLE IF NOT EXISTS pd_prod_img (
     prod_img_id     VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),                            -- sy_site.site_id
     prod_id         VARCHAR(21)     NOT NULL,              -- FK: pd_prod.prod_id
-    prod_opt_id_1   VARCHAR(21),                            -- 옵션1 값ID (pd_prod_opt.prod_opt_id, 예: 색상-블랙)
-    prod_opt_id_2   VARCHAR(21),                            -- 옵션2 값ID (pd_prod_opt.prod_opt_id, 예: 사이즈-M)
+    prod_opt1_id   VARCHAR(21),                            -- 옵션1 값ID (pd_prod_opt.prod_opt_id, 예: 색상-블랙)
+    prod_opt2_id   VARCHAR(21),                            -- 옵션2 값ID (pd_prod_opt.prod_opt_id, 예: 사이즈-M)
     attach_id       VARCHAR(21),                            -- FK: sy_attach.attach_id (원본 파일 참조)
     cdn_host        VARCHAR(100),                           -- CDN 호스트명 (예: cdn.example.com)
     cdn_img_url     VARCHAR(500),                           -- CDN 원본 이미지 URL (상세 페이지용)
@@ -2581,8 +2581,8 @@ COMMENT ON TABLE pd_prod_img IS '상품 이미지';
 COMMENT ON COLUMN pd_prod_img.prod_img_id    IS '상품이미지ID';
 COMMENT ON COLUMN pd_prod_img.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN pd_prod_img.prod_id        IS '상품ID (pd_prod.prod_id)';
-COMMENT ON COLUMN pd_prod_img.prod_opt_id_1  IS '옵션1 값ID (pd_prod_opt.prod_opt_id, 색상 등, NULL이면 공통 이미지)';
-COMMENT ON COLUMN pd_prod_img.prod_opt_id_2  IS '옵션2 값ID (pd_prod_opt.prod_opt_id, 사이즈 등, NULL이면 색상 공통)';
+COMMENT ON COLUMN pd_prod_img.prod_opt1_id  IS '옵션1 값ID (pd_prod_opt.prod_opt_id, 색상 등, NULL이면 공통 이미지)';
+COMMENT ON COLUMN pd_prod_img.prod_opt2_id  IS '옵션2 값ID (pd_prod_opt.prod_opt_id, 사이즈 등, NULL이면 색상 공통)';
 COMMENT ON COLUMN pd_prod_img.attach_id      IS '첨부파일ID (sy_attach.attach_id, 원본 파일 보관용)';
 COMMENT ON COLUMN pd_prod_img.cdn_host       IS 'CDN 호스트명 (예: cdn.example.com, 원본 시점의 CDN)';
 COMMENT ON COLUMN pd_prod_img.cdn_img_url    IS 'CDN 원본 이미지 URL (상세 페이지용, sy_attach 기준)';
@@ -2595,14 +2595,14 @@ COMMENT ON COLUMN pd_prod_img.reg_date       IS '등록일';
 COMMENT ON COLUMN pd_prod_img.upd_by         IS '수정자 (sy_user.user_id, mb_member.member_id)';
 COMMENT ON COLUMN pd_prod_img.upd_date       IS '수정일';
 
-CREATE INDEX idx_pd_prod_img_opt ON pd_prod_img (prod_id, prod_opt_id_1, prod_opt_id_2);
+CREATE INDEX idx_pd_prod_img_opt ON pd_prod_img (prod_id, prod_opt1_id, prod_opt2_id);
 
 CREATE TABLE IF NOT EXISTS pd_prod_sku (
     prod_sku_id     VARCHAR(21)     NOT NULL,
     site_id         VARCHAR(21),                            -- sy_site.site_id
     prod_id         VARCHAR(21)     NOT NULL,
-    prod_opt_id_1   VARCHAR(21),                            -- 옵션1 값ID (pd_prod_opt.prod_opt_id)
-    prod_opt_id_2   VARCHAR(21),                            -- 옵션2 값ID (pd_prod_opt.prod_opt_id)
+    prod_opt1_id   VARCHAR(21),                            -- 옵션1 값ID (pd_prod_opt.prod_opt_id)
+    prod_opt2_id   VARCHAR(21),                            -- 옵션2 값ID (pd_prod_opt.prod_opt_id)
     prod_sku_code   VARCHAR(50),                            -- 자체 SKU 코드
     add_price       BIGINT          DEFAULT 0,              -- 옵션 추가금액
     prod_opt_stock  INTEGER         DEFAULT 0,              -- 옵션 조합별 재고
@@ -2618,8 +2618,8 @@ COMMENT ON TABLE pd_prod_sku IS '상품 옵션 SKU (조합별 재고/가격)';
 COMMENT ON COLUMN pd_prod_sku.prod_sku_id    IS 'SKU ID';
 COMMENT ON COLUMN pd_prod_sku.site_id        IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN pd_prod_sku.prod_id        IS '상품ID';
-COMMENT ON COLUMN pd_prod_sku.prod_opt_id_1  IS '옵션1 값ID (pd_prod_opt.prod_opt_id)';
-COMMENT ON COLUMN pd_prod_sku.prod_opt_id_2  IS '옵션2 값ID (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN pd_prod_sku.prod_opt1_id  IS '옵션1 값ID (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN pd_prod_sku.prod_opt2_id  IS '옵션2 값ID (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN pd_prod_sku.sku_code       IS '자체 SKU 코드';
 COMMENT ON COLUMN pd_prod_sku.add_price      IS '옵션 추가금액 (기본가 대비)';
 COMMENT ON COLUMN pd_prod_sku.prod_opt_stock IS '해당 옵션 조합 재고수량';
@@ -2640,18 +2640,18 @@ COMMENT ON COLUMN pd_prod_sku.upd_date       IS '수정일';
 --              PO004=S,    PO005=M,       PO006=L
 -- ============================================================
 -- prod_id='P001'
---   ├─ prod_opt_id_1='PO001' (블랙, add_price=0)
---   │   ├─ prod_sku_id='SKU001', prod_opt_id_2='PO004' (S), prod_sku_code='TS-BLACK-S',  stock=20
---   │   ├─ prod_sku_id='SKU002', prod_opt_id_2='PO005' (M), prod_sku_code='TS-BLACK-M',  stock=30
---   │   └─ prod_sku_id='SKU003', prod_opt_id_2='PO006' (L), prod_sku_code='TS-BLACK-L',  stock=15
---   ├─ prod_opt_id_1='PO002' (화이트, add_price=0)
---   │   ├─ prod_sku_id='SKU004', prod_opt_id_2='PO004' (S), prod_sku_code='TS-WHITE-S',  stock=10
---   │   ├─ prod_sku_id='SKU005', prod_opt_id_2='PO005' (M), prod_sku_code='TS-WHITE-M',  stock=25
---   │   └─ prod_sku_id='SKU006', prod_opt_id_2='PO006' (L), prod_sku_code='TS-WHITE-L',  stock=8
---   └─ prod_opt_id_1='PO003' (딥네이비, add_price=+2,000)
---       ├─ prod_sku_id='SKU007', prod_opt_id_2='PO004' (S), prod_sku_code='TS-DNAVY-S',  stock=5
---       ├─ prod_sku_id='SKU008', prod_opt_id_2='PO005' (M), prod_sku_code='TS-DNAVY-M',  stock=12
---       └─ prod_sku_id='SKU009', prod_opt_id_2='PO006' (L), prod_sku_code='TS-DNAVY-L',  stock=7
+--   ├─ prod_opt1_id='PO001' (블랙, add_price=0)
+--   │   ├─ prod_sku_id='SKU001', prod_opt2_id='PO004' (S), prod_sku_code='TS-BLACK-S',  stock=20
+--   │   ├─ prod_sku_id='SKU002', prod_opt2_id='PO005' (M), prod_sku_code='TS-BLACK-M',  stock=30
+--   │   └─ prod_sku_id='SKU003', prod_opt2_id='PO006' (L), prod_sku_code='TS-BLACK-L',  stock=15
+--   ├─ prod_opt1_id='PO002' (화이트, add_price=0)
+--   │   ├─ prod_sku_id='SKU004', prod_opt2_id='PO004' (S), prod_sku_code='TS-WHITE-S',  stock=10
+--   │   ├─ prod_sku_id='SKU005', prod_opt2_id='PO005' (M), prod_sku_code='TS-WHITE-M',  stock=25
+--   │   └─ prod_sku_id='SKU006', prod_opt2_id='PO006' (L), prod_sku_code='TS-WHITE-L',  stock=8
+--   └─ prod_opt1_id='PO003' (딥네이비, add_price=+2,000)
+--       ├─ prod_sku_id='SKU007', prod_opt2_id='PO004' (S), prod_sku_code='TS-DNAVY-S',  stock=5
+--       ├─ prod_sku_id='SKU008', prod_opt2_id='PO005' (M), prod_sku_code='TS-DNAVY-M',  stock=12
+--       └─ prod_sku_id='SKU009', prod_opt2_id='PO006' (L), prod_sku_code='TS-DNAVY-L',  stock=7
 
 -- pd_prod_opt_type: 상품 옵션 유형 (색상, 사이즈 등 옵션 축) — 구 테이블명: pd_prod_opt (2026-07-12 rename)
 -- 2026-07-13: prod_opt_input_type_cd 제거, prod_opt_type_level1_cd / prod_opt_type_level2_cd 추가
@@ -3532,8 +3532,8 @@ CREATE TABLE IF NOT EXISTS od_cart (
     session_key     VARCHAR(100),                          -- 비회원 세션키
     prod_id         VARCHAR(21)     NOT NULL,              -- pd_prod.prod_id
     sku_id          VARCHAR(21),                           -- pd_prod_sku.prod_sku_id
-    prod_opt_id_1   VARCHAR(21),                           -- 옵션1 값ID (pd_prod_opt.prod_opt_id, 예: 색상)
-    prod_opt_id_2   VARCHAR(21),                           -- 옵션2 값ID (pd_prod_opt.prod_opt_id, 예: 사이즈)
+    prod_opt1_id   VARCHAR(21),                           -- 옵션1 값ID (pd_prod_opt.prod_opt_id, 예: 색상)
+    prod_opt2_id   VARCHAR(21),                           -- 옵션2 값ID (pd_prod_opt.prod_opt_id, 예: 사이즈)
     unit_price      BIGINT          DEFAULT 0,             -- 단가 (담을 시점)
     order_qty       INTEGER         DEFAULT 1,
     item_price      BIGINT          DEFAULT 0,             -- 소계 (unit_price × order_qty)
@@ -3552,8 +3552,8 @@ COMMENT ON COLUMN od_cart.member_id      IS '회원ID (비회원 NULL)';
 COMMENT ON COLUMN od_cart.session_key    IS '비회원 세션키';
 COMMENT ON COLUMN od_cart.prod_id        IS '상품ID (pd_prod.prod_id)';
 COMMENT ON COLUMN od_cart.sku_id         IS 'SKU ID (pd_prod_sku.sku_id)';
-COMMENT ON COLUMN od_cart.prod_opt_id_1  IS '옵션1 값ID (pd_prod_opt.prod_opt_id, 예: 색상)';
-COMMENT ON COLUMN od_cart.prod_opt_id_2  IS '옵션2 값ID (pd_prod_opt.prod_opt_id, 예: 사이즈)';
+COMMENT ON COLUMN od_cart.prod_opt1_id  IS '옵션1 값ID (pd_prod_opt.prod_opt_id, 예: 색상)';
+COMMENT ON COLUMN od_cart.prod_opt2_id  IS '옵션2 값ID (pd_prod_opt.prod_opt_id, 예: 사이즈)';
 COMMENT ON COLUMN od_cart.unit_price     IS '단가 (담을 시점 가격)';
 COMMENT ON COLUMN od_cart.order_qty      IS '수량';
 COMMENT ON COLUMN od_cart.item_price     IS '소계 (단가 × 수량)';
@@ -3718,8 +3718,8 @@ CREATE TABLE IF NOT EXISTS od_order_item (
     order_id        VARCHAR(21)     NOT NULL,
     prod_id         VARCHAR(21)     NOT NULL,
     sku_id          VARCHAR(21),                            -- pd_prod_sku.prod_sku_id
-    prod_opt_id_1   VARCHAR(21),                            -- 옵션1 값ID (pd_prod_opt.prod_opt_id)
-    prod_opt_id_2   VARCHAR(21),                            -- 옵션2 값ID (pd_prod_opt.prod_opt_id)
+    prod_opt1_id   VARCHAR(21),                            -- 옵션1 값ID (pd_prod_opt.prod_opt_id)
+    prod_opt2_id   VARCHAR(21),                            -- 옵션2 값ID (pd_prod_opt.prod_opt_id)
     -- ── 상품 스냅샷 (주문 시점) ──
     prod_nm         VARCHAR(200),                           -- 상품명 스냅샷
     brand_nm        VARCHAR(100),                           -- 브랜드명 스냅샷
@@ -3778,8 +3778,8 @@ COMMENT ON COLUMN od_order_item.site_id          IS '사이트ID (sy_site.site_i
 COMMENT ON COLUMN od_order_item.order_id         IS '주문ID (od_order.)';
 COMMENT ON COLUMN od_order_item.prod_id          IS '상품ID (pd_prod.)';
 COMMENT ON COLUMN od_order_item.sku_id           IS 'SKU ID (pd_prod_sku.prod_sku_id, 무옵션 시 NULL)';
-COMMENT ON COLUMN od_order_item.prod_opt_id_1     IS '옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
-COMMENT ON COLUMN od_order_item.prod_opt_id_2     IS '옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN od_order_item.prod_opt1_id     IS '옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN od_order_item.prod_opt2_id     IS '옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN od_order_item.prod_nm          IS '상품명 (주문 시점 스냅샷)';
 COMMENT ON COLUMN od_order_item.brand_nm         IS '브랜드명 (주문 시점 스냅샷)';
 COMMENT ON COLUMN od_order_item.dliv_tmplt_id    IS '배송비 템플릿ID 스냅샷';
@@ -4383,8 +4383,8 @@ CREATE TABLE IF NOT EXISTS od_dliv_item (
     dliv_id         VARCHAR(21)     NOT NULL,
     order_item_id   VARCHAR(21)     NOT NULL,               -- 원 주문상품ID
     prod_id         VARCHAR(21),
-    prod_opt_id_1   VARCHAR(21),                            -- 옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)
-    prod_opt_id_2   VARCHAR(21),                            -- 옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)
+    prod_opt1_id   VARCHAR(21),                            -- 옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)
+    prod_opt2_id   VARCHAR(21),                            -- 옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)
     dliv_type_cd    VARCHAR(20)     DEFAULT 'OUT',           -- 입출고구분: OUT 출고 / IN 입고(반품)
     unit_price      BIGINT          DEFAULT 0,
     dliv_qty        INTEGER         DEFAULT 1,              -- 이 배송의 출고수량 (부분출고 시 < 주문수량)
@@ -4404,8 +4404,8 @@ COMMENT ON COLUMN od_dliv_item.site_id       IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN od_dliv_item.dliv_id       IS '배송ID (od_dliv.)';
 COMMENT ON COLUMN od_dliv_item.order_item_id IS '주문상품ID (od_order_item.)';
 COMMENT ON COLUMN od_dliv_item.prod_id       IS '상품ID';
-COMMENT ON COLUMN od_dliv_item.prod_opt_id_1 IS '옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
-COMMENT ON COLUMN od_dliv_item.prod_opt_id_2 IS '옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN od_dliv_item.prod_opt1_id IS '옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN od_dliv_item.prod_opt2_id IS '옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN od_dliv_item.dliv_type_cd  IS '입출고구분 (OUT:출고 / IN:입고반품)';
 COMMENT ON COLUMN od_dliv_item.unit_price    IS '단가 (주문시점 스냅샷)';
 COMMENT ON COLUMN od_dliv_item.dliv_qty      IS '출고수량 (부분출고 시 주문수량보다 적을 수 있음)';
@@ -7523,8 +7523,8 @@ CREATE TABLE IF NOT EXISTS st_settle_raw (
     category_id_4           VARCHAR(21),                            -- 카테고리 4단계ID 스냅샷 (pd_category.category_id)
     category_id_5           VARCHAR(21),                            -- 카테고리 5단계ID 스냅샷 (pd_category.category_id)
     sku_id                  VARCHAR(21),                            -- pd_prod_sku.prod_sku_id (스냅샷)
-    prod_opt_id_1           VARCHAR(21),                            -- pd_prod_opt.prod_opt_id (옵션1, 스냅샷)
-    prod_opt_id_2           VARCHAR(21),                            -- pd_prod_opt.prod_opt_id (옵션2, 스냅샷)
+    prod_opt1_id           VARCHAR(21),                            -- pd_prod_opt.prod_opt_id (옵션1, 스냅샷)
+    prod_opt2_id           VARCHAR(21),                            -- pd_prod_opt.prod_opt_id (옵션2, 스냅샷)
     md_user_id              VARCHAR(21),                            -- 담당 MD (sy_user.user_id)
 
     -- ── 수량 · 가격
@@ -7623,8 +7623,8 @@ COMMENT ON COLUMN st_settle_raw.category_id_3        IS '카테고리 3단계(�
 COMMENT ON COLUMN st_settle_raw.category_id_4        IS '카테고리 4단계 ID 스냅샷 (pd_category.category_id)';
 COMMENT ON COLUMN st_settle_raw.category_id_5        IS '카테고리 5단계 ID 스냅샷 (pd_category.category_id)';
 COMMENT ON COLUMN st_settle_raw.sku_id               IS 'SKU ID 스냅샷 (pd_prod_sku.prod_sku_id)';
-COMMENT ON COLUMN st_settle_raw.prod_opt_id_1        IS '옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
-COMMENT ON COLUMN st_settle_raw.prod_opt_id_2        IS '옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN st_settle_raw.prod_opt1_id        IS '옵션1 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
+COMMENT ON COLUMN st_settle_raw.prod_opt2_id        IS '옵션2 값ID 스냅샷 (pd_prod_opt.prod_opt_id)';
 COMMENT ON COLUMN st_settle_raw.md_user_id           IS '담당MD (sy_user.user_id)';
 COMMENT ON COLUMN st_settle_raw.normal_price         IS '정상가 스냅샷 (할인 전 1ea 가격)';
 COMMENT ON COLUMN st_settle_raw.unit_price           IS '단가 (옵션 추가금액 포함)';

@@ -29,13 +29,13 @@ public class OdClaimItemDto {
         private String prodId;
         private String prodNm;
         private String prodSkuId;
-        private String prodOptId1;
-        private String prodOptId2;
+        private String prodOpt1Id;
+        private String prodOpt2Id;
         private String prodOption;
         private String newProdId;
         private String newProdSkuId;
-        private String newProdOptId1;
-        private String newProdOptId2;
+        private String newProdOpt1Id;
+        private String newProdOpt2Id;
         private String newProdNm;
         private String newProdOption;
         private Integer newQty;

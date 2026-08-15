@@ -108,8 +108,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                         stSettleRaw.categoryId4,             // 카테고리 4단계 ID 스냅샷
                         stSettleRaw.categoryId5,             // 카테고리 5단계 ID 스냅샷
                         stSettleRaw.prodSkuId,               // SKU ID 스냅샷 (pd_prod_sku.prod_sku_id)
-                        stSettleRaw.prodOptId1,              // 옵션1 값ID 스냅샷 (pd_prod_opt.opt_id)
-                        stSettleRaw.prodOptId2,              // 옵션2 값ID 스냅샷 (pd_prod_opt.opt_id)
+                        stSettleRaw.prodOpt1Id,              // 옵션1 값ID 스냅샷 (pd_prod_opt.opt_id)
+                        stSettleRaw.prodOpt2Id,              // 옵션2 값ID 스냅샷 (pd_prod_opt.opt_id)
                         stSettleRaw.mdUserId,                // 담당MD (sy_user.user_id)
                         stSettleRaw.normalPrice,             // 정상가 스냅샷 (할인 전 1ea 가격)
                         stSettleRaw.unitPrice,               // 단가 (옵션 추가금액 포함)
@@ -315,8 +315,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
             QdslUtil.FieldDef.like("giftId", stSettleRaw.giftId),
             QdslUtil.FieldDef.like("mdUserId", stSettleRaw.mdUserId),
             QdslUtil.FieldDef.like("memberId", stSettleRaw.memberId),
-            QdslUtil.FieldDef.like("prodOptId1", stSettleRaw.prodOptId1),
-            QdslUtil.FieldDef.like("prodOptId2", stSettleRaw.prodOptId2),
+            QdslUtil.FieldDef.like("prodOpt1Id", stSettleRaw.prodOpt1Id),
+            QdslUtil.FieldDef.like("prodOpt2Id", stSettleRaw.prodOpt2Id),
             QdslUtil.FieldDef.like("orderId", stSettleRaw.orderId),
             QdslUtil.FieldDef.like("orderItemId", stSettleRaw.orderItemId),
             QdslUtil.FieldDef.like("orderItemStatusCd", stSettleRaw.orderItemStatusCd),
@@ -384,8 +384,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         if (entity.getCategoryId4()         != null) { update.set(stSettleRaw.categoryId4,         entity.getCategoryId4());         hasAny = true; }
         if (entity.getCategoryId5()         != null) { update.set(stSettleRaw.categoryId5,         entity.getCategoryId5());         hasAny = true; }
         if (entity.getProdSkuId()            != null) { update.set(stSettleRaw.prodSkuId,            entity.getProdSkuId());            hasAny = true; }
-        if (entity.getProdOptId1()              != null) { update.set(stSettleRaw.prodOptId1,              entity.getProdOptId1());              hasAny = true; }
-        if (entity.getProdOptId2()              != null) { update.set(stSettleRaw.prodOptId2,              entity.getProdOptId2());              hasAny = true; }
+        if (entity.getProdOpt1Id()              != null) { update.set(stSettleRaw.prodOpt1Id,              entity.getProdOpt1Id());              hasAny = true; }
+        if (entity.getProdOpt2Id()              != null) { update.set(stSettleRaw.prodOpt2Id,              entity.getProdOpt2Id());              hasAny = true; }
         if (entity.getMdUserId()            != null) { update.set(stSettleRaw.mdUserId,            entity.getMdUserId());            hasAny = true; }
         if (entity.getNormalPrice()         != null) { update.set(stSettleRaw.normalPrice,         entity.getNormalPrice());         hasAny = true; }
         if (entity.getUnitPrice()           != null) { update.set(stSettleRaw.unitPrice,           entity.getUnitPrice());           hasAny = true; }

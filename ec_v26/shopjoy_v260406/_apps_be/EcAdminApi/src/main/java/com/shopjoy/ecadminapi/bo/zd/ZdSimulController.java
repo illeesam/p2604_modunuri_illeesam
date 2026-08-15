@@ -243,7 +243,7 @@ public class ZdSimulController {
         if (optGroups != null && !optGroups.isEmpty()) {
             List<String> grp1ItemIds = new ArrayList<>();
             List<String> grp2ItemIds = new ArrayList<>();
-            /* tmpOptId → 실제 저장된 optId 매핑 (프론트 prodImgs.prodOptId1 변환용) */
+            /* tmpOptId → 실제 저장된 optId 매핑 (프론트 prodImgs.prodOpt1Id 변환용) */
             Map<String, String> tmpToRealOptId = new java.util.LinkedHashMap<>();
 
             /* pd_prod 플랫 컬럼 업데이트 (optType1/2 명칭·코드) */
@@ -297,7 +297,7 @@ public class ZdSimulController {
                         PdProdSku sku = PdProdSku.builder()
                             .prodSkuId(skuId)
                             .prodId(prodId)
-                            .prodOptId1(grp1ItemIds.get(i))
+                            .prodOpt1Id(grp1ItemIds.get(i))
                             .addPrice((long) (i * 1000))
                             .useYn("Y")
                             .build();
@@ -311,8 +311,8 @@ public class ZdSimulController {
                             PdProdSku sku = PdProdSku.builder()
                                 .prodSkuId(skuId)
                                 .prodId(prodId)
-                                .prodOptId1(grp1ItemIds.get(i))
-                                .prodOptId2(grp2ItemIds.get(j))
+                                .prodOpt1Id(grp1ItemIds.get(i))
+                                .prodOpt2Id(grp2ItemIds.get(j))
                                 .addPrice((long) (i * 1000))
                                 .useYn("Y")
                                 .build();
@@ -332,11 +332,11 @@ public class ZdSimulController {
                 for (Map<String, Object> fim : frontImgs) {
                     String url = str(fim, "cdnImgUrl");
                     if (url == null || url.isBlank()) continue;
-                    String tmpOpt1 = str(fim, "prodOptId1");
+                    String tmpOpt1 = str(fim, "prodOpt1Id");
                     String realOpt1 = (tmpOpt1 != null) ? tmpToRealOptId.getOrDefault(tmpOpt1, tmpOpt1) : null;
                     PdProdImg img = PdProdImg.builder()
                         .prodId(prodId)
-                        .prodOptId1(realOpt1)
+                        .prodOpt1Id(realOpt1)
                         .cdnImgUrl(url)
                         .isThumb(imgSortOrd == 1 ? "Y" : "N")
                         .sortOrd(imgSortOrd++)
@@ -349,7 +349,7 @@ public class ZdSimulController {
                     PdProdImg img = PdProdImg.builder()
                         .prodImgId("tmp-img-" + pad2(i))
                         .prodId(prodId)
-                        .prodOptId1(grp1ItemIds.get(i))
+                        .prodOpt1Id(grp1ItemIds.get(i))
                         .cdnImgUrl("https://picsum.photos/seed/" + (200 + i * 37) + "/400/400")
                         .isThumb(i == 0 ? "Y" : "N")
                         .sortOrd(i + 1)

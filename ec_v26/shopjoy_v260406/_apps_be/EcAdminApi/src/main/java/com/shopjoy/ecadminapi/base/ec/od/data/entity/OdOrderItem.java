@@ -40,12 +40,12 @@ public class OdOrderItem extends BaseEntity {
     private String prodSkuId;
 
     @Comment("옵션1 값ID (pd_prod_opt.opt_id)")
-    @Column(name = "prod_opt_id_1", length = 21)
-    private String prodOptId1;
+    @Column(name = "prod_opt1_id", length = 21)
+    private String prodOpt1Id;
 
     @Comment("옵션2 값ID (pd_prod_opt.opt_id)")
-    @Column(name = "prod_opt_id_2", length = 21)
-    private String prodOptId2;
+    @Column(name = "prod_opt2_id", length = 21)
+    private String prodOpt2Id;
 
     @Comment("상품명 (주문 시점 스냅샷)")
     @Column(name = "prod_nm", length = 200)

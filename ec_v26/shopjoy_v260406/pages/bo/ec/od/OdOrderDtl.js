@@ -319,8 +319,8 @@ window.OdOrderDtl = {
         orderItems.splice(0, orderItems.length, ...((o.orderItems || []).map(it => ({
           ...it,
           prodNm: it.prodNm,
-          color: it.prodOptId1 || '',
-          size: it.prodOptId2 || '',
+          color: it.prodOpt1Id || '',
+          size: it.prodOpt2Id || '',
           qty: it.orderQty || 1,
           salePrice: it.normalPrice || it.unitPrice || 0,
           price: it.itemOrderAmt || (it.unitPrice * (it.orderQty || 1)) || 0,

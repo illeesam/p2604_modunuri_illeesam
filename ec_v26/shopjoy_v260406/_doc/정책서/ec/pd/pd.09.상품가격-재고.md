@@ -119,10 +119,10 @@ purchase_price: 10,000원
 margin_rate  : 60.00%
 
 [SKU - 2단 옵션: 향 × 용량]
-SKU001  prod_opt_id_1=OPT001(라벤더)  prod_opt_id_2=OPT004(50ml)   add_price=0      stock=20
-SKU002  prod_opt_id_1=OPT001(라벤더)  prod_opt_id_2=OPT005(100ml)  add_price=5,000  stock=15
-SKU003  prod_opt_id_1=OPT002(로즈)    prod_opt_id_2=OPT004(50ml)   add_price=1,000  stock=8
-SKU004  prod_opt_id_1=OPT002(로즈)    prod_opt_id_2=OPT005(100ml)  add_price=6,000  stock=0  ← 품절
+SKU001  prod_opt1_id=OPT001(라벤더)  prod_opt2_id=OPT004(50ml)   add_price=0      stock=20
+SKU002  prod_opt1_id=OPT001(라벤더)  prod_opt2_id=OPT005(100ml)  add_price=5,000  stock=15
+SKU003  prod_opt1_id=OPT002(로즈)    prod_opt2_id=OPT004(50ml)   add_price=1,000  stock=8
+SKU004  prod_opt1_id=OPT002(로즈)    prod_opt2_id=OPT005(100ml)  add_price=6,000  stock=0  ← 품절
 ```
 
 ---
@@ -147,8 +147,8 @@ pd_prod.prod_stock: 합산 갱신
 
 od_order_item
   prod_sku_id     : SKU002
-  prod_opt_id_1   : OPT001  (스냅샷)
-  prod_opt_id_2   : OPT005  (스냅샷)
+  prod_opt1_id   : OPT001  (스냅샷)
+  prod_opt2_id   : OPT005  (스냅샷)
   unit_price      : 30,000원 (스냅샷: sale_price + add_price)
   qty             : 2
 
@@ -201,7 +201,7 @@ sy_alarm 생성:
 - `pdh_prod_sku_price_hist` — SKU 추가금액 변경 이력 (add_price_before/after)
 - `pdh_prod_sku_stock_hist` — SKU 재고 변경 이력 (stock_before/after, chg_qty, chg_reason_cd)
 - `pdh_prod_sku_chg_hist` — SKU 상태 변경 이력 (use_yn)
-- `od_order_item` — 주문 시 unit_price·prod_opt_id_1/2 스냅샷
+- `od_order_item` — 주문 시 unit_price·prod_opt1_id/2 스냅샷
 
 ## 관련 화면
 | pageId | 라벨 |
@@ -214,6 +214,6 @@ sy_alarm 생성:
 - `pd.04.배송템플릿.md` — 배송비 계산 (환불 차감 기준)
 
 ## 변경이력
-- 2026-07-12: sku_id → prod_sku_id, opt_item_id_1/2 → prod_opt_id_1/2 업데이트
+- 2026-07-12: sku_id → prod_sku_id, opt_item_id_1/2 → prod_opt1_id/2 업데이트
 - 2026-04-19: 이력 테이블 분리 반영 (pdh_prod_sku_price_hist / pdh_prod_sku_stock_hist), SKU_STOCK_CHG 코드 적용, opt_item_id_1/2 스냅샷 반영
 - 2026-04-19: 초기 작성

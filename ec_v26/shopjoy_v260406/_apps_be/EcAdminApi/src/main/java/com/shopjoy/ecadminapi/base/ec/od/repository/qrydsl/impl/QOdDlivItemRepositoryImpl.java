@@ -45,8 +45,8 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                         odDlivItem.dlivId,                    // 배송ID (od_dliv.)
                         odDlivItem.orderItemId,               // 주문상품ID (od_order_item.)
                         odDlivItem.prodId,                     // 상품ID
-                        odDlivItem.prodOptId1,                // 옵션1 값ID (pd_prod_opt.opt_id)
-                        odDlivItem.prodOptId2,                // 옵션2 값ID (pd_prod_opt.opt_id)
+                        odDlivItem.prodOpt1Id,                // 옵션1 값ID (pd_prod_opt.opt_id)
+                        odDlivItem.prodOpt2Id,                // 옵션2 값ID (pd_prod_opt.opt_id)
                         odDlivItem.dlivTypeCd,                // 입출고구분 — {OUT:출고, IN:입고반품}
                         odDlivItem.unitPrice,                 // 단가 (주문시점 스냅샷)
                         odDlivItem.dlivQty,                    // 출고수량 (부분출고 시 주문수량보다 적을 수 있음)
@@ -137,8 +137,8 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
             QdslUtil.FieldDef.like("dlivItemStatusCd", odDlivItem.dlivItemStatusCd),
             QdslUtil.FieldDef.like("dlivItemStatusCdBefore", odDlivItem.dlivItemStatusCdBefore),
             QdslUtil.FieldDef.like("dlivTypeCd", odDlivItem.dlivTypeCd),
-            QdslUtil.FieldDef.like("prodOptId1", odDlivItem.prodOptId1),
-            QdslUtil.FieldDef.like("prodOptId2", odDlivItem.prodOptId2),
+            QdslUtil.FieldDef.like("prodOpt1Id", odDlivItem.prodOpt1Id),
+            QdslUtil.FieldDef.like("prodOpt2Id", odDlivItem.prodOpt2Id),
             QdslUtil.FieldDef.like("orderItemId", odDlivItem.orderItemId),
             QdslUtil.FieldDef.like("prodId", odDlivItem.prodId)
         ));
@@ -168,8 +168,8 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         if (entity.getDlivId()                 != null) { update.set(odDlivItem.dlivId,                 entity.getDlivId());                 hasAny = true; }
         if (entity.getOrderItemId()            != null) { update.set(odDlivItem.orderItemId,            entity.getOrderItemId());            hasAny = true; }
         if (entity.getProdId()                 != null) { update.set(odDlivItem.prodId,                 entity.getProdId());                 hasAny = true; }
-        if (entity.getProdOptId1()             != null) { update.set(odDlivItem.prodOptId1,             entity.getProdOptId1());             hasAny = true; }
-        if (entity.getProdOptId2()             != null) { update.set(odDlivItem.prodOptId2,             entity.getProdOptId2());             hasAny = true; }
+        if (entity.getProdOpt1Id()             != null) { update.set(odDlivItem.prodOpt1Id,             entity.getProdOpt1Id());             hasAny = true; }
+        if (entity.getProdOpt2Id()             != null) { update.set(odDlivItem.prodOpt2Id,             entity.getProdOpt2Id());             hasAny = true; }
         if (entity.getDlivTypeCd()             != null) { update.set(odDlivItem.dlivTypeCd,             entity.getDlivTypeCd());             hasAny = true; }
         if (entity.getUnitPrice()              != null) { update.set(odDlivItem.unitPrice,              entity.getUnitPrice());              hasAny = true; }
         if (entity.getDlivQty()                != null) { update.set(odDlivItem.dlivQty,                entity.getDlivQty());                hasAny = true; }
