@@ -41,6 +41,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 .select(Projections.bean(SyAttachDto.Item.class,
                         syAttach.attachId,           // 첨부파일 ID (YYMMDDhhmmss+random(4)+seq)
                         syAttach.attachGrpId,        // 파일 그룹 ID (sy_attach_grp 과 연계)
+                        syAttach.refTableNm,         // 관련 테이블명 (attach_grp_id 없이 직접 연계할 때)
+                        syAttach.refId,              // 관련 ID
                         syAttach.fileNm,             // 원본 파일명
                         syAttach.fileSize,           // 파일 크기
                         syAttach.fileExt,            // 파일 확장자
@@ -87,6 +89,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                     QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
                     QdslUtil.strEq(syAttach.attachGrpId, search.getAttachGrpId()),
                     QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
+                    QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()),
+                    QdslUtil.strEq(syAttach.refId, search.getRefId()),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -113,6 +117,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
                 QdslUtil.strEq(syAttach.attachGrpId, search.getAttachGrpId()),
                 QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
+                QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()),
+                QdslUtil.strEq(syAttach.refId, search.getRefId()),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
         };
 

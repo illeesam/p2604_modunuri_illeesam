@@ -16,6 +16,8 @@ public class SyAttachDto {
         @Size(max = 21) private String attachId;
         @Size(max = 21) private String attachGrpId;
         @Size(max = 50) private String mimeTypeCd;
+        @Size(max = 100) private String refTableNm;
+        @Size(max = 21) private String refId;
     }
 
     /**
@@ -52,6 +54,8 @@ public class SyAttachDto {
         // ── sy_attach ──────────────────────────────────────────
         private String attachId;
         private String attachGrpId;
+        private String refTableNm;
+        private String refId;
         private String fileNm;
         private Long fileSize;
         private String fileExt;

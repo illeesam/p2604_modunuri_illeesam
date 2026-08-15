@@ -21,13 +21,16 @@ public class CmUploadMultiController {
     private final CmUploadService cmUploadService;
 
     /// 다중 파일 업로드 (확장자/용량 검증, 썸네일 옵션, DB 저장)
+    /// refTableNm/refId 를 주면(attachGrpId 미지정 시) attach_grp_id 없이 관련테이블명+관련ID 로 직접 연계 저장
     @PostMapping("/multi")
     public ResponseEntity<ApiResponse<Map<String, Object>>> uploadMulti(
             @RequestParam("files") MultipartFile[] files,
             @RequestParam(value = "businessCode", defaultValue = "common") String businessCode,
             @RequestParam(value = "grpNm", defaultValue = "") String grpNm,
-            @RequestParam(value = "attachGrpId", required = false) String attachGrpId) {
-        Map<String, Object> result = cmUploadService.uploadMulti(files, businessCode, grpNm, attachGrpId);
+            @RequestParam(value = "attachGrpId", required = false) String attachGrpId,
+            @RequestParam(value = "refTableNm", required = false) String refTableNm,
+            @RequestParam(value = "refId", required = false) String refId) {
+        Map<String, Object> result = cmUploadService.uploadMulti(files, businessCode, grpNm, attachGrpId, refTableNm, refId);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 
@@ -36,6 +39,14 @@ public class CmUploadMultiController {
     public ResponseEntity<ApiResponse<List<SyAttachDto.Item>>> getAttachGrpFiles(
             @PathVariable("attachGrpId") String attachGrpId) {
         return ResponseEntity.ok(ApiResponse.ok(cmUploadService.getAttachGrpFiles(attachGrpId)));
+    }
+
+    /// 관련테이블명/관련ID로 파일 목록 조회 (attach_grp_id 없이 직접 연계된 첨부용)
+    @GetMapping("/ref/files")
+    public ResponseEntity<ApiResponse<List<SyAttachDto.Item>>> getRefFiles(
+            @RequestParam("refTableNm") String refTableNm,
+            @RequestParam("refId") String refId) {
+        return ResponseEntity.ok(ApiResponse.ok(cmUploadService.getRefFiles(refTableNm, refId)));
     }
 
     /// 첨부 파일 단건 삭제 (DB + 실제 파일)

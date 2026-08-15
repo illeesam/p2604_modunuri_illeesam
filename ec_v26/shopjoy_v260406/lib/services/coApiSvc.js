@@ -117,6 +117,10 @@
     getFiles(attachGrpId, uiNm = '첨부파일', cmdNm = '목록조회') {
       return chkId(attachGrpId, uiNm, cmdNm) || client().get(`/co/cm/upload/attach-grp/${attachGrpId}/files`, hdr(uiNm, cmdNm));
     },
+    /* getFilesByRef — attach_grp_id 없이 관련테이블명+관련ID 로 직접 연계된 첨부 조회 */
+    getFilesByRef(refTableNm, refId, uiNm = '첨부파일', cmdNm = '목록조회') {
+      return client().get('/co/cm/upload/ref/files', { params: { refTableNm, refId }, ...hdr(uiNm, cmdNm) });
+    },
     deleteFile(attachId, uiNm = '첨부파일', cmdNm = '삭제') {
       return chkId(attachId, uiNm, cmdNm) || client().delete(`/co/cm/upload/attach/${attachId}`, hdr(uiNm, cmdNm));
     },

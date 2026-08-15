@@ -24,9 +24,17 @@ public class SyAttach extends BaseEntity {
     private String attachId;
 
 
-    @Comment("파일 그룹 ID (sy_attach_grp과 연계)")
-    @Column(name = "attach_grp_id", length = 21, nullable = false)
+    @Comment("파일 그룹 ID (sy_attach_grp과 연계). ref_table_nm/ref_id 방식 사용 시 NULL")
+    @Column(name = "attach_grp_id", length = 21)
     private String attachGrpId;
+
+    @Comment("관련 테이블명 (예: sy_attach_grp) - attach_grp_id 없이 임의 엔티티에 직접 연계할 때 사용")
+    @Column(name = "ref_table_nm", length = 100)
+    private String refTableNm;
+
+    @Comment("관련 ID - ref_table_nm 과 조합해 대상 레코드를 식별")
+    @Column(name = "ref_id", length = 21)
+    private String refId;
 
     @Comment("원본 파일명")
     @Column(name = "file_nm", length = 300, nullable = false)

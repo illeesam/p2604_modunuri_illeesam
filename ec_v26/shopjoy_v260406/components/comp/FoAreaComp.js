@@ -74,6 +74,9 @@
 .fo-grid-table tbody tr:nth-child(even) { background:var(--bg-base); }
 .fo-grid-table tbody tr.fo-grid-clickable { cursor:pointer; }
 .fo-grid-table tbody tr.fo-grid-clickable:hover { background:var(--accent-dim); }
+.fo-grid-table tbody tr.fo-grid-selected td { background:rgba(37,99,235,.12); }
+.fo-grid-table tr.fo-grid-selected { outline:2px solid #2563eb; outline-offset:-2px; }
+.fo-grid-table tr.fo-grid-selected:hover td { background:rgba(37,99,235,.18); }
 .fo-grid-table tfoot td { padding:9px 12px; border-top:1.5px solid var(--border); font-weight:700; color:var(--text-primary); }
 .fo-grid-link { color:var(--blue); cursor:pointer; font-weight:600; text-decoration:underline; text-underline-offset:2px; }
 .fo-grid-badge { display:inline-block; padding:1px 8px; border-radius:9px; font-size:0.7rem; font-weight:700; background:var(--accent-dim); color:var(--accent); }
@@ -546,6 +549,33 @@ window.FoGrid = {
       + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
     const cfTableStyle = Vue.computed(() => props.minWidth ? ('min-width:' + props.minWidth + ';') : '');
 
+    /* ── ▼ 좌/우 고정(pin) — 번호 항상 좌측 고정, 관리(rowActions) 항상 우측 고정.
+       BoGrid 의 pinLeftStyle/pinRightStyle 을 FO 용으로 단순화(선택행 강조 없음)해 이식.
+       가로스크롤 없는 그리드는 시각적 변화 없어 안전하다. ── */
+    const cfPinDragLeft = Vue.computed(() => (props.selectable ? 34 : 0));
+    const cfPinNoLeft   = Vue.computed(() => cfPinDragLeft.value + (props.draggable ? 26 : 0));
+    /* th(헤더)는 배경을 여기서 주지 않는다 — .fo-grid-table thead th CSS 가 이미 th 자체에 직접
+       칠하므로 고정 헤더도 자연히 같은 색이 된다(인라인로 덮으면 고정 컬럼만 색이 달라짐).
+       반면 td(데이터 행)는 position:sticky 가 걸리면 부모 tr 의 배경(줄무늬)을 물려받지 못해
+       기본적으로 투명해진다 — 가로 스크롤 중 뒤에 있는(스크롤되는) 다른 컬럼 내용이 그 투명한
+       고정 셀을 통해 겹쳐 보이는 원인이 된다. td 는 반드시 fnPinBg() 로 불투명 배경을 직접 칠한다. */
+    const pinLeftStyle = (px, z, edge) => {
+      let st = 'position:sticky;left:' + px + 'px;z-index:' + z + ';';
+      if (edge) st += 'box-shadow:2px 0 4px rgba(0,0,0,.08);';
+      return st;
+    };
+    const pinRightStyle = (z, edge) => {
+      let st = 'position:sticky;right:0;z-index:' + z + ';';
+      if (edge) st += 'box-shadow:-2px 0 4px rgba(0,0,0,.08);';
+      return st;
+    };
+    const fnPinBg = (row, idx) => {
+      const rs = (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : '') || '';
+      const m = rs.match(/background:\s*([^;]+)/);
+      if (m) return m[1].trim();
+      return idx % 2 === 1 ? 'var(--grid-td-bg-alt)' : 'var(--grid-td-bg)';
+    };
+
     /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ FoGrid : handleBtnAction -> ', cmd, param);
@@ -617,6 +647,7 @@ window.FoGrid = {
     return { U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
              cfTableStyle, fnRowChecked,
+             cfPinDragLeft, cfPinNoLeft, pinLeftStyle, pinRightStyle, fnPinBg,
              handleBtnAction, handleSelectAction };
   },
   template: /* html */`
@@ -645,12 +676,12 @@ window.FoGrid = {
     <table class="fo-grid-table" :style="cfTableStyle">
       <thead>
         <tr>
-          <th v-if="selectable" style="width:34px;text-align:center;">
+          <th v-if="selectable" :style="'width:34px;text-align:center;' + pinLeftStyle(0, 6)">
             <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
           </th>
-          <th v-if="draggable" style="width:26px;">
+          <th v-if="draggable" :style="'width:26px;' + pinLeftStyle(cfPinDragLeft, 6)">
           </th>
-          <th v-if="showRowNo" style="width:40px;text-align:center;">
+          <th v-if="showRowNo" :style="'width:40px;text-align:center;' + pinLeftStyle(cfPinNoLeft, 6, true)">
             번호
           </th>
           <slot name="head">
@@ -664,7 +695,7 @@ window.FoGrid = {
               </span>
             </th>
           </slot>
-          <th v-if="rowActions || $slots['head-actions']" style="width:44px;text-align:center;">
+          <th v-if="rowActions || $slots['head-actions']" :style="'width:44px;text-align:center;' + pinRightStyle(6, true)">
             <slot name="head-actions">
               관리
             </slot>
@@ -679,13 +710,13 @@ window.FoGrid = {
             @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
             @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
             @dragend="handleSelectAction('grid-row-drag-end')">
-            <td v-if="selectable" style="text-align:center;" @click.stop>
+            <td v-if="selectable" :style="'text-align:center;' + pinLeftStyle(0, 4) + 'background:' + fnPinBg(row, idx) + ';'" @click.stop>
               <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
             </td>
-            <td v-if="draggable" class="fo-grid-drag">
+            <td v-if="draggable" class="fo-grid-drag" :style="pinLeftStyle(cfPinDragLeft, 4) + 'background:' + fnPinBg(row, idx) + ';'">
               ≡
             </td>
-            <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;"
+            <td v-if="showRowNo" :style="'text-align:center;color:var(--text-muted);font-size:0.74rem;' + pinLeftStyle(cfPinNoLeft, 4, true) + 'background:' + fnPinBg(row, idx) + ';'"
               @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__' }, ci: -1, idx })">
               {{ rowNo(idx) }}
             </td>
@@ -718,7 +749,7 @@ window.FoGrid = {
                 </td>
               </slot>
             </template>
-            <td v-if="rowActions" style="text-align:center;">
+            <td v-if="rowActions" :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true) + 'background:' + fnPinBg(row, idx) + ';'">
               <slot name="row-actions" :row="row" :idx="idx">
                 <button class="btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
@@ -760,8 +791,11 @@ window.FoGridCrud = {
     columns:    { type: Array,  required: true },
     rows:       { type: Array,  required: true },
     rowKey:     { type: String, required: true },
+    actionHeader:{ type: String, default: '관리' },            // 우측 관리 컬럼 헤더명. #head-actions 슬롯으로 오버라이드 가능
     listTitle:  { type: String, default: '목록' },
     maxHeight:  { type: String, default: '480px' },
+    totalCount: { type: Number, default: null },               // 서버 총건수(무한스크롤). 주면 '총 N건 · 조회 M건'
+    scrollEndOffset: { type: Number, default: 500 },           // 바닥에서 N px 앞에서 scroll-end 발화 (≈15행)
     minWidth:   { type: String, default: '' },
     draggable:  { type: Boolean, default: true },
     checkAll:   { type: Boolean, default: false },
@@ -772,12 +806,16 @@ window.FoGridCrud = {
     showRowCheck:  { type: Boolean, default: true },
     showAdd:       { type: Boolean, default: true },
     showSave:      { type: Boolean, default: true },
+    showExport:    { type: Boolean, default: false },          // 📥 엑셀 버튼 노출
+    showExcelUpload: { type: Boolean, default: false },        // 📤 엑셀업로드 버튼 노출
+    selectedKey: { type: [String, Number], default: null },    // 선택된 행의 rowKey 값. 일치 행에 파란 테두리 자동 부여
     cellTitle:  { type: Function, default: null },
     sortState:  { type: Object, default: null },
     emptyText:  { type: String, default: '데이터가 없습니다.' },
   },
   emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
-          'update:checkAll', 'update:focusedIdx', 'sort', 'cell-click'],
+          'update:checkAll', 'update:focusedIdx', 'sort', 'cell-click',
+          'scroll-end', 'export', 'excel-upload', 'row-dblclick', 'row-click'],
   setup(props, { emit }) {
     const U = window._foAreaCompUtil;
 
@@ -810,6 +848,10 @@ window.FoGridCrud = {
         return emit('cancel-checked');
       } else if (cmd === 'toolbar-delete-checked') {
         return emit('delete-checked');
+      } else if (cmd === 'toolbar-export') {
+        return emit('export');
+      } else if (cmd === 'toolbar-excel-upload') {
+        return emit('excel-upload');
       } else if (cmd === 'grid-toggle-check-all') {
         const v = !allChecked.value;
         allChecked.value = v;
@@ -827,7 +869,10 @@ window.FoGridCrud = {
         if (typeof param.col.headClick === 'function') return param.col.headClick(param.col);
         if (param.col.sortKey) return emit('sort', param.col.sortKey);
       } else if (cmd === 'grid-row-focus') {
-        if (props.focusedIdx !== param.idx) return emit('update:focusedIdx', param.idx);
+        if (props.focusedIdx !== param.idx) emit('update:focusedIdx', param.idx);
+        return emit('row-click', param.row, param.idx);
+      } else if (cmd === 'grid-row-dblclick') {
+        return emit('row-dblclick', param.row, param.idx);
       } else if (cmd === 'grid-cell-click') {
         return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
       } else if (cmd === 'grid-row-cell-change') {
@@ -867,8 +912,60 @@ window.FoGridCrud = {
     };
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
 
-    return { U, cfVisibleCount, fnStatusClass, allChecked,
+    /* ── ▼ 좌/우 고정(pin) — 드래그+번호+ID 좌측 고정(있는 것만 연속 누적), 우측 관리 컬럼 고정.
+       BoGridCrud 를 참고해 이식(행상태 배경색은 FO 쪽에 해당 CSS 자체가 없어 이식하지 않음 —
+       가로스크롤 없는 그리드는 시각적 변화 없어 안전). */
+    const cfPinIdLeft = Vue.computed(() => (props.draggable ? 26 : 0) + (props.showRowNo ? 40 : 0));
+    const fnRowSelected = (row) => props.selectedKey != null && row[props.rowKey] === props.selectedKey;
+    /* th(헤더)는 배경을 여기서 주지 않는다 — .fo-grid-table thead th CSS 가 이미 th 자체에 직접
+       칠하므로 고정 헤더도 자연히 같은 색이 된다. td(데이터 행)는 position:sticky 가 걸리면 부모 tr 의
+       줄무늬 배경을 물려받지 못해 투명해지고, 가로 스크롤 중 뒤 컬럼 내용이 겹쳐 보이는 원인이 된다.
+       td 는 반드시 fnPinBg() 로 불투명 배경을 직접 칠한다(BoGridCrud 이식).
+       선택행(selectedKey 일치)은 outline 이 고정 셀 아래로 가려지므로 BoGrid 와 동일하게
+       inset box-shadow 로 직접 그려 끊김 없이 이어지게 한다(선택 시에만 4번째 인자 전달). */
+    const pinLeftStyle = (px, z, edge, selected) => {
+      let st = 'position:sticky;left:' + px + 'px;z-index:' + z + ';';
+      const sh = [];
+      if (selected) { if (px === 0) sh.push('inset 2px 0 0 #2563eb'); sh.push('inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb'); }
+      if (edge) sh.push('2px 0 4px rgba(0,0,0,.08)');
+      if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
+      return st;
+    };
+    const pinRightStyle = (z, edge, selected) => {
+      let st = 'position:sticky;right:0;z-index:' + z + ';';
+      const sh = [];
+      if (selected) sh.push('inset -2px 0 0 #2563eb', 'inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb');
+      if (edge) sh.push('-2px 0 4px rgba(0,0,0,.08)');
+      if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
+      return st;
+    };
+    const fnPinBg = (row, idx) => {
+      if (fnRowSelected(row)) return 'rgba(37,99,235,.12)';
+      return idx % 2 === 1 ? 'var(--grid-td-bg-alt)' : 'var(--grid-td-bg)';
+    };
+
+    /* cfCountText — 하단 좌측 건수 문구(BoGridCrud 의 .grid-foot 이식) */
+    const cfCountText = Vue.computed(() => (
+      props.totalCount != null
+        ? coUtil.cofCountText(props.totalCount, cfVisibleCount.value)
+        : coUtil.cofCountText(cfVisibleCount.value)
+    ));
+
+    /* onScroll — 바닥에서 scrollEndOffset(px) 이내로 오면 scroll-end 를 올린다(무한스크롤용).
+       연속 발화 방지: 같은 scrollHeight 에서 두 번 쏘지 않는다. */
+    let _lastEmitAt = -1;
+    const onScroll = (e) => {
+      const el = e.target;
+      const rest = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (rest > props.scrollEndOffset) { _lastEmitAt = -1; return; }
+      if (_lastEmitAt === el.scrollHeight) { return; }
+      _lastEmitAt = el.scrollHeight;
+      emit('scroll-end');
+    };
+
+    return { U, cfVisibleCount, cfCountText, onScroll, fnStatusClass, allChecked,
              fnColTitle, cfEmptyColspan, sortIcon, sortActive, cfTableStyle,
+             cfPinIdLeft, pinLeftStyle, pinRightStyle, fnPinBg, fnRowSelected,
              handleBtnAction, handleSelectAction };
   },
   template: /* html */`
@@ -892,21 +989,27 @@ window.FoGridCrud = {
       <button v-if="showRowCheck" class="btn-outline btn-sm" @click="handleBtnAction('toolbar-cancel-checked')">
         취소
       </button>
+      <button v-if="showExport" class="btn btn_excel" @click="handleBtnAction('toolbar-export')">
+        📥 엑셀
+      </button>
+      <button v-if="showExcelUpload" class="btn btn_excel_upload" @click="handleBtnAction('toolbar-excel-upload')">
+        📤 엑셀업로드
+      </button>
       <button v-if="showSave" class="btn btn_save" @click="handleBtnAction('toolbar-save')">
         저장
       </button>
     </div>
   </div>
-  <div class="fo-grid-scroll" :style="'max-height:' + maxHeight + ';'">
+  <div class="fo-grid-scroll" :style="'max-height:' + maxHeight + ';'" @scroll="onScroll">
     <table class="fo-grid-table" :style="cfTableStyle">
       <thead>
         <tr>
-          <th v-if="draggable" style="width:26px;">
+          <th v-if="draggable" :style="'width:26px;' + pinLeftStyle(0, 6)">
           </th>
-          <th v-if="showRowNo" style="width:40px;text-align:center;">
+          <th v-if="showRowNo" :style="'width:40px;text-align:center;' + pinLeftStyle(draggable ? 26 : 0, 6)">
             번호
           </th>
-          <th v-if="showRowId" style="width:54px;text-align:center;">
+          <th v-if="showRowId" :style="'width:54px;text-align:center;' + pinLeftStyle(cfPinIdLeft, 6, true)">
             ID
           </th>
           <th v-if="showRowStatus" style="width:40px;text-align:center;">
@@ -926,7 +1029,8 @@ window.FoGridCrud = {
               </span>
             </th>
           </slot>
-          <th style="width:44px;">
+          <th :style="'width:44px;text-align:center;' + pinRightStyle(6, true)">
+            <slot name="head-actions">{{ actionHeader }}</slot>
           </th>
         </tr>
       </thead>
@@ -938,20 +1042,21 @@ window.FoGridCrud = {
           </td>
         </tr>
         <tr v-else v-for="(row, idx) in rows" :key="row[rowKey]"
-          class="fo-grid-clickable" :class="[ 's-row-' + row._row_status, focusedIdx===idx ? 'fo-grid-focused' : '' ]"
+          class="fo-grid-clickable" :class="[ 's-row-' + row._row_status, focusedIdx===idx ? 'fo-grid-focused' : '', fnRowSelected(row) ? 'fo-grid-selected' : '' ]"
           :draggable="draggable"
           :style="focusedIdx===idx ? 'outline:2px solid var(--accent) inset;' : ''"
-          @click="handleSelectAction('grid-row-focus', { idx })"
+          @click="handleSelectAction('grid-row-focus', { row, idx })"
+          @dblclick="handleSelectAction('grid-row-dblclick', { row, idx })"
           @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
           @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
           @dragend="handleSelectAction('grid-row-drag-end')">
-          <td v-if="draggable" class="fo-grid-drag" title="드래그로 순서 변경">
+          <td v-if="draggable" class="fo-grid-drag" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
             ⠿
           </td>
-          <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">
+          <td v-if="showRowNo" :style="'text-align:center;color:var(--text-muted);font-size:0.74rem;' + pinLeftStyle(draggable ? 26 : 0, 4, false, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
             {{ idx + 1 }}
           </td>
-          <td v-if="showRowId" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">
+          <td v-if="showRowId" :style="'text-align:center;color:var(--text-muted);font-size:0.74rem;' + pinLeftStyle(cfPinIdLeft, 4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
             {{ row[rowKey] > 0 ? row[rowKey] : 'NEW' }}
           </td>
           <td v-if="showRowStatus" style="text-align:center;">
@@ -977,6 +1082,7 @@ window.FoGridCrud = {
                 <select v-else-if="col.edit==='select'" class="fo-grid-select"
                   v-model="row[col.key]" :disabled="row._row_status==='D'"
                   @change="handleSelectAction('grid-row-cell-change', { row, col })">
+                  <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
                 <span v-else-if="col.link" class="fo-grid-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx })">
@@ -991,7 +1097,7 @@ window.FoGridCrud = {
               </td>
             </slot>
           </template>
-          <td style="text-align:center;">
+          <td :style="'text-align:center;white-space:nowrap;' + pinRightStyle(4, true, fnRowSelected(row)) + 'background:' + fnPinBg(row, idx) + ';'">
             <slot name="row-actions" :row="row" :idx="idx">
             </slot>
           </td>
@@ -999,6 +1105,7 @@ window.FoGridCrud = {
       </tbody>
     </table>
   </div>
+  <div style="padding:6px 2px 0;font-size:0.76rem;color:var(--text-muted);font-weight:600;">{{ cfCountText }}</div>
 </div>
 `,
 };

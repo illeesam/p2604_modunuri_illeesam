@@ -193,11 +193,26 @@ public class CmUploadService {
     @Transactional
     public Map<String, Object> uploadMulti(MultipartFile[] files, String businessCode,
                                             String grpNm, String attachGrpId) {
+        return uploadMulti(files, businessCode, grpNm, attachGrpId, null, null);
+    }
+
+    /**
+     * 다중 파일 업로드 (ref 방식 지원) — refTableNm/refId 가 주어지면 attach_grp_id 를 만들지 않고
+     * sy_attach 행에 ref_table_nm/ref_id 만 채운다(attach_grp_id NULL). attachGrpId 를 함께 넘기지 않는
+     * 화면에서만 사용 — 두 방식은 상호 배타적이다(attachGrpId 우선).
+     */
+    @Transactional
+    public Map<String, Object> uploadMulti(MultipartFile[] files, String businessCode,
+                                            String grpNm, String attachGrpId,
+                                            String refTableNm, String refId) {
         if (files == null || files.length == 0) throw new CmBizException("업로드할 파일을 선택해주세요." + "::" + CmUtil.svcCallerInfo(this));
         if (files.length > 10) throw new CmBizException("한 번에 최대 10개 파일만 업로드 가능합니다." + "::" + CmUtil.svcCallerInfo(this));
 
+        boolean refMode = (attachGrpId == null || attachGrpId.isBlank())
+                && refTableNm != null && !refTableNm.isBlank() && refId != null && !refId.isBlank();
+
         try {
-            SyAttachGrp savedGrp = resolveAttachGrp(businessCode, grpNm, attachGrpId);
+            SyAttachGrp savedGrp = refMode ? null : resolveAttachGrp(businessCode, grpNm, attachGrpId);
 
             List<Map<String, Object>> uploadedFiles = new ArrayList<>();
             List<String> failedFiles = new ArrayList<>();
@@ -263,7 +278,9 @@ public class CmUploadService {
                     String cdnImgUrl = cdnBase + "/" + storageFilePath;
 
                     SyAttach syAttach = SyAttach.builder()
-                            .attachGrpId(savedGrp.getAttachGrpId())
+                            .attachGrpId(refMode ? null : savedGrp.getAttachGrpId())
+                            .refTableNm(refMode ? refTableNm : null)
+                            .refId(refMode ? refId : null)
                             .fileNm(originalName)
                             .fileSize(file.getSize())
                             .fileExt(fileUploadUtil.isVideo(ext) ? "mp4" : ext)
@@ -338,7 +355,7 @@ public class CmUploadService {
             }
 
             Map<String, Object> result = new HashMap<>();
-            result.put("attachGrpId", savedGrp.getAttachGrpId());
+            result.put("attachGrpId", refMode ? null : savedGrp.getAttachGrpId());
             result.put("uploadedCount", uploadedFiles.size());
             result.put("failedCount", failedFiles.size());
             result.put("totalSize", totalSize);
@@ -360,6 +377,24 @@ public class CmUploadService {
         String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
         SyAttachDto.Request req = new SyAttachDto.Request();
         req.setAttachGrpId(attachGrpId);
+        List<SyAttachDto.Item> files = syAttachService.getList(req);
+        files.forEach(f -> {
+            if (f.getThumbUrl() != null && !f.getThumbUrl().isBlank()) {
+                f.setThumbCdnUrl(cdnBase + "/" + f.getThumbUrl());
+            }
+        });
+        return files;
+    }
+
+    /** 관련 테이블명/ID 로 파일 목록 조회 (CDN URL 보정 포함) — attach_grp_id 없이 직접 연계된 첨부용 */
+    public List<SyAttachDto.Item> getRefFiles(String refTableNm, String refId) {
+        if (refTableNm == null || refTableNm.isBlank() || refId == null || refId.isBlank())
+            throw new CmBizException("refTableNm/refId 가 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        String cdnHost = fnCdnHost();
+        String cdnBase = cdnHost.endsWith("/") ? cdnHost.substring(0, cdnHost.length() - 1) : cdnHost;
+        SyAttachDto.Request req = new SyAttachDto.Request();
+        req.setRefTableNm(refTableNm);
+        req.setRefId(refId);
         List<SyAttachDto.Item> files = syAttachService.getList(req);
         files.forEach(f -> {
             if (f.getThumbUrl() != null && !f.getThumbUrl().isBlank()) {

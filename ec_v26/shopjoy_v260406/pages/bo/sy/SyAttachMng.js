@@ -34,6 +34,14 @@ window.SyAttachMng = {
     /* -- 첨부그룹 -- */
     const grpForm = reactive({ attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
 
+    /* -- 그룹 등록(신규) 임시 목록첨부 --
+       attachGrpId 가 아직 없는 신규 등록 단계라 서버에 즉시 업로드하지 못한다.
+       브라우저 메모리에 File 객체만 쌓아두고(newGrpFiles), 그룹 저장(POST) 이 성공해
+       실제 attachGrpId 가 확정된 직후 refTableNm='sy_attach_grp' + refId=<신규 attachGrpId> 로
+       한 번에 업로드한다 — attachGrpId 방식이 아닌 관련테이블명/관련ID 방식. */
+    const newGrpFiles = ref([]);
+    const newGrpFileInputRef = ref(null);
+
     /* -- 첨부파일 -- */
     const fileForm = reactive({
       attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', mimeTypeCd: '',
@@ -71,6 +79,9 @@ window.SyAttachMng = {
       } else if (cmd === 'attachGrps-formClose') {
         uiState.grpEditMode = false;
         return;
+      // 그룹 등록(신규) 목록첨부 파일선택 열기
+      } else if (cmd === 'grpForm-fileNew') {
+        return openNewGrpFilePicker();
       // 첨부파일 신규 등록 폼 열기
       } else if (cmd === 'attaches-add') {
         return openFileNew();
@@ -107,6 +118,9 @@ window.SyAttachMng = {
       // 첨부그룹 페이지 크기 변경
       } else if (cmd === 'attachGrps-pager-sizeChange') {
         return onGrpSizeChange();
+      // 그룹 등록(신규) 목록첨부 스테이징 파일 제거
+      } else if (cmd === 'grpForm-fileRemove') {
+        return removeNewGrpFile(param);
       // 첨부파일 수정 버튼
       } else if (cmd === 'attaches-rowEdit') {
         return openFileEdit(param);
@@ -259,13 +273,44 @@ window.SyAttachMng = {
     const openGrpNew = () => {
       uiState.grpEditId = null; uiState.grpEditMode = true;
       Object.assign(grpForm, { attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
+      newGrpFiles.value = [];
     };
 
     /* openGrpEdit — 열기 */
     const openGrpEdit = (g) => {
       uiState.grpEditId = g.attachGrpId; uiState.grpEditMode = true;
       Object.assign(grpForm, { ...g });
+      newGrpFiles.value = [];
     };
+
+    /* openNewGrpFilePicker — 신규 등록 목록첨부 파일선택 열기 */
+    const openNewGrpFilePicker = () => {
+      if (newGrpFiles.value.length >= grpForm.maxFileCount) {
+        showToast(`최대 ${grpForm.maxFileCount}개까지 첨부 가능합니다.`, 'warning');
+        return;
+      }
+      newGrpFileInputRef.value && newGrpFileInputRef.value.click();
+    };
+
+    /* onNewGrpFileChange — 신규 등록 목록첨부 파일선택 (즉시 업로드하지 않고 브라우저에 스테이징만) */
+    const onNewGrpFileChange = (e) => {
+      const selected = Array.from(e.target.files || []);
+      e.target.value = '';
+      if (!selected.length) return;
+      const maxBytes = (grpForm.maxFileSize || 5) * 1024 * 1024;
+      const allowed = (grpForm.fileExtAllow || '*') === '*' ? null
+        : grpForm.fileExtAllow.split(',').map(x => x.trim().toLowerCase());
+      const remaining = grpForm.maxFileCount - newGrpFiles.value.length;
+      for (const file of selected.slice(0, remaining)) {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (allowed && !allowed.includes(ext)) { showToast(`허용되지 않는 확장자입니다: .${ext}`, 'error'); continue; }
+        if (file.size > maxBytes) { showToast(`파일 크기가 ${grpForm.maxFileSize}MB를 초과합니다: ${file.name}`, 'error'); continue; }
+        newGrpFiles.value.push(file);
+      }
+    };
+
+    /* removeNewGrpFile — 신규 등록 목록첨부 스테이징 파일 제거 */
+    const removeNewGrpFile = (idx) => { newGrpFiles.value.splice(idx, 1); };
 
     /* handleSaveGrp — 그룹 저장 */
     const handleSaveGrp = async () => {
@@ -276,6 +321,21 @@ window.SyAttachMng = {
         if (uiState.grpEditId === null) {
           const res = await boApi.post('/bo/sy/attach-grp', { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹등록'));
           newGrpId = res.data?.data?.attachGrpId || null;
+          // 목록첨부 스테이징 파일 업로드 — attachGrpId 대신 관련테이블명(sy_attach_grp)+관련ID(신규 attachGrpId) 방식
+          if (newGrpId && newGrpFiles.value.length) {
+            const fd = new FormData();
+            newGrpFiles.value.forEach(f => fd.append('files', f));
+            fd.append('businessCode', 'sy_attach_grp');
+            fd.append('grpNm', grpForm.attachGrpNm);
+            fd.append('refTableNm', 'sy_attach_grp');
+            fd.append('refId', newGrpId);
+            try {
+              await coApiSvc.cmUpload.uploadMulti(fd, '첨부파일관리', '목록첨부업로드');
+            } catch (upErr) {
+              showToast(upErr.response?.data?.message || upErr.message || '목록첨부 업로드 중 오류가 발생했습니다.', 'error', 0);
+            }
+            newGrpFiles.value = [];
+          }
           showToast('그룹이 등록되었습니다.', 'success');
         } else {
           await boApi.put(`/bo/sy/attach-grp/${uiState.grpEditId}`, { ...grpForm }, coUtil.cofApiHdr('첨부파일관리', '그룹수정'));
@@ -402,6 +462,8 @@ window.SyAttachMng = {
       { key: 'maxFileCount',  label: '최대개수', type: 'number', min: 1 },
       { key: 'maxFileSize',   label: '최대크기(MB)', type: 'number', min: 1 },
       { type: 'rowBreak' },
+      { type: 'slot', name: 'attachList', label: '목록첨부', colSpan: 2 },
+      { type: 'rowBreak' },
       { key: 'useYn',         label: '상태', type: 'select', options: () => codes.use_yns, colSpan: 2 },
     ];
     // 파일 폼
@@ -460,8 +522,10 @@ window.SyAttachMng = {
     return {
       columns,
       attaches, attachGrps, uiState, searchParam, fileGridPager, grpPager, grpSearchParam, grpForm, fileForm,       // 상태 / 데이터
+      newGrpFiles, newGrpFileInputRef,                                                                              // 신규 그룹 목록첨부 스테이징
       handleBtnAction, handleSelectAction,                                                                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, // computed
+      onNewGrpFileChange, showToast,                                                                                 // 직접 핸들러 / base-attach-grp 전달용
+      cfSiteNm, fnFmtSize, // computed / 헬퍼
     };
   },
   template: /* html */`
@@ -489,12 +553,40 @@ window.SyAttachMng = {
         </div>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================ -->
         <bo-form-area :columns="columns.grpForm" :form="grpForm" :errors="{}"
-          :cols="2" compact :show-actions="false" />
-        <div style="display:flex;gap:6px;margin-top:8px;">
-          <button class="btn btn_save" style="flex:1;" @click="handleBtnAction('attachGrps-save')">
+          :cols="2" compact :show-actions="false">
+          <!-- 목록첨부 — attach_grp_id 가 아닌 관련테이블명(sy_attach_grp)+관련ID 방식 (2026-08-15) -->
+          <!-- 신규 등록: attachGrpId 가 없어 즉시 업로드 불가 → 브라우저에 스테이징만 하고 그룹 저장 시 일괄 업로드 -->
+          <template v-if="uiState.grpEditId===null" #attachList>
+            <input ref="newGrpFileInputRef" type="file" multiple style="display:none;" @change="onNewGrpFileChange" />
+            <div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:10px 12px;">
+              <div v-for="(f, idx) in newGrpFiles" :key="idx"
+                style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;">
+                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ f.name }}</span>
+                <span style="color:#999;">{{ fnFmtSize(f.size) }}</span>
+                <button type="button" class="btn btn_row_delete" style="font-size:11px;padding:1px 6px;"
+                  @click="handleSelectAction('grpForm-fileRemove', idx)">✕</button>
+              </div>
+              <div v-if="!newGrpFiles.length" style="font-size:12px;color:#aaa;padding:2px 0 6px;">
+                첨부된 파일이 없습니다. 그룹 저장 시 함께 등록됩니다.
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" style="margin-top:4px;"
+                @click="handleBtnAction('grpForm-fileNew')">
+                + 파일선택
+              </button>
+            </div>
+          </template>
+          <!-- 수정: attachGrpId(신규 uiState.grpEditId) 가 이미 있어 바로 업로드/조회 가능 -->
+          <template v-else #attachList>
+            <base-attach-grp :show-toast="showToast" ref-table-nm="sy_attach_grp" :ref-key-id="uiState.grpEditId"
+              grp-code="sy_attach_grp" :grp-nm="grpForm.attachGrpNm"
+              :max-count="grpForm.maxFileCount" :max-size-mb="grpForm.maxFileSize" :allow-ext="grpForm.fileExtAllow" />
+          </template>
+        </bo-form-area>
+        <div style="display:flex;gap:6px;margin-top:8px;justify-content:center;">
+          <button class="btn btn_save" @click="handleBtnAction('attachGrps-save')">
             저장
           </button>
-          <button class="btn btn_cancel" style="flex:1;" @click="handleBtnAction('attachGrps-formClose')">
+          <button class="btn btn_cancel" @click="handleBtnAction('attachGrps-formClose')">
             취소
           </button>
         </div>
@@ -524,10 +616,10 @@ window.SyAttachMng = {
               </div>
             </div>
             <div style="display:flex;gap:4px;" @click.stop>
-              <button class="btn btn_row_edit" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowEdit', g)">
+              <button class="btn btn_row_edit" @click="handleSelectAction('attachGrps-rowEdit', g)">
                 수정
               </button>
-              <button class="btn btn_row_delete" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowDelete', g)">
+              <button class="btn btn_row_delete" @click="handleSelectAction('attachGrps-rowDelete', g)">
                 삭제
               </button>
             </div>
@@ -584,10 +676,10 @@ window.SyAttachMng = {
             :cols="3" compact :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 저장/취소 가운데 정렬 ==================================== -->
           <div style="display:flex;gap:8px;justify-content:center;">
-            <button class="btn btn_save" style="min-width:60px;" @click="handleBtnAction('attaches-save')">
+            <button class="btn btn_save" @click="handleBtnAction('attaches-save')">
               저장
             </button>
-            <button class="btn btn_cancel" style="min-width:60px;" @click="handleBtnAction('attaches-formClose')">
+            <button class="btn btn_cancel" @click="handleBtnAction('attaches-formClose')">
               취소
             </button>
           </div>

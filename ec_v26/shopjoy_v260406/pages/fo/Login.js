@@ -163,7 +163,7 @@ window.Login = {
         fmt: (v, row) => `${(row.memberNm || '?').charAt(0)} ${row.memberNm || '-'}`,
         cellInnerStyle: 'font-weight:700;color:var(--text-primary);white-space:nowrap;' },
       { key: 'loginId',  label: '로그인ID', mono: true, fmt: v => v || '-' },
-      { key: 'siteNm',   label: '사이트', fmt: v => v || '-' },
+      { key: 'memberEmail', label: '이메일', mono: true, fmt: v => v || '-' },
       { key: 'gradeCdNm', label: '등급',
         fmt: v => v || '—',
         cellInnerStyle: (v) => v
@@ -590,12 +590,12 @@ window.Login = {
           <!-- ===== ■.■.■.■.■. 테이블 ============================================= -->
           <div style="border-radius:8px;border:1px solid #f0e0e8;overflow:hidden;">
             <!-- ===== ■.■.■.■.■.■. 목록 영역 ========================================= -->
-            <fo-grid bare :columns="columns.memberPickGrid" :rows="memberPick.rows" :pager="memberPick"
+            <fo-grid bare show-row-no :columns="columns.memberPickGrid" :rows="memberPick.rows" :pager="memberPick"
               row-key="memberId" row-actions
               :empty-text="memberPick.loading ? '⏳ 조회 중...' : '🔍 조회 결과 없음'"
               :row-click="(row) => handleSelectAction('members-rowPick', row)">
               <template #row-actions="{ row }">
-                <button @click.stop="handleSelectAction('members-rowPick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
+                <button @click.stop="handleSelectAction('members-rowPick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;display:inline-block;">
                   선택
                 </button>
               </template>

@@ -156,6 +156,15 @@ body {
 /* FO 그리드 헤더 — 가운데 정렬(인라인 thStyle) + 항목 간 구분선 */
 .fo-grid-table th { border-right: 1px solid var(--border); }
 .fo-grid-table th:last-child { border-right: none; }
+/* 헤더 통일 톤 — 3개 사이트 테마(베이지/민트/퍼플) 색과 충돌하지 않는 중립 회색.
+   sticky 로 고정된 번호/관리 헤더도 이 규칙 하나로 같은 색이 된다(별도 인라인 배경 불필요). */
+.fo-grid-table thead th { background:#f6f7fa; color:#3d4152; font-weight:700; border-bottom:2px solid #dde1e8; }
+[data-theme="dark"] .fo-grid-table thead th { background:#242424; color:#ddd; border-bottom-color:#3a3a3a; }
+.fo-grid-table { --grid-td-bg:#ffffff; --grid-td-bg-alt:#fafbfc; }
+[data-theme="dark"] .fo-grid-table { --grid-td-bg:rgba(255,255,255,.02); --grid-td-bg-alt:rgba(255,255,255,.05); }
+.fo-grid-table tbody td { background:var(--grid-td-bg); }
+/* 홀짝 줄무늬 (BO 그리드와 동일 컨셉) — 고정 컬럼도 tr 이 아닌 td 자체를 칠하므로 자연히 같이 적용된다 */
+.fo-grid-table tbody tr:nth-child(even) td { background:var(--grid-td-bg-alt); }
 .fo-area-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .fo-area-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
 .fo-area-count { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }

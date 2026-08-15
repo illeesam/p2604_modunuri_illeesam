@@ -31,7 +31,9 @@ window.BaseAttachGrp = {
   name: 'BaseAttachGrp',
   props: {
     modelValue: { default: null },
-    refId:      { default: '' },
+    refId:      { default: '' },     // 표시용 배지 문자열(예: 'NOTICE-1'). DB 연계와 무관 — refTableNm/refKeyId 와 다른 prop
+    refTableNm: { default: null },   // ref 모드: 관련 테이블명 (예: 'sy_attach_grp'). attach_grp_id 없이 직접 연계
+    refKeyId:   { default: null },   // ref 모드: 관련 ID. refTableNm 과 함께 주면 modelValue(attachGrpId) 대신 이 방식 사용
     showToast:  { type: Function, default: () => {} },
     grpCode:    { default: 'common' },
     grpNm:      { default: '첨부파일' },
@@ -81,24 +83,31 @@ window.BaseAttachGrp = {
       }
     };
 
-    /* loadFiles */
+    /* cfRefMode — refTableNm/refKeyId 가 둘 다 있으면 attach_grp_id 대신 관련테이블명+관련ID 로 연계
+       (그룹이 아직 없는 신규 등록 화면 등, attachGrpId 를 전제할 수 없는 경우) */
+    const cfRefMode = computed(() => !!(props.refTableNm && props.refKeyId));
+
+    /* fnMapFile — 서버 응답 → 화면 files 행 매핑 (attachGrpId/ref 모드 공통) */
+    const fnMapFile = (f) => ({
+      attachId:   f.attachId,
+      fileNm:     f.fileNm,
+      fileSize:   f.fileSize,
+      fileExt:    f.fileExt,
+      attachUrl:  f.attachUrl || f.storagePath,
+      cdnImgUrl:  f.cdnImgUrl || '',
+      storagePath: f.storagePath || '',
+      thumbUrl:   f.thumbUrl || '',
+      thumbCdnUrl: f.thumbCdnUrl || '',
+    });
+
+    /* loadFiles — attachGrpId 방식 */
     const loadFiles = async (attachGrpId) => {
       if (!attachGrpId) return;
       uiState.loading = true;
       try {
         const res = await window.coApiSvc.cmAttach.getFiles(attachGrpId);
         const list = res.data?.data || [];
-        files.splice(0, files.length, ...list.map(f => ({
-          attachId:   f.attachId,
-          fileNm:     f.fileNm,
-          fileSize:   f.fileSize,
-          fileExt:    f.fileExt,
-          attachUrl:  f.attachUrl || f.storagePath,
-          cdnImgUrl:  f.cdnImgUrl || '',
-          storagePath: f.storagePath || '',
-          thumbUrl:   f.thumbUrl || '',
-          thumbCdnUrl: f.thumbCdnUrl || '',
-        })));
+        files.splice(0, files.length, ...list.map(fnMapFile));
       } catch (err) {
         console.error('[BaseAttachGrp] 파일 목록 조회 실패', err);
       } finally {
@@ -106,12 +115,34 @@ window.BaseAttachGrp = {
       }
     };
 
+    /* loadFilesByRef — refTableNm/refKeyId 방식 */
+    const loadFilesByRef = async () => {
+      if (!props.refTableNm || !props.refKeyId) return;
+      uiState.loading = true;
+      try {
+        const res = await window.coApiSvc.cmAttach.getFilesByRef(props.refTableNm, props.refKeyId);
+        const list = res.data?.data || [];
+        files.splice(0, files.length, ...list.map(fnMapFile));
+      } catch (err) {
+        console.error('[BaseAttachGrp] ref 파일 목록 조회 실패', err);
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
     /* 자기 emit 으로 인한 watch 재진입 차단 (업로드 직후 깜빡임/리프레시 방지) */
     let _lastEmittedGrpId = null;
-    onMounted(() => { if (props.modelValue) loadFiles(props.modelValue); });
+    onMounted(() => {
+      if (cfRefMode.value) loadFilesByRef();
+      else if (props.modelValue) loadFiles(props.modelValue);
+    });
     watch(() => props.modelValue, (val) => {
+      if (cfRefMode.value) return;
       if (val === _lastEmittedGrpId) { _lastEmittedGrpId = null; return; }
       if (val) loadFiles(val);
+    });
+    watch(() => props.refKeyId, (val) => {
+      if (cfRefMode.value && val) loadFilesByRef();
     });
 
     /* 허용 확장자 accept 문자열 변환 */
@@ -167,7 +198,12 @@ window.BaseAttachGrp = {
         validFiles.forEach(f => fd.append('files', f));
         fd.append('businessCode', props.grpCode);
         fd.append('grpNm', props.grpNm);
-        if (props.modelValue) fd.append('attachGrpId', props.modelValue);
+        if (cfRefMode.value) {
+          fd.append('refTableNm', props.refTableNm);
+          fd.append('refId', props.refKeyId);
+        } else if (props.modelValue) {
+          fd.append('attachGrpId', props.modelValue);
+        }
 
         // Content-Type은 axios가 FormData boundary 포함해서 자동 설정
         // coApiSvc.cmUpload 는 client()(boApi||foApi)로 FO·BO 모두 동작 — FO 에는 boApi 미로드라 직접 호출 시 크래시
@@ -177,9 +213,12 @@ window.BaseAttachGrp = {
         if (!d) throw new Error('업로드 응답이 없습니다.');
         console.log('[BaseAttachGrp] upload response:', JSON.stringify(d));
 
-        /* attachGrpId emit (첫 업로드 or 기존 그룹에 추가) */
-        const grpId = d.attachGrpId;
-        if (!props.modelValue) { _lastEmittedGrpId = grpId; emit('update:modelValue', grpId); }
+        /* attachGrpId emit (첫 업로드 or 기존 그룹에 추가) — ref 모드는 attachGrpId 개념이 없어 emit 없음 */
+        if (!cfRefMode.value && !props.modelValue) {
+          const grpId = d.attachGrpId;
+          _lastEmittedGrpId = grpId;
+          emit('update:modelValue', grpId);
+        }
 
         /* 파일 목록 추가 */
         (d.files || []).forEach(f => {
@@ -228,7 +267,7 @@ window.BaseAttachGrp = {
       }
       const idx = files.findIndex(f => f.attachId === attachId);
       if (idx !== -1) files.splice(idx, 1);
-      if (files.length === 0) { _lastEmittedGrpId = null; emit('update:modelValue', null); }
+      if (files.length === 0 && !cfRefMode.value) { _lastEmittedGrpId = null; emit('update:modelValue', null); }
     };
 
     /* fnFmtSize */
@@ -306,7 +345,7 @@ window.BaseAttachGrp = {
     };
 
     return {
-      uiState, files, cfAcceptAttr, fileInputRef,           // 상태 / computed
+      uiState, files, cfAcceptAttr, fileInputRef, cfRefMode, // 상태 / computed
       thumbState, hoverState, dragState,                    // UI 상태
       handleBtnAction, handleSelectAction,                  // dispatch
       onFileChange, onDragStart, onDragOver, onDrop,        // 직접 핸들러 (param 다양)
