@@ -183,8 +183,8 @@ window.SyBbsDtl = {
         // bbsId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다.
         const attachChanges = attachGrpRef.value?.pendingChanges || [];
         await (cfIsNew.value
-          ? boApiSvc.syBbs.create({ ...form, attachChanges }, '게시판관리', '등록')
-          : boApiSvc.syBbs.update(form.bbsId, { ...form, attachChanges }, '게시판관리', '저장'));
+          ? boApiSvc.syBbs.create({ ...form, attachFiles: attachChanges }, '게시판관리', '등록')
+          : boApiSvc.syBbs.update(form.bbsId, { ...form, attachFiles: attachChanges }, '게시판관리', '저장'));
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('syBbsMng', { reload: true }); }
       } catch (err) {

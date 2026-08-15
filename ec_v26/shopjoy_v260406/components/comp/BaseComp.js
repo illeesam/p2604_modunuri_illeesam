@@ -27,19 +27,24 @@
      allowExt    : 허용 확장자 문자열, 쉼표 구분 (기본 '*' = 전체)
      readonly    : 보기(view) 모드 (Boolean, 기본 false) — 파일첨부/삭제(✕)/드래그정렬 숨김, 다운로드·미리보기 보기 액션만 노출
 
-   ⭐ 연계 모델 (2026-08-15 개편) — 업로드/삭제는 항상 즉시 물리 반영되지만, sy_attach 의
-   ref_table_nm/ref_id "연계" 자체는 즉시 반영하지 않는다. 부모 화면(Dtl)이 실제 저장(등록/수정)
-   버튼을 누르는 시점에, 이 컴포넌트가 노출하는 pendingChanges([{attachId, rowStatus:'I'|'D'}])를
-   읽어 create/update 요청 바디에 attachChanges(또는 도메인별 필드명)로 함께 실어 보내고,
-   백엔드가 부모 레코드 저장과 같은 트랜잭션 안에서 원자적으로 반영한다.
-     - 업로드(추가) → 항상 미연계 상태로 즉시 업로드, pendingChanges 에 {attachId,'I'} 적재
-     - 삭제(✕) 클릭 → 이번 세션에 추가만 되고 아직 미연계인 파일(pendingChanges 의 'I' 항목)은
-       저장을 기다릴 필요가 없으므로 즉시 물리 삭제. 이미 연계되어 있던(서버에서 불러온) 기존
-       파일은 즉시 삭제하지 않고 pendingChanges 에 {attachId,'D'} 로 적재 → 부모가 저장할 때만 반영
+   ⭐ 연계 모델 (2026-08-15 개편, 전체목록 방식으로 재개편) — 업로드/삭제는 항상 즉시 물리 반영되지만,
+   sy_attach 의 ref_table_nm/ref_id "연계" 자체는 즉시 반영하지 않는다. 부모 화면(Dtl)이 실제 저장
+   (등록/수정) 버튼을 누르는 시점에, 이 컴포넌트가 노출하는 pendingChanges 를 읽어 create/update 요청
+   바디에 attachFiles(2번째 슬롯은 attach2Files)로 함께 실어 보내고, 백엔드가 부모 레코드 저장과
+   같은 트랜잭션 안에서 원자적으로 반영한다.
+   pendingChanges 는 BoGridCrud 의 N/I/U/D 전체목록 관례와 동일하게 **항상 관련 파일 전체**를 담는다
+   (변경분만 담는 델타 목록이 아니다) — [{attachId, rowStatus:'N'|'I'|'D'}]:
+     - 조회(loadFiles) → 서버에서 불러온 기존(이미 연계된) 파일은 전부 rowStatus:'N' 으로 적재
+     - 업로드(추가) → 항상 미연계 상태로 즉시 업로드, pendingChanges 에 {attachId,'I'} 신규 추가
+     - 삭제(✕) 클릭 → 이번 세션에 추가만 되고 아직 미연계인 파일('I' 항목)은 저장을 기다릴 필요가
+       없으므로 즉시 물리 삭제 + pendingChanges 에서 제거. 이미 연계되어 있던(서버에서 불러온, 'N')
+       기존 파일은 즉시 삭제하지 않고 해당 'N' 항목을 그대로 'D' 로 바꿔치기 → 부모가 저장할 때만 반영
        (취소/미저장 시 원래 연계 상태 그대로 보존됨)
-     - 부모는 저장 성공 후 reload() 를 호출해 pendingChanges 를 비우고 최신 목록을 다시 조회해야 한다
-       (화면이 그대로 남아 재저장이 반복되는 패턴 — 예: SyContactDtl). 저장 직후 다른 화면으로
-       navigate(unmount)하는 패턴은 호출 불필요.
+     - 백엔드는 'I'/'D' 만 처리하고 'N'(및 예약된 'U')은 조용히 무시하므로, 'N' 항목이 섞여 와도
+       추가 백엔드 대응 없이 그대로 동작한다
+     - 부모는 저장 성공 후 reload() 를 호출해 pendingChanges 를 비우고 최신 목록(전부 'N')을 다시
+       조회해야 한다 (화면이 그대로 남아 재저장이 반복되는 패턴 — 예: SyContactDtl). 저장 직후 다른
+       화면으로 navigate(unmount)하는 패턴은 호출 불필요.
  ─────────────────────────────────────────── */
 window.BaseAttachGrp = {
   name: 'BaseAttachGrp',
@@ -118,7 +123,10 @@ window.BaseAttachGrp = {
       thumbCdnUrl: f.thumbCdnUrl || '',
     });
 
-    /* loadFiles — refTableNm/refKeyId 로 첨부 목록 조회 */
+    /* loadFiles — refTableNm/refKeyId 로 첨부 목록 조회.
+       불러온 기존 파일은 pendingChanges 에 rowStatus:'N'(미수정) 으로 미리 적재해둔다 —
+       저장 시 신규/삭제뿐 아니라 미수정 기존 항목까지 전부 포함해서 보낸다(BoGridCrud 의
+       N/I/U/D 전체목록 관례와 동일). 삭제(removeFile)는 이 'N' 항목을 'D' 로 바꿔치기한다. */
     const loadFiles = async () => {
       if (!cfHasRef.value) return;
       uiState.loading = true;
@@ -126,6 +134,7 @@ window.BaseAttachGrp = {
         const res = await window.coApiSvc.cmAttach.getFilesByRef(props.refTableNm, props.refKeyId);
         const list = res.data?.data || [];
         files.splice(0, files.length, ...list.map(fnMapFile));
+        pendingChanges.value = list.map(f => ({ attachId: f.attachId, rowStatus: 'N' }));
       } catch (err) {
         console.error('[BaseAttachGrp] 파일 목록 조회 실패', err);
       } finally {
@@ -265,7 +274,12 @@ window.BaseAttachGrp = {
           return;
         }
       } else {
-        pendingChanges.value.push({ attachId, rowStatus: 'D' });
+        const nEntry = pendingChanges.value.find(c => c.attachId === attachId && c.rowStatus === 'N');
+        if (nEntry) {
+          nEntry.rowStatus = 'D';
+        } else {
+          pendingChanges.value.push({ attachId, rowStatus: 'D' });
+        }
       }
       const idx = files.findIndex(f => f.attachId === attachId);
       if (idx !== -1) files.splice(idx, 1);
@@ -352,7 +366,7 @@ window.BaseAttachGrp = {
       onFileChange, onDragStart, onDragOver, onDrop,        // 직접 핸들러 (param 다양)
       fnFmtSize, fnExtIcon, fnIsImage,                      // 헬퍼
       reload,          // ⭐ 부모가 저장 성공 후 호출 — pendingChanges 를 비우고 최신 목록 재조회
-      pendingChanges,  // ⭐ 부모가 저장 요청(attachChanges)에 그대로 실어 보냄 — 백엔드가 원자적 반영
+      pendingChanges,  // ⭐ 부모가 저장 요청(attachFiles/attach2Files)에 그대로 실어 보냄 — 백엔드가 원자적 반영
     };
   },
   template: /* html */`

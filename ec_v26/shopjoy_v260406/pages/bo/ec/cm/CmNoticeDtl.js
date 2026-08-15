@@ -133,8 +133,8 @@ window.CmNoticeDtl = {
         // noticeId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다.
         const attachChanges = attachGrpRef.value?.pendingChanges || [];
         await (isNew
-          ? boApiSvc.cmNotice.create({ ...baseForm, attachChanges }, '공지사항관리', '등록')
-          : boApiSvc.cmNotice.update(props.dtlId, { ...baseForm, attachChanges }, '공지사항관리', '저장'));
+          ? boApiSvc.cmNotice.create({ ...baseForm, attachFiles: attachChanges }, '공지사항관리', '등록')
+          : boApiSvc.cmNotice.update(props.dtlId, { ...baseForm, attachFiles: attachChanges }, '공지사항관리', '저장'));
         showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
         props.navigate('cmNoticeMng', { reload: true });
       } catch (err) {

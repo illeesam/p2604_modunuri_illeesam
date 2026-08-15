@@ -216,7 +216,7 @@ window.SyContactDtl = {
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
         if (!ok) { return; }
         try {
-          const payload = { ...form, contentAttachChanges: contentAttachRef.value?.pendingChanges || [] };
+          const payload = { ...form, attachFiles: contentAttachRef.value?.pendingChanges || [] };
           const res = isCreate
             ? await boApiSvc.syContact.create(payload, '문의관리', '등록')
             : await boApiSvc.syContact.update(cfCurId.value, payload, '문의관리', '문의내용저장');
@@ -245,7 +245,7 @@ window.SyContactDtl = {
       try {
         const answerAttachChanges = answerAttachRef.value?.pendingChanges || [];
         const res = await boApiSvc.syContact.update(cfCurId.value,
-          { contactAnswer: form.contactAnswer, contactStatusCd: form.contactStatusCd, answerAttachChanges },
+          { contactAnswer: form.contactAnswer, contactStatusCd: form.contactStatusCd, attach2Files: answerAttachChanges },
           '문의관리', '답변저장');
         if (answerAttachRef.value) { await answerAttachRef.value.reload(); }
         _afterApiOk(res, '답변이 저장되었습니다.');

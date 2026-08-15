@@ -171,7 +171,7 @@ window.CmFaqDtl = {
         // 첨부파일 추가/삭제 변경 목록을 함께 전송 — 백엔드(CmFaqService.create/update)가
         // faqId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한다.
         const attachChanges = attachGrpRef.value?.pendingChanges || [];
-        await (cfIsNew.value ? boApiSvc.cmFaq.create({ ...form, attachChanges }, 'FAQ관리', '등록') : boApiSvc.cmFaq.update(form.faqId, { ...form, attachChanges }, 'FAQ관리', '저장'));
+        await (cfIsNew.value ? boApiSvc.cmFaq.create({ ...form, attachFiles: attachChanges }, 'FAQ관리', '등록') : boApiSvc.cmFaq.update(form.faqId, { ...form, attachFiles: attachChanges }, 'FAQ관리', '저장'));
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('cmFaqMng', { reload: true }); }
       } catch (err) {

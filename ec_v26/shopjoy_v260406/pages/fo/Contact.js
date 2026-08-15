@@ -151,7 +151,7 @@ window.Contact = {
           orderNo:            form.orderNo,
           message:            form.desc,                // 백엔드 DTO 필드명은 message (프론트 desc)
           blogAuthor:         form.name,                // 작성자명 = 문의자 이름
-          attachChanges,                                 // 첨부 추가/삭제 변경 목록 → 백엔드가 저장 트랜잭션 안에서 반영
+          attachFiles: attachChanges,                    // 첨부 추가/삭제 변경 목록. 백엔드 필드명(attachFiles) 그대로 사용해야 반영됨
           // siteId 는 foApiAxios 가 X-Site-Id 헤더로 전달 → 백엔드 fallback 처리
         }, '문의', '저장');
         showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
