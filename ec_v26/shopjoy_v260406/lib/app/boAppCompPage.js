@@ -157,5 +157,12 @@
     zdSimulVendorMng:  'zd-simul-vendor-mng',
     zdSimulVoucherMng: 'zd-simul-voucher-mng',
     zdSimulLogMng:     'zd-simul-log-mng',
+    /* 알림 시뮬레이션 — 6개 메뉴가 같은 컴포넌트를 mode prop 만 바꿔 쓴다 */
+    zdSimulNotiKakao:  'zd-simul-noti-mng',
+    zdSimulNotiSms:    'zd-simul-noti-mng',
+    zdSimulNotiMail:   'zd-simul-noti-mng',
+    zdSimulNotiChat:   'zd-simul-noti-mng',
+    zdSimulNotiNotice: 'zd-simul-noti-mng',
+    zdSimulNotiError:  'zd-simul-noti-mng',
   };
 })();

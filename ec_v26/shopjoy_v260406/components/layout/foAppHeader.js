@@ -351,6 +351,9 @@ window.foAppHeader = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
 
+    <!-- ===== ■.■. 🔔 알림 종 (회원에게 온 알림 + 오류정보 누적) — 로그인 시에만 ==== -->
+    <co-noti-bell v-if="cfIsLogin" ctx="fo" :navigate="navigate" />
+
     <!-- ===== ■.■. 비로그인 ================================================== -->
     <button v-if="!cfIsLogin" @click="handleBtnAction('nav-show-login')"
       style="padding:7px 16px;border:1.5px solid var(--blue);border-radius:20px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:700;white-space:nowrap;transition:all 0.2s;"

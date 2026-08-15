@@ -643,6 +643,22 @@
     updateMsgs(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/sy/i18n/${_id}/msgs`, body, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── sy: 알림함 (상단 종) ────────────────────────────────────
+   * 수신자 조건(recvTypeCd='USER' + 로그인 사용자ID)은 서버에서 강제 주입한다.
+   * 오류 알림은 DB 에 저장하지 않고 브라우저에만 쌓인다 (coNotiStore 참조). */
+  boApiSvc.syNoti = {
+    getMyList(params, uiNm, cmdNm)   { return global.boApi.get('/bo/sy/noti/my', { params, ...hdr(uiNm, cmdNm) }); },
+    getMyPage(params, uiNm, cmdNm, opt) { return global.boApi.get('/bo/sy/noti/my/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
+    getMyUnreadCount(uiNm, cmdNm)    { return global.boApi.get('/bo/sy/noti/my/unread-count', hdr(uiNm, cmdNm)); },
+    getPage(params, uiNm, cmdNm, opt) { return global.boApi.get('/bo/sy/noti/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
+    getById(_id, uiNm, cmdNm)        { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/noti/${_id}`, hdr(uiNm, cmdNm)); },
+    send(body, uiNm, cmdNm)          { return global.boApi.post('/bo/sy/noti/send', body, hdr(uiNm, cmdNm)); },
+    markRead(_id, readYn, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.patch(`/bo/sy/noti/${_id}/read`, { readYn }, hdr(uiNm, cmdNm)); },
+    markAllRead(uiNm, cmdNm)         { return global.boApi.post('/bo/sy/noti/my/read-all', {}, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)         { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/sy/noti/${_id}`, hdr(uiNm, cmdNm)); },
+    removeMyAll(uiNm, cmdNm)         { return global.boApi.delete('/bo/sy/noti/my/all', hdr(uiNm, cmdNm)); },
+  };
+
   /* ── sy: 메뉴 ───────────────────────────────────────────────── */
   boApiSvc.syMenu = {
     getPathTreeNodeCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/menu/path-counts', { params, ...hdr(uiNm, cmdNm) }); },

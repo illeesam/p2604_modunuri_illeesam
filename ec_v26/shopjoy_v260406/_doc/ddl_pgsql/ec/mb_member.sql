@@ -7,6 +7,7 @@ CREATE TABLE shopjoy_2604.mb_member (
     login_id                VARCHAR(100) NOT NULL,
     login_pwd_hash          VARCHAR(255) NOT NULL,
     member_nm               VARCHAR(50)  NOT NULL,
+    member_email            VARCHAR(100) ,
     member_phone            VARCHAR(20) ,
     member_gender           VARCHAR(1)  ,
     birth_date              DATE        ,
@@ -35,6 +36,7 @@ COMMENT ON COLUMN shopjoy_2604.mb_member.reg_site_id IS '사이트ID (sy_site.si
 COMMENT ON COLUMN shopjoy_2604.mb_member.login_id IS '이메일 (로그인 ID)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.login_pwd_hash IS '비밀번호 (bcrypt)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.member_nm IS '회원명';
+COMMENT ON COLUMN shopjoy_2604.mb_member.member_email IS '회원 이메일 (수신용. 로그인ID(login_id)와 별개)';
 COMMENT ON COLUMN shopjoy_2604.mb_member.member_phone IS '연락처';
 COMMENT ON COLUMN shopjoy_2604.mb_member.member_gender IS '성별 M/F';
 COMMENT ON COLUMN shopjoy_2604.mb_member.birth_date IS '생년월일';

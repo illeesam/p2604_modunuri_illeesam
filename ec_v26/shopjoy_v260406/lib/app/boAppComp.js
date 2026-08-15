@@ -15,11 +15,13 @@ window.boRegisterComponents = function (app) {
     /* ── components/comp/ (공통 컴포넌트) ── */
     .component('CoEchartComp', window.CoEchartComp)
     .component('CoEchart', window.CoEchartComp)
+    .component('CoNotiBell', window.CoNotiBell)
     .component('BaseAttachGrp', window.BaseAttachGrp)
     .component('BaseAttachOne', window.BaseAttachOne)
     .component('BaseHtmlEditor', window.BaseHtmlEditor)
     .component('BaseTossPayWidget', window.BaseTossPayWidget)
     /* ── pages/bo/ (공통) ── */
+    .component('ZdSimulNotiMng', window.ZdSimulNotiMng)
     .component('BoRefModal', window.BoRefModal)
     .component('BoExcelUploadModal', window.BoExcelUploadModal)
     /* ── pages/bo/ec/ — 회원 ── */

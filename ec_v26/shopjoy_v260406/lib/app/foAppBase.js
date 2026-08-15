@@ -71,6 +71,11 @@
         if (d.uiLabel) label += ` :: ${d.uiLabel}`;
       }
       let msg = label ? `${label}\n${d.message || ''}` : (d.message || '');
+      /* 상단 🔔 알림함에도 누적 — 오류가 순간적으로 스쳐 지나가도 나중에 다시 확인할 수 있다
+         (동일 오류는 1건으로 병합 + 반복횟수 표기). */
+      if (st === 0 || st >= 400) {
+        try { window.foNotiStore?.fnAddError?.(d); } catch (_) {}
+      }
       if (st !== 401 && !(st >= 500 || st === 0)) {
         let details = d.errorDetails || '';
         const reqFmt = _fmtXHeaders(d.reqHeaders);

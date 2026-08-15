@@ -40,6 +40,44 @@
  *   비는 쪽이 null 이 아니라 빈 값이라 resultList.forEach / resultObj.userId 를
  *   null 검사 없이 바로 쓸 수 있다.
  */
+/* ── 선택행 표시 스타일 1회 주입 ────────────────────────────────────────
+   전역 CSS 가 `.bo-table tbody tr:nth-child(even) td { background }` 로 **td** 를 칠하기 때문에
+   tr 인라인 배경(:row-style)은 짝수행에서 통째로 가려진다 — 선택색이 행마다 다르게 보이던 원인.
+   같은 명시도(0,2,3)로 td 를 직접 지정하고, 런타임에 늦게 주입돼 순서상 이긴다. */
+if (!document.getElementById('cm-pick-sel-style')) {
+  (function () {
+    var st = document.createElement('style');
+    st.id = 'cm-pick-sel-style';
+    st.textContent = [
+      '.bo-table tbody tr.cm-pick-sel td{background:#dbe8fb;color:#17356e;}',
+      '.bo-table tbody tr.cm-pick-sel:hover td{background:#cbdefa;}',
+      '.fo-grid-table tbody tr.cm-pick-sel td{background:#dbe8fb;color:#17356e;}',
+      '.fo-grid-table tbody tr.cm-pick-sel:hover td{background:#cbdefa;}',
+      /* 팝업 바탕은 옅은 회색 — 검색/목록/선택목록 흰 카드가 떠 보이게 (영역 구분).
+         모달 박스 전체를 회색으로 깔아야 카드 바깥 여백까지 흰색이 남지 않는다. */
+      /* BoModal/FoModal 이 .modal-box 에 background:#fff 를 **인라인**으로 박아서
+         !important 없이는 절대 못 이긴다 (회색이 안 먹던 원인) */
+      '.modal-box:has(.cm-pick-body){background:#eef0f4 !important;}',
+      '.modal-box:has(.cm-pick-body) .modal-footer{border-top-color:#dfe3e9;}',
+      '.cm-pick-body{background:transparent;}',
+      '.cm-pick-body > .search-bar,.cm-pick-body .cm-pick-card{background:#fff;border:1px solid #e3e6ec;border-radius:8px;}',
+      '.cm-pick-body > .search-bar{padding:8px 10px;margin-bottom:10px;}'
+    ].join(' ');
+    document.head.appendChild(st);
+  })();
+}
+
+/* 공통팝업 등록기간 옵션 — 기본값 1년 */
+const CM_PICK_RANGE_OPTS = [
+  { value: '1week',  label: '1주일' },
+  { value: '1month', label: '1달' },
+  { value: '3months', label: '3달' },
+  { value: '6months', label: '6달' },
+  { value: '1year',  label: '1년' },
+  { value: 'thisyear', label: '이번년' },
+  { value: 'lastyear', label: '작년' },
+];
+
 window.BoCmPopupModal = {
   name: 'BoCmPopupModal',
   props: {
@@ -47,7 +85,10 @@ window.BoCmPopupModal = {
     show:       { type: Boolean, default: true },                 // 표시 여부
     title:      { type: String,  default: '' },                   // 제목 override (미지정 시 메타의 popup_nm)
     multi:      { type: Boolean, default: null },                 // 다중선택 override (미지정 시 메타의 multi_yn)
-    excludeIds: { type: Array,   default: () => ([]) },           // 이미 선택된 ID (목록에서 제외)
+    /* 목록에서 아예 빼버릴 ID — 자기 자신을 상위로 못 고르게 하는 등 '진짜 제외' 전용.
+       ⛔ '이미 선택된 항목' 을 여기 넘기지 말 것 → init-selected-ids 를 쓴다 (정책: cm.01 §4.3) */
+    excludeIds: { type: Array,   default: () => ([]) },           // 하드 제외 ID (목록에 아예 안 나옴)
+
     excludeId:  { type: [String, Number], default: null },        // 제외할 ID 1건 (자기 자신을 상위로 못 고르게 등)
     initParam:  { type: Object,  default: () => ({}) },           // 고정 추가 검색조건
     clearable:  { type: Boolean, default: false },                // 트리 전용에서 "선택 안함" 노출
@@ -82,7 +123,7 @@ window.BoCmPopupModal = {
 
     const cfg = reactive({
       popupNm: '', popupPattern: 1, multiYn: 'N', pagingYn: 'Y', pageSize: 10, modalWidth: '900px',
-      idField: '', nmField: '', hasTree: false, searchCols: [], listCols: [], sysScope: '',
+      idField: '', nmField: '', dateField: '', hasTree: false, searchCols: [], listCols: [], sysScope: '',
     });
     const uiState = reactive({ loading: false, ready: false, initing: false, errorMsg: '', needCond: false });
 
@@ -174,10 +215,12 @@ window.BoCmPopupModal = {
     const picked = reactive([]);        /* 패턴3 / 다중선택 누적 */
     const expanded = reactive({});      /* 트리 펼침 상태 */
 
-    const searchParam = reactive({ searchValue: '' });
+    /* 검색대상(searchFields)·등록기간은 모든 공통팝업에 항상 노출한다.
+       기본값: 검색대상 = ID + 표시명 / 등록기간 = 최근 1년 (fnApplySearchDefaults 에서 채움) */
+    const searchParam = reactive({ searchValue: '', searchFields: '', dateRange: '1year', dateStart: '', dateEnd: '' });
     const gridPager = reactive({
       pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
-      pageSizes: [5, 10, 20, 30, 50, 100],
+      pageSizes: [5, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 2000],
     });
     const treeState = reactive({ selectedId: null });
 
@@ -230,8 +273,33 @@ window.BoCmPopupModal = {
       return cfIsToggle.value ? cfSelectedSet.value.has(key) : cfPickedSet.value.has(key);
     };
     /** 선택된 행 배경 강조 */
-    const fnRowStyle = (row) => fnIsPicked(row)
-      ? 'background:#eff6ff;box-shadow:inset 3px 0 0 #2563eb;' : '';
+    /** fnAllPickedOnPage — 현재 페이지 행이 전부 담겼는가 (헤더 토글 아이콘 표시용) */
+    const fnAllPickedOnPage = () => {
+      const list = rows.filter(r => r ? (r.id != null) : false);
+      return list.length > 0 ? list.every(r => fnIsPicked(r)) : false;
+    };
+
+    /** handleToggleAllOnPage — 헤더 아이콘 클릭: 현재 페이지 전체 담기 / 전체 빼기.
+        전부 담긴 상태면 빼고, 하나라도 빠져 있으면 모두 담는다. */
+    const handleToggleAllOnPage = () => {
+      const list = rows.filter(r => r ? (r.id != null) : false);
+      if (!list.length) return;
+      const allOn = fnAllPickedOnPage();
+      list.forEach((r) => {
+        const on = fnIsPicked(r);
+        if (allOn ? !on : on) return;             /* 이미 목표 상태면 건너뛴다 */
+        /* 토글 모드는 부모가 체크 상태를 소유하므로 행 단위로 알린다 */
+        if (cfIsToggle.value) fnEmitResult('toggle', r);
+        else handlePickRow(r);
+      });
+    };
+
+    /** 선택행 표시 — 색은 한 가지로만. 신규/기존을 색으로 나누면 목록이 얼룩덜룩해진다.
+        · class : 일반 td 를 칠한다 (전역 줄무늬가 td 를 칠하므로 tr 인라인으로는 안 먹는다)
+        · style : 좌측 고정(번호) 셀은 BoGrid 의 fnPinBg 가 이 문자열에서 background 를 읽어
+                  인라인으로 칠한다 → 둘 다 줘야 고정셀까지 같은 색이 된다 */
+    const fnRowClass = (row) => (fnIsPicked(row) ? 'cm-pick-sel' : '');
+    const fnRowStyle = (row) => (fnIsPicked(row) ? 'background:#dbe8fb;' : '');
 
     /* 트리: 평면 목록 → 들여쓰기 목록 (가시 노드만) */
     const cfTreeVisible = computed(() => {
@@ -276,7 +344,9 @@ window.BoCmPopupModal = {
       /* 토글 모드·다중선택은 맨 앞에 체크 상태 컬럼을 붙인다 */
       if (cfIsToggle.value || cfHasPickList.value) {
         cols.unshift({
-          key: '_checked', label: '선택', align: 'center', style: 'width:56px;',
+          /* 헤더는 '선택' 라벨 대신 전체선택 토글 아이콘 — 현재 페이지 행을 한 번에 담고/뺀다 */
+          key: '_checked', label: fnAllPickedOnPage() ? '☑' : '☐', align: 'center', style: 'width:56px;',
+          headClick: () => handleToggleAllOnPage(),
           fmt: (v, row) => fnIsPicked(row) ? '☑' : '☐',
         });
       }
@@ -285,8 +355,31 @@ window.BoCmPopupModal = {
 
     /* 조회영역 컬럼 = 통합검색(LIKE 항목 OR) + EQ 항목은 개별 조건.
        EQ 항목이 CODE 유형이면 공통코드 드롭다운으로 렌더한다. */
+    /* cfSearchFieldOpts — 검색대상 옵션. ID·표시명은 cm_popup_item 에 없어도 항상 넣는다
+       (백엔드도 id_field/nm_field 는 화이트리스트에 포함해 허용한다). */
+    const cfSearchFieldOpts = computed(() => {
+      const out = [];
+      const seen = new Set();
+      const add = (v, l) => { if (v ? !seen.has(v) : false) { seen.add(v); out.push({ value: v, label: l || v }); } };
+      add(cfg.idField, 'ID');
+      add(cfg.nmField, '이름');
+      (cfg.searchCols || []).forEach(c => { if (c.searchType !== 'EQ') add(c.field, c.label); });
+      return out;
+    });
+
     const cfSearchColumns = computed(() => {
-      const out = [{ key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력' }];
+      const out = [
+        { key: 'searchFields', type: 'multiCheck', label: '검색대상',
+          options: () => cfSearchFieldOpts.value, placeholder: '검색대상 전체', allLabel: '전체 선택' },
+        { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력' },
+      ];
+      /* 등록기간 — cm_popup.date_field 가 있는 팝업만 (없으면 서버가 무시하므로 UI 도 숨긴다) */
+      if (cfg.dateField) {
+        out.push({ key: 'dateRange', type: 'dateRange', label: '등록기간',
+          typeKey: '_dateType', startKey: 'dateStart', endKey: 'dateEnd',
+          rangeOptions: () => CM_PICK_RANGE_OPTS,
+          onRangeChange: () => fnApplyRange() });
+      }
       (cfg.searchCols || []).forEach(c => {
         if (c.searchType !== 'EQ') return;
         if (c.type === 'CODE') {
@@ -363,10 +456,11 @@ window.BoCmPopupModal = {
     /** 프리체크 — initSelectedIds 를 선택 목록에 채운다. 트리/목록에 없는 ID 는 ID 를 그대로 표시명으로 쓴다 */
     const fnSeedPicked = () => {
       if (!cfHasPickList.value) return;
-      if (!Array.isArray(props.initSelectedIds)) return;
+      const seedIds = Array.isArray(props.initSelectedIds) ? props.initSelectedIds : null;
+      if (!seedIds) return;
       picked.splice(0, picked.length);
       const pool = [...treeRows, ...rows];
-      props.initSelectedIds.forEach((id) => {
+      seedIds.forEach((id) => {
         const hit = pool.find(r => String(r.id) === String(id));
         picked.push(hit || { id, nm: String(id) });
       });
@@ -384,12 +478,13 @@ window.BoCmPopupModal = {
           popupNm: d.popupNm || '', popupPattern: d.popupPattern || 1,
           multiYn: d.multiYn || 'N', pagingYn: d.pagingYn || 'Y', pageSize: d.pageSize || 10,
           modalWidth: d.modalWidth || '900px', idField: d.idField || 'id',
-          nmField: d.nmField || 'nm', hasTree: !!d.hasTree,
+          nmField: d.nmField || 'nm', dateField: d.dateField || '', hasTree: !!d.hasTree,
           searchCols: d.searchCols || [], listCols: d.listCols || [],
           sysScope: d.sysScope || '',
         });
         gridPager.pageSize = cfg.pageSize;
         await handleSearchCodes();
+        fnApplySearchDefaults();   /* 검색대상 = ID+이름 체크, 등록기간 = 1년 */
         uiState.ready = true;
         if (cfHasTree.value) await handleSearchTree();
         /* 필수 조회조건이 비어 있으면 자동 조회하지 않는다 — 조건 입력 후 [조회] */
@@ -406,9 +501,27 @@ window.BoCmPopupModal = {
 
     /* ##### [04] 내장 사용 함수 #################################################### */
 
+    /* fnApplyRange — 기간 옵션 → dateStart/dateEnd 계산 */
+    const fnApplyRange = () => {
+      const u = window.boUtil || window.foUtil;
+      if (u ? u.bofApplyDateRange : false) {
+        u.bofApplyDateRange(searchParam, searchParam.dateRange, 'dateStart', 'dateEnd');
+      }
+    };
+
+    /* fnApplySearchDefaults — 팝업 구성을 받은 뒤 기본 검색조건을 채운다.
+       검색대상 = ID + 표시명 체크 / 등록기간 = 최근 1년 */
+    const fnApplySearchDefaults = () => {
+      const ids = [cfg.idField, cfg.nmField].filter(Boolean);
+      searchParam.searchFields = ids.join('^');
+      searchParam.dateRange = '1year';
+      fnApplyRange();
+    };
+
     const fnResetSearch = () => {
       Object.keys(searchParam).forEach(k => { searchParam[k] = ''; });
       searchParam.searchValue = '';
+      fnApplySearchDefaults();
       treeState.selectedId = null;
     };
 
@@ -592,7 +705,7 @@ window.BoCmPopupModal = {
       cfg, uiState, rows, picked, searchParam, gridPager, treeState, fnMissingRequired,
       cfIsMulti, cfTitle, cfHeadTitle, cfPopupTooltip, cfHasTree, cfTreeOnly, cfHasList, cfHasPickList, cfHasPager, cfIsToggle, cfSelectedSet,
       cfGridColumns, cfSearchColumns, cfTreeVisible, cfTreeLayoutStyle, cfTreeCardStyle,
-      cfPickedSet, cfIsCheckMode, fnIsPicked, fnRowStyle,
+      cfPickedSet, cfIsCheckMode, fnIsPicked, fnRowStyle, fnRowClass, fnAllPickedOnPage, handleToggleAllOnPage,
       fnTreeArrow, fnTreeNodeIcon, fnTreeNodeStyle, handleBtnAction, handleSelectAction, handleGridCellAction,
     };
   },
@@ -606,13 +719,14 @@ window.BoCmPopupModal = {
     {{ uiState.errorMsg }}
   </div>
   <template v-else>
+  <div class="cm-pick-body">
     <!-- 1단 조회영역 -->
     <bo-search-area :loading="uiState.loading" :columns="cfSearchColumns" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
 
     <!-- 2단 트리 / 목록 (패턴3=트리 전용이면 목록 없이 트리만 전체 폭) -->
     <div :style="cfTreeLayoutStyle">
-      <div v-if="cfHasTree" class="card" :style="cfTreeCardStyle">
+      <div v-if="cfHasTree" class="card cm-pick-card" :style="cfTreeCardStyle">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <span style="font-size:12px;font-weight:600;color:#555;">📂 {{ cfTreeOnly ? cfTitle : '분류' }}</span>
           <div style="display:flex;gap:4px;">
@@ -644,11 +758,12 @@ window.BoCmPopupModal = {
         </div>
       </div>
 
-      <div v-if="cfHasList">
+      <div v-if="cfHasList" class="cm-pick-card" style="padding:8px;">
         <!-- 체크형(토글·다중)은 어느 셀을 눌러도 담기/빼기가 되어야 하므로 row-clickable 필요
              (BoGrid 는 이 옵션이 없으면 번호·링크 셀에서만 cell-click 을 올린다) -->
         <bo-grid :columns="cfGridColumns" :rows="rows" row-key="id" :loading="uiState.loading"
-          :pager="gridPager" :empty-text="uiState.needCond ? '필수 조회조건을 입력하고 [조회] 를 누르세요.' : '조회 결과가 없습니다.'" :row-style="fnRowStyle"
+          :pager="gridPager" :empty-text="uiState.needCond ? '필수 조회조건을 입력하고 [조회] 를 누르세요.' : '조회 결과가 없습니다.'" :row-style="fnRowStyle" :row-class="fnRowClass"
+          table-max-height="46vh"
           :row-clickable="cfIsCheckMode"
           grid-id="pickGrid-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
         <bo-pager v-if="cfHasPager" :pager="gridPager"
@@ -658,7 +773,7 @@ window.BoCmPopupModal = {
     </div>
 
     <!-- 3단 선택목록 -->
-    <div v-if="cfHasPickList" class="card" style="padding:10px;margin-top:10px;">
+    <div v-if="cfHasPickList" class="card cm-pick-card" style="padding:10px;margin-top:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <span class="list-title" style="font-size:12px;">선택 목록 <span style="color:#e8587a;">{{ picked.length }}</span>건</span>
         <button v-if="picked.length" class="btn btn_uncheck_all btn-xs"
@@ -676,6 +791,7 @@ window.BoCmPopupModal = {
         </span>
       </div>
     </div>
+  </div><!-- /cm-pick-body -->
   </template>
 
   <template #footer>

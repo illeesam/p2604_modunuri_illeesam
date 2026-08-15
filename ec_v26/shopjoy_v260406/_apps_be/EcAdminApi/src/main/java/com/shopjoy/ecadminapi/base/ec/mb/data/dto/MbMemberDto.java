@@ -25,6 +25,7 @@ public class MbMemberDto {
         private String memberId;
         private String loginId;
         private String memberNm;
+        private String memberEmail;
         private String memberPhone;
         private String memberGender;
         private LocalDate birthDate;

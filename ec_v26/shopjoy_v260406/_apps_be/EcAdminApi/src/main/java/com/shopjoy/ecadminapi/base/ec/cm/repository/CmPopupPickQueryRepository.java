@@ -182,15 +182,29 @@ public class CmPopupPickQueryRepository {
         /* 통합검색: search_yn='Y' 且 LIKE 인 항목 전체 OR */
         String kw = str(p.get("searchValue"));
         if (kw != null) {
-            List<CmPopupItem> likeCols = items.stream()
-                .filter(i -> "Y".equals(i.getSearchYn()))
-                .filter(i -> !"RANGE".equals(i.getSearchTypeCd()))
-                .toList();
-            if (!likeCols.isEmpty()) {
+            /* 검색대상(searchFields) 을 주면 그 필드만 OR LIKE. 미지정이면 종전대로 LIKE 항목 전체.
+               id_field / nm_field 는 cm_popup_item 에 없어도 검색대상으로 허용한다(항상 노출되는 기본 대상). */
+            java.util.Set<String> allow = new java.util.LinkedHashSet<>();
+            items.stream().filter(i -> "Y".equals(i.getSearchYn()))
+                 .filter(i -> !"RANGE".equals(i.getSearchTypeCd()))
+                 .forEach(i -> allow.add(i.getFieldNm()));
+            if (pop.getIdField() != null) allow.add(pop.getIdField());
+            if (pop.getNmField() != null) allow.add(pop.getNmField());
+
+            List<String> targets = new java.util.ArrayList<>();
+            for (String f : splitIds(str(p.get("searchFields")))) {
+                if (allow.contains(f)) targets.add(f);      /* 화이트리스트 밖 필드는 무시 (주입 방지) */
+            }
+            if (targets.isEmpty()) {
+                items.stream().filter(i -> "Y".equals(i.getSearchYn()))
+                     .filter(i -> !"RANGE".equals(i.getSearchTypeCd()))
+                     .forEach(i -> targets.add(i.getFieldNm()));
+            }
+            if (!targets.isEmpty()) {
                 w.append(" AND ( ");
-                for (int i = 0; i < likeCols.size(); i++) {
+                for (int i = 0; i < targets.size(); i++) {
                     if (i > 0) w.append(" OR ");
-                    String f = ident(likeCols.get(i).getFieldNm(), "field_nm");
+                    String f = ident(targets.get(i), "field_nm");
                     w.append("LOWER(CAST(a.").append(f).append(" AS string)) LIKE :kw ");
                 }
                 w.append(" ) ");
@@ -227,6 +241,21 @@ public class CmPopupPickQueryRepository {
             String linkField = isCrossTree(pop) ? pop.getTreeLinkField() : pop.getIdField();
             w.append(" AND a.").append(ident(linkField, "tree_link_field")).append(" IN (:idIn) ");
             binds.put("idIn", idIn);
+        }
+        /* 등록기간 — cm_popup.date_field 가 지정된 팝업만. 종료일은 그날 24시까지 포함한다. */
+        String dField = pop.getDateField();
+        if (dField != null && !dField.isBlank()) {
+            String ds = str(p.get("dateStart"));
+            String de = str(p.get("dateEnd"));
+            String df = ident(dField, "date_field");
+            if (ds != null) {
+                w.append(" AND a.").append(df).append(" >= :dateStart ");
+                binds.put("dateStart", java.time.LocalDate.parse(ds).atStartOfDay());
+            }
+            if (de != null) {
+                w.append(" AND a.").append(df).append(" < :dateEnd ");
+                binds.put("dateEnd", java.time.LocalDate.parse(de).plusDays(1).atStartOfDay());
+            }
         }
         /* 이미 선택된 항목 제외 */
         List<String> excludes = splitIds(str(p.get("excludeIds")));

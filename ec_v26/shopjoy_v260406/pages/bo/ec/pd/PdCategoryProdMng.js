@@ -697,7 +697,7 @@ window.PdCategoryProdMng = {
 <!-- ===== □. 좌 트리 + 우 상품목록 =========================================== -->
 <!-- ===== ■. 상품 추가 피커 모달 ============================================= -->
 <!-- ===== ■. 상품 추가 모달 (BoModals.js / PdProdPickModal) ================== -->
-<bo-cm-popup-modal popup-cmd="cmPopup-prod-pick" popup-code="prod" :show="pickerOpen" :title="'상품 추가' + (cfSelectedCat ? ' → ' + cfSelectedCat.categoryNm : '')" :exclude-ids="cfExcludeProdIds" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal popup-cmd="cmPopup-prod-pick" popup-code="prod" :show="pickerOpen" :title="'상품 추가' + (cfSelectedCat ? ' → ' + cfSelectedCat.categoryNm : '')" :init-selected-ids="cfExcludeProdIds" :on-callback="fnCallbackModal" />
 <!-- ===== □. 상품 추가 모달 ================================================= -->
 </bo-page>
 <!-- ===== □. 상품 추가 피커 모달 ============================================= -->

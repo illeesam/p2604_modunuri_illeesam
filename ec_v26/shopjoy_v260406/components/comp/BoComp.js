@@ -793,7 +793,7 @@ window.BoCategoryTree = {
 window.BoPager = {
   name: 'BoPager',
   props: {
-    pager:        { type: Object,   default: () => ({ pageNo: 1, pageTotalPage: 1, pageNums: [1], pageSize: 20, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] }) },
+    pager:        { type: Object,   default: () => ({ pageNo: 1, pageTotalPage: 1, pageNums: [1], pageSize: 20, pageSizes: [5, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 2000] }) },
     onSetPage:    { type: Function, default: () => {} },
     onSizeChange: { type: Function, default: () => {} },
     pageWindow:   { type: Number,   default: 10 },   // 한 번에 보일 페이지 번호 칸 수

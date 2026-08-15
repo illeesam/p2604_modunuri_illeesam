@@ -169,6 +169,8 @@
   <script src="lib/consts/boConsts.js"></script>
   <script src="lib/utils/boApiAxios.js"></script>
   <script src="lib/utils/boUtil.js"></script>
+  <!-- 알림 누적 스토어(FO·BO 공용) — boApiAxios 의 api-response-error 훅이 window.boNotiStore 를 참조 -->
+  <script src="lib/utils/coNotiStore.js"></script>
   <!-- 외부 연동 상수(토스 테스트키 / SDK URL 등) — coExtSdk 보다 먼저 로드 -->
   <script src="lib/env/boEnvConsts.js"></script>
   <!-- 소셜 로그인 / 결제(Toss) / 지도(Naver, Kakao) 통합 헬퍼 — AppStore 키 의존 -->
@@ -211,6 +213,7 @@
   <script src="components/comp/BoComp.js"></script>
   <script src="components/comp/BoAreaComp.js"></script>
   <script src="components/comp/CoEchartComp.js"></script>
+  <script src="components/comp/CoNotiBell.js"></script>
 
   <!-- ■ B3.2: Modal Setup — BO 전용 모달 ■ -->
   <script src="components/modals/BoModals.js"></script>
@@ -431,6 +434,7 @@
   <script src="pages/bo/zd/ZdSimulVendorMng.js"></script>
   <script src="pages/bo/zd/ZdSimulVoucherMng.js"></script>
   <script src="pages/bo/zd/ZdSimulLogMng.js"></script>
+  <script src="pages/bo/zd/ZdSimulNotiMng.js"></script>
 
   <!-- ═══════════════════════════════════════════════════════════════════════════
        B99: 메인 앱 부트스트랩 (반드시 마지막)

@@ -166,6 +166,7 @@ public class CmPopupPickService {
         out.put("modalWidth", p.getModalWidth() == null ? "900px" : p.getModalWidth());
         out.put("idField", p.getIdField());
         out.put("nmField", p.getNmField());
+        out.put("dateField", p.getDateField());
         out.put("hasTree", p.getParentField() != null && !p.getParentField().isBlank());
         out.put("sysScope", p.getSysScope() == null ? "^BO^" : p.getSysScope());
         /* 서버가 강제하는 세션 조건 (프론트 안내·미리보기 표시용) */

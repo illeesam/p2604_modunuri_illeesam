@@ -530,7 +530,13 @@ window.CmDashboardMyMng = {
     const resizeState = reactive({ idx: null });
     let   _rs = null;   /* 드래그 중 임시값 (반응성 불필요) */
 
-    const fnRowH = (c) => { const w = fnWidget(c); return (w && w.kind === 'kpi') ? KPI_ROW_H : ROW_H; };
+    /* fnIsKpi — KPI 카드는 본문이 스스로 아이콘+라벨+값을 보여주므로 헤더 제목이 중복된다.
+       (헤더 숨김/축소 행높이 판단에 함께 쓴다) */
+    const fnIsKpi = (c) => { const w = fnWidget(c); return !!(w ? (w.kind === 'kpi') : false); };
+    const fnRowH  = (c) => (fnIsKpi(c) ? KPI_ROW_H : ROW_H);
+    /* fnShowHead — KPI 카드는 보기모드에서 헤더를 통째로 감춘다.
+       편집모드에서는 드래그/크기조절/제거 컨트롤이 필요하므로 헤더는 남기되 제목만 뺀다. */
+    const fnShowHead = (c) => (fnIsKpi(c) ? cfCanEdit.value : true);
 
     const onResizeStart = (idx, ev) => {
       if (!cfCanEdit.value) return;   /* 보기 모드·공유받은 대시보드는 크기 조절 불가 */
@@ -633,7 +639,7 @@ window.CmDashboardMyMng = {
       canvasRef, canvasH,
       handleBtnAction,
       onCardDragStart, onCatalogDragStart, onCardDragOver, onCardDrop, onCanvasDragOver, onCanvasDrop, fnDragReset,
-      fnCardStyle, fnChartHeight, fnWidget, fnGridCols,
+      fnCardStyle, fnChartHeight, fnWidget, fnGridCols, fnIsKpi, fnShowHead,
       resizeState, onResizeStart,
     };
   },
@@ -821,12 +827,15 @@ window.CmDashboardMyMng = {
           :style="fnCardStyle(c, idx)"
           style="position:relative;background:#fff;border:1px solid #eee;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;flex-direction:column;overflow:hidden;"
           @dragover.prevent.stop="onCardDragOver(idx)" @drop.prevent.stop="onCardDrop(idx)">
-          <div :draggable="cfCanEdit" @dragstart="onCardDragStart(idx, $event)" @dragend="fnDragReset"
+          <div v-if="fnShowHead(c)" :draggable="cfCanEdit" @dragstart="onCardDragStart(idx, $event)" @dragend="fnDragReset"
             :style="{ cursor: cfCanEdit ? 'grab' : 'default' }"
             style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 10px;background:#fafbfc;border-bottom:1px solid #f0f0f0;">
             <span v-if="cfCanEdit" style="color:#bbb;font-size:12px;">⠿</span>
-            <span style="font-size:12px;">{{ util.itemTypeIcon(util.itemTypeOf(c)) }}</span>
-            <span style="font-size:12px;font-weight:700;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.itemNm }}</span>
+            <!-- KPI 카드는 본문이 아이콘+라벨을 이미 보여줘 헤더 제목이 중복 → 생략 -->
+            <template v-if="!fnIsKpi(c)">
+              <span style="font-size:12px;">{{ util.itemTypeIcon(util.itemTypeOf(c)) }}</span>
+              <span style="font-size:12px;font-weight:700;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.itemNm }}</span>
+            </template>
             <span style="flex:1;"></span>
             <span style="font-size:10px;color:#aaa;font-family:monospace;">{{ c.panelWidth }}×{{ c.panelHeight }}</span>
             <template v-if="cfCanEdit">

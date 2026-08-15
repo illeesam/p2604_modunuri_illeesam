@@ -1717,6 +1717,33 @@ public void saveList(String cmd, List<Xxx> rows) {
 - 행 변형(`btn_row_edit`/`btn_row_delete`)은 **xs 크기 내장** → `btn-xs` 병기 불필요.
 - 수정·미리보기 버튼이 **파랑**인 이유: 알림관리(BoFormArea)가 핑크였던 것을 공지사항처럼 파랑으로 통일 (2026-06-07).
 
+### 20.1-A ⛔ 크기 수식어 병기 금지 — 기준 화면 `PdProdMng` ⭐ (2026-08-15)
+
+색과 마찬가지로 **크기도 의미 클래스가 이미 정의한다.** `btn-sm` / `btn-xs` 를 임의로 덧붙이지 않는다.
+
+| 구분 | 표준 | 실제 크기 |
+|---|---|---|
+| 일반 액션 버튼 | `class="btn btn_search"` 처럼 **수식어 없음** | `.btn` = `padding:7px 14px; font-size:13px` |
+| 행(row) 액션 | `btn_row_edit` / `btn_row_delete` | **xs 크기 내장** — `btn-xs` 병기 불필요 |
+| 진짜 보조 버튼 | `btn-sm` 허용 | 툴바 옆 부가기능(열설정·미리보기 등) 한정 |
+
+**기준 화면**: `pages/bo/ec/pd/PdProdMng.js` — 툴바 `btn btn_excel` / `btn btn_new`,
+행 `btn btn_row_edit` / `btn btn_row_delete`, 검색은 `bo-search-area`(내부적으로 `btn btn_search` 사용).
+새 화면의 버튼·그리드·폼 크기는 이 화면을 눈으로 맞춰보면 된다.
+
+```html
+<!-- ✅ 표준 -->
+<button class="btn btn_search" @click="...">조회</button>
+<button class="btn btn_new"    @click="...">＋ 신규</button>
+
+<!-- ❌ 임의 축소 — 화면마다 버튼 크기가 달라진다 -->
+<button class="btn btn_search btn-xs">조회</button>
+<button class="btn btn_new btn-sm">＋ 신규</button>
+```
+
+**폼 입력도 같다** — 기본은 일반 `.form-control`(`padding:8px 11px`). `.bo-form-compact`(28px)는
+**행 펼침·인라인 패널 등 좁은 영역 전용**이며, 일반 화면 폼에 임의로 걸지 않는다.
+
 ### 20.2 공통 컴포넌트 자동 적용
 
 다음 컴포넌트를 쓰는 화면은 자동 반영 — 개별 화면 수정 불필요:

@@ -52,6 +52,7 @@ window.foRegisterComponents = function (app) {
     .component('FoGrid',       window.FoGrid)
     .component('FoGridCrud',   window.FoGridCrud)
     .component('FoModal',      window.FoModal)
+    .component('CoNotiBell',   window.CoNotiBell)
     .component('FoCmPopupModal', window.FoCmPopupModal)
     .component('FoRowCancelDelete', window.FoRowCancelDelete)
     /* ── components/comp/FoComp.js — FO 공통 단위 컴포넌트 ── */

@@ -46,6 +46,10 @@ public class CmPopup extends BaseEntity {
     @Column(name = "nm_field", length = 50, nullable = false)
     private String nmField;
 
+    @Comment("등록기간 검색 기준 필드(엔티티 필드명, 기본 regDate). 비우면 기간검색 미노출")
+    @Column(name = "date_field", length = 50)
+    private String dateField;
+
     @Comment("트리 부모 필드명 (트리 엔티티 기준)")
     @Column(name = "parent_field", length = 50)
     private String parentField;

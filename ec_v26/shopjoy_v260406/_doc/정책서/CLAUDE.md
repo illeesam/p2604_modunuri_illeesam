@@ -251,6 +251,7 @@
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
 | **기능을 어디에 만드는가 (레이어)** ⭐ | `base/base.기술-api.md` §3.4-A / §4 — 단순CRUD=base, 외부연동·발송=co/cm, 관리자=bo, 사용자=fo |
 | **메시지 발송 (메일/카톡/SMS/알림)** ⭐ | `sy/sy.16.메시지발송.md` — co/cm 채널서비스 + 오케스트레이터 + 이력 + 템플릿. starter-mail clean build·Gmail 앱비밀번호 주의 |
+| **알림함 / 테스트 수신처 통일** ⭐ | `sy/sy.17.알림함.md` — sy_noti 수신자별 1행, 오류만 브라우저 로컬(이유 명시), 전 회원·사용자 이메일=illeesam@gmail.com·휴대폰=010-3805-0206. `mb_member.login_id` 는 UNIQUE 라 덮어쓰지 말 것 |
 | **`/api/base/**` 호출 금지** ⭐ | `base/base.기술-api.md` §3.5 — 클라이언트는 `/api/bo/**` / `/api/fo/**` 만 호출 |
 | **JPA `@Query` 작성 규칙** ⭐ | `base/base.backend-EcAdminApi.md` §14.5 — named 파라미터(`:name` + `@Param`) 필수, nativeQuery 위치는 `*Repository.java` 인터페이스 |
 | **QueryDSL `Q*RepositoryImpl` 표준** ⭐ | `base/base.backend-EcAdminApi.md` §14.6 — 6개 섹션 구분, `buildCondition` 금지, 개별 `andXxx()` + `.where(...)` 직접 나열, `QSyUserRepositoryImpl` 표준 모델 |

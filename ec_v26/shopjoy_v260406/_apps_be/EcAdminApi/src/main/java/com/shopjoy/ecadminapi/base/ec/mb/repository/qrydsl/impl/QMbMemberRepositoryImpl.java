@@ -52,6 +52,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                         mbMember.memberId,               // 회원ID (PK, YYMMDDhhmmss+rand4)
                         mbMember.loginId,                // 이메일 (로그인 ID)
                         mbMember.memberNm,                // 회원명
+                        mbMember.memberEmail,             // 회원 이메일 (수신용, login_id 와 별개)
                         mbMember.memberPhone,             // 연락처
                         mbMember.memberGender,            // 성별 — M/F {M: '남성', F: '여성'}
                         mbMember.birthDate,               // 생년월일
@@ -162,6 +163,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
             QdslUtil.FieldDef.like("loginPwdHash", mbMember.loginPwdHash),
             QdslUtil.FieldDef.like("memberAddr", mbMember.memberAddr),
             QdslUtil.FieldDef.like("memberAddrDetail", mbMember.memberAddrDetail),
+            QdslUtil.FieldDef.like("memberEmail", mbMember.memberEmail),
             QdslUtil.FieldDef.like("memberGender", mbMember.memberGender),
             QdslUtil.FieldDef.like("memberId", mbMember.memberId),
             QdslUtil.FieldDef.like("memberMemo", mbMember.memberMemo),
@@ -199,6 +201,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         if (entity.getMemberStatusCdBefore() != null) { update.set(mbMember.memberStatusCdBefore, entity.getMemberStatusCdBefore()); hasAny = true; }
         if (entity.getGradeCd()              != null) { update.set(mbMember.gradeCd,              entity.getGradeCd());              hasAny = true; }
         if (entity.getMemberNm()             != null) { update.set(mbMember.memberNm,             entity.getMemberNm());             hasAny = true; }
+        if (entity.getMemberEmail()          != null) { update.set(mbMember.memberEmail,          entity.getMemberEmail());          hasAny = true; }
         if (entity.getMemberPhone()          != null) { update.set(mbMember.memberPhone,          entity.getMemberPhone());          hasAny = true; }
         if (entity.getMemberMemo()           != null) { update.set(mbMember.memberMemo,           entity.getMemberMemo());           hasAny = true; }
         if (entity.getUpdBy()                != null) { update.set(mbMember.updBy,                entity.getUpdBy());                hasAny = true; }

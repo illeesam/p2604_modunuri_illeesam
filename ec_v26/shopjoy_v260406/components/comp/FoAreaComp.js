@@ -524,6 +524,7 @@ window.FoGrid = {
     emptyText:  { type: String, default: '데이터가 없습니다.' },
     bare:       { type: Boolean, default: false },   // true=card/toolbar/pager 없이 <table>만
     minWidth:   { type: String,  default: '' },      // 가로 스크롤용 table min-width
+    tableMaxHeight: { type: String, default: null }, // 테이블 영역 최대 높이(예: '46vh'). 주면 자체 스크롤 컨테이너
     showRowNo:  { type: Boolean, default: true },    // 번호 컬럼 (FO 정적 테이블은 끌 수 있음)
     rowClick:   { type: Function, default: null },   // 전체 행 클릭 핸들러(picker 등). 지정 시 tr 클릭→호출
     selectable: { type: Boolean, default: false },
@@ -560,6 +561,8 @@ window.FoGrid = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ FoGrid : handleSelectAction -> ', cmd, param);
       if (cmd === 'sort-toggle') {
+        /* 헤더 자체가 액션인 컬럼(전체선택 토글 등) — 정렬보다 우선한다 */
+        if (typeof param.col.headClick === 'function') return param.col.headClick(param.col);
         if (param.col.sortKey) return emit('sort', param.col.sortKey);
       } else if (cmd === 'grid-row-click') {
         if (typeof props.rowClick === 'function') props.rowClick(param.row);
@@ -634,7 +637,7 @@ window.FoGrid = {
       </button>
     </div>
   </div>
-  <div class="fo-grid-scroll" style="position:relative;">
+  <div class="fo-grid-scroll" :style="tableMaxHeight ? ('position:relative;max-height:' + tableMaxHeight + ';overflow:auto;') : 'position:relative;'">
     <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
     <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
       <span style="font-size:13px;color:var(--accent);background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>
@@ -820,6 +823,8 @@ window.FoGridCrud = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ FoGridCrud : handleSelectAction -> ', cmd, param);
       if (cmd === 'sort-toggle') {
+        /* 헤더 자체가 액션인 컬럼(전체선택 토글 등) — 정렬보다 우선한다 */
+        if (typeof param.col.headClick === 'function') return param.col.headClick(param.col);
         if (param.col.sortKey) return emit('sort', param.col.sortKey);
       } else if (cmd === 'grid-row-focus') {
         if (props.focusedIdx !== param.idx) return emit('update:focusedIdx', param.idx);

@@ -211,7 +211,10 @@ window.CmDashboardLayoutMng = {
     const resizeState = reactive({ idx: null });
     let   _rs = null;   /* 드래그 중 임시값 (반응성 불필요) */
 
-    const fnRowH = (c) => { const w = fnWidget(c); return (w && w.kind === 'kpi') ? KPI_ROW_H : ROW_H; };
+    /* fnIsKpi — KPI 카드는 본문이 스스로 아이콘+라벨+값을 보여주므로 헤더 제목이 중복된다.
+       (헤더 제목 생략 / 축소 행높이 판단에 함께 쓴다) */
+    const fnIsKpi = (c) => { const w = fnWidget(c); return !!(w ? (w.kind === 'kpi') : false); };
+    const fnRowH  = (c) => (fnIsKpi(c) ? KPI_ROW_H : ROW_H);
 
     /* onResizeStart — 핸들 mousedown */
     const onResizeStart = (idx, ev) => {
@@ -285,7 +288,7 @@ window.CmDashboardLayoutMng = {
       dashboards, cards, uiState, codes, layout, cond, dragState, simState,
       cfSelectedDash, util,
       handleBtnAction, onCardDragStart, onCardDragOver, onCardDrop, onCardDragEnd,
-      fnCardStyle, fnChartHeight, fnWidget,
+      fnCardStyle, fnChartHeight, fnWidget, fnIsKpi,
       resizeState, onResizeStart,
     };
   },
@@ -337,8 +340,12 @@ window.CmDashboardLayoutMng = {
         <div draggable="true" @dragstart="onCardDragStart(idx, $event)" @dragend="onCardDragEnd"
           style="flex-shrink:0;display:flex;align-items:center;gap:6px;padding:8px 10px;background:#fafbfc;border-bottom:1px solid #f0f0f0;cursor:grab;">
           <span style="color:#bbb;font-size:12px;">⠿</span>
-          <span style="font-size:12px;">{{ util.itemTypeIcon(util.itemTypeOf(c)) }}</span>
-          <span style="font-size:12px;font-weight:700;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.itemNm }}</span>
+          <!-- KPI 카드는 본문이 아이콘+라벨을 이미 보여줘 헤더 제목이 중복 → 생략
+               (이 화면은 항상 편집 상태라 드래그/크기조절 컨트롤 때문에 헤더 자체는 남긴다) -->
+          <template v-if="!fnIsKpi(c)">
+            <span style="font-size:12px;">{{ util.itemTypeIcon(util.itemTypeOf(c)) }}</span>
+            <span style="font-size:12px;font-weight:700;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.itemNm }}</span>
+          </template>
           <span v-if="c.realtimeYn === 'Y'" class="badge badge-red" style="font-size:9px;">실시간</span>
           <span style="flex:1;"></span>
           <span style="font-size:10px;color:#aaa;font-family:monospace;">{{ c.panelWidth }}×{{ c.panelHeight }}</span>

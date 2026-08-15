@@ -687,6 +687,8 @@ window.BoGrid = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ BoGrid : handleSelectAction -> ', cmd, param);
       if (cmd === 'sort-toggle') {
+        /* 헤더 자체가 액션인 컬럼(전체선택 토글 등) — 정렬보다 우선한다 */
+        if (typeof param.col.headClick === 'function') return param.col.headClick(param.col);
         if (param.col.sortKey) return emit('sort', param.col.sortKey);
       } else if (cmd === 'grid-row-click') {
         return emit('row-click', param.row);
@@ -754,10 +756,14 @@ window.BoGrid = {
       if (isHovered && isSelected) return '#e0ecff';
       if (isHovered)  return '#e8effe';
       if (isSelected) return '#eff6ff';
-      if (idx % 2 === 1) return '#f7f8fc';
+      /* 화면이 준 커스텀 행 배경(:row-style)이 줄무늬보다 우선한다.
+         줄무늬를 먼저 반환하면 홀수 행의 고정셀(번호 등)만 커스텀색이 안 먹어
+         선택행 번호칸 색이 한 줄 걸러 달라 보인다. */
       const rs = fnRowStyle(row, idx) || '';
       const m = rs.match(/background:\s*([^;]+)/);
-      return m ? m[1].trim() : '#fff';
+      if (m) return m[1].trim();
+      if (idx % 2 === 1) return '#f7f8fc';
+      return '#fff';
     };
 
     /* 체크박스 — 부모 Set 기반. checkedKey(없으면 rowKey) 필드값을 식별자로 */
@@ -954,7 +960,7 @@ window.BoGrid = {
                  컬럼(이름+ID 합성 텍스트 등)을 임의로 고정하면 auto 테이블 레이아웃에서 sticky 폭
                  계산이 어긋나 텍스트가 겹쳐 보이는 문제가 있어 자동고정 대신 명시적 opt-in만 허용. -->
             <th v-for="(col, ci) in columns" :key="col.key" :class="col.cls"
-            :style="thResizeStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;' + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 6, true) : '')"
+            :style="thResizeStyle(col) + ((col.sortKey || col.headClick) ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'overflow:visible;' + (col.pin === 'left' ? pinLeftStyle(cfPinFirstLeft, 6, true) : '')"
             @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
@@ -1245,6 +1251,8 @@ window.BoGridCrud = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ BoGridCrud : handleSelectAction -> ', cmd, param);
       if (cmd === 'sort-toggle') {
+        /* 헤더 자체가 액션인 컬럼(전체선택 토글 등) — 정렬보다 우선한다 */
+        if (typeof param.col.headClick === 'function') return param.col.headClick(param.col);
         if (param.col.sortKey) return emit('sort', param.col.sortKey);
       } else if (cmd === 'grid-row-focus') {
         const out = cfTreeMode.value
@@ -1438,7 +1446,7 @@ window.BoGridCrud = {
           </th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :class="col.cls"
-              :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
+              :style="U.thStyle(col) + ((col.sortKey || col.headClick) ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
               :title="fnColTitle(col)" @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"

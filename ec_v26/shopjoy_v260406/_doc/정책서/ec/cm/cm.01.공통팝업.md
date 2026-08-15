@@ -230,7 +230,7 @@ select_expr: b.deptNm      ← 조인 별칭
 | `result-type` | `row`(기본) / `id` / `array` / `idArray` |
 | `init-selected-ids` | **확정 모드** 프리체크. `[선택]` 을 눌러야 확정 |
 | `selected-ids` | **토글 모드** 프리체크. 클릭 즉시 `@toggle`, 모달 유지 |
-| `exclude-ids` / `exclude-id` | 목록에서 제외 (Array / String) |
+| `exclude-ids` / `exclude-id` | **하드 제외** — 목록에 아예 안 나온다. ⛔ '이미 선택된 항목'을 여기 넘기지 말 것 |
 | `init-param` | 고정 필터 (예: `{ bizCd: 'X' }`). 트리에도 적용된다 |
 | `clearable` | "상위 없음 / 전체" 선택 허용 |
 
@@ -253,6 +253,7 @@ select_expr: b.deptNm      ← 조인 별칭
 | 결과는 **최종 전체 집합** → 해당 유형을 **통째 교체** | 팝업에서 해제한 것이 빠져야 한다. 추가만 되면 제거를 화면에서 또 해야 한다 |
 | **0건 확정 = 전부 비우기** 허용 | 편집 모드이므로 "전부 해제" 가 표현돼야 한다. `init-selected-ids` 가 있을 때만 허용 |
 | `exclude-ids` 는 **고를 수 없는 대상**에만 | 예: 공유대상에서 소유자 자신 |
+| 이미 선택된 행은 **진하게 표시 + 클릭 시 선택 반전** | 무엇이 담겼는지 목록에서 바로 보이고, 그 자리에서 뺄 수 있다 |
 
 ```js
 /* 해당 유형만 교체 — 다른 유형은 유지 */
@@ -270,7 +271,68 @@ const fnReplaceTargets = (type, rows) => {
 공유대상(사용자)  [👤 사용자 추가] [7건]  👤 홍길동 ✕  👤 김철수 ✕  …  ＋2
 ```
 
+#### 선택 행 표시 규칙 ⭐ (2026-08-15)
+
+`init-selected-ids` 로 프리체크된 행은 **목록에서 빼지 않고 그대로 보여준다.**
+
+| 상태 | 행 스타일 | 클릭 시 |
+|---|---|---|
+| 선택됨 (기존/신규 **구분 없이 동일**) | 파랑 `#c3d9fa` / 글자 `#17356e` / 좌측 4px `#1d4ed8` | **선택 반전 = 해제** |
+| 미선택 | 기본 | 담기 |
+
+- ⛔ 이미 선택된 항목을 `exclude-ids` 로 **숨기지 않는다** — 무엇이 담겼는지 확인할 수 없고,
+  팝업 안에서 뺄 수도 없어 화면에서 따로 지워야 한다
+- ⛔ "기존 선택" 과 "이번에 담은 것" 을 **색으로 나누지 않는다** — 목록이 얼룩덜룩해져 오히려 상태 파악이 어렵다
+- 선택됨이 곧 잠김은 아니다. 클릭하면 반전된다
+
+#### 선택 컬럼 헤더 = 전체선택 토글 ⭐ (2026-08-15)
+
+다중선택 팝업의 첫 컬럼(`_checked`) 헤더는 **`선택` 라벨 대신 토글 아이콘**을 쓴다.
+
+| 헤더 | 뜻 | 클릭 |
+|---|---|---|
+| `☐` | 현재 페이지에 안 담긴 행이 있음 | 현재 페이지 **전체 담기** |
+| `☑` | 현재 페이지가 전부 담김 | 현재 페이지 **전체 빼기** |
+
+- 대상은 **현재 페이지 행만** — 전체 페이지를 한 번에 담으면 되돌리기 어렵고 의도치 않은 대량 선택이 된다
+- 구현: BoGrid/FoGrid 컬럼에 **`headClick`** 훅 신설 (헤더 클릭이 정렬보다 우선).
+  `headClick` 이 있으면 헤더에 `cursor:pointer` 가 붙는다
+
+```js
+cols.unshift({
+  key: '_checked', label: fnAllPickedOnPage() ? '☑' : '☐', align: 'center',
+  headClick: () => handleToggleAllOnPage(),
+  fmt: (v, row) => fnIsPicked(row) ? '☑' : '☐',
+});
+```
+
+> `headClick` 은 공통 그리드 기능이므로 다른 화면에서도 "헤더 자체가 액션인 컬럼"에 쓸 수 있다.
+
+#### ⛔ 선택행 배경은 반드시 `:row-class` 로 (`:row-style` 금지) ⭐
+
+전역 CSS 가 **td** 에 배경을 칠한다:
+
+```css
+.bo-table tbody tr:nth-child(even) td { background: #f7f8fc; }   /* 줄무늬 */
+.bo-table tbody tr:hover td           { background: #e8effe; }   /* hover  */
+```
+
+`:row-style` 은 **tr** 에 인라인 배경을 주므로 **짝수 행에서는 td 배경에 완전히 가려진다.**
+→ 선택했는데 어떤 행은 색이 보이고 어떤 행은 안 보이는 증상(2026-08-15 실제 발생).
+
+**해결**: 선택 행에 `cm-pick-sel` 클래스를 주고, 같은 명시도(0,2,3)로 **td 를 직접** 지정한다.
+스타일은 `BoCmPopupModal.js` / `FoCmPopupModal.js` 가 `<style id="cm-pick-sel-style">` 로 1회 주입한다.
+
+```js
+const fnRowClass = (row) => (fnIsPicked(row) ? 'cm-pick-sel' : '');
+/* <bo-grid ... :row-class="fnRowClass"> */
+```
+
+> 같은 함정이 **모든 그리드**에 적용된다 — 행 배경을 바꾸려면 `:row-class` 를 쓴다.
+
 적용: `CmDashboardMyMng` 공유대상(사용자/부서). 두 란은 `cfShareGroups` 메타 하나로 같은 마크업을 돌려 쓴다.
+`ZdSimulNotiMng` 수신대상(회원/사용자), `PdProdDtl`(카테고리·연관·묶음·세트), `PdCategoryProdMng`,
+`PmCouponDtl`/`PmDiscntDtl`/`PmGiftDtl`/`PmSaveDtl` 대상상품 — 2026-08-15 `exclude-ids` → `init-selected-ids` 전환 완료.
 
 ### 4.2 콜백
 

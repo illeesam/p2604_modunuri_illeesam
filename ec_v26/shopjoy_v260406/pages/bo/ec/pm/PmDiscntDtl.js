@@ -574,7 +574,7 @@ window.PmDiscntDtl = {
   </div>
   <!-- ===== □.■. 탭 컨텐츠 =================================================== -->
 <!-- 발급대상 피커 모달 -->
-<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='SELECTED_PROD')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :exclude-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
+<bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='SELECTED_PROD')" popup-cmd="cmPopup-target-prod-pick" popup-code="prodByCategory" :init-selected-ids="form.issueTargets.map(t => t.targetId)" :on-callback="fnCallbackModal" />
 <bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='CATEGORY')" popup-cmd="cmPopup-target-category-pick" popup-code="category" :on-callback="fnCallbackModal" />
 <bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='BRAND')" popup-cmd="cmPopup-target-brand-pick" popup-code="brand" :on-callback="fnCallbackModal" />
 <bo-cm-popup-modal v-if="coUtil.cofAnd(showTargetPicker, form.discntTargetCd==='VENDOR')" popup-cmd="cmPopup-vendor-target-pick" popup-code="vendor" :show="true" :on-callback="fnCallbackModal" />

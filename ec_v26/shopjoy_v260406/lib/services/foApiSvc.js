@@ -112,6 +112,19 @@
     create(body, uiNm, cmdNm)    { return global.foApi.post('/fo/inquiry/create', body, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── my: 알림함 (상단 종) ────────────────────────────────────
+   * 수신자 조건(recvTypeCd='MEMBER' + 로그인 회원ID)은 서버에서 강제 주입한다.
+   * 오류 알림은 DB 에 저장하지 않고 브라우저에만 쌓인다 (coNotiStore 참조). */
+  foApiSvc.myNoti = {
+    getList(params, uiNm, cmdNm)     { return global.foApi.get('/fo/my/noti/list', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm, opt) { return global.foApi.get('/fo/my/noti/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
+    getUnreadCount(uiNm, cmdNm)      { return global.foApi.get('/fo/my/noti/unread-count', hdr(uiNm, cmdNm)); },
+    markRead(_id, readYn, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.foApi.patch(`/fo/my/noti/${_id}/read`, { readYn }, hdr(uiNm, cmdNm)); },
+    markAllRead(uiNm, cmdNm)         { return global.foApi.post('/fo/my/noti/read-all', {}, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)         { return chkId(_id, uiNm, cmdNm) || global.foApi.delete(`/fo/my/noti/${_id}`, hdr(uiNm, cmdNm)); },
+    removeAll(uiNm, cmdNm)           { return global.foApi.delete('/fo/my/noti/all', hdr(uiNm, cmdNm)); },
+  };
+
   /* ── my: 주문 ───────────────────────────────────────────────── */
   foApiSvc.myOrder = {
     getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/order/list', { params, ...hdr(uiNm, cmdNm) }); },

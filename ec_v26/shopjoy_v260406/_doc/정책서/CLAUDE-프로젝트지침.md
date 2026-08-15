@@ -1561,6 +1561,7 @@ const baseFormColumns = [
   BoRowCancelDelete(행삭제) · BoComp 트리(전체펼치기/닫기) · BoGridCrud(엑셀/엑셀업로드) · BoModals(선택/닫기) ·
   Fo 대응(FoSearchArea/FoFormArea/FoGrid/FoRowCancelDelete)
 - 사용 예: `<button class="btn btn_edit" @click="...">수정</button>` (BO 는 `btn` 베이스 유지, FO 는 단독 가능)
+- ⛔ **크기 수식어(`btn-sm`/`btn-xs`) 병기 금지** — 크기도 의미 클래스가 정의한다. 행 버튼(`btn_row_*`)은 xs 내장. **기준 화면: `PdProdMng`** (버튼·그리드·폼 크기를 여기에 맞춘다). 폼 입력 기본은 일반 `.form-control`, `.bo-form-compact` 는 행 펼침·인라인 패널 전용
 - **대상 외(미변환 유지)**: 폼 내부 자식 리스트 add/remove(+값/+파일/+상품 추가, removeImage/체크삭제),
   모달 OPEN 트리거(`*Modal-open`)·모달 picker 조회, 폼 내부 필터/비번 초기화, 일괄(toolbar-delete-checked),
   페이지네이션(‹›«»), 뷰토글(리스트/카드 tab-mode), 정렬토글, 모달 헤더 아이콘 ✕/×, 상태배지 `<span class=badge>`

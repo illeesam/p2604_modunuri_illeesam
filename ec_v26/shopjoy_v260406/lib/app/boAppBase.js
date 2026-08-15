@@ -62,6 +62,9 @@
         let msg = label ? `${label}\n${d.message || ''}` : d.message || '';
         // 최근 오류 목록 — 4xx/5xx/네트워크(0) 모두 최신순 최대 20건 (500 화면 하단에서 한눈에 확인)
         if (st === 0 || st >= 400) {
+          /* 상단 🔔 알림함에도 누적 — 화면이 500 으로 튕겨도, 오류가 순간적으로 여러 번
+             스쳐 지나가도 나중에 다시 확인할 수 있다(동일 오류는 1건으로 병합 + 반복횟수). */
+          try { window.boNotiStore?.fnAddError?.(d); } catch (_) {}
           recentServerErrors.unshift({
             _rid: ++_recentServerErrorSeq,
             status: st, method: d.method || '', url: d.fullUrl || d.url || '',
@@ -2095,6 +2098,8 @@
     <!-- 로그인/유저 영역 -->
     <div class="top-nav-user" @click.stop>
       <template v-if="cfIsLoggedIn">
+        <!-- 🔔 알림 종 (누적 알림 + 미읽음 카운트) — 이름 좌측 -->
+        <co-noti-bell ctx="bo" :navigate="navigate" />
         <!-- 이름 + 역할명 세로 스택 -->
         <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;margin-right:4px;gap:1px;" @click.stop>
           <span style="font-size:12px;font-weight:600;color:#fff;white-space:nowrap;line-height:1.3;">{{ currentAuthUser?.authNm || currentAuthUser?.name || '' }}</span>
@@ -2643,6 +2648,12 @@
             <zd-simul-vendor-mng  v-else-if="page==='zdSimulVendorMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-voucher-mng v-else-if="page==='zdSimulVoucherMng'" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-log-mng     v-else-if="page==='zdSimulLogMng'"     :navigate="navigate" :show-toast="showToast" />
+            <zd-simul-noti-mng v-else-if="page==='zdSimulNotiKakao'"  mode="kakao"  :key="page" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-noti-mng v-else-if="page==='zdSimulNotiSms'"    mode="sms"    :key="page" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-noti-mng v-else-if="page==='zdSimulNotiMail'"   mode="mail"   :key="page" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-noti-mng v-else-if="page==='zdSimulNotiChat'"   mode="chat"   :key="page" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-noti-mng v-else-if="page==='zdSimulNotiNotice'" mode="notice" :key="page" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-noti-mng v-else-if="page==='zdSimulNotiError'"  mode="error"  :key="page" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
             <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" :errors="recentServerErrors" />
             <bo-error-404 v-else :navigate="navigate" :page-id="page" />

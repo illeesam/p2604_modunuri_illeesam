@@ -38,6 +38,10 @@ public class MbMember extends BaseEntity {
     @Column(name = "member_nm", length = 50, nullable = false)
     private String memberNm;
 
+    @Comment("회원 이메일 (수신용. 로그인ID(login_id)와 별개)")
+    @Column(name = "member_email", length = 100)
+    private String memberEmail;
+
     @Comment("연락처")
     @Column(name = "member_phone", length = 20)
     private String memberPhone;

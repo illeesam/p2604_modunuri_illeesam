@@ -1914,7 +1914,7 @@ window.PdProdDtl = {
       </bo-form-area>
       <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
       <bo-cm-popup-modal v-if="catPickerOpen" popup-cmd="cmPopup-category-pick" popup-code="category"
-        :exclude-ids="[...cfCatExcludeSet]" :on-callback="fnCallbackModal"
+        :init-selected-ids="[...cfCatExcludeSet]" :on-callback="fnCallbackModal"
         @close="handleBtnAction('catPicker-close')" />
       <!-- ===== ■.■.■. 담당MD 선택 모달 ========================================== -->
       <bo-cm-popup-modal v-if="mdModalOpen" popup-cmd="cmPopup-md-pick" popup-code="user"
@@ -2664,7 +2664,7 @@ window.PdProdDtl = {
         <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
       <!-- ===== ■.■.■. 상품 추가 피커 모달 (좌:카테고리트리 / 우:상품목록) ===================== -->
-      <bo-cm-popup-modal v-if="prodPickerOpen" popup-cmd="cmPopup-prod-cate-pick" popup-code="prodByCategory" :title="prodPickerOpen==='rel' ? '연관상품 추가' : '코디상품 추가'" :exclude-ids="(prodPickerOpen==='rel' ? relProds : codeProds).map(r => r.prodId)" :on-callback="fnProdPickerCallback" />
+      <bo-cm-popup-modal v-if="prodPickerOpen" popup-cmd="cmPopup-prod-cate-pick" popup-code="prodByCategory" :title="prodPickerOpen==='rel' ? '연관상품 추가' : '코디상품 추가'" :init-selected-ids="(prodPickerOpen==='rel' ? relProds : codeProds).map(r => r.prodId)" :on-callback="fnProdPickerCallback" />
     </div>
     <!-- ══════════════════════════════════════
      💰 옵션(가격/재고)  (SKU별 가격·재고)
@@ -2939,7 +2939,7 @@ window.PdProdDtl = {
       </div>
       <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
       <bo-cm-popup-modal v-if="bundlePickerOpen" popup-cmd="cmPopup-bundle-pick" popup-code="prod"
-        title="묶음 상품 선택" :exclude-ids="tabData.bundleItems.map(r => r.prodId)"
+        title="묶음 상품 선택" :init-selected-ids="tabData.bundleItems.map(r => r.prodId)"
         :on-callback="fnCallbackModal" @close="bundlePickerOpen = false" />
     </div>
     <!-- ══════════════════════════════════════
@@ -2982,7 +2982,7 @@ window.PdProdDtl = {
       </div>
       <!-- ===== ■.■.■. 상품 피커 모달 ============================================= -->
       <bo-cm-popup-modal v-if="setPickerOpen" popup-cmd="cmPopup-set-pick" popup-code="prod"
-        title="세트 구성 상품 선택" :exclude-ids="tabData.setItems.map(r => r.prodId)"
+        title="세트 구성 상품 선택" :init-selected-ids="tabData.setItems.map(r => r.prodId)"
         :on-callback="fnCallbackModal" @close="setPickerOpen = false" />
     </div>
   </div>
