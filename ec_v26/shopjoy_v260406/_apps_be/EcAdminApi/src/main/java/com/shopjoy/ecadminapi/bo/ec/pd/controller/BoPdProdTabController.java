@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdSkuRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdStockRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
+import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +56,7 @@ public class BoPdProdTabController {
     private final PdProdImgRepository      pdProdImgRepository;
     private final PdProdSkuRepository      pdProdSkuRepository;
     private final PdProdStockRepository    pdProdStockRepository;
+    private final SyAttachService          syAttachService;
 
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
@@ -189,13 +192,15 @@ public class BoPdProdTabController {
      * 이미지 저장 (전체 교체).
      * body 예: {
      *   "images": [
-     *     { "previewUrl": "data:image/png;base64,...", "isMain": true,  "prodOptId1": "", "prodOptId2": "", "imgAltText": "" },
-     *     { "previewUrl": "https://cdn/.../a.jpg",     "isMain": false, "prodOptId1": "VAL_OCOL_BLACK", "prodOptId2": "VAL_OSIZ_M" },
+     *     { "previewUrl": "https://cdn/.../a.jpg", "attachId": "ATT...", "isMain": true,  "prodOptId1": "", "prodOptId2": "", "imgAltText": "" },
+     *     { "previewUrl": "https://ext/.../b.jpg", "attachId": null,     "isMain": false, "prodOptId1": "VAL_OCOL_BLACK", "prodOptId2": "VAL_OSIZ_M" },
      *     ...
      *   ]
      * }
      * 처리: 기존 pd_prod_img 전체 삭제 → 페이로드 순서대로 INSERT.
-     *        previewUrl 의 prefix 가 "http" 면 cdn_img_url, 아니면 그대로 cdn_img_url 에 저장 (Base64 등).
+     *        attachId 가 있는 행은 sy_attach 에 ref_table_nm=pd_prod_img / ref_id=신규 prodImgId 로 연계.
+     *        더 이상 어떤 행에서도 참조되지 않는 기존 attachId 는 sy_attach 에서 정리(물리 삭제)한다
+     *        (그렇지 않으면 나중에 ATTACH_CLEANUP 배치가 "미참조"로 오인해 삭제할 위험이 있음 — 2026-08-15).
      */
     @PutMapping("/images")
     @Transactional
@@ -205,10 +210,19 @@ public class BoPdProdTabController {
         List<PdProdImgUpdateDto.Row> rows = req != null && req.getImages() != null ? req.getImages() : List.of();
         LocalDateTime now = LocalDateTime.now();
 
+        // 0) 기존(삭제 전) attach_id 수집 — 정리 대상 판별용
+        PdProdImgDto.Request imgReq = new PdProdImgDto.Request();
+        imgReq.setProdId(prodId);
+        List<String> oldAttachIds = imgService.getList(imgReq).stream()
+            .map(PdProdImgDto.Item::getAttachId)
+            .filter(id -> id != null && !id.isBlank())
+            .toList();
+
         // 1) 기존 데이터 전체 삭제
         pdProdImgRepository.deleteByProdId(prodId);
 
-        // 2) 신규 INSERT
+        // 2) 신규 INSERT + attach 연계
+        java.util.Set<String> keptAttachIds = new java.util.HashSet<>();
         int idx = 0;
         for (PdProdImgUpdateDto.Row r : rows) {
             String prodImgId = "PI" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + idx;
@@ -222,6 +236,7 @@ public class BoPdProdTabController {
                 .prodId(prodId)
                 .prodOptId1(r.getProdOptId1())
                 .prodOptId2(r.getProdOptId2())
+                .attachId(r.getAttachId())
                 .cdnImgUrl(imgUrl)
                 .cdnThumbUrl(thumbUrl != null ? thumbUrl : imgUrl)
                 .imgAltText(r.getImgAltText())
@@ -229,7 +244,20 @@ public class BoPdProdTabController {
                 .isThumb(Boolean.TRUE.equals(r.getIsMain()) ? "Y" : "N")
                 .build();
             pdProdImgRepository.save(img);
+
+            if (r.getAttachId() != null && !r.getAttachId().isBlank()) {
+                keptAttachIds.add(r.getAttachId());
+                syAttachService.updateSelective(SyAttach.builder()
+                    .attachId(r.getAttachId()).refTableNm("pd_prod_img").refId(prodImgId).build());
+            }
             idx++;
+        }
+
+        // 3) 더 이상 참조되지 않는 기존 첨부 정리
+        for (String oldId : oldAttachIds) {
+            if (!keptAttachIds.contains(oldId) && syAttachService.existsById(oldId)) {
+                syAttachService.delete(oldId);
+            }
         }
 
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
@@ -348,7 +376,12 @@ public class BoPdProdTabController {
     /**
      * 상품설명 블록 일괄 저장.
      * 프론트가 보낸 contentBlocks 를 기준으로 기존 데이터 전체 삭제 후 재등록.
-     * body 예: { "contentBlocks": [{ "type":"html", "content":"<p>...</p>" }, ...] }
+     * body 예: { "contentBlocks": [{ "type":"file", "content":"https://cdn/...", "attachId":"ATT..." }, ...] }
+     * attachId 가 있는 file 타입 블록은 sy_attach 에 ref_table_nm=pd_prod_content / ref_id=prodId 로 연계한다
+     * (pd_prod_content 는 저장마다 행이 새 ID로 재생성되어 행 단위 연계가 무의미 — 상품 단위로 연계).
+     * ⚠️ 제거/교체된 기존 블록의 첨부는 여기서 정리하지 않는다 — 행에 attach_id 를 저장하지 않아 "이전에
+     *    어떤 파일이 쓰였는지"를 신뢰성 있게 추적할 수 없기 때문(잘못 지우면 실사용 파일 유실 위험이
+     *    더 크다). 장기 미참조 정리는 ATTACH_CLEANUP 배치에 위임한다.
      */
     @PutMapping("/contents")
     @Transactional
@@ -361,7 +394,7 @@ public class BoPdProdTabController {
         // 1) 기존 데이터 전체 삭제 (단순 전체 갱신 패턴)
         pdProdContentRepository.deleteByProdId(prodId);
 
-        // 2) 새 블록 INSERT
+        // 2) 새 블록 INSERT + attach 연계
         int order = 1;
         for (PdProdContentUpdateDto.Block blk : blocks) {
             String type = blk.getType() != null ? blk.getType() : "html";
@@ -377,6 +410,11 @@ public class BoPdProdTabController {
                 .useYn("Y")
                 .build();
             pdProdContentRepository.save(entity);
+
+            if (blk.getAttachId() != null && !blk.getAttachId().isBlank()) {
+                syAttachService.updateSelective(SyAttach.builder()
+                    .attachId(blk.getAttachId()).refTableNm("pd_prod_content").refId(prodId).build());
+            }
         }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }

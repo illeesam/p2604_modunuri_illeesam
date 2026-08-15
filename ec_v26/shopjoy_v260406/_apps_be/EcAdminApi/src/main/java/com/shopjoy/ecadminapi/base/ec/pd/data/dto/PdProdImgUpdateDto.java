@@ -22,11 +22,13 @@ public class PdProdImgUpdateDto {
     public static class Row {
         private String prodOptId1;
         private String prodOptId2;
-        /** 새 업로드 이미지 URL (또는 Base64) */
+        /** 업로드된 CDN 이미지 URL (coApiSvc.cmUpload 업로드 결과) 또는 직접 입력 URL */
         private String previewUrl;
         private String cdnThumbUrl;
         private String imgAltText;
         /** 대표 이미지 여부 */
         private Boolean isMain;
+        /** 첨부파일ID (sy_attach.attach_id) — coApiSvc.cmUpload 업로드 결과. 직접 입력 URL(+URL 입력)이면 null */
+        private String attachId;
     }
 }

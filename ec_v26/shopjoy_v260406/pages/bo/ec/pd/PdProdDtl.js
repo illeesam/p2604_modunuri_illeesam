@@ -211,7 +211,8 @@ window.PdProdDtl = {
         return removeContentBlock(param);
       // 콘텐츠 블록 파일 초기화
       } else if (cmd === 'contentBlock-clearFile') {
-        param.content = ''; param.fileName = '';
+        fnDeleteBlockAttachIfPending(param);
+        param.content = ''; param.fileName = ''; param.attachId = null; param._persisted = false;
         return;
       // 미리보기 디바이스 변경
       } else if (cmd === 'preview-setDevice') {
@@ -409,6 +410,7 @@ window.PdProdDtl = {
             isMain:      img.isThumb === 'Y',
             prodOptId1:  img.prodOptId1 || '',
             prodOptId2:  img.prodOptId2 || '',
+            _persisted:  true,   // 서버에서 이미 저장된 이미지 — 제거 시 즉시 물리삭제 대상 아님(저장 시 정리)
           })));
 
           // 옵션그룹+아이템 [4] — GET /opts 응답 구조
@@ -896,23 +898,45 @@ window.PdProdDtl = {
     /* addImageByUrl — 추가 */
     const addImageByUrl = () => images.push({ id: imgIdSeq++, previewUrl: '', isMain: images.length === 0, prodOptId1: '', prodOptId2: '' });
 
-    /* onFileChange — 이벤트 */
-    const onFileChange = (e) => {
-      Array.from(e.target.files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = ev => images.push({ id: imgIdSeq++, previewUrl: ev.target.result, isMain: images.length === 0, prodOptId1: '', prodOptId2: '' });
-        reader.readAsDataURL(file);
-      });
+    /* onFileChange — 이벤트. base64 인코딩 대신 실제 업로드(coApiSvc.cmUpload)로 CDN URL 확보 —
+       sy_attach 에 물리 저장되고, attachId 는 저장 시 pd_prod_img.attach_id 로 연계된다. */
+    const onFileChange = async (e) => {
+      const files = Array.from(e.target.files || []);
       e.target.value = '';
+      if (!files.length) return;
+      const fd = new FormData();
+      files.forEach(f => fd.append('files', f));
+      fd.append('businessCode', 'PROD_IMG');
+      try {
+        const res = await window.coApiSvc.cmUpload.uploadMulti(fd, '상품관리', '이미지업로드');
+        const uploaded = res.data?.data?.files || [];
+        uploaded.forEach(f => {
+          images.push({
+            id: imgIdSeq++, attachId: f.attachId, _persisted: false,
+            previewUrl: f.cdnImgUrl || '', prodOptId1: '', prodOptId2: '',
+            isMain: images.length === 0,
+          });
+        });
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '이미지 업로드 중 오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     /* setMain — 설정 */
     const setMain = (id) => window.safeArrayUtils.safeForEach(images, img => { img.isMain = img.id === id; });
 
-    /* removeImage — 제거 */
+    /* removeImage — 제거. 이번 세션에 새로 업로드만 되고 아직 저장 전인 이미지는 물리 파일도 즉시 삭제
+       (미저장 상태로 남겨두면 어차피 재사용되지 않고 고아 상태로만 남음) */
     const removeImage = (id) => {
       const idx = images.findIndex(img => img.id === id);
-      if (idx !== -1) { const wasMain = images[idx].isMain; images.splice(idx, 1); if (wasMain && images.length) safeFirst(images).isMain = true; }
+      if (idx === -1) return;
+      const target = images[idx];
+      const wasMain = target.isMain;
+      images.splice(idx, 1);
+      if (wasMain && images.length) safeFirst(images).isMain = true;
+      if (target.attachId && !target._persisted) {
+        window.coApiSvc.cmAttach.deleteFile(target.attachId).catch(err => console.error('[PdProdDtl] 이미지 파일 삭제 실패', err));
+      }
     };
     // 2단 옵션 라벨 — 상위옵션값(parent_opt_item)이 있으면 "상위 > 본인" 형식으로 표시
     /* fnOptItem2Label — 유틸 */
@@ -951,20 +975,42 @@ window.PdProdDtl = {
 
     /* addContentBlock — 추가 */
     const addContentBlock = (type) => {
-      contentBlocks.push({ _id: _blockSeq++, type, content: '', fileName: '' });
+      contentBlocks.push({ _id: _blockSeq++, type, content: '', fileName: '', attachId: null, _persisted: false });
+    };
+
+    /* fnDeleteBlockAttachIfPending — 이번 세션에 새로 업로드만 되고 아직 저장 전인 블록 파일은
+       물리 파일도 즉시 삭제 (미저장 상태로 남겨두면 고아 상태로만 남음) */
+    const fnDeleteBlockAttachIfPending = (block) => {
+      if (block?.attachId && !block._persisted) {
+        window.coApiSvc.cmAttach.deleteFile(block.attachId).catch(err => console.error('[PdProdDtl] 첨부 파일 삭제 실패', err));
+      }
     };
 
     /* removeContentBlock — 제거 */
     const removeContentBlock = (idx) => {
+      fnDeleteBlockAttachIfPending(contentBlocks[idx]);
       contentBlocks.splice(idx, 1);
     };
 
-    /* onBlockFileChange — 이벤트 */
-    const onBlockFileChange = (block, e) => {
-      const file = e.target.files[0]; if (!file) return;
-      const reader = new FileReader();
-      reader.onload = ev => { block.content = ev.target.result; block.fileName = file.name; };
-      reader.readAsDataURL(file); e.target.value = '';
+    /* onBlockFileChange — 이벤트. base64 인코딩 대신 실제 업로드(coApiSvc.cmUpload)로 CDN URL 확보 */
+    const onBlockFileChange = async (block, e) => {
+      const file = e.target.files[0]; e.target.value = '';
+      if (!file) return;
+      fnDeleteBlockAttachIfPending(block);   // 재선택 시 기존 미저장 업로드 파일 정리
+      const fd = new FormData();
+      fd.append('files', file);
+      fd.append('businessCode', 'PROD_CONTENT');
+      try {
+        const res = await window.coApiSvc.cmUpload.uploadMulti(fd, '상품관리', '상품설명파일업로드');
+        const uploaded = (res.data?.data?.files || [])[0];
+        if (!uploaded) return;
+        block.attachId = uploaded.attachId;
+        block.content = uploaded.cdnImgUrl || '';
+        block.fileName = uploaded.originalName || file.name;
+        block._persisted = false;
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '파일 업로드 중 오류가 발생했습니다.', 'error', 0);
+      }
     };
             const onBlockDragStart = (idx) => { uiState.dragBlockIdx = idx; };
 
@@ -1235,7 +1281,7 @@ window.PdProdDtl = {
             // 대표가 하나도 없으면 첫 번째 자동 지정
             if (!images.some(i => i.isMain)) { safeFirst(images).isMain = true; }
           }
-          else if (p.mainImage) { images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, prodOptId1: '', prodOptId2: '' }); }
+          else if (p.mainImage) { images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, prodOptId1: '', prodOptId2: '', _persisted: true }); }
 
           // 상품설명 — tabData.content에서 채움
           // DB contentTypeCd (HTML/FILE/URL/IMAGE) → 클라이언트 type (html/file/url) 매핑
@@ -1243,19 +1289,23 @@ window.PdProdDtl = {
             const v = String(cd || 'HTML').toUpperCase();
             if (v === 'FILE') { return 'file'; }
             if (v === 'URL') { return 'url'; }
-            if (v === 'IMAGE') return 'file'; // IMAGE 는 첨부와 동일 표시 (data:image)
+            if (v === 'IMAGE') return 'file'; // IMAGE 는 첨부와 동일 표시
             return 'html';
           };
           if (tabData.content.length) {
+            /* attachId 는 DB 컬럼이 아니라(이번 세션에 새로 업로드된 경우에만 존재) 재조회 시 항상 비움 —
+               이미 연계된 파일의 물리 삭제는 하지 않는다(_persisted=true 라 즉시삭제 대상에서 제외됨) */
             contentBlocks.splice(0, contentBlocks.length, ...tabData.content.map(c => ({
               _id: _blockSeq++,
               type: fnMapTypeCd(c.contentTypeCd),
               content: c.contentHtml || '',
               fileName: c.fileName || '',
+              attachId: null,
               prodContentId: c.prodContentId,
+              _persisted: true,   // 서버에서 이미 저장된 블록 — 제거해도 즉시 물리삭제 대상 아님
             })));
           } else if (form.contentHtml) {
-            contentBlocks.splice(0, contentBlocks.length, { _id: _blockSeq++, type: 'html', content: form.contentHtml, fileName: '' });
+            contentBlocks.splice(0, contentBlocks.length, { _id: _blockSeq++, type: 'html', content: form.contentHtml, fileName: '', attachId: null, _persisted: true });
           }
 
           // 연관상품 — tabData.rels에서 채움

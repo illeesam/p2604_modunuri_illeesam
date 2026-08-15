@@ -32,7 +32,7 @@ public class PdProdContent extends BaseEntity {
     @Column(name = "content_type_cd", length = 50, nullable = false)
     private String contentTypeCd;
 
-    @Comment("HTML 에디터 컨텐츠")
+    @Comment("HTML 에디터 컨텐츠 (file/url 타입은 CDN URL 문자열)")
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
 
