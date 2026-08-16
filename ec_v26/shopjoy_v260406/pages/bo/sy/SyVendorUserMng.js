@@ -13,7 +13,8 @@ window.SyVendorUserMng = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
 
     const vendorUsers = reactive([]);
-    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, selectedPath: null, searchVendorId: null, bizSearchType: '', bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null, userSearchType: '', userSearchValue: '', userStatusFlt: ''});
+    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, selectedPath: null, searchVendorId: null, bizSearchType: '', bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', dtlMode: 'view', roleModalTemp: null, userSearchType: '', userSearchValue: '', userStatusFlt: ''}); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => uiState.dtlMode === 'view');
     const codes = reactive({
       USER_STATUS: [],
       BOOL_YN: [],
@@ -62,6 +63,12 @@ window.SyVendorUserMng = {
       // 사용자 인라인 폼: 닫기/취소
       } else if (cmd === 'vendorUsers-close') {
         return closeForm();
+      // 사용자 인라인 폼: 보기모드 → 수정모드 전환
+      } else if (cmd === 'vendorUsers-edit') {
+        return switchToEdit();
+      // 사용자 인라인 폼: 수정 취소 (보기모드 복귀 또는 닫기)
+      } else if (cmd === 'vendorUsers-cancel') {
+        return handleCancelEdit();
       // 회원가입 메일 전송
       } else if (cmd === 'vendorUsers-sendJoinMail') {
         if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
@@ -129,10 +136,14 @@ window.SyVendorUserMng = {
         // 업체 picker — 행 아무 셀이나 클릭 시 선택
         return pickVendorRow(row);
       } else if (cmd === 'vendorUsers-cellClick') {
+        // 행 수정 버튼 → 상세/수정 패널 열기
+        if (colKey === 'btn_row_edit') {
+          return openEdit(row);
+        }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
-          return openEdit(row);
+          return loadView(row);
         }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
@@ -353,9 +364,10 @@ window.SyVendorUserMng = {
       if (uiState.searchVendorId) { formData.vendorId = uiState.searchVendorId; }
       userRoles.splice(0);
       uiState.formMode = '';     // 버튼 숨김 (비활성)
+      uiState.dtlMode = 'view';
     };
 
-    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    /* openNew — 신규 열기 (빈 폼 + 활성, 항상 수정모드로 시작 → 저장/취소 노출) */
     const openNew = () => {
       const vid = uiState.searchVendorId;
       if (!vid) { showToast('업체를 먼저 선택해주세요.', 'warning'); return; }
@@ -364,34 +376,58 @@ window.SyVendorUserMng = {
       formData.joinDate = coUtil.cofToYmd(new Date());
       userRoles.splice(0);
       uiState.formMode = 'new';  // 신규 입력 가능 → 저장/취소 노출
+      uiState.dtlMode = 'edit';
     };
 
-    /* openEdit — 열기 (행 선택 → 저장/취소 노출) */
-    const openEdit = (u) => { Object.assign(formData, u); uiState.formMode = 'edit'; loadUserRoles(u.vendorUserId); };
+    /* _loadDetailForm — 인라인 폼에 행 데이터 적재 (view/edit 공용) */
+    const _loadDetailForm = (u, mode) => {
+      Object.assign(formData, u);
+      uiState.formMode = 'edit';
+      uiState.dtlMode = mode;
+      loadUserRoles(u.vendorUserId);
+    };
+
+    /* loadView — 보기모드로 인라인 폼 열기 (행 클릭) */
+    const loadView = (u) => _loadDetailForm(u, 'view');
+
+    /* openEdit — 수정모드로 인라인 폼 열기 ([수정] 버튼) */
+    const openEdit = (u) => _loadDetailForm(u, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (상세 패널 상단 [수정] 버튼) */
+    const switchToEdit = () => { uiState.dtlMode = 'edit'; };
 
     /* closeForm — 닫기/취소 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
     const closeForm = () => { resetFormToNew(); };
+
+    /* handleCancelEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 행 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelEdit = () => {
+      if (uiState.formMode === 'new') { return closeForm(); }
+      const row = vendorUsers.find(u => u.vendorUserId === formData.vendorUserId);
+      return row ? loadView(row) : closeForm();
+    };
 
     /* handleSaveForm — 저장 */
     const handleSaveForm = async () => {
       if (!formData.memberNm || !formData.vendorUserMobile || !formData.vendorUserEmail) {
         showToast('이름/휴대전화/이메일은 필수입니다.', 'error'); return;
       }
-      const ok = await showConfirm(uiState.formMode==='new'?'등록':'저장', uiState.formMode==='new'?'등록하시겠습니까?':'저장하시겠습니까?');
+      const isNewUser = uiState.formMode === 'new';
+      const ok = await showConfirm(isNewUser?'등록':'저장', isNewUser?'등록하시겠습니까?':'저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = uiState.formMode === 'new'
+        const res = isNewUser
           ? await boApiSvc.syVendorUser.create({ ...formData }, '사업자사용자관리', '등록')
           : await boApiSvc.syVendorUser.update(formData.vendorUserId, { ...formData }, '사업자사용자관리', '저장');
-        showToast(uiState.formMode==='new'?'등록되었습니다.':'저장되었습니다.', 'success');
+        showToast(isNewUser?'등록되었습니다.':'저장되었습니다.', 'success');
         await loadVendorUsers(formData.vendorId);
-        if (uiState.formMode === 'edit') {
+        if (isNewUser) {
+          closeForm();
+        } else {
           const saved = res.data?.data;
           if (saved) { Object.assign(formData, saved); }
-        } else {
-          closeForm();
+          uiState.formMode = 'edit';
+          uiState.dtlMode = 'view';
         }
-        uiState.formMode = uiState.formMode === 'new' ? '' : 'edit';
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
         showToast(msg, 'error', 0);
@@ -663,7 +699,7 @@ window.SyVendorUserMng = {
 
     return {
       columns,
-      uiState, vendorUsers, vendors, vendorGridPager, userGridPager, formData, userRoles, roleTreeExpanded,    // 상태 / 데이터
+      uiState, cfDtlMode, vendorUsers, vendors, vendorGridPager, userGridPager, formData, userRoles, roleTreeExpanded,    // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                              // dispatch (모든 이벤트 / 액션 라우팅)
       cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList, cfMenuPermColumns,           // computed
       fnVendorRowStyle, fnUserRowStyle, fnPermBadgeColor, roleNmByCode,                                        // 헬퍼
@@ -717,6 +753,7 @@ window.SyVendorUserMng = {
           :empty-text="uiState.searchVendorId != null ? '사용자가 없습니다.' : '좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.'"
           grid-id="vendorUsers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
           <template #row-actions="{ row }">
+            <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('vendorUsers-cellClick', 'btn_row_edit', row)">수정</button>
             <button class="btn btn_row_delete" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">삭제</button>
           </template>
         </bo-grid>
@@ -731,7 +768,7 @@ window.SyVendorUserMng = {
     <div class="card" style="margin-top:12px;">
       <div class="toolbar">
         <span class="list-title">
-          {{ uiState.formMode==='new' ? '신규 업체사용자' : uiState.formMode==='edit' ? '업체사용자 수정' : '업체사용자 상세' }}
+          {{ uiState.formMode==='new' ? '업체담당자 신규' : (uiState.formMode==='edit' ? (cfDtlMode ? '업체담당자 상세' : '업체담당자 수정') : '업체담당자 상세') }}
           <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;font-weight:400;">
             #{{ formData.vendorUserId }}
           </span>
@@ -739,15 +776,21 @@ window.SyVendorUserMng = {
         <div v-if="uiState.formMode" style="display:flex;gap:6px;flex-wrap:wrap;">
           <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendJoinMail')">✉ 회원가입메일</button>
           <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendPwresetMail')">🔑 비밀번호초기화</button>
-          <button class="btn btn_cancel" @click="handleBtnAction('vendorUsers-close')">취소</button>
-          <button class="btn btn_save" @click="handleBtnAction('vendorUsers-save')">저장</button>
+          <template v-if="cfDtlMode">
+            <button class="btn btn_edit" @click="handleBtnAction('vendorUsers-edit')">수정</button>
+            <button class="btn btn_close" @click="handleBtnAction('vendorUsers-close')">닫기</button>
+          </template>
+          <template v-else>
+            <button class="btn btn_cancel" @click="handleBtnAction('vendorUsers-cancel')">취소</button>
+            <button class="btn btn_save" @click="handleBtnAction('vendorUsers-save')">저장</button>
+          </template>
         </div>
       </div>
       <!-- ===== ■.■. 업체사용자 상세 폼 (항상 표시 — 미선택 시 빈 폼 구조 노출) =============== -->
       <div style="padding:16px;">
         <!-- ===== ■.■.■. 폼 영역 ================================================ -->
         <bo-form-area :columns="columns.baseVendorUserForm" :form="formData" :errors="{}"
-          :cols="3" compact :show-actions="false" />
+          :cols="3" compact :show-actions="false" :readonly="cfDtlMode" plain-readonly />
       </div>
       <!-- ===== □.□. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
       <!-- ===== ■.■. 역할 목록 (수정 모드에서만) ====================================== -->

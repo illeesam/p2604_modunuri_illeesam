@@ -386,7 +386,44 @@ const openNew          = ()   => { detailPanel.openMode = 'edit'; detailPanel.ac
   - `dtlMode` 변형(6개, 2026-08-17 적용): `SySiteMng`·`SyContactMng`·`SyBbsMng`·`SyBbmMng`·`SyAlarmMng`·`CmFaqMng`.
   - **`coUtil.cofDetail()` 팩토리 사용 화면** — 팩토리 자체(`lib/utils/coUtil.js` `cofDetail()`)는 `openMode: 'view'` 로 이미 올바르게 기본값을 갖고 있다. 그런데도 화면이 자체 `resetDetailToNew` 에서 `baseDetail.openMode = 'edit'` 로 **되돌려 재도입**한 경우가 있었다(4개, 2026-08-17 적용): `CmNoticeMng`·`DpDispUiMng`·`DpDispAreaMng`·`DpDispPanelMng`. 팩토리를 쓰는 화면은 팩토리 기본값을 신뢰하고 **자체 reset 함수에서 openMode 를 건드리지 않는 것**이 가장 안전하다 — 굳이 재설정해야 한다면 반드시 `'view'`.
   - ⛔ **일괄 문자열 치환 금지**: `.openMode = 'edit'` 를 IDE 전역 검색으로 찾았다고 전부 `'view'` 로 바꾸면 **안 된다** — `handleLoadDetail`/`openEdit`/`openNew`/`__switchToEdit__`(그리고 `coUtil.cofDetail()` 의 `openEdit`/`openNew`/`switchToEdit` 메서드 정의 자체)는 의도적으로 `'edit'` 를 써야 하는 코드다. 바꿔야 하는 건 오직 **초기 선언값**과 **resetDetailToNew(닫기/취소로 돌아가는 함수)** 안의 값뿐이다.
-  - `PdDlivTmpltMng`/`SyVendorUserMng`/`SyI18nMng` 등 **"CRUD 그리드" 계열 화면**(행 선택 시 곧바로 편집 가능한 폼을 보여주는 구조, `uiState.isNew` 류로만 상태를 구분하고 view/edit 모드 구분 자체가 없음)은 이 정책의 적용 대상이 **아니다** — 애초에 view 모드 개념이 없어 "기본값을 view 로 바꾸는" 방식의 수정이 성립하지 않는다. 이런 화면에 view 모드를 도입하려면 §6.9 패턴(`loadView`/`handleLoadDetail` 분리)을 새로 얹는 별도 작업이 필요하다.
+  - `PdDlivTmpltMng`/`SyVendorUserMng`/`SyI18nMng`/`CmBlogMng` 등 **"CRUD 그리드" 계열 화면**(행 선택 시 곧바로 편집 가능한 폼을 보여주는 구조, `uiState.isNew` 류로만 상태를 구분하고 view/edit 모드 구분 자체가 없음)은 이 정책의 적용 대상이 **아니다** — 애초에 view 모드 개념이 없어 "기본값을 view 로 바꾸는" 방식의 수정이 성립하지 않는다. 이런 화면에 view 모드를 도입하려면 §6.9 패턴(`loadView`/`handleLoadDetail` 분리)을 새로 얹는 별도 작업이 필요하다 — 절차와 참조모델은 바로 아래 서브섹션 참조 (`CmBlogMng`, 2026-08-17).
+
+#### ⭐⭐ "CRUD 그리드" 계열 화면에 view/edit 모드 신규 도입 (2026-08-17, 참조모델: CmBlogMng)
+
+바로 위 항목이 다루는 "view 모드 개념 자체가 없는" 화면(`PdDlivTmpltMng`/`SyVendorUserMng`/`SyI18nMng`/`CmBlogMng` 등 — 행 클릭이 곧바로 완전 편집 가능한 폼을 열고, 상세영역 제목도 "상세 / 수정" 처럼 모드와 무관한 고정 문구)에 §6.9 상호작용을 **새로 얹는** 표준 절차. 기존 `dtlMode`/`openMode` 가 있는데 기본값만 잘못된 경우는 위 §6.9-a 를 따른다 — 이 항목은 그 상태 자체가 없는 화면 전용.
+
+1. **상태 필드 추가**: 상세패널 reactive 에 `dtlMode: 'view'` 필드 추가(기본값 항상 `'view'`) + `cfDtlMode = computed(() => detailPanel.dtlMode === 'view')`.
+2. **로드 함수 2분리**: 기존 "행 클릭→폼 열기" 함수 하나를 `loadView(row)`(dtlMode='view')와 `openDetail(row)`(dtlMode='edit', [수정] 버튼 전용)로 분리. 공통 적재 로직은 내부 헬퍼 `_loadDetailForm(row, mode)` 로 묶고 두 함수가 얇게 위임.
+3. **셀 라우터 분기**: `handleGridCellAction` 에서 행 액션 [수정](`btn_row_edit`)은 `openDetail`(edit), 링크/`__no__`(행 클릭)는 `loadView`(view) — 서로 다른 함수를 가리키게 한다.
+4. **신규 등록은 그대로 edit**: `openNew()` 는 `dtlMode='edit'` (명시적 등록 의도, §6.9-a 와 동일 기준).
+5. **닫기/초기화는 항상 view**: `resetDetailToNew()` 는 `dtlMode='view'` (§6.9-a 원칙 그대로).
+6. **수정 취소 함수 신설**: `handleCancelEdit()` — 신규 등록 중이면 패널을 닫고(`closeDetail()`), 기존 행 수정 중이면 원본 데이터를 재적재해 보기모드로 복귀(`loadView(cfSelectedRow.value)`). "취소"는 저장 없이 폼을 원상복구해야 하므로 단순히 `dtlMode` 값만 바꾸면 편집 중이던 미저장 값이 남는다 — 반드시 재적재.
+7. **폼 잠금**: `<bo-form-area :readonly="cfDtlMode" plain-readonly>` 추가 — text/select/date 등 표준 컬럼은 자동으로 평문 표시로 전환된다.
+8. **커스텀 슬롯(`type:'slot'`) 개별 분기**: 리치에디터 등은 BoFormArea 의 자동 plain 전환 대상이 아니므로 슬롯 안에서 직접 `v-if="cfDtlMode"`(렌더된 HTML, `class="readonly-field-plain" v-html="... || '-'"`)/`v-else`(에디터) 로 나눠야 한다.
+9. **폼 바깥 편집 영역(첨부 등)도 동일 기준**: `BoGridCrud` 처럼 컴포넌트 자체에 readonly prop 이 없으면, 화면에서 `v-if="cfDtlMode"`(간단한 읽기전용 썸네일 나열)/`v-else`(기존 인터랙티브 그리드) 로 분기한다 — §"첨부파일 보기/수정 모드 분리"의 "컨트롤만 숨기고 목록(읽기)은 유지" 취지를 동일 적용.
+10. **제목은 3상태**: 미선택/보기=`'{도메인} 상세'`, 신규=`'{도메인} 신규'`, 수정중=`'{도메인} 수정'`. 식: `!active ? '…상세' : (isNew ? '…신규' : (cfDtlMode ? '…상세' : '…수정'))`.
+11. **하단 액션 분기**: 보기모드(`cfDtlMode`)=`[수정][닫기]`, 수정모드=`[저장][삭제(!isNew)][취소]` — §6.9 와 동일.
+
+```js
+// ✅ 표준 — CmBlogMng.js 참조모델
+const detailPanel = reactive({ active: false, isNew: false, dtlMode: 'view', dtlId: null, form: _initForm() });
+const cfDtlMode = computed(() => detailPanel.dtlMode === 'view');
+
+const _loadDetailForm = (row, mode) => {
+  Object.assign(detailPanel.form, _initForm(), { ...row });
+  detailPanel.dtlId = row.id; detailPanel.isNew = false; detailPanel.active = true;
+  detailPanel.dtlMode = mode;
+};
+const loadView    = (row) => _loadDetailForm(row, 'view');  // 행 클릭
+const openDetail  = (row) => _loadDetailForm(row, 'edit');  // [수정] 버튼
+const switchToEdit = () => { detailPanel.dtlMode = 'edit'; }; // 보기모드 하단 [수정]
+const openNew = () => { Object.assign(detailPanel.form, _initForm()); detailPanel.isNew = true; detailPanel.active = true; detailPanel.dtlMode = 'edit'; };
+const resetDetailToNew = () => { Object.assign(detailPanel.form, _initForm()); detailPanel.active = false; detailPanel.dtlMode = 'view'; };
+const handleCancelEdit = () => detailPanel.isNew ? closeDetail() : loadView(cfSelectedRow.value);
+```
+
+- 적용(2026-08-17): **CmBlogMng**(발견 계기, 참조모델 — 뉴스&블로그관리, "게시판&블로그 신규/상세/수정" 3상태 제목 + 본문 에디터 보기모드 잠금 + 첨부 그리드 보기모드 간이 썸네일 전환).
+- 같은 "CRUD 그리드" 범주인 `PdDlivTmpltMng`/`SyVendorUserMng`/`SyI18nMng` 는 아직 미적용 — 위 절차로 순차 확대 대상.
 
 #### ⭐⭐ 첨부파일(BaseAttachGrp/BaseAttachOne) 보기/수정 모드 분리 (2026-06-08, 전체공통)
 

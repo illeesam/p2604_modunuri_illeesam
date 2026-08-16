@@ -13,7 +13,8 @@ window.PdQnaMng = {
     const members = reactive([]);                 // 회원 목록 (이름 변환용)
     const qnas = reactive([]);                    // Q&A 목록 (메인 그리드 데이터)
     const uiState = reactive({ loading: false, error: null, sortKey: '', sortDir: 'asc',
-                               selectedId: null, isNew: false });
+                               selectedId: null, isNew: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => uiState.dtlMode === 'view');
     const codes = reactive({ qna_statuses: [] });
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
     /* Dtl 인라인 패널용 폼 */
@@ -44,6 +45,12 @@ window.PdQnaMng = {
       // 상세 패널 닫기
       } else if (cmd === 'form-close') {
         return handleClose();
+      // 상세 패널 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return switchToEdit();
+      // 상세 패널 수정 취소 (보기모드 복귀 또는 닫기)
+      } else if (cmd === 'form-cancel') {
+        return handleCancelEdit();
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'qnas-sort') {
         return onSort(param);
@@ -72,18 +79,22 @@ window.PdQnaMng = {
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ PdQnaMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'qnas-cellClick') {
+        // 행 수정 버튼 → 상세/수정 패널 열기
+        if (colKey === 'btn_row_edit') {
+          return openDetail(row);
+        }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
-          return handleLoadDetail(row);
+          return loadView(row);
         }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
-    /* handleLoadDetail — 단건 조회 후 인라인 패널에 폼 로드 */
-    const handleLoadDetail = async (row) => {
+    /* _loadDetailForm — 단건 조회 후 인라인 패널에 폼 로드 (view/edit 공용) */
+    const _loadDetailForm = async (row, mode) => {
       if (!row || !row.qnaId) return;
       try {
         const res = await boApiSvc.pdQna.getById(row.qnaId, '상품Q&A관리', '단건조회');
@@ -96,9 +107,25 @@ window.PdQnaMng = {
         });
         uiState.selectedId = data.qnaId;
         uiState.isNew = false;
+        uiState.dtlMode = mode;
       } catch (err) {
         console.error('[handleLoadDetail]', err);
       }
+    };
+
+    /* loadView — 보기모드로 인라인 패널 열기 (행 클릭 / 제목 링크) */
+    const loadView = (row) => _loadDetailForm(row, 'view');
+
+    /* openDetail — 수정모드로 인라인 패널 열기 ([수정] 버튼) */
+    const openDetail = (row) => _loadDetailForm(row, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (상세 패널 하단 [수정] 버튼) */
+    const switchToEdit = () => { uiState.dtlMode = 'edit'; };
+
+    /* handleCancelEdit — 수정 취소: 원본 답변 재적재(서버 재조회) 후 보기모드 복귀 (신규 등록 개념 없음) */
+    const handleCancelEdit = () => {
+      const row = qnas.find(q => q.qnaId === uiState.selectedId);
+      return row ? loadView(row) : handleClose();
     };
 
     /* handleSaveAnswer — 답변 저장 */
@@ -109,6 +136,7 @@ window.PdQnaMng = {
           { answContent: form.answContent, answYn: form.answContent ? 'Y' : 'N' },
           '상품Q&A관리', '답변저장');
         form.answYn = form.answContent ? 'Y' : 'N';
+        uiState.dtlMode = 'view';
         await handleSearchList('RELOAD');
       } catch (err) {
         console.error('[handleSaveAnswer]', err);
@@ -116,7 +144,7 @@ window.PdQnaMng = {
     };
 
     /* handleClose — 상세 패널 닫기 */
-    const handleClose = () => { uiState.selectedId = null; uiState.isNew = false; };
+    const handleClose = () => { uiState.selectedId = null; uiState.isNew = false; uiState.dtlMode = 'view'; };
 
     const searchParam = reactive({ answYn: '', prodId: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
@@ -241,7 +269,7 @@ window.PdQnaMng = {
 
     return {
       columns,
-      qnas, uiState, baseGridPager, searchParam, form,       // 상태 / 데이터
+      qnas, uiState, cfDtlMode, baseGridPager, searchParam, form,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, // dispatch
       fnStatusBadge, fnAnswLabel, fnProdNm, fnMemNm,          // 헬퍼
     };
@@ -264,7 +292,11 @@ window.PdQnaMng = {
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
       @sort="key => handleBtnAction('qnas-sort', key)"
-      grid-id="qnas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
+      grid-id="qnas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('qnas-cellClick', 'btn_row_edit', row)">수정</button>
+      </template>
+    </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
@@ -273,7 +305,7 @@ window.PdQnaMng = {
     <div class="card" style="margin-top:14px;">
       <div class="toolbar">
         <span class="list-title">
-          상품 Q&A 상세 / 답변
+          {{ !uiState.selectedId ? '상품문의 상세' : (cfDtlMode ? '상품문의 상세' : '상품문의 수정') }}
           <span v-if="uiState.selectedId ? (form.qnaId) : false" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
             #{{ form.qnaId }}
           </span>
@@ -299,21 +331,31 @@ window.PdQnaMng = {
         </div>
         <!-- 답변 폼 -->
         <bo-form-area :columns="columns.answerForm" :form="form" :errors="{}"
-          :cols="3" :show-actions="false">
+          :cols="3" :show-actions="false" :readonly="cfDtlMode" plain-readonly>
           <template #qnaContent>
             <div style="padding:12px;background:#fafafa;border:1px solid #e5e7eb;border-radius:6px;min-height:80px;white-space:pre-wrap;">
               {{ form.qnaContent || '(내용 없음)' }}
             </div>
           </template>
         </bo-form-area>
-        <!-- 하단 액션 -->
+        <!-- 하단 액션 — 보기모드=[수정][닫기] / 수정모드=[답변저장][취소] -->
         <div class="form-actions">
-          <button class="btn btn_save" @click="handleBtnAction('form-save')">
-            답변 저장
-          </button>
-          <button class="btn btn_close" @click="handleBtnAction('form-close')">
-            닫기
-          </button>
+          <template v-if="cfDtlMode">
+            <button class="btn btn_edit" @click="handleBtnAction('form-edit')">
+              수정
+            </button>
+            <button class="btn btn_close" @click="handleBtnAction('form-close')">
+              닫기
+            </button>
+          </template>
+          <template v-else>
+            <button class="btn btn_save" @click="handleBtnAction('form-save')">
+              답변 저장
+            </button>
+            <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">
+              취소
+            </button>
+          </template>
         </div>
       </div>
     </div>

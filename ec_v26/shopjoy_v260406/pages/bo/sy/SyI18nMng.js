@@ -13,7 +13,8 @@ window.SyI18nMng = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
     const i18ns     = reactive([]);             // 다국어 키 그리드 데이터
-    const uiState  = reactive({ selectedKey: null }); // UI 상태 (선택 식별은 i18nKey — UNIQUE 이므로 단독 식별 가능)
+    const uiState  = reactive({ selectedKey: null, dtlMode: 'view' }); // UI 상태 (선택 식별은 i18nKey — UNIQUE 이므로 단독 식별 가능). dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => uiState.dtlMode === 'view');
     const codes    = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
 
@@ -36,8 +37,13 @@ window.SyI18nMng = {
         return saveMsgs();
       // 번역 편집 패널 닫기
       } else if (cmd === 'msgForm-close') {
-        uiState.selectedKey = null;
-        return;
+        return resetDetailToNew();
+      // 번역 편집 패널 보기모드 → 수정모드 전환
+      } else if (cmd === 'msgForm-edit') {
+        return switchToEdit();
+      // 번역 편집 패널 수정 취소 (보기모드 복귀 또는 닫기)
+      } else if (cmd === 'msgForm-cancel') {
+        return handleCancelEdit();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -63,10 +69,16 @@ window.SyI18nMng = {
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ SyI18nMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'i18ns-cellClick') {
+        // 행 수정 버튼 → 상세/수정 패널 열기
+        if (colKey === 'btn_row_edit') {
+          return openDetail(row);
+        }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
-          return openDetail(row);
+          // 이미 보기모드로 열려 있는 동일 행 재클릭 시 패널 닫기 (토글, 기존 동작 유지)
+          if (uiState.selectedKey === row.i18nKey && uiState.dtlMode === 'view') { return resetDetailToNew(); }
+          return loadView(row);
         }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
@@ -123,13 +135,31 @@ window.SyI18nMng = {
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
     };
 
-    /* openDetail — 번역 편집 패널 열기 (토글) */
-    const openDetail = (key) => {
-      if (uiState.selectedKey === key.i18nKey) { uiState.selectedKey = null; return; }
+    /* _loadDetailForm — 번역 편집 패널에 행 데이터 적재 (view/edit 공용) */
+    const _loadDetailForm = (key, mode) => {
       uiState.selectedKey = key.i18nKey;
+      uiState.dtlMode = mode;
       const msgs = {};
       LANGS.forEach(lang => { msgs[lang] = getLangMsg(key, lang); });
       Object.assign(msgForm, msgs);
+    };
+
+    /* loadView — 보기모드로 번역 편집 패널 열기 (행 클릭) */
+    const loadView = (key) => _loadDetailForm(key, 'view');
+
+    /* openDetail — 수정모드로 번역 편집 패널 열기 ([수정] 버튼) */
+    const openDetail = (key) => _loadDetailForm(key, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (상세 패널 상단 [수정] 버튼) */
+    const switchToEdit = () => { uiState.dtlMode = 'edit'; };
+
+    /* resetDetailToNew — 번역 편집 패널 닫기(=미선택 상태로 복귀) */
+    const resetDetailToNew = () => { uiState.selectedKey = null; uiState.dtlMode = 'view'; };
+
+    /* handleCancelEdit — 수정 취소: 원본 메시지 재적재 후 보기모드 복귀 (신규 등록 개념 없음) */
+    const handleCancelEdit = () => {
+      const row = cfSelectedKey.value;
+      return row ? loadView(row) : resetDetailToNew();
     };
 
     /* saveMsgs — 번역 메시지 저장 */
@@ -141,6 +171,7 @@ window.SyI18nMng = {
         /* 목록 갱신은 저장 성공 후 재조회로만 한다 (실패 시 화면이 저장된 것처럼 보이면 안 됨) */
         await boApiSvc.syI18n.updateMsgs(cfSelectedKey.value.i18nId, { msgs: { ...msgForm } }, '다국어관리', '저장');
         await handleSearchData();
+        uiState.dtlMode = 'view';
         if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
@@ -221,7 +252,7 @@ window.SyI18nMng = {
 
     return {
       columns,
-      uiState, searchParam, baseGridPager, i18ns, msgForm,       // 상태 / 데이터
+      uiState, cfDtlMode, searchParam, baseGridPager, i18ns, msgForm,       // 상태 / 데이터
       msgFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction, handleGridCellAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedKey, // computed
@@ -239,7 +270,10 @@ window.SyI18nMng = {
     <bo-grid bare
       :columns="columns.baseGrid" :rows="i18ns" row-key="i18nKey" :selected-key="uiState.selectedKey"
       :row-style="fnRowStyle"
-      grid-id="i18ns-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      grid-id="i18ns-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('i18ns-cellClick', 'btn_row_edit', row)">수정</button>
+      </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
   </bo-container>
@@ -247,7 +281,7 @@ window.SyI18nMng = {
   <bo-container>
     <div class="toolbar">
       <span class="list-title">
-        번역 편집
+        {{ !cfSelectedKey ? '다국어 상세' : (cfDtlMode ? '다국어 상세' : '다국어 수정') }}
         <span v-if="cfSelectedKey ? (cfSelectedKey.i18nKey) : false" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ cfSelectedKey.i18nKey }}
         </span>
@@ -256,19 +290,29 @@ window.SyI18nMng = {
         </span>
       </span>
       <div v-if="cfSelectedKey" style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn_save" @click="handleBtnAction('msgForm-save')">
-          저장
-        </button>
-        <button class="btn btn_close" @click="handleBtnAction('msgForm-close')">
-          닫기
-        </button>
+        <template v-if="cfDtlMode">
+          <button class="btn btn_edit" @click="handleBtnAction('msgForm-edit')">
+            수정
+          </button>
+          <button class="btn btn_close" @click="handleBtnAction('msgForm-close')">
+            닫기
+          </button>
+        </template>
+        <template v-else>
+          <button class="btn btn_save" @click="handleBtnAction('msgForm-save')">
+            저장
+          </button>
+          <button class="btn btn_cancel" @click="handleBtnAction('msgForm-cancel')">
+            취소
+          </button>
+        </template>
       </div>
     </div>
     <!-- ===== ■.■. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->
     <div style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area v-if="cfSelectedKey" :columns="msgFormColumns" :form="msgForm" :errors="{}"
-        :cols="3" :show-actions="false" />
+        :cols="3" :show-actions="false" :readonly="cfDtlMode" plain-readonly />
       <div v-else style="text-align:center;color:#bbb;padding:28px 12px;font-size:13px;">
         목록에서 다국어 키를 선택하면 언어별 번역을 편집할 수 있습니다.
       </div>

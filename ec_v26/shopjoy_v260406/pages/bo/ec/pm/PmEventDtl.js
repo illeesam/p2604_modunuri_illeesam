@@ -460,7 +460,7 @@ window.PmEventDtl = {
         <bo-form-area plain-readonly :columns="columns.vendorForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
           <template #vendor>
-            <div v-if="cfDtlMode" class="readonly-field-plain">{{ cfSelectedVendorNm || '-' }}</div>
+            <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.vendorId ? cfSelectedVendorNm : '-' }}</div>
             <div v-else style="display:flex;gap:8px;align-items:center;">
               <div class="form-control" style="background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:pointer;" @click="handleBtnAction('vendorModal-open')">
                 <span style="padding:4px 10px;flex:1;">{{ cfSelectedVendorNm }}</span>

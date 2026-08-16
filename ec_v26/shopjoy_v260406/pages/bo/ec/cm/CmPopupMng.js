@@ -28,7 +28,8 @@ window.CmPopupMng = {
     });
 
     /* 팝업 상세 */
-    const baseDetail = reactive({ selectedId: null, isNew: false });
+    const baseDetail = reactive({ selectedId: null, isNew: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => baseDetail.dtlMode === 'view');
     const _initBaseForm = () => ({
       popupId: null, popupCode: '', popupNm: '', popupPattern: 1, entityNm: '',
       idField: '', nmField: '', parentField: '', siteField: 'siteId', joinClause: '',
@@ -47,7 +48,8 @@ window.CmPopupMng = {
     /* 항목정보(cm_popup_item) — 선택한 팝업의 항목 목록 + 인라인 항목 폼 */
     const items    = reactive([]);   /* 선택 팝업의 항목 */
     const codeGrps = reactive([]);   /* CODE 유형 항목의 코드그룹 선택지 */
-    const itemDetail = reactive({ selectedId: null, isNew: false, show: false });
+    const itemDetail = reactive({ selectedId: null, isNew: false, show: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfItemDtlMode = computed(() => itemDetail.dtlMode === 'view');
     const _initItemForm = () => ({
       popupItemId: null, fieldNm: '', fieldLabel: '', fieldTypeCd: 'TEXT', codeGrp: '',
       selectExpr: '', sessionCondField: '', requiredYn: 'N', searchYn: 'N', searchTypeCd: 'LIKE', listYn: 'Y', treeLabelYn: 'N',
@@ -88,10 +90,14 @@ window.CmPopupMng = {
       if (cmd === 'popups-add')        return openPopupNew();
       if (cmd === 'baseForm-save')     return handleSavePopup();
       if (cmd === 'baseForm-close')    return resetPopupDetail();
+      if (cmd === 'baseForm-edit')     return switchToPopupEdit();
+      if (cmd === 'baseForm-cancel')   return handleCancelPopupEdit();
       if (cmd === 'tab-select')        { uiState.tab = param; return; }
       if (cmd === 'items-add')         return openItemNew();
       if (cmd === 'itemForm-save')     return handleSaveItem();
-      if (cmd === 'itemForm-close')    { itemDetail.show = false; itemDetail.selectedId = null; return; }
+      if (cmd === 'itemForm-close')    return resetItemDetail();
+      if (cmd === 'itemForm-edit')     return switchToItemEdit();
+      if (cmd === 'itemForm-cancel')   return handleCancelItemEdit();
       if (cmd === 'popups-preview' || cmd === 'popups-previewMulti') {
         /* param 이 있으면 그 행, 없으면(다시 열기) 직전에 보던 팝업 */
         previewModal.popupCode = (param ? param.popupCode : previewModal.popupCode) || baseForm.popupCode;
@@ -113,13 +119,13 @@ window.CmPopupMng = {
         if (colKey === 'btn_row_previewMulti') return handleBtnAction('popups-previewMulti', row);
         if (colKey === 'btn_row_edit')   return openPopupEdit(row);
         if (colKey === 'btn_row_delete') return handleDeletePopup(row);
-        if ((e.col ? e.col.link : false) || colKey === '__no__') return openPopupEdit(row);
+        if ((e.col ? e.col.link : false) || colKey === '__no__') return loadPopupView(row);
         return;
       }
       if (cmd === 'items-cellClick') {
         if (colKey === 'btn_row_edit')   return openItemEdit(row);
         if (colKey === 'btn_row_delete') return handleDeleteItem(row);
-        if ((e.col ? e.col.link : false) || colKey === '__no__') return openItemEdit(row);
+        if ((e.col ? e.col.link : false) || colKey === '__no__') return loadItemView(row);
         return;
       }
       console.warn('[handleGridCellAction] unknown cmd:', cmd);
@@ -161,21 +167,23 @@ window.CmPopupMng = {
        (부모 선택이 바뀌면 자식 선택도 초기화하는 정책 — 다른 팝업의 항목이 남아있지 않도록) */
     const _resetItemsPane = () => {
       items.splice(0, items.length);
-      itemDetail.show = false;
-      itemDetail.selectedId = null;
+      resetItemDetail();
       uiState.tab = 'info';
     };
 
     const openPopupNew = () => {
       baseDetail.selectedId = null;
       baseDetail.isNew = true;
+      baseDetail.dtlMode = 'edit';
       Object.assign(baseForm, _initBaseForm());
       _resetItemsPane();
     };
 
-    const openPopupEdit = (row) => {
+    /* _loadPopupDetailForm — 팝업 상세에 행 데이터 적재 (view/edit 공용) */
+    const _loadPopupDetailForm = (row, mode) => {
       baseDetail.selectedId = row.popupId;
       baseDetail.isNew = false;
+      baseDetail.dtlMode = mode;
       Object.assign(baseForm, {
         popupId: row.popupId, popupCode: row.popupCode, popupNm: row.popupNm,
         popupPattern: row.popupPattern || 1, entityNm: row.entityNm,
@@ -186,17 +194,33 @@ window.CmPopupMng = {
         modalWidth: row.modalWidth || '900px', applyUiMemo: row.applyUiMemo || '', useYn: row.useYn || 'Y',
         sortOrd: row.sortOrd || 10, remark: row.remark || '',
       });
-      itemDetail.show = false;
-      itemDetail.selectedId = null;
+      resetItemDetail();
       uiState.tab = 'info';
       handleSearchItems();
     };
 
+    /* loadPopupView — 보기모드로 팝업 상세 열기 (행 클릭) */
+    const loadPopupView = (row) => _loadPopupDetailForm(row, 'view');
+
+    /* openPopupEdit — 수정모드로 팝업 상세 열기 ([수정] 버튼) */
+    const openPopupEdit = (row) => _loadPopupDetailForm(row, 'edit');
+
+    /* switchToPopupEdit — 보기모드 → 수정모드 전환 (상세 패널 하단 [수정] 버튼) */
+    const switchToPopupEdit = () => { baseDetail.dtlMode = 'edit'; };
+
     const resetPopupDetail = () => {
       baseDetail.selectedId = null;
       baseDetail.isNew = false;
+      baseDetail.dtlMode = 'view';
       Object.assign(baseForm, _initBaseForm());
       _resetItemsPane();
+    };
+
+    /* handleCancelPopupEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 팝업 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelPopupEdit = () => {
+      if (baseDetail.isNew) { return resetPopupDetail(); }
+      const row = popups.find(p => p.popupId === baseDetail.selectedId);
+      return row ? loadPopupView(row) : resetPopupDetail();
     };
 
     const handleSavePopup = async () => {
@@ -232,6 +256,7 @@ window.CmPopupMng = {
         } else {
           await boApiSvc.cmPopupPick.popupUpdate(baseForm.popupId, body, '팝업관리', '수정');
         }
+        baseDetail.dtlMode = 'view';
         showToast('저장되었습니다.', 'success');
         await handleSearchList();
         await handleSearchItems();
@@ -281,14 +306,17 @@ window.CmPopupMng = {
       itemDetail.selectedId = null;
       itemDetail.isNew = true;
       itemDetail.show = true;
+      itemDetail.dtlMode = 'edit';
       const maxOrd = items.reduce((m, p) => Math.max(m, p.sortOrd || 0), 0);
       Object.assign(itemForm, _initItemForm(), { sortOrd: maxOrd + 10 });
     };
 
-    const openItemEdit = (row) => {
+    /* _loadItemDetailForm — 항목 인라인 폼에 행 데이터 적재 (view/edit 공용) */
+    const _loadItemDetailForm = (row, mode) => {
       itemDetail.selectedId = row.popupItemId;
       itemDetail.isNew = false;
       itemDetail.show = true;
+      itemDetail.dtlMode = mode;
       Object.assign(itemForm, {
         popupItemId: row.popupItemId, fieldNm: row.fieldNm, fieldLabel: row.fieldLabel,
         fieldTypeCd: row.fieldTypeCd || 'TEXT', codeGrp: row.codeGrp || '',
@@ -297,6 +325,27 @@ window.CmPopupMng = {
         colWidth: row.colWidth || '', colAlign: row.colAlign || '',
         linkYn: row.linkYn || 'N', sortOrd: row.sortOrd || 10, useYn: row.useYn || 'Y',
       });
+    };
+
+    /* loadItemView — 보기모드로 항목 인라인 폼 열기 (행 클릭) */
+    const loadItemView = (row) => _loadItemDetailForm(row, 'view');
+
+    /* openItemEdit — 수정모드로 항목 인라인 폼 열기 ([수정] 버튼) */
+    const openItemEdit = (row) => _loadItemDetailForm(row, 'edit');
+
+    /* switchToItemEdit — 보기모드 → 수정모드 전환 (항목 상세 하단 [수정] 버튼) */
+    const switchToItemEdit = () => { itemDetail.dtlMode = 'edit'; };
+
+    /* resetItemDetail — 항목 인라인 폼 닫기(=미선택 상태로 복귀) */
+    const resetItemDetail = () => {
+      itemDetail.show = false; itemDetail.selectedId = null; itemDetail.isNew = false; itemDetail.dtlMode = 'view';
+    };
+
+    /* handleCancelItemEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 항목 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelItemEdit = () => {
+      if (itemDetail.isNew) { return resetItemDetail(); }
+      const row = items.find(i => i.popupItemId === itemDetail.selectedId);
+      return row ? loadItemView(row) : resetItemDetail();
     };
 
     const handleSaveItem = async () => {
@@ -321,7 +370,7 @@ window.CmPopupMng = {
           linkYn: itemForm.linkYn, sortOrd: Number(itemForm.sortOrd) || 10, useYn: itemForm.useYn,
         }, '공통팝업관리', '항목저장');
         showToast('저장되었습니다.', 'success');
-        itemDetail.show = false;
+        resetItemDetail();
         await handleSearchItems();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '저장 오류', 'error', 0);
@@ -333,7 +382,7 @@ window.CmPopupMng = {
       try {
         await boApiSvc.cmPopupPick.itemRemove(row.popupItemId, '공통팝업관리', '항목삭제');
         showToast('삭제되었습니다.', 'success');
-        if (itemDetail.selectedId === row.popupItemId) itemDetail.show = false;
+        if (itemDetail.selectedId === row.popupItemId) resetItemDetail();
         await handleSearchItems();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
@@ -568,8 +617,8 @@ window.CmPopupMng = {
 
     return {
       popups, uiState, codes, searchParam, baseGridPager,
-      baseDetail, baseForm, baseErrors, tabs,
-      items, codeGrps, itemDetail, itemForm, itemErrors,
+      baseDetail, baseForm, baseErrors, tabs, cfDtlMode,
+      items, codeGrps, itemDetail, itemForm, itemErrors, cfItemDtlMode,
       previewModal, cfPreviewRequest, cfPreviewSample, cfPreviewArgs, fnPreviewCallback, columns, PATTERN_LABELS, PATTERN_OPTS, fnPretty,
       handleBtnAction, handleGridCellAction,
     };
@@ -611,7 +660,7 @@ window.CmPopupMng = {
   </bo-container>
 
   <!-- ===== ■. 팝업 상세 (기본정보/항목정보 탭) ================================= -->
-  <bo-container :title="baseDetail.isNew ? '팝업 신규 등록' : '팝업 상세'"
+  <bo-container :title="baseDetail.isNew ? '팝업 신규' : (cfDtlMode ? '팝업 상세' : '팝업 수정')"
     :title-id="baseDetail.selectedId ? baseDetail.selectedId : ''">
     <div v-if="baseDetail.selectedId || baseDetail.isNew">
       <bo-tab-bar :tabs="tabs" :tab="uiState.tab" :show-modes="false"
@@ -619,10 +668,16 @@ window.CmPopupMng = {
       <!-- ===== ■.■. 기본정보 탭 ============================================== -->
       <div v-show="uiState.tab==='info'" style="padding:12px;">
         <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="baseErrors"
-          :cols="3" compact :show-actions="false" />
+          :cols="3" compact :show-actions="false" :readonly="cfDtlMode" plain-readonly />
         <div class="form-actions">
-          <button class="btn btn_save" @click="handleBtnAction('baseForm-save')">저장</button>
-          <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
+          <template v-if="cfDtlMode">
+            <button class="btn btn_edit" @click="handleBtnAction('baseForm-edit')">수정</button>
+            <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
+          </template>
+          <template v-else>
+            <button class="btn btn_save" @click="handleBtnAction('baseForm-save')">저장</button>
+            <button class="btn btn_cancel" @click="handleBtnAction('baseForm-cancel')">취소</button>
+          </template>
         </div>
       </div>
       <!-- ===== □.□. 기본정보 탭 ============================================== -->
@@ -653,17 +708,23 @@ window.CmPopupMng = {
           </bo-grid>
           <div style="margin-top:16px;border-top:1px solid #eee;padding-top:12px;">
             <div class="list-title" style="font-size:12px;margin-bottom:8px;">
-              {{ itemDetail.show ? (itemDetail.isNew ? '항목 신규 등록' : '항목 상세 / 수정') : '항목 상세' }}
-              <span v-if="itemDetail.show && !itemDetail.isNew" style="font-size:11px;color:#999;margin-left:6px;font-weight:400;">
+              {{ !itemDetail.show ? '팝업항목 상세' : (itemDetail.isNew ? '팝업항목 신규' : (cfItemDtlMode ? '팝업항목 상세' : '팝업항목 수정')) }}
+              <span v-if="itemDetail.show ? !itemDetail.isNew : false" style="font-size:11px;color:#999;margin-left:6px;font-weight:400;">
                 #{{ itemForm.popupItemId }}
               </span>
             </div>
             <template v-if="itemDetail.show">
               <bo-form-area :columns="columns.itemForm" :form="itemForm" :errors="itemErrors"
-                :cols="3" compact :show-actions="false" />
+                :cols="3" compact :show-actions="false" :readonly="cfItemDtlMode" plain-readonly />
               <div class="form-actions">
-                <button class="btn btn_save" @click="handleBtnAction('itemForm-save')">저장</button>
-                <button class="btn btn_close" @click="handleBtnAction('itemForm-close')">닫기</button>
+                <template v-if="cfItemDtlMode">
+                  <button class="btn btn_edit" @click="handleBtnAction('itemForm-edit')">수정</button>
+                  <button class="btn btn_close" @click="handleBtnAction('itemForm-close')">닫기</button>
+                </template>
+                <template v-else>
+                  <button class="btn btn_save" @click="handleBtnAction('itemForm-save')">저장</button>
+                  <button class="btn btn_cancel" @click="handleBtnAction('itemForm-cancel')">취소</button>
+                </template>
               </div>
             </template>
             <div v-else style="padding:20px;text-align:center;color:#aaa;font-size:12px;">

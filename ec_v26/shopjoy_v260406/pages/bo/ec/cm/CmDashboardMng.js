@@ -26,7 +26,8 @@ window.CmDashboardMng = {
     const searchParam = reactive({ searchValue: '', useYn: '' });
 
     /* baseDetail — 대시보드 인라인 상세 폼 상태 */
-    const baseDetail = reactive({ selectedId: null, isNew: false });
+    const baseDetail = reactive({ selectedId: null, isNew: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => baseDetail.dtlMode === 'view');
     const _initBaseForm = () => ({
       dashboardId: null, dashboardNm: '', uiCompNm: '', layoutCols: 4, sortOrd: 10, useYn: 'Y', ownerUserId: '', remark: '',
     });
@@ -46,6 +47,8 @@ window.CmDashboardMng = {
       if (cmd === 'dashboards-add')    return openDashNew();
       if (cmd === 'baseForm-save')     return handleSaveDash();
       if (cmd === 'baseForm-close')    return resetDashDetail();
+      if (cmd === 'baseForm-edit')     return switchToEdit();
+      if (cmd === 'baseForm-cancel')   return handleCancelEdit();
       if (cmd === 'dashboards-layout') { return props.navigate('cmDashboardLayoutMng', { dtlId: baseDetail.selectedId }); }
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
@@ -54,7 +57,7 @@ window.CmDashboardMng = {
       if (cmd === 'dashboards-cellClick') {
         if (colKey === 'btn_row_edit')   return openDashEdit(row);
         if (colKey === 'btn_row_delete') return handleDeleteDash(row);
-        if ((e.col ? e.col.link : false) || colKey === '__no__') return openDashEdit(row);
+        if ((e.col ? e.col.link : false) || colKey === '__no__') return loadView(row);
         return;
       }
       console.warn('[handleGridCellAction] unknown cmd:', cmd);
@@ -101,12 +104,15 @@ window.CmDashboardMng = {
     const openDashNew = () => {
       baseDetail.selectedId = null;
       baseDetail.isNew = true;
+      baseDetail.dtlMode = 'edit';
       Object.assign(baseForm, _initBaseForm());
     };
 
-    const openDashEdit = (row) => {
+    /* _loadDetailForm — 대시보드 인라인 상세 폼에 행 데이터 적재 (view/edit 공용) */
+    const _loadDetailForm = (row, mode) => {
       baseDetail.selectedId = row.dashboardId;
       baseDetail.isNew = false;
+      baseDetail.dtlMode = mode;
       Object.assign(baseForm, {
         dashboardId: row.dashboardId, dashboardNm: row.dashboardNm, uiCompNm: row.uiCompNm,
         layoutCols: row.layoutCols || 4, sortOrd: row.sortOrd || 10, useYn: row.useYn || 'Y',
@@ -114,10 +120,27 @@ window.CmDashboardMng = {
       });
     };
 
+    /* loadView — 보기모드로 대시보드 인라인 상세 폼 열기 (행 클릭) */
+    const loadView = (row) => _loadDetailForm(row, 'view');
+
+    /* openDashEdit — 수정모드로 대시보드 인라인 상세 폼 열기 ([수정] 버튼) */
+    const openDashEdit = (row) => _loadDetailForm(row, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (상세 패널 하단 [수정] 버튼) */
+    const switchToEdit = () => { baseDetail.dtlMode = 'edit'; };
+
     const resetDashDetail = () => {
       baseDetail.selectedId = null;
       baseDetail.isNew = false;
+      baseDetail.dtlMode = 'view';
       Object.assign(baseForm, _initBaseForm());
+    };
+
+    /* handleCancelEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 대시보드 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelEdit = () => {
+      if (baseDetail.isNew) { return resetDashDetail(); }
+      const row = dashboards.find(d => d.dashboardId === baseDetail.selectedId);
+      return row ? loadView(row) : resetDashDetail();
     };
 
     /* handleSaveDash — 대시보드 저장 (신규/수정) */
@@ -141,6 +164,7 @@ window.CmDashboardMng = {
         } else {
           await boApiSvc.cmDashboard.update(baseForm.dashboardId, body, '대시보드기준관리', '수정');
         }
+        baseDetail.dtlMode = 'view';
         showToast('저장되었습니다.', 'success');
         await handleSearchList();
       } catch (err) {
@@ -220,7 +244,7 @@ window.CmDashboardMng = {
 
     return {
       dashboards, panelCnt, uiState, codes, searchParam,
-      baseDetail, baseForm, baseErrors,
+      baseDetail, baseForm, baseErrors, cfDtlMode,
       columns, fnIsMyDash,
       handleBtnAction, handleGridCellAction,
     };
@@ -253,7 +277,7 @@ window.CmDashboardMng = {
     </bo-grid>
   </bo-container>
   <!-- ===== ■. 대시보드 상세 폼 (항상 표시 — 미선택 시 안내) ================= -->
-  <bo-container :title="baseDetail.isNew ? '대시보드 신규 등록' : '대시보드 상세'"
+  <bo-container :title="baseDetail.isNew ? '대시보드 신규' : (cfDtlMode ? '대시보드 상세' : '대시보드 수정')"
     :title-id="baseDetail.selectedId ? baseDetail.selectedId : ''">
     <template #toolbar-actions>
       <button v-if="baseDetail.selectedId" class="btn btn_preview"
@@ -261,10 +285,16 @@ window.CmDashboardMng = {
     </template>
     <div v-if="baseDetail.selectedId || baseDetail.isNew" style="padding:12px;">
       <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="baseErrors"
-        :cols="3" :show-actions="false" />
+        :cols="3" :show-actions="false" :readonly="cfDtlMode" plain-readonly />
       <div class="form-actions">
-        <button class="btn btn_save" @click="handleBtnAction('baseForm-save')">저장</button>
-        <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
+        <template v-if="cfDtlMode">
+          <button class="btn btn_edit" @click="handleBtnAction('baseForm-edit')">수정</button>
+          <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn_save" @click="handleBtnAction('baseForm-save')">저장</button>
+          <button class="btn btn_cancel" @click="handleBtnAction('baseForm-cancel')">취소</button>
+        </template>
       </div>
     </div>
     <div v-else style="padding:32px;text-align:center;color:#aaa;">목록에서 대시보드를 선택하거나 [+ 신규]를 클릭하세요.</div>

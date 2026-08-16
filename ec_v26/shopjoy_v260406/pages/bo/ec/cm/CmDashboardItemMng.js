@@ -29,7 +29,8 @@ window.CmDashboardItemMng = {
     const dashState = reactive({ selectedId: null });
 
     /* panelDetail — 항목 인라인 폼 상태 */
-    const panelDetail = reactive({ selectedId: null, isNew: false, show: false });
+    const panelDetail = reactive({ selectedId: null, isNew: false, show: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => panelDetail.dtlMode === 'view');
     const _initPanelForm = () => ({
       dashboardItemId: null, itemKey: '', itemNm: '', itemTypeCd: 'CHART', chartTypeCd: 'bar', sortOrd: 10,
       panelWidth: 1, panelHeight: 1, realtimeYn: 'N', useYn: 'Y', seriesJson: '', optionJson: '',
@@ -49,7 +50,9 @@ window.CmDashboardItemMng = {
       if (cmd === 'searchParam-reset') { searchParam.searchValue = ''; searchParam.useYn = ''; return handleSearchList(); }
       if (cmd === 'panels-add')        return openPanelNew();
       if (cmd === 'panelForm-save')    return handleSavePanel();
-      if (cmd === 'panelForm-close')   { panelDetail.show = false; panelDetail.selectedId = null; return; }
+      if (cmd === 'panelForm-close')   return resetDetailToNew();
+      if (cmd === 'panelForm-edit')    return switchToEdit();
+      if (cmd === 'panelForm-cancel')  return handleCancelEdit();
       if (cmd === 'dash-layout')       return props.navigate('cmDashboardLayoutMng', { dtlId: dashState.selectedId });
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
@@ -62,7 +65,7 @@ window.CmDashboardItemMng = {
       if (cmd === 'panels-cellClick') {
         if (colKey === 'btn_row_edit')   return openPanelEdit(row);
         if (colKey === 'btn_row_delete') return handleDeletePanel(row);
-        if ((e.col ? e.col.link : false) || colKey === '__no__') return openPanelEdit(row);
+        if ((e.col ? e.col.link : false) || colKey === '__no__') return loadView(row);
         return;
       }
       console.warn('[handleGridCellAction] unknown cmd:', cmd);
@@ -95,7 +98,7 @@ window.CmDashboardItemMng = {
         if (dashState.selectedId && !list.some(d => d.dashboardId === dashState.selectedId)) {
           dashState.selectedId = null;
           panels.splice(0, panels.length);
-          panelDetail.show = false;
+          resetDetailToNew();
         }
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
@@ -137,9 +140,13 @@ window.CmDashboardItemMng = {
     /* selectDash — 좌측 대시보드 선택 (자식 폼은 초기화) */
     const selectDash = (row) => {
       dashState.selectedId = row.dashboardId;
-      panelDetail.show = false;
-      panelDetail.selectedId = null;
+      resetDetailToNew();
       handleSearchPanels();
+    };
+
+    /* resetDetailToNew — 항목 인라인 폼 닫기(=미선택 상태로 복귀) */
+    const resetDetailToNew = () => {
+      panelDetail.show = false; panelDetail.selectedId = null; panelDetail.isNew = false; panelDetail.dtlMode = 'view';
     };
 
     const openPanelNew = () => {
@@ -147,14 +154,17 @@ window.CmDashboardItemMng = {
       panelDetail.selectedId = null;
       panelDetail.isNew = true;
       panelDetail.show = true;
+      panelDetail.dtlMode = 'edit';
       const maxOrd = panels.reduce((m, p) => Math.max(m, p.sortOrd || 0), 0);
       Object.assign(panelForm, _initPanelForm(), { sortOrd: maxOrd + 10 });
     };
 
-    const openPanelEdit = (row) => {
+    /* _loadDetailForm — 항목 인라인 폼에 행 데이터 적재 (view/edit 공용) */
+    const _loadDetailForm = (row, mode) => {
       panelDetail.selectedId = row.dashboardItemId;
       panelDetail.isNew = false;
       panelDetail.show = true;
+      panelDetail.dtlMode = mode;
       Object.assign(panelForm, {
         dashboardItemId: row.dashboardItemId, itemKey: row.itemKey, itemNm: row.itemNm,
         itemTypeCd: util.itemTypeOf(row), chartTypeCd: row.chartTypeCd || 'bar', sortOrd: row.sortOrd || 10,
@@ -162,6 +172,22 @@ window.CmDashboardItemMng = {
         realtimeYn: row.realtimeYn || 'N', useYn: row.useYn || 'Y',
         seriesJson: row.seriesJson || '', optionJson: row.optionJson || '',
       });
+    };
+
+    /* loadView — 보기모드로 항목 인라인 폼 열기 (행 클릭) */
+    const loadView = (row) => _loadDetailForm(row, 'view');
+
+    /* openPanelEdit — 수정모드로 항목 인라인 폼 열기 ([수정] 버튼) */
+    const openPanelEdit = (row) => _loadDetailForm(row, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (상세 패널 하단 [수정] 버튼) */
+    const switchToEdit = () => { panelDetail.dtlMode = 'edit'; };
+
+    /* handleCancelEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 항목 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelEdit = () => {
+      if (panelDetail.isNew) { return resetDetailToNew(); }
+      const row = panels.find(p => p.dashboardItemId === panelDetail.selectedId);
+      return row ? loadView(row) : resetDetailToNew();
     };
 
     /* handleSavePanel — 항목 저장 (itemSave base, rowStatus I/U) */
@@ -186,7 +212,7 @@ window.CmDashboardItemMng = {
         };
         await boApiSvc.cmDashboard.itemSave('base', body, '대시보드항목관리', '항목저장');
         showToast('저장되었습니다.', 'success');
-        panelDetail.show = false;
+        resetDetailToNew();
         await handleSearchPanels();
         await fnLoadPanelCounts();
       } catch (err) {
@@ -201,7 +227,7 @@ window.CmDashboardItemMng = {
         await boApiSvc.cmDashboard.itemSave('base',
           { dashboardItemId: row.dashboardItemId, rowStatus: 'D' }, '대시보드항목관리', '항목삭제');
         showToast('삭제되었습니다.', 'success');
-        if (panelDetail.selectedId === row.dashboardItemId) panelDetail.show = false;
+        if (panelDetail.selectedId === row.dashboardItemId) resetDetailToNew();
         await handleSearchPanels();
         await fnLoadPanelCounts();
       } catch (err) {
@@ -279,7 +305,7 @@ window.CmDashboardItemMng = {
     return {
       dashboards, panels, panelCnt, uiState, codes, searchParam,
       dashState, panelDetail, panelForm, panelErrors, columns, util,
-      cfCurDash,
+      cfCurDash, cfDtlMode,
       handleBtnAction, handleGridCellAction,
     };
   },
@@ -333,14 +359,20 @@ window.CmDashboardItemMng = {
   </div>
 
   <!-- ===== ■. 항목 상세 폼 (전체 폭 · 항상 표시 — 미선택 시 안내) ============ -->
-  <bo-container :title="panelDetail.isNew ? '항목 신규 등록' : '항목 상세 / 수정'"
+  <bo-container :title="!panelDetail.show ? '대시보드위젯 상세' : (panelDetail.isNew ? '대시보드위젯 신규' : (cfDtlMode ? '대시보드위젯 상세' : '대시보드위젯 수정'))"
     :title-id="panelDetail.selectedId ? panelForm.dashboardItemId : ''">
     <div v-if="panelDetail.show" style="padding:12px;">
       <bo-form-area :columns="columns.panelForm" :form="panelForm" :errors="panelErrors"
-        :cols="3" :show-actions="false" />
+        :cols="3" :show-actions="false" :readonly="cfDtlMode" plain-readonly />
       <div class="form-actions">
-        <button class="btn btn_save" @click="handleBtnAction('panelForm-save')">저장</button>
-        <button class="btn btn_close" @click="handleBtnAction('panelForm-close')">닫기</button>
+        <template v-if="cfDtlMode">
+          <button class="btn btn_edit" @click="handleBtnAction('panelForm-edit')">수정</button>
+          <button class="btn btn_close" @click="handleBtnAction('panelForm-close')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn_save" @click="handleBtnAction('panelForm-save')">저장</button>
+          <button class="btn btn_cancel" @click="handleBtnAction('panelForm-cancel')">취소</button>
+        </template>
       </div>
     </div>
     <div v-else style="padding:32px;text-align:center;color:#aaa;">

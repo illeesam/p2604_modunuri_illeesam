@@ -13,7 +13,8 @@ window.PdDlivTmpltMng = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
 
     const dlivTmplts = reactive([]);              // 배송템플릿 목록 (메인 그리드)
-    const uiState = reactive({ loading: false, error: null, selectedId: null, sortKey: '', sortDir: 'asc', isNew: false });
+    const uiState = reactive({ loading: false, error: null, selectedId: null, sortKey: '', sortDir: 'asc', isNew: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => uiState.dtlMode === 'view');
     const codes = reactive({
       USE_YN: [],
       DLIV_METHOD: [], DLIV_PAY_TYPE: [], COURIER: [],
@@ -51,8 +52,13 @@ window.PdDlivTmpltMng = {
         return handleDelete();
       // 상세 폼 닫기
       } else if (cmd === 'form-close') {
-        uiState.selectedId = null;
-        return;
+        return resetDetailToNew();
+      // 상세 폼 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return switchToEdit();
+      // 상세 폼 수정 취소 (보기모드 복귀 또는 닫기)
+      } else if (cmd === 'form-cancel') {
+        return handleCancelEdit();
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'dlivTmplts-sort') {
         return onSort(param);
@@ -81,10 +87,16 @@ window.PdDlivTmpltMng = {
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ PdDlivTmpltMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'dlivTmplts-cellClick') {
+        // 행 수정 버튼 → 상세/수정 패널 열기
+        if (colKey === 'btn_row_edit') {
+          return openDetail(row);
+        }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
-          return openDetail(row);
+          // 이미 보기모드로 열려 있는 동일 행 재클릭 시 패널 닫기 (토글, 기존 동작 유지)
+          if (uiState.selectedId === row.dlivTmpltId && uiState.dtlMode === 'view') { return resetDetailToNew(); }
+          return loadView(row);
         }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
@@ -134,19 +146,39 @@ window.PdDlivTmpltMng = {
       }
     };
 
-    /* openDetail — 상세 열기 (토글) */
-    const openDetail = (row) => {
-      if (uiState.selectedId === row.dlivTmpltId) { uiState.selectedId = null; return; }
+    /* _loadDetailForm — 인라인 패널에 행 데이터 적재 (view/edit 공용) */
+    const _loadDetailForm = (row, mode) => {
       Object.assign(form, { ...row });
       uiState.selectedId = row.dlivTmpltId;
       uiState.isNew = false;
+      uiState.dtlMode = mode;
     };
 
-    /* openNew — 신규 등록 폼 열기 */
+    /* loadView — 보기모드로 인라인 패널 열기 (행 클릭 / 제목 링크) */
+    const loadView = (row) => _loadDetailForm(row, 'view');
+
+    /* openDetail — 수정모드로 인라인 패널 열기 ([수정] 버튼) */
+    const openDetail = (row) => _loadDetailForm(row, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (상세 패널 하단 [수정] 버튼) */
+    const switchToEdit = () => { uiState.dtlMode = 'edit'; };
+
+    /* resetDetailToNew — 상세 패널 닫기(=미선택 상태로 복귀) */
+    const resetDetailToNew = () => { uiState.selectedId = null; uiState.isNew = false; uiState.dtlMode = 'view'; };
+
+    /* handleCancelEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 행 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelEdit = () => {
+      if (uiState.isNew) { return resetDetailToNew(); }
+      const row = cfSelectedRow.value;
+      return row ? loadView(row) : resetDetailToNew();
+    };
+
+    /* openNew — 신규 등록 폼 열기 (항상 수정모드로 시작) */
     const openNew = () => {
       Object.assign(form, { dlivTmpltId: null, siteId: null, vendorId: null, dlivTmpltNm: '', dlivMethodCd: 'COURIER', dlivPayTypeCd: 'PREPAY', dlivCourierCd: 'CJ', dlivCost: 3000, freeDlivMinAmt: 50000, islandExtraCost: 5000, returnCost: 3000, exchangeCost: 6000, returnCourierCd: 'CJ', returnAddrZip: '', returnAddr: '', returnAddrDetail: '', returnTelNo: '', baseDlivYn: 'N', useYn: 'Y' });
       uiState.selectedId = '__new__';
       uiState.isNew = true;
+      uiState.dtlMode = 'edit';
     };
 
     /* handleSave — 저장 */
@@ -160,6 +192,7 @@ window.PdDlivTmpltMng = {
       else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
       try {
         const res = await boApiSvc.pdDlivTmplt.save(form.dlivTmpltId || null, { ...form }, '배송템플릿관리', isNewTmplt ? '등록' : '저장');
+        uiState.dtlMode = 'view';
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -172,7 +205,7 @@ window.PdDlivTmpltMng = {
       if (!cfSelectedRow.value) { return; }
       const ok = await showConfirm('삭제', `[${cfSelectedRow.value.dlivTmpltNm}]을 삭제하시겠습니까?`);
       if (!ok) { return; }
-      const si = dlivTmplts.findIndex(t => t.dlivTmpltId === cfSelectedRow.value.dlivTmpltId); if (si !== -1) dlivTmplts.splice(si, 1); uiState.selectedId = null;
+      const si = dlivTmplts.findIndex(t => t.dlivTmpltId === cfSelectedRow.value.dlivTmpltId); if (si !== -1) dlivTmplts.splice(si, 1); resetDetailToNew();
       try {
         const res = await boApiSvc.pdDlivTmplt.remove(cfSelectedRow.value.dlivTmpltId, '배송템플릿관리', '삭제');
       } catch (err) {
@@ -281,7 +314,7 @@ window.PdDlivTmpltMng = {
 
     return {
       columns,
-      uiState, searchParam, baseGridPager, dlivTmplts, form,       // 상태 / 데이터
+      uiState, cfDtlMode, searchParam, baseGridPager, dlivTmplts, form,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, // dispatch
     };
   },
@@ -305,7 +338,11 @@ window.PdDlivTmpltMng = {
       :columns="columns.baseGrid" :rows="dlivTmplts" row-key="dlivTmpltId" :selected-key="uiState.selectedId"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
-      @sort="key => handleBtnAction('dlivTmplts-sort', key)" grid-id="dlivTmplts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"></bo-grid>
+      @sort="key => handleBtnAction('dlivTmplts-sort', key)" grid-id="dlivTmplts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn_row_edit btn-sm" @click.stop="handleGridCellAction('dlivTmplts-cellClick', 'btn_row_edit', row)">수정</button>
+      </template>
+    </bo-grid>
     <!-- 페이저는 그리드 밖, 컨테이너 안에 배치 -->
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
   </bo-container>
@@ -315,7 +352,7 @@ window.PdDlivTmpltMng = {
     <!-- ===== ■.■. 상세 툴바: 제목만 (저장/삭제/닫기는 하단 form-actions) ======== -->
     <div class="toolbar">
       <span class="list-title">
-        {{ !uiState.selectedId ? '배송템플릿 상세' : (uiState.isNew ? '배송템플릿 신규 등록' : '배송템플릿 상세 / 수정') }}
+        {{ !uiState.selectedId ? '배송템플릿 상세' : (uiState.isNew ? '배송템플릿 신규' : (cfDtlMode ? '배송템플릿 상세' : '배송템플릿 수정')) }}
         <span v-if="uiState.selectedId ? (!uiState.isNew ? (form.dlivTmpltId) : false) : false" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ form.dlivTmpltId }}
         </span>
@@ -328,12 +365,18 @@ window.PdDlivTmpltMng = {
     <div v-else style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="columns.baseForm" :form="form" :errors="{}"
-        :cols="3" compact :show-actions="false" />
-      <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
+        :cols="3" compact :show-actions="false" :readonly="cfDtlMode" plain-readonly />
+      <!-- ===== ■.■.■. 하단 액션 — 보기모드=[수정][닫기] / 수정모드=[저장][삭제][취소] (.form-actions 중앙 정렬) ===== -->
       <div class="form-actions">
-        <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
-        <button v-if="!uiState.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+        <template v-if="cfDtlMode">
+          <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+          <button v-if="!uiState.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+          <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+        </template>
       </div>
     </div>
   </bo-container>

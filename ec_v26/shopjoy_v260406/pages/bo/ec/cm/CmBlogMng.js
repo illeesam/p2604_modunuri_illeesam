@@ -50,6 +50,12 @@ window.CmBlogMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 상세 인라인 패널 보기모드 → 수정모드 전환
+      } else if (cmd === 'detailPanel-edit') {
+        return switchToEdit();
+      // 상세 인라인 패널 수정 취소 (보기모드 복귀 또는 닫기)
+      } else if (cmd === 'detailPanel-cancel') {
+        return handleCancelEdit();
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'blogs-sort') {
         return onSort(param);
@@ -101,7 +107,7 @@ window.CmBlogMng = {
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
-          return openDetail(row);
+          return loadView(row);
         }
       } else if (cmd === 'attach-cellChange') {
         return attachCellChange(row, colKey);
@@ -122,7 +128,8 @@ window.CmBlogMng = {
     /* ===== 상세 인라인 패널 ===== */
     /* _initBlogForm — 빈(신규) 블로그 폼 기본값 */
     const _initBlogForm = () => ({ blogId: null, siteId: null, blogCateId: null, blogTypeCd: 'BLOG', blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
-    const detailPanel = reactive({ show: true, active: false, isNew: false, dtlId: null, form: _initBlogForm() }); // 인라인 Dtl 패널 상태 (항상 표시, active=false 면 버튼 숨김)
+    const detailPanel = reactive({ show: true, active: false, isNew: false, dtlMode: 'view', dtlId: null, form: _initBlogForm() }); // 인라인 Dtl 패널 상태 (항상 표시, active=false 면 버튼 숨김). dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => detailPanel.dtlMode === 'view');
 
     /* ===== 첨부 이미지(cm_blog_file) 관리 그리드 상태 ===== */
     const attachRows = reactive([]);                 // 첨부 그리드 행 (_row_status N/I/U/D)
@@ -191,6 +198,7 @@ window.CmBlogMng = {
     const resetDetailToNew = () => {
       Object.assign(detailPanel.form, _initBlogForm());
       detailPanel.dtlId = null; detailPanel.isNew = false; detailPanel.show = true; detailPanel.active = false;
+      detailPanel.dtlMode = 'view';
       attachRows.splice(0, attachRows.length);
       attachUi.focusedIdx = null; attachUi.checkAll = false;
     };
@@ -207,24 +215,42 @@ window.CmBlogMng = {
       attachUi.focusedIdx = null; attachUi.checkAll = false;
     };
 
-    /* openDetail — 인라인 패널 열기 (토글)
+    /* _loadDetailForm — 인라인 패널에 행 데이터 적재 (view/edit 공용)
      *   본문 이미지 경로 '/cdn/...' → 'assets/cdn/...' 보정 후 에디터에 표시 (저장 시 역변환) */
-    const openDetail = (row) => {
+    const _loadDetailForm = (row, mode) => {
       Object.assign(detailPanel.form, _initBlogForm(), { ...row });
       detailPanel.form.blogContent = coUtil.cofHtmlCdnToAsset(detailPanel.form.blogContent);
       detailPanel.dtlId = row.blogId; detailPanel.isNew = false; detailPanel.show = true; detailPanel.active = true;
+      detailPanel.dtlMode = mode;
       _loadAttachRows(row.files);
     };
 
-    /* openNew — 신규 등록 */
+    /* loadView — 보기모드로 인라인 패널 열기 (행 클릭 / 제목 링크) */
+    const loadView = (row) => _loadDetailForm(row, 'view');
+
+    /* openDetail — 수정모드로 인라인 패널 열기 ([수정] 버튼) */
+    const openDetail = (row) => _loadDetailForm(row, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (상세 패널 하단 [수정] 버튼) */
+    const switchToEdit = () => { detailPanel.dtlMode = 'edit'; };
+
+    /* openNew — 신규 등록 (항상 수정모드로 시작) */
     const openNew = () => {
       Object.assign(detailPanel.form, _initBlogForm());
       detailPanel.dtlId = '__new__'; detailPanel.isNew = true; detailPanel.show = true; detailPanel.active = true;
+      detailPanel.dtlMode = 'edit';
       _loadAttachRows([]);
     };
 
     /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
     const closeDetail = () => { resetDetailToNew(); };
+
+    /* handleCancelEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 행 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelEdit = () => {
+      if (detailPanel.isNew) { return closeDetail(); }
+      const row = cfSelectedRow.value;
+      return row ? loadView(row) : closeDetail();
+    };
 
     /* handleSave — 저장 (블로그 본문 + 첨부 이미지 일괄) */
     const handleSave = async () => {
@@ -472,14 +498,14 @@ window.CmBlogMng = {
 
     return {
       columns,
-      blogs, uiState, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
+      blogs, uiState, searchParam, baseGridPager, detailPanel, cfDtlMode, // 상태 / 데이터
       attachRows, attachUi,                                          // 첨부 그리드 상태
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       fnGridRowClass, fnRowThumb, fnAttachPreview,         // 헬퍼
     };
   },
   template: `
-<bo-page title="게시판(블로그)관리">
+<bo-page title="뉴스&블로그관리">
   <!-- ===== ■. 검색 ======================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -524,7 +550,7 @@ window.CmBlogMng = {
     <div class="card">
       <div class="toolbar">
         <span class="list-title">
-          {{ !detailPanel.active ? '상세 / 등록' : (detailPanel.isNew ? '신규 등록' : '상세 / 수정') }}
+          {{ !detailPanel.active ? '게시판&블로그 상세' : (detailPanel.isNew ? '게시판&블로그 신규' : (cfDtlMode ? '게시판&블로그 상세' : '게시판&블로그 수정')) }}
           <span v-if="detailPanel.active ? (!detailPanel.isNew ? (detailPanel.form.blogId) : false) : false" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
             #{{ detailPanel.form.blogId }}
           </span>
@@ -538,14 +564,24 @@ window.CmBlogMng = {
       <div v-else style="padding:12px">
         <!-- ===== ■.■.■. 폼 영역 ================================================ -->
         <bo-form-area :columns="columns.blogForm" :form="detailPanel.form" :errors="{}"
-          :cols="3" compact :show-actions="false">
+          :cols="3" compact :show-actions="false" :readonly="cfDtlMode" plain-readonly>
           <template #blogContent>
-            <base-html-editor v-model="detailPanel.form.blogContent" height="320px" />
+            <div v-if="cfDtlMode" class="readonly-field-plain" v-html="detailPanel.form.blogContent || '-'"></div>
+            <base-html-editor v-else v-model="detailPanel.form.blogContent" height="320px" />
           </template>
         </bo-form-area>
         <!-- ===== ■.■.■. 첨부 이미지 관리 (목록 썸네일·상세 이미지 소스) ============= -->
         <div style="margin-top:16px;">
-          <bo-grid-crud
+          <template v-if="cfDtlMode">
+            <div class="list-title" style="margin-bottom:6px;">첨부 이미지</div>
+            <div v-if="attachRows.length" style="display:flex;flex-wrap:wrap;gap:8px;">
+              <img v-for="row in attachRows.filter(r => fnAttachPreview(r))" :key="row.blogFileId"
+                :src="fnAttachPreview(row)" :alt="row.imgAltText"
+                style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #eee;" />
+            </div>
+            <div v-else class="readonly-field-plain">-</div>
+          </template>
+          <bo-grid-crud v-else
             list-title="첨부 이미지"
             :columns="columns.attachGrid" :rows="attachRows" row-key="blogFileId"
             grid-id="attach-cellChange"
@@ -563,21 +599,31 @@ window.CmBlogMng = {
               <span v-else style="color:#ccc;font-size:11px;">-</span>
             </template>
           </bo-grid-crud>
-          <div style="font-size:11px;color:#999;margin-top:4px;">
+          <div v-if="!cfDtlMode" style="font-size:11px;color:#999;margin-top:4px;">
             * 첫 번째 행(정렬 가장 위)의 이미지가 목록 썸네일로 표시됩니다. 저장은 하단 [저장] 버튼으로 본문과 함께 반영됩니다.
           </div>
         </div>
-        <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
+        <!-- ===== ■.■.■. 하단 액션 — 보기모드=[수정][닫기] / 수정모드=[저장][삭제][취소] (.form-actions 중앙 정렬) ===== -->
         <div class="form-actions">
-          <button class="btn btn_save" @click="handleBtnAction('detailPanel-save')">
-            저장
-          </button>
-          <button v-if="!detailPanel.isNew" class="btn btn_delete" @click="handleBtnAction('detailPanel-delete')">
-            삭제
-          </button>
-          <button class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-            닫기
-          </button>
+          <template v-if="cfDtlMode">
+            <button class="btn btn_edit" @click="handleBtnAction('detailPanel-edit')">
+              수정
+            </button>
+            <button class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
+              닫기
+            </button>
+          </template>
+          <template v-else>
+            <button class="btn btn_save" @click="handleBtnAction('detailPanel-save')">
+              저장
+            </button>
+            <button v-if="!detailPanel.isNew" class="btn btn_delete" @click="handleBtnAction('detailPanel-delete')">
+              삭제
+            </button>
+            <button class="btn btn_cancel" @click="handleBtnAction('detailPanel-cancel')">
+              취소
+            </button>
+          </template>
         </div>
       </div>
       <!-- ===== □.■. 블로그 detail 폼 ========================================== -->

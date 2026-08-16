@@ -11,7 +11,8 @@ window.StSettleEtcAdjMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const uiState = reactive({ error: null, selectedId: null, isNew: false });
+    const uiState = reactive({ error: null, selectedId: null, isNew: false, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => uiState.dtlMode === 'view');
     const codes = reactive({
       settle_etc_adj_types: [],
       adj_dirs: [],
@@ -34,6 +35,10 @@ window.StSettleEtcAdjMng = {
       } else if (cmd === 'form-save') {
         return handleSave();
       } else if (cmd === 'form-cancel') {
+        return handleCancelEdit();
+      } else if (cmd === 'form-edit') {
+        return switchToEdit();
+      } else if (cmd === 'form-close') {
         return closeForm();
       } else if (cmd === 'etcAdjs-pager-setPage') {
         if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchData('PAGE_CLICK'); }
@@ -59,9 +64,16 @@ window.StSettleEtcAdjMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (번호/조정ID 클릭 시 상세 열기) */
-    const handleGridCellAction = (cmd, colKey, row) => {
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ StSettleEtcAdjMng.js : handleGridCellAction -> ', cmd, colKey, row);
-      if (cmd === 'etcAdjs-cellClick') { return openEdit(row); }
+      if (cmd === 'etcAdjs-cellClick') {
+        // 보기모드 트리거 컬럼: 조정ID(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row);
+        }
+        return;
+      }
       console.warn('[handleGridCellAction] unknown cmd:', cmd);
     };
 
@@ -151,18 +163,38 @@ window.StSettleEtcAdjMng = {
       etcAdjReason: window.yup.string().required('사유를 입력하세요.'),
     });
 
-    /* openNew — 신규 열기 */
+    /* openNew — 신규 열기 (항상 수정모드로 시작) */
     const openNew = () => {
       Object.assign(form, { settleEtcAdjId: null, settleId: '', etcAdjTypeCd: '', etcAdjDirCd: '', etcAdjAmt: 0, etcAdjReason: '', settleEtcAdjMemo: '' });
-      uiState.selectedId = '__new__'; uiState.isNew = true;
+      uiState.selectedId = '__new__'; uiState.isNew = true; uiState.dtlMode = 'edit';
       Object.keys(errors).forEach(k => delete errors[k]);
     };
 
-    /* openEdit — 열기 */
-    const openEdit = (r) => { Object.assign(form, {...r}); uiState.selectedId = r.settleEtcAdjId; uiState.isNew = false; Object.keys(errors).forEach(k => delete errors[k]); };
+    /* _loadDetailForm — 인라인 패널에 행 데이터 적재 (view/edit 공용) */
+    const _loadDetailForm = (r, mode) => {
+      Object.assign(form, {...r});
+      uiState.selectedId = r.settleEtcAdjId; uiState.isNew = false; uiState.dtlMode = mode;
+      Object.keys(errors).forEach(k => delete errors[k]);
+    };
+
+    /* loadView — 보기모드로 인라인 패널 열기 (행 클릭) */
+    const loadView = (r) => _loadDetailForm(r, 'view');
+
+    /* openEdit — 수정모드로 인라인 패널 열기 ([수정] 버튼) */
+    const openEdit = (r) => _loadDetailForm(r, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (BoFormArea readonly 상태의 [수정] 버튼) */
+    const switchToEdit = () => { uiState.dtlMode = 'edit'; };
 
     /* closeForm — 닫기 */
-    const closeForm = () => { uiState.selectedId = null; };
+    const closeForm = () => { uiState.selectedId = null; uiState.isNew = false; uiState.dtlMode = 'view'; };
+
+    /* handleCancelEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 행 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelEdit = () => {
+      if (uiState.isNew) { return closeForm(); }
+      const row = etcAdjs.find(a => a.settleEtcAdjId === uiState.selectedId);
+      return row ? loadView(row) : closeForm();
+    };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
@@ -262,7 +294,7 @@ window.StSettleEtcAdjMng = {
 
     return {
       columns,
-      uiState, baseGridPager, etcAdjs, searchParam, form, errors,
+      uiState, cfDtlMode, baseGridPager, etcAdjs, searchParam, form, errors,
       handleBtnAction, handleSelectAction, handleGridCellAction,
     };
   },
@@ -283,7 +315,7 @@ window.StSettleEtcAdjMng = {
       :columns="columns.baseGrid" :rows="etcAdjs" row-key="settleEtcAdjId" :selected-key="uiState.selectedId"
       :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.settleEtcAdjId ? 'selected' : ''"
-      grid-id="etcAdjs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row)">
+      grid-id="etcAdjs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         액션
       </template>
@@ -298,15 +330,16 @@ window.StSettleEtcAdjMng = {
   </bo-container>
   <!-- ===== ■. 상세 패널 (전체 폭 — 항상 표시, 미선택 시 안내) ===================== -->
   <bo-container card-style="margin-top:12px"
-    :title="!uiState.selectedId ? '기타조정 상세' : (uiState.isNew ? '기타조정 추가' : '기타조정 수정')">
+    :title="!uiState.selectedId ? '기타정산조정 상세' : (uiState.isNew ? '기타정산조정 신규' : (cfDtlMode ? '기타정산조정 상세' : '기타정산조정 수정'))">
     <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
     <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
       목록에서 기타조정 행을 선택하거나 [+ 기타조정 추가]를 누르면 입력할 수 있습니다.
     </div>
-    <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) ============================= -->
+    <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) — readonly 시 BoFormArea 가 [수정][닫기] 자동 노출 ===== -->
     <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"
-      :cols="3"
-      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
+      :cols="3" :readonly="cfDtlMode" plain-readonly
+      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')"
+      @edit="handleBtnAction('form-edit')" @close="handleBtnAction('form-close')" />
   </bo-container>
 </bo-page>
 `,

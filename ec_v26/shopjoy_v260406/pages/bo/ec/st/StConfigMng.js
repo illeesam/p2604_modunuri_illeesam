@@ -8,10 +8,11 @@ window.StConfigMng = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, watch, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const uiState = reactive({ isNew: false, error: null, loading: false, selectedId: null });
+    const uiState = reactive({ isNew: false, error: null, loading: false, selectedId: null, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
+    const cfDtlMode = computed(() => uiState.dtlMode === 'view');
     const configs = reactive([]);
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -24,6 +25,10 @@ window.StConfigMng = {
       } else if (cmd === 'form-save') {
         return handleSave();
       } else if (cmd === 'form-cancel') {
+        return handleCancelEdit();
+      } else if (cmd === 'form-edit') {
+        return switchToEdit();
+      } else if (cmd === 'form-close') {
         return closeForm();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -43,9 +48,16 @@ window.StConfigMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (번호/카테고리 클릭 시 상세 열기) */
-    const handleGridCellAction = (cmd, colKey, row) => {
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ StConfigMng.js : handleGridCellAction -> ', cmd, colKey, row);
-      if (cmd === 'configs-cellClick') { return openEdit(row); }
+      if (cmd === 'configs-cellClick') {
+        // 보기모드 트리거 컬럼: 카테고리(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row);
+        }
+        return;
+      }
       console.warn('[handleGridCellAction] unknown cmd:', cmd);
     };
 
@@ -112,24 +124,42 @@ window.StConfigMng = {
       useYn: apiData.useYn
     });
 
-    /* openEdit — 열기 */
-    const openEdit = (c) => {
+    /* _loadDetailForm — 인라인 패널에 행 데이터 적재 (view/edit 공용) */
+    const _loadDetailForm = (c, mode) => {
       Object.assign(form, fnMapApiToUi(c));
       uiState.selectedId = c.settleConfigId;
       uiState.isNew = false;
+      uiState.dtlMode = mode;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
 
-    /* openNew — 신규 열기 */
+    /* loadView — 보기모드로 인라인 패널 열기 (행 클릭) */
+    const loadView = (c) => _loadDetailForm(c, 'view');
+
+    /* openEdit — 수정모드로 인라인 패널 열기 ([수정] 버튼) */
+    const openEdit = (c) => _loadDetailForm(c, 'edit');
+
+    /* switchToEdit — 보기모드 → 수정모드 전환 (BoFormArea readonly 상태의 [수정] 버튼) */
+    const switchToEdit = () => { uiState.dtlMode = 'edit'; };
+
+    /* openNew — 신규 열기 (항상 수정모드로 시작) */
     const openNew = () => {
       Object.assign(form, { settleConfigId: null, siteId: null, siteNm: '', settleCycleCd: 'MONTHLY', settleDay: 10, commissionRate: 10, minSettleAmt: 10000, useYn: 'Y', settleConfigRemark: '' });
       uiState.selectedId = '__new__';
       uiState.isNew = true;
+      uiState.dtlMode = 'edit';
       Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* closeForm — 닫기 */
-    const closeForm = () => { uiState.selectedId = null; };
+    const closeForm = () => { uiState.selectedId = null; uiState.isNew = false; uiState.dtlMode = 'view'; };
+
+    /* handleCancelEdit — 수정 취소: 신규 등록 중이면 패널 닫기, 기존 행 수정 중이면 원본 재적재 후 보기모드 복귀 */
+    const handleCancelEdit = () => {
+      if (uiState.isNew) { return closeForm(); }
+      const row = configs.find(c => c.settleConfigId === uiState.selectedId);
+      return row ? loadView(row) : closeForm();
+    };
 
     /* validate — 검증 */
     const validate = () => {
@@ -242,7 +272,7 @@ window.StConfigMng = {
 
     return {
       columns,
-      uiState, configs, form, errors,
+      uiState, cfDtlMode, configs, form, errors,
       handleBtnAction, handleSelectAction, handleGridCellAction,
     };
   },
@@ -259,7 +289,7 @@ window.StConfigMng = {
       :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId" :selected-key="uiState.selectedId"
       :row-actions="true"
       :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''"
-      grid-id="configs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row)">
+      grid-id="configs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         액션
       </template>
@@ -273,15 +303,16 @@ window.StConfigMng = {
   </bo-container>
   <!-- ===== ■. 상세 패널 (항상 표시 — 미선택 시 안내, 선택/신규 시 폼) ============== -->
   <bo-container card-style="margin-top:12px"
-    :title="!uiState.selectedId ? '정산기준 상세' : (uiState.isNew ? '정산기준 추가' : '정산기준 수정')">
+    :title="!uiState.selectedId ? '정산설정 상세' : (uiState.isNew ? '정산설정 신규' : (cfDtlMode ? '정산설정 상세' : '정산설정 수정'))">
     <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
     <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
       목록에서 정산기준 행을 선택하거나 [+신규]를 누르면 입력할 수 있습니다.
     </div>
-    <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) ============================= -->
+    <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) — readonly 시 BoFormArea 가 [수정][닫기] 자동 노출 ===== -->
     <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"
-      :cols="3"
-      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
+      :cols="3" :readonly="cfDtlMode" plain-readonly
+      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')"
+      @edit="handleBtnAction('form-edit')" @close="handleBtnAction('form-close')" />
   </bo-container>
 </bo-page>
 `,
