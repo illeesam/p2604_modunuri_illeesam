@@ -102,7 +102,6 @@ window.SyExceldownDtl = {
       { key: 'cancelBy', label: '취소자', type: 'readonly', visible: (f) => !!f.cancelBy, fmt: (v) => v },
       { key: 'cancelDate', label: '취소일시', type: 'readonly', visible: (f) => !!f.cancelBy, fmt: (v) => fnDateTime(v) },
 
-      { type: 'group', label: '조건 · 헤더' },
       { key: 'searchCondText', label: '조건값', type: 'readonly', colSpan: 3, fmt: (v) => v || '-' },
       { key: 'excelColumns', label: '헤더명', type: 'readonly', colSpan: 3, fmt: (v) => v || '-' },
       { key: 'errorMsg', label: '사유', type: 'readonly', colSpan: 3, visible: (f) => !!f.errorMsg, html: true,

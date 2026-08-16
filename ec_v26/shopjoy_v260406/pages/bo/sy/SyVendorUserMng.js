@@ -639,6 +639,7 @@ window.SyVendorUserMng = {
 
     // 판매업체 사용자 폼
     columns.baseVendorUserForm = [
+      { type: 'group', label: '기본 · 연락처' },
       { key: 'vendorId',          label: '업체', type: 'readonly',
         fmt: (v) => fnVendorSummary(v) },
       { key: 'memberNm',          label: '이름', type: 'text', required: true },
@@ -648,6 +649,7 @@ window.SyVendorUserMng = {
       { key: 'vendorUserMobile',  label: '휴대전화', type: 'text', required: true },
       { key: 'vendorUserEmail',   label: '이메일', type: 'text', required: true },
       { key: 'birthDate',         label: '생년월일', type: 'date' },
+      { type: 'group', label: '권한 · 재직정보' },
       { key: 'isMain',            label: '대표 담당자', type: 'select', options: () => codes.BOOL_YN },
       { key: 'authYn',            label: '관리권한', type: 'select', options: () => codes.BOOL_YN },
       { key: 'vendorUserStatusCd', label: '상태', type: 'select',

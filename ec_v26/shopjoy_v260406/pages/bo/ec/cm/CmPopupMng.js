@@ -440,6 +440,7 @@ window.CmPopupMng = {
     ];
 
     columns.baseForm = [
+      { type: 'group', label: '팝업 정의' },
       { key: 'popupCode', label: '팝업코드', type: 'text', required: true, mono: true, placeholder: 'user, dept, prod …' },
       { key: 'popupNm', label: '팝업명(제목)', type: 'text', required: true, colSpan: 2 },
       { key: 'popupPattern', label: '화면패턴', type: 'select',
@@ -455,6 +456,7 @@ window.CmPopupMng = {
       { key: 'parentField', label: '트리 부모 필드', type: 'text', mono: true,
         visible: (f) => Number(f.popupPattern) >= 2, placeholder: 'parentDeptId (패턴2·3 필수)' },
       /* 라벨 조인 — 드라이빙 별칭은 항상 a, 조인 별칭은 b~z. to-one 만 허용 */
+      { type: 'group', label: '조회 · 표시 · 운영정보' },
       { key: 'joinClause', label: '조인절(LEFT JOIN)', type: 'text', mono: true, colSpan: 3,
         placeholder: 'LEFT JOIN SyDept b ON b.deptId = a.deptId',
         hint: '항목의 출력식(b.deptNm)과 함께 사용 · 형태 고정' },
@@ -517,6 +519,7 @@ window.CmPopupMng = {
     ];
 
     columns.itemForm = [
+      { type: 'group', label: '필드 · 조회조건' },
       { key: 'fieldNm', label: '엔티티 필드명', type: 'text', required: true, mono: true, placeholder: 'userNm' },
       { key: 'fieldLabel', label: '화면 라벨', type: 'text', required: true },
       { key: 'fieldTypeCd', label: '필드유형', type: 'select',
@@ -546,6 +549,7 @@ window.CmPopupMng = {
       { key: 'searchTypeCd', label: '검색연산', type: 'select',
         visible: (f) => f.searchYn === 'Y',
         options: () => [{ value: 'LIKE', label: 'LIKE (부분일치)' }, { value: 'EQ', label: 'EQ (정확히·드롭다운)' }, { value: 'RANGE', label: 'RANGE (범위)' }] },
+      { type: 'group', label: '표시 옵션' },
       { key: 'listYn', label: '목록항목 여부', type: 'select',
         options: () => [{ value: 'Y', label: '목록에 표시' }, { value: 'N', label: '표시 안함' }] },
       { key: 'treeLabelYn', label: '트리 라벨', type: 'select',

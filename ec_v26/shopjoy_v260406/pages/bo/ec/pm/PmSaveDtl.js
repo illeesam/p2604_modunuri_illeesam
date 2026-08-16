@@ -384,6 +384,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       { key: 'issueGrades', label: '적용 회원 등급', type: 'slot', name: 'issueGrades', colSpan: 2 },
     ];
     columns.infoForm = [
+      { type: 'group', label: '적립금정보' },
       { key: 'saveNm',      label: '적립금명', type: 'text', required: true,
         placeholder: '적립금명 입력' },
       { key: 'saveTypeCd',  label: '적립금 유형', type: 'select', options: () => codes.save_types },
@@ -462,7 +463,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     <!-- ===== ■.■. 발급대상 ================================================== -->
     <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 발급대상</div>
-      <bo-form-area :columns="columns.targetForm" :form="form" :errors="{}" :cols="3"
+      <bo-form-area :columns="columns.targetForm" :form="form" :errors="{}" :cols="3" compact
         :show-actions="false" :readonly="cfDtlMode">
         <template #issueGrades>
           <bo-multi-check-select

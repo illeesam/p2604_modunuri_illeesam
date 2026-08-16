@@ -216,6 +216,7 @@ window.SyUserDtl = {
 
     // 기본 폼 (cols=3, 1열 위주 + 주소/프로필은 한 줄 전체 폭)
     columns.baseForm = [
+      { type: 'group', label: '계정 · 연락처정보' },
       // 1행: 사이트명(2) + 로그인ID(1)
       { key: '_siteNm',      label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { key: 'loginId',      label: '로그인ID', type: 'text', required: true,

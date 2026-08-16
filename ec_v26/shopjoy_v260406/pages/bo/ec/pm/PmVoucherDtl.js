@@ -396,6 +396,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
     // --- [컬럼 정의] ---
     columns.infoForm = [
+      { type: 'group', label: '상품권정보' },
       { key: 'voucherNm',     label: '상품권명', type: 'text', required: true,
         placeholder: '예: ShopJoy 10,000원 상품권' },
       { key: 'voucherAmt',    label: '액면가 (원)', type: 'number', required: true, placeholder: '0' },

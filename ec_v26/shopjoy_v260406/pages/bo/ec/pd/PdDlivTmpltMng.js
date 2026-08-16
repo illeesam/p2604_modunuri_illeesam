@@ -247,6 +247,7 @@ window.PdDlivTmpltMng = {
 
     // 기본 폼 — cols=3 기준 자연 배치
     columns.baseForm = [
+      { type: 'group', label: '기본 · 배송비 설정' },
       /* 1행: 템플릿명(2) + 배송방법(1) */
       { key: 'dlivTmpltNm',      label: '템플릿명', type: 'text', required: true, colSpan: 2 },
       { key: 'dlivMethodCd',     label: '배송방법', type: 'select', nullable: false,
@@ -261,6 +262,7 @@ window.PdDlivTmpltMng = {
       { key: 'freeDlivMinAmt',   label: '무료배송 최소금액 (원)', type: 'number' },
       { key: 'islandExtraCost',  label: '도서산간 추가배송비 (원)', type: 'number' },
       { key: 'returnCost',       label: '반품배송비 편도 (원)', type: 'number' },
+      { type: 'group', label: '반품정보' },
       /* 4행: 교환배송 왕복 + 반품 택배사 + 반품지 우편번호 */
       { key: 'exchangeCost',     label: '교환배송비 왕복 (원)', type: 'number' },
       { key: 'returnCourierCd',  label: '반품 택배사', type: 'select', nullLabel: '없음',

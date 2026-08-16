@@ -497,7 +497,7 @@ window.PmDiscntDtl = {
     <!-- ===== ■.■. 적용대상 ================================================== -->
     <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 적용대상</div>
-      <bo-form-area :columns="columns.discntApplyForm" :form="form" :errors="{}" :cols="3"
+      <bo-form-area :columns="columns.discntApplyForm" :form="form" :errors="{}" :cols="3" compact
         :show-actions="false" :readonly="cfDtlMode">
         <template #issueGrades>
           <bo-multi-check-select

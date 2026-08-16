@@ -415,6 +415,7 @@ window.SyMemberLoginHist = {
 
     /* logGridRowDetail — 로그인 로그 행 펼침 BoFormArea 컬럼 (cols=6, 라벨+값 그대로) */
     columns.logGridRowDetail = [
+      { type: 'group', label: '로그인정보' },
       { key: '_loginDate',  label: '로그인일시', type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.loginDate || row.regDate || '') || '-' },
       { key: '_ip',         label: 'IP',         type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
       { key: '_os',         label: 'OS',         type: 'readonly', fmt: (v, row) => row.os || '-' },
@@ -422,6 +423,7 @@ window.SyMemberLoginHist = {
       { key: '_country',    label: '국가',       type: 'readonly', fmt: (v, row) => row.country || '-' },
       { key: '_failCnt',    label: '연속실패',    type: 'readonly', fmt: (v, row) => row.failCnt > 0 ? (row.failCnt + '회') : '-' },
       { key: '_result',     label: '결과',       type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnResultBadge(row.resultCd)}">${fnResultLabel(row.resultCd)}</span>` },
+      { type: 'group', label: '요청헤더 (X-*) · 계정정보' },
       { key: '_uiNm',       label: 'x-ui-nm',    type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
       { key: '_cmdNm',      label: 'x-cmd-nm',   type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
       { key: '_fileNm',     label: 'x-file-nm',  type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },
@@ -437,6 +439,7 @@ window.SyMemberLoginHist = {
 
     /* tokenGridRowDetail — 토큰 이력 행 펼침 BoFormArea 컬럼 (cols=6) */
     columns.tokenGridRowDetail = [
+      { type: 'group', label: '토큰정보' },
       { key: '_action',      label: '액션',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnActionBadge(row.actionCd)}">${fnActionLabel(row.actionCd)}</span>` },
       { key: '_tokenType',   label: '토큰유형', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnTypeBadge(row.tokenTypeCd)}">${row.tokenTypeCd || '-'}</span>` },
       { key: '_atExp',       label: 'AT만료',   type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.accessTokenExp || '') || '-' },
@@ -444,6 +447,7 @@ window.SyMemberLoginHist = {
       { key: '_ip',          label: 'IP',       type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
       { key: '_memberId',    label: '회원ID',   type: 'readonly', fmt: (v, row) => row.memberId || '-' },
       { key: '_revokeReason',label: '폐기사유', type: 'readonly', visible: (row) => !!row.revokeReasonCd, fmt: (v, row) => row.revokeReasonCd || '-' },
+      { type: 'group', label: '요청헤더 (X-*) · 토큰값' },
       { key: '_uiNm',        label: 'x-ui-nm',  type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
       { key: '_cmdNm',       label: 'x-cmd-nm', type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
       { key: '_fileNm',      label: 'x-file-nm',type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },

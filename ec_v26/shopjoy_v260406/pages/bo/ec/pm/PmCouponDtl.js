@@ -510,6 +510,7 @@ window.PmCouponDtl = {
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
     // 정보 영역 폼
     columns.infoForm = [
+      { type: 'group', label: '기본정보 · 할인조건' },
       { key: 'couponTypeCd',   label: '쿠폰 타입', type: 'select', nullable: false,
         options: () => codes.COUPON_TYPE },
       { key: 'couponNm',       label: '쿠폰명', type: 'text', required: true, placeholder: '쿠폰명 입력' },
@@ -520,6 +521,7 @@ window.PmCouponDtl = {
       { key: 'discountVal',    label: '할인값', type: 'number', required: true },
       { key: 'minOrderAmt',    label: '최소주문금액 (원)', type: 'number', placeholder: '0' },
       { key: 'maxDiscountAmt', label: '최대할인금액 (원)', type: 'number', placeholder: '0 = 무제한' },
+      { type: 'group', label: '발급 · 담당정보' },
       { key: 'validFrom',      label: '시작일', type: 'date' },
       { key: 'validTo',        label: '만료일', type: 'date', required: true },
       { key: 'issueLimit',     label: '총 발급수량', type: 'number', placeholder: '0 = 무제한' },

@@ -161,6 +161,7 @@ window.SyVendorDtl = {
     // 기본 폼 (cols=3 빈칸 최소화 + 메모는 한 줄 전체 폭)
     const columns = {};
     columns.baseForm = [
+      { type: 'group', label: '업체정보' },
       // 1행: 사이트명(2) + 업체유형(1)
       { key: '_siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { key: 'vendorTypeCd',     label: '업체유형', type: 'select', nullable: false, required: true,

@@ -463,6 +463,7 @@ window.SyApiLogMng = {
 
     /* accessGridRowDetail — API요청로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
     columns.accessGridRowDetail = [
+      { type: 'group', label: '요청정보' },
       { key: '_path',     label: '경로',     type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => (row.reqPath || '') + (row.reqQuery ? '?' + row.reqQuery : '') },
       { key: '_method',   label: '메서드',   type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnMethodBadge(row.reqMethod)}">${row.reqMethod || '-'}</span>` },
       { key: '_status',   label: '상태코드', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnStatusBadge(row.respStatus)}">${row.respStatus || '-'}</span>` },
@@ -470,12 +471,14 @@ window.SyApiLogMng = {
       { key: '_ip',       label: 'IP',       type: 'readonly', mono: true, fmt: (v, row) => row.reqIp || '-' },
       { key: '_host',     label: 'Host',     type: 'readonly', mono: true, fmt: (v, row) => row.reqHost || '-' },
       { key: '_ua',       label: 'UA',       type: 'readonly', colSpan: 3, fmt: (v, row) => row.reqUa || '-' },
+      { type: 'group', label: '요청헤더 (X-*)' },
       { key: '_uiNm',     label: 'x-ui-nm',  type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
       { key: '_cmdNm',    label: 'x-cmd-nm', type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
       { key: '_fileNm',   label: 'x-file-nm',type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },
       { key: '_funcNm',   label: 'x-func-nm',type: 'readonly', mono: true, fmt: (v, row) => row.funcNm || '-' },
       { key: '_lineNo',   label: 'x-line-no',type: 'readonly', mono: true, fmt: (v, row) => row.lineNo || '-' },
       { key: '_traceId',  label: 'x-trace-id',type: 'readonly', mono: true, colSpan: 3, fmt: (v, row) => row.traceId || '-' },
+      { type: 'group', label: '사용자 · 권한 · 서버' },
       { key: '_userId',   label: '사용자ID', type: 'readonly', fmt: (v, row) => row.userId || '-' },
       { key: '_appType',  label: '앱유형',   type: 'readonly', fmt: (v, row) => row.appTypeCd || '-' },
       { key: '_roleId',   label: '역할ID',   type: 'readonly', fmt: (v, row) => row.roleId || '-' },
@@ -489,6 +492,7 @@ window.SyApiLogMng = {
 
     /* errorGridRowDetail — API오류로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
     columns.errorGridRowDetail = [
+      { type: 'group', label: '요청 · 오류정보' },
       { key: '_path',     label: '경로',       type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => (row.reqPath || '') + (row.reqQuery ? '?' + row.reqQuery : '') },
       { key: '_method',   label: '메서드',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnMethodBadge(row.reqMethod)}">${row.reqMethod || '-'}</span>` },
       { key: '_respTime', label: '처리시간',   type: 'readonly', fmt: (v, row) => row.respTimeMs != null ? row.respTimeMs + 'ms' : '-' },
@@ -499,6 +503,7 @@ window.SyApiLogMng = {
       { key: '_errorMsg', label: '오류메시지', type: 'readonly', colSpan: 4, fmt: (v, row) => row.errorMsg || '-' },
       { key: '_server',   label: '서버',       type: 'readonly', mono: true, fmt: (v, row) => row.serverNm || '-' },
       { key: '_profile',  label: '프로파일',   type: 'readonly', html: true, fmt: (v, row) => row.profile ? `<span class="badge badge-blue" style="font-size:10px;">${row.profile}</span>` : '-' },
+      { type: 'group', label: '요청헤더 (X-*)' },
       { key: '_uiNm',     label: 'x-ui-nm',    type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
       { key: '_cmdNm',    label: 'x-cmd-nm',   type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
       { key: '_fileNm',   label: 'x-file-nm',  type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },

@@ -197,6 +197,7 @@ window.SyBbmDtl = {
     // 기본 폼
     const columns = {};
     columns.baseForm = [
+      { type: 'group', label: '게시판 설정' },
       { key: '_siteNm',       label: '사이트명',    type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
       { key: 'bbmCode',       label: '게시판코드',  type: 'text', required: true, mono: true, placeholder: 'BOARD_CODE' },
       { key: 'bbmNm',         label: '게시판명',    type: 'text', required: true, placeholder: '게시판명' },

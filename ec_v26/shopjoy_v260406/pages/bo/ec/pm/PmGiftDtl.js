@@ -465,7 +465,7 @@ window.PmGiftDtl = {
     <!-- ===== ■.■. 발급대상 ================================================== -->
     <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 발급대상</div>
-      <bo-form-area :columns="columns.targetForm" :form="form" :errors="{}" :cols="3"
+      <bo-form-area :columns="columns.targetForm" :form="form" :errors="{}" :cols="3" compact
         :show-actions="false" :readonly="cfIsView">
         <template #issueGrades>
           <bo-multi-check-select

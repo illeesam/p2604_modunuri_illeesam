@@ -250,6 +250,7 @@ window.CmDashboardItemMng = {
     ];
 
     columns.panelForm = [
+      { type: 'group', label: '기본 · 배치설정' },
       { key: 'itemKey', label: '항목 키', type: 'text', required: true, mono: true, placeholder: 'COMP0101' },
       { key: 'itemNm', label: '항목명', type: 'text', required: true, colSpan: 2 },
       { key: 'itemTypeCd', label: '항목유형', type: 'select',

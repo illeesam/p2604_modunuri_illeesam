@@ -1753,6 +1753,7 @@ window.PdProdDtl = {
 
     // 기본정보 통합 폼 (cols=3 한 줄에 3필드씩 배치)
     columns.infoForm = [
+      { type: 'group', label: '기본정보' },
       // 1행: 상품명 / 상품코드(SKU) / 상품유형
       { key: 'prodNm',       label: '상품명', type: 'text', required: true, placeholder: '상품명' },
       { key: 'prodCode',     label: '상품코드 (SKU)', type: 'text', placeholder: '예: SKU-20260419-001' },
@@ -1762,6 +1763,7 @@ window.PdProdDtl = {
       { key: '_categories',  label: '카테고리', type: 'slot', name: 'categories' },
       { key: 'brandId',      label: '브랜드', type: 'slot', name: 'brand' },
       { key: 'vendorId',     label: '업체', type: 'slot', name: 'vendor' },
+      { type: 'group', label: '상세정보' },
       // 3행: 담당MD / 배송템플릿 / 상태
       { key: 'mdUserId',     label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
       { key: 'dlivTmpltId',  label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt' },

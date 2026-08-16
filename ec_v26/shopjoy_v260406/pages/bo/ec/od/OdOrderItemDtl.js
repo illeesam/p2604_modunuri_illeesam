@@ -160,6 +160,7 @@ window.OdOrderItemDtl = {
     ]);
 
     const baseFormColumns = [
+      { type: 'group', label: '기본 · 상품정보' },
       { key: 'orderItemId',       label: '주문항목ID',   type: 'readonly', mono: true },
       { key: 'orderId',           label: '주문ID',       type: 'readonly', mono: true },
       { key: 'regDate',           label: '등록일시',     type: 'readonly', fmt: () => fnDate(baseForm.regDate) },
@@ -181,6 +182,7 @@ window.OdOrderItemDtl = {
       { key: 'itemOrderAmt',      label: '주문금액',     type: 'readonly', fmt: () => fnPrice(baseForm.itemOrderAmt) },
       { key: 'itemCancelAmt',     label: '환불금액',     type: 'readonly', fmt: () => fnPrice(baseForm.itemCancelAmt) },
       { key: 'itemCompletedAmt',  label: '확정금액',     type: 'readonly', fmt: () => fnPrice(baseForm.itemCompletedAmt) },
+      { type: 'group', label: '금액 · 상태정보' },
       { key: 'orderItemStatusCd', label: '품목상태',
         type: cfReadonly.value ? 'readonly' : 'select',
         options: () => codes.order_item_statuses,
@@ -254,7 +256,7 @@ window.OdOrderItemDtl = {
         <div v-if="uiState.tabMode !== 'tab'" class="dtl-tab-card-title">📋 기본정보</div>
         <div v-if="uiState.loading" style="padding:32px;text-align:center;color:#bbb;">조회 중...</div>
         <bo-form-area v-else :columns="baseFormColumns" :form="baseForm" :errors="{}"
-          :readonly="cfReadonly" :cols="3" :show-actions="false" />
+          :readonly="cfReadonly" :cols="3" compact :show-actions="false" />
       </div>
       <!-- ── 클레임 탭 ────────────────────────────────────────── -->
       <div v-show="uiState.tabMode !== 'tab' || uiState.activeTab === 'claim'" class="card">

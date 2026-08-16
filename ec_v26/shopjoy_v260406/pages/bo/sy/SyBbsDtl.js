@@ -351,7 +351,7 @@ window.SyBbsDtl = {
   <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
     width="420px" modal-name="bbm-detail" :on-callback="fnCallbackModal" @close="showBbmDetail = false">
     <bo-form-area v-if="selectedBbm" :columns="columns.bbmDetail" :form="selectedBbm" :errors="{}"
-      :cols="1" :show-actions="false" />
+      :cols="1" compact readonly :show-actions="false" />
     <template #footer>
       <button class="btn btn_close" @click="handleBtnAction('bbmDetail-close')">닫기</button>
     </template>

@@ -2432,7 +2432,9 @@ window.BoFormArea = {
       let s = '';
       if (cs > 1) s += `grid-column:span ${Math.min(cs, props.cols)};flex:${cs};`;
       if (rs > 1) s += `grid-row:span ${rs};`;
-      if (props.labelLeft) s += `display:grid;grid-template-columns:${props.labelWidth} 1fr;align-items:center;gap:8px;margin-bottom:${props.compact ? '2px' : '6px'};`;
+      /* group 타입은 라벨/입력 2칸 구조가 아니므로 labelLeft 의 90px 라벨열 그리드를 적용하지 않는다
+         (적용 시 섹션 제목이 90px 라벨칸에 눌려 잘림) */
+      if (props.labelLeft && col.type !== 'group') s += `display:grid;grid-template-columns:${props.labelWidth} 1fr;align-items:center;gap:8px;margin-bottom:${props.compact ? '2px' : '6px'};`;
       return s;
     };
 

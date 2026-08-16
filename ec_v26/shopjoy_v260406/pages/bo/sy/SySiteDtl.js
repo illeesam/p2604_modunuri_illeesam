@@ -183,6 +183,7 @@ window.SySiteDtl = {
     // 기본 폼 (cols=3 — 빈 칸 없이 3열을 모두 채우도록 colSpan 배치)
     const columns = {};
     columns.baseForm = [
+      { type: 'group', label: '사이트정보' },
       // 1행: 사이트코드 / 사이트유형 / 사이트명
       { key: 'siteCode',       label: '사이트코드', type: 'text', required: true,
         placeholder: 'ST0001', mono: true },
@@ -197,6 +198,7 @@ window.SySiteDtl = {
         onOpen: () => handleBtnAction('pathModal-open') },
       // 3행: 사이트 설명 (1열만 차지)
       { key: 'siteDesc',       label: '사이트 설명', type: 'text', placeholder: '사이트 한줄 설명' },
+      { type: 'group', label: '연락처 · 브랜딩' },
       // 4행: 대표이메일 / 대표전화 / 대표자명
       { key: 'siteEmail',      label: '대표이메일', type: 'text', placeholder: 'help@shopjoy.com' },
       { key: 'sitePhone',      label: '대표전화',   type: 'text', placeholder: '02-1234-5678' },

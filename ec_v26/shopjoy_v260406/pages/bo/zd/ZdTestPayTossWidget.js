@@ -407,22 +407,22 @@ window.ZdTestPayTossWidget = {
     ];
 
     const hiddenFormColumns = [
-      { key: '_sec1',              label: '', type: 'slot', name: 'sec1Header', colSpan: 3 },
+      { type: 'group', label: '💰 금액 세부' },
       { key: 'taxFreeAmount',      label: '비과세 금액',          type: 'number',   hint: 'taxFreeAmount' },
       { key: 'taxExemptionAmount', label: '면세 금액',            type: 'number',   hint: 'taxExemptionAmount' },
       { key: 'cultureExpense',     label: '문화비 소득공제',      type: 'slot',     name: 'cultureExpenseSlot', hint: 'cultureExpense' },
-      { key: '_sec2',              label: '', type: 'slot', name: 'sec2Header', colSpan: 3 },
+      { type: 'group', label: '🛡 에스크로' },
       { key: 'useEscrow',          label: '에스크로 사용',        type: 'slot',     name: 'useEscrowSlot', hint: 'useEscrow' },
       { key: 'escrowProducts',     label: '에스크로 상품 (JSON)', type: 'textarea', colSpan: 2,
         placeholder: '[{"id":"PROD-1","name":"상품","unitPrice":1000,"quantity":1}]',
         hint: 'escrowProducts — 필드: id/name/code/unitPrice/quantity/category' },
-      { key: '_sec3',              label: '', type: 'slot', name: 'sec3Header', colSpan: 3 },
+      { type: 'group', label: '📱 앱/브라우저' },
       { key: 'appScheme',          label: '앱 복귀 스킴',  type: 'text',   placeholder: 'shopjoy:// (선택)', mono: true, hint: 'appScheme' },
       { key: 'windowTarget',       label: '팝업 창 타겟',  type: 'select',
         options: [{ value: '', label: '기본 (_self)' }, { value: '_blank', label: '_blank (새 탭)' }, { value: '_top', label: '_top' }],
         hint: 'windowTarget' },
       { key: 'addCardBenefits',    label: '카드 즉시 할인', type: 'slot',   name: 'addCardBenefitsSlot', hint: 'addCardBenefits' },
-      { key: '_sec4',              label: '', type: 'slot', name: 'sec4Header', colSpan: 3 },
+      { type: 'group', label: '🌍 국가/통화 (해외결제)' },
       { key: 'currency',           label: '통화',     type: 'select',
         options: [{ value: 'KRW', label: 'KRW (기본)' }, { value: 'USD', label: 'USD' }, { value: 'JPY', label: 'JPY' }, { value: 'EUR', label: 'EUR' }],
         hint: 'currency' },
@@ -2354,32 +2354,20 @@ od_order:
     </div>
     <div style="padding:12px">
       <bo-form-area :columns="hiddenFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
-        <template #sec1Header>
-          <div style="font-size:11px;font-weight:600;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;margin-bottom:2px">💰 금액 세부</div>
-        </template>
         <template #cultureExpenseSlot>
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin-top:6px">
             <input type="checkbox" v-model="form.cultureExpense" /> 활성화 (도서/공연/박물관 등)
           </label>
-        </template>
-        <template #sec2Header>
-          <div style="font-size:11px;font-weight:600;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;margin-bottom:2px">🛡 에스크로</div>
         </template>
         <template #useEscrowSlot>
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin-top:6px">
             <input type="checkbox" v-model="form.useEscrow" /> 에스크로 적용
           </label>
         </template>
-        <template #sec3Header>
-          <div style="font-size:11px;font-weight:600;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;margin-bottom:2px">📱 앱/브라우저</div>
-        </template>
         <template #addCardBenefitsSlot>
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin-top:6px">
             <input type="checkbox" v-model="form.addCardBenefits" /> 즉시 할인 혜택 표시
           </label>
-        </template>
-        <template #sec4Header>
-          <div style="font-size:11px;font-weight:600;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;margin-bottom:2px">🌍 국가/통화 (해외결제)</div>
         </template>
         <template #currencyNote>
           <div style="font-size:11px;color:#9ca3af;line-height:1.7;padding-top:4px">
