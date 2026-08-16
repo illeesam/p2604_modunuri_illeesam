@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -41,10 +41,16 @@ import java.util.Map;
  *
  * <p><b>메모리·디스크 안전 설계</b>
  * <ul>
- *   <li>SXSSF 윈도우 100행 — 행수와 무관하게 힙 사용량이 일정하다.</li>
- *   <li>분할 저장(기본 5만행/파일) — 파일 하나를 닫을 때마다 {@code dispose()} 하므로
- *       temp 디스크 피크가 "전체"가 아니라 "파일 1개분"으로 유지된다. 2G pod 에서 중요.</li>
- *   <li>{@code dispose()} 는 항상 finally — 취소/실패 시에도 temp 파일이 남지 않는다.</li>
+ *   <li>파일마다 새 {@link XSSFWorkbook} — 분할 저장(기본 5만행/파일)으로 한 인스턴스가
+ *       {@code app.excel.split-rows} 행을 넘지 않도록 경계를 두어 인메모리 처리를 안전하게 유지한다.
+ *       ({@code split-rows=0}(미분할)로 설정하면 상한(300,000행)까지 한 워크북에 몰릴 수 있어
+ *       메모리가 빠듯한 환경에서는 분할값을 반드시 지정할 것.)</li>
+ *   <li>SXSSFWorkbook(임시파일 스트리밍) 대신 XSSFWorkbook 을 쓰는 이유 — SXSSFWorkbook 이 생성하는
+ *       xlsx 의 zip 엔트리가 (POI 5.2.5 + 이 환경 기준) 무효한 로컬헤더 크기/날짜를 갖는 현상이 있어
+ *       Windows 의 실제 Microsoft Excel 이 "파일 형식 또는 파일 확장명이 잘못되어 파일을 열 수 없습니다"
+ *       로 거부했다(2026-08-16 확인). unzip/7-zip 등 관대한 도구는 문제없이 열려 눈치채기 어렵다.
+ *       XSSFWorkbook 은 표준 OOXML 패키지 작성 경로를 타 이 문제가 없다.</li>
+ *   <li>파일 하나를 닫을 때마다 {@code close()} 하므로 한 번에 여러 워크북을 메모리에 들고 있지 않는다.</li>
  *   <li>청크마다 heartbeat(독립 트랜잭션) — 살아있음을 알려 고아 오판을 막는다.</li>
  *   <li>청크마다 취소 여부 확인 — 강제취소 시 즉시 중단하고 만든 파일을 지운다.</li>
  * </ul>
@@ -150,7 +156,7 @@ public class BoExcelDownRunner {
         private final LocalDateTime start;
         private final Map<String, Field> fieldMap;
 
-        private SXSSFWorkbook wb;
+        private XSSFWorkbook wb;
         private Sheet sheet;
         private int rowInFile;
         private int fileSeq;
@@ -196,8 +202,7 @@ public class BoExcelDownRunner {
 
         private void openNewFile() throws Exception {
             fileSeq++;
-            wb = new SXSSFWorkbook(100);
-            wb.setCompressTempFiles(true);
+            wb = new XSSFWorkbook();
             sheet = wb.createSheet("Sheet1");
             ExcelExportUtil.writeMetaHeader(wb, sheet, meta);
             rowInFile = 3;   // 메타 헤더 3행 뒤부터 데이터
@@ -214,7 +219,7 @@ public class BoExcelDownRunner {
             } catch (Exception e) {
                 throw new RuntimeException("엑셀 파일 저장 실패: " + e.getMessage(), e);
             } finally {
-                disposeQuietly(wb);
+                closeQuietly(wb);
                 wb = null; sheet = null; rowInFile = 0;
             }
         }
@@ -225,7 +230,7 @@ public class BoExcelDownRunner {
     /* ── 파일 저장 ───────────────────────────────────────────── */
 
     /** 워크북을 물리 파일로 쓰고 sy_attach 에 등록한다 (ref_table_nm/ref_id 로 1:N 연계) */
-    private SyAttach persistFile(SXSSFWorkbook wb, String areaNm, int seq, String exceldownId) throws Exception {
+    private SyAttach persistFile(XSSFWorkbook wb, String areaNm, int seq, String exceldownId) throws Exception {
         LocalDateTime now = LocalDateTime.now();
         String y   = now.format(DateTimeFormatter.ofPattern("yyyy"));
         String ym  = now.format(DateTimeFormatter.ofPattern("yyyyMM"));
@@ -378,9 +383,9 @@ public class BoExcelDownRunner {
         return s.replaceAll("[\\\\/:*?\"<>|\\s]", "_");
     }
 
-    private static void disposeQuietly(SXSSFWorkbook wb) {
+    /** XSSFWorkbook 정리 — 임시파일이 없어 dispose() 불필요, close() 만 하면 된다 */
+    private static void closeQuietly(XSSFWorkbook wb) {
         if (wb == null) return;
-        try { wb.dispose(); } catch (Exception ignored) { }
-        try { wb.close(); }   catch (Exception ignored) { }
+        try { wb.close(); } catch (Exception ignored) { }
     }
 }
