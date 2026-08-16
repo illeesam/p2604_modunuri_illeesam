@@ -3100,11 +3100,7 @@ window.PdProdDtl = {
   <!-- ===== □. 재고코드 선택 모달 ============================================= -->
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-<!-- ===== ■. 이력 ====================================================== -->
-<div v-if="!cfIsNew" style="margin-top:12px;">
-  <pd-prod-hist :prod-id="dtlId" :navigate="navigate" />
-</div>
-<!-- ===== □. 이력 ====================================================== -->
+<!-- 이력정보는 목록(PdProdMng) 관리컬럼의 [이력] 버튼으로만 노출된다 — 상세 하단 상시 렌더 폐지(2026-08-16) -->
 <!-- ===== ■. 공통코드 그룹 미리보기 모달 (BoModals.js / window.BoCodeGrpModal) ===== -->
 <!-- ===== ■. 영역 ====================================================== -->
 <bo-cm-popup-modal popup-cmd="cmPopup-code-grp" popup-code="code" :init-param="{ codeGrp: codeGrpModal.codeGrp }" :show="codeGrpModal.show" :title="codeGrpModal.title" :on-callback="fnCallbackModal" />

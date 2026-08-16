@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.base.sy.repository.qrydsl;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
 
+import java.util.List;
 import java.util.Optional;
 
 /** SyhAccessLog QueryDSL Custom Repository */
@@ -12,5 +13,7 @@ public interface QSyhAccessLogRepository {
     Optional<SyhAccessLogDto.Item> selectById(String id);
 
     /** 페이지 목록 */
+    /** 대량 export 용 목록조회 — pageNo/pageSize 지정 시 청크 페이징 */
+    List<SyhAccessLogDto.Item> selectList(SyhAccessLogDto.Request search);
     BasePage<SyhAccessLogDto.Item> selectPageData(SyhAccessLogDto.Request search);
 }

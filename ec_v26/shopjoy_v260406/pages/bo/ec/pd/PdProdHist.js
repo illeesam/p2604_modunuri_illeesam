@@ -5,6 +5,7 @@ window.PdProdHist = {
   props: {
     navigate:     { type: Function, required: true }, // 페이지 이동
     prodId:       { type: String, default: null }, // 대상 ID
+    onClose:      { type: Function, default: null }, // 닫기 콜백 (목록의 [이력] 로 연 인라인 표시일 때만 전달)
   },
   setup(props) {
 
@@ -410,6 +411,10 @@ window.PdProdHist = {
     <span v-if="uiState.loading" style="margin-left:8px;font-size:11px;color:#aaa;font-weight:400;">
       조회 중...
     </span>
+  </template>
+  <!-- ===== ■.■. 헤더 우측 액션 (목록 [이력] 로 연 경우에만 닫기 제공) ================ -->
+  <template v-if="onClose" #toolbar-actions>
+    <button class="btn btn_close" @click="onClose()">닫기</button>
   </template>
   <!-- ===== ■.■. 탭 영역 ================================================== -->
   <bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2"

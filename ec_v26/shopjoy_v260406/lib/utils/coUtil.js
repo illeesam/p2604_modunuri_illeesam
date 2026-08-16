@@ -416,16 +416,23 @@
    *   uiNm/cmdNm : apiHdr 용 (X-UI-Nm / X-Cmd-Nm, BO 정책)
    *
    * 동작:
-   *   - boApi.get(url, { params, responseType:'blob', ...apiHdr })
+   *   - boApi.get(url, { params, responseType:'blob', timeout:EXCEL_TIMEOUT, ...apiHdr })
    *   - 응답 Blob 을 임시 a 태그 클릭으로 다운로드
    *   - Content-Disposition 의 filename 을 우선 사용, 없으면 areaNm_타임스탬프.xlsx
    *   - 에러 시 Blob 안의 JSON 메시지를 토스트로 표시 가능 (호출자가 catch)
+   *
+   * ⚠ 타임아웃: boApi 전역은 8초지만 엑셀은 이 호출에서만 EXCEL_TIMEOUT(3분)으로 덮어쓴다.
+   *   POI 는 wb.write() 로 생성이 끝난 뒤에야 첫 바이트를 보내므로, 대량 건일수록 그때까지
+   *   클라이언트가 무응답 대기 상태가 된다 → 8초로는 정상 요청도 끊긴다.
+   *   앞단에 nginx/ingress 가 있으면 proxy_read_timeout 도 함께 늘려야 한다(인프라 설정).
    */
+  var EXCEL_TIMEOUT = 180000;   // 엑셀 다운로드 전용 타임아웃 (3분)
+
   function cofDownloadExcel(url, params, areaNm, uiNm, cmdNm) {
     if (!global.boApi || typeof global.boApi.get !== 'function') {
       return Promise.reject(new Error('boApi 가 로드되지 않았습니다.'));
     }
-    const cfg = { params: params || {}, responseType: 'blob' };
+    const cfg = { params: params || {}, responseType: 'blob', timeout: EXCEL_TIMEOUT };
     if (typeof global.coUtil.cofApiHdr === 'function' && uiNm) {
       Object.assign(cfg, global.coUtil.cofApiHdr(uiNm, cmdNm || '엑셀다운로드'));
     }

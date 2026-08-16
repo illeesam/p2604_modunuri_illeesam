@@ -117,6 +117,7 @@
     syBbsMng: 'sy-bbs-mng',
     syMemberLoginHist: 'sy-member-login-hist',
     syUserLoginHist: 'sy-user-login-hist',
+    syExceldownMng: 'sy-exceldown-mng',
     syApiLogMng: 'sy-api-log-mng',
     sySendMsgLog: 'sy-send-msg-log-mng',
     syPostman: 'sy-postman',

@@ -5,6 +5,7 @@ window.MbMemberHist = {
   props: {
     navigate:  { type: Function, default: () => {} }, // 페이지 이동
     memberId:  { type: String, default: null },       // 대상 회원 ID
+    onClose:   { type: Function, default: null },     // 닫기 콜백 (목록의 [이력] 로 연 인라인 표시일 때만 전달)
   },
   setup(props) {
 
@@ -122,12 +123,16 @@ window.MbMemberHist = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 이력 타이틀 ================================================== -->
-  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
+  <!-- ===== ■. 이력 타이틀 (목록 [이력] 로 연 경우에만 우측 닫기 제공) ================= -->
+  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;display:flex;align-items:center;">
     <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
       ●
     </span>
     이력정보
+    <span v-if="memberId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ memberId }}
+    </span>
+    <button v-if="onClose" class="btn btn_close" style="margin-left:auto;" @click="onClose()">닫기</button>
   </div>
   <!-- ===== □. 이력 타이틀 ================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->

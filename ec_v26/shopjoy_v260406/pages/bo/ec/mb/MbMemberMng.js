@@ -69,6 +69,9 @@ window.MbMemberMng = {
       // 행 수정 버튼 → 인라인 상세 편집 모드
       } else if (cmd === 'members-rowEdit') {
         return openDetail(param);
+      // 행 이력 버튼 → 목록 하단 이력정보 표시
+      } else if (cmd === 'members-rowHist') {
+        return openHist(param.memberId);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -107,6 +110,17 @@ window.MbMemberMng = {
       form: _emptyForm()
     });
 
+    /* ===== 이력 인라인 패널 =====
+     *   상세와 달리 항상 표시하지 않는다 — 관리컬럼 [이력] 클릭 시에만 memberId 가 채워져 렌더된다.
+     *   [이력] 이 아닌 모든 동작(행 클릭·[수정]·[신규]·[취소]·조회·페이징)에서는 닫는다. */
+    const histPanel = reactive({ memberId: null });
+
+    /* openHist — 관리컬럼 [이력] 클릭 → 목록 하단에 해당 회원 이력 표시 */
+    const openHist = (id) => { histPanel.memberId = id; };
+
+    /* closeHist — 이력 패널 닫기 */
+    const closeHist = () => { histPanel.memberId = null; };
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
 
     /* getSortParam — 정렬 파라미터 */
@@ -130,6 +144,7 @@ window.MbMemberMng = {
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
+      closeHist();   // 목록이 바뀌면 이력 대상 행이 화면에서 사라지므로 함께 닫는다
       uiState.loading = true;
       try {
         const params = {
@@ -168,6 +183,7 @@ window.MbMemberMng = {
 
     /* _loadMember — 공통 상세 데이터 로드 (row 먼저 표시 후 API 재조회) */
     const _loadMember = async (row, active) => {
+      closeHist();
       detailPanel.dtlId = row.memberId;
       detailPanel.isNew = false;
       detailPanel.show = true;
@@ -191,6 +207,7 @@ window.MbMemberMng = {
 
     /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
     const openNew = () => {
+      closeHist();
       Object.assign(detailPanel.form, _emptyForm(), { joinDate: new Date().toISOString().split('T')[0] });
       detailPanel.dtlId = '__new__';
       detailPanel.isNew = true;
@@ -202,6 +219,7 @@ window.MbMemberMng = {
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
     const resetDetailToNew = () => {
+      closeHist();
       Object.assign(detailPanel.form, _emptyForm());
       detailPanel.show = true;
       detailPanel.dtlId = null;
@@ -358,10 +376,11 @@ window.MbMemberMng = {
 
     return {
       columns,
-      members, uiState, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
+      members, uiState, searchParam, baseGridPager, detailPanel, histPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       fnGridRowClass,                                                  // 헬퍼
       handleSave, handleDelete, closeDetail, switchToEdit, handleSearchList,            // Dtl 콜백 (자식 컴포넌트로 전달)
+      closeHist,                                                       // 이력 패널 닫기 (Hist 임베드 전달용)
     };
   },
   template: /* html */`
@@ -389,6 +408,9 @@ window.MbMemberMng = {
         <button class="btn btn_row_edit" @click.stop="handleSelectAction('members-rowEdit', row)">
           수정
         </button>
+        <button class="btn btn_row_hist" @click.stop="handleSelectAction('members-rowHist', row)">
+          이력
+        </button>
       </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
@@ -401,6 +423,11 @@ window.MbMemberMng = {
     :reload-trigger="detailPanel.reloadTrigger"
     />
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
+  <!-- ===== ■. 하단 이력: 관리컬럼 [이력] 클릭 시에만 노출 ========================= -->
+  <bo-container v-if="histPanel.memberId">
+    <mb-member-hist :key="histPanel.memberId" :member-id="histPanel.memberId" :on-close="closeHist" />
+  </bo-container>
+  <!-- ===== □. 하단 이력 ==================================================== -->
 </bo-page>
 `,
 };

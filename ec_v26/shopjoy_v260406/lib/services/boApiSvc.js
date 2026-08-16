@@ -625,6 +625,24 @@
   };
 
   /* ── sy: 부서 ───────────────────────────────────────────────── */
+  /* ── sy: 엑셀다운로드 ────────────────────────────────────────
+     domain 은 백엔드 ExcelDomainConfig 에 등록된 key (예: memberLoginLog).
+     즉시(sync)는 coUtil.cofDownloadExcel 이 blob 스트리밍 + 3분 타임아웃으로 처리한다. */
+  boApiSvc.syExceldown = {
+    /* [엑셀] 클릭 시 — 진행중 건/대기열/대상건수/임계값을 한 번에 받아 버튼 상태를 결정 */
+    getStatus(domain, params, uiNm, cmdNm) { return global.boApi.get(`/bo/exceldown/status/${domain}`, { params, ...hdr(uiNm, cmdNm) }); },
+    /* 즉시 다운로드 — 파일 응답이라 axios 래퍼 대신 전용 헬퍼 사용 */
+    downloadSync(domain, params, areaNm, uiNm, cmdNm) {
+      return global.coUtil.cofDownloadExcel(`/bo/exceldown/sync/${domain}`, params, areaNm, uiNm, cmdNm || '엑셀다운로드');
+    },
+    /* 예약 접수 — WAITING 등록 후 즉시 반환 (실제 생성은 스케줄러가 수행) */
+    requestAsync(domain, params, uiNm, cmdNm) { return global.boApi.post(`/bo/exceldown/async/${domain}`, null, { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm, opt)  { return global.boApi.get('/bo/exceldown/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
+    getById(_id, uiNm, cmdNm)          { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/exceldown/${_id}`, hdr(uiNm, cmdNm)); },
+    cancel(_id, uiNm, cmdNm)           { return chkId(_id, uiNm, cmdNm) || global.boApi.post(`/bo/exceldown/${_id}/cancel`, null, hdr(uiNm, cmdNm)); },
+    markDownloaded(_id, uiNm, cmdNm)   { return chkId(_id, uiNm, cmdNm) || global.boApi.post(`/bo/exceldown/${_id}/downloaded`, null, hdr(uiNm, cmdNm)); },
+  };
+
   boApiSvc.syDept = {
     getPage(params, uiNm, cmdNm, opt) { return global.boApi.get(   '/bo/sy/dept/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
     getList(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/dept', { params, ...hdr(uiNm, cmdNm) }); },

@@ -2608,6 +2608,7 @@
             <st-erp-recon-mng  v-else-if="page==='stErpReconMng'"  :navigate="navigate" />
             <sy-member-login-hist v-else-if="page==='syMemberLoginHist'" :navigate="navigate" />
             <sy-user-login-hist  v-else-if="page==='syUserLoginHist'"  :navigate="navigate" />
+            <sy-exceldown-mng    v-else-if="page==='syExceldownMng'"    :navigate="navigate" :dtl-id="dtlId" />
             <sy-api-log-mng      v-else-if="page==='syApiLogMng'"      :navigate="navigate" />
             <sy-send-msg-log-mng v-else-if="page==='sySendMsgLog'"     :navigate="navigate" />
             <sy-postman  v-else-if="page==='syPostman'"  :navigate="navigate" />

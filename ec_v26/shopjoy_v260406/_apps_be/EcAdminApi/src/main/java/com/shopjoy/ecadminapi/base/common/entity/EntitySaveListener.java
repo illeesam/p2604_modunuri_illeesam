@@ -98,6 +98,20 @@ public class EntitySaveListener {
             }
             e.setRegDate(now);
             e.setUpdDate(now);
+            /* reg_site_id — 이 클래스 문서와 BaseEntity.regSiteId 주석이 "INSERT 시 자동 주입" 이라고
+               명시하고 있었지만 실제로는 아무도 채우지 않았다. applySiteId 는 'siteId' 라는 이름의
+               필드만 리플렉션으로 찾기 때문에 BaseEntity 의 regSiteId 는 대상이 아니었다.
+               대부분 테이블이 nullable 이라 드러나지 않았을 뿐, NOT NULL 인 곳(sy_noti, sy_exceldown 등)은
+               INSERT 가 통째로 실패했다(그래서 알림함이 한 건도 쌓이지 않았다).
+
+               규칙:
+                 · INSERT 시점에만 채운다(등록 당시 사이트 추적이 목적이라 UPDATE 로는 바뀌면 안 된다).
+                 · 이미 값이 있으면 존중한다 — 호출 측이 의도적으로 지정한 경우를 덮어쓰지 않는다.
+                 · 배치/스케줄러처럼 인증 컨텍스트가 없는 스레드도 있으므로 기본 사이트로 폴백한다. */
+            if (e.getRegSiteId() == null || e.getRegSiteId().isEmpty()) {
+                String siteId = SecurityUtil.getSiteIdOrDefault();
+                if (siteId != null && !siteId.isEmpty()) e.setRegSiteId(siteId);
+            }
         }
     }
 

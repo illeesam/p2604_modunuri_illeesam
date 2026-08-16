@@ -90,6 +90,8 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn_row_edit:hover:not(:disabled)  { box-shadow: 0 4px 12px rgba(22,119,255,.35); }
 .btn_row_delete{ background: linear-gradient(135deg, #ff4d4f, #d9363e); color: #fff; box-shadow: 0 2px 6px rgba(255,77,79,.22); padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
 .btn_row_delete:hover:not(:disabled){ box-shadow: 0 4px 12px rgba(255,77,79,.35); }
+.btn_row_hist  { background: #eef1f6; color: #4b5563; border: 1px solid #d4dae3; padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
+.btn_row_hist:hover:not(:disabled)  { background: #e2e7ef; border-color: #c2cad6; }
 
 .bo-table { width: 100%; min-width: 720px; border-collapse: collapse; }
 /* 좁은 선택 목록(.bo-2col 좌측 등) — 720px 하한을 풀어 가로 스크롤 없이 폭에 맞춘다 */

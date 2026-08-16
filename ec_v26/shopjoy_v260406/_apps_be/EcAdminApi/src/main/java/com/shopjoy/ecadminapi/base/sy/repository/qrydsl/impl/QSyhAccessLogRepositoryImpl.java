@@ -103,6 +103,35 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         return Optional.ofNullable(dto);
     }
 
+    /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
+    private BooleanExpression[] buildWheres(SyhAccessLogDto.Request search) {
+        return new BooleanExpression[] {
+                QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod()),
+                andStatusEq(search),
+                andPathLike(search),
+                andUiNmLike(search),
+                QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()),
+                QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()),
+                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
+                andSearchValue(search.getSearchValue(), search.getSearchType())
+        };
+    }
+
+    /* 목록조회 — 대량 export 청크용. COUNT 를 돌지 않아 selectPageData 보다 가볍다 */
+    @Override
+    public List<SyhAccessLogDto.Item> selectList(SyhAccessLogDto.Request search) {
+        JPAQuery<SyhAccessLogDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(buildWheres(search))
+                .orderBy(buildOrder(QdslUtil.sortOf(search)).toArray(OrderSpecifier[]::new));
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
+        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
+            query.offset((long) (pageNo - 1) * pageSize).limit(pageSize);
+        }
+        return query.fetch();
+    }
+
     /* 페이지조회 */
     @Override
     public BasePage<SyhAccessLogDto.Item> selectPageData(SyhAccessLogDto.Request search) {
@@ -112,16 +141,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhAccessLog.reqMethod, search.getMethod()),
-                andStatusEq(search),
-                andPathLike(search),
-                andUiNmLike(search),
-                QdslUtil.strEqTrim(syhAccessLog.traceId, search.getTraceId()),
-                QdslUtil.strEq(syhAccessLog.appTypeCd, search.getAppTypeCd()),
-                QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        BooleanExpression[] wheres = buildWheres(search);
 
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyhAccessLogDto.Item> query = baseSelColumnQuery();

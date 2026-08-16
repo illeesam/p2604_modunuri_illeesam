@@ -179,6 +179,34 @@ window.SyMemberLoginHist = {
       else { list.forEach((r,i) => { const id = r.logId||i; expandedRows.add(id); fnFetchDetail(r.logId); }); allExpanded.value = true; }
     };
 
+
+    /* ===== 엑셀 다운로드 =====
+       탭마다 대상 테이블이 달라 domain/areaNm 을 탭값으로 매핑한다.
+       domain 키는 백엔드 ExcelDomainConfig 의 @Bean 등록명과 일치해야 한다. */
+    const excelModal = reactive({ show: false });
+    const EXCEL_MAP = {
+      'log': { domain: 'memberLoginLog', areaNm: '회원 로그인 로그' },
+      'token': { domain: 'memberTokenLog', areaNm: '회원 토큰 이력' }
+    };
+    const cfExcelDomain = computed(() => (EXCEL_MAP[searchParam.activeTab] || EXCEL_MAP['log']).domain);
+    const cfExcelAreaNm = computed(() => (EXCEL_MAP[searchParam.activeTab] || EXCEL_MAP['log']).areaNm);
+
+    /* cfExcelColumns — 현재 탭의 그리드 헤더. 엑셀 컬럼/순서/라벨을 화면과 일치시키기 위해
+       모달에 넘긴다(안 넘기면 서버가 Entity 필드로 만들어 화면과 어긋난다). */
+    const cfExcelColumns = computed(() => {
+      if (searchParam.activeTab === 'log') { return columns.logGrid || []; }
+      if (searchParam.activeTab === 'token') { return columns.tokenGrid || []; }
+      return columns.logGrid || [];
+    });
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다.
+       페이지 번호/크기는 의미가 없어 제거한다(서버가 조건 전체를 청크로 훑는다). */
+    const buildExcelParams = () => {
+      const p = { ...buildParams() };
+      delete p.pageNo; delete p.pageSize;
+      return p;
+    };
+
     /* buildParams — 검색 파라미터 빌드 */
     const buildParams = () => {
       const p = {
@@ -353,14 +381,14 @@ window.SyMemberLoginHist = {
         fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => coUtil.cofYmdHms(row.loginDate || row.regDate || '') },
-      { key: '_member',  label: '회원',
+      { key: '_member', excelKeys: [{key:'memberNm',label:'회원명'},{key:'memberId',label:'회원ID'}],  label: '회원',
         fmt: (v, row) => `${row.memberNm || row.memberId || '-'}  #${row.memberId}` },
       { key: 'loginId',  label: '로그인ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
       { key: 'resultCd', label: '결과', badge: (row) => fnResultBadge(row.resultCd), fmt: (v) => fnResultLabel(v) },
       { key: 'failCnt',  label: '실패',      style: 'text-align:center;', align: 'center', cellStyle: (v, row) => row.failCnt > 0 ? 'color:#e74c3c;font-weight:700' : '', fmt: (v) => v > 0 ? v + '회' : '-' },
       { key: 'ip',       label: 'IP', mono: true, fmt: (v) => v || '-' },
-      { key: '_browser', label: 'OS/브라우저', cellStyle: 'font-size:11px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.browser + ' / ' + row.os, fmt: (v, row) => row.browser || row.device || '-' },
-      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
+      { key: '_browser', excelKeys: [{key:'browser',label:'브라우저'},{key:'os',label:'OS'},{key:'device',label:'기기'}], label: 'OS/브라우저', cellStyle: 'font-size:11px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.browser + ' / ' + row.os, fmt: (v, row) => row.browser || row.device || '-' },
+      { key: '_uiNm', excelKeys: [{key:'uiNm',label:'화면'},{key:'cmdNm',label:'기능'}], label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
       { key: 'traceId',  label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',  label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') },
     ];
@@ -429,6 +457,7 @@ window.SyMemberLoginHist = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,   // 엑셀 다운로드
       columns,
       searchParam, logGridPager, uiState, histTabs, cfCurrentList, allExpanded,        // 상태 / 데이터
       onScrollEnd,                                      // 무한 스크롤 (하단 도달 시 다음 100건)
@@ -464,6 +493,7 @@ window.SyMemberLoginHist = {
   <bo-container title="로그인/토큰 이력"
     :count-text="cofCountText(logGridPager.pageTotalCount, cfCurrentList.length)">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <span style="font-size:11px;color:#aaa;">
         행 클릭 시 상세정보 펼침
       </span>
@@ -510,6 +540,10 @@ window.SyMemberLoginHist = {
     :show-pages="false" :loaded-count="cfCurrentList.length" />
   <!-- ===== □. 토큰 이력 탭 ================================================= -->
   </bo-container>
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" :domain="cfExcelDomain"
+    :area-nm="cfExcelAreaNm" :columns="cfExcelColumns" ui-nm="회원로그인이력" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

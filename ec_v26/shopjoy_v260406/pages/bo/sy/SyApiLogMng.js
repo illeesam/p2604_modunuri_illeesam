@@ -183,6 +183,34 @@ window.SyApiLogMng = {
     };
 
 
+
+    /* ===== 엑셀 다운로드 =====
+       탭마다 대상 테이블이 달라 domain/areaNm 을 탭값으로 매핑한다.
+       domain 키는 백엔드 ExcelDomainConfig 의 @Bean 등록명과 일치해야 한다. */
+    const excelModal = reactive({ show: false });
+    const EXCEL_MAP = {
+      'access': { domain: 'accessLog', areaNm: 'API 접근 로그' },
+      'error': { domain: 'accessErrorLog', areaNm: 'API 오류 로그' }
+    };
+    const cfExcelDomain = computed(() => (EXCEL_MAP[uiState.activeTab] || EXCEL_MAP['access']).domain);
+    const cfExcelAreaNm = computed(() => (EXCEL_MAP[uiState.activeTab] || EXCEL_MAP['access']).areaNm);
+
+    /* cfExcelColumns — 현재 탭의 그리드 헤더. 엑셀 컬럼/순서/라벨을 화면과 일치시키기 위해
+       모달에 넘긴다(안 넘기면 서버가 Entity 필드로 만들어 화면과 어긋난다). */
+    const cfExcelColumns = computed(() => {
+      if (uiState.activeTab === 'access') { return columns.accessGrid || []; }
+      if (uiState.activeTab === 'error') { return columns.errorGrid || []; }
+      return columns.accessGrid || [];
+    });
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다.
+       페이지 번호/크기는 의미가 없어 제거한다(서버가 조건 전체를 청크로 훑는다). */
+    const buildExcelParams = () => {
+      const p = { ...buildSearchParams() };
+      delete p.pageNo; delete p.pageSize;
+      return p;
+    };
+
     /* buildSearchParams — 빌드 */
     const buildSearchParams = () => {
       const p = {
@@ -485,6 +513,7 @@ window.SyApiLogMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,   // 엑셀 다운로드
       uiState, accessGridPager, tabCounts, tabs, allExpanded,                     // 상태 / 데이터
       columns,                                                                              // 컬럼 정의 모음 (baseSearch/moreSearch/accessGrid/errorGrid/accessGridRowDetail/errorGridRowDetail)
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
@@ -527,6 +556,7 @@ window.SyApiLogMng = {
         @tab-select="id => handleSelectAction('tabs-select', id)" />
     </template>
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <span style="font-size:11px;color:#aaa;">
         행 클릭 시 상세정보 펼침
       </span>
@@ -574,6 +604,10 @@ window.SyApiLogMng = {
     <bo-pager :pager="{ pageTotalCount: accessGridPager.pageTotalCount }"
       :show-pages="false" :loaded-count="cfCurrentList.length" />
   </bo-container>
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" :domain="cfExcelDomain"
+    :area-nm="cfExcelAreaNm" :columns="cfExcelColumns" ui-nm="API로그조회" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

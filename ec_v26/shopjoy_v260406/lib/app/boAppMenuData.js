@@ -127,6 +127,7 @@
       { id: 'cmBlogMng', label: '뉴스&블로그 관리' },
       { id: 'syBbmMng', label: '게시판관리' },
       { id: 'syBbsMng', label: '게시글관리' },
+      { id: 'syExceldownMng', label: '엑셀다운로드' },
     ],
     settle: [
       { group: '기준정보' },

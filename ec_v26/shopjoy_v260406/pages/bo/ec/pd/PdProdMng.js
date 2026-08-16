@@ -119,6 +119,7 @@ window.PdProdMng = {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
         if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.prodId); }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
+        if (colKey === 'btn_row_hist')   { return openHist(row.prodId); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -176,6 +177,19 @@ window.PdProdMng = {
       active: false,                               // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
     });
 
+    /* ===== 이력 인라인 패널 =====
+     *   상세와 달리 항상 표시하지 않는다 — 관리컬럼 [이력] 클릭 시에만 prodId 가 채워져 렌더된다.
+     *   [이력] 이 아닌 모든 동작(행 클릭·[수정]·[신규]·[취소]·조회·페이징·삭제)에서는 닫는다.
+     *   닫지 않으면 한 번 연 뒤로 계속 남아 "항상 보인다" 가 되고,
+     *   상세는 B상품인데 이력은 A상품이 남는 불일치도 생긴다. */
+    const histPanel = reactive({ prodId: null });
+
+    /* openHist — 관리컬럼 [이력] 클릭 → 목록 하단에 해당 상품 이력 표시 */
+    const openHist = (id) => { histPanel.prodId = id; };
+
+    /* closeHist — 이력 패널 닫기 */
+    const closeHist = () => { histPanel.prodId = null; };
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
 
     /* getSortParam — 정렬 파라미터 */
@@ -199,6 +213,7 @@ window.PdProdMng = {
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
+      closeHist();   // 목록이 바뀌면 이력 대상 행이 화면에서 사라지므로 함께 닫는다
       uiState.loading = true;
       try {
         const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
@@ -235,16 +250,17 @@ window.PdProdMng = {
       detailPanel.openMode = 'edit';
       detailPanel.active = false;      // 버튼 숨김
       detailPanel.resetSeq++;          // :key 재마운트 → 폼 초기화
+      closeHist();
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { closeHist(); detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
     /* handleLoadDetail — 인라인 패널 편집 모드로 열기 (행 선택 → 저장/취소 노출) */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { closeHist(); detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
     /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++; };
+    const openNew = () => { closeHist(); detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
     const closeDetail = () => { resetDetailToNew(); };
@@ -276,6 +292,7 @@ window.PdProdMng = {
       const idx = products.findIndex(x => x.prodId === p.prodId);
       if (idx !== -1) { products.splice(idx, 1); }
       if (detailPanel.selectedId === p.prodId) { resetDetailToNew(); }
+      if (histPanel.prodId === p.prodId) { closeHist(); }
       try {
         const res = await boApiSvc.pdProd.remove(p.prodId, '상품관리', '삭제');
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
@@ -450,11 +467,12 @@ window.PdProdMng = {
 
       modals,   // 모달 표시 상태 모음
       columns,
-      products, uiState, searchParam, baseGridPager, detailPanel, // 상태 / 데이터
+      products, uiState, searchParam, baseGridPager, detailPanel, histPanel, // 상태 / 데이터
       cfOptCodeMngUrl,                                    // 외부URL 모달 경로 표시
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                          // computed
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
+      closeHist,                                             // 이력 패널 닫기 (Hist 임베드 전달용)
       handleSearchList,                                      // Dtl 임베드 전달용
       fnOpenOptCodeMng,
       fixedProdTypeCd: props.fixedProdTypeCd,             // 유형별 개별 메뉴 진입 시 Dtl 신규등록 초기값 전달용
@@ -508,6 +526,9 @@ window.PdProdMng = {
           <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', p)">
             삭제
           </button>
+          <button class="btn btn_row_hist" @click.stop="handleGridCellAction(gridId, 'btn_row_hist', p)">
+            이력
+          </button>
         </div>
       </template>
     </bo-grid>
@@ -536,6 +557,12 @@ window.PdProdMng = {
     :fixed-prod-type-cd="fixedProdTypeCd"
     />
   <!-- ===== □. 하단 상세: ProdDtl 임베드 ====================================== -->
+  <!-- ===== ■. 하단 이력: 관리컬럼 [이력] 클릭 시에만 노출 ========================= -->
+  <div v-if="histPanel.prodId" style="margin-top:12px;">
+    <pd-prod-hist :key="histPanel.prodId" :prod-id="histPanel.prodId"
+      :navigate="inlineNavigate" :on-close="closeHist" />
+  </div>
+  <!-- ===== □. 하단 이력 ==================================================== -->
   <!-- ===== ■. 상품옵션코드관리 모달 (bo-pd-opt-code-mng.html iframe 인라인) ============== -->
   <bo-modal v-if="modals.isOptCodeModal" title="⚙ 상품옵션코드관리" width="1100px" height="720px" body-pad="0"
     @close="modals.isOptCodeModal = false">

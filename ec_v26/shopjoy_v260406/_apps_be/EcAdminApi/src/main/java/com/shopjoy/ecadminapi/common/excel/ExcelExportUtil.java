@@ -147,15 +147,41 @@ public final class ExcelExportUtil {
             );
         }
         setExcelResponseHeaders(response, areaNm);
-        try (SXSSFWorkbook wb = new SXSSFWorkbook(SXSSF_WINDOW_SIZE)) {
+        /* dispose() 는 반드시 finally — SXSSF 의 temp 디스크 파일은 close() 가 아니라 dispose() 로 지워진다.
+           write() 도중 클라이언트가 취소/이탈하면 IOException 이 나는데, try 안에서만 호출하면
+           그 경로에서 temp 파일이 그대로 남아 디스크가 계속 차오른다. */
+        SXSSFWorkbook wb = null;
+        try {
+            wb = new SXSSFWorkbook(SXSSF_WINDOW_SIZE);
             wb.setCompressTempFiles(true);
             writeSheetWithSplit(wb, sheetName, columns, rows);
             wb.write(response.getOutputStream());
             response.getOutputStream().flush();
-            wb.dispose();
         } catch (Exception e) {
             log.error("[ExcelExportUtil] writeXlsx fail — area={}, sheet={}, msg={}", areaNm, sheetName, e.getMessage(), e);
             throw new RuntimeException("엑셀 다운로드 중 오류: " + e.getMessage(), e);
+        } finally {
+            disposeQuietly(wb, areaNm);
+        }
+    }
+
+    /**
+     * SXSSF 워크북 정리 — temp 파일 삭제 후 close.
+     *
+     * <p>정리 자체가 실패해도 원래 예외를 덮지 않도록 로깅만 하고 삼킨다
+     * (finally 에서 throw 하면 진짜 원인이 사라진다).</p>
+     */
+    private static void disposeQuietly(SXSSFWorkbook wb, String areaNm) {
+        if (wb == null) return;
+        try {
+            wb.dispose();   // temp 파일 삭제 — close() 로는 지워지지 않는다
+        } catch (Exception e) {
+            log.warn("[ExcelExportUtil] dispose 실패 — area={}, msg={}", areaNm, e.getMessage());
+        }
+        try {
+            wb.close();
+        } catch (Exception e) {
+            log.warn("[ExcelExportUtil] close 실패 — area={}, msg={}", areaNm, e.getMessage());
         }
     }
 
@@ -173,18 +199,23 @@ public final class ExcelExportUtil {
             java.util.function.Consumer<java.util.function.Consumer<T>> fetcher
     ) {
         setExcelResponseHeaders(response, areaNm);
-        try (SXSSFWorkbook wb = new SXSSFWorkbook(SXSSF_WINDOW_SIZE)) {
+        /* dispose() 는 반드시 finally — 대용량일수록 생성이 길어 취소/이탈 확률이 높고,
+           그때마다 temp 파일이 남으면 컨테이너 임시 디스크가 빠르게 고갈된다. */
+        SXSSFWorkbook wb = null;
+        try {
+            wb = new SXSSFWorkbook(SXSSF_WINDOW_SIZE);
             wb.setCompressTempFiles(true);
             Sheet sheet = wb.createSheet(safeSheetName(sheetName, 1));
             writeHeader(wb, sheet, columns);
+            final SXSSFWorkbook wbRef = wb;
             final int[] rowIdx = { 1 };
             final int[] sheetSeq = { 1 };
             final Sheet[] curSheet = { sheet };
             fetcher.accept(item -> {
                 if (rowIdx[0] > EXCEL_SHEET_MAX_ROWS) {
                     sheetSeq[0]++;
-                    curSheet[0] = wb.createSheet(safeSheetName(sheetName, sheetSeq[0]));
-                    writeHeader(wb, curSheet[0], columns);
+                    curSheet[0] = wbRef.createSheet(safeSheetName(sheetName, sheetSeq[0]));
+                    writeHeader(wbRef, curSheet[0], columns);
                     rowIdx[0] = 1;
                 }
                 Row r = curSheet[0].createRow(rowIdx[0]++);
@@ -194,10 +225,11 @@ public final class ExcelExportUtil {
             });
             wb.write(response.getOutputStream());
             response.getOutputStream().flush();
-            wb.dispose();
         } catch (Exception e) {
             log.error("[ExcelExportUtil] writeXlsxStreaming fail — area={}, sheet={}, msg={}", areaNm, sheetName, e.getMessage(), e);
             throw new RuntimeException("엑셀 스트리밍 다운로드 중 오류: " + e.getMessage(), e);
+        } finally {
+            disposeQuietly(wb, areaNm);
         }
     }
 
@@ -252,7 +284,8 @@ public final class ExcelExportUtil {
     }
 
     /** Object → Cell 값 안전 변환 */
-    private static void setCellValue(Cell cell, Object value) {
+    /** 셀 값 세팅 — 분할 저장 writer(BoExcelDownRunner)가 재사용하도록 공개 */
+    public static void setCellValue(Cell cell, Object value) {
         if (value == null) { cell.setBlank(); return; }
         if (value instanceof Number n)          cell.setCellValue(n.doubleValue());
         else if (value instanceof Boolean b)    cell.setCellValue(b);
@@ -309,13 +342,17 @@ public final class ExcelExportUtil {
             Consumer<Consumer<T>> fetcher
     ) {
         setExcelResponseHeaders(response, meta.tableLabel());
-        try (SXSSFWorkbook wb = new SXSSFWorkbook(SXSSF_WINDOW_SIZE)) {
+        /* dispose() 는 반드시 finally — 취소/이탈 시 temp 파일 잔존 방지 */
+        SXSSFWorkbook wb = null;
+        try {
+            wb = new SXSSFWorkbook(SXSSF_WINDOW_SIZE);
             wb.setCompressTempFiles(true);
             Sheet sheet = wb.createSheet(safeSheetName(meta.tableLabel(), 1));
             writeMetaHeader(wb, sheet, meta);
 
             // 필드 reflection 캐시
             Map<String, Field> fieldMap = buildFieldMap(entityClass, meta.columns());
+            final SXSSFWorkbook wbRef = wb;
             int[] rowIdx = { 3 }; // Row 4 부터 데이터 (0-indexed: 3)
             Sheet[] curSheet = { sheet };
             int[] sheetSeq = { 1 };
@@ -323,8 +360,8 @@ public final class ExcelExportUtil {
             fetcher.accept(item -> {
                 if (rowIdx[0] > EXCEL_SHEET_MAX_ROWS) {
                     sheetSeq[0]++;
-                    curSheet[0] = wb.createSheet(safeSheetName(meta.tableLabel(), sheetSeq[0]));
-                    writeMetaHeader(wb, curSheet[0], meta);
+                    curSheet[0] = wbRef.createSheet(safeSheetName(meta.tableLabel(), sheetSeq[0]));
+                    writeMetaHeader(wbRef, curSheet[0], meta);
                     rowIdx[0] = 3;
                 }
                 Row r = curSheet[0].createRow(rowIdx[0]++);
@@ -342,10 +379,11 @@ public final class ExcelExportUtil {
 
             wb.write(response.getOutputStream());
             response.getOutputStream().flush();
-            wb.dispose();
         } catch (Exception e) {
             log.error("[ExcelExportUtil] writeXlsxWithMeta fail — table={}, msg={}", meta.tableLabel(), e.getMessage(), e);
             throw new RuntimeException("엑셀 다운로드 중 오류: " + e.getMessage(), e);
+        } finally {
+            disposeQuietly(wb, meta.tableLabel());
         }
     }
 
@@ -358,7 +396,8 @@ public final class ExcelExportUtil {
      * </ul>
      * 모든 헤더 행은 기본 행높이의 1.5배(약 22pt).
      */
-    private static void writeMetaHeader(SXSSFWorkbook wb, Sheet sheet, ExcelMetaInfo meta) {
+    /** 3행 메타 헤더 작성 — 분할 저장 writer 가 파일마다 호출한다 */
+    public static void writeMetaHeader(SXSSFWorkbook wb, Sheet sheet, ExcelMetaInfo meta) {
         int colCount = meta.columns().size();
 
         // ─── Row 1: 테이블 라벨 + 코멘트 (회색 배경, 굵게, 병합)
@@ -461,7 +500,8 @@ public final class ExcelExportUtil {
     }
 
     /** 필드명 → Field 객체 매핑 캐시 빌드 */
-    private static Map<String, Field> buildFieldMap(Class<?> cls, List<ColumnMeta> cols) {
+    /** 컬럼→Field reflection 캐시 — 분할 저장 writer 가 재사용 */
+    public static Map<String, Field> buildFieldMap(Class<?> cls, List<ColumnMeta> cols) {
         Map<String, Field> map = new HashMap<>();
         for (ColumnMeta col : cols) {
             Field f = findField(cls, col.fieldName());
@@ -484,7 +524,8 @@ public final class ExcelExportUtil {
     }
 
     /** Field reflection 값 읽기 (실패 시 null) */
-    private static Object readField(Object obj, Field f) {
+    /** 필드 값 read — 분할 저장 writer 가 재사용 */
+    public static Object readField(Object obj, Field f) {
         if (f == null || obj == null) return null;
         try { return f.get(obj); }
         catch (IllegalAccessException e) { return null; }
