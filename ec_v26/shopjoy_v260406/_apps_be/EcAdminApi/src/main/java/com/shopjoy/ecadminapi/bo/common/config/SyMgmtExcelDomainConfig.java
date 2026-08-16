@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbsDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyExceldownDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
@@ -12,6 +13,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyAlarm;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbs;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyExceldown;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyTemplate;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
@@ -20,10 +22,12 @@ import com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBbmRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyBbsRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyExceldownRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SySiteRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyTemplateRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyUserRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyVendorRepository;
+import com.shopjoy.ecadminapi.base.sy.service.SyExceldownService;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyAlarmService;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBbmService;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyBbsService;
@@ -134,5 +138,15 @@ public class SyMgmtExcelDomainConfig {
         return PagedExcelHandler.of("syVendor", "업체",
             SyVendor.class, SyVendorDto.Item.class, SyVendorDto.Request.class,
             r, svc::getList, svc::getPageData, "vendorId", em);
+    }
+
+    /* ── 시스템 > 엑셀다운로드 이력 ────────────────────────────── */
+
+    @Bean
+    public ExcelDomainHandler<SyExceldown, SyExceldownDto.Item, SyExceldownDto.Request>
+    syExceldownExcelHandler(SyExceldownService svc, SyExceldownRepository r, EntityManager em) {
+        return PagedExcelHandler.of("syExceldown", "엑셀다운로드 요청이력",
+            SyExceldown.class, SyExceldownDto.Item.class, SyExceldownDto.Request.class,
+            r, svc::getList, svc::getPageData, "exceldownId", em);
     }
 }

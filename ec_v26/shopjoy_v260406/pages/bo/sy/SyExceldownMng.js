@@ -25,6 +25,10 @@ window.SyExceldownMng = {
       const s = window.sfGetBoAuthStore ? window.sfGetBoAuthStore() : null;
       return s && s.svAuthUser ? (s.svAuthUser.authId || '') : '';
     };
+    const fnAuthNm = () => {
+      const s = window.sfGetBoAuthStore ? window.sfGetBoAuthStore() : null;
+      return s && s.svAuthUser ? (s.svAuthUser.userNm || '') : '';
+    };
 
     const codes = reactive({});
 
@@ -34,9 +38,10 @@ window.SyExceldownMng = {
       autoTimer: null,      // 진행중이 있으면 주기 갱신
     });
 
-    /* 조회조건 — 요청자는 내 정보가 기본 */
+    /* 조회조건 — 요청자는 내 정보가 기본. regBy=사용자ID/회원ID(둘 중 하나), regByNm=표시용 이름 */
     const searchParam = reactive({
       regBy: '',                 // initPage 에서 내 정보로 채움 (스토어 준비 시점 이후)
+      regByNm: '',
       exceldownStatusCd: '',
       runTypeCd: '',
       searchValue: '',
@@ -46,6 +51,12 @@ window.SyExceldownMng = {
       dateRange: '1week',
     });
     boUtil.bofApplyDateRange(searchParam, '1week');
+
+    /* 요청자 선택 팝업 — 사용자(staff) / 회원(member) 둘 다 요청자가 될 수 있음 */
+    const picks = reactive({ user: false, member: false });
+
+    /* 목록 자체 엑셀다운로드 */
+    const excelModal = reactive({ show: false });
 
     const rows = reactive([]);
     const baseGridPager = reactive({
@@ -60,12 +71,29 @@ window.SyExceldownMng = {
       console.log(' ■■ SyExceldownMng : handleBtnAction -> ', cmd, param);
       if (cmd === 'search-list')      { baseGridPager.pageNo = 1; return handleSearchList(); }
       if (cmd === 'search-reset')     { return onReset(); }
-      if (cmd === 'search-mine')      { searchParam.regBy = fnAuthId(); return handleSearchList(); }
+      if (cmd === 'search-mine')      { searchParam.regBy = fnAuthId(); searchParam.regByNm = fnAuthNm(); return handleSearchList(); }
       if (cmd === 'grid-pager-page')  { baseGridPager.pageNo = param; return handleSearchList(); }
       if (cmd === 'row-cancel')       { return handleCancel(param); }
       if (cmd === 'row-detail')       { return handleToggleDetail(param); }
       if (cmd === 'row-download')     { return handleQuickDownload(param); }
+      if (cmd === 'pick-user-open')   { picks.user = true; return; }
+      if (cmd === 'pick-member-open') { picks.member = true; return; }
+      if (cmd === 'pick-clear')       { searchParam.regBy = ''; searchParam.regByNm = ''; return; }
       console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
+
+    /* fnCallbackModal — 요청자 선택 팝업 통합 콜백 (사용자/회원 공용) */
+    const fnCallbackModal = (popCmd, param, result) => {
+      if (result == null) { picks.user = picks.member = false; return; }
+      if (popCmd === 'cmPopup-user-pick') {
+        searchParam.regBy   = result?.selId || '';
+        searchParam.regByNm = result?.selName || result?.userNm || result?.loginId || '';
+        picks.user = false;
+      } else if (popCmd === 'cmPopup-member-pick') {
+        searchParam.regBy   = result?.selId || '';
+        searchParam.regByNm = result?.selName || result?.memberNm || result?.loginId || '';
+        picks.member = false;
+      }
     };
 
     /* handleSelectAction — select/페이지크기 라우팅 */
@@ -149,7 +177,7 @@ window.SyExceldownMng = {
     /* onReset — 검색조건 초기화 (요청자는 내 정보로 되돌림) */
     const onReset = () => {
       Object.assign(searchParam, {
-        regBy: fnAuthId(), exceldownStatusCd: '', runTypeCd: '',
+        regBy: fnAuthId(), regByNm: fnAuthNm(), exceldownStatusCd: '', runTypeCd: '',
         searchValue: '', dateRange: '1week',
       });
       boUtil.bofApplyDateRange(searchParam, '1week');
@@ -166,6 +194,7 @@ window.SyExceldownMng = {
           ...coUtil.cofOmitEmpty(searchParam),
         };
         delete params.dateRange;
+        delete params.regByNm;
         const res = await boApiSvc.syExceldown.getPage(params, '엑셀다운로드', '목록조회');
         const d = res.data?.data || {};
         rows.splice(0, rows.length, ...(d.pageList || []));
@@ -177,6 +206,14 @@ window.SyExceldownMng = {
       } finally {
         uiState.loading = false;
       }
+    };
+
+    /* buildExcelParams — 목록 자체 엑셀다운로드용 (조회조건과 동일, 페이징 제외) */
+    const buildExcelParams = () => {
+      const params = { ...coUtil.cofOmitEmpty(searchParam) };
+      delete params.dateRange;
+      delete params.regByNm;
+      return params;
     };
 
     /* handleToggleDetail — 행 상세(파일 목록) 펼침/접기.
@@ -263,6 +300,11 @@ window.SyExceldownMng = {
     const cfHasActive = computed(() => rows.some(r => ['RUNNING', 'WAITING'].includes(r.exceldownStatusCd)));
     const cfIsMine    = computed(() => !!searchParam.regBy && searchParam.regBy === fnAuthId());
 
+    /* 목록 자체 엑셀다운로드 — 화면에 뜨는 컬럼과 동일하게(_progress 는 클라이언트 계산이라 자동 제외) */
+    const cfExcelDomain  = computed(() => 'syExceldown');
+    const cfExcelAreaNm  = computed(() => '엑셀다운로드');
+    const cfExcelColumns = computed(() => columns.baseGrid.filter(c => !String(c.key).startsWith('_')));
+
     const statusOptions = [
       { value: '',         label: '상태 전체' },
       { value: 'WAITING',  label: '대기' },
@@ -284,7 +326,8 @@ window.SyExceldownMng = {
       await fnLoadCodes();
       /* 조회조건 요청자 기본값 = 내 정보.
          단 알림에서 특정 건으로 진입한 경우엔 그 건이 반드시 보이도록 필터를 비운다. */
-      searchParam.regBy = props.dtlId ? '' : fnAuthId();
+      searchParam.regBy   = props.dtlId ? '' : fnAuthId();
+      searchParam.regByNm = props.dtlId ? '' : fnAuthNm();
       await handleSearchList();
       if (props.dtlId) { await handleToggleDetail(props.dtlId); }
 
@@ -302,11 +345,12 @@ window.SyExceldownMng = {
     /* ##### [07] return (템플릿 노출) ############################################## */
 
     return {
-      codes, uiState, searchParam, rows, baseGridPager, columns,   // 상태 / 데이터
+      codes, uiState, searchParam, rows, baseGridPager, columns, picks, excelModal,  // 상태 / 데이터
       showToast, showConfirm,                                     // sy-exceldown-dtl 인라인 임베드 전달용
-      handleBtnAction, handleSelectAction, handleGridCellAction,   // dispatch
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,  // dispatch
       fnStatusLabel, fnStatusBadge, fnProgress, fnDateTime, fnCanCancel, fnCanDownload,  // 헬퍼
       cfHasActive, cfIsMine, statusOptions, runTypeOptions,        // computed / 옵션
+      cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,  // 엑셀 다운로드
       cofCountText: coUtil.cofCountText,
     };
   },
@@ -318,7 +362,16 @@ window.SyExceldownMng = {
   <bo-container>
     <div class="search-bar">
       <span class="search-label">요청자</span>
-      <input class="form-control" v-model="searchParam.regBy" placeholder="사용자ID" style="width:150px;" @keyup.enter="handleBtnAction('search-list')" />
+      <span style="display:inline-flex;align-items:center;gap:4px;">
+        <input class="form-control" readonly
+          :value="searchParam.regBy ? (searchParam.regByNm ? searchParam.regByNm + ' (' + searchParam.regBy + ')' : searchParam.regBy) : ''"
+          placeholder="사용자/회원 선택" style="width:170px;background:#f7f7f7;" />
+        <button type="button" class="btn btn-secondary btn-sm" @click="handleBtnAction('pick-user-open')">사용자선택</button>
+        <button type="button" class="btn btn-secondary btn-sm" @click="handleBtnAction('pick-member-open')">회원선택</button>
+        <button v-if="searchParam.regBy" type="button" title="선택 해제"
+          style="background:none;border:none;padding:0 2px;color:#bbb;cursor:pointer;font-size:12px;"
+          @click="handleBtnAction('pick-clear')">x</button>
+      </span>
       <button class="btn btn-secondary btn-sm" :disabled="cfIsMine" @click="handleBtnAction('search-mine')">내 요청</button>
       <span class="search-label">상태</span>
       <select class="form-control" v-model="searchParam.exceldownStatusCd" style="width:120px;">
@@ -346,6 +399,7 @@ window.SyExceldownMng = {
     <template #toolbar-actions>
       <span v-if="cfHasActive" style="font-size:11px;color:#1677ff;">진행중 — 5초마다 자동 갱신</span>
       <span style="font-size:11px;color:#aaa;">행 클릭 시 생성 파일 표시</span>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
     </template>
     <bo-grid bare :columns="columns.baseGrid" :rows="rows" row-key="exceldownId"
       :selected-key="uiState.selectedId" :row-actions="true"
@@ -374,6 +428,9 @@ window.SyExceldownMng = {
       :on-size-change="() => handleSelectAction('grid-pager-size')" />
   </bo-container>
   <!-- ===== □. 목록 ======================================================== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="syExceldown"
+    area-nm="엑셀다운로드" :columns="cfExcelColumns" ui-nm="엑셀다운로드" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
   <!-- ===== ■. 상세 (생성 파일 목록) ========================================== -->
   <bo-container v-if="uiState.selectedId" title="생성 파일">
     <sy-exceldown-dtl :key="uiState.selectedId" :navigate="navigate" :show-ref-modal="showRefModal"
@@ -381,6 +438,10 @@ window.SyExceldownMng = {
       @downloaded="handleSearchList" />
   </bo-container>
   <!-- ===== □. 상세 ======================================================== -->
+  <!-- ===== ■. 요청자 선택 팝업 ================================================ -->
+  <bo-cm-popup-modal popup-cmd="cmPopup-user-pick"   popup-code="user"   :show="picks.user"   :on-callback="fnCallbackModal" />
+  <bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="picks.member" :on-callback="fnCallbackModal" />
+  <!-- ===== □. 요청자 선택 팝업 ================================================ -->
 </bo-page>
 `
 };

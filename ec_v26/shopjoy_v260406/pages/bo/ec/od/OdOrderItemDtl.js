@@ -32,6 +32,16 @@ window.OdOrderItemDtl = {
       buyConfirmYn: '', settleYn: '', refundCompltYn: '',
       courierCd: '', courierNm: '', invoiceNo: '',
       regDate: '', updDate: '',
+      // 금액계산
+      normalPrice: null, unitPrice: null,
+      orgUnitPrice: null, orgItemOrderAmt: null, orgDiscountAmt: null, orgShippingFee: null,
+      outboundShippingFee: null,
+      // 정산정보
+      saveRate: null, saveUseAmt: null, saveSchdAmt: null,
+      settlePeriod: '', settleTargetAmt: null, settleFeeRate: null, settleFeeAmt: null,
+      settleAmt: null, closeYn: '', closeDate: '', settleId: '',
+      // 전표정보
+      erpVoucherId: '', erpVoucherLineNo: null, erpSendYn: '', erpSendDate: '', rawStatusCdNm: '',
     });
 
     const uiState = reactive({
@@ -99,9 +109,16 @@ window.OdOrderItemDtl = {
           buyConfirmYn: '', settleYn: '', refundCompltYn: '',
           courierCd: '', courierNm: '', invoiceNo: '',
           regDate: '', updDate: '',
+          normalPrice: null, unitPrice: null,
+          orgUnitPrice: null, orgItemOrderAmt: null, orgDiscountAmt: null, orgShippingFee: null,
+          outboundShippingFee: null,
+          saveRate: null, saveUseAmt: null, saveSchdAmt: null,
+          settlePeriod: '', settleTargetAmt: null, settleFeeRate: null, settleFeeAmt: null,
+          settleAmt: null, closeYn: '', closeDate: '', settleId: '',
+          erpVoucherId: '', erpVoucherLineNo: null, erpSendYn: '', erpSendDate: '', rawStatusCdNm: '',
         });
         Object.assign(baseForm, d);
-        await Promise.all([fnLoadClaims(), fnLoadHistory()]);
+        await Promise.all([fnLoadClaims(), fnLoadHistory(), fnLoadSettleRaw()]);
       } catch (err) {
         showToast(err.response?.data?.message || '조회 중 오류가 발생했습니다.', 'error', 0);
       } finally {
@@ -125,6 +142,31 @@ window.OdOrderItemDtl = {
           { orderItemId: props.dtlId, histType: 'status' }, '주문항목상세', '이력조회');
         history.splice(0, history.length, ...(res.data?.data || []));
       } catch (_) { history.splice(0, history.length); }
+    };
+
+    /* 정산원장(st_settle_raw) 조회 — 정산정보/전표정보 그룹의 데이터 소스(ORDER 유형 원장 1건) */
+    const fnLoadSettleRaw = async () => {
+      if (!props.dtlId) return;
+      try {
+        const res = await boApiSvc.stSettleRaw.getPage(
+          { orderItemId: props.dtlId, rawTypeCd: 'ORDER', pageNo: 1, pageSize: 1 }, '주문항목상세', '정산조회');
+        const row = res.data?.data?.pageList?.[0] || {};
+        Object.assign(baseForm, {
+          settlePeriod:     row.settlePeriod     || '',
+          settleTargetAmt:  row.settleTargetAmt  ?? null,
+          settleFeeRate:    row.settleFeeRate    ?? null,
+          settleFeeAmt:     row.settleFeeAmt     ?? null,
+          settleAmt:        row.settleAmt        ?? null,
+          closeYn:          row.closeYn          || '',
+          closeDate:        row.closeDate        || '',
+          settleId:         row.settleId         || '',
+          erpVoucherId:     row.erpVoucherId     || '',
+          erpVoucherLineNo: row.erpVoucherLineNo ?? null,
+          erpSendYn:        row.erpSendYn        || '',
+          erpSendDate:      row.erpSendDate      || '',
+          rawStatusCdNm:    row.rawStatusCdNm    || '',
+        });
+      } catch (_) { /* 정산원장 미수집 상태일 수 있음 — 조용히 무시, 해당 그룹은 '-'로 표시 */ }
     };
 
     const handleSave = async () => {
@@ -196,6 +238,32 @@ window.OdOrderItemDtl = {
       { key: 'courierNm',         label: '택배사',       type: 'readonly', fmt: () => baseForm.courierNm || baseForm.courierCd || '-' },
       { key: 'invoiceNo',         label: '운송장번호',   type: 'readonly', mono: true, fmt: () => baseForm.invoiceNo || '-' },
       { key: 'updDate',           label: '수정일시',     type: 'readonly', fmt: () => fnDate(baseForm.updDate) },
+      { type: 'group', label: '금액계산' },
+      { key: 'normalPrice',          label: '정상가',       type: 'readonly', fmt: () => fnPrice(baseForm.normalPrice) },
+      { key: 'unitPrice',            label: '판매단가',     type: 'readonly', fmt: () => fnPrice(baseForm.unitPrice) },
+      { key: 'orgUnitPrice',         label: '확정단가',     type: 'readonly', fmt: () => fnPrice(baseForm.orgUnitPrice) },
+      { key: 'orgItemOrderAmt',      label: '확정주문금액', type: 'readonly', fmt: () => fnPrice(baseForm.orgItemOrderAmt) },
+      { key: 'orgDiscountAmt',       label: '확정할인금액', type: 'readonly', fmt: () => fnPrice(baseForm.orgDiscountAmt) },
+      { key: 'orgShippingFee',       label: '확정배송료',   type: 'readonly', fmt: () => fnPrice(baseForm.orgShippingFee) },
+      { key: 'outboundShippingFee',  label: '항목배송비',   type: 'readonly', fmt: () => fnPrice(baseForm.outboundShippingFee) },
+      { type: 'group', label: '정산정보' },
+      { key: 'settlePeriod',      label: '정산기간',     type: 'readonly', fmt: () => baseForm.settlePeriod || '-' },
+      { key: 'settleTargetAmt',   label: '정산대상금액', type: 'readonly', fmt: () => fnPrice(baseForm.settleTargetAmt) },
+      { key: 'settleFeeRate',     label: '수수료율',     type: 'readonly', fmt: () => baseForm.settleFeeRate != null ? baseForm.settleFeeRate + '%' : '-' },
+      { key: 'settleFeeAmt',      label: '수수료금액',   type: 'readonly', fmt: () => fnPrice(baseForm.settleFeeAmt) },
+      { key: 'settleAmt',         label: '정산금액',     type: 'readonly', fmt: () => fnPrice(baseForm.settleAmt) },
+      { key: 'closeYn',           label: '정산마감여부', type: 'readonly', fmt: () => fnYn(baseForm.closeYn) },
+      { key: 'closeDate',         label: '마감일시',     type: 'readonly', fmt: () => fnDate(baseForm.closeDate) },
+      { key: 'settleId',          label: '정산집계ID',   type: 'readonly', mono: true, fmt: () => baseForm.settleId || '-' },
+      { key: 'saveRate',          label: '적립율',       type: 'readonly', fmt: () => baseForm.saveRate != null ? baseForm.saveRate + '%' : '-' },
+      { key: 'saveUseAmt',        label: '사용적립금',   type: 'readonly', fmt: () => fnPrice(baseForm.saveUseAmt) },
+      { key: 'saveSchdAmt',       label: '적립예정금액', type: 'readonly', fmt: () => fnPrice(baseForm.saveSchdAmt) },
+      { type: 'group', label: '전표정보' },
+      { key: 'erpVoucherId',      label: '전표ID',       type: 'readonly', mono: true, fmt: () => baseForm.erpVoucherId || '-' },
+      { key: 'erpVoucherLineNo',  label: '전표라인번호', type: 'readonly', fmt: () => baseForm.erpVoucherLineNo ?? '-' },
+      { key: 'erpSendYn',         label: 'ERP전송여부',  type: 'readonly', fmt: () => fnYn(baseForm.erpSendYn) },
+      { key: 'erpSendDate',       label: 'ERP전송일시',  type: 'readonly', fmt: () => fnDate(baseForm.erpSendDate) },
+      { key: 'rawStatusCdNm',     label: '수집상태',     type: 'readonly', fmt: () => baseForm.rawStatusCdNm || '-' },
     ];
 
     const claimGridColumns = [

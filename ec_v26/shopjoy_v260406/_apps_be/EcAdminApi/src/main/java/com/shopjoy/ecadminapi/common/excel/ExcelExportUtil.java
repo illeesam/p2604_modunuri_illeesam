@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
@@ -371,23 +372,34 @@ public final class ExcelExportUtil {
         return buildXlsxBytes(meta, entityClass, fetcher);
     }
 
-    /** {@link #writeXlsxWithMeta}/{@link #writeXlsxWithMetaBytes} 공용 빌드 로직 */
+    /**
+     * {@link #writeXlsxWithMeta}/{@link #writeXlsxWithMetaBytes} 공용 빌드 로직.
+     *
+     * <p>SXSSFWorkbook(임시파일 기반 스트리밍) 대신 {@link XSSFWorkbook}(순수 인메모리)을 쓴다 —
+     * 이 메서드는 이미 결과를 {@code ByteArrayOutputStream} 에 전량 모아 {@code byte[]} 로 반환하므로
+     * SXSSF 의 "최근 N행만 RAM 유지" 이점이 애초에 발휘되지 않고(어차피 전체를 메모리에 들고 있음),
+     * 오히려 SXSSF 의 임시파일 zip 엔트리 기록 경로에서 zip 엔트리 날짜가 DOS 포맷상 무효값
+     * ("1980-00-00", month=0)으로 기록되는 현상이 있었다 — 대부분의 zip 리더(unzip, 7-zip 등)는
+     * 관대하게 허용하지만, 실제 Microsoft Excel 의 엄격한 OOXML 파서는 이를 거부해
+     * "파일 형식 또는 파일 확장명이 잘못되어 파일을 열 수 없습니다" 오류로 이어졌다(2026-08-16 확인).
+     * 이 경로는 즉시(SYNC) 다운로드 전용이라 상한이 {@code app.excel.sync-max-rows}(기본 10,000건)로
+     * 작아 XSSFWorkbook 인메모리 처리가 안전하다. 진짜 대용량(예약/ASYNC, {@link BoExcelDownRunner})은
+     * 여전히 SXSSFWorkbook 스트리밍을 그대로 사용한다.</p>
+     */
     private static <T> byte[] buildXlsxBytes(
             ExcelMetaInfo meta,
             Class<T> entityClass,
             Consumer<Consumer<T>> fetcher
     ) {
-        /* dispose() 는 반드시 finally — 취소/이탈 시 temp 파일 잔존 방지 */
-        SXSSFWorkbook wb = null;
+        XSSFWorkbook wb = null;
         try {
-            wb = new SXSSFWorkbook(SXSSF_WINDOW_SIZE);
-            wb.setCompressTempFiles(true);
+            wb = new XSSFWorkbook();
             Sheet sheet = wb.createSheet(safeSheetName(meta.tableLabel(), 1));
             writeMetaHeader(wb, sheet, meta);
 
             // 필드 reflection 캐시
             Map<String, Field> fieldMap = buildFieldMap(entityClass, meta.columns());
-            final SXSSFWorkbook wbRef = wb;
+            final XSSFWorkbook wbRef = wb;
             int[] rowIdx = { 3 }; // Row 4 부터 데이터 (0-indexed: 3)
             Sheet[] curSheet = { sheet };
             int[] sheetSeq = { 1 };
@@ -419,7 +431,17 @@ public final class ExcelExportUtil {
             log.error("[ExcelExportUtil] buildXlsxBytes fail — table={}, msg={}", meta.tableLabel(), e.getMessage(), e);
             throw new RuntimeException("엑셀 생성 중 오류: " + e.getMessage(), e);
         } finally {
-            disposeQuietly(wb, meta.tableLabel());
+            closeQuietly(wb, meta.tableLabel());
+        }
+    }
+
+    /** XSSFWorkbook 정리 — 임시파일이 없어 dispose() 불필요, close() 만 하면 된다 */
+    private static void closeQuietly(XSSFWorkbook wb, String areaNm) {
+        if (wb == null) return;
+        try {
+            wb.close();
+        } catch (Exception e) {
+            log.warn("[ExcelExportUtil] close 실패 — area={}, msg={}", areaNm, e.getMessage());
         }
     }
 
@@ -432,8 +454,8 @@ public final class ExcelExportUtil {
      * </ul>
      * 모든 헤더 행은 기본 행높이의 1.5배(약 22pt).
      */
-    /** 3행 메타 헤더 작성 — 분할 저장 writer 가 파일마다 호출한다 */
-    public static void writeMetaHeader(SXSSFWorkbook wb, Sheet sheet, ExcelMetaInfo meta) {
+    /** 3행 메타 헤더 작성 — 분할 저장 writer 가 파일마다 호출한다. SXSSF/XSSF 공용(Workbook 인터페이스). */
+    public static void writeMetaHeader(Workbook wb, Sheet sheet, ExcelMetaInfo meta) {
         int colCount = meta.columns().size();
 
         // ─── Row 1: 테이블 라벨 + 코멘트 (회색 배경, 굵게, 병합)
