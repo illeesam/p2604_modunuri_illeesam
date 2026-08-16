@@ -57,7 +57,7 @@ window.DpDispAreaMng = {
     baseDetail.active = false;
     baseDetail.resetSeq = 0;
     const resetDetailToNew = () => {
-      baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit';
+      baseDetail.selectedId = '__new__'; baseDetail.openMode = 'view';
       baseDetail.active = false; baseDetail.resetSeq++;
     };
     resetDetailToNew();

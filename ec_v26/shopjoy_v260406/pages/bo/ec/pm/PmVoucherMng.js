@@ -22,7 +22,7 @@ window.PmVoucherMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     /* 하단 상세 (항상 표시 — 진입 시 빈 신규 폼, 비활성) */
-    const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
+    const detailPanel = reactive({ selectedId: '__new__', openMode: 'view', reloadTrigger: 0, resetSeq: 0, active: false });
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -216,7 +216,7 @@ window.PmVoucherMng = {
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지) */
     const resetDetailToNew = () => {
       detailPanel.selectedId = '__new__';
-      detailPanel.openMode = 'edit';
+      detailPanel.openMode = 'view';
       detailPanel.active = false;   // 버튼 숨김
       detailPanel.resetSeq++;       // :key 재마운트 → 폼 초기화
     };

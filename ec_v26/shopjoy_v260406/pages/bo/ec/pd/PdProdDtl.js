@@ -572,7 +572,7 @@ window.PdProdDtl = {
     const form = reactive({
       prodId: null,
       prodNm: '', prodCode: '',
-      categoryId: '', brandId: '', vendorId: '',
+      categoryId: '', brandId: '', brandNm: '', vendorId: '', vendorNm: '',
       mdUserId: '',
       prodTypeCd: 'OPTION', prodStatusCd: 'DRAFT', unsaleMsg: '',
       dlivTmpltId: '',
@@ -631,6 +631,9 @@ window.PdProdDtl = {
 
     /* fnSortByOrd — 유틸 */
     const fnSortByOrd = (a,b) => (a.sortOrd||0) - (b.sortOrd||0);
+
+    /* fnDateTime — 보기모드 날짜/시간 표시용 (YYYY-MM-DD HH:mm) */
+    const fnDateTime = (v) => (v ? String(v).substring(0, 16).replace('T', ' ') : '-');
 
     // 1레벨 — 옵션 카테고리 선택용
     const cfOptTypeLevel1Codes = computed(() =>
@@ -1258,7 +1261,9 @@ window.PdProdDtl = {
           form.prodCode       = p.prodCode || '';
           form.categoryId     = p.categoryId || '';
           form.brandId        = p.brandId || '';
+          form.brandNm        = p.brandNm || '';
           form.vendorId       = p.vendorId || '';
+          form.vendorNm       = p.vendorNm || '';
           form.mdUserId       = p.mdUserId || '';
           form.prodTypeCd     = p.prodTypeCd || 'SINGLE';
           form.prodStatusCd   = p.prodStatusCd || 'DRAFT';
@@ -1876,7 +1881,7 @@ window.PdProdDtl = {
       prodOptCategoryTypeCd, openHelp,
       safeFirst, safeFind, safeFilter,
       grpCodes,
-      fnMdRowStyle, fnRemainSkuRowStyle,
+      fnMdRowStyle, fnRemainSkuRowStyle, fnDateTime,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
       showToast,
@@ -1917,7 +1922,10 @@ window.PdProdDtl = {
       <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false">
         <template #categories>
-          <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
+          <div v-if="cfDtlMode" class="readonly-field-plain">
+            {{ prodCategories.length ? prodCategories.map(c => c.categoryNm).join(' , ') : '-' }}
+          </div>
+          <div v-else style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
             <div v-if="prodCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
             <div v-for="(cat,idx) in prodCategories" :key="cat?.categoryId"
               draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
@@ -1942,19 +1950,22 @@ window.PdProdDtl = {
           </div>
         </template>
         <template #brand>
-          <select class="form-control" v-model="form.brandId">
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.brandNm || '-' }}</div>
+          <select v-else class="form-control" v-model="form.brandId">
             <option value="">-- 선택 --</option>
             <option v-for="b in ([]||[])" :key="b.brandId||b.id" :value="b.brandId||b.id">{{ b.brandNm||b.name }}</option>
           </select>
         </template>
         <template #vendor>
-          <select class="form-control" v-model="form.vendorId">
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.vendorNm || '-' }}</div>
+          <select v-else class="form-control" v-model="form.vendorId">
             <option value="">-- 선택 --</option>
             <option v-for="v in ([]||[])" :key="v.vendorId||v.id" :value="v.vendorId||v.id">{{ v.vendorNm||v.name }}</option>
           </select>
         </template>
         <template #mdUser>
-          <div style="display:flex;gap:6px;align-items:flex-end;">
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ cfMdSelectedNm || '-' }}</div>
+          <div v-else style="display:flex;gap:6px;align-items:flex-end;">
             <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
               style="flex:1;background:#fafafa;" @click="handleBtnAction('mdModal-open')" />
             <span style="display:inline-flex;align-items:center;flex-shrink:0;">
@@ -1964,16 +1975,19 @@ window.PdProdDtl = {
           </div>
         </template>
         <template #dlivTmplt>
-          <select class="form-control" v-model="form.dlivTmpltId">
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.dlivTmpltId || '-' }}</div>
+          <select v-else class="form-control" v-model="form.dlivTmpltId">
             <option value="">-- 선택 --</option>
             <option v-for="t in ([]||[])" :key="t?.dlivTmpltId" :value="t.dlivTmpltId">{{ t.dlivTmpltNm }}</option>
           </select>
         </template>
         <template #saleStart>
-          <bo-date-time-picker v-model="form.saleStartDate" placeholder-date="즉시" />
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.saleStartDate ? fnDateTime(form.saleStartDate) : '즉시' }}</div>
+          <bo-date-time-picker v-else v-model="form.saleStartDate" placeholder-date="즉시" />
         </template>
         <template #saleEnd>
-          <bo-date-time-picker v-model="form.saleEndDate" placeholder-date="무기한" />
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.saleEndDate ? fnDateTime(form.saleEndDate) : '무기한' }}</div>
+          <bo-date-time-picker v-else v-model="form.saleEndDate" placeholder-date="무기한" />
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
@@ -1984,8 +1998,15 @@ window.PdProdDtl = {
       <bo-cm-popup-modal v-if="mdModalOpen" popup-cmd="cmPopup-md-pick" popup-code="user"
         title="담당MD 선택" :on-callback="fnCallbackModal"
         @close="handleBtnAction('mdModal-close')" />
-      <!-- ===== ■.■.■. 체크박스 그룹 (세로 슬림) ===================================== -->
-      <div style="display:flex;flex-wrap:wrap;gap:16px;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
+      <!-- ===== ■.■.■. 체크박스 그룹 (세로 슬림) — 보기모드는 배지로 표시 ============== -->
+      <div v-if="cfDtlMode" style="display:flex;flex-wrap:wrap;gap:8px;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
+        <span class="badge" :class="form.isNew==='Y' ? 'badge-green' : 'badge-gray'">신상품</span>
+        <span class="badge" :class="form.isBest==='Y' ? 'badge-green' : 'badge-gray'">베스트</span>
+        <span class="badge" :class="form.adltYn==='Y' ? 'badge-green' : 'badge-gray'">성인상품</span>
+        <span class="badge" :class="form.sameDayDlivYn==='Y' ? 'badge-green' : 'badge-gray'">당일배송</span>
+        <span class="badge" :class="form.soldOutYn==='Y' ? 'badge-red' : 'badge-gray'">강제품절</span>
+      </div>
+      <div v-else style="display:flex;flex-wrap:wrap;gap:16px;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
           <input type="checkbox" :checked="form.isNew==='Y'" @change="form.isNew=$event.target.checked?'Y':'N'" />
           신상품
@@ -2016,7 +2037,10 @@ window.PdProdDtl = {
       <bo-form-area :columns="columns.basePriceForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false">
         <template #marginRate>
-          <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
+          <div v-if="cfDtlMode" class="readonly-field-plain" :style="{ color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
+            {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}
+          </div>
+          <div v-else class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
             {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
           </div>
         </template>
@@ -2095,7 +2119,7 @@ window.PdProdDtl = {
           </div>
         </template>
         <span v-if="!prodOptCategoryTypeCd" style="font-size:11px;color:#f5a623;">← 옵션 카테고리를 먼저 선택하세요</span>
-        <button v-if="prodOptCategoryTypeCd" class="btn btn-xs btn-secondary" style="margin-left:auto;" @click="handleBtnAction('optGroup-add')" :disabled="optGroups.length>=2">+ 차원 추가</button>
+        <button v-if="prodOptCategoryTypeCd ? !cfDtlMode : false" class="btn btn-xs btn-secondary" style="margin-left:auto;" @click="handleBtnAction('optGroup-add')" :disabled="optGroups.length>=2">+ 차원 추가</button>
       </div>
       <!-- ===== ■.■.■. 미사용 안내 ============================================== -->
       <template v-if="!prodOptCategoryTypeCd">
@@ -2114,7 +2138,7 @@ window.PdProdDtl = {
               <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ grp.level }}단 옵션</span>
               <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
                 style="flex:1;min-width:80px;font-size:12px;" />
-              <button class="btn btn-xs btn-danger" style="flex-shrink:0;" @click="handleBtnAction('optGroup-remove', gi)">삭제</button>
+              <button v-if="!cfDtlMode" class="btn btn-xs btn-danger" style="flex-shrink:0;" @click="handleBtnAction('optGroup-remove', gi)">삭제</button>
             </div>
             <!-- 옵션값 테이블 -->
             <div style="max-height:220px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;background:#fff;">
@@ -2165,7 +2189,7 @@ window.PdProdDtl = {
                         style="width:13px;height:13px;" />
                     </td>
                     <td style="padding:2px 3px;text-align:center;">
-                      <button style="background:#ff4d4f;color:#fff;border:none;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;"
+                      <button v-if="!cfDtlMode" style="background:#ff4d4f;color:#fff;border:none;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;"
                         @click="handleBtnAction('optItem-remove', {grp:grp, ii:ii})">✕</button>
                     </td>
                   </tr>
@@ -2175,7 +2199,7 @@ window.PdProdDtl = {
                 </tbody>
               </table>
             </div>
-            <button class="btn btn-xs btn-secondary" style="margin-top:6px;" @click="handleBtnAction('optItem-add', grp)">+ 값 추가</button>
+            <button v-if="!cfDtlMode" class="btn btn-xs btn-secondary" style="margin-top:6px;" @click="handleBtnAction('optItem-add', grp)">+ 값 추가</button>
           </div>
         </div>
         <!-- ===== ■.■.■. N×M 조합 설정 (체크/언체크로 SKU useYn 토글) ================== -->
@@ -2323,7 +2347,7 @@ window.PdProdDtl = {
             </div>
             <!-- ===== ■.■.■.■.■.■. HTML 에디터 방식 (Toast UI) — 보기모드는 렌더만 ========= -->
             <div v-else-if="block.type==='html'" style="padding:12px;">
-              <div v-if="cfDtlMode" class="form-control" style="min-height:120px;line-height:1.6;overflow:auto;" v-html="block.content || '<span style=color:#bbb>-</span>'"></div>
+              <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:120px;line-height:1.6;overflow:auto;" v-html="block.content || '-'"></div>
               <base-html-editor v-else v-model="block.content" height="240px" />
             </div>
           </div>
@@ -2371,7 +2395,7 @@ window.PdProdDtl = {
               </div>
               <div style="display:flex;flex-direction:column;gap:12px;">
                 <template v-for="block in contentBlocks" :key="block?._id">
-                  <img v-if="coUtil.cofAnd(block.type==='file'||block.type==='url', block.content)" :src="block.content" style="max-width:100%;height:auto;display:block;border-radius:4px;" />
+                  <img v-if="(block.type==='file'||block.type==='url') ? block.content : false" :src="block.content" style="max-width:100%;height:auto;display:block;border-radius:4px;" />
                   <div v-else-if="block.type==='html'" v-html="block.content||''"></div>
                 </template>
               </div>
@@ -2401,14 +2425,19 @@ window.PdProdDtl = {
       <bo-form-area :columns="columns.detailForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false">
         <template #advrtStmt>
-          <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
-          <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.advrtStmt||'').length }} / 500</div>
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.advrtStmt || '-' }}</div>
+          <template v-else>
+            <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
+            <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.advrtStmt||'').length }} / 500</div>
+          </template>
         </template>
         <template #advrtStart>
-          <bo-date-time-picker v-model="form.advrtStartDate" />
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.advrtStartDate ? fnDateTime(form.advrtStartDate) : '-' }}</div>
+          <bo-date-time-picker v-else v-model="form.advrtStartDate" />
         </template>
         <template #advrtEnd>
-          <bo-date-time-picker v-model="form.advrtEndDate" />
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.advrtEndDate ? fnDateTime(form.advrtEndDate) : '-' }}</div>
+          <bo-date-time-picker v-else v-model="form.advrtEndDate" />
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매계획 ================================================= -->
@@ -2418,7 +2447,7 @@ window.PdProdDtl = {
           판매계획
           <span style="font-size:12px;font-weight:400;color:#888;">{{ cfPlanVisible.length }}건</span>
         </div>
-        <div style="display:flex;gap:6px;">
+        <div v-if="!cfDtlMode" style="display:flex;gap:6px;">
           <button class="btn btn-sm btn-danger"    @click="handleBtnAction('plan-deleteChecked')">체크삭제</button>
           <button class="btn btn-sm btn-secondary" @click="handleBtnAction('plan-addRow')">행추가</button>
         </div>
@@ -2677,14 +2706,14 @@ window.PdProdDtl = {
             </span>
             <span class="badge badge-blue" style="margin-left:6px;">{{ relProds.length }}건</span>
           </div>
-          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('prodPicker-open', 'rel')">+ 추가</button>
+          <button v-if="!cfDtlMode" class="btn btn-sm btn-secondary" @click="handleBtnAction('prodPicker-open', 'rel')">+ 추가</button>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
         <bo-grid bare :columns="columns.relProdGrid" :rows="relProds" row-key="_id"
-          draggable row-actions empty-text="+ 추가 버튼으로 연관상품을 등록하세요."
+          :draggable="!cfDtlMode" row-actions empty-text="+ 추가 버튼으로 연관상품을 등록하세요."
           @reorder="onRelDrop"
           @ref-click="({id}) => navigate('pdProdDtl', { id })">
-          <template #row-actions="{ idx }">
+          <template v-if="!cfDtlMode" #row-actions="{ idx }">
             <button class="btn btn-xs btn-danger" @click="handleBtnAction('rel-remove', idx)">삭제</button>
           </template>
         </bo-grid>
@@ -2702,14 +2731,14 @@ window.PdProdDtl = {
             </span>
             <span class="badge badge-purple" style="margin-left:6px;">{{ codeProds.length }}건</span>
           </div>
-          <button class="btn btn-sm btn-secondary" @click="handleBtnAction('prodPicker-open', 'code')">+ 추가</button>
+          <button v-if="!cfDtlMode" class="btn btn-sm btn-secondary" @click="handleBtnAction('prodPicker-open', 'code')">+ 추가</button>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
         <bo-grid bare :columns="columns.codeProdGrid" :rows="codeProds" row-key="_id"
-          draggable row-actions empty-text="+ 추가 버튼으로 코디상품을 등록하세요."
+          :draggable="!cfDtlMode" row-actions empty-text="+ 추가 버튼으로 코디상품을 등록하세요."
           @reorder="onCodeDrop"
           @ref-click="({id}) => navigate('pdProdDtl', { id })">
-          <template #row-actions="{ idx }">
+          <template v-if="!cfDtlMode" #row-actions="{ idx }">
             <td style="text-align:center;;white-space:nowrap;">
               <button class="btn btn-xs btn-danger" @click="handleBtnAction('codeProd-remove', idx)">삭제</button>
             </td>
@@ -2779,7 +2808,7 @@ window.PdProdDtl = {
               ✕ 초기화
             </button>
             <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong> {{ cfTotalStock }} </strong> 개</span>
-            <button class="btn btn-sm btn-secondary" @click="handleBtnAction('sku-generate')">🔄 SKU 재생성</button>
+            <button v-if="!cfDtlMode" class="btn btn-sm btn-secondary" @click="handleBtnAction('sku-generate')">🔄 SKU 재생성</button>
           </div>
         </div>
         <!-- ===== ■.■.■.■.■. SKU 테이블 (가격 섹션 + 재고 섹션 컬럼 분리) =============== -->
@@ -2976,7 +3005,7 @@ window.PdProdDtl = {
           안분율 합계: {{ cfBundleRateSum }}%
           <span v-if="!cfBundleRateOk" style="font-size:11px;font-weight:400;margin-left:4px;">(100% 가 되어야 합니다)</span>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
+        <div v-if="!cfDtlMode" style="display:flex;gap:6px;flex-shrink:0;">
           <button class="btn btn-sm btn-secondary" @click="handleBtnAction('bundlePicker-open')">+ 상품 추가</button>
         </div>
       </div>
@@ -2984,7 +3013,7 @@ window.PdProdDtl = {
       <bo-grid bare :columns="columns.bundleGrid" :rows="tabData.bundleItems" row-key="_id"
         empty-text="+ 상품 추가 버튼으로 묶음 구성품을 등록하세요."
         @cell-change="e => { e.row[e.col.key] = e.value; }">
-        <template #row-actions="{ row, idx, pinStyle }">
+        <template v-if="!cfDtlMode" #row-actions="{ row, idx, pinStyle }">
           <td :style="'text-align:center;white-space:nowrap;' + pinStyle">
             <button class="btn btn-xs btn-danger" @click="handleBtnAction('bundleItem-remove', idx)">삭제</button>
           </td>
@@ -3018,7 +3047,7 @@ window.PdProdDtl = {
           세트를 구성하는 상품 또는 비상품 구성품(박스, 엽서 등)을 추가하세요.
           <br><span style="font-size:11px;color:#888;">비상품 구성품은 [빈 행 추가] 후 설명을 입력하세요.</span>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
+        <div v-if="!cfDtlMode" style="display:flex;gap:6px;flex-shrink:0;">
           <button class="btn btn-sm btn-secondary" @click="handleBtnAction('setItem-addEmpty')">+ 빈 행 추가</button>
           <button class="btn btn-sm btn-secondary" @click="handleBtnAction('setPicker-open')">+ 상품 추가</button>
         </div>
@@ -3027,7 +3056,7 @@ window.PdProdDtl = {
       <bo-grid bare :columns="columns.setGrid" :rows="tabData.setItems" row-key="_id"
         empty-text="+ 상품 추가 또는 빈 행 추가로 세트 구성품을 등록하세요."
         @cell-change="e => { e.row[e.col.key] = e.value; }">
-        <template #row-actions="{ row, idx }">
+        <template v-if="!cfDtlMode" #row-actions="{ row, idx }">
           <td style="text-align:center;white-space:nowrap;">
             <button class="btn btn-xs btn-danger" @click="handleBtnAction('setItem-remove', idx)">삭제</button>
           </td>

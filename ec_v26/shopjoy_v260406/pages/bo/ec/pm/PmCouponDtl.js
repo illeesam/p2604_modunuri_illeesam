@@ -530,8 +530,7 @@ window.PmCouponDtl = {
       { key: 'memo',           label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
       { key: 'vendorId',       label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff',    label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
-      { key: 'mdUserId', label: '담당MD', type: 'pick', display: (f) => f.mdUserNm, placeholder: 'MD 선택', nameKey: 'mdUserNm',
-        onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('form-mdClear') },
+      { key: 'mdUserId', label: '담당MD', type: 'slot', name: 'mdUser' },
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 일부 =================
@@ -587,20 +586,37 @@ window.PmCouponDtl = {
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 메모: Quill 에디터 (보기모드는 렌더만) ==================== -->
         <template #memo>
-          <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;overflow:auto;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+          <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:180px;line-height:1.6;overflow:auto;" v-html="form.memo || '-'"></div>
           <base-html-editor v-else v-model="form.memo" height="200px" />
         </template>
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.vendorId ? cfSelectedVendorNm : '-' }}</div>
+          <div v-else style="display:flex;gap:8px;align-items:center;">
+            <div class="form-control" style="background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:pointer;" @click="handleBtnAction('vendorModal-open')">
               <span style="padding:4px 10px;flex:1;">{{ cfSelectedVendorNm }}</span>
               <span style="padding:4px 10px;color:#999;font-size:12px;">▼</span>
             </div>
-            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+            <button v-if="form.vendorId" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
               style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
               x
             </button>
+          </div>
+        </template>
+        <!-- ===== ■.■.■.■. 담당MD picker ========================================= -->
+        <template #mdUser>
+          <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.mdUserNm || '-' }}</div>
+          <div v-else style="display:flex;align-items:center;gap:6px;">
+            <input :value="form.mdUserNm || ''" readonly placeholder="MD 선택" class="form-control"
+              style="background:#f9f9f9;cursor:pointer;" @click="handleBtnAction('mdModal-open')" />
+            <span style="display:inline-flex;align-items:center;flex-shrink:0;">
+              <button type="button" class="btn btn-secondary btn-sm" title="선택"
+                style="padding:0;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"
+                @click="handleBtnAction('mdModal-open')">🔍</button>
+              <button v-if="form.mdUserId" type="button" title="선택 해제"
+                style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;"
+                @click="handleBtnAction('form-mdClear')">x</button>
+            </span>
           </div>
         </template>
       </bo-form-area>

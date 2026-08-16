@@ -178,7 +178,7 @@ window.OdOrderMng = {
     const listGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 하단 상세 (인라인 Dtl) — 항상 표시. 진입 시 빈 신규 폼(비활성) */
-    const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, active: false, resetSeq: 0 });
+    const detailPanel = reactive({ selectedId: '__new__', openMode: 'view', reloadTrigger: 0, active: false, resetSeq: 0 });
 
     /* 일괄선택 */
     const checked = reactive(new Set());
@@ -293,7 +293,7 @@ window.OdOrderMng = {
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
     const resetDetailToNew = () => {
       detailPanel.selectedId = '__new__';
-      detailPanel.openMode = 'edit';
+      detailPanel.openMode = 'view';
       detailPanel.active = false;   // 버튼 숨김
       detailPanel.resetSeq++;       // :key 재마운트 → 폼 초기화
     };

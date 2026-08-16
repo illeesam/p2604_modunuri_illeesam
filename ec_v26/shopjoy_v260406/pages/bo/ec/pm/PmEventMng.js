@@ -25,7 +25,7 @@ window.PmEventMng = {
     /* 하단 상세 */
     const detailPanel = reactive({
       selectedId: '__new__',  // 진입 시 빈 신규 폼 (자동 첫 행 오픈 안 함)
-      openMode: 'edit',
+      openMode: 'view',
       reloadTrigger: 0,
       resetSeq: 0,            // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
       active: false,          // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
@@ -231,7 +231,7 @@ window.PmEventMng = {
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
     const resetDetailToNew = () => {
       detailPanel.selectedId = '__new__';
-      detailPanel.openMode = 'edit';
+      detailPanel.openMode = 'view';
       detailPanel.active = false;    // 버튼 숨김
       detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
     };

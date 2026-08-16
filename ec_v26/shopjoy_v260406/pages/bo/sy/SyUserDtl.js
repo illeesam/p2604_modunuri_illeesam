@@ -281,7 +281,7 @@ window.SyUserDtl = {
     </template>
     <!-- ===== ■.■.■. 주소: 우편번호 + 주소검색 + 기본주소 + 상세주소 ============== -->
     <template #addr>
-      <div v-if="cfDtlMode" class="readonly-field">
+      <div v-if="cfDtlMode" class="readonly-field-plain">
         {{ [form.zipcode ? '('+form.zipcode+')' : '', form.address, form.addressDetail].filter(Boolean).join(' ') || '-' }}
       </div>
       <div v-else style="display:flex;flex-direction:column;gap:6px;">

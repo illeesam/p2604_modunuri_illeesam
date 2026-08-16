@@ -361,6 +361,33 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 - `cfDetailKey`(또는 Dtl `:key`)에 `dtlMode`/`openMode` 포함 → 모드 전환 시 재마운트(보기 데이터 → 편집 가능).
 - 적용(2026-06-04): SyBbs(기준)·SyAlarm·SyBbm·SyContact·SySite·**SyUser**. 동일 상태머신(`loadView`+`handleLoadDetail`+`dtlMode`) 보유 화면에 점진 확대.
 
+#### ⭐⭐ 인라인 상세 패널의 초기값·초기화(reset) 은 항상 view (2026-08-17, 전체공통)
+
+"항상표시 인라인 상세" 패턴(§ 아래 "Mng 상세임베드")을 쓰는 Mng 는 `detailPanel` 같은 reactive 상태에 `openMode: 'view' | 'edit'` 를 갖는다. **이 값의 초기 선언값과, "닫기"/취소 후 되돌아가는 리셋 함수(`resetDetailToNew` 류)가 설정하는 값은 항상 `'view'` 여야 한다.** `'edit'` 로 초기화하면 페이지 진입 직후(또는 새로고침 직후) 행을 아무것도 선택하지 않았는데도 상세 패널이 **편집 가능한 상태처럼 렌더**된다 — §6.9 "행 클릭=보기, 의도적 액션만 수정"의 취지를 초기 상태에서 위반하는 것과 같다.
+
+```js
+// ❌ 금지 — 초기값/reset 이 'edit' → 새로고침 직후 편집모드로 보임
+const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', active: false });
+const resetDetailToNew = () => { detailPanel.openMode = 'edit'; detailPanel.active = false; ...};
+
+// ✅ 표준 — 초기값/reset 은 'view'. 'edit' 는 오직 명시적 액션에서만
+const detailPanel = reactive({ selectedId: '__new__', openMode: 'view', active: false });
+const resetDetailToNew = () => { detailPanel.openMode = 'view'; detailPanel.active = false; ...};
+const loadView        = (id) => { detailPanel.openMode = 'view'; detailPanel.active = true;  ...};  // 행 클릭
+const handleLoadDetail = (id) => { detailPanel.openMode = 'edit'; detailPanel.active = true;  ...};  // [수정] 버튼
+const openNew          = ()   => { detailPanel.openMode = 'edit'; detailPanel.active = true;  ...};  // [신규] 버튼(명시적 등록 의도이므로 edit 유지)
+```
+
+- `openMode: 'edit'` 로 남아 있어도 되는 곳은 **오직** [수정] 버튼(`handleLoadDetail`)과 [신규] 버튼(`openNew`)처럼 사용자가 **의도적으로 편집을 시작한** 액션뿐이다. 그 외(컴포넌트 초기 선언, `resetDetailToNew`/닫기/취소로 되돌아가는 경로)는 전부 `'view'`.
+- Dtl 쪽 탭이 여러 개여도 **하나의 `cfDtlMode`(`props.dtlMode === 'view'`) 를 전 탭이 공유**하도록 이미 구성되어 있다면(§ 위 "모든 편집 컨트롤은 보기모드에서 잠금"), 이 `openMode` 하나만 고치면 전 탭이 동시에 정상화된다 — 탭별로 따로 손볼 필요 없음.
+- 점검: `grep -n "openMode:\s*'edit'" pages/bo/**/*.js` 로 초기 선언/reset 함수에 남은 `'edit'` 를 찾아 위 기준으로 선별 교정(무조건 전부 바꾸면 안 됨 — [신규]/[수정] 핸들러는 `'edit'` 유지가 맞다).
+- 적용(2026-08-17): **PdProdMng**(발견 계기, 기준 모델). 동일 패턴 보유 화면 18개(`SyVendorMng`·`CmChattMng`·`SyUserMng`·`SyTemplateMng`·`PmVoucherMng`·`OdOrderMng`·`PmSaveMng`·`PmPlanMng`·`PmGiftMng`·`OdDlivMng`·`PmEventMng`·`PmDiscntMng`·`OdClaimMng`·`PmCouponMng`·`PmCacheMng`·`DpDispWidgetMng`·`DpDispWidgetLibMng`) 순차 확산.
+- **변수명 변형 주의** ⭐ — 화면마다 상세패널 변수명이 다르다(`detailPanel`/`detailModal`/`baseDetail`, `openMode`/`dtlMode`). 점검 시 `openMode`/`dtlMode` **양쪽 다** 그리고 `coUtil.cofDetail()` 팩토리 사용 화면(아래)까지 확인할 것 — 이름만 다를 뿐 동일 버그다.
+  - `dtlMode` 변형(6개, 2026-08-17 적용): `SySiteMng`·`SyContactMng`·`SyBbsMng`·`SyBbmMng`·`SyAlarmMng`·`CmFaqMng`.
+  - **`coUtil.cofDetail()` 팩토리 사용 화면** — 팩토리 자체(`lib/utils/coUtil.js` `cofDetail()`)는 `openMode: 'view'` 로 이미 올바르게 기본값을 갖고 있다. 그런데도 화면이 자체 `resetDetailToNew` 에서 `baseDetail.openMode = 'edit'` 로 **되돌려 재도입**한 경우가 있었다(4개, 2026-08-17 적용): `CmNoticeMng`·`DpDispUiMng`·`DpDispAreaMng`·`DpDispPanelMng`. 팩토리를 쓰는 화면은 팩토리 기본값을 신뢰하고 **자체 reset 함수에서 openMode 를 건드리지 않는 것**이 가장 안전하다 — 굳이 재설정해야 한다면 반드시 `'view'`.
+  - ⛔ **일괄 문자열 치환 금지**: `.openMode = 'edit'` 를 IDE 전역 검색으로 찾았다고 전부 `'view'` 로 바꾸면 **안 된다** — `handleLoadDetail`/`openEdit`/`openNew`/`__switchToEdit__`(그리고 `coUtil.cofDetail()` 의 `openEdit`/`openNew`/`switchToEdit` 메서드 정의 자체)는 의도적으로 `'edit'` 를 써야 하는 코드다. 바꿔야 하는 건 오직 **초기 선언값**과 **resetDetailToNew(닫기/취소로 돌아가는 함수)** 안의 값뿐이다.
+  - `PdDlivTmpltMng`/`SyVendorUserMng`/`SyI18nMng` 등 **"CRUD 그리드" 계열 화면**(행 선택 시 곧바로 편집 가능한 폼을 보여주는 구조, `uiState.isNew` 류로만 상태를 구분하고 view/edit 모드 구분 자체가 없음)은 이 정책의 적용 대상이 **아니다** — 애초에 view 모드 개념이 없어 "기본값을 view 로 바꾸는" 방식의 수정이 성립하지 않는다. 이런 화면에 view 모드를 도입하려면 §6.9 패턴(`loadView`/`handleLoadDetail` 분리)을 새로 얹는 별도 작업이 필요하다.
+
 #### ⭐⭐ 첨부파일(BaseAttachGrp/BaseAttachOne) 보기/수정 모드 분리 (2026-06-08, 전체공통)
 
 상세(Dtl)의 **첨부파일 영역도 폼·내용과 동일하게 보기/수정 모드를 따른다.** 보기모드에서 업로드·삭제 컨트롤이 노출되면 보기모드가 깨진 것(§6.9 [저장] 노출 금지와 동일 취지).

@@ -173,7 +173,7 @@ window.DpDispWidgetMng = {
     /* ===== 상세 인라인 패널 (항상 표시. 진입 시 빈 신규 폼) ===== */
     const detailPanel = reactive({
       selectedId: '__new__',  // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
-      openMode: 'edit',
+      openMode: 'view',
       reloadTrigger: 0,
       resetSeq: 0,            // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
       active: false,          // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
@@ -308,7 +308,7 @@ window.DpDispWidgetMng = {
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
     const resetDetailToNew = () => {
       detailPanel.selectedId = '__new__';
-      detailPanel.openMode = 'edit';
+      detailPanel.openMode = 'view';
       detailPanel.active = false;    // 버튼 숨김
       detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
     };

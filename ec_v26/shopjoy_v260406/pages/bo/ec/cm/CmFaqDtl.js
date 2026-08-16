@@ -216,9 +216,9 @@ window.CmFaqDtl = {
     :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <!-- 답변 (HtmlEditor 또는 view 모드 HTML) -->
     <template #answer>
-      <div v-if="cfDtlMode" class="form-control" style="min-height:160px;line-height:1.6;overflow:auto;">
+      <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:160px;line-height:1.6;overflow:auto;">
         <div v-if="form.faqAnswer" v-html="form.faqAnswer"></div>
-        <span v-else style="color:#bbb;">-</span>
+        <span v-else>-</span>
       </div>
       <base-html-editor v-else v-model="form.faqAnswer" height="260px" />
     </template>

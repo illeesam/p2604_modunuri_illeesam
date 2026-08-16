@@ -131,7 +131,7 @@ window.PmGiftMng = {
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 상세영역 항상 표시 (진입 시 빈 신규 폼, active=false → 버튼 숨김)
+    const detailPanel = reactive({ selectedId: '__new__', openMode: 'view', reloadTrigger: 0, resetSeq: 0, active: false }); // 상세영역 항상 표시 (진입 시 빈 신규 폼, active=false → 버튼 숨김)
 
     const searchParam = reactive({ searchType: '', searchValue: '', dateRangeType: '', dateRange: '', dateRangeStart: '', dateRangeEnd: '', giftTypeCd: '', giftStatusCd: '',
       memberId: '', memberNm: '', mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
@@ -240,7 +240,7 @@ window.PmGiftMng = {
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
     const resetDetailToNew = () => {
       detailPanel.selectedId = '__new__';
-      detailPanel.openMode = 'edit';
+      detailPanel.openMode = 'view';
       detailPanel.active = false;    // 버튼 숨김
       detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
     };

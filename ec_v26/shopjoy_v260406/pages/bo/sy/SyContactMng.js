@@ -101,7 +101,7 @@ window.SyContactMng = {
     const detailModal = reactive({   // 인라인 Dtl 패널 상태 (modal_reload_trigger 표준)
       show: true,                    // 상세영역 항상 표시 (진입 시 빈 신규 폼)
       dtlId: '__new__',              // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
-      dtlMode: 'edit',               // 'view' | 'edit'
+      dtlMode: 'view',               // 'view' | 'edit'
       reloadTrigger: 0,              // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
       resetSeq: 0,                   // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
       active: false,                 // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
@@ -198,7 +198,7 @@ window.SyContactMng = {
     const resetDetailToNew = () => {
       detailModal.show = true;
       detailModal.dtlId = '__new__';
-      detailModal.dtlMode = 'edit';
+      detailModal.dtlMode = 'view';
       detailModal.active = false;    // 버튼 숨김
       detailModal.resetSeq++;        // :key 재마운트 → 폼 초기화
     };

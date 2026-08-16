@@ -235,21 +235,26 @@ window.SySiteDtl = {
     @close="handleBtnAction('form-close')">
     <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소 (카카오 우편번호 연동) ============= -->
     <template #addr>
-      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:6px;">
-        <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
-          style="width:110px;flex-shrink:0;" readonly />
-        <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
-          style="white-space:nowrap;">
-          🔍 주소 검색
-        </button>
-        <button v-if="!cfDtlMode ? ((form.siteZipCode || form.siteAddress)) : false" type="button"
-          title="주소 초기화" @click="handleBtnAction('addr-clear')"
-          style="background:none;border:none;padding:0 2px 2px;margin-left:-6px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
-          x
-        </button>
+      <div v-if="cfDtlMode" class="readonly-field-plain">
+        {{ [form.siteZipCode, form.siteAddress].filter(Boolean).join(' ') || '-' }}
       </div>
-      <input class="form-control" v-model="form.siteAddress"
-        placeholder="기본주소 (주소 검색 후 자동 입력)" readonly />
+      <template v-else>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:6px;">
+          <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
+            style="width:110px;flex-shrink:0;" readonly />
+          <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
+            style="white-space:nowrap;">
+            🔍 주소 검색
+          </button>
+          <button v-if="form.siteZipCode || form.siteAddress" type="button"
+            title="주소 초기화" @click="handleBtnAction('addr-clear')"
+            style="background:none;border:none;padding:0 2px 2px;margin-left:-6px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
+            x
+          </button>
+        </div>
+        <input class="form-control" v-model="form.siteAddress"
+          placeholder="기본주소 (주소 검색 후 자동 입력)" readonly />
+      </template>
     </template>
   </bo-form-area>
 </bo-container>

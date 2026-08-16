@@ -405,22 +405,32 @@ window.OdDlivDtl = {
         @close="handleBtnAction('form-close')">
         <!-- ===== ■.■.■.■. 주문ID + 보기 ========================================= -->
         <template #orderId>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
+          <div v-if="cfDtlMode" class="readonly-field-plain" style="display:flex;gap:8px;align-items:center;">
+            <span>{{ form.orderId || '-' }}</span>
             <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">보기</span>
           </div>
-          <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
+          <template v-else>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :class="errors.orderId ? 'is-invalid' : ''" />
+              <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">보기</span>
+            </div>
+            <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
+          </template>
         </template>
         <!-- ===== ■.■.■.■. 회원명 + 보기 ========================================== -->
         <template #memberNm>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
+          <div v-if="cfDtlMode" class="readonly-field-plain" style="display:flex;gap:8px;align-items:center;">
+            <span>{{ form.memberNm || '-' }}</span>
+            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">보기</span>
+          </div>
+          <div v-else style="display:flex;gap:8px;align-items:center;">
+            <input class="form-control" v-model="form.memberNm" />
             <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">보기</span>
           </div>
         </template>
         <!-- ===== ■.■.■.■. 메모: Quill 또는 view 모드 HTML ========================= -->
         <template #memo>
-          <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.dlivMemo || '<span style=color:#bbb>-</span>'"></div>
+          <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:90px;line-height:1.6;" v-html="form.dlivMemo || '-'"></div>
           <base-html-editor v-else v-model="form.dlivMemo" height="180px" />
         </template>
       </bo-form-area>

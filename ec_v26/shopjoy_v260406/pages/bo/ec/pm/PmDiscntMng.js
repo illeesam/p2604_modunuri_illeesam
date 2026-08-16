@@ -234,7 +234,7 @@ window.PmDiscntMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
      // 'list' | 'card'
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
+const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'view', reloadTrigger: 0, resetSeq: 0, active: false });
   const searchParam = reactive({ searchType: '', searchValue: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '', discntTypeCd: '', discntStatusCd: '',
     memberId: '', memberNm: '', mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
@@ -257,7 +257,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
     const resetDetailToNew = () => {
       uiStateDetail.selectedId = '__new__';
-      uiStateDetail.openMode = 'edit';
+      uiStateDetail.openMode = 'view';
       uiStateDetail.active = false;
       uiStateDetail.resetSeq++;
     };

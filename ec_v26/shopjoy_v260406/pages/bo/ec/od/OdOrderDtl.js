@@ -827,15 +827,21 @@ window.OdOrderDtl = {
         @close="handleBtnAction('form-close')">
         <!-- ===== ■.■.■.■. 회원ID + 선택/보기 (MD 대리주문: 회원 모달 선택) ============ -->
         <template #memberId>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" style="flex:1;min-width:0;" />
-            <span style="display:inline-flex;align-items:center;flex-shrink:0;">
-              <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('memberModal-open')">🔍 회원선택</button>
-              <button v-if="!cfDtlMode &amp;&amp; form.memberId" type="button" title="선택 해제" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="form.memberId = ''; form.memberNm = '';">x</button>
-            </span>
+          <div v-if="cfDtlMode" class="readonly-field-plain" style="display:flex;gap:6px;align-items:center;">
+            <span>{{ form.memberId || '-' }}</span>
             <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">보기</span>
           </div>
-          <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
+          <template v-else>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :class="errors.memberId ? 'is-invalid' : ''" style="flex:1;min-width:0;" />
+              <span style="display:inline-flex;align-items:center;flex-shrink:0;">
+                <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('memberModal-open')">🔍 회원선택</button>
+                <button v-if="form.memberId" type="button" title="선택 해제" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="form.memberId = ''; form.memberNm = '';">x</button>
+              </span>
+              <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">보기</span>
+            </div>
+            <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
+          </template>
         </template>
         <!-- ===== ■.■.■.■. 판매업체 표시 =========================================== -->
         <template #vendor>
@@ -848,7 +854,7 @@ window.OdOrderDtl = {
         </template>
         <!-- ===== ■.■.■.■. 메모: Quill 또는 view 모드 HTML ========================= -->
         <template #memo>
-          <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+          <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:90px;line-height:1.6;" v-html="form.memo || '-'"></div>
           <base-html-editor v-else v-model="form.memo" height="180px" />
         </template>
       </bo-form-area>

@@ -317,9 +317,9 @@ window.SyBbsDtl = {
       <div style="color:#bbb;font-size:13px;padding:12px 0;">이 게시판은 내용 입력을 지원하지 않습니다.</div>
     </template>
     <template #contentHtmlEditor>
-      <div v-if="cfDtlMode" class="form-control"
+      <div v-if="cfDtlMode" class="readonly-field-plain"
         style="min-height:300px;line-height:1.6;"
-        v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
+        v-html="form.contentHtml || '-'"></div>
       <base-html-editor v-else v-model="form.contentHtml" height="320px" />
     </template>
     <template #attachGrp>

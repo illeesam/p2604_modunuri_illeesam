@@ -226,14 +226,16 @@ window.SyTemplateDtl = {
     <!-- ===== ■.■.■. 내용 (Quill 에디터 또는 textarea, view 모드는 HTML) =========== -->
     <template #content>
       <template v-if="cfUseHtmlEditor">
-        <div v-if="cfDtlMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.templateContent || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:260px;line-height:1.6;overflow:auto;" v-html="form.templateContent || '-'"></div>
         <base-html-editor v-else v-model="form.templateContent" height="320px" />
       </template>
-      <textarea v-else class="form-control" v-model="form.templateContent"
-        :rows="cfIsLongContent ? 10 : 5"
-        placeholder="템플릿 내용 입력"
-        :readonly="cfDtlMode"
-        :class="errors.templateContent ? 'is-invalid' : ''"></textarea>
+      <template v-else>
+        <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:90px;line-height:1.6;white-space:pre-wrap;">{{ form.templateContent || '-' }}</div>
+        <textarea v-else class="form-control" v-model="form.templateContent"
+          :rows="cfIsLongContent ? 10 : 5"
+          placeholder="템플릿 내용 입력"
+          :class="errors.templateContent ? 'is-invalid' : ''"></textarea>
+      </template>
       <span v-if="errors.templateContent" class="field-error">{{ errors.templateContent }}</span>
     </template>
   </bo-form-area>

@@ -168,7 +168,7 @@ window.PdProdMng = {
     /* ===== 상세 인라인 패널 ===== */
     const detailPanel = reactive({                 // 인라인 Dtl 패널 상태 (항상 표시, 진입 시 빈 신규 폼)
       selectedId: '__new__',                       // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
-      openMode: 'edit',                            // 'view' | 'edit'
+      openMode: 'view',                            // 'view' | 'edit' — 기본은 항상 view (정책: 행 미선택/초기 진입은 편집 상태로 보이면 안 됨)
       reloadTrigger: 0,
       resetSeq: 0,                                 // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
       active: false,                               // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
@@ -244,7 +244,7 @@ window.PdProdMng = {
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
     const resetDetailToNew = () => {
       detailPanel.selectedId = '__new__';
-      detailPanel.openMode = 'edit';
+      detailPanel.openMode = 'view';   // 행 미선택 안내 상태 — 편집 가능한 것처럼 보이면 안 됨
       detailPanel.active = false;      // 버튼 숨김
       detailPanel.resetSeq++;          // :key 재마운트 → 폼 초기화
       closeHist();

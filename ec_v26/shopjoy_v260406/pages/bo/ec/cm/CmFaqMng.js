@@ -88,7 +88,7 @@ window.CmFaqMng = {
 
     /* ===== 상세 인라인 패널 ===== */
     const detailModal = reactive({
-      show: true, dtlId: '__new__', dtlMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false,
+      show: true, dtlId: '__new__', dtlMode: 'view', reloadTrigger: 0, resetSeq: 0, active: false,
     });
 
     /* ===== 엑셀 다운로드 ===== */
@@ -165,7 +165,7 @@ window.CmFaqMng = {
     const resetDetailToNew = () => {
       detailModal.show = true;
       detailModal.dtlId = '__new__';
-      detailModal.dtlMode = 'edit';
+      detailModal.dtlMode = 'view';
       detailModal.active = false;
       detailModal.resetSeq++;
     };

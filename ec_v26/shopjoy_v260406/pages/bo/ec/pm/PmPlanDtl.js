@@ -411,7 +411,7 @@ window.PmPlanDtl = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
       <div style="margin-bottom:12px;">
         <div style="font-size:12px;color:#888;margin-bottom:6px;">💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.</div>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.bannerImage || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:300px;line-height:1.6;" v-html="form.bannerImage || '-'"></div>
         <base-html-editor v-else v-model="form.bannerImage" height="320px" />
       </div>
       <div class="form-actions" v-if="active ? (cfDtlMode) : false">
@@ -446,12 +446,13 @@ window.PmPlanDtl = {
         <bo-form-area plain-readonly :columns="columns.vendorForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
           <template #vendor>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <div class="form-control" style="background:#f9f9f9;padding:0;display:flex;align-items:center;" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
+            <div v-if="cfDtlMode" class="readonly-field-plain">{{ cfSelectedVendorNm || '-' }}</div>
+            <div v-else style="display:flex;gap:8px;align-items:center;">
+              <div class="form-control" style="background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:pointer;" @click="handleBtnAction('vendorModal-open')">
                 <span style="padding:4px 10px;flex:1;">{{ cfSelectedVendorNm }}</span>
                 <span style="padding:4px 10px;color:#999;font-size:12px;">▼</span>
               </div>
-              <button v-if="form.vendorId" :disabled="cfDtlMode" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+              <button v-if="form.vendorId" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
                 style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
                 x
               </button>
@@ -481,15 +482,15 @@ window.PmPlanDtl = {
           @tab-select="i => handleBtnAction('content-tab', i)" />
       </div>
       <template v-if="activeContentTab===1">
-        <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content1 || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content1 || '-'"></div>
         <base-html-editor v-else v-model="form.content1" height="420px" />
       </template>
       <template v-if="activeContentTab===2">
-        <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content2 || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content2 || '-'"></div>
         <base-html-editor v-else v-model="form.content2" height="420px" />
       </template>
       <template v-if="activeContentTab===3">
-        <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content3 || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content3 || '-'"></div>
         <base-html-editor v-else v-model="form.content3" height="420px" />
       </template>
       <div class="form-actions" v-if="active ? (cfDtlMode) : false">

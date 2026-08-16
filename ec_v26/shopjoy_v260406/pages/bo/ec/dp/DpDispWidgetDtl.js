@@ -902,7 +902,7 @@ window.DpDispWidgetDtl = {
         </div>
         <!-- ===== ■.■.■.■. HTML 에디터 (공통 BaseHtmlEditor — Toast UI Editor) ===== -->
         <div v-else-if="cfIsHtmlEditor" style="margin:0;">
-          <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.htmlContent || '<span style=color:#bbb>-</span>'"></div>
+          <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.htmlContent || '-'"></div>
           <base-html-editor v-else v-model="form.htmlContent" height="320px" />
         </div>
         <!-- ===== ■.■.■.■. 파일목록 ============================================== -->

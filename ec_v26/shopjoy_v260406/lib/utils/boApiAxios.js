@@ -25,9 +25,21 @@
     var host = global.location.hostname || 'localhost';
     return 'http://' + host + ':3000/api/' + p;
   }
+  /* cdnUrl — /cdn/** 정적 리소스(첨부파일 등) 절대 URL.
+   * apiUrl() 과 host:port 는 같지만 /api 세그먼트가 없다(WebConfig 가 /cdn/** 를 /api 밖에 매핑).
+   * 과거 fnTriggerDownload 류가 window.boEnvConsts.apiHost(존재하지 않는 필드) 로 절대경로를
+   * 만들려다 항상 '' 로 떨어져, 상대경로가 프론트(Live Server) origin 으로 잘못 풀리는 버그가 있었다
+   * (다운로드한 파일이 실제로는 backend 의 xlsx 가 아니라 프론트 서버의 엉뚱한 응답이었음, 2026-08-16). */
+  function cdnUrl(path) {
+    if (/^https?:\/\//i.test(path)) return path;
+    var p = String(path || '').replace(/^\//, '');
+    var host = global.location.hostname || 'localhost';
+    return 'http://' + host + ':3000/' + p;
+  }
   global.appBase = global.appBase || appBase;
   global.pageUrl = global.pageUrl || pageUrl;
   global.apiUrl  = global.apiUrl  || apiUrl;
+  global.cdnUrl  = global.cdnUrl  || cdnUrl;
 
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[bo]';

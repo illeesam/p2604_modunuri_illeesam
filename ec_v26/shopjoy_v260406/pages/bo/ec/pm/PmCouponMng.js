@@ -146,7 +146,7 @@ window.PmCouponMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 진입 시 빈 신규 폼(비활성). 행 선택/신규 시 active=true
+    const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'view', reloadTrigger: 0, resetSeq: 0, active: false }); // 진입 시 빈 신규 폼(비활성). 행 선택/신규 시 active=true
 
     const searchParam = reactive({ searchType: '', searchValue: '', dateRange: '', dateRangeType: '', dateRangeStart: '', dateRangeEnd: '', couponStatusCd: '',
       memberId: '', memberNm: '', mdUserId: '', mdUserNm: '', prodId: '', prodNm: '', vendorId: '', vendorNm: '' });
@@ -237,7 +237,7 @@ window.PmCouponMng = {
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
     const resetDetailToNew = () => {
       uiStateDetail.selectedId = '__new__';
-      uiStateDetail.openMode = 'edit';
+      uiStateDetail.openMode = 'view';
       uiStateDetail.active = false;    // 버튼 숨김
       uiStateDetail.resetSeq++;        // :key 재마운트 → 폼 초기화
     };

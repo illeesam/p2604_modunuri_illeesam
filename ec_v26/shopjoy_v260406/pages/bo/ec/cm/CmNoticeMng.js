@@ -70,7 +70,7 @@ window.CmNoticeMng = {
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지) */
     const resetDetailToNew = () => {
       baseDetail.selectedId = '__new__';
-      baseDetail.openMode = 'edit';
+      baseDetail.openMode = 'view';
       baseDetail.active = false;     // 버튼 숨김
       baseDetail.resetSeq++;         // :key 재마운트 → 폼 초기화
     };
