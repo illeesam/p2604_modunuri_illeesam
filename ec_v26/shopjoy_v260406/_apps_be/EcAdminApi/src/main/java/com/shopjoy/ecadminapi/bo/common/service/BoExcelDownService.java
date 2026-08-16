@@ -19,6 +19,7 @@ import com.shopjoy.ecadminapi.common.excel.ExcelMetaBuilder;
 import com.shopjoy.ecadminapi.common.excel.ExcelMetaInfo;
 import com.shopjoy.ecadminapi.common.excel.GridColumnMetaBuilder;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,7 @@ public class BoExcelDownService {
     private final SyAttachService syAttachService;
     private final SyAttachRepository syAttachRepository;
     private final ObjectMapper objectMapper;
+    private final FileUploadUtil fileUploadUtil;
 
     /** 저장 루트 — /cdn/** 로 서빙되는 물리 경로. BoExcelDownRunner 와 동일 값을 쓴다(같은 프로퍼티). */
     @Value("${app.file.local.physical-root:src/main/resources/static/cdn}")
@@ -61,7 +63,6 @@ public class BoExcelDownService {
 
     private static final String REF_TABLE = "sy_exceldown";
     private static final String BIZ_CODE  = "sy_exceldown";
-    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     /* ── 상태 조회 ───────────────────────────────────────────── */
 
@@ -155,6 +156,12 @@ public class BoExcelDownService {
      * <p>{@code BoExcelDownRunner.persistFile} 과 저장 경로 규칙(attach/sy_exceldown/YYYY/YYYYMM/YYYYMMDD/)
      * 이 동일하다 — 즉시/예약 어느 쪽으로 받았든 나중에 같은 방식으로 재다운로드할 수 있어야 하기 때문이다.
      * 즉시는 항상 분할하지 않으므로(상한이 splitRows 보다 훨씬 작다) seq 는 항상 1이다.</p>
+     *
+     * <p>파일명은 한글 영역명을 넣지 않고 {@link FileUploadUtil#generateFileName} (기존 첨부 업로드와
+     * 동일한 {@code yyyyMMdd_HHmmss_seq_random} 패턴)을 그대로 재사용한다 — 다른 첨부 파일들과 명명 규칙을
+     * 통일하는 목적과 더불어, Content-Disposition 헤더에 비ASCII(한글) 파일명이 들어가면 일부 브라우저의
+     * 다운로드 처리 경로에서 저장 바이트가 깨지는 사례가 있었다(2026-08-16 확인 — 서버 파일 자체는 정상인데
+     * 브라우저로 받은 사본만 "파일 형식이 잘못되어 열 수 없음" 오류가 났다).</p>
      */
     private SyAttach persistBytes(byte[] bytes, String areaNm, String exceldownId) throws java.io.IOException {
         LocalDateTime now = LocalDateTime.now();
@@ -163,7 +170,7 @@ public class BoExcelDownService {
         String ymd = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         String storageDir = String.format("attach/%s/%s/%s/%s", BIZ_CODE, y, ym, ymd);
-        String fileNm = String.format("%s_%s_01.xlsx", safeFileName(areaNm), now.format(TS));
+        String fileNm = fileUploadUtil.generateFileName("xlsx", 1);
 
         String root = physicalRoot.endsWith("/") ? physicalRoot.substring(0, physicalRoot.length() - 1) : physicalRoot;
         java.nio.file.Path dir = Paths.get(root, storageDir);
@@ -190,11 +197,6 @@ public class BoExcelDownService {
             .attachUrl("/cdn/" + storageDir + "/" + fileNm)
             .build();
         return syAttachRepository.save(attach);
-    }
-
-    private static String safeFileName(String s) {
-        if (s == null || s.isBlank()) return "excel";
-        return s.replaceAll("[\\\\/:*?\"<>|\\s]", "_");
     }
 
     /* ── 예약(ASYNC) ─────────────────────────────────────────── */

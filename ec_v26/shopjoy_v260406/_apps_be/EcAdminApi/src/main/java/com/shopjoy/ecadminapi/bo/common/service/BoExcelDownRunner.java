@@ -16,6 +16,7 @@ import com.shopjoy.ecadminapi.common.excel.ExcelMetaBuilder;
 import com.shopjoy.ecadminapi.common.excel.ExcelMetaInfo;
 import com.shopjoy.ecadminapi.common.excel.GridColumnMetaBuilder;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
@@ -66,6 +67,7 @@ public class BoExcelDownRunner {
     private final SyAttachRepository syAttachRepository;
     private final SyNotiService syNotiService;
     private final ObjectMapper objectMapper;
+    private final FileUploadUtil fileUploadUtil;
 
     /** 저장 루트 — /cdn/** 로 서빙되는 물리 경로 */
     @Value("${app.file.local.physical-root:src/main/resources/static/cdn}")
@@ -74,7 +76,6 @@ public class BoExcelDownRunner {
     /** 첨부 업무코드 — 저장 경로 attach/sy_exceldown/YYYY/YYYYMM/YYYYMMDD/ */
     private static final String BIZ_CODE = "sy_exceldown";
     private static final String REF_TABLE = "sy_exceldown";
-    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     /**
      * 예약 건 1개 실행.
@@ -229,7 +230,13 @@ public class BoExcelDownRunner {
 
     /* ── 파일 저장 ───────────────────────────────────────────── */
 
-    /** 워크북을 물리 파일로 쓰고 sy_attach 에 등록한다 (ref_table_nm/ref_id 로 1:N 연계) */
+    /**
+     * 워크북을 물리 파일로 쓰고 sy_attach 에 등록한다 (ref_table_nm/ref_id 로 1:N 연계).
+     *
+     * <p>파일명은 한글 영역명(areaNm) 대신 {@link FileUploadUtil#generateFileName} 의
+     * {@code yyyyMMdd_HHmmss_seq_random} 패턴을 그대로 쓴다 — {@link BoExcelDownService#persistBytes}
+     * 와 동일한 이유(비ASCII 파일명이 Content-Disposition 경유 브라우저 다운로드를 깨뜨림).</p>
+     */
     private SyAttach persistFile(XSSFWorkbook wb, String areaNm, int seq, String exceldownId) throws Exception {
         LocalDateTime now = LocalDateTime.now();
         String y   = now.format(DateTimeFormatter.ofPattern("yyyy"));
@@ -237,7 +244,7 @@ public class BoExcelDownRunner {
         String ymd = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         String storageDir = String.format("attach/%s/%s/%s/%s", BIZ_CODE, y, ym, ymd);
-        String fileNm = String.format("%s_%s_%02d.xlsx", safeName(areaNm), now.format(TS), seq);
+        String fileNm = fileUploadUtil.generateFileName("xlsx", seq);
 
         String root = physicalRoot.endsWith("/") ? physicalRoot.substring(0, physicalRoot.length() - 1) : physicalRoot;
         java.nio.file.Path dir = Paths.get(root, storageDir);
@@ -376,11 +383,6 @@ public class BoExcelDownRunner {
         if (json == null || json.isBlank()) return (BaseRequest) handler.reqClass().getDeclaredConstructor().newInstance();
         Map<String, Object> map = objectMapper.readValue(json, Map.class);
         return (BaseRequest) objectMapper.convertValue(map, handler.reqClass());
-    }
-
-    private static String safeName(String s) {
-        if (s == null || s.isBlank()) return "excel";
-        return s.replaceAll("[\\\\/:*?\"<>|\\s]", "_");
     }
 
     /** XSSFWorkbook 정리 — 임시파일이 없어 dispose() 불필요, close() 만 하면 된다 */
