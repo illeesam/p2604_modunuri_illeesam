@@ -30,8 +30,7 @@ window.SyExceldownMng = {
 
     const uiState = reactive({
       loading: false,
-      selectedId: null,     // 상세 펼침 대상
-      detail: null,         // 상세(파일 목록 포함)
+      selectedId: null,     // 상세 펼침 대상 (sy-exceldown-dtl 에 dtlId 로 전달)
       autoTimer: null,      // 진행중이 있으면 주기 갱신
     });
 
@@ -65,7 +64,7 @@ window.SyExceldownMng = {
       if (cmd === 'grid-pager-page')  { baseGridPager.pageNo = param; return handleSearchList(); }
       if (cmd === 'row-cancel')       { return handleCancel(param); }
       if (cmd === 'row-detail')       { return handleToggleDetail(param); }
-      if (cmd === 'file-download')    { return handleDownloadFile(param); }
+      if (cmd === 'row-download')     { return handleQuickDownload(param); }
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -95,8 +94,9 @@ window.SyExceldownMng = {
         { key: 'exceldownStatusCd', label: '상태', width: '82px', align: 'center',
           badge: (row) => fnStatusBadge(row.exceldownStatusCd),
           fmt: (v) => fnStatusLabel(v) },
-        { key: 'totalCount', label: '건수',     width: '90px', align: 'right',
-          fmt: (v) => coUtil.cofWon ? Number(v || 0).toLocaleString() : v },
+        { key: 'totalCount', label: '건수(예상)', width: '90px', align: 'right',
+          cellTitle: (v, row) => `예상 ${Number(v || 0).toLocaleString()}건 / 실제 ${Number(row.doneCount || 0).toLocaleString()}건`,
+          fmt: (v) => Number(v || 0).toLocaleString() },
         { key: '_progress',  label: '진행',     width: '90px', align: 'center',
           fmt: (v, row) => fnProgress(row) },
         { key: 'fileCount',  label: '파일',     width: '60px', align: 'center',
@@ -138,16 +138,13 @@ window.SyExceldownMng = {
     /* fnDateTime — 표시용 일시 */
     const fnDateTime = (v) => (v ? String(v).replace('T', ' ').substring(0, 19) : '-');
 
-    /* fnFileSize — byte → 읽기 쉬운 단위 */
-    const fnFileSize = (n) => {
-      if (!n) { return '-'; }
-      if (n < 1024) { return n + ' B'; }
-      if (n < 1024 * 1024) { return (n / 1024).toFixed(1) + ' KB'; }
-      return (n / 1024 / 1024).toFixed(1) + ' MB';
-    };
-
     /* fnCanCancel — 취소 가능 여부 */
     const fnCanCancel = (row) => ['RUNNING', 'WAITING'].includes(row.exceldownStatusCd);
+
+    /* fnCanDownload — 완료 + 생성된 파일이 있어야 받을 게 있다.
+       즉시/예약 모두 완료 시 sy_attach 에 파일을 남기므로 fileCount 로만 판단하면 된다.
+       (구 버전엔 즉시는 파일을 저장하지 않았으나, 재다운로드 요구로 즉시도 저장하도록 변경됨) */
+    const fnCanDownload = (row) => row.exceldownStatusCd === 'DONE' && (row.fileCount || 0) > 0;
 
     /* onReset — 검색조건 초기화 (요청자는 내 정보로 되돌림) */
     const onReset = () => {
@@ -182,17 +179,10 @@ window.SyExceldownMng = {
       }
     };
 
-    /* handleToggleDetail — 행 상세(파일 목록) 펼침/접기 */
-    const handleToggleDetail = async (id) => {
-      if (uiState.selectedId === id) { uiState.selectedId = null; uiState.detail = null; return; }
-      uiState.selectedId = id;
-      uiState.detail = null;
-      try {
-        const res = await boApiSvc.syExceldown.getById(id, '엑셀다운로드', '상세조회');
-        uiState.detail = res.data?.data || null;
-      } catch (err) {
-        showToast(err.response?.data?.message || err.message || '상세 조회 중 오류가 발생했습니다.', 'error', 0);
-      }
+    /* handleToggleDetail — 행 상세(파일 목록) 펼침/접기.
+       상세 데이터 자체는 <sy-exceldown-dtl :key="uiState.selectedId"> 가 dtlId 로 자체 조회한다. */
+    const handleToggleDetail = (id) => {
+      uiState.selectedId = uiState.selectedId === id ? null : id;
     };
 
     /* handleCancel — 강제취소 */
@@ -209,21 +199,54 @@ window.SyExceldownMng = {
       }
     };
 
-    /* handleDownloadFile — 파일 다운로드 + 횟수 카운트 */
-    const handleDownloadFile = async (file) => {
+    /* fnTriggerDownload — 브라우저 다운로드만 실행 (API 호출 없음).
+       단일/전체 다운로드가 카운트 처리 방식이 서로 달라(단일=매번 +1, 전체=한 번에 +1)
+       실제 파일 내려받기 동작만 여기로 분리했다. */
+    const fnTriggerDownload = (file) => {
+      const url = file.attachUrl || file.cdnImgUrl;
+      if (!url) { showToast(`${file.fileNm || '파일'} 경로가 없습니다.`, 'error'); return false; }
+      const host = (window.boEnvConsts && window.boEnvConsts.apiHost) || '';
+      const a = document.createElement('a');
+      a.href = url.startsWith('http') ? url : (host.replace(/\/api\/?$/, '') + url);
+      a.download = file.fileNm || '';
+      a.target = '_blank';
+      a.click();
+      return true;
+    };
+
+    /* handleDownloadFile — 파일 1개 다운로드 + 횟수 카운트.
+       exceldownId 를 명시로 받는다 — uiState.selectedId(펼쳐진 행)에 암묵 의존하면,
+       행이 안 펼쳐진 상태에서 바로 받는 handleQuickDownload 경로에서 카운트가 엉뚱한 행에 붙거나
+       아예 안 붙는다. */
+    const handleDownloadFile = async (file, exceldownId) => {
       try {
-        const url = file.attachUrl || file.cdnImgUrl;
-        if (!url) { showToast('파일 경로가 없습니다.', 'error'); return; }
-        const host = (window.boEnvConsts && window.boEnvConsts.apiHost) || '';
-        const a = document.createElement('a');
-        a.href = url.startsWith('http') ? url : (host.replace(/\/api\/?$/, '') + url);
-        a.download = file.fileNm || '';
-        a.target = '_blank';
-        a.click();
-        if (uiState.selectedId) {
-          await boApiSvc.syExceldown.markDownloaded(uiState.selectedId, '엑셀다운로드', '다운로드');
+        if (!fnTriggerDownload(file)) { return; }
+        const id = exceldownId || uiState.selectedId;
+        if (id) {
+          await boApiSvc.syExceldown.markDownloaded(id, '엑셀다운로드', '다운로드');
           handleSearchList();
         }
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '다운로드 중 오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
+    /* handleQuickDownload — 목록 행의 [다운로드] 버튼. 상세를 펼치지 않고 바로 받는다.
+       파일이 1개면 즉시 다운로드하고, 여러 개(분할 저장)면 어떤 파일인지 골라야 하므로
+       상세 패널만 펼친다 (파일 목록·전체 다운로드는 sy-exceldown-dtl 이 자체 조회해 표시). */
+    const handleQuickDownload = async (row) => {
+      try {
+        const res = await boApiSvc.syExceldown.getById(row.exceldownId, '엑셀다운로드', '다운로드');
+        const files = (res.data?.data || {}).attachFiles || [];
+        if (files.length === 0) {
+          showToast('생성된 파일이 없습니다. (보관기간이 지났을 수 있습니다)', 'error');
+          return;
+        }
+        if (files.length === 1) {
+          await handleDownloadFile(files[0], row.exceldownId);
+          return;
+        }
+        uiState.selectedId = row.exceldownId;
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '다운로드 중 오류가 발생했습니다.', 'error', 0);
       }
@@ -280,8 +303,9 @@ window.SyExceldownMng = {
 
     return {
       codes, uiState, searchParam, rows, baseGridPager, columns,   // 상태 / 데이터
+      showToast, showConfirm,                                     // sy-exceldown-dtl 인라인 임베드 전달용
       handleBtnAction, handleSelectAction, handleGridCellAction,   // dispatch
-      fnStatusLabel, fnStatusBadge, fnProgress, fnDateTime, fnFileSize, fnCanCancel,  // 헬퍼
+      fnStatusLabel, fnStatusBadge, fnProgress, fnDateTime, fnCanCancel, fnCanDownload,  // 헬퍼
       cfHasActive, cfIsMine, statusOptions, runTypeOptions,        // computed / 옵션
       cofCountText: coUtil.cofCountText,
     };
@@ -336,6 +360,9 @@ window.SyExceldownMng = {
           <button v-if="fnCanCancel(row)" class="btn btn_row_delete" @click.stop="handleBtnAction('row-cancel', row)">
             강제취소
           </button>
+          <button v-if="fnCanDownload(row)" class="btn btn_row_download" @click.stop="handleBtnAction('row-download', row)">
+            다운로드
+          </button>
           <button class="btn btn_row_hist" @click.stop="handleBtnAction('row-detail', row.exceldownId)">
             파일
           </button>
@@ -349,50 +376,9 @@ window.SyExceldownMng = {
   <!-- ===== □. 목록 ======================================================== -->
   <!-- ===== ■. 상세 (생성 파일 목록) ========================================== -->
   <bo-container v-if="uiState.selectedId" title="생성 파일">
-    <div v-if="!uiState.detail" style="padding:16px;text-align:center;color:#999;font-size:12px;">
-      불러오는 중...
-    </div>
-    <div v-else style="padding:4px 2px;">
-      <!-- 요약 -->
-      <table style="width:100%;font-size:12px;color:#555;margin-bottom:12px;">
-        <tr>
-          <td style="width:80px;color:#999;padding:3px 0;">대상</td>
-          <td>{{ uiState.detail.domainNm || uiState.detail.domainCd }}</td>
-          <td style="width:80px;color:#999;padding:3px 0;">상태</td>
-          <td><span class="badge" :class="fnStatusBadge(uiState.detail.exceldownStatusCd)">{{ fnStatusLabel(uiState.detail.exceldownStatusCd) }}</span></td>
-        </tr>
-        <tr>
-          <td style="color:#999;padding:3px 0;">API</td>
-          <td style="font-family:monospace;font-size:11px;">{{ uiState.detail.apiUrl || '-' }}</td>
-          <td style="color:#999;padding:3px 0;">실행서버</td>
-          <td style="font-family:monospace;font-size:11px;">{{ uiState.detail.podId || '-' }}</td>
-        </tr>
-        <tr>
-          <td style="color:#999;padding:3px 0;">건수</td>
-          <td>{{ (uiState.detail.totalCount || 0).toLocaleString() }}건</td>
-          <td style="color:#999;padding:3px 0;">보관만료</td>
-          <td>{{ fnDateTime(uiState.detail.expireDate) }}</td>
-        </tr>
-        <tr v-if="uiState.detail.errorMsg">
-          <td style="color:#999;padding:3px 0;">사유</td>
-          <td colspan="3" style="color:#d9363e;">{{ uiState.detail.errorMsg }}</td>
-        </tr>
-      </table>
-      <!-- 파일 목록 -->
-      <div v-if="!uiState.detail.attachFiles || uiState.detail.attachFiles.length === 0"
-        style="padding:14px;text-align:center;color:#bbb;font-size:12px;border:1px dashed #e0e0e0;border-radius:8px;">
-        생성된 파일이 없습니다. (미완료이거나 보관기간이 지났습니다)
-      </div>
-      <div v-else>
-        <div v-for="(f, i) in uiState.detail.attachFiles" :key="f.attachId"
-          style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #eee;border-radius:8px;margin-bottom:6px;background:#fafafa;">
-          <span style="font-size:11px;color:#999;width:44px;">{{ (i+1) }}/{{ uiState.detail.attachFiles.length }}</span>
-          <span style="flex:1;font-size:12px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ f.fileNm }}</span>
-          <span style="font-size:11px;color:#888;width:76px;text-align:right;">{{ fnFileSize(f.fileSize) }}</span>
-          <button class="btn btn_row_edit" @click="handleBtnAction('file-download', f)">다운로드</button>
-        </div>
-      </div>
-    </div>
+    <sy-exceldown-dtl :key="uiState.selectedId" :navigate="navigate" :show-ref-modal="showRefModal"
+      :show-toast="showToast" :show-confirm="showConfirm" :dtl-id="uiState.selectedId"
+      @downloaded="handleSearchList" />
   </bo-container>
   <!-- ===== □. 상세 ======================================================== -->
 </bo-page>

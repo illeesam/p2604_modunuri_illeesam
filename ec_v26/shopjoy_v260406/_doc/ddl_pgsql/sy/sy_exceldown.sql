@@ -34,6 +34,8 @@ CREATE TABLE shopjoy_2604.sy_exceldown (
     run_type_cd         VARCHAR(20)  NOT NULL DEFAULT 'SYNC',
     exceldown_status_cd VARCHAR(20)  NOT NULL DEFAULT 'RUNNING',
     search_param_json   TEXT,
+    search_cond_text    TEXT,
+    excel_columns       TEXT,
     total_count         INTEGER      DEFAULT 0,
     done_count          INTEGER      DEFAULT 0,
     file_nm             VARCHAR(300),
@@ -81,8 +83,10 @@ COMMENT ON COLUMN shopjoy_2604.sy_exceldown.api_method_cd       IS 'HTTP 메서�
 COMMENT ON COLUMN shopjoy_2604.sy_exceldown.run_type_cd         IS '실행유형 (SYNC: 즉시다운로드 / ASYNC: 예약다운로드)';
 COMMENT ON COLUMN shopjoy_2604.sy_exceldown.exceldown_status_cd IS '상태 (WAITING: 대기열 / RUNNING: 진행중 / DONE: 완료 / FAIL: 실패 / TIMEOUT: 시간초과 / CANCELED: 강제취소)';
 COMMENT ON COLUMN shopjoy_2604.sy_exceldown.search_param_json   IS '요청 시점 검색조건 스냅샷 (JSON, 재실행·표시용)';
-COMMENT ON COLUMN shopjoy_2604.sy_exceldown.total_count         IS '대상 전체 건수 (countList 결과)';
-COMMENT ON COLUMN shopjoy_2604.sy_exceldown.done_count          IS '처리 완료 건수 (청크 단위 갱신, 진행률 표시용)';
+COMMENT ON COLUMN shopjoy_2604.sy_exceldown.search_cond_text    IS '검색조건 사람이 읽는 형태 (화면 라벨 기준, 이력 화면 표시용)';
+COMMENT ON COLUMN shopjoy_2604.sy_exceldown.excel_columns       IS '다운로드 컬럼 헤더명 (그리드 헤더 순서대로, 쉼표 구분)';
+COMMENT ON COLUMN shopjoy_2604.sy_exceldown.total_count         IS '예상 다운로드 건수 (요청 시점 countList 결과 — 실행 시점엔 데이터가 바뀌어 있을 수 있음)';
+COMMENT ON COLUMN shopjoy_2604.sy_exceldown.done_count          IS '실제 다운로드(처리) 건수. 진행중엔 청크 단위로 갱신되어 진행률로도 쓰이고, DONE/FAIL 종료 시점엔 실제 처리된 최종 건수를 담는다';
 COMMENT ON COLUMN shopjoy_2604.sy_exceldown.file_nm             IS '대표(첫) 파일명 — 분할 시 1/N 파일';
 COMMENT ON COLUMN shopjoy_2604.sy_exceldown.file_size           IS '대표(첫) 파일 크기 (byte)';
 COMMENT ON COLUMN shopjoy_2604.sy_exceldown.file_count          IS '생성 파일 수 (분할 시 N, 미분할 1)';

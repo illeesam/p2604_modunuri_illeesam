@@ -1302,11 +1302,14 @@ window.FoFormArea = {
     const U = window._foAreaCompUtil;
 
     /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
+    /* type:'group' — 항목이 많을 때 중간 제목(섹션 헤더)을 끼워넣는 용도.
+     *                앞뒤로 강제 줄바꿈 + 항상 한 줄 전체 폭 단독 행. { type:'group', label:'기본정보' } 형태로 사용. */
     const cfRows = Vue.computed(() => {
       const rows = []; let cur = []; let used = 0;
       for (const col of props.columns) {
         if (col.visible && !col.visible(props.form)) continue;
         if (col.type === 'rowBreak') { if (cur.length) { rows.push(cur); cur = []; used = 0; } continue; }
+        if (col.type === 'group') { if (cur.length) { rows.push(cur); cur = []; used = 0; } rows.push([col]); continue; }
         const span = Math.min(col.colSpan || 1, props.cols);
         if (used + span > props.cols && cur.length) { rows.push(cur); cur = []; used = 0; }
         cur.push(col); used += span;
@@ -1352,9 +1355,13 @@ window.FoFormArea = {
 <div class="fo-form-area">
   <div v-for="(row, ri) in cfRows" :key="ri"
     :style="{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax('+minColWidth+',1fr))',gap:gap+'px',marginBottom:gap+'px'}">
-    <div v-for="col in row" :key="col.key" :style="((col.colSpan ? col.colSpan>1 : false) ? ('grid-column: span ' + Math.min(col.colSpan, cols) + ';') : '')">
+    <div v-for="col in row" :key="col.key || col.label" :style="((col.colSpan ? col.colSpan>1 : false) ? ('grid-column: span ' + Math.min(col.colSpan, cols) + ';') : '')">
+    <!-- 중간그룹 제목 (라벨/입력 없이 섹션 헤더만) -->
+    <div v-if="col.type === 'group'" class="section-title" :style="ri===0?'margin-top:0;':''">
+    {{ col.label }}
+  </div>
     <!-- 라벨 -->
-    <label v-if="col.type !== 'slot' ? (!col.hideLabel) : false" class="form-label">
+    <label v-else-if="col.type !== 'slot' ? (!col.hideLabel) : false" class="form-label">
     {{ col.label }}
     <span v-if="col.required" class="form-required">
       *

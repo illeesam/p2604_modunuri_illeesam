@@ -51,13 +51,7 @@ public final class GridColumnMetaBuilder {
     public static ExcelMetaInfo fromGridJson(String json, Class<?> itemClass, String tableLabel, ObjectMapper om) {
         if (json == null || json.isBlank()) return null;
 
-        List<Map<String, Object>> defs;
-        try {
-            defs = om.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {});
-        } catch (Exception e) {
-            log.warn("[GridColumnMeta] excelColumns 파싱 실패 — Entity 기반 메타로 대체. msg={}", e.getMessage());
-            return null;
-        }
+        List<Map<String, Object>> defs = parseDefs(json, om);
         if (defs == null || defs.isEmpty()) return null;
 
         Set<String> itemFields = fieldNames(itemClass);
@@ -80,6 +74,39 @@ public final class GridColumnMetaBuilder {
             log.debug("[GridColumnMeta] 서버 필드에 없는 화면 컬럼 제외 — {}", skipped);
         }
         return new ExcelMetaInfo(tableLabel, tableLabel, cols.get(0).fieldName(), cols);
+    }
+
+    /**
+     * 컬럼 정의 파싱 — 두 형식을 모두 받는다.
+     *
+     * <ul>
+     *   <li><b>{@code key:label,key:label}</b> — 화면(BoExcelDownModal)이 쓰는 기본 형식.
+     *       JSON 을 쓰지 않는 이유: axios 가 쿼리스트링의 {@code %5B/%5D} 를 {@code [}/{@code ]} 로
+     *       되돌려 보내는데 Tomcat 이 그 문자를 거부해 요청 자체가 끊긴다.</li>
+     *   <li><b>JSON 배열</b> — 외부 도구/테스트에서 직접 호출할 때를 위해 계속 지원한다.</li>
+     * </ul>
+     */
+    private static List<Map<String, Object>> parseDefs(String raw, ObjectMapper om) {
+        String s = raw.trim();
+        if (s.startsWith("[")) {
+            try {
+                return om.readValue(s, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {});
+            } catch (Exception e) {
+                log.warn("[GridColumnMeta] JSON 파싱 실패 — Entity 기반 메타로 대체. msg={}", e.getMessage());
+                return null;
+            }
+        }
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (String pair : s.split(",")) {
+            String p = pair.trim();
+            if (p.isEmpty()) continue;
+            int i = p.indexOf(':');
+            String key   = (i < 0) ? p : p.substring(0, i).trim();
+            String label = (i < 0) ? p : p.substring(i + 1).trim();
+            if (key.isEmpty()) continue;
+            out.add(Map.of("key", key, "label", label.isEmpty() ? key : label));
+        }
+        return out;
     }
 
     /** Dto.Item 의 필드명 집합 (상속 포함) */

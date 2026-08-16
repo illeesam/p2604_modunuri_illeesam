@@ -59,7 +59,9 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
                         syExceldown.apiMethodCd,        // HTTP 메서드
                         syExceldown.runTypeCd,          // 실행유형 — RUN_TYPE_CD {SYNC, ASYNC}
                         syExceldown.exceldownStatusCd,  // 상태 — EXCELDOWN_STATUS_CD {WAITING, RUNNING, DONE, FAIL, TIMEOUT, CANCELED}
-                        syExceldown.searchParamJson,    // 검색조건 스냅샷
+                        syExceldown.searchParamJson,    // 검색조건 스냅샷(JSON)
+                        syExceldown.searchCondText,     // 검색조건 사람이 읽는 형태
+                        syExceldown.excelColumns,       // 다운로드 컬럼 헤더명
                         syExceldown.totalCount,         // 대상 전체 건수
                         syExceldown.doneCount,          // 처리 완료 건수(진행률)
                         syExceldown.fileNm,             // 대표 파일명
@@ -201,6 +203,8 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
         if (entity.getRunTypeCd()         != null) { update.set(syExceldown.runTypeCd,         entity.getRunTypeCd());         hasAny = true; }
         if (entity.getExceldownStatusCd() != null) { update.set(syExceldown.exceldownStatusCd, entity.getExceldownStatusCd()); hasAny = true; }
         if (entity.getSearchParamJson()   != null) { update.set(syExceldown.searchParamJson,   entity.getSearchParamJson());   hasAny = true; }
+        if (entity.getSearchCondText()    != null) { update.set(syExceldown.searchCondText,    entity.getSearchCondText());    hasAny = true; }
+        if (entity.getExcelColumns()      != null) { update.set(syExceldown.excelColumns,      entity.getExcelColumns());      hasAny = true; }
         if (entity.getTotalCount()        != null) { update.set(syExceldown.totalCount,        entity.getTotalCount());        hasAny = true; }
         if (entity.getDoneCount()         != null) { update.set(syExceldown.doneCount,         entity.getDoneCount());         hasAny = true; }
         if (entity.getFileNm()            != null) { update.set(syExceldown.fileNm,            entity.getFileNm());            hasAny = true; }

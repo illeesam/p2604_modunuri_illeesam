@@ -2399,7 +2399,7 @@ window.BoFormArea = {
      *   내용/긴 입력 영역(textarea·htmlEditor)은 colSpan 미지정 시 항상 한 줄 전체 폭(cols).
      *   다른 필드가 같은 줄에 끼지 않게 한다. (정책: §4.7 / CLAUDE.md "큰 영역은 한 줄 전체 폭")
      *   colSpan 이 명시돼 있으면 그 값을 우선 존중한다. → 화면에서 textarea 는 colSpan:3(=cols) 명시 권장. */
-    const FULL_WIDTH_TYPES = ['textarea', 'htmlEditor'];
+    const FULL_WIDTH_TYPES = ['textarea', 'htmlEditor', 'group'];
     const fnEffSpan = (col) => {
       if (col.colSpan != null) return Math.min(col.colSpan, props.cols);
       if (FULL_WIDTH_TYPES.includes(col.type)) return props.cols;
@@ -2407,12 +2407,15 @@ window.BoFormArea = {
     };
 
     /* columns → 행별 그룹화 (rowBreak 또는 colSpan 누적이 cols 초과 시 줄바꿈)
-     *           rowSpan>1 인 필드는 다음 행들에도 col 자리를 점유한다. */
+     *           rowSpan>1 인 필드는 다음 행들에도 col 자리를 점유한다.
+     *           type:'group' — 25~30개 필드처럼 항목이 많을 때 중간 제목(섹션 헤더)을 끼워넣는 용도.
+     *           앞뒤로 강제 줄바꿈 + 항상 한 줄 전체 폭(cols) 단독 행. { type:'group', label:'기본정보' } 형태로 사용. */
     const cfRows = Vue.computed(() => {
       const rows = []; let cur = []; let used = 0;
       for (const col of props.columns) {
         if (col.visible && !col.visible(props.form)) continue;
         if (col.type === 'rowBreak') { if (cur.length) { rows.push(cur); cur = []; used = 0; } continue; }
+        if (col.type === 'group') { if (cur.length) { rows.push(cur); cur = []; used = 0; } rows.push([col]); continue; }
         const span = fnEffSpan(col);
         if (used + span > props.cols && cur.length) { rows.push(cur); cur = []; used = 0; }
         cur.push(col); used += span;
@@ -2486,11 +2489,15 @@ window.BoFormArea = {
   template: /* html */`
 <div class="bo-form-area" :class="compact?'bo-form-compact':''">
   <div v-for="(row, ri) in cfRows" :key="ri" class="form-row" :class="cols===3?'col3':''" :style="(cols!==2 ? cols!==3 : false) ? ('grid-template-columns:repeat('+cols+',1fr)') : ''">
-    <div v-for="col in row" :key="col.key" class="form-group" :style="cfFieldStyle(col)">
+    <div v-for="col in row" :key="col.key || col.label" class="form-group" :style="cfFieldStyle(col)">
+    <!-- 중간그룹 제목 (라벨/입력 없이 섹션 헤더만) -->
+    <div v-if="col.type === 'group'" class="section-title" :style="ri===0?'margin-top:0;':''">
+    {{ col.label }}
+  </div>
     <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지)
          slot 타입도 col.label 이 있으면 위쪽 라벨 모드에서 자동 렌더 (라벨 누락 방지).
          단, labelLeft 모드 + slot 의 경우 grid 첫 칸 채우기 위해 별도 렌더 분기. -->
-    <label v-if="col.type !== 'slot' ? (!col.hideLabel) : false" class="form-label" :style="labelLeft?'margin-bottom:0;white-space:nowrap;':''">
+    <label v-else-if="col.type !== 'slot' ? (!col.hideLabel) : false" class="form-label" :style="labelLeft?'margin-bottom:0;white-space:nowrap;':''">
     {{ col.label }}
     <span v-if="col.required ? (!readonly) : false" class="req">
     *

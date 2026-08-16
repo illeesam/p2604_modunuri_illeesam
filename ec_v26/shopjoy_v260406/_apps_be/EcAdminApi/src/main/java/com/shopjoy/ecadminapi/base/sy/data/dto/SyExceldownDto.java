@@ -36,6 +36,8 @@ public class SyExceldownDto {
         private String runTypeCd;
         private String exceldownStatusCd;
         private String searchParamJson;
+        private String searchCondText;
+        private String excelColumns;
         private Integer totalCount;
         private Integer doneCount;
         private String fileNm;

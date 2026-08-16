@@ -46,7 +46,7 @@ public class BoExcelDownController {
     public void sync(@PathVariable("domain") String domain,
                      @RequestParam Map<String, Object> queryParams,
                      @RequestHeader(value = "X-UI-Nm", required = false) String uiNm,
-                     HttpServletResponse response) {
+                     HttpServletResponse response) throws java.io.IOException {
         boExcelDownService.exportSync(domain, queryParams, decode(uiNm), response);
     }
 

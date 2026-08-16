@@ -174,13 +174,21 @@ public class SyExceldownService {
         syExceldownRepository.updateSelective(patch);
     }
 
-    /** 실패 처리 */
+    /**
+     * 실패 처리.
+     *
+     * <p>{@code doneCount} 를 반드시 받는다 — 실패 시점까지 실제로 처리(집계/기록)된 건수를
+     * 남겨야 "예상(total_count) 대비 실제로 어디까지 됐는지" 를 이력에서 알 수 있다.
+     * heartbeat 는 청크(기본 1,000건) 단위로만 갱신되므로, 그보다 적게 처리하고 실패하면
+     * done_count 가 null 로 남아 "0건도 못 갔다" 와 "몰라서 비어있다" 를 구분할 수 없었다.</p>
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void finishFail(String exceldownId, String errorMsg, LocalDateTime startDate) {
+    public void finishFail(String exceldownId, String errorMsg, int doneCount, LocalDateTime startDate) {
         LocalDateTime now = LocalDateTime.now();
         SyExceldown patch = SyExceldown.builder()
             .exceldownId(exceldownId)
             .exceldownStatusCd("FAIL")
+            .doneCount(doneCount)
             .errorMsg(cut(errorMsg, 2000))
             .endDate(now)
             .elapsedMs(elapsedMs(startDate, now))

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.AttachFile;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyExceldownDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyAttach;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyExceldown;
+import com.shopjoy.ecadminapi.base.sy.repository.SyAttachRepository;
 import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.base.sy.service.SyExceldownService;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
@@ -16,14 +18,22 @@ import com.shopjoy.ecadminapi.common.excel.ExcelExportUtil;
 import com.shopjoy.ecadminapi.common.excel.ExcelMetaBuilder;
 import com.shopjoy.ecadminapi.common.excel.ExcelMetaInfo;
 import com.shopjoy.ecadminapi.common.excel.GridColumnMetaBuilder;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -42,9 +52,16 @@ public class BoExcelDownService {
     private final ExcelDownProps props;
     private final SyExceldownService syExceldownService;
     private final SyAttachService syAttachService;
+    private final SyAttachRepository syAttachRepository;
     private final ObjectMapper objectMapper;
 
+    /** 저장 루트 — /cdn/** 로 서빙되는 물리 경로. BoExcelDownRunner 와 동일 값을 쓴다(같은 프로퍼티). */
+    @Value("${app.file.local.physical-root:src/main/resources/static/cdn}")
+    private String physicalRoot;
+
     private static final String REF_TABLE = "sy_exceldown";
+    private static final String BIZ_CODE  = "sy_exceldown";
+    private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     /* ── 상태 조회 ───────────────────────────────────────────── */
 
@@ -78,14 +95,17 @@ public class BoExcelDownService {
     /* ── 즉시(SYNC) ──────────────────────────────────────────── */
 
     /**
-     * 즉시 다운로드 — 요청 스레드가 그대로 xlsx 를 스트리밍한다.
+     * 즉시 다운로드 — 요청 스레드가 그대로 xlsx 를 만들어 응답으로 보낸다.
      *
-     * <p>이력은 남기되 파일은 저장하지 않는다(브라우저로 바로 흘려보냄).
-     * 상한을 넘거나 이미 진행중이면 시작 전에 막는다.</p>
+     * <p>응답과 동시에 같은 바이트를 {@code sy_attach} 에도 한 부 저장한다(사용자 선택:
+     * "즉시도 파일 저장하여 재다운로드 허용"). 즉시는 상한이 있어(기본 10,000건) 파일이
+     * 커봐야 수 MB 수준이라 메모리에 전부 만들고 그대로 한 번 더 디스크에 쓰는 비용이 작다.
+     * 응답 속도는 그대로 유지된다 — 생성이 끝난 뒤 응답과 저장을 순서대로 처리할 뿐,
+     * 두 번 생성하지 않고 한 번 만든 bytes 를 공유한다.</p>
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void exportSync(String domainKey, Map<String, Object> queryParams,
-                           String uiNm, HttpServletResponse response) {
+                           String uiNm, HttpServletResponse response) throws java.io.IOException {
         ExcelDomainHandler handler = registry.get(domainKey);
         BaseRequest req = (BaseRequest) objectMapper.convertValue(queryParams, handler.reqClass());
 
@@ -99,18 +119,82 @@ public class BoExcelDownService {
         SyExceldown job = startJob(domainKey, handler, queryParams, uiNm, "SYNC",
                                    "/api/bo/excel/" + domainKey + "/excel", (int) total);
         LocalDateTime start = job.getStartDate();
+        /* try 밖에 선언 — 실패 시에도 cnt[0](여기까지 실제로 처리한 행수) 를 finishFail 에 넘기기 위함 */
+        final int[] cnt = { 0 };
         try {
             ExcelMetaInfo meta = resolveMeta(handler, queryParams);
+            String areaNm = (handler.label() != null && !handler.label().isBlank()) ? handler.label() : domainKey;
 
-            final int[] cnt = { 0 };
-            ExcelExportUtil.writeXlsxWithMeta(response, meta, handler.itemClass(),
+            byte[] bytes = ExcelExportUtil.writeXlsxWithMetaBytes(meta, handler.itemClass(),
                 rowWriter -> handler.fetchChunked(req, props.chunkRows(), item -> { cnt[0]++; rowWriter.accept(item); })
             );
-            syExceldownService.finishDone(job.getExceldownId(), cnt[0], null, null, 0, 0L, null, start, null);
+
+            SyAttach attach = persistBytes(bytes, areaNm, job.getExceldownId());
+
+            String filename = attach.getFileNm();
+            String encoded = java.net.URLEncoder.encode(filename, java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"; filename*=UTF-8''" + encoded);
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            response.setContentLength(bytes.length);
+            response.getOutputStream().write(bytes);
+            response.getOutputStream().flush();
+
+            syExceldownService.finishDone(job.getExceldownId(), cnt[0],
+                attach.getFileNm(), attach.getFileSize(), 1, attach.getFileSize(), attach.getAttachId(),
+                start, LocalDateTime.now().plusDays(props.keepDays()));
         } catch (Exception e) {
-            syExceldownService.finishFail(job.getExceldownId(), e.getMessage(), start);
+            syExceldownService.finishFail(job.getExceldownId(), e.getMessage(), cnt[0], start);
             throw e;
         }
+    }
+
+    /**
+     * 생성된 xlsx 바이트를 물리 파일로 쓰고 {@code sy_attach} 에 등록한다.
+     *
+     * <p>{@code BoExcelDownRunner.persistFile} 과 저장 경로 규칙(attach/sy_exceldown/YYYY/YYYYMM/YYYYMMDD/)
+     * 이 동일하다 — 즉시/예약 어느 쪽으로 받았든 나중에 같은 방식으로 재다운로드할 수 있어야 하기 때문이다.
+     * 즉시는 항상 분할하지 않으므로(상한이 splitRows 보다 훨씬 작다) seq 는 항상 1이다.</p>
+     */
+    private SyAttach persistBytes(byte[] bytes, String areaNm, String exceldownId) throws java.io.IOException {
+        LocalDateTime now = LocalDateTime.now();
+        String y   = now.format(DateTimeFormatter.ofPattern("yyyy"));
+        String ym  = now.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        String ymd = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        String storageDir = String.format("attach/%s/%s/%s/%s", BIZ_CODE, y, ym, ymd);
+        String fileNm = String.format("%s_%s_01.xlsx", safeFileName(areaNm), now.format(TS));
+
+        String root = physicalRoot.endsWith("/") ? physicalRoot.substring(0, physicalRoot.length() - 1) : physicalRoot;
+        java.nio.file.Path dir = Paths.get(root, storageDir);
+        Files.createDirectories(dir);
+        File out = dir.resolve(fileNm).toFile();
+
+        try (OutputStream os = new FileOutputStream(out)) {
+            os.write(bytes);
+            os.flush();
+        }
+
+        SyAttach attach = SyAttach.builder()
+            .attachId(CmUtil.generateId("sy_attach"))
+            .refTableNm(REF_TABLE)
+            .refId(exceldownId)
+            .fileNm(fileNm)
+            .storedNm(fileNm)
+            .fileExt("xlsx")
+            .mimeTypeCd("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .fileSize((long) bytes.length)
+            .storageTypeCd("LOCAL")
+            .storagePath(storageDir + "/" + fileNm)
+            .physicalPath(out.getAbsolutePath())
+            .attachUrl("/cdn/" + storageDir + "/" + fileNm)
+            .build();
+        return syAttachRepository.save(attach);
+    }
+
+    private static String safeFileName(String s) {
+        if (s == null || s.isBlank()) return "excel";
+        return s.replaceAll("[\\\\/:*?\"<>|\\s]", "_");
     }
 
     /* ── 예약(ASYNC) ─────────────────────────────────────────── */
@@ -206,6 +290,10 @@ public class BoExcelDownService {
             .apiMethodCd("GET")
             .runTypeCd(runTypeCd)
             .searchParamJson(json)
+            /* 이력 화면에서 "무엇을 어떤 조건으로 어떤 컬럼으로 받았는지" 를 바로 읽을 수 있도록
+               사람이 읽는 형태로도 저장한다. JSON 만 남기면 나중에 해석이 어렵다. */
+            .searchCondText(condText(queryParams))
+            .excelColumns(columnLabels(queryParams))
             .totalCount(total)
             .build();
         try {
@@ -216,6 +304,58 @@ public class BoExcelDownService {
             }
             throw e;
         }
+    }
+
+
+    /** 검색조건을 사람이 읽는 한 줄로 — 화면이 보낸 excelCondText 우선, 없으면 파라미터를 나열 */
+    private String condText(Map<String, Object> q) {
+        if (q == null || q.isEmpty()) return null;
+        Object given = q.get("excelCondText");
+        if (given != null && !String.valueOf(given).isBlank()) return String.valueOf(given);
+
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Object> e : q.entrySet()) {
+            String k = e.getKey();
+            if (k == null) continue;
+            if (k.equals(GridColumnMetaBuilder.PARAM) || k.equals("excelCondText")) continue;
+            if (k.equals("pageNo") || k.equals("pageSize")) continue;
+            Object v = e.getValue();
+            if (v == null || String.valueOf(v).isBlank()) continue;
+            if (sb.length() > 0) sb.append(" / ");
+            sb.append(k).append(": ").append(v);
+        }
+        return sb.length() == 0 ? null : sb.toString();
+    }
+
+    /** 다운로드 컬럼 헤더명만 뽑아 쉼표로 — `key:label,...` 및 JSON 형식 모두 처리 */
+    private String columnLabels(Map<String, Object> q) {
+        Object raw = q == null ? null : q.get(GridColumnMetaBuilder.PARAM);
+        if (raw == null || String.valueOf(raw).isBlank()) return null;
+        String s = String.valueOf(raw).trim();
+        StringBuilder sb = new StringBuilder();
+        if (s.startsWith("[")) {
+            try {
+                List<Map<String, Object>> defs = objectMapper.readValue(
+                    s, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {});
+                for (Map<String, Object> d : defs) {
+                    Object lb = d.get("label") != null ? d.get("label") : d.get("key");
+                    if (lb == null) continue;
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(lb);
+                }
+            } catch (Exception e) { return s; }
+            return sb.length() == 0 ? null : sb.toString();
+        }
+        for (String pair : s.split(",")) {
+            String p = pair.trim();
+            if (p.isEmpty()) continue;
+            int i = p.indexOf(':');
+            String label = (i < 0) ? p : p.substring(i + 1).trim();
+            if (label.isEmpty()) continue;
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(label);
+        }
+        return sb.length() == 0 ? null : sb.toString();
     }
 
     /** uk01_running 위반인지 판별 — 메시지에 인덱스명이 실린다 */

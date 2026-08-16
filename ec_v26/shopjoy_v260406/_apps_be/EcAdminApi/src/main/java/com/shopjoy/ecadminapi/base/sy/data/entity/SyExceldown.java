@@ -56,6 +56,14 @@ public class SyExceldown extends BaseEntity {
     @Column(name = "search_param_json", columnDefinition = "TEXT")
     private String searchParamJson;
 
+    @Comment("검색조건 사람이 읽는 형태 (화면 라벨 기준, 이력 화면 표시용)")
+    @Column(name = "search_cond_text", columnDefinition = "TEXT")
+    private String searchCondText;
+
+    @Comment("다운로드 컬럼 헤더명 (그리드 헤더 순서대로, 쉼표 구분)")
+    @Column(name = "excel_columns", columnDefinition = "TEXT")
+    private String excelColumns;
+
     @Comment("대상 전체 건수 (countList 결과)")
     @Column(name = "total_count")
     private Integer totalCount;

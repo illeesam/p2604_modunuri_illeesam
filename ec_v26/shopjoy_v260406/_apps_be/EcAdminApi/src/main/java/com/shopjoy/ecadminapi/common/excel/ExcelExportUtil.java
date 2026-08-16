@@ -342,6 +342,41 @@ public final class ExcelExportUtil {
             Consumer<Consumer<T>> fetcher
     ) {
         setExcelResponseHeaders(response, meta.tableLabel());
+        try {
+            byte[] bytes = buildXlsxBytes(meta, entityClass, fetcher);
+            response.setContentLength(bytes.length);
+            response.getOutputStream().write(bytes);
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("[ExcelExportUtil] writeXlsxWithMeta fail — table={}, msg={}", meta.tableLabel(), e.getMessage(), e);
+            throw new RuntimeException("엑셀 다운로드 중 오류: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * {@link #writeXlsxWithMeta} 와 컬럼·행 구성은 완전히 동일하되, HTTP 응답이 아니라
+     * {@code byte[]} 로 돌려준다.
+     *
+     * <p>호출자가 응답 전송과 동시에 파일을 서버(sy_attach)에도 남기고 싶을 때 쓴다 —
+     * 예: 즉시(SYNC) 다운로드도 완료 후 재다운로드가 가능해야 한다는 요구로,
+     * {@code BoExcelDownService.exportSync} 가 이 메서드로 바이트를 얻어
+     * (1) 브라우저 응답으로 쓰고 (2) 같은 바이트를 디스크/{@code sy_attach} 에도 저장한다.
+     * 두 번 생성하지 않고 한 번 만든 결과를 공유하므로 CPU 낭비가 없다.</p>
+     */
+    public static <T> byte[] writeXlsxWithMetaBytes(
+            ExcelMetaInfo meta,
+            Class<T> entityClass,
+            Consumer<Consumer<T>> fetcher
+    ) {
+        return buildXlsxBytes(meta, entityClass, fetcher);
+    }
+
+    /** {@link #writeXlsxWithMeta}/{@link #writeXlsxWithMetaBytes} 공용 빌드 로직 */
+    private static <T> byte[] buildXlsxBytes(
+            ExcelMetaInfo meta,
+            Class<T> entityClass,
+            Consumer<Consumer<T>> fetcher
+    ) {
         /* dispose() 는 반드시 finally — 취소/이탈 시 temp 파일 잔존 방지 */
         SXSSFWorkbook wb = null;
         try {
@@ -377,11 +412,12 @@ public final class ExcelExportUtil {
                 sheet.setColumnWidth(c, 18 * 256); // 18 chars * 256 units/char
             }
 
-            wb.write(response.getOutputStream());
-            response.getOutputStream().flush();
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            wb.write(baos);
+            return baos.toByteArray();
         } catch (Exception e) {
-            log.error("[ExcelExportUtil] writeXlsxWithMeta fail — table={}, msg={}", meta.tableLabel(), e.getMessage(), e);
-            throw new RuntimeException("엑셀 다운로드 중 오류: " + e.getMessage(), e);
+            log.error("[ExcelExportUtil] buildXlsxBytes fail — table={}, msg={}", meta.tableLabel(), e.getMessage(), e);
+            throw new RuntimeException("엑셀 생성 중 오류: " + e.getMessage(), e);
         } finally {
             disposeQuietly(wb, meta.tableLabel());
         }

@@ -21,6 +21,7 @@ window.BoExcelDownModal = {
     uiNm:   { type: String,  default: '' },                     // 요청 화면명 (이력 기록용)
     params: { type: Object,  default: () => ({}) },             // 현재 검색조건 (그대로 전달)
     columns:{ type: Array,   default: () => ([]) },             // 그리드 컬럼 정의 — 엑셀 컬럼/순서/라벨을 화면과 일치시킨다
+    condText: { type: String, default: '' },                    // 검색조건 사람이 읽는 한 줄(선택). 없으면 params 로 자동 생성
   },
   emits: ['close'],
   setup(props, { emit }) {
@@ -67,6 +68,41 @@ window.BoExcelDownModal = {
       return Math.max(1, Math.ceil(cfTotal.value / s));
     });
 
+    /* cfCols — 화면 전용 컬럼(_ 접두어) 제외 + excelKeys 조합 컬럼 펼침. fnExcelParams 와
+       "다운로드 정보" 표시가 서로 다른 컬럼을 보여주면 안 되므로 이 하나로 공유한다. */
+    const cfCols = computed(() => {
+      const cols = [];
+      (props.columns || []).forEach(c => {
+        if (!c || !c.key) { return; }
+        if (Array.isArray(c.excelKeys) && c.excelKeys.length) {
+          c.excelKeys.forEach(ek => {
+            const key   = typeof ek === 'string' ? ek : ek.key;
+            const label = typeof ek === 'string' ? key : (ek.label || ek.key);
+            if (key) { cols.push({ key, label }); }
+          });
+          return;
+        }
+        if (String(c.key).startsWith('_')) { return; }
+        cols.push({ key: c.key, label: c.label || c.key });
+      });
+      return cols;
+    });
+
+    /* cfColumnText — "다운로드 정보" 카드에 보여줄 헤더명 나열 */
+    const cfColumnText = computed(() => cfCols.value.map(c => c.label).join(', ') || '(전체 컬럼)');
+
+    /* cfCondText — 조건값정보. 화면이 condText prop 으로 예쁜 문장을 직접 주면 그걸 쓰고,
+       없으면 params 를 key: value 로 나열한다(서버 쪽 BoExcelDownService.condText() 와 동일 로직 —
+       화면에 보여준 문구와 실제 저장되는 이력 문구가 어긋나지 않게 하기 위함). */
+    const cfCondText = computed(() => {
+      if (props.condText) { return props.condText; }
+      const entries = Object.entries(props.params || {})
+        .filter(([k, v]) => v !== null && v !== undefined && String(v).trim() !== ''
+          && k !== 'pageNo' && k !== 'pageSize' && k !== 'excelColumns' && k !== 'excelCondText')
+        .map(([k, v]) => `${k}: ${v}`);
+      return entries.length ? entries.join(' / ') : '(전체 조회)';
+    });
+
     /* ##### [04] 내장 사용 함수 ################################################## */
 
     /* fnNum — 천단위 콤마 */
@@ -83,23 +119,22 @@ window.BoExcelDownModal = {
                                  그 필드들로 펼쳐서 내보낸다. 선언이 없으면 조용히 제외한다. */
     const fnExcelParams = () => {
       const p = { ...(props.params || {}) };
-      const cols = [];
-      (props.columns || []).forEach(c => {
-        if (!c || !c.key) { return; }
-        if (Array.isArray(c.excelKeys) && c.excelKeys.length) {
-          c.excelKeys.forEach(ek => {
-            const key   = typeof ek === 'string' ? ek : ek.key;
-            const label = typeof ek === 'string' ? key : (ek.label || ek.key);
-            if (key) { cols.push({ key, label }); }
-          });
-          return;
-        }
-        if (String(c.key).startsWith('_')) { return; }
-        cols.push({ key: c.key, label: c.label || c.key });
-      });
-      if (cols.length) { p.excelColumns = JSON.stringify(cols); }
+      if (cfCols.value.length) { p.excelColumns = fnEncodeCols(cfCols.value); }
+      /* 화면에 보여준 "조건값정보" 문구를 그대로 이력에 남긴다 — 서버가 params 로 재조합하면
+         화면 표시 문구와 저장 문구가 어긋날 수 있어 여기서 확정한 텍스트를 넘긴다. */
+      p.excelCondText = cfCondText.value;
       return p;
     };
+
+    /* fnEncodeCols — 컬럼 목록을 `key:label,key:label` 로 직렬화한다.
+       ⚠ JSON 을 그대로 넘기면 안 된다. axios 의 buildURL encode 는 %5B/%5D 를 다시 `[`/`]` 로
+       되돌려 보내는데(의도된 동작), Tomcat 은 쿼리스트링의 `[`/`]` 를 기본적으로 거부해
+       요청이 서버에 닿기도 전에 net::ERR_FAILED 로 끊긴다.
+       `:` 와 `,` 는 쿼리에서 합법이라 그대로 두어도 안전하고, 한글 라벨은 axios 가 퍼센트 인코딩한다.
+       라벨 안의 `:`/`,` 는 구분자와 충돌하므로 공백으로 치환한다. */
+    const fnEncodeCols = (cols) => cols
+      .map(c => `${c.key}:${String(c.label).replace(/[:,]/g, ' ')}`)
+      .join(',');
 
     /* fnDateTime — 표시용 일시 */
     const fnDateTime = (v) => (v ? String(v).replace('T', ' ').substring(0, 19) : '-');
@@ -193,6 +228,7 @@ window.BoExcelDownModal = {
     return {
       uiState, handleBtnAction,
       cfBusy, cfRunning, cfTotal, cfSyncMax, cfSplitRows, cfWaiting, cfSyncOk, cfEmpty, cfFileCount,
+      cfCondText, cfColumnText,
       fnNum, fnDateTime, fnExcelParams,
     };
   },
@@ -235,6 +271,25 @@ window.BoExcelDownModal = {
       <div v-if="cfEmpty" style="font-size:12px;color:#d9363e;margin-top:6px;">
         조건에 해당하는 데이터가 없습니다. 검색조건을 확인해주세요.
       </div>
+    </div>
+    <!-- ===== ■. 다운로드 정보 (화면명 / 조건값정보 / 헤더명) — 이 화면에서 실제로 저장·다운로드될
+         내용을 실행 전에 확인시키고, sy_exceldown 이력에도 동일 문구로 남는다 ================== -->
+    <div style="border:1px solid #eee;border-radius:8px;padding:10px 12px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px;">다운로드 정보</div>
+      <table style="width:100%;font-size:12px;color:#555;">
+        <tr>
+          <td style="width:68px;color:#999;padding:3px 0;vertical-align:top;">화면명</td>
+          <td>{{ uiNm || '-' }}</td>
+        </tr>
+        <tr>
+          <td style="color:#999;padding:3px 0;vertical-align:top;">조건값</td>
+          <td style="word-break:break-all;">{{ cfCondText }}</td>
+        </tr>
+        <tr>
+          <td style="color:#999;padding:3px 0;vertical-align:top;">헤더명</td>
+          <td style="word-break:break-all;">{{ cfColumnText }}</td>
+        </tr>
+      </table>
     </div>
     <!-- ===== ■. 방식 선택 =================================================== -->
     <div style="display:flex;flex-direction:column;gap:8px;">

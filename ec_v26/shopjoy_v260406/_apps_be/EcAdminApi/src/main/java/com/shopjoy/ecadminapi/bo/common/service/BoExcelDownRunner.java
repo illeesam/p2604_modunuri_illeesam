@@ -83,6 +83,10 @@ public class BoExcelDownRunner {
 
         LocalDateTime start = job.getStartDate() != null ? job.getStartDate() : LocalDateTime.now();
         List<SyAttach> saved = new ArrayList<>();
+        /* try 밖에 선언 — 실패 시 catch 에서 "실제 어디까지 처리됐는지"(writer.written) 를 읽어
+           finishFail 에 넘기기 위함. try 안에서만 선언하면 catch 블록에서 접근할 수 없다.
+           람다 캡처 때문에 effectively-final 이 필요해 1칸짜리 배열로 감싼다. */
+        final SplitWriter[] writerRef = new SplitWriter[1];
 
         try {
             ExcelDomainHandler handler = registry.get(job.getDomainCd());
@@ -97,12 +101,12 @@ public class BoExcelDownRunner {
             String areaNm = (job.getDomainNm() != null && !job.getDomainNm().isBlank())
                 ? job.getDomainNm() : job.getDomainCd();
 
-            SplitWriter writer = new SplitWriter(exceldownId, areaNm, meta, handler.itemClass(),
-                                                 splitRows, saved, start);
-            handler.fetchChunked(req, chunkRows, item -> writer.write(item));
-            writer.close();
+            writerRef[0] = new SplitWriter(exceldownId, areaNm, meta, handler.itemClass(),
+                                           splitRows, saved, start);
+            handler.fetchChunked(req, chunkRows, item -> writerRef[0].write(item));
+            writerRef[0].close();
 
-            if (writer.canceled) {
+            if (writerRef[0].canceled) {
                 cleanupFiles(saved);
                 log.info("[ExcelRun] 강제취소로 중단 — id={}, 삭제파일={}", exceldownId, saved.size());
                 return;
@@ -112,20 +116,20 @@ public class BoExcelDownRunner {
             SyAttach first = saved.isEmpty() ? null : saved.get(0);
 
             syExceldownService.finishDone(
-                exceldownId, writer.written,
+                exceldownId, writerRef[0].written,
                 first != null ? first.getFileNm() : null,
                 first != null ? first.getFileSize() : null,
                 saved.size(), totalSize,
                 first != null ? first.getAttachId() : null,
                 start, LocalDateTime.now().plusDays(props.keepDays()));
 
-            notifyDone(job, writer.written, saved.size());
-            log.info("[ExcelRun] 완료 — id={}, rows={}, files={}", exceldownId, writer.written, saved.size());
+            notifyDone(job, writerRef[0].written, saved.size());
+            log.info("[ExcelRun] 완료 — id={}, rows={}, files={}", exceldownId, writerRef[0].written, saved.size());
 
         } catch (Exception e) {
             log.error("[ExcelRun] 실패 — id={}, msg={}", exceldownId, e.getMessage(), e);
             cleanupFiles(saved);
-            syExceldownService.finishFail(exceldownId, e.getMessage(), start);
+            syExceldownService.finishFail(exceldownId, e.getMessage(), writerRef[0] != null ? writerRef[0].written : 0, start);
             notifyFail(job, e.getMessage());
         }
     }

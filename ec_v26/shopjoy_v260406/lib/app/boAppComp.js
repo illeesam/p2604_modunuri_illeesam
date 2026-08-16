@@ -224,6 +224,7 @@ window.boRegisterComponents = function (app) {
     .component('SyMemberLoginHist', window.SyMemberLoginHist)
     .component('SyUserLoginHist', window.SyUserLoginHist)
     .component('SyExceldownMng', window.SyExceldownMng)
+    .component('SyExceldownDtl', window.SyExceldownDtl)
     .component('SyApiLogMng', window.SyApiLogMng)
     .component('SySendMsgLogMng', window.SySendMsgLogMng)
     .component('SyPostman', window.SyPostman)
