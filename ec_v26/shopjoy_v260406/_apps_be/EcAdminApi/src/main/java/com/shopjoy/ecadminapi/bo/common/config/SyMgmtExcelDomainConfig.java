@@ -115,9 +115,12 @@ public class SyMgmtExcelDomainConfig {
 
     /* ── 시스템 > 사용자 관리 ──────────────────────────────────── */
 
+    // 빈 이름 주의: bo.sy.service.SyUserExcelHandler(@Component, domain key "user", 미사용 레거시)와
+    // 이름이 겹치면 BeanDefinitionOverrideException 발생 → 메서드명만 syUserMgmtExcelHandler 로 구분
+    // (도메인 키는 "syUser" 그대로 유지, 프론트 SyUserMng.js 변경 불필요)
     @Bean
     public ExcelDomainHandler<SyUser, SyUserDto.Item, SyUserDto.Request>
-    syUserExcelHandler(BoSyUserService svc, SyUserRepository r, EntityManager em) {
+    syUserMgmtExcelHandler(BoSyUserService svc, SyUserRepository r, EntityManager em) {
         return PagedExcelHandler.of("syUser", "시스템 사용자",
             SyUser.class, SyUserDto.Item.class, SyUserDto.Request.class,
             r, svc::getList, svc::getPageData, "userId", em);
