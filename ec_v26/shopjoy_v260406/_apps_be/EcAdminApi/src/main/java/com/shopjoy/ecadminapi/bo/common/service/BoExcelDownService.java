@@ -309,13 +309,16 @@ public class BoExcelDownService {
     }
 
 
-    /** 검색조건을 사람이 읽는 한 줄로 — 화면이 보낸 excelCondText 우선, 없으면 파라미터를 나열 */
+    /**
+     * 검색조건을 JSON 오브젝트 문자열로 — {@code {"key":"value",...}} 형식 그대로 저장한다.
+     *
+     * <p>화면(이력 상세)은 이 값을 가공 없이 그대로 표시한다 — 사람이 읽는 문장으로 미리 조립해두면
+     * 나중에 조건을 다시 읽거나(재실행 등) 다른 화면이 재사용하기 어렵다. JSON 이면 그대로 파싱해
+     * 재사용할 수 있고, 화면에 그대로 찍어도 "key: value" 형태로 읽기에 충분하다(2026-08-16 변경).</p>
+     */
     private String condText(Map<String, Object> q) {
         if (q == null || q.isEmpty()) return null;
-        Object given = q.get("excelCondText");
-        if (given != null && !String.valueOf(given).isBlank()) return String.valueOf(given);
-
-        StringBuilder sb = new StringBuilder();
+        Map<String, Object> filtered = new java.util.LinkedHashMap<>();
         for (Map.Entry<String, Object> e : q.entrySet()) {
             String k = e.getKey();
             if (k == null) continue;
@@ -323,41 +326,49 @@ public class BoExcelDownService {
             if (k.equals("pageNo") || k.equals("pageSize")) continue;
             Object v = e.getValue();
             if (v == null || String.valueOf(v).isBlank()) continue;
-            if (sb.length() > 0) sb.append(" / ");
-            sb.append(k).append(": ").append(v);
+            filtered.put(k, v);
         }
-        return sb.length() == 0 ? null : sb.toString();
+        if (filtered.isEmpty()) return null;
+        try { return objectMapper.writeValueAsString(filtered); }
+        catch (Exception e) { return null; }
     }
 
-    /** 다운로드 컬럼 헤더명만 뽑아 쉼표로 — `key:label,...` 및 JSON 형식 모두 처리 */
+    /**
+     * 다운로드 컬럼 헤더명을 JSON 오브젝트 문자열로 — {@code {"컬럼명":"라벨명",...}} 형식.
+     * 화면이 보낸 {@code key:label,key:label,...}(쿼리스트링 제약으로 이 포맷을 씀 — JSON 을 그대로
+     * 보내면 `[`/`]` 를 Tomcat 이 거부한다, {@code BoExcelDownModal.js} fnEncodeCols 참고) 또는
+     * 이미 JSON 배열인 형식(GridColumnMetaBuilder 경유) 모두 파싱해 동일한 JSON 오브젝트로 저장한다.
+     */
     private String columnLabels(Map<String, Object> q) {
         Object raw = q == null ? null : q.get(GridColumnMetaBuilder.PARAM);
         if (raw == null || String.valueOf(raw).isBlank()) return null;
         String s = String.valueOf(raw).trim();
-        StringBuilder sb = new StringBuilder();
+        Map<String, String> map = new java.util.LinkedHashMap<>();
         if (s.startsWith("[")) {
             try {
                 List<Map<String, Object>> defs = objectMapper.readValue(
                     s, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {});
                 for (Map<String, Object> d : defs) {
-                    Object lb = d.get("label") != null ? d.get("label") : d.get("key");
-                    if (lb == null) continue;
-                    if (sb.length() > 0) sb.append(", ");
-                    sb.append(lb);
+                    Object key = d.get("key");
+                    Object lb  = d.get("label") != null ? d.get("label") : key;
+                    if (key == null || lb == null) continue;
+                    map.put(String.valueOf(key), String.valueOf(lb));
                 }
             } catch (Exception e) { return s; }
-            return sb.length() == 0 ? null : sb.toString();
+        } else {
+            for (String pair : s.split(",")) {
+                String p = pair.trim();
+                if (p.isEmpty()) continue;
+                int i = p.indexOf(':');
+                String key   = (i < 0) ? p : p.substring(0, i).trim();
+                String label = (i < 0) ? p : p.substring(i + 1).trim();
+                if (key.isEmpty()) continue;
+                map.put(key, label.isEmpty() ? key : label);
+            }
         }
-        for (String pair : s.split(",")) {
-            String p = pair.trim();
-            if (p.isEmpty()) continue;
-            int i = p.indexOf(':');
-            String label = (i < 0) ? p : p.substring(i + 1).trim();
-            if (label.isEmpty()) continue;
-            if (sb.length() > 0) sb.append(", ");
-            sb.append(label);
-        }
-        return sb.length() == 0 ? null : sb.toString();
+        if (map.isEmpty()) return null;
+        try { return objectMapper.writeValueAsString(map); }
+        catch (Exception e) { return null; }
     }
 
     /** uk01_running 위반인지 판별 — 메시지에 인덱스명이 실린다 */

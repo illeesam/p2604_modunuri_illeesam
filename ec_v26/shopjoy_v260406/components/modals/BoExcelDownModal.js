@@ -21,7 +21,6 @@ window.BoExcelDownModal = {
     uiNm:   { type: String,  default: '' },                     // 요청 화면명 (이력 기록용)
     params: { type: Object,  default: () => ({}) },             // 현재 검색조건 (그대로 전달)
     columns:{ type: Array,   default: () => ([]) },             // 그리드 컬럼 정의 — 엑셀 컬럼/순서/라벨을 화면과 일치시킨다
-    condText: { type: String, default: '' },                    // 검색조건 사람이 읽는 한 줄(선택). 없으면 params 로 자동 생성
   },
   emits: ['close'],
   setup(props, { emit }) {
@@ -88,19 +87,25 @@ window.BoExcelDownModal = {
       return cols;
     });
 
-    /* cfColumnText — "다운로드 정보" 카드에 보여줄 헤더명 나열 */
-    const cfColumnText = computed(() => cfCols.value.map(c => c.label).join(', ') || '(전체 컬럼)');
+    /* cfColumnText — "다운로드 정보" 카드에 보여줄 헤더명. {"컬럼명":"라벨명",...} JSON 그대로 표시
+       (서버 쪽 BoExcelDownService.columnLabels() 와 동일 포맷 — 미리보기와 이력 상세가 같은 문구를 보이도록). */
+    const cfColumnText = computed(() => {
+      if (!cfCols.value.length) { return '(전체 컬럼)'; }
+      const obj = {};
+      cfCols.value.forEach(c => { obj[c.key] = c.label; });
+      return JSON.stringify(obj);
+    });
 
-    /* cfCondText — 조건값정보. 화면이 condText prop 으로 예쁜 문장을 직접 주면 그걸 쓰고,
-       없으면 params 를 key: value 로 나열한다(서버 쪽 BoExcelDownService.condText() 와 동일 로직 —
-       화면에 보여준 문구와 실제 저장되는 이력 문구가 어긋나지 않게 하기 위함). */
+    /* cfCondText — 조건값정보. params 를 {"key":"value",...} JSON 오브젝트 그대로 보여준다
+       (서버 쪽 BoExcelDownService.condText() 와 동일 포맷). */
     const cfCondText = computed(() => {
-      if (props.condText) { return props.condText; }
       const entries = Object.entries(props.params || {})
         .filter(([k, v]) => v !== null && v !== undefined && String(v).trim() !== ''
-          && k !== 'pageNo' && k !== 'pageSize' && k !== 'excelColumns' && k !== 'excelCondText')
-        .map(([k, v]) => `${k}: ${v}`);
-      return entries.length ? entries.join(' / ') : '(전체 조회)';
+          && k !== 'pageNo' && k !== 'pageSize' && k !== 'excelColumns' && k !== 'excelCondText');
+      if (!entries.length) { return '(전체 조회)'; }
+      const obj = {};
+      entries.forEach(([k, v]) => { obj[k] = v; });
+      return JSON.stringify(obj);
     });
 
     /* ##### [04] 내장 사용 함수 ################################################## */
@@ -120,9 +125,6 @@ window.BoExcelDownModal = {
     const fnExcelParams = () => {
       const p = { ...(props.params || {}) };
       if (cfCols.value.length) { p.excelColumns = fnEncodeCols(cfCols.value); }
-      /* 화면에 보여준 "조건값정보" 문구를 그대로 이력에 남긴다 — 서버가 params 로 재조합하면
-         화면 표시 문구와 저장 문구가 어긋날 수 있어 여기서 확정한 텍스트를 넘긴다. */
-      p.excelCondText = cfCondText.value;
       return p;
     };
 
