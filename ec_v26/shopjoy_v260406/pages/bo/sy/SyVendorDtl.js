@@ -198,7 +198,7 @@ window.SyVendorDtl = {
   :title-id="!active ? '' : (cfIsNew ? '' : form.vendorId)">
   <!-- ===== ■.■. 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
   <!-- ===== ■.■. 폼 영역 ================================================== -->
-  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
     @save="handleBtnAction('form-save')"
     @cancel="handleBtnAction('form-cancel')"

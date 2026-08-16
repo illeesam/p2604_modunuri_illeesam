@@ -198,7 +198,7 @@ window.ZdTestSnsLoginKakao = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">설정 / 키 확인</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="display:flex;gap:6px;margin-top:8px;margin-bottom:8px">
         <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
         <button class="btn btn_apply btn-sm" @click="handleBtnAction('sdk-init')">SDK 초기화</button>
@@ -223,7 +223,7 @@ window.ZdTestSnsLoginKakao = {
       <div style="font-size:12px;color:#666;margin-bottom:10px;padding:8px;background:#fffbeb;border-radius:4px;line-height:1.6">
         ⓘ 카카오 OAuth 인증 창이 열립니다. 로그인 완료 후 리다이렉트 URL의 <b>#access_token=…</b> 값을 복사해 아래에 붙여넣고 [프로필 조회] 하세요.
       </div>
-      <bo-form-area :columns="tokenFormColumns" :form="result" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
+      <bo-form-area plain-readonly :columns="tokenFormColumns" :form="result" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #tokenRawSlot>
           <div style="display:flex;gap:8px;align-items:flex-end">
             <input class="form-control" v-model="result.tokenRaw" placeholder="예: AAABxxxxx…" style="font-family:monospace;font-size:12px;flex:1" />

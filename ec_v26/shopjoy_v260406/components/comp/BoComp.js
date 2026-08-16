@@ -1571,15 +1571,16 @@ window.BoTabBar = {
   : 'display:flex;gap:8px;margin-bottom:10px;align-items:stretch;'">
   <div :style="(orientation==='vertical'
     ? 'display:flex;flex-direction:column;gap:4px;padding:5px;border-radius:12px;min-width:160px;'
-    : 'flex:1;display:flex;gap:4px;padding:5px;border-radius:12px;') + 'background:' + bg + ';'">
+    : 'flex:1;display:flex;flex-wrap:wrap;gap:4px;padding:5px;border-radius:12px;') + 'background:' + bg + ';'">
     <template v-for="t in tabs" :key="t?.id">
       <button v-if="t.visible===undefined || t.visible" class="bo-tabbar-btn" :class="{ 'is-active': isTabMode() && tab===t.id }" @click="onTab(t.id)" :disabled="!isTabMode()"
         :style="{
-          flex: orientation==='vertical' ? 'none' : 1,
+          flex: orientation==='vertical' ? 'none' : '0 0 auto',
           width: orientation==='vertical' ? '100%' : 'auto',
           padding:'5px 12px',
           border: (isTabMode() && tab===t.id) ? '1.5px solid transparent' : '1.5px solid #b7bec9',
           cursor: isTabMode() ? 'pointer' : 'default',
+          whiteSpace:'nowrap',
           fontSize:'12.5px', borderRadius:'9px', transition:'transform .15s, box-shadow .15s, border-color .15s, background .15s, color .15s',
           display:'inline-flex', alignItems:'center',
           justifyContent: orientation==='vertical' ? 'flex-start' : 'center',

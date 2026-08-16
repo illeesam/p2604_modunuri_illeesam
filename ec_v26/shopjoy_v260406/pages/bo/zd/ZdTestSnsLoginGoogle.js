@@ -194,7 +194,7 @@ window.ZdTestSnsLoginGoogle = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">설정 / 키 확인</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="display:flex;gap:6px;margin-top:8px;margin-bottom:8px">
         <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
         <button class="btn btn_apply btn-sm" @click="handleBtnAction('sdk-init')">GSI 초기화</button>

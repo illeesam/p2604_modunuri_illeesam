@@ -752,7 +752,7 @@ window.DpDispWidgetLibDtl = {
         </div>
         <!-- ===== ■.■.■.■. Lib코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) ========== -->
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="columns.baseLibForm" :form="form" :errors="errors"
+        <bo-form-area plain-readonly :columns="columns.baseLibForm" :form="form" :errors="errors"
           :readonly="false" :cols="2" compact :show-actions="false" />
         <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
           표시경로
@@ -819,7 +819,7 @@ window.DpDispWidgetLibDtl = {
         <div v-if="!cfIsHtmlEditor ? (!cfIsFileList ? (!cfIsEmbed) : false) : false" style="margin-bottom:14px;">
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">👆 클릭동작</div>
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.clickActionForm" :form="form" :errors="errors"
+          <bo-form-area plain-readonly :columns="columns.clickActionForm" :form="form" :errors="errors"
             :readonly="false" :cols="3" compact :show-actions="false" />
         </div>
         <!-- ===== ■.■.■.■. 공통 동적 행 =========================================== -->

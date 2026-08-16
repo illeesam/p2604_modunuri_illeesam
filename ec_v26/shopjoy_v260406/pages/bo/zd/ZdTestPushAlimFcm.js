@@ -182,7 +182,7 @@ window.ZdTestPushAlimFcm = {
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
+      <bo-form-area plain-readonly :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #target-value>
           <input class="form-control" v-model="form.targetValue"
             :placeholder="form.targetType==='token'?'eXxxxxxx…':form.targetType==='topic'?'all_members':'MB000001'"

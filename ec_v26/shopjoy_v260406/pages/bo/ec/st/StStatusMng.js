@@ -583,7 +583,7 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
   <!-- ===== ■. ══ 1. 업체별현황 ══ ========================================== -->
   <bo-container v-if="uiState.activeTab==='vendor'" title="업체별현황"
     :count-text="'총 ' + cfVendorTotal + '개 업체'" card-style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="columns.vendorSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly :columns="columns.vendorSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <bo-grid bare
       :columns="columns.vendorGrid"
@@ -597,7 +597,7 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
   <!-- ===== ■. ══ 2. 주문별현황 ══ ========================================== -->
   <bo-container v-if="uiState.activeTab==='order'" title="주문별현황"
     :count-text="'총 ' + cfOrderTotal + '건'" card-style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="columns.orderSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly :columns="columns.orderSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="columns.orderSearch" :param="uiState"
@@ -615,7 +615,7 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
   <!-- ===== ■. ══ 3. 클레임별현황 ══ ========================================= -->
   <bo-container v-if="uiState.activeTab==='claim'" title="클레임별현황"
     :count-text="'총 ' + cfClaimTotal + '건'" card-style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="columns.claimSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly :columns="columns.claimSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="columns.claimSearch" :param="uiState"
@@ -632,7 +632,7 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
   <!-- ===== ■. ══ 4. 프로모션별현황 ══ ======================================== -->
   <bo-container v-if="uiState.activeTab==='promo'" title="프로모션별현황"
     :count-text="'총 ' + cfPromoTotal + '개'" card-style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="columns.promoSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly :columns="columns.promoSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="columns.promoSearch" :param="uiState"
@@ -649,7 +649,7 @@ const uiState = reactive({ error: null, activeTab: 'vendor', dateRange: '이번�
   <!-- ===== ■. ══ 5. 정산별현황 ══ ========================================== -->
   <bo-container v-if="uiState.activeTab==='settle'" title="정산별현황"
     :count-text="'총 ' + cfSettleTotal + '개월'" card-style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="columns.settleSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly :columns="columns.settleSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="columns.settleSearch" :param="uiState"

@@ -465,7 +465,7 @@ window.SySendMsgLogMng = {
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
           <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
-          <bo-form-area :columns="cfCurDetailCols" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false">
+          <bo-form-area plain-readonly :columns="cfCurDetailCols" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false">
             <template #emailContent>
               <div v-if="fnRowDetail(row).content" style="max-height:360px;overflow:auto;border:1px solid #e8d8f0;border-radius:6px;padding:10px;background:#fff;font-size:12px;"
                 v-html="fnRowDetail(row).content"></div>

@@ -256,7 +256,7 @@ window.OdOrderItemDtl = {
         <div v-if="uiState.tabMode !== 'tab'" class="dtl-tab-card-title">📋 기본정보</div>
         <div v-if="uiState.loading" style="padding:32px;text-align:center;color:#bbb;">조회 중...</div>
         <bo-form-area v-else :columns="baseFormColumns" :form="baseForm" :errors="{}"
-          :readonly="cfReadonly" :cols="3" compact :show-actions="false" />
+          :readonly="cfReadonly" :cols="3" compact plain-readonly :show-actions="false" />
       </div>
       <!-- ── 클레임 탭 ────────────────────────────────────────── -->
       <div v-show="uiState.tabMode !== 'tab' || uiState.activeTab === 'claim'" class="card">

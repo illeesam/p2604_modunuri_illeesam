@@ -437,7 +437,7 @@ const raws = reactive([]);
       <template #row-expand="{ row: r, colspan }">
         <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
           <div v-if="fnRowDetailLoading(r)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
-          <bo-form-area :columns="columns.rawGridRowDetail" :form="fnRowDetail(r)" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.rawGridRowDetail" :form="fnRowDetail(r)" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>

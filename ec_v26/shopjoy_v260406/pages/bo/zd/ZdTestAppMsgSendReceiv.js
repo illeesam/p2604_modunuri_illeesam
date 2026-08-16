@@ -579,7 +579,7 @@ window.ZdTestAppMsgSendReceiv = {
     <div class="card" style="margin-bottom:12px">
       <div class="toolbar"><span class="list-title">발송 대상</span></div>
       <div style="padding:12px">
-        <bo-form-area :columns="targetFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+        <bo-form-area plain-readonly :columns="targetFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
         <div v-if="baseForm.targetMode==='broadcast'" style="padding:8px;background:#fef9c3;border:1px solid #fde68a;border-radius:4px;font-size:12px;color:#92400e;margin-top:8px">
           ⚠ 전체 브로드캐스트: 등록된 모든 디바이스에 발송됩니다. 주의하여 사용하세요.
         </div>
@@ -637,12 +637,12 @@ window.ZdTestAppMsgSendReceiv = {
         <!-- 공통 Push/InApp 내용 -->
         <div v-if="baseForm.chFcm || baseForm.chApns || baseForm.chInapp">
           <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;text-transform:uppercase">Push / 인앱 메시지</div>
-          <bo-form-area :columns="pushFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+          <bo-form-area plain-readonly :columns="pushFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
         </div>
         <!-- 카카오 알림톡 -->
         <div v-if="baseForm.chKakao" style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0">
           <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;text-transform:uppercase">카카오 알림톡 / 친구톡</div>
-          <bo-form-area :columns="kakaoFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+          <bo-form-area plain-readonly :columns="kakaoFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
         </div>
         <!-- SMS -->
         <div v-if="baseForm.chSms" style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0">
@@ -702,7 +702,7 @@ window.ZdTestAppMsgSendReceiv = {
       </div>
       <!-- 필터 -->
       <div style="padding:12px;border-bottom:1px solid #f0f0f0">
-        <bo-form-area :columns="deviceFilterFormColumns" :form="devices.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+        <bo-form-area plain-readonly :columns="deviceFilterFormColumns" :form="devices.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       </div>
       <div style="padding:12px">
         <div v-if="!devices.rows.length" style="color:#999;font-size:12px;text-align:center;padding:24px">
@@ -743,7 +743,7 @@ window.ZdTestAppMsgSendReceiv = {
       </div>
       <!-- 필터 -->
       <div style="padding:12px;border-bottom:1px solid #f0f0f0">
-        <bo-form-area :columns="histFilterFormColumns" :form="hist.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+        <bo-form-area plain-readonly :columns="histFilterFormColumns" :form="hist.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       </div>
       <div style="padding:12px">
         <div v-if="!hist.rows.length" style="color:#999;font-size:12px;text-align:center;padding:24px">

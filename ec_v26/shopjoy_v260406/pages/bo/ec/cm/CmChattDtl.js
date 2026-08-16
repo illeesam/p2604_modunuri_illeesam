@@ -547,7 +547,7 @@ window.CmChattDtl = {
       <!-- ===== ■.■.■. 신규 등록 탭 (BoFormArea 자동 렌더) ========================== -->
       <div v-show="uiState.tab==='new'">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="columns.newForm" :form="form" :errors="errors"
+        <bo-form-area plain-readonly :columns="columns.newForm" :form="form" :errors="errors"
           :readonly="false" :cols="3" compact :show-actions="false">
           <!-- ===== ■.■.■.■.■. 회원ID + 보기 ======================================= -->
           <template #memberId>

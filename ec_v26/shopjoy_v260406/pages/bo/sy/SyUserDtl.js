@@ -259,7 +259,7 @@ window.SyUserDtl = {
 <bo-container :title="!active ? '사용자 상세' : (cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.userId)">
   <!-- ===== ■.■. 기본정보 폼 ============================================== -->
-  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <!-- ===== ■.■.■. 부서: picker ========================================== -->
     <template #dept>

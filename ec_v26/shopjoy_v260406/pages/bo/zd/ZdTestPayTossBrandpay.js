@@ -213,7 +213,7 @@ window.ZdTestPayTossBrandpay = {
       <span style="font-size:11px;color:#888;margin-left:8px">결제창 전용 키 (test_ck_ / live_ck_ 접두어) — 결제위젯 키(gck) 사용 불가</span>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="display:flex;justify-content:flex-end;margin-top:8px">
         <button class="btn btn_save btn-sm" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
       </div>
@@ -228,7 +228,7 @@ window.ZdTestPayTossBrandpay = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="payFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
+      <bo-form-area plain-readonly :columns="payFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />

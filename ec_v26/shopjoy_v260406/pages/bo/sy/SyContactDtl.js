@@ -306,7 +306,7 @@ window.SyContactDtl = {
     <div class="dtl-pane" v-show="showTab('content')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 문의 내용</div>
       <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-      <bo-form-area :columns="columns.contentForm" :form="form" :errors="errors"
+      <bo-form-area plain-readonly :columns="columns.contentForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■.■. 회원ID + 보기 버튼 ==================================== -->
         <template #memberId>
@@ -350,7 +350,7 @@ window.SyContactDtl = {
         <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.contactTitle }}</div>
         <div style="font-size:13px;color:#555;white-space:pre-line;">{{ form.contactContent }}</div>
       </div>
-      <bo-form-area :columns="columns.answerForm" :form="form" :errors="{}"
+      <bo-form-area plain-readonly :columns="columns.answerForm" :form="form" :errors="{}"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <template #answerContent>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">

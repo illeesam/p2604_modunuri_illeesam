@@ -79,12 +79,15 @@ window.MbMemberDtl = {
     // 기본 폼
     const columns = {};
     columns.baseForm = [
+      { type: 'group', label: '기본정보' },
       { key: 'loginId',        label: '로그인ID', type: 'text', required: true, placeholder: '로그인ID (이메일 형식)' },
       { key: 'memberEmail',    label: '이메일',   type: 'text', placeholder: '수신용 이메일' },
       { key: 'memberNm',       label: '이름',      type: 'text', required: true, placeholder: '이름' },
       { key: 'memberPhone',    label: '연락처',    type: 'text', placeholder: '010-0000-0000' },
+      { type: 'group', label: '인증정보' },
       { key: 'gradeCd',        label: '등급',      type: 'select', options: () => codes.member_grades },
       { key: 'memberStatusCd', label: '상태',      type: 'select', options: () => codes.member_statuses },
+      { type: 'group', label: '생성정보' },
       { key: 'joinDate',       label: '가입일',    type: 'date' },
       { key: 'memberMemo',     label: '메모',      type: 'textarea', rows: 6,
         placeholder: '관리자 메모' },
@@ -118,7 +121,7 @@ window.MbMemberDtl = {
   <!-- ===== □.■. 상세 툴바 ================================================ -->
   <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->
   <!-- detailModal 기본값이 {} 라 form 이 없을 수 있다 (부모 Mng 없이 단독 진입 등) → 빈 폼으로 렌더 -->
-  <bo-form-area :columns="columns.baseForm" :form="detailModal.form || {}" :errors="{}"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="detailModal.form || {}" :errors="{}"
     :readonly="!active" :cols="3" compact :show-actions="false" />
   <!-- ===== □.■. 폼 영역 ================================================== -->
 </bo-container>

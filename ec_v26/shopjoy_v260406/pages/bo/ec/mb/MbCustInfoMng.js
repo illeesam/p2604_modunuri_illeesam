@@ -694,7 +694,7 @@
             @ref-click="ref => handleSelectAction('row-ref', ref)" :is-expanded="(row) => isExpanded(fnExpKey('orders', row))">
             <template #row-expand="{ row, colspan }">
               <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-                <bo-form-area :columns="columns.orderGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+                <bo-form-area plain-readonly :columns="columns.orderGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
               </td>
             </template>
           </bo-grid>
@@ -718,7 +718,7 @@
             @ref-click="ref => handleSelectAction('row-ref', ref)" :is-expanded="(row) => isExpanded(fnExpKey('claims', row))">
             <template #row-expand="{ row, colspan }">
               <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-                <bo-form-area :columns="columns.claimGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+                <bo-form-area plain-readonly :columns="columns.claimGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
               </td>
             </template>
           </bo-grid>
@@ -742,7 +742,7 @@
             :is-expanded="(row) => isExpanded(fnExpKey('dliv', row))">
             <template #row-expand="{ row, colspan }">
               <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-                <bo-form-area :columns="columns.dlivGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+                <bo-form-area plain-readonly :columns="columns.dlivGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
               </td>
             </template>
           </bo-grid>
@@ -769,7 +769,7 @@
             :is-expanded="(row) => isExpanded(fnExpKey('cache', row))">
             <template #row-expand="{ row, colspan }">
               <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-                <bo-form-area :columns="columns.cacheGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+                <bo-form-area plain-readonly :columns="columns.cacheGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
               </td>
             </template>
           </bo-grid>
@@ -793,7 +793,7 @@
             :is-expanded="(row) => isExpanded(fnExpKey('contacts', row))">
             <template #row-expand="{ row, colspan }">
               <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-                <bo-form-area :columns="columns.contactGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+                <bo-form-area plain-readonly :columns="columns.contactGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
               </td>
             </template>
           </bo-grid>
@@ -817,7 +817,7 @@
             :is-expanded="(row) => isExpanded(fnExpKey('chats', row))">
             <template #row-expand="{ row, colspan }">
               <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-                <bo-form-area :columns="columns.chatGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+                <bo-form-area plain-readonly :columns="columns.chatGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
               </td>
             </template>
           </bo-grid>
@@ -841,7 +841,7 @@
             :is-expanded="(row) => isExpanded(fnExpKey('login', row))">
             <template #row-expand="{ row, colspan }">
               <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-                <bo-form-area :columns="columns.loginGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+                <bo-form-area plain-readonly :columns="columns.loginGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
               </td>
             </template>
           </bo-grid>
@@ -865,7 +865,7 @@
             @ref-click="ref => handleSelectAction('row-ref', ref)" :is-expanded="(row) => isExpanded(fnExpKey('coupon', row))">
             <template #row-expand="{ row, colspan }">
               <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-                <bo-form-area :columns="columns.couponGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+                <bo-form-area plain-readonly :columns="columns.couponGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
               </td>
             </template>
           </bo-grid>
@@ -889,7 +889,7 @@
             :is-expanded="(row) => isExpanded(fnExpKey('send', row))">
             <template #row-expand="{ row, colspan }">
               <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-                <bo-form-area :columns="columns.sendGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+                <bo-form-area plain-readonly :columns="columns.sendGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
               </td>
             </template>
           </bo-grid>

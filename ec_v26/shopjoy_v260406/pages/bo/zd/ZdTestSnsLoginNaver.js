@@ -221,7 +221,7 @@ window.ZdTestSnsLoginNaver = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="display:flex;gap:6px;margin-top:8px">
         <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
         <button class="btn btn_apply btn-sm" @click="handleBtnAction('sdk-load')">SDK 로드</button>
@@ -247,7 +247,7 @@ window.ZdTestSnsLoginNaver = {
       <div style="font-size:12px;color:#666;margin-bottom:8px;padding:8px;background:#f0f4ff;border-radius:4px;line-height:1.6">
         ⓘ 네이버 로그인은 팝업 → 리다이렉트 구조입니다. 팝업 로그인 완료 후 발급된 <b>Access Token</b>을 아래에 붙여넣고 [프로필 조회] 하세요.
       </div>
-      <bo-form-area :columns="tokenFormColumns" :form="result" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
+      <bo-form-area plain-readonly :columns="tokenFormColumns" :form="result" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #tokenRawSlot>
           <div style="display:flex;gap:8px;align-items:flex-end">
             <input class="form-control" v-model="result.tokenRaw" placeholder="AAAAxxxxx…" style="font-family:monospace;font-size:12px;flex:1" />

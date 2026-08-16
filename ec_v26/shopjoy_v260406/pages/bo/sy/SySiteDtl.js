@@ -227,7 +227,7 @@ window.SySiteDtl = {
 <bo-container :title="!active ? '사이트 상세' : (cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.siteId)">
   <!-- ===== ■.■. 폼 영역 ================================================== -->
-  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
     @save="handleBtnAction('form-save')"
     @cancel="handleBtnAction('form-cancel')"

@@ -518,7 +518,7 @@ window.SyMemberLoginHist = {
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
         <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
-        <bo-form-area :columns="columns.logGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
+        <bo-form-area plain-readonly :columns="columns.logGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
       </td>
     </template>
   </bo-grid>
@@ -533,7 +533,7 @@ window.SyMemberLoginHist = {
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
         <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
-        <bo-form-area :columns="columns.tokenGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
+        <bo-form-area plain-readonly :columns="columns.tokenGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
         <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
           ℹ SHA-256 해시. 원문 복원 불가
         </div>

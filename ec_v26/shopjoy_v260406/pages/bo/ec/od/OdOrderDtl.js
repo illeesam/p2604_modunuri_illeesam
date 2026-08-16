@@ -819,7 +819,7 @@ window.OdOrderDtl = {
       </div>
       <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+      <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
         @save="handleBtnAction('form-save')"
         @cancel="handleBtnAction('form-cancel')"
@@ -919,7 +919,7 @@ window.OdOrderDtl = {
         </template>
         <template #row-expand="{ row, colspan }">
           <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
-            <bo-form-area :columns="columns.orderItemGridRowDetail" :form="row" :cols="3" compact readonly label-left :show-actions="false">
+            <bo-form-area plain-readonly :columns="columns.orderItemGridRowDetail" :form="row" :cols="3" compact readonly label-left :show-actions="false">
               <template #tracking>
                 <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
                   {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍

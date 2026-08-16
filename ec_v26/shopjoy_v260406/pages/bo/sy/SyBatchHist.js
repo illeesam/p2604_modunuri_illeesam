@@ -306,7 +306,7 @@ window.SyBatchHist = {
         ▼ 실행 상세
       </div>
       <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
-      <bo-form-area :columns="columns.histGridRowDetail" :form="fnRowDetail(row)" :cols="5" readonly label-left compact :show-actions="false" />
+      <bo-form-area plain-readonly :columns="columns.histGridRowDetail" :form="fnRowDetail(row)" :cols="5" readonly label-left compact :show-actions="false" />
       <div style="display:flex;align-items:flex-start;gap:10px;margin:6px 0 0;">
         <div style="flex:0 0 70px;font-size:11px;font-weight:600;color:#888;padding-top:7px;">
           메시지

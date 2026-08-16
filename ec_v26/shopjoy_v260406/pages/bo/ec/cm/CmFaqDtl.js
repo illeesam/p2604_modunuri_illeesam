@@ -212,7 +212,7 @@ window.CmFaqDtl = {
 <bo-container :title="!active ? 'FAQ 상세' : (cfIsNew ? 'FAQ 등록' : (cfDtlMode ? 'FAQ 상세' : 'FAQ 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.faqId)">
   <!-- ===== ■.■. 폼 영역 ================================================== -->
-  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <!-- 답변 (HtmlEditor 또는 view 모드 HTML) -->
     <template #answer>

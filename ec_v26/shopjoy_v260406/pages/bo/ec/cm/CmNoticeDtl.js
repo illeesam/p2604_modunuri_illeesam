@@ -3,7 +3,7 @@
  *   - 폼 reactive: `const baseForm = reactive({...})` (변수명 `form` 단독 금지)
  *   - setup() 6섹션 [01]~[06] 마커 (dispatch=[02] / init=[03] / 핸들러=[04] / 헬퍼·컬럼=[05])
  *   - cmd 라우팅: 'baseForm-save' / 'baseForm-cancel' / 'baseForm-edit' / 'baseForm-close'
- *   - 폼: <bo-form-area :columns="columns.baseForm" :form="baseForm" :readonly="cfReadonly" :cols="3">
+ *   - 폼: <bo-form-area plain-readonly :columns="columns.baseForm" :form="baseForm" :readonly="cfReadonly" :cols="3">
  *     (※ bo-form-area 의 prop명 `form` 은 컴포넌트 표준이라 그대로 유지)
  *   - readonly 판정: `const cfReadonly = computed(() => props.dtlMode === 'view')`
  *   - 신규 판정:    `const cfIsNew    = computed(() => props.dtlId == null)`
@@ -173,7 +173,7 @@ window.CmNoticeDtl = {
 <bo-container :title="!active ? '공지사항 상세' : (cfIsNew ? '공지사항 등록' : (cfReadonly ? '공지사항 상세' : '공지사항 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : baseForm.noticeId)">
   <!-- ===== ■.■. 컨테이너 헤더 (제목 = list-title, 페이지 타이틀 아님) ========= -->
-  <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="baseForm" :errors="errors"
     :readonly="cfReadonly" :cols="3" compact :show-actions="false">
     <!-- 내용 (HtmlEditor 또는 view 모드 HTML) -->
     <template #content>

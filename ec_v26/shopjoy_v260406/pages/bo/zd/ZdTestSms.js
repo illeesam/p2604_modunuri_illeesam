@@ -134,7 +134,7 @@ window.ZdTestSms = {
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="smsFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="smsFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
 
       <!-- 결과 -->
       <div v-if="result.status" style="margin-top:8px;font-size:13px;font-weight:600">{{ result.status }}</div>
@@ -161,7 +161,7 @@ window.ZdTestSms = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">SMS 설정 현황 (sy_prop)</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="true" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="true" compact />
     </div>
   </div>
 

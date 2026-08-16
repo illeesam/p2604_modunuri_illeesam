@@ -173,7 +173,7 @@ window.SyBatchDtl = {
 <bo-container :title="cfIsNew ? '배치 등록' : (cfDtlMode ? '배치 상세' : '배치 수정')"
   :title-id="cfIsNew ? '' : form.batchId">
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
-  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact
     @save="handleBtnAction('form-save')"
     @cancel="handleBtnAction('form-cancel')"

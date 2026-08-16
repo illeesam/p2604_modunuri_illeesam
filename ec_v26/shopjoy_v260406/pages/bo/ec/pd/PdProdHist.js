@@ -435,7 +435,7 @@ window.PdProdHist = {
     <bo-grid bare :columns="columns.qnaGrid" :rows="qnas" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('qna', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-          <bo-form-area :columns="columns.qnaGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.qnaGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
@@ -453,7 +453,7 @@ window.PdProdHist = {
     <bo-grid bare :columns="columns.reviewGrid" :rows="reviews" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('review', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-          <bo-form-area :columns="columns.reviewGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.reviewGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
@@ -476,7 +476,7 @@ window.PdProdHist = {
       </template>
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-          <bo-form-area :columns="columns.orderGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.orderGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
@@ -494,7 +494,7 @@ window.PdProdHist = {
     <bo-grid bare fit-bottom @scroll-end="onScrollEnd('stock')" :columns="columns.stockGrid" :rows="stockHistories" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('stock', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-          <bo-form-area :columns="columns.stockGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.stockGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
@@ -513,7 +513,7 @@ window.PdProdHist = {
     <bo-grid bare fit-bottom @scroll-end="onScrollEnd('price')" :columns="columns.priceGrid" :rows="priceHistories" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('price', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-          <bo-form-area :columns="columns.priceGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.priceGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
@@ -532,7 +532,7 @@ window.PdProdHist = {
     <bo-grid bare fit-bottom @scroll-end="onScrollEnd('status')" :columns="columns.statusGrid" :rows="statusHistories" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('status', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-          <bo-form-area :columns="columns.statusGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.statusGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
@@ -551,7 +551,7 @@ window.PdProdHist = {
     <bo-grid bare fit-bottom @scroll-end="onScrollEnd('changes')" :columns="columns.changeGrid" :rows="changeHistories" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('changes', row))">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-          <bo-form-area :columns="columns.changeGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.changeGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>

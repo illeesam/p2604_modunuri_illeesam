@@ -285,7 +285,7 @@ window.SyBbsDtl = {
 <bo-container :title="!active ? '게시글 상세' : (cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.bbsId)">
   <!-- ===== ■.■. 기본 정보 + 게시판 선택 ===================================== -->
-  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <template #bbmPick>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -308,7 +308,7 @@ window.SyBbsDtl = {
     </template>
   </bo-form-area>
   <!-- ===== ■.■. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
-  <bo-form-area :columns="columns.contentForm" :form="form" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.contentForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <template #contentNoBbm>
       <div style="color:#bbb;font-size:13px;padding:12px 0;">게시판을 먼저 선택하세요.</div>
@@ -350,7 +350,7 @@ window.SyBbsDtl = {
   <!-- ===== ■. 게시판 상세보기 팝업 ============================================= -->
   <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
     width="420px" modal-name="bbm-detail" :on-callback="fnCallbackModal" @close="showBbmDetail = false">
-    <bo-form-area v-if="selectedBbm" :columns="columns.bbmDetail" :form="selectedBbm" :errors="{}"
+    <bo-form-area plain-readonly v-if="selectedBbm" :columns="columns.bbmDetail" :form="selectedBbm" :errors="{}"
       :cols="1" compact readonly :show-actions="false" />
     <template #footer>
       <button class="btn btn_close" @click="handleBtnAction('bbmDetail-close')">닫기</button>

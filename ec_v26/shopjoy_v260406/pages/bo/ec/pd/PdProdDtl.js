@@ -1763,12 +1763,13 @@ window.PdProdDtl = {
       { key: '_categories',  label: '카테고리', type: 'slot', name: 'categories' },
       { key: 'brandId',      label: '브랜드', type: 'slot', name: 'brand' },
       { key: 'vendorId',     label: '업체', type: 'slot', name: 'vendor' },
-      { type: 'group', label: '상세정보' },
+      { type: 'group', label: '담당 · 상태' },
       // 3행: 담당MD / 배송템플릿 / 상태
       { key: 'mdUserId',     label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
       { key: 'dlivTmpltId',  label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt' },
       { key: 'prodStatusCd', label: '상태 (prod_status_cd)', type: 'select',
         options: () => grpCodes.PRODUCT_STATUS },
+      { type: 'group', label: '상세속성 · 판매기간' },
       // 4행: 미판매메시지 / 무게 / 사이즈
       { key: 'unsaleMsg',    label: '미판매메시지', type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
         hint: '판매불가 시 고객 노출' },
@@ -1914,7 +1915,7 @@ window.PdProdDtl = {
       <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
       <!-- ===== ■.■.■. 기본정보 통합 폼 (BoFormArea 자동 렌더, cols=3 한 줄 3필드) ======== -->
       <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false">
         <template #categories>
           <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
             <div v-if="prodCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
@@ -2013,7 +2014,7 @@ window.PdProdDtl = {
         <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
       </div>
       <bo-form-area :columns="columns.basePriceForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false">
         <template #marginRate>
           <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
             {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
@@ -2398,7 +2399,7 @@ window.PdProdDtl = {
       <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
       <!-- ===== ■.■.■. 상세설정 통합 폼 (홍보문구 + 광고 노출 + 구매 제한, cols=3 한 줄 3필드) ===== -->
       <bo-form-area :columns="columns.detailForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false">
         <template #advrtStmt>
           <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
           <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.advrtStmt||'').length }} / 500</div>
@@ -2917,7 +2918,7 @@ window.PdProdDtl = {
         <!-- ===== ■.■.■.■. 재고수량 (BoFormArea 자동 렌더) =========================== -->
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="columns.singleStockForm" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
+          :readonly="cfDtlMode" :cols="3" compact plain-readonly :show-actions="false" />
         <template v-if="tabData.skus.length">
           <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
             잔존 SKU 데이터

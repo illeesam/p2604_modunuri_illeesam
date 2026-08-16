@@ -185,7 +185,7 @@ window.PdCategoryDtl = {
 <bo-container :title="cfIsNew ? '카테고리 등록' : '카테고리 수정'"
   :title-id="cfIsNew ? '' : form.categoryId">
   <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ========================== -->
-  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact
     @save="handleBtnAction('form-save')"
     @cancel="handleBtnAction('form-cancel')"

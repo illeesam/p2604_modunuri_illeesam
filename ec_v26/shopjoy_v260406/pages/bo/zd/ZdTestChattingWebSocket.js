@@ -188,7 +188,7 @@ window.ZdTestChattingWebSocket = {
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;margin-top:8px">
         상태: <strong>{{ result.status }}</strong>
         <span v-if="result.pingMs" style="margin-left:12px;color:#15803d">RTT: {{ result.pingMs }}ms</span>

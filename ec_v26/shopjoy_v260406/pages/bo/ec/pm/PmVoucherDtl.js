@@ -441,7 +441,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     <div class="dtl-pane" v-if="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">기본정보</div>
       <!-- ===== ■.■. 폼 영역 ================================================== -->
-      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
+      <bo-form-area plain-readonly :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■. 판매업체 picker ========================================= -->
         <template #vendor>

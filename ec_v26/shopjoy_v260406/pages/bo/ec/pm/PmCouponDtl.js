@@ -583,7 +583,7 @@ window.PmCouponDtl = {
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
+      <bo-form-area plain-readonly :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 메모: Quill 에디터 (보기모드는 렌더만) ==================== -->
         <template #memo>
@@ -786,7 +786,7 @@ window.PmCouponDtl = {
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">📤 지급방법/조건</h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="columns.detailIssueForm" :form="form" :errors="errors"
+        <bo-form-area plain-readonly :columns="columns.detailIssueForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
           <template #issueGrades>
             <bo-multi-check-select
@@ -802,7 +802,7 @@ window.PmCouponDtl = {
       <div>
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🔍 사용방법</h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="columns.detailUseForm" :form="form" :errors="errors"
+        <bo-form-area plain-readonly :columns="columns.detailUseForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
       </div>
     </div>

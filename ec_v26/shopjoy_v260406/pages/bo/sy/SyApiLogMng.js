@@ -579,7 +579,7 @@ window.SyApiLogMng = {
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
           <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
-          <bo-form-area :columns="columns.accessGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.accessGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
@@ -590,7 +590,7 @@ window.SyApiLogMng = {
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
           <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
-          <bo-form-area :columns="columns.errorGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
+          <bo-form-area plain-readonly :columns="columns.errorGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
           <div style="margin-top:12px;">
             <div style="font-weight:700;color:#c0392b;margin-bottom:6px;border-bottom:1px solid #fcc;padding-bottom:4px;font-size:12px;">
               📋 스택트레이스

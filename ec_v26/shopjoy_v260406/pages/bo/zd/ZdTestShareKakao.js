@@ -210,7 +210,7 @@ window.ZdTestShareKakao = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
         <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
         <button class="btn btn_apply btn-sm" @click="handleBtnAction('sdk-init')">SDK 초기화</button>
@@ -233,7 +233,7 @@ window.ZdTestShareKakao = {
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="shareFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="shareFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div v-if="form.shareType === 'scrap'" style="padding:8px;background:#fff8e1;border-radius:4px;font-size:12px;color:#92400e;margin-top:8px">
         ⚠️ 스크랩은 해당 URL 의 Open Graph 메타 태그를 읽어 공유합니다. 카카오 개발자 콘솔에 도메인 등록 필요.
       </div>

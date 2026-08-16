@@ -184,7 +184,7 @@ window.ZdTestAiChatbot = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">AI 설정</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
         <button class="btn btn_save btn-sm" @click="handleBtnAction('key-save')">sy_prop 저장</button>
       </div>

@@ -397,7 +397,7 @@ window.OdDlivDtl = {
       </div>
       <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+      <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
         @save="handleBtnAction('form-save')"
         @cancel="handleBtnAction('form-cancel')"

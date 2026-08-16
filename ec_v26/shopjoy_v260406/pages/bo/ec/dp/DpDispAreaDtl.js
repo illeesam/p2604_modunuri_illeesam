@@ -184,7 +184,7 @@ window.DpDispAreaDtl = {
 <bo-container :title="!active ? '전시영역 상세' : (cfIsNew ? '전시영역 등록' : (cfReadonly ? '전시영역 상세' : '전시영역 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : baseForm.areaId)">
   <!-- ===== ■. 폼 영역 ===================================================== -->
-  <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="baseForm" :errors="errors"
     :readonly="cfReadonly" :cols="2" compact :show-actions="false" />
   <!-- ===== ■. 소속 패널 목록 (수정 시에만) =================================== -->
   <div v-if="!cfIsNew" style="margin-top:14px;">

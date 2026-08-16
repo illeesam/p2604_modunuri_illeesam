@@ -1374,35 +1374,35 @@ window.BoRefModal = {
   </div>
   <!-- 회원 -->
   <template v-if="s.type==='member'">
-    <bo-form-area v-if="member.userId" :columns="memberFormColumns" :form="member" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly v-if="member.userId" :columns="memberFormColumns" :form="member" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       회원 정보를 찾을 수 없습니다.
     </div>
   </template>
   <!-- 상품 -->
   <template v-else-if="s.type==='product'">
-    <bo-form-area v-if="product.productId" :columns="productFormColumns" :form="product" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly v-if="product.productId" :columns="productFormColumns" :form="product" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       상품 정보를 찾을 수 없습니다.
     </div>
   </template>
   <!-- 주문 -->
   <template v-else-if="s.type==='order'">
-    <bo-form-area v-if="order.orderId" :columns="orderFormColumns" :form="order" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly v-if="order.orderId" :columns="orderFormColumns" :form="order" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       주문 정보를 찾을 수 없습니다.
     </div>
   </template>
   <!-- 클레임 -->
   <template v-else-if="s.type==='claim'">
-    <bo-form-area v-if="claim.claimId" :columns="claimFormColumns" :form="claim" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly v-if="claim.claimId" :columns="claimFormColumns" :form="claim" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       클레임 정보를 찾을 수 없습니다.
     </div>
   </template>
   <!-- 쿠폰 -->
   <template v-else-if="s.type==='coupon'">
-    <bo-form-area v-if="coupon.couponId" :columns="couponFormColumns" :form="coupon" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area plain-readonly v-if="coupon.couponId" :columns="couponFormColumns" :form="coupon" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       쿠폰 정보를 찾을 수 없습니다.
     </div>

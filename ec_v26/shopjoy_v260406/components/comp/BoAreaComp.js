@@ -2384,6 +2384,7 @@ window.BoFormArea = {
     labelLeft:   { type: Boolean, default: false },  // true=라벨 좌측 / 값 우측 분리, false=라벨 위 / 값 아래
     labelWidth:  { type: String,  default: '90px' }, // labelLeft 모드에서 라벨 컬럼 폭
     compact:     { type: Boolean, default: false },  // true=필드 높이/간격 축소 (행 펼침·인라인 패널용)
+    plainReadonly: { type: Boolean, default: false },  // true=readonly 필드를 박스(배경/테두리) 없이 순수 라벨처럼 표시
     showActions: { type: Boolean, default: true },
     saveLabel:   { type: String,  default: '저장' },
     cancelLabel: { type: String,  default: '취소' },
@@ -2479,19 +2480,40 @@ window.BoFormArea = {
     };
 
     const normOpts = (opts) => U.normOptions(opts);
-    /* readonly 표시값 — fmt 가 있으면 사용, 없으면 form 값 그대로 */
+    /* readonly 표시값 — fmt 가 있으면 최우선 사용.
+       select/checkbox/multiCheck 는 fmt 없으면 저장된 코드값 대신 라벨을 찾아 보여준다
+       (plainReadonly 로 select 등이 자동 변환될 때 코드값이 그대로 노출되는 것 방지). */
     const dispVal = (col) => {
       const v = props.form[col.key];
       if (col.fmt) return col.fmt(v, props.form);
+      if (col.type === 'select') {
+        const found = normOpts(col.options).find(o => String(o.value) === String(v));
+        if (found) return found.label;
+      } else if (col.type === 'checkbox') {
+        const checkedVal = col.checkedValue != null ? col.checkedValue : 'Y';
+        return v === checkedVal ? (col.checkboxLabel || col.label) : '-';
+      } else if (col.type === 'multiCheck') {
+        const sep = col.separator || '^';
+        const vals = String(v || '').split(sep).filter(Boolean);
+        if (!vals.length) return '-';
+        const opts = normOpts(col.options);
+        return vals.map(vv => (opts.find(o => String(o.value) === vv) || {}).label || vv).join(', ');
+      }
       return (v == null || v === '') ? '-' : v;
     };
 
-    return { cfRows, cfFieldStyle, normOpts, dispVal, handleBtnAction, handleSelectAction };
+    /* plainReadonly 자동 변환 대상 — 폼 전체가 readonly 일 때 text/select/date 등 입력형 컬럼도
+       readonly-field-plain 라벨로 표시한다. pathPick/pick/slot 은 자체 readonly 처리를 이미 갖고 있어 제외,
+       type:'readonly' 는 별도 분기에서 처리하므로 제외. */
+    const fnAutoPlain = (col) => props.readonly && props.plainReadonly
+      && !['slot', 'pathPick', 'pick', 'readonly', 'group', 'rowBreak'].includes(col.type);
+
+    return { cfRows, cfFieldStyle, normOpts, dispVal, fnAutoPlain, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="bo-form-area" :class="compact?'bo-form-compact':''">
   <div v-for="(row, ri) in cfRows" :key="ri" class="form-row" :class="cols===3?'col3':''" :style="(cols!==2 ? cols!==3 : false) ? ('grid-template-columns:repeat('+cols+',1fr)') : ''">
-    <div v-for="col in row" :key="col.key || col.label" class="form-group" :style="cfFieldStyle(col)">
+    <div v-for="col in row" :key="col.key || col.label" class="form-group" :class="plainReadonly && (col.type==='readonly' || fnAutoPlain(col)) ? 'form-group-plain' : ''" :style="cfFieldStyle(col)">
     <!-- 중간그룹 제목 (라벨/입력 없이 섹션 헤더만) -->
     <div v-if="col.type === 'group'" class="section-title" :style="ri===0?'margin-top:0;':''">
     {{ col.label }}
@@ -2527,9 +2549,13 @@ window.BoFormArea = {
 </span>
 </label>
 <!-- readonly 표시 -->
-<div v-if="col.type === 'readonly' ? (col.html) : false" class="readonly-field" v-html="dispVal(col)">
+<div v-if="col.type === 'readonly' ? (col.html) : false" :class="plainReadonly ? 'readonly-field-plain' : 'readonly-field'" v-html="dispVal(col)">
 </div>
-<div v-else-if="col.type === 'readonly'" class="readonly-field">
+<div v-else-if="col.type === 'readonly'" :class="plainReadonly ? 'readonly-field-plain' : 'readonly-field'">
+  {{ dispVal(col) }}
+</div>
+<!-- plainReadonly 자동 변환 — 폼이 readonly 일 때 입력형 컬럼(text/select/date 등)도 라벨처럼 표시 -->
+<div v-else-if="fnAutoPlain(col)" class="readonly-field-plain">
   {{ dispVal(col) }}
 </div>
 <!-- text / password -->

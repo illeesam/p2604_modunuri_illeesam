@@ -2305,7 +2305,7 @@ od_order:
       <span style="font-size:11px;color:#888;margin-left:8px">결제위젯 전용 키 (test_gck_ / live_gck_ 접두어)</span>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
       <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
         <button class="btn btn_save btn-sm" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
       </div>
@@ -2320,7 +2320,7 @@ od_order:
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
+      <bo-form-area plain-readonly :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />
@@ -2353,7 +2353,7 @@ od_order:
       <span style="font-size:11px;color:#888;margin-left:8px">requestPayment() 추가 파라미터 — 값 입력/체크 시 전송됨</span>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="hiddenFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
+      <bo-form-area plain-readonly :columns="hiddenFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact>
         <template #cultureExpenseSlot>
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin-top:6px">
             <input type="checkbox" v-model="form.cultureExpense" /> 활성화 (도서/공연/박물관 등)

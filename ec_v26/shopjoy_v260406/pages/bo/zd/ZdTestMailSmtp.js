@@ -144,7 +144,7 @@ window.ZdTestMailSmtp = {
       </div>
     </div>
     <div style="padding:12px">
-      <bo-form-area :columns="mailFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
+      <bo-form-area plain-readonly :columns="mailFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" compact />
 
       <!-- 결과 -->
       <div v-if="uiState.loading" style="margin-top:12px;font-size:13px;font-weight:600;color:#6b7280;">⏳ 메일 발송 중…</div>
@@ -180,7 +180,7 @@ window.ZdTestMailSmtp = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">SMTP 설정 현황 (sy_prop)</span></div>
     <div style="padding:12px">
-      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="true" compact />
+      <bo-form-area plain-readonly :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="true" compact />
     </div>
   </div>
 

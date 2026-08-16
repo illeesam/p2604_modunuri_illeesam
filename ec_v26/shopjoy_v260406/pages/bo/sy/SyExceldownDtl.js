@@ -183,7 +183,7 @@ window.SyExceldownDtl = {
   </div>
   <div v-else style="padding:2px 4px 4px;">
     <!-- ===== ■. 요약 — sy_exceldown 테이블 전체 정보, 3열 readonly 폼(중간그룹 3단) ================ -->
-    <bo-form-area :columns="detailFormColumns" :form="uiState.detail" readonly compact :cols="3" :show-actions="false" />
+    <bo-form-area plain-readonly :columns="detailFormColumns" :form="uiState.detail" readonly compact :cols="3" :show-actions="false" />
     <!-- ===== □. 요약 ======================================================== -->
     <!-- ===== ■. 파일 목록 ==================================================== -->
     <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">

@@ -432,7 +432,7 @@ window.PmGiftDtl = {
     <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
+      <bo-form-area plain-readonly :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfIsView" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
@@ -465,7 +465,7 @@ window.PmGiftDtl = {
     <!-- ===== ■.■. 발급대상 ================================================== -->
     <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎯 발급대상</div>
-      <bo-form-area :columns="columns.targetForm" :form="form" :errors="{}" :cols="3" compact
+      <bo-form-area plain-readonly :columns="columns.targetForm" :form="form" :errors="{}" :cols="3" compact
         :show-actions="false" :readonly="cfIsView">
         <template #issueGrades>
           <bo-multi-check-select

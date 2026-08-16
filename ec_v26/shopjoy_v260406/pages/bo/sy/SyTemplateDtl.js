@@ -221,7 +221,7 @@ window.SyTemplateDtl = {
 <bo-container :title="!active ? '템플릿 상세' : (cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.templateId)">
   <!-- ===== ■.■. 폼 영역 ================================================== -->
-  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <!-- ===== ■.■.■. 내용 (Quill 에디터 또는 textarea, view 모드는 HTML) =========== -->
     <template #content>
