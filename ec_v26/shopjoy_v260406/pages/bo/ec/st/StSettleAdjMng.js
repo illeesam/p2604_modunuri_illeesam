@@ -62,6 +62,13 @@ window.StSettleAdjMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (번호/조정ID 클릭 시 상세 열기) */
+    const handleGridCellAction = (cmd, colKey, row) => {
+      console.log(' ■■ StSettleAdjMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'settleAdjs-cellClick') { return openEdit(row); }
+      console.warn('[handleGridCellAction] unknown cmd:', cmd);
+    };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드
@@ -259,7 +266,7 @@ window.StSettleAdjMng = {
           업체·기간이 필요하면 settleId 로 정산마스터(st_settle)를 조회해야 한다.
           상세 → _doc/정책서/ec/st/st.06.정산화면-백엔드불일치.md */
     columns.baseGrid = [
-      { key: 'settleAdjId',   label: '조정ID' },
+      { key: 'settleAdjId',   label: '조정ID', link: true },
       { key: 'settleId',      label: '정산ID', cellStyle: 'color:#666;font-size:11px' },
       { key: 'adjTypeCd',     label: '유형', badge: (row) => fnTypeBadge(row.adjTypeCd) },
       { key: 'adjAmt',        label: '조정금액', fmt: fmtW, cellStyle: 'color:#27ae60;font-weight:700' },
@@ -290,7 +297,7 @@ window.StSettleAdjMng = {
     return {
       columns,
       uiState, baseGridPager, adjs, searchParam, form, errors,
-      handleBtnAction, handleSelectAction,
+      handleBtnAction, handleSelectAction, handleGridCellAction,
     };
   },
   template: /* html */`
@@ -309,7 +316,8 @@ window.StSettleAdjMng = {
     <bo-grid bare
       :columns="columns.baseGrid" :rows="adjs" row-key="settleAdjId" :selected-key="uiState.selectedId"
       :row-actions="true"
-      :row-class="(r) => uiState.selectedId===r.settleAdjId ? 'selected' : ''">
+      :row-class="(r) => uiState.selectedId===r.settleAdjId ? 'selected' : ''"
+      grid-id="settleAdjs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row)">
       <template #head-actions>
         액션
       </template>

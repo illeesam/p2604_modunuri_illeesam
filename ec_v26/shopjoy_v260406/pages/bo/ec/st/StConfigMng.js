@@ -42,6 +42,13 @@ window.StConfigMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (번호/카테고리 클릭 시 상세 열기) */
+    const handleGridCellAction = (cmd, colKey, row) => {
+      console.log(' ■■ StConfigMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'configs-cellClick') { return openEdit(row); }
+      console.warn('[handleGridCellAction] unknown cmd:', cmd);
+    };
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
     /* handleLoadList — 목록 조회 */
@@ -202,7 +209,7 @@ window.StConfigMng = {
     const columns = {};
     columns.baseGrid = [
       { key: 'siteNm',             label: '사이트' },
-      { key: 'categoryNm',         label: '카테고리', cellStyle: 'font-weight:700',
+      { key: 'categoryNm',         label: '카테고리', link: true, cellStyle: 'font-weight:700',
         fmt: (v, row) => row.categoryNm || row.vendorNm || '-' },
       { key: 'commissionRate',     label: '수수료율', cellStyle: 'font-weight:700',
         fmt: (v) => v + '%' },
@@ -210,7 +217,7 @@ window.StConfigMng = {
         badge: (row) => fnCycleBadge(row.settleCycleCd), fmt: (v) => fnCycleCdToLabel(v) },
       { key: 'settleDay',          label: '정산일', fmt: (v) => '매월 ' + v + '일' },
       { key: 'minSettleAmt',       label: '최소정산금',
-        fmt: (v) => NumbercoUtil.cofWon(v) },
+        fmt: (v) => coUtil.cofWon(v) },
       { key: 'useYn',              label: '사용여부',
         badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray',
         fmt: (v) => v === 'Y' ? '사용' : '미사용' },
@@ -236,7 +243,7 @@ window.StConfigMng = {
     return {
       columns,
       uiState, configs, form, errors,
-      handleBtnAction, handleSelectAction,
+      handleBtnAction, handleSelectAction, handleGridCellAction,
     };
   },
   template: /* html */`
@@ -251,7 +258,8 @@ window.StConfigMng = {
     <bo-grid bare
       :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId" :selected-key="uiState.selectedId"
       :row-actions="true"
-      :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
+      :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''"
+      grid-id="configs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row)">
       <template #head-actions>
         액션
       </template>

@@ -637,7 +637,7 @@ window.BoCmPopupModal = {
       if (!row) return;
       if (!cfIsMulti.value) {
         fnEmitResult('select', row);
-        handleClose();
+        handleClose(true);
         return;
       }
       /* 이미 담긴 항목을 다시 누르면 해제 */
@@ -651,13 +651,17 @@ window.BoCmPopupModal = {
       if (i >= 0) picked.splice(i, 1);
     };
 
-    /** 닫기 — 기존 규약대로 onCallback(modalName, null, null) 도 함께 알린다 */
-    const handleClose = () => {
+    /** 닫기 — 기존 규약대로 onCallback(modalName, null, null) 도 함께 알린다.
+        skipCallback=true 는 방금 fnEmitResult 로 실제 선택 결과를 이미 onCallback 에 전달한 직후
+        호출되는 경우(handlePickRow/handleConfirm) — 뒤이어 또 null 결과로 onCallback 을 부르면
+        호출부의 "result?.selId || ''" 패턴이 방금 세팅한 값을 그대로 빈 값으로 덮어써버린다. */
+    const handleClose = (skipCallback = false) => {
       emit('close');
-      if (props.onCallback) props.onCallback(fnCmd(), null, null);
+      if (!skipCallback && props.onCallback) props.onCallback(fnCmd(), null, null);
     };
 
     const handleConfirm = () => {
+      let picked_any = false;
       if (cfHasPickList.value) {
         /* 프리체크 모드(init-selected-ids)는 "기존 선택을 편집" 하는 것이라
            전부 해제한 뒤 확정 = 전부 비우기 로 봐야 한다. 그 외(빈 상태에서 담기)만 막는다. */
@@ -666,8 +670,9 @@ window.BoCmPopupModal = {
         }
         const rows = picked.slice();
         fnEmitResult('select', rows);
+        picked_any = true;
       }
-      handleClose();
+      handleClose(picked_any);
     };
 
     /* ##### [05] 사용자 함수 ####################################################### */

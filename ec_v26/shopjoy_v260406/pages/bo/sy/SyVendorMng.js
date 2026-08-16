@@ -44,9 +44,6 @@ window.SyVendorMng = {
       // 업체 신규 등록 (인라인 패널)
       } else if (cmd === 'vendors-add') {
         return openNew();
-      // 업체 목록 엑셀 내보내기
-      } else if (cmd === 'vendors-excel') {
-        return exportExcel();
       // 업체 목록 재조회
       } else if (cmd === 'vendors-reload') {
         return handleSearchList('RELOAD');
@@ -242,9 +239,16 @@ window.SyVendorMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(vendors, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorTypeCd'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceoNm'},{label:'사업자번호',key:'vendorNo'},{label:'전화',key:'vendorPhone'},{label:'상태',key:'vendorStatusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
+    /* ===== 엑셀 다운로드 ===== */
+    const excelModal = reactive({ show: false });
 
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 제외).
+       handleSearchList 의 검색조건 조립 로직과 동일하게 맞춰야 화면과 엑셀이 같은 결과를 낸다. */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'vendorNm,corpNo,vendorId'; }
+      return p;
+    };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
@@ -325,6 +329,7 @@ window.SyVendorMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      excelModal, buildExcelParams,                       // 엑셀 다운로드
       columns,
       vendors, uiState, vendorCounts, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
@@ -352,9 +357,7 @@ window.SyVendorMng = {
     <bo-container title="거래처목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn_excel" @click="handleBtnAction('vendors-excel')">
-            📥 엑셀
-          </button>
+          <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
           <button class="btn btn_new" @click="handleBtnAction('vendors-add')">
             + 신규
           </button>
@@ -391,6 +394,10 @@ window.SyVendorMng = {
     :active="detailPanel.active"
     :reload-trigger="detailPanel.reloadTrigger"
   />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="syVendor"
+    area-nm="업체관리" :columns="columns.baseGrid" ui-nm="업체관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

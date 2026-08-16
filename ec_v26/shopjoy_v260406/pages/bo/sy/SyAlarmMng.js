@@ -45,9 +45,6 @@ window.SyAlarmMng = {
       // 알림 신규 등록 (인라인 패널)
       } else if (cmd === 'alarms-add') {
         return openNew();
-      // 알림 목록 엑셀 내보내기
-      } else if (cmd === 'alarms-excel') {
-        return exportExcel();
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
@@ -319,14 +316,20 @@ window.SyAlarmMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(alarms, [
-      { label: 'ID', key: 'alarmId' }, { label: '유형', key: 'alarmTypeCd' },
-      { label: '채널', key: 'channelCd' }, { label: '제목', key: 'alarmTitle' },
-      { label: '메시지', key: 'alarmMsg' }, { label: '상태', key: 'alarmStatusCd' },
-      { label: '발송일', key: 'alarmSendDate' },
-    ], '알림목록.csv');
+    /* ===== 엑셀 다운로드 ===== */
+    const excelModal = reactive({ show: false });
 
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 제외).
+       handleSearchList 의 검색조건 조립 로직과 동일하게 맞춰야 화면과 엑셀이 같은 결과를 낸다. */
+    const buildExcelParams = () => {
+      const p = {
+        ...getSortParam(),
+        ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+        ...coUtil.cofOmitEmpty(searchParam),
+      };
+      if (p.searchValue && !p.searchType) { p.searchType = 'alarmTitle,alarmMsg'; }
+      return p;
+    };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
@@ -415,6 +418,7 @@ window.SyAlarmMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      excelModal, buildExcelParams,                       // 엑셀 다운로드
       columns,
       alarms, uiState, alarmCounts, searchParam, baseGridPager, detailModal, pathPickModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                       // dispatch (모든 이벤트 / 액션 라우팅)
@@ -443,9 +447,7 @@ window.SyAlarmMng = {
     <bo-container title="알림목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn_excel" @click="handleBtnAction('alarms-excel')">
-            📥 엑셀
-          </button>
+          <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
           <button class="btn btn_new" @click="handleBtnAction('alarms-add')">
             + 신규
           </button>
@@ -484,6 +486,10 @@ window.SyAlarmMng = {
     :reload-trigger="detailModal.reloadTrigger" />
   <!-- ===== ■. 표시경로 선택 모달 ========================================== -->
   <bo-cm-popup-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_alarm' }" :on-callback="fnCallbackModal" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="syAlarm"
+    area-nm="알림관리" :columns="columns.baseGrid" ui-nm="알림관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

@@ -42,9 +42,6 @@ window.SyContactMng = {
       // 문의 신규 등록 (인라인 패널)
       } else if (cmd === 'contacts-add') {
         return openNew();
-      // 문의 목록 엑셀 내보내기
-      } else if (cmd === 'contacts-excel') {
-        return exportExcel();
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
@@ -270,8 +267,16 @@ window.SyContactMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(contacts, [{label:'ID',key:'contactId'},{label:'회원명',key:'memberNm'},{label:'분류',key:'categoryCd'},{label:'제목',key:'contactTitle'},{label:'상태',key:'contactStatusCd'},{label:'등록일',key:'contactDate'}], '문의목록.csv');
+    /* ===== 엑셀 다운로드 ===== */
+    const excelModal = reactive({ show: false });
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 제외).
+       handleSearchList 의 검색조건 조립 로직과 동일하게 맞춰야 화면과 엑셀이 같은 결과를 낸다. */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'contactTitle,memberNm'; }
+      return p;
+    };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -309,6 +314,7 @@ window.SyContactMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      excelModal, buildExcelParams,                       // 엑셀 다운로드
       columns,
       contacts, uiState, searchParam, baseGridPager, detailModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,         // dispatch (모든 이벤트 / 액션 라우팅)
@@ -326,9 +332,7 @@ window.SyContactMng = {
   <bo-container title="문의목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
-        <button class="btn btn_excel" @click="handleBtnAction('contacts-excel')">
-          📥 엑셀
-        </button>
+        <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
         <button class="btn btn_new" @click="handleBtnAction('contacts-add')">
           + 신규
         </button>
@@ -369,6 +373,10 @@ window.SyContactMng = {
     :active="detailModal.active"
     :reload-trigger="detailModal.reloadTrigger"
     />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="syContact"
+    area-nm="문의관리" :columns="columns.baseGrid" ui-nm="문의관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `
 };

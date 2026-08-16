@@ -49,9 +49,6 @@ window.OdDlivMng = {
         detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit';
         detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++;
         return;
-      // 엑셀 내보내기
-      } else if (cmd === 'dlivs-excel') {
-        return exportExcel();
       // 변경작업 모달 열기
       } else if (cmd === 'actionsModal-open') {
         return openBulk();
@@ -319,8 +316,16 @@ window.OdDlivMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(dlivs, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
+    /* ===== 엑셀 다운로드 =====
+       domain 키는 백엔드 OdPdCmExcelDomainConfig 의 @Bean 등록명과 일치해야 한다. */
+    const excelModal = reactive({ show: false });
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 없이 서버가 전건 청크 처리) */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'dlivId,orderId,memberNm,recvNm,outboundTrackingNo'; }
+      return p;
+    };
 
     /* isChecked — 여부 확인 */
     const isChecked = (id) => checked.has(id);
@@ -502,13 +507,13 @@ window.OdDlivMng = {
       { key: 'memberNm',         label: '회원', refLink: 'member', refKey: 'memberId',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'recvNm',           label: '수령인' },
-      { key: '_courier',         label: '택배사',
+      { key: '_courier',         label: '택배사', excelKeys: [{key:'outboundCourierCdNm',label:'택배사'}],
         fmt: (v, row) => row.outboundCourierCdNm || row.outboundCourierCd },
       { key: 'outboundTrackingNo', label: '운송장번호',
         fmt: (v) => v || '-' },
       { key: 'recvAddr',         label: '배송지',
         cellStyle: 'max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' },
-      { key: '_dlivStatus',      label: '상태', sortKey: 'reg', style: 'white-space:nowrap;',
+      { key: '_dlivStatus',      label: '상태', sortKey: 'reg', style: 'white-space:nowrap;', excelKeys: [{key:'dlivStatusCdNm',label:'상태'}],
         fmt: (v, row) => row.dlivStatusCdNm || row.dlivStatusCd,
         badge: (row) => fnStatusBadge(row.dlivStatusCd) },
       { key: '_site',            label: '사이트명',
@@ -570,6 +575,7 @@ window.OdDlivMng = {
 
     return {
       columns,
+      excelModal, buildExcelParams,                                                                                    // 엑셀 다운로드
       dlivs, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick, // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfDetailEditId, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview,                        // computed
@@ -593,7 +599,7 @@ window.OdDlivMng = {
       <button class="btn btn-blue btn-sm" :disabled="!checked.size" @click="handleBtnAction('actionsModal-open')">
         📝 변경작업 선택
       </button>
-      <button class="btn btn_excel" @click="handleBtnAction('dlivs-excel')">
+      <button class="btn btn_excel" @click="excelModal.show = true">
         📥 엑셀
       </button>
       <button class="btn btn_new" @click="handleBtnAction('dlivs-add')">
@@ -715,6 +721,10 @@ window.OdDlivMng = {
   <!-- ===== □. 변경작업 모달 ================================================= -->
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
   <bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="memberPick.open" :on-callback="fnCallbackModal" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="odDliv"
+    area-nm="배송관리" :columns="columns.listGrid" ui-nm="배송관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `
 };

@@ -48,9 +48,6 @@ window.OdClaimMng = {
       // 신규 클레임 등록 (인라인 Dtl) → 빈 폼 + 활성(저장/취소 노출)
       } else if (cmd === 'claims-add') {
         return openNew();
-      // 엑셀 내보내기
-      } else if (cmd === 'claims-excel') {
-        return exportExcel();
       // 변경작업 모달 열기
       } else if (cmd === 'actionsModal-open') {
         return openBulk();
@@ -354,8 +351,16 @@ window.OdClaimMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(claims, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
+    /* ===== 엑셀 다운로드 =====
+       domain 키는 백엔드 OdPdCmExcelDomainConfig 의 @Bean 등록명과 일치해야 한다. */
+    const excelModal = reactive({ show: false });
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 없이 서버가 전건 청크 처리) */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'claimId,orderId,memberNm,prodNm'; }
+      return p;
+    };
 
     /* isChecked — 여부 확인 */
     const isChecked = (id) => checked.has(id);
@@ -564,7 +569,7 @@ window.OdClaimMng = {
       { key: 'claimItemCnt',  label: '항목수', align: 'right', style: 'width:64px;white-space:nowrap;',
         fmt: (v) => (v == null ? '-' : Number(v).toLocaleString() + '개') },
       { key: 'reasonDetail',  label: '사유' },
-      { key: '_claimStatus',  label: '클레임상태',
+      { key: '_claimStatus',  label: '클레임상태', excelKeys: [{key:'claimTypeCdNm',label:'클레임유형'},{key:'claimStatusCdNm',label:'클레임상태'}],
         fmt: (v, row) => `${row.claimTypeCdNm || row.claimTypeCd} · ${row.claimStatusCdNm || row.claimStatusCd}`,
         cellInnerStyle: (v, row) => `font-size:10px;padding:2px 8px;border-radius:10px;color:#fff;font-weight:700;background:${fnClaimTypeColor(row.claimTypeCd)};` },
       { key: 'requestDate',   label: '신청일', sortKey: 'reg', style: 'white-space:nowrap;',
@@ -697,6 +702,7 @@ window.OdClaimMng = {
 
     return {
       columns,
+      excelModal, buildExcelParams,                                                                                    // 엑셀 다운로드
       claims, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick, // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfDetailEditId, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfCheckedByType,                        // computed
@@ -723,7 +729,7 @@ window.OdClaimMng = {
       <button class="btn btn-blue btn-sm" :disabled="!checked.size" @click="handleBtnAction('actionsModal-open')">
         📝 변경작업 선택
       </button>
-      <button class="btn btn_excel" @click="handleBtnAction('claims-excel')">
+      <button class="btn btn_excel" @click="excelModal.show = true">
         📥 엑셀
       </button>
       <button class="btn btn_new" @click="handleBtnAction('claims-add')">
@@ -873,6 +879,10 @@ window.OdClaimMng = {
   <!-- ===== ■. 클레임 금액 계산 모달 ========================================= -->
   <od-claim-calc-modal :show="mngCalcDialog.show" :claim-id="mngCalcDialog.claimId" @close="handleCloseMngCalc" />
   <!-- ===== □. 클레임 금액 계산 모달 ========================================= -->
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="odClaim"
+    area-nm="클레임관리" :columns="columns.listGrid" ui-nm="클레임관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `
 };

@@ -17,7 +17,7 @@ window.CmNoticeMng = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { reactive, onMounted } = Vue;
+    const { reactive, computed, onMounted } = Vue;
     const { showToast, showConfirm } = window.boApp;
     const notices = reactive([]);
     const uiState = reactive({ loading: false, error: null });
@@ -95,6 +95,18 @@ window.CmNoticeMng = {
       baseDetail.resetSeq++;
     };
 
+    /* ===== 엑셀 다운로드 ===== */
+    const excelModal = reactive({ show: false });
+    const cfExcelDomain = computed(() => 'cmNotice');
+    const cfExcelAreaNm = computed(() => '공지사항');
+    /* cfExcelColumns — 화면 그리드 헤더 그대로. 엑셀 컬럼/순서/라벨을 화면과 일치시키기 위해
+       모달에 넘긴다(안 넘기면 서버가 Entity 필드로 만들어 화면과 어긋난다). */
+    const cfExcelColumns = computed(() => columns.baseGrid);
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다.
+       페이지 번호/크기는 의미가 없어 제거한다(서버가 조건 전체를 청크로 훑는다). */
+    const buildExcelParams = () => Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v));
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -108,10 +120,7 @@ window.CmNoticeMng = {
         return;
       }
       if (cmd === 'notices-add')       return openDetailNew();
-      if (cmd === 'notices-excel')     return coUtil.cofExportCsv(notices,
-        [{ label: 'ID', key: 'noticeId' }, { label: '제목', key: 'noticeTitle' }, { label: '유형', key: 'noticeTypeCd' },
-         { label: '상태', key: 'noticeStatusCd' }, { label: '조회수', key: 'viewCount' }, { label: '등록일', key: 'regDate' }],
-        '공지목록.csv');
+      if (cmd === 'notices-excel')     { excelModal.show = true; return; }
       if (cmd === 'baseDetail-close') return resetDetailToNew();
       if (cmd === 'notices-sort')             return baseGrid.onSort(param);
       if (cmd === 'notices-pager-setPage')    return baseGrid.setPage(param);
@@ -246,6 +255,7 @@ window.CmNoticeMng = {
     return {
       notices, uiState, codes, searchParam, baseGrid, baseDetail,
       columns,
+      excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,   // 엑셀 다운로드
       handleBtnAction, handleSelectAction, handleGridCellAction,
       inlineNavigate,
     };
@@ -283,6 +293,10 @@ window.CmNoticeMng = {
     :dtl-id="baseDetail.editId" :dtl-mode="baseDetail.dtlMode"
     :active="baseDetail.active"
     :reload-trigger="baseDetail.reloadTrigger" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" :domain="cfExcelDomain"
+    :area-nm="cfExcelAreaNm" :columns="cfExcelColumns" ui-nm="공지사항관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

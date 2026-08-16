@@ -36,7 +36,8 @@ window.CmFaqMng = {
       } else if (cmd === 'faqs-add') {
         return openNew();
       } else if (cmd === 'faqs-excel') {
-        return exportExcel();
+        excelModal.show = true;
+        return;
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
       } else if (cmd === 'faqs-pager-setPage') {
@@ -90,16 +91,34 @@ window.CmFaqMng = {
       show: true, dtlId: '__new__', dtlMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false,
     });
 
+    /* ===== 엑셀 다운로드 ===== */
+    const excelModal = reactive({ show: false });
+    const cfExcelDomain = computed(() => 'cmFaq');
+    const cfExcelAreaNm = computed(() => 'FAQ');
+    /* cfExcelColumns — 화면 그리드 헤더 그대로. 엑셀 컬럼/순서/라벨을 화면과 일치시키기 위해
+       모달에 넘긴다(안 넘기면 서버가 Entity 필드로 만들어 화면과 어긋난다). */
+    const cfExcelColumns = computed(() => columns.baseGrid);
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
+    /* buildSearchParams — 검색조건(페이징 제외) 빌드. 목록 조회 + 엑셀 다운로드가 공유 */
+    const buildSearchParams = () => {
+      const p = { ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) {
+        p.searchType = 'faqQuestion,faqAnswer';
+      }
+      return p;
+    };
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다.
+       페이지 번호/크기는 의미가 없어 제거한다(서버가 조건 전체를 청크로 훑는다). */
+    const buildExcelParams = () => buildSearchParams();
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...coUtil.cofOmitEmpty(searchParam) };
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'faqQuestion,faqAnswer';
-        }
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...buildSearchParams() };
         const res = await boApiSvc.cmFaq.getPage(params, 'FAQ관리', '목록조회');
         const data = res.data?.data;
         faqs.splice(0, faqs.length, ...(data?.pageList || []));
@@ -207,13 +226,6 @@ window.CmFaqMng = {
       }
     };
 
-    /* exportExcel */
-    const exportExcel = () => coUtil.cofExportCsv(faqs, [
-      { label: 'ID', key: 'faqId' }, { label: '분류', key: 'pathLabel' },
-      { label: '질문', key: 'faqQuestion' }, { label: '노출여부', key: 'useYn' },
-      { label: '등록일', key: 'regDate' },
-    ], 'FAQ목록.csv');
-
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -261,7 +273,8 @@ window.CmFaqMng = {
 
     // 기본 그리드
     columns.baseGrid = [
-      { key: 'pathId',      label: '분류(표시경로)', style: 'width:180px;max-width:180px;', pathPick: 'cm_faq' },
+      { key: 'pathId',      label: '분류(표시경로)', style: 'width:180px;max-width:180px;', pathPick: 'cm_faq',
+        excelKeys: [{ key: 'pathLabel', label: '분류' }] },
       { key: 'faqQuestion', label: '질문', link: true,
         cellInnerStyle: (v, row) => detailModal.dtlId === row.faqId ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'faqAnswer',   label: '답변', cellStyle: 'color:#666;font-size:12px;',
@@ -278,6 +291,7 @@ window.CmFaqMng = {
     return {
       columns,
       faqs, uiState, faqCounts, searchParam, baseGridPager, detailModal,
+      excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,   // 엑셀 다운로드
       handleBtnAction, handleSelectAction, handleGridCellAction,
       cfDetailEditId, cfIsViewMode, cfDetailKey,
       fnRowStyle,
@@ -340,6 +354,10 @@ window.CmFaqMng = {
     :reload-trigger="detailModal.reloadTrigger"
   />
   <!-- ===== □. 상세 인라인 패널 ============================================= -->
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" :domain="cfExcelDomain"
+    :area-nm="cfExcelAreaNm" :columns="cfExcelColumns" ui-nm="FAQ관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

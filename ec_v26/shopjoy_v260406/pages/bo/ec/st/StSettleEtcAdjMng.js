@@ -58,6 +58,13 @@ window.StSettleEtcAdjMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (번호/조정ID 클릭 시 상세 열기) */
+    const handleGridCellAction = (cmd, colKey, row) => {
+      console.log(' ■■ StSettleEtcAdjMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'etcAdjs-cellClick') { return openEdit(row); }
+      console.warn('[handleGridCellAction] unknown cmd:', cmd);
+    };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드.
@@ -223,7 +230,7 @@ window.StSettleEtcAdjMng = {
           (aprvStatusCd 는 st_settle_adj 전용 — 이 테이블엔 승인 개념이 없다).
           상세 → _doc/정책서/ec/st/st.06.정산화면-백엔드불일치.md */
     columns.baseGrid = [
-      { key: 'settleEtcAdjId', label: '조정ID' },
+      { key: 'settleEtcAdjId', label: '조정ID', link: true },
       { key: 'settleId',       label: '정산ID', cellStyle: 'color:#666;font-size:11px' },
       { key: 'etcAdjTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.etcAdjTypeCd) },
       { key: 'etcAdjDirCd',    label: '방향', badge: (row) => fnDirBadge(row.etcAdjDirCd),
@@ -256,7 +263,7 @@ window.StSettleEtcAdjMng = {
     return {
       columns,
       uiState, baseGridPager, etcAdjs, searchParam, form, errors,
-      handleBtnAction, handleSelectAction,
+      handleBtnAction, handleSelectAction, handleGridCellAction,
     };
   },
   template: /* html */`
@@ -275,7 +282,8 @@ window.StSettleEtcAdjMng = {
     <bo-grid bare
       :columns="columns.baseGrid" :rows="etcAdjs" row-key="settleEtcAdjId" :selected-key="uiState.selectedId"
       :row-actions="true"
-      :row-class="(r) => uiState.selectedId===r.settleEtcAdjId ? 'selected' : ''">
+      :row-class="(r) => uiState.selectedId===r.settleEtcAdjId ? 'selected' : ''"
+      grid-id="etcAdjs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row)">
       <template #head-actions>
         액션
       </template>

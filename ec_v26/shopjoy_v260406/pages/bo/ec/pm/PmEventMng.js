@@ -54,9 +54,10 @@ window.PmEventMng = {
       // 이벤트 신규 등록
       } else if (cmd === 'events-add') {
         return openNew();
-      // 이벤트 목록 엑셀 내보내기
+      // 이벤트 목록 엑셀 다운로드 모달 열기
       } else if (cmd === 'events-excel') {
-        return exportExcel();
+        excelModal.show = true;
+        return;
       // 탭 모드 변경
       } else if (cmd === 'tab-mode') {
         uiState.tabMode = param;
@@ -285,8 +286,15 @@ window.PmEventMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(events, [{label:'ID',key:'eventId'},{label:'이벤트명',key:'eventNm'},{label:'제목',key:'eventTitle'},{label:'유형',key:'eventTypeCd'},{label:'상태',key:'eventStatusCd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '이벤트목록.csv');
+    /* ===== 엑셀 다운로드 (공통 모달 — sy_exceldown 기반 동기/비동기) ===== */
+    const excelModal = reactive({ show: false });
+    const cfExcelDomain  = computed(() => 'pmEvent');
+    const cfExcelAreaNm  = computed(() => '이벤트');
+    /* cfExcelColumns — 화면 그리드(columns.baseGrid) 그대로 사용, 엑셀 컬럼/순서/라벨을 화면과 일치시킴 */
+    const cfExcelColumns = computed(() => columns.baseGrid);
+
+    /* buildExcelParams — 현재 검색조건을 엑셀 요청 파라미터로 그대로 전달 (페이지 정보 불필요) */
+    const buildExcelParams = () => ({ ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) });
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
@@ -297,11 +305,11 @@ window.PmEventMng = {
     columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '이벤트 제목', placeholder: '이벤트 제목 검색' },
       { key: 'eventStatusCd', type: 'select', label: '상태', options: () => codes.event_statuses, nullLabel: '상태 전체' },
-      { key: 'mdUserId', label: '담당MD', type: 'pick', display: (p) => p.mdUserNm, placeholder: 'MD 선택',
+      { key: 'mdUserId', label: '담당MD', type: 'pick', nameKey: 'mdUserNm', display: (p) => p.mdUserNm, placeholder: 'MD 선택',
         onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('searchParam-mdClear') },
-      { key: 'prodId', label: '상품', type: 'pick', display: (p) => p.prodNm, placeholder: '상품 선택',
+      { key: 'prodId', label: '상품', type: 'pick', nameKey: 'prodNm', display: (p) => p.prodNm, placeholder: '상품 선택',
         onOpen: () => handleBtnAction('prodModal-open'), onClear: () => handleBtnAction('searchParam-prodClear') },
-      { key: 'vendorId', label: '업체', type: 'pick', display: (p) => p.vendorNm, placeholder: '업체 선택',
+      { key: 'vendorId', label: '업체', type: 'pick', nameKey: 'vendorNm', display: (p) => p.vendorNm, placeholder: '업체 선택',
         onOpen: () => handleBtnAction('vendorModal-open'), onClear: () => handleBtnAction('searchParam-vendorClear') },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
@@ -336,6 +344,7 @@ window.PmEventMng = {
       fnStatusBadge,          // 헬퍼
       inlineNavigate,                                      // 콜백 / 전역
       modals, fnCallbackModal,
+      excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,     // 엑셀 다운로드
     };
   },
   template: /* html */`
@@ -454,6 +463,10 @@ window.PmEventMng = {
   <bo-cm-popup-modal v-if="modals.isMdPick" popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :on-callback="fnCallbackModal" @close="modals.isMdPick = false" />
   <bo-cm-popup-modal v-if="modals.isProdPick" popup-cmd="cmPopup-prod-pick" popup-code="prod" :on-callback="fnCallbackModal" @close="modals.isProdPick = false" />
   <bo-cm-popup-modal v-if="modals.isVendorPick" popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :on-callback="fnCallbackModal" @close="modals.isVendorPick = false" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" :domain="cfExcelDomain"
+    :area-nm="cfExcelAreaNm" :columns="cfExcelColumns" ui-nm="이벤트관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `
 };

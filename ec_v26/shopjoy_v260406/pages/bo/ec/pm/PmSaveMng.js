@@ -31,9 +31,10 @@ window.PmSaveMng = {
       // 적립금 신규 등록
       } else if (cmd === 'saves-add') {
         return openNew();
-      // 적립금 엑셀 내보내기
+      // 적립금 엑셀 다운로드 모달 열기
       } else if (cmd === 'saves-excel') {
-        return exportExcel();
+        excelModal.show = true;
+        return;
       // 탭 모드 변경
       } else if (cmd === 'tab-mode') {
         uiState.tabMode = param;
@@ -298,10 +299,19 @@ window.PmSaveMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(saves,
-      [{label:'ID',key:'saveId'},{label:'적립금명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
-      '적립금목록.csv');
+    /* ===== 엑셀 다운로드 (공통 모달 — sy_exceldown 기반 동기/비동기) ===== */
+    const excelModal = reactive({ show: false });
+    const cfExcelDomain  = computed(() => 'pmSave');
+    const cfExcelAreaNm  = computed(() => '적립금');
+    /* cfExcelColumns — 화면 그리드(columns.baseGrid) 그대로 사용, 엑셀 컬럼/순서/라벨을 화면과 일치시킴 */
+    const cfExcelColumns = computed(() => columns.baseGrid);
+
+    /* buildExcelParams — 현재 검색조건을 엑셀 요청 파라미터로 그대로 전달 (페이지 정보 불필요) */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'saveNm,saveId'; }
+      return p;
+    };
 
     // ===== 탭 모드 (리스트/카드) ===========================================
     const tabMode = Vue.toRef(uiState, 'tabMode');
@@ -320,13 +330,13 @@ window.PmSaveMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'saveTypeCd', type: 'select', label: '유형', options: () => codes.save_issue_types, nullLabel: '유형 전체' },
-      { key: 'memberId', label: '회원', type: 'pick', display: (p) => p.memberNm, placeholder: '회원 선택',
+      { key: 'memberId', label: '회원', type: 'pick', nameKey: 'memberNm', display: (p) => p.memberNm, placeholder: '회원 선택',
         onOpen: () => handleBtnAction('memberModal-open'), onClear: () => handleBtnAction('searchParam-memberClear') },
-      { key: 'mdUserId', label: '담당MD', type: 'pick', display: (p) => p.mdUserNm, placeholder: 'MD 선택',
+      { key: 'mdUserId', label: '담당MD', type: 'pick', nameKey: 'mdUserNm', display: (p) => p.mdUserNm, placeholder: 'MD 선택',
         onOpen: () => handleBtnAction('mdModal-open'), onClear: () => handleBtnAction('searchParam-mdClear') },
-      { key: 'prodId', label: '상품', type: 'pick', display: (p) => p.prodNm, placeholder: '상품 선택',
+      { key: 'prodId', label: '상품', type: 'pick', nameKey: 'prodNm', display: (p) => p.prodNm, placeholder: '상품 선택',
         onOpen: () => handleBtnAction('prodModal-open'), onClear: () => handleBtnAction('searchParam-prodClear') },
-      { key: 'vendorId', label: '업체', type: 'pick', display: (p) => p.vendorNm, placeholder: '업체 선택',
+      { key: 'vendorId', label: '업체', type: 'pick', nameKey: 'vendorNm', display: (p) => p.vendorNm, placeholder: '업체 선택',
         onOpen: () => handleBtnAction('vendorModal-open'), onClear: () => handleBtnAction('searchParam-vendorClear') },
       { key: 'dateRange', type: 'dateRange', label: '시작일',
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
@@ -360,6 +370,7 @@ window.PmSaveMng = {
       fnTypeBadge, fnStatusBadge,          // 헬퍼
       inlineNavigate,                                      // 콜백 / 전역
       modals, fnCallbackModal,
+      excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,     // 엑셀 다운로드
     };
   },
   // ===== 템플릿 ===========================================================
@@ -480,6 +491,10 @@ window.PmSaveMng = {
   <bo-cm-popup-modal v-if="modals.isMdPick" popup-cmd="cmPopup-userMd-pick" popup-code="userMd" :on-callback="fnCallbackModal" @close="modals.isMdPick = false" />
   <bo-cm-popup-modal v-if="modals.isProdPick" popup-cmd="cmPopup-prod-pick" popup-code="prod" :on-callback="fnCallbackModal" @close="modals.isProdPick = false" />
   <bo-cm-popup-modal v-if="modals.isVendorPick" popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :on-callback="fnCallbackModal" @close="modals.isVendorPick = false" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" :domain="cfExcelDomain"
+    :area-nm="cfExcelAreaNm" :columns="cfExcelColumns" ui-nm="적립금관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `
 };

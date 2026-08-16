@@ -45,9 +45,6 @@ window.SyUserMng = {
       // 사용자 신규 등록 (인라인 패널)
       } else if (cmd === 'users-add') {
         return openNew();
-      // 사용자 목록 엑셀 내보내기
-      } else if (cmd === 'users-excel') {
-        return exportExcel();
       // 사용자 엑셀 업로드 모달 열기
       } else if (cmd === 'users-excel-upload') {
         excelUploadModal.reloadTrigger++;
@@ -313,16 +310,17 @@ window.SyUserMng = {
       }
     };
 
-    /* exportExcel — 엑셀(xlsx) 내보내기. 백엔드 SXSSF 스트리밍 — 대용량 메모리 안전. */
-    const exportExcel = () => {
-      const params = {
-        ...getSortParam(),
-        ...coUtil.cofOmitEmpty(searchParam),
-      };
-      if (uiState.selectedDeptId != null) { params.deptId = uiState.selectedDeptId; }
-      return coUtil.cofDownloadExcel('/bo/sy/user/excel', params, '사용자목록', '사용자관리', '엑셀다운로드');
-    };
+    /* ===== 엑셀 다운로드 ===== */
+    const excelModal = reactive({ show: false });
 
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 제외).
+       handleSearchList 의 검색조건 조립 로직과 동일하게 맞춰야 화면과 엑셀이 같은 결과를 낸다. */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'userId,loginId,userNm,userEmail'; }
+      if (uiState.selectedDeptId != null) { p.deptId = uiState.selectedDeptId; }
+      return p;
+    };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
@@ -410,6 +408,7 @@ window.SyUserMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      excelModal, buildExcelParams,                       // 엑셀 다운로드
       columns,
       users, uiState, searchParam, baseGridPager, detailPanel, expanded, deptCounts,       // 상태 / 데이터
       excelUploadModal, // 엑셀 업로드 모달
@@ -450,9 +449,7 @@ window.SyUserMng = {
     <bo-container title="사용자목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn_excel" @click="handleBtnAction('users-excel')">
-            📥 엑셀
-          </button>
+          <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
           <button class="btn btn_excel_upload" @click="handleBtnAction('users-excel-upload')">
             📤 엑셀업로드
           </button>
@@ -496,6 +493,10 @@ window.SyUserMng = {
   <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
   <bo-excel-upload-modal v-if="excelUploadModal.show"
     default-domain="user" modal-name="excel-upload" :on-callback="fnCallbackModal" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="syUser"
+    area-nm="사용자관리" :columns="columns.baseGrid" ui-nm="사용자관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

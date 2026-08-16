@@ -50,9 +50,6 @@ window.OdOrderMng = {
       } else if (cmd === 'orders-add') {
         detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++;
         return;
-      // 엑셀 내보내기
-      } else if (cmd === 'orders-excel') {
-        return exportExcel();
       // 변경작업 모달 열기
       } else if (cmd === 'actionsModal-open') {
         return openBulk();
@@ -341,8 +338,16 @@ window.OdOrderMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(orders, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
+    /* ===== 엑셀 다운로드 =====
+       domain 키는 백엔드 OdPdCmExcelDomainConfig 의 @Bean 등록명과 일치해야 한다. */
+    const excelModal = reactive({ show: false });
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 없이 서버가 전건 청크 처리) */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'orderId,memberNm,loginId,recvNm,recvPhone'; }
+      return p;
+    };
 
     /* claimByOrder — 클레임 으로 주문 */
     const claimByOrder = (orderId) =>
@@ -591,6 +596,7 @@ window.OdOrderMng = {
 
     return {
       columns,
+      excelModal, buildExcelParams,                                                                                    // 엑셀 다운로드
       orders, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick,        // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅) + 모달 통합 콜백
       cfDetailEditId, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview,                        // computed
@@ -615,7 +621,7 @@ window.OdOrderMng = {
       <button class="btn btn-blue btn-sm" :disabled="!checked.size" @click="handleBtnAction('actionsModal-open')">
         📝 변경작업 선택
       </button>
-      <button class="btn btn_excel" @click="handleBtnAction('orders-excel')">
+      <button class="btn btn_excel" @click="excelModal.show = true">
         📥 엑셀
       </button>
       <button class="btn btn_new" @click="handleBtnAction('orders-add')">
@@ -742,6 +748,10 @@ window.OdOrderMng = {
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
   <bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="memberPick.open" :on-callback="fnCallbackModal" />
   <!-- ===== □. 회원 선택 팝업 ================================================ -->
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="odOrder"
+    area-nm="주문관리" :columns="columns.listGrid" ui-nm="주문관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `
 };

@@ -106,24 +106,24 @@ window.MbMemberDtl = {
 <bo-container body-style="padding:12px;"
   :title="!active ? '회원 상세' : (detailModal.isNew ? '신규 등록' : '회원 수정')"
   :title-id="!active ? '' : (detailModal.isNew ? '' : (detailModal.form?.memberId || ''))">
-  <!-- ===== ■.■. 상세 툴바: 보기모드=[수정]/[닫기], 편집모드=[저장]/[삭제]/[닫기] ============ -->
-  <template v-if="detailModal.dtlId" #toolbar-actions>
-    <template v-if="!active">
-      <button class="btn btn_edit btn-sm" @click="handleBtnAction('form-switch-edit')">수정</button>
-      <button class="btn btn_close btn-sm" @click="handleBtnAction('form-close')">닫기</button>
-    </template>
-    <template v-if="active">
-      <button class="btn btn_save btn-sm" @click="handleBtnAction('form-save')">저장</button>
-      <button v-if="!detailModal.isNew" class="btn btn_delete btn-sm" @click="handleBtnAction('form-delete')">삭제</button>
-      <button class="btn btn_close btn-sm" @click="handleBtnAction('form-close')">닫기</button>
-    </template>
-  </template>
-  <!-- ===== □.■. 상세 툴바 ================================================ -->
   <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->
   <!-- detailModal 기본값이 {} 라 form 이 없을 수 있다 (부모 Mng 없이 단독 진입 등) → 빈 폼으로 렌더 -->
   <bo-form-area plain-readonly :columns="columns.baseForm" :form="detailModal.form || {}" :errors="{}"
     :readonly="!active" :cols="3" compact :show-actions="false" />
   <!-- ===== □.■. 폼 영역 ================================================== -->
+  <!-- ===== ■.■. 하단 액션 (Mng 인라인 상세 패널 표준 — 처리버튼은 하단 중앙 정렬) ============== -->
+  <div v-if="detailModal.dtlId" class="form-actions">
+    <template v-if="!active">
+      <button class="btn btn_edit" @click="handleBtnAction('form-switch-edit')">수정</button>
+      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+    </template>
+    <template v-if="active">
+      <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+      <button v-if="!detailModal.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+    </template>
+  </div>
+  <!-- ===== □.■. 하단 액션 ================================================= -->
 </bo-container>
 <!-- ===== □. 상세/수정 카드 ================================================ -->
 <!-- 이력정보는 목록(MbMemberMng) 관리컬럼의 [이력] 버튼으로만 노출된다 — 상세 하단 상시 렌더 폐지(2026-08-16) -->

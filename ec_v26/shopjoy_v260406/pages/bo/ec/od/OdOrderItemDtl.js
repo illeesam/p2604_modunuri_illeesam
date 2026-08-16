@@ -231,14 +231,10 @@ window.OdOrderItemDtl = {
   template: `
 <bo-container v-if="active" title="주문항목 상세"
   :title-id="baseForm.orderItemId || ''">
-  <!-- ===== 툴바 ============================================================= -->
+  <!-- ===== 툴바 (처리버튼 배치 금지 — 관련 이동 링크만) ============================== -->
   <template #toolbar-actions>
     <button v-if="baseForm.orderId" class="btn btn-blue btn-sm"
       @click="handleBtnAction('btn-navOrder')">📦 주문 보기</button>
-    <button v-if="cfReadonly" class="btn btn_edit btn-sm" @click="handleBtnAction('btn-edit')">수정</button>
-    <button v-if="!cfReadonly" class="btn btn_save btn-sm" @click="handleBtnAction('btn-save')">저장</button>
-    <button v-if="!cfReadonly" class="btn btn_cancel btn-sm" @click="handleBtnAction('btn-cancel')">취소</button>
-    <button class="btn btn_close btn-sm" @click="handleBtnAction('btn-close')">닫기</button>
   </template>
   <!-- ===== 미선택 안내 ======================================================= -->
   <div v-if="!baseForm.orderItemId" style="padding:40px;text-align:center;color:#bbb;">
@@ -276,6 +272,13 @@ window.OdOrderItemDtl = {
         <bo-grid v-else bare :columns="historyGridColumns" :rows="history" row-key="regDate"
           empty-text="이력 없음" />
       </div>
+    </div>
+    <!-- ===== 하단 액션 (Mng 인라인 상세 패널 표준 — 처리버튼은 하단 중앙 정렬) ===================== -->
+    <div class="form-actions">
+      <button v-if="cfReadonly" class="btn btn_edit" @click="handleBtnAction('btn-edit')">수정</button>
+      <button v-if="!cfReadonly" class="btn btn_save" @click="handleBtnAction('btn-save')">저장</button>
+      <button v-if="!cfReadonly" class="btn btn_cancel" @click="handleBtnAction('btn-cancel')">취소</button>
+      <button class="btn btn_close" @click="handleBtnAction('btn-close')">닫기</button>
     </div>
   </template>
 </bo-container>

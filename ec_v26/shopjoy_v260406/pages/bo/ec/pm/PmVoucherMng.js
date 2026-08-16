@@ -47,9 +47,10 @@ window.PmVoucherMng = {
       // 상품권 신규 등록
       } else if (cmd === 'vouchers-add') {
         return openNew();
-      // 상품권 엑셀 내보내기
+      // 상품권 엑셀 다운로드 모달 열기
       } else if (cmd === 'vouchers-excel') {
-        return exportExcel();
+        excelModal.show = true;
+        return;
       // 탭 모드 변경
       } else if (cmd === 'tab-mode') {
         uiState.tabMode = param;
@@ -263,8 +264,19 @@ window.PmVoucherMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(vouchers, [{label:'ID',key:'voucherId'},{label:'상품권명',key:'voucherNm'},{label:'액면가',key:'voucherValue'},{label:'유형',key:'voucherTypeCd'},{label:'최소주문금액',key:'minOrderAmt'},{label:'최대할인금액',key:'maxDiscntAmt'},{label:'유효개월',key:'expireMonth'},{label:'상태',key:'voucherStatusCd'}], '상품권목록.csv');
+    /* ===== 엑셀 다운로드 (공통 모달 — sy_exceldown 기반 동기/비동기) ===== */
+    const excelModal = reactive({ show: false });
+    const cfExcelDomain  = computed(() => 'pmVoucher');
+    const cfExcelAreaNm  = computed(() => '상품권');
+    /* cfExcelColumns — 화면 그리드(columns.baseGrid) 그대로 사용, 엑셀 컬럼/순서/라벨을 화면과 일치시킴 */
+    const cfExcelColumns = computed(() => columns.baseGrid);
+
+    /* buildExcelParams — 현재 검색조건을 엑셀 요청 파라미터로 그대로 전달 (페이지 정보 불필요) */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'voucherNm,voucherId'; }
+      return p;
+    };
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
@@ -281,7 +293,7 @@ window.PmVoucherMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'voucherStatusCd', type: 'select', label: '상태', options: () => codes.voucher_statuses, nullLabel: '상태 전체' },
-      { key: 'memberId', label: '회원', type: 'pick', display: (p) => p.memberNm, placeholder: '회원 선택',
+      { key: 'memberId', label: '회원', type: 'pick', nameKey: 'memberNm', display: (p) => p.memberNm, placeholder: '회원 선택',
         onOpen: () => handleBtnAction('memberModal-open'), onClear: () => handleBtnAction('searchParam-memberClear') },
       { key: 'dateRange', type: 'dateRange', label: '판매기간',
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
@@ -321,6 +333,7 @@ window.PmVoucherMng = {
       loadView, // 카드뷰 @click 직접 호출
       inlineNavigate,                                      // 콜백 / 전역
       modals, fnCallbackModal,
+      excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,     // 엑셀 다운로드
     };
   },
   template: /* html */`
@@ -434,6 +447,10 @@ window.PmVoucherMng = {
     :reload-trigger="detailPanel.reloadTrigger"
     />
   <bo-cm-popup-modal v-if="modals.isMemberPick" popup-cmd="cmPopup-member-pick" popup-code="member" :on-callback="fnCallbackModal" @close="modals.isMemberPick = false" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" :domain="cfExcelDomain"
+    :area-nm="cfExcelAreaNm" :columns="cfExcelColumns" ui-nm="상품권관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `
 };

@@ -44,9 +44,6 @@ window.SyTemplateMng = {
       // 템플릿 신규 등록 (인라인 패널)
       } else if (cmd === 'templates-add') {
         return openNew();
-      // 엑셀 내보내기
-      } else if (cmd === 'templates-excel') {
-        return exportExcel();
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
@@ -346,14 +343,18 @@ window.SyTemplateMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(templates, [
-      { label: 'ID', key: 'templateId' },
-      { label: '템플릿명', key: 'templateNm' },
-      { label: '유형', key: 'templateTypeCd' },
-      { label: '사용여부', key: 'useYn' },
-      { label: '등록일', key: 'regDate' },
-    ], '템플릿목록.csv');
+    /* ===== 엑셀 다운로드 ===== */
+    const excelModal = reactive({ show: false });
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 제외).
+       handleSearchList 의 검색조건 조립 로직과 동일하게 맞춰야 화면과 엑셀이 같은 결과를 낸다. */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(),
+        ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+        ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'templateNm,templateSubject'; }
+      return p;
+    };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -408,6 +409,7 @@ window.SyTemplateMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      excelModal, buildExcelParams,                       // 엑셀 다운로드
       columns,
       templates, uiState, templateCounts, searchParam, baseGridPager, detailPanel, pathPickModal, previewModal, sendModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
@@ -435,9 +437,7 @@ window.SyTemplateMng = {
     <bo-container title="템플릿목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn_excel" @click="handleBtnAction('templates-excel')">
-            📥 엑셀
-          </button>
+          <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
           <button class="btn btn_new" @click="handleBtnAction('templates-add')">
             + 신규
           </button>
@@ -485,6 +485,10 @@ window.SyTemplateMng = {
   <template-preview-modal v-if="previewModal ? (previewModal.show) : false" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
   <template-send-modal v-if="sendModal ? (sendModal.show) : false" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
   <bo-cm-popup-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_template' }" :on-callback="fnCallbackModal" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="syTemplate"
+    area-nm="템플릿관리" :columns="columns.baseGrid" ui-nm="템플릿관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

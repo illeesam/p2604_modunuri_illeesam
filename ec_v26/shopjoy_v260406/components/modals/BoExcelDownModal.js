@@ -219,6 +219,12 @@ window.BoExcelDownModal = {
     /* onClose — 닫기 */
     const onClose = () => emit('close');
 
+    /* handleGoHistory — 엑셀다운로드 이력 화면으로 이동 (전역 window.boApp.navigate — props 없이 어디서나 사용) */
+    const handleGoHistory = () => {
+      onClose();
+      window.boApp.navigate('syExceldownMng');
+    };
+
     /* ##### [05] watch ########################################################## */
 
     watch(() => props.show, (v) => { if (v) { handleLoadStatus(); } });
@@ -226,7 +232,7 @@ window.BoExcelDownModal = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, handleBtnAction,
+      uiState, handleBtnAction, handleGoHistory,
       cfBusy, cfRunning, cfTotal, cfSyncMax, cfSplitRows, cfWaiting, cfSyncOk, cfEmpty, cfFileCount,
       cfCondText, cfColumnText,
       fnNum, fnDateTime, fnExcelParams,
@@ -234,6 +240,11 @@ window.BoExcelDownModal = {
   },
   template: /* html */`
 <bo-modal :show="show" title="📗 엑셀 다운로드" width="560px" @close="handleBtnAction('modal-close')">
+  <template #header-extra>
+    <button type="button" class="btn btn_list btn-xs" @click="handleGoHistory" title="내 다운로드 요청 이력과 진행상태를 확인합니다">
+      📋 다운로드 이력
+    </button>
+  </template>
   <!-- ===== ■. 조회중 ====================================================== -->
   <div v-if="uiState.loading" style="padding:24px;text-align:center;color:#999;font-size:13px;">
     대상 건수를 확인하는 중입니다...

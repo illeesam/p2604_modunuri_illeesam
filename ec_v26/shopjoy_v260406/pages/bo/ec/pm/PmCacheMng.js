@@ -52,9 +52,10 @@ window.PmCacheMng = {
       // 캐시 신규 등록 (인라인 패널)
       } else if (cmd === 'caches-add') {
         return openNew();
-      // 캐시 목록 엑셀 내보내기
+      // 캐시 목록 엑셀 다운로드 모달 열기
       } else if (cmd === 'caches-excel') {
-        return exportExcel();
+        excelModal.show = true;
+        return;
       // 캐시 목록 재조회
       } else if (cmd === 'caches-reload') {
         return handleSearchList('RELOAD');
@@ -265,8 +266,19 @@ window.PmCacheMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(caches, [{label:'ID',key:'cacheId'},{label:'회원명',key:'memberNm'},{label:'유형',key:'cacheTypeCd'},{label:'금액',key:'cacheAmt'},{label:'잔액',key:'balanceAmt'},{label:'설명',key:'cacheDesc'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
+    /* ===== 엑셀 다운로드 (공통 모달 — sy_exceldown 기반 동기/비동기) ===== */
+    const excelModal = reactive({ show: false });
+    const cfExcelDomain  = computed(() => 'pmCache');
+    const cfExcelAreaNm  = computed(() => '캐시');
+    /* cfExcelColumns — 화면 그리드(columns.baseGrid) 그대로 사용, 엑셀 컬럼/순서/라벨을 화면과 일치시킴 */
+    const cfExcelColumns = computed(() => columns.baseGrid);
+
+    /* buildExcelParams — 현재 검색조건을 엑셀 요청 파라미터로 그대로 전달 (페이지 정보 불필요) */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'memberNm,memberId,cacheDesc'; }
+      return p;
+    };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -286,7 +298,7 @@ window.PmCacheMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'cacheTypeCd', type: 'select', label: '유형', options: () => codes.cache_trans_types, nullLabel: '유형 전체' },
-      { key: 'memberId', label: '회원', type: 'pick', display: (p) => p.memberNm, placeholder: '회원 선택',
+      { key: 'memberId', label: '회원', type: 'pick', nameKey: 'memberNm', display: (p) => p.memberNm, placeholder: '회원 선택',
         onOpen: () => handleBtnAction('memberModal-open'), onClear: () => handleBtnAction('searchParam-memberClear') },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
@@ -318,6 +330,7 @@ window.PmCacheMng = {
       fnTypeBadge,          // 헬퍼
       inlineNavigate,                                                                // Dtl 콜백 (closure 필요)
       modals, fnCallbackModal,
+      excelModal, cfExcelDomain, cfExcelAreaNm, cfExcelColumns, buildExcelParams,     // 엑셀 다운로드
     };
   },
   template: /* html */`
@@ -420,6 +433,10 @@ window.PmCacheMng = {
     :reload-trigger="detailPanel.reloadTrigger" />
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
   <bo-cm-popup-modal v-if="modals.isMemberPick" popup-cmd="cmPopup-member-pick" popup-code="member" :on-callback="fnCallbackModal" @close="modals.isMemberPick = false" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" :domain="cfExcelDomain"
+    :area-nm="cfExcelAreaNm" :columns="cfExcelColumns" ui-nm="캐쉬관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

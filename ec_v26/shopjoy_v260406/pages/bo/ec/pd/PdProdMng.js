@@ -63,9 +63,6 @@ window.PdProdMng = {
       // 상품 신규 등록 (인라인 패널)
       } else if (cmd === 'prods-add') {
         return openNew();
-      // 상품 목록 엑셀 내보내기
-      } else if (cmd === 'prods-excel') {
-        return exportExcel();
       // 상품 목록 재조회
       } else if (cmd === 'prods-reload') {
         return handleSearchList('RELOAD');
@@ -319,12 +316,16 @@ window.PdProdMng = {
       modals.isCatModal = false;
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(products, [
-      { label:'ID', key:'prodId' }, { label:'상품명', key:'prodNm' }, { label:'카테고리', key:'cateNm' },
-      { label:'가격', key:'listPrice' }, { label:'재고', key:'prodStock' }, { label:'브랜드', key:'brandNm' },
-      { label:'상태', key:'prodStatusCdNm' }, { label:'등록일', key:'regDate' },
-    ], '상품목록.csv');
+    /* ===== 엑셀 다운로드 =====
+       domain 키는 백엔드 OdPdCmExcelDomainConfig 의 @Bean 등록명과 일치해야 한다. */
+    const excelModal = reactive({ show: false });
+
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 없이 서버가 전건 청크 처리) */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'prodId,prodNm,prodCode'; }
+      return p;
+    };
 
 
     /* 상품 상태 배지 */
@@ -467,6 +468,7 @@ window.PdProdMng = {
 
       modals,   // 모달 표시 상태 모음
       columns,
+      excelModal, buildExcelParams,                                                                                    // 엑셀 다운로드
       products, uiState, searchParam, baseGridPager, detailPanel, histPanel, // 상태 / 데이터
       cfOptCodeMngUrl,                                    // 외부URL 모달 경로 표시
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
@@ -496,7 +498,7 @@ window.PdProdMng = {
   <!-- ===== ■. 목록 ====================================================== -->
   <bo-container title="상품목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn_excel" @click="handleBtnAction('prods-excel')">
+      <button class="btn btn_excel" @click="excelModal.show = true">
         📥 엑셀
       </button>
       <button class="btn btn_new" @click="handleBtnAction('prods-add')">
@@ -574,6 +576,10 @@ window.PdProdMng = {
     </div>
   </bo-modal>
   <!-- ===== □. 상품옵션코드관리 모달 ============================================ -->
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="pdProd"
+    area-nm="상품관리" :columns="columns.baseGrid" ui-nm="상품관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

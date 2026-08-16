@@ -44,9 +44,6 @@ window.SySiteMng = {
       // 사이트 신규 등록 (인라인 패널)
       } else if (cmd === 'sites-add') {
         return openNew();
-      // 사이트 목록 엑셀 내보내기
-      } else if (cmd === 'sites-excel') {
-        return exportExcel();
       // 사이트 목록 재조회
       } else if (cmd === 'sites-reload') {
         return handleSearchList('RELOAD');
@@ -327,13 +324,18 @@ window.SySiteMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(sites, [
-      { label: 'ID', key: 'siteId' }, { label: '사이트코드', key: 'siteCode' },
-      { label: '사이트명', key: 'siteNm' }, { label: '도메인', key: 'domain' },
-      { label: '상태', key: 'statusCd' }, { label: '등록일', key: 'regDate' },
-    ], '사이트목록.csv');
+    /* ===== 엑셀 다운로드 ===== */
+    const excelModal = reactive({ show: false });
 
+    /* buildExcelParams — 엑셀은 현재 검색조건 전체를 그대로 넘긴다(페이지 번호/크기 제외).
+       handleSearchList 의 검색조건 조립 로직과 동일하게 맞춰야 화면과 엑셀이 같은 결과를 낸다. */
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(),
+        ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+        ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'siteCode,siteNm,siteDomain'; }
+      return p;
+    };
 
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ '운영중': 'badge-green', '점검중': 'badge-orange', '비활성': 'badge-gray' }[s] || 'badge-gray');
@@ -421,6 +423,7 @@ window.SySiteMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      excelModal, buildExcelParams,                       // 엑셀 다운로드
       columns,
       sites, siteCounts, uiState, searchParam, baseGridPager, detailModal, pathPickModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                     // dispatch (모든 이벤트 / 액션 라우팅)
@@ -449,9 +452,7 @@ window.SySiteMng = {
     <!-- ===== ■.■. 목록 영역 (bo-container 카드+제목, bo-grid bare, baseGridPager 바깥) ======== -->
     <bo-container title="사이트목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
-        <button class="btn btn_excel" @click="handleBtnAction('sites-excel')">
-          📥 엑셀
-        </button>
+        <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
         <button class="btn btn_new" @click="handleBtnAction('sites-add')">
           + 신규
         </button>
@@ -492,6 +493,10 @@ window.SySiteMng = {
     :reload-trigger="detailModal.reloadTrigger" />
   <!-- ===== ■. 표시경로 선택 모달 ============================================ -->
   <bo-cm-popup-modal v-if="pathPickModal ? (pathPickModal.show) : false" popup-cmd="cmPopup-path-pick" popup-code="path" result-type="id" :init-param="{ bizCd: 'sy_site' }" :on-callback="fnCallbackModal" />
+  <!-- ===== ■. 엑셀 다운로드 모달 (즉시/예약 + 진행중 안내 + 강제취소) ========== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="sySite"
+    area-nm="사이트관리" :columns="columns.baseGrid" ui-nm="사이트관리" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };
