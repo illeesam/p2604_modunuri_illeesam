@@ -231,7 +231,7 @@ window.SyRoleMng = {
     /* ===== CRUD 그리드 ===== */
     const gridRows   = reactive([]);  // 트리 평면화 + 편집 상태 포함 행
     let   _tempId    = -1;            // 신규 행 임시 ID (음수)
-    const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentRoleId', 'roleTypeCd', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'roleRemark'];
+    const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentRoleId', 'roleTypeCd', 'sortOrd', 'useYn', 'restrictPerm', 'sensitiveViewYn', 'roleCat', 'roleRemark'];
 
     /* ===== 권한 색상 / 깊이 표시 상수 ===== */
     const PERM_COLORS   = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
@@ -431,10 +431,12 @@ window.SyRoleMng = {
 
       return { ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
         restrictPerm: r.restrictPerm || '없음',
+        sensitiveViewYn: r.sensitiveViewYn || 'N',
         roleCat: cat,
         _row_org: { roleCode: r.roleCode, roleNm: r.roleNm, parentRoleId: r.parentRoleId,
                  roleTypeCd: r.roleTypeCd, sortOrd: r.sortOrd, useYn: r.useYn,
                  restrictPerm: r.restrictPerm || '없음',
+                 sensitiveViewYn: r.sensitiveViewYn || 'N',
                  roleCat: JSON.stringify(cat), roleRemark: r.roleRemark },
       };
     };
@@ -550,7 +552,7 @@ window.SyRoleMng = {
         roleId: _tempId--, roleCode: '', roleNm: '', parentRoleId: ref ? ref.parentRoleId : null,
         roleTypeCd: ref ? ref.roleTypeCd : '업무',
         sortOrd: ref ? (ref.sortOrd || 0) + 1 : 1,
-        useYn: 'Y', restrictPerm: '없음', roleCat: [], roleRemark: '',
+        useYn: 'Y', restrictPerm: '없음', sensitiveViewYn: 'N', roleCat: [], roleRemark: '',
         _depth: ref ? ref._depth : 0, _row_status: 'I', _row_check: false, _row_org: null,
       };
       const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
@@ -838,6 +840,9 @@ window.SyRoleMng = {
           clear: (row) => { row.parentRoleId = null; onCellChange(row); }, title: '상위역할 선택' } },
       { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
       { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: () => codes.use_yn },
+      { key: 'sensitiveViewYn', label: '민감정보열람', style: 'width:100px;',
+        edit: 'select', options: () => codes.use_yn,
+        hint: '연락처/이메일/주소 등 민감정보를 마스킹(***) 없이 원본으로 조회·다운로드할 수 있는 권한' },
       { key: 'roleCat',      label: '역할구분', style: 'width:100px;',
         cellStyle: (v, row) => {
           const cat = effectiveRoleCat(row)[0];

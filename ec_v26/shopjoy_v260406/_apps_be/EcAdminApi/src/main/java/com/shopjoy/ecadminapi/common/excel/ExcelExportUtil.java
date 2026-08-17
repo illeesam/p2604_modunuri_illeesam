@@ -582,10 +582,19 @@ public final class ExcelExportUtil {
     }
 
     /** Field reflection 값 읽기 (실패 시 null) */
-    /** 필드 값 read — 분할 저장 writer 가 재사용 */
+    /**
+     * 필드 값 read — 분할 저장 writer(BoExcelDownRunner.SplitWriter)도 재사용하는 공용 지점.
+     *
+     * <p>{@code @Sensitive} 로 마킹된 필드는 여기서 {@link com.shopjoy.ecadminapi.common.util.MaskUtil}
+     * 로 마스킹된다 — 즉시(SYNC)/예약(ASYNC) 두 다운로드 경로가 전부 이 메서드를 거치므로
+     * 마스킹 훅도 한 곳(여기)에만 있으면 양쪽에 자동 적용된다.
+     */
     public static Object readField(Object obj, Field f) {
         if (f == null || obj == null) return null;
-        try { return f.get(obj); }
+        try {
+            Object raw = f.get(obj);
+            return com.shopjoy.ecadminapi.common.util.MaskUtil.maskIfSensitive(f, raw);
+        }
         catch (IllegalAccessException e) { return null; }
     }
 }

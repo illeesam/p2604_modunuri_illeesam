@@ -17,6 +17,7 @@ import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderItemService;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderService;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdPayService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.MaskUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -55,6 +56,7 @@ public class BoOdOrderService {
     public OdOrderDto.Item getById(String id) {
         OdOrderDto.Item dto = odOrderService.getById(id);
         _itemFillRelations(dto);
+        MaskUtil.applyMask(dto);   // 주문자/수령인 연락처·주소·환불계좌 마스킹 (민감정보열람 권한 없으면)
         return dto;
     }
 
@@ -74,12 +76,14 @@ public class BoOdOrderService {
     public List<OdOrderDto.Item> getList(OdOrderDto.Request req) {
         List<OdOrderDto.Item> list = odOrderService.getList(req);
         _listFillRelations(list);
+        MaskUtil.applyMask(list);   // 주문자/수령인 연락처·주소·환불계좌 마스킹 (민감정보열람 권한 없으면)
         return list;
     }
     /* 페이지조회 */
     public BasePage<OdOrderDto.Item> getPageData(OdOrderDto.Request req) {
         BasePage<OdOrderDto.Item> res = odOrderService.getPageData(req);
         _listFillRelations(res.getPageList());
+        MaskUtil.applyMask(res.getPageList());   // 주문자/수령인 연락처·주소·환불계좌 마스킹 (민감정보열람 권한 없으면)
         return res;
     }
 
@@ -96,7 +100,9 @@ public class BoOdOrderService {
         // 하위 결제 목록 조회 (orderId 기준)
         OdPayDto.Request payReq = new OdPayDto.Request();
         payReq.setOrderId(orderId);
-        order.setOrderPays(odPayService.getList(payReq)); // 결제목록
+        List<OdPayDto.Item> pays = odPayService.getList(payReq);
+        MaskUtil.applyMask(pays);   // 카드번호/가상계좌 마스킹 (민감정보열람 권한 없으면)
+        order.setOrderPays(pays); // 결제목록
 
         // 하위 배송 목록 조회 (orderId 기준)
         OdDlivDto.Request dlivReq = new OdDlivDto.Request();
@@ -133,7 +139,9 @@ public class BoOdOrderService {
         // 결제 일괄조회 → Map<orderId, List<pay>>
         OdPayDto.Request payReq = new OdPayDto.Request();
         payReq.setOrderIds(orderIds);
-        Map<String, List<OdPayDto.Item>> payMap = odPayService.getList(payReq).stream()
+        List<OdPayDto.Item> payList = odPayService.getList(payReq);
+        MaskUtil.applyMask(payList);   // 카드번호/가상계좌 마스킹 (민감정보열람 권한 없으면)
+        Map<String, List<OdPayDto.Item>> payMap = payList.stream()
             .collect(Collectors.groupingBy(OdPayDto.Item::getOrderId));
 
         // 배송 일괄조회 → Map<orderId, List<dliv>>

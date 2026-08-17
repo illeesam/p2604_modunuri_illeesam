@@ -153,6 +153,25 @@ public final class SecurityUtil {
     }
 
     /**
+     * 민감정보(연락처/주소/계좌 등) 원본 열람 권한 보유 여부.
+     *
+     * <p>로그인 시 {@code BoAuthService.buildAccessToken}이 사용자의 {@code sy_role.sensitive_view_yn}
+     * 을 확인해 'Y' 인 경우에만 JWT authorities 에 {@code SENSITIVE_VIEW} 를 추가한다. 역할 변경은
+     * 다음 로그인/토큰갱신부터 반영된다(다른 role 기반 권한과 동일한 방식 — 매 요청마다 DB 조회하지 않음).
+     *
+     * <p>false 인 경우 {@link com.shopjoy.ecadminapi.common.util.MaskUtil} 이 회원 연락처/주소 등을
+     * 마스킹(***)해 응답·엑셀 양쪽에 적용한다. 인증 자체가 없으면 false(미인증 = 원본 열람 불가).
+     *
+     * @return SENSITIVE_VIEW authority 보유 시 true
+     */
+    public static boolean hasSensitiveViewAuth() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+        return auth.getAuthorities().stream()
+            .anyMatch(a -> "SENSITIVE_VIEW".equals(a.getAuthority()));
+    }
+
+    /**
      * 현재 인증된 사용자의 authId 반환, 없으면 지정 기본값.
      *
      * @param defaultValue authId 가 null/empty 또는 미인증일 때 반환할 값

@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.base.ec.od.data.dto;
 
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import com.shopjoy.ecadminapi.common.util.Sensitive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,7 +26,7 @@ public class OdOrderDto {
         private String orderId;
         private String memberId;
         private String memberNm;
-        private String ordererEmail;
+        @Sensitive("email") private String ordererEmail;
         private Long totalAmt;
         private Long payAmt;
         private Long discntAmt;
@@ -38,14 +39,14 @@ public class OdOrderDto {
         private String dlivStatusCd;
         private String couponId;
         private String recvNm;
-        private String recvPhone;
+        @Sensitive("phone")   private String recvPhone;
         private String recvZip;
-        private String recvAddr;
-        private String recvAddrDetail;
+        @Sensitive("address") private String recvAddr;
+        @Sensitive("address") private String recvAddrDetail;
         private String recvMemo;
         private String refundBankCd;
-        private String refundAccountNo;
-        private String refundAccountNm;
+        @Sensitive("account") private String refundAccountNo;
+        @Sensitive("name")    private String refundAccountNm;
         private String accessChannelCd;
         private String apprStatusCd;
         private String apprStatusCdBefore;
@@ -64,8 +65,8 @@ public class OdOrderDto {
         private String regSiteId;
         private String updBy;
         private LocalDateTime updDate;
-        private String memberEmail;
-        private String memberPhoneOrigin;
+        @Sensitive("email") private String memberEmail;
+        @Sensitive("phone") private String memberPhoneOrigin;
         private String gradeCd;
         private Long totalPurchaseAmt;
         private String siteNm;

@@ -33,6 +33,7 @@ public class SyRoleDto {
         private Integer sortOrd;
         private String useYn;
         private String restrictPerm;
+        private String sensitiveViewYn;
         private String roleRemark;
         private String regBy;
         private LocalDateTime regDate;

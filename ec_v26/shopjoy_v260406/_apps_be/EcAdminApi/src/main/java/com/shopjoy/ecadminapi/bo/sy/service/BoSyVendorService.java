@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
 import com.shopjoy.ecadminapi.base.sy.service.SyVendorService;
+import com.shopjoy.ecadminapi.common.util.MaskUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +22,23 @@ public class BoSyVendorService {
     private final SyVendorService syVendorService;
 
     /* 키조회 */
-    public SyVendorDto.Item getById(String id) { return syVendorService.getById(id); }
+    public SyVendorDto.Item getById(String id) {
+        SyVendorDto.Item dto = syVendorService.getById(id);
+        MaskUtil.applyMask(dto);   // 연락처/주소/계좌 마스킹 (민감정보열람 권한 없으면)
+        return dto;
+    }
     /* 목록조회 */
-    public List<SyVendorDto.Item> getList(SyVendorDto.Request req) { return syVendorService.getList(req); }
+    public List<SyVendorDto.Item> getList(SyVendorDto.Request req) {
+        List<SyVendorDto.Item> list = syVendorService.getList(req);
+        MaskUtil.applyMask(list);   // 연락처/주소/계좌 마스킹 (민감정보열람 권한 없으면)
+        return list;
+    }
     /* 페이지조회 */
-    public BasePage<SyVendorDto.Item> getPageData(SyVendorDto.Request req) { return syVendorService.getPageData(req); }
+    public BasePage<SyVendorDto.Item> getPageData(SyVendorDto.Request req) {
+        BasePage<SyVendorDto.Item> res = syVendorService.getPageData(req);
+        MaskUtil.applyMask(res.getPageList());   // 연락처/주소/계좌 마스킹 (민감정보열람 권한 없으면)
+        return res;
+    }
 
     @Transactional public SyVendor create(SyVendor body) { return syVendorService.create(body); }
     @Transactional public SyVendor update(String id, SyVendor body) { return syVendorService.update(id, body); }

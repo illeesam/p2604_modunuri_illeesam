@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.base.ec.od.data.dto;
 
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import com.shopjoy.ecadminapi.common.util.Sensitive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,12 +39,12 @@ public class OdPayDto {
         private String pgResultCd;
         private String pgResultMsg;
         private LocalDateTime payDate;
-        private String cardNo;
+        @Sensitive("account") private String cardNo;
         private String cardTypeCd;
         private Integer cardInstallMonth;
         private String vbankBankCd;
-        private String vbankAccountNo;
-        private String vbankAccountNm;
+        @Sensitive("account") private String vbankAccountNo;
+        @Sensitive("name")    private String vbankAccountNm;
         private LocalDateTime vbankExpireDate;
         private String memo;
         private String regBy;
@@ -54,7 +55,7 @@ public class OdPayDto {
         private String memberNm;
         private LocalDateTime orderDate;
         private String orderStatusCd;
-        private String memberEmail;
+        @Sensitive("email") private String memberEmail;
         private String payStatusCdNm;
         private String payMethodCdNm;
         private String payDirCdNm;

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.auth.service;
 
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserLoginLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhUserTokenLog;
@@ -273,7 +274,7 @@ public class BoAuthService {
             AccessTokenClaims.builder()
                 .authId(user.getUserId())
                 .loginId(user.getLoginId())
-                .roles(List.of("BO_GUEST"))
+                .roles(resolveRoles(user))
                 .appTypeCd(appTypeCd)
                 .roleId(user.getRoleId())
                 .vendorId(null)
@@ -285,6 +286,25 @@ public class BoAuthService {
                 .isAdminYn("N")
                 .build()
         );
+    }
+
+    /**
+     * JWT authorities 목록 구성. 기본 "BO_GUEST" 는 항상 부여하고,
+     * {@code sy_role.sensitive_view_yn = 'Y'} 인 역할이면 "SENSITIVE_VIEW" 를 추가로 부여한다.
+     *
+     * <p>{@link SecurityUtil#hasSensitiveViewAuth()} 가 이 authority 를 체크해 회원 연락처·주소
+     * 등 민감정보를 원본으로 내려줄지 마스킹(***)할지 결정한다. 역할의 권한을 바꾸면 다음
+     * 로그인/토큰갱신부터 반영된다(매 요청마다 DB 조회하지 않는 기존 방식과 동일).
+     */
+    private List<String> resolveRoles(SyUser user) {
+        List<String> roles = new java.util.ArrayList<>(List.of("BO_GUEST"));
+        if (user.getRoleId() != null && !user.getRoleId().isBlank()) {
+            SyRole role = em.find(SyRole.class, user.getRoleId());
+            if (role != null && "Y".equals(role.getSensitiveViewYn())) {
+                roles.add("SENSITIVE_VIEW");
+            }
+        }
+        return roles;
     }
 
     /** syh_user_token_log INSERT, logId 반환 */

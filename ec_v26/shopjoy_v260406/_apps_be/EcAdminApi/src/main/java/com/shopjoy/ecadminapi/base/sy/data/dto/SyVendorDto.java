@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.base.sy.data.dto;
 
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import com.shopjoy.ecadminapi.common.util.Sensitive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,15 +36,15 @@ public class SyVendorDto {
         private String vendorItem;
         private String vendorClassCd;
         private String vendorZipCode;
-        private String vendorAddr;
-        private String vendorAddrDetail;
-        private String vendorPhone;
+        @Sensitive("address") private String vendorAddr;
+        @Sensitive("address") private String vendorAddrDetail;
+        @Sensitive("phone")   private String vendorPhone;
         private String vendorFax;
-        private String vendorEmail;
+        @Sensitive("email")   private String vendorEmail;
         private String vendorHomepage;
         private String vendorBankNm;
-        private String vendorBankAccount;
-        private String vendorBankHolder;
+        @Sensitive("account") private String vendorBankAccount;
+        @Sensitive("name")    private String vendorBankHolder;
         private String vendorRegUrl;
         private LocalDate openDate;
         private LocalDate contractDate;

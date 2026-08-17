@@ -51,6 +51,10 @@ public class SyRole extends BaseEntity {
     @Column(name = "restrict_perm", length = 1)
     private String restrictPerm;
 
+    @Comment("민감정보(연락처/주소/계좌 등) 원본 열람 권한 Y/N")
+    @Column(name = "sensitive_view_yn", length = 1)
+    private String sensitiveViewYn;
+
     @Comment("비고")
     @Column(name = "role_remark", length = 300)
     private String roleRemark;

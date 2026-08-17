@@ -10,6 +10,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberAddrService;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberService;
 import com.shopjoy.ecadminapi.base.ec.mb.service.MbMemberSnsService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.MaskUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -44,18 +45,21 @@ public class BoMbMemberService {
     public MbMemberDto.Item getById(String id) {
         MbMemberDto.Item dto = mbMemberService.getById(id);
         _itemFillRelations(dto);
+        MaskUtil.applyMask(dto);                 // 연락처/이메일/주소 마스킹 (민감정보열람 권한 없으면)
         return dto;
     }
     /* 목록조회 */
     public List<MbMemberDto.Item> getList(MbMemberDto.Request req) {
         List<MbMemberDto.Item> list = mbMemberService.getList(req);
         _listFillRelations(list);
+        MaskUtil.applyMask(list);                // 연락처/이메일/주소 마스킹 (민감정보열람 권한 없으면)
         return list;
     }
     /* 페이지조회 */
     public BasePage<MbMemberDto.Item> getPageData(MbMemberDto.Request req) {
         BasePage<MbMemberDto.Item> res = mbMemberService.getPageData(req);
         _listFillRelations(res.getPageList());
+        MaskUtil.applyMask(res.getPageList());   // 연락처/이메일/주소 마스킹 (민감정보열람 권한 없으면)
         return res;
     }
 
@@ -67,7 +71,9 @@ public class BoMbMemberService {
         // 하위 배송지 목록 조회 (memberId 기준)
         MbMemberAddrDto.Request addrReq = new MbMemberAddrDto.Request();
         addrReq.setMemberId(memberId);
-        member.setAddrs(mbMemberAddrService.getList(addrReq)); // 배송지목록
+        List<MbMemberAddrDto.Item> addrs = mbMemberAddrService.getList(addrReq);
+        MaskUtil.applyMask(addrs);   // 수령인 연락처/주소 마스킹 (민감정보열람 권한 없으면)
+        member.setAddrs(addrs); // 배송지목록
 
         // 하위 SNS 연동 목록 조회 (memberId 기준)
         MbMemberSnsDto.Request snsReq = new MbMemberSnsDto.Request();
@@ -93,7 +99,9 @@ public class BoMbMemberService {
         // 배송지 일괄조회 → Map<memberId, List<addr>>
         MbMemberAddrDto.Request addrReq = new MbMemberAddrDto.Request();
         addrReq.setMemberIds(memberIds);
-        Map<String, List<MbMemberAddrDto.Item>> addrMap = mbMemberAddrService.getList(addrReq).stream()
+        List<MbMemberAddrDto.Item> addrList = mbMemberAddrService.getList(addrReq);
+        MaskUtil.applyMask(addrList);   // 수령인 연락처/주소 마스킹 (민감정보열람 권한 없으면)
+        Map<String, List<MbMemberAddrDto.Item>> addrMap = addrList.stream()
             .collect(Collectors.groupingBy(MbMemberAddrDto.Item::getMemberId));
 
         // SNS 연동 일괄조회 → Map<memberId, List<sns>>

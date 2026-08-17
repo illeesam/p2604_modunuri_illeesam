@@ -1,11 +1,12 @@
 package com.shopjoy.ecadminapi.bo.common.config;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmFaq;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmFaqRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyNotice;
 import com.shopjoy.ecadminapi.base.sy.repository.SyNoticeRepository;
+import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmBlogService;
 import com.shopjoy.ecadminapi.common.excel.ExcelDomainHandler;
 import com.shopjoy.ecadminapi.common.excel.PagedExcelHandler;
 import jakarta.persistence.EntityManager;
@@ -27,15 +28,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CmDashboardExcelDomainConfig {
 
-    /* ── 고객센터 > FAQ관리 ──────────────────────────────────── */
+    /* ── 고객센터 > 블로그관리 ──────────────────────────────── */
 
     @Bean
-    public ExcelDomainHandler<CmFaq, CmFaqDto.Item, CmFaqDto.Request>
-    cmFaqExcelHandler(CmFaqRepository r, EntityManager em) {
-        return PagedExcelHandler.of("cmFaq", "FAQ",
-            CmFaq.class, CmFaqDto.Item.class, CmFaqDto.Request.class,
-            r, r::selectList, r::selectPageData, "faqId", em);
+    public ExcelDomainHandler<CmBlog, CmBlogDto.Item, CmBlogDto.Request>
+    cmBlogExcelHandler(BoCmBlogService svc, CmBlogRepository r, EntityManager em) {
+        return PagedExcelHandler.of("cmBlog", "블로그",
+            CmBlog.class, CmBlogDto.Item.class, CmBlogDto.Request.class,
+            r, svc::getList, svc::getPageData, "blogId", em);
     }
+
+    // 고객센터 > FAQ관리(cmFaq) 여기 등록하지 않는다: AutoExcelDomainScanner 가 CmFaqRepository 를
+    // 부팅 후 classpath 스캔으로 자동 등록한다 — Bo서비스 enrich 없이 r::selectList 그대로였던
+    // 등록이라 자동탐색 결과와 완전히 동일(2026-08-17 중복 제거).
 
     /* ── 고객센터 > 공지사항관리 ──────────────────────────────── */
 

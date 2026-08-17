@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.base.ec.mb.data.dto;
 
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
+import com.shopjoy.ecadminapi.common.util.Sensitive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,10 +25,10 @@ public class MbMemberAddrDto {
         private String memberId;
         private String addrNm;
         private String recvNm;
-        private String recvPhone;
+        @Sensitive("phone")   private String recvPhone;
         private String zipCode;
-        private String addr;
-        private String addrDetail;
+        @Sensitive("address") private String addr;
+        @Sensitive("address") private String addrDetail;
         private String defaultYn;
         private String regBy;
         private LocalDateTime regDate;
