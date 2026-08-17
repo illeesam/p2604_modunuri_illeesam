@@ -13,6 +13,6 @@ public class PdProdQnaAnswerDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 4000) private String answContent;
+        @Size(max = 4000) private String answContent;    // 답변내용
     }
 }

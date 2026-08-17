@@ -12,6 +12,6 @@ public class SyAttachSortDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        private Integer sortOrd;
+        private Integer sortOrd;  // 변경할 정렬 순서
     }
 }

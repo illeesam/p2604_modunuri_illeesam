@@ -13,22 +13,22 @@ public class PmEventItemDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String eventItemId;
+        @Size(max = 21) private String siteId;       // 사이트ID
+        @Size(max = 21) private String eventItemId;  // 이벤트항목ID 필터
         @Size(max = 21) private String eventId;         // 상위 FK 필터
         private List<String> eventIds;                 // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String eventItemId;
-        private String eventId;
-        private String targetTypeCd;
-        private String targetId;
-        private Integer sortNo;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
+        private String eventItemId;     // 이벤트항목ID (YYMMDDhhmmss+rand4)
+        private String eventId;         // 이벤트ID (pm_event.event_id)
+        private String targetTypeCd;    // 대상유형 — PROMO_TARGET_TYPE {ALL:전체, PRODUCT:상품, CATEGORY:카테고리, VENDOR:업체, BRAND:브랜드, MEMBER_GRADE:회원등급}
+        private String targetId;        // 대상ID (prod_id/category_id/vendor_id/brand_id)
+        private Integer sortNo;         // 이벤트 내 노출 순서
+        private String regBy;           // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;       // 등록 사이트ID
     }
 
 }

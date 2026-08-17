@@ -19,9 +19,9 @@ public class CmPopupDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 1)  private String useYn;
-        private Integer popupPattern;
+        @Size(max = 21) private String siteId;  // 사이트ID 필터
+        @Size(max = 1)  private String useYn;  // 사용여부 Y/N 필터
+        private Integer popupPattern;  // 화면패턴 필터 1:목록 / 2:트리+목록 / 3:트리+목록+선택목록
     }
 
     /** 항목 타입은 엔티티 — 위 클래스 주석 참조 */

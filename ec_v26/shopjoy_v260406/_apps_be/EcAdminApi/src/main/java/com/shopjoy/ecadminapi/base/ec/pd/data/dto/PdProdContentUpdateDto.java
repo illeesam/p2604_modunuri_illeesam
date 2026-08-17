@@ -14,7 +14,7 @@ public class PdProdContentUpdateDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        private List<Block> contentBlocks;
+        private List<Block> contentBlocks;    // 갱신할 상품 설명 블록 목록 (전체 교체)
     }
 
     @Getter @Setter @NoArgsConstructor

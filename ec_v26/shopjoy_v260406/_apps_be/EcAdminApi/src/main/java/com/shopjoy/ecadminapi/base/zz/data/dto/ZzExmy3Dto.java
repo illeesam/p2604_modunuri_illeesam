@@ -20,28 +20,28 @@ public class ZzExmy3Dto {
         @Size(max = 21)  private String exmy1IdLike;   // PK 부분검색
         @Size(max = 21)  private String exmy2IdLike;   // PK 부분검색
         @Size(max = 21)  private String exmy3IdLike;   // PK 부분검색
-        @Size(max = 200) private String col31;
-        @Size(max = 200) private String col32;
-        @Size(max = 200) private String col33;
-        @Size(max = 200) private String col34;
-        @Size(max = 200) private String col35;
+        @Size(max = 200) private String col31;  // 예제 범용 컬럼31 검색값
+        @Size(max = 200) private String col32;  // 예제 범용 컬럼32 검색값
+        @Size(max = 200) private String col33;  // 예제 범용 컬럼33 검색값
+        @Size(max = 200) private String col34;  // 예제 범용 컬럼34 검색값
+        @Size(max = 200) private String col35;  // 예제 범용 컬럼35 검색값
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String exmy1Id;
-        private String exmy2Id;
-        private String exmy3Id;
-        private String col31;
-        private String col32;
-        private String col33;
-        private String col34;
-        private String col35;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String exmy1Id;  // 상위 exmy1 ID (복합 PK)
+        private String exmy2Id;  // 상위 exmy2 ID (복합 PK)
+        private String exmy3Id;  // 예제(exmy3, MyBatis) ID (복합 PK)
+        private String col31;  // 예제 범용 컬럼31
+        private String col32;  // 예제 범용 컬럼32
+        private String col33;  // 예제 범용 컬럼33
+        private String col34;  // 예제 범용 컬럼34
+        private String col35;  // 예제 범용 컬럼35
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
 
         // ── 상위 계층 연관정보 ──
         private ZzExmy1Dto.Item exmy1;   // 상위 exmy1 단건 (exmy1_id)

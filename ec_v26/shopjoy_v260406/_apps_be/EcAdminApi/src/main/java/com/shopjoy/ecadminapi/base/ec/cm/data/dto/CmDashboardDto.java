@@ -30,34 +30,34 @@ import lombok.*;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class CmDashboardDto {
 
-    private String dashboardId;
-    private String compId;
-    private Integer sortOrd;
-    private String yyyymmdd;
-    private String siteNo;
-    private String siteNm;
-    private String uiNm;
-    private String deptId;
-    private String deptNm;
-    private String userId;
-    private String userNm;
+    private String dashboardId;  // 대시보드 항목ID (info0101 등 차트 ID)
+    private String compId;  // 컴포넌트ID (회사/법인 구분)
+    private Integer sortOrd;  // 정렬순서
+    private String yyyymmdd;  // 집계 기준일자 (YYYYMMDD)
+    private String siteNo;  // 사이트 번호
+    private String siteNm;  // 사이트명
+    private String uiNm;  // 화면명
+    private String deptId;  // 부서ID
+    private String deptNm;  // 부서명
+    private String userId;  // 사용자ID
+    private String userNm;  // 사용자명
 
-    private String col1Nm;
-    private Double col1Num;
-    private String col2Nm;
-    private Double col2Num;
-    private String col3Nm;
-    private Double col3Num;
-    private String col4Nm;
-    private Double col4Num;
-    private String col5Nm;
-    private Double col5Num;
-    private String col6Nm;
-    private Double col6Num;
-    private String col7Nm;
-    private Double col7Num;
-    private String col8Nm;
-    private Double col8Num;
-    private String col9Nm;
-    private Double col9Num;
+    private String col1Nm;  // 1열 지표명
+    private Double col1Num;  // 1열 지표 수치
+    private String col2Nm;  // 2열 지표명
+    private Double col2Num;  // 2열 지표 수치
+    private String col3Nm;  // 3열 지표명
+    private Double col3Num;  // 3열 지표 수치
+    private String col4Nm;  // 4열 지표명
+    private Double col4Num;  // 4열 지표 수치
+    private String col5Nm;  // 5열 지표명
+    private Double col5Num;  // 5열 지표 수치
+    private String col6Nm;  // 6열 지표명
+    private Double col6Num;  // 6열 지표 수치
+    private String col7Nm;  // 7열 지표명
+    private Double col7Num;  // 7열 지표 수치
+    private String col8Nm;  // 8열 지표명
+    private Double col8Num;  // 8열 지표 수치
+    private String col9Nm;  // 9열 지표명
+    private Double col9Num;  // 9열 지표 수치
 }

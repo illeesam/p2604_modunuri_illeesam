@@ -14,24 +14,24 @@ public class MbLikeDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String likeId;
-        @Size(max = 21) private String memberId;
-        @Size(max = 50) private String targetTypeCd;
-        @Size(max = 21) private String targetId;
+        @Size(max = 21) private String siteId;             // 사이트ID 필터
+        @Size(max = 21) private String likeId;              // 좋아요ID 필터
+        @Size(max = 21) private String memberId;            // 회원ID 필터
+        @Size(max = 50) private String targetTypeCd;        // 대상유형 필터 — LIKE_TARGET_TYPE (PRODUCT/BLOG/EVENT)
+        @Size(max = 21) private String targetId;            // 대상ID 필터
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String likeId;
-        private String memberId;
-        private String targetTypeCd;
-        private String targetId;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String likeId;                 // 좋아요ID (YYMMDDhhmmss+rand4)
+        private String memberId;               // 회원ID (mb_member.member_id)
+        private String targetTypeCd;            // 대상유형 — LIKE_TARGET_TYPE (PRODUCT/BLOG/EVENT)
+        private String targetId;                // 대상ID
+        private String regBy;                   // 등록자
+        private LocalDateTime regDate;          // 등록일시
+        private String regSiteId;               // 등록 사이트ID
+        private String updBy;                   // 수정자
+        private LocalDateTime updDate;          // 수정일시
         // ── 연관정보 (목록 시 채움, targetTypeCd=PROD 인 경우) ──
         private PdProdDto.Item prod;   // 찜 대상 상품 단건
     }

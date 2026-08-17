@@ -13,41 +13,41 @@ public class SyVendorUserDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String vendorId;
-        @Size(max = 21) private String vendorUserId;
-        @Size(max = 21) private String userId;
-        @Size(max = 20) private String status;
-        @Size(max = 1)  private String authYn;
+        @Size(max = 21) private String vendorId;  // 업체ID 검색값
+        @Size(max = 21) private String vendorUserId;  // 업체사용자ID 검색값
+        @Size(max = 21) private String userId;  // 사용자ID 검색값
+        @Size(max = 20) private String status;  // 상태 검색값 — VENDOR_USER_STATUS_CD {ACTIVE:재직, LEFT:퇴직, SUSPENDED:정지}
+        @Size(max = 1)  private String authYn;  // 업체 관리권한 여부 검색값 Y/N
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
 
         // ── sy_vendor_user ──────────────────────────────────────────
-        private String vendorUserId;
-        private String vendorId;
-        private String userId;
-        private String memberNm;
-        private String positionCd;
-        private String vendorUserDeptNm;
-        private String vendorUserPhone;
-        private String vendorUserMobile;
-        private String vendorUserEmail;
-        private LocalDate birthDate;
-        private String isMain;
-        private String authYn;
-        private LocalDate joinDate;
-        private LocalDate leaveDate;
-        private String vendorUserStatusCd;
-        private String vendorUserRemark;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String vendorUserId;  // 판매/배송업체사용자ID (PK)
+        private String vendorId;  // 판매/배송업체ID (sy_vendor.vendor_id)
+        private String userId;  // 사용자ID (sy_user.user_id, NULL=비로그인)
+        private String memberNm;  // 이름
+        private String positionCd;  // 직위/직책 — POSITION_CD {CEO:대표, DIRECTOR:이사, MANAGER:팀장, EMPLOYEE:담당자}
+        private String vendorUserDeptNm;  // 부서/팀명
+        private String vendorUserPhone;  // 사무실 전화
+        private String vendorUserMobile;  // 휴대전화
+        private String vendorUserEmail;  // 이메일
+        private LocalDate birthDate;  // 생년월일
+        private String isMain;  // 대표 담당자 여부 (업체당 1명 권장)
+        private String authYn;  // 업체 관리권한 여부 (Y=업체 정보 수정 가능)
+        private LocalDate joinDate;  // 등록(합류) 일자
+        private LocalDate leaveDate;  // 퇴직/탈퇴 일자
+        private String vendorUserStatusCd;  // 상태 — VENDOR_USER_STATUS_CD {ACTIVE:재직, LEFT:퇴직, SUSPENDED:정지}
+        private String vendorUserRemark;  // 비고
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
 
         // ── JOIN ──────────────────────────────────────────────
-        private String vendorNm;
+        private String vendorNm;  // 업체명 (JOIN)
     }
 
 }

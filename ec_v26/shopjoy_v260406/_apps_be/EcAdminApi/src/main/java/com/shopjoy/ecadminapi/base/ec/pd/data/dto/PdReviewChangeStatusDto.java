@@ -13,6 +13,6 @@ public class PdReviewChangeStatusDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 30) private String reviewStatusCd;
+        @Size(max = 30) private String reviewStatusCd;  // 변경할 리뷰상태 — REVIEW_STATUS_CD {ACTIVE:정상, HIDDEN:숨김, DELETED:삭제}
     }
 }

@@ -12,24 +12,24 @@ public class PdhProdStatusHistDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String prodStatusHistId;
+        @Size(max = 21) private String siteId;  // 사이트ID (검색 필터)
+        @Size(max = 21) private String prodStatusHistId;  // 이력ID (단건 조회 필터)
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String prodStatusHistId;
-        private String prodId;
-        private String beforeStatusCd;
-        private String afterStatusCd;
-        private String memo;
-        private String procUserId;
-        private LocalDateTime procDate;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String prodStatusHistId;  // 이력ID
+        private String prodId;  // 상품ID
+        private String beforeStatusCd;  // 이전상태 — PROD_STATUS_CD {ACTIVE:판매중, INACTIVE:중지, SOLDOUT:품절, DRAFT:임시저장}
+        private String afterStatusCd;  // 변경상태 — PROD_STATUS_CD {ACTIVE:판매중, INACTIVE:중지, SOLDOUT:품절, DRAFT:임시저장}
+        private String memo;  // 처리메모
+        private String procUserId;  // 처리자 (sy_user.user_id)
+        private LocalDateTime procDate;  // 처리일시
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
     }
 
 }

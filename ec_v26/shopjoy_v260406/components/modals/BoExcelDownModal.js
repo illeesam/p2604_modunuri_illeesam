@@ -36,6 +36,7 @@ window.BoExcelDownModal = {
       running: false,      // 즉시 다운로드 실행중
       mode: 'sync',        // 'sync' | 'async'
       status: null,        // 서버 status 응답
+      showDetail: false,   // 조건값/헤더명 상세 펼침 여부 (기본 접힘 — 화면명/정렬만 항상 노출)
     });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -47,6 +48,7 @@ window.BoExcelDownModal = {
       if (cmd === 'excel-run')        { return handleRun(); }
       if (cmd === 'running-cancel')   { return handleCancelRunning(); }
       if (cmd === 'mode-select')      { uiState.mode = param; return; }
+      if (cmd === 'detail-toggle')    { uiState.showDetail = !uiState.showDetail; return; }
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -97,15 +99,22 @@ window.BoExcelDownModal = {
     });
 
     /* cfCondText — 조건값정보. params 를 {"key":"value",...} JSON 오브젝트 그대로 보여준다
-       (서버 쪽 BoExcelDownService.condText() 와 동일 포맷). */
+       (서버 쪽 BoExcelDownService.condText() 와 동일 포맷). sort 는 별도 "정렬" 행으로 분리 표시하므로 제외. */
     const cfCondText = computed(() => {
       const entries = Object.entries(props.params || {})
         .filter(([k, v]) => v !== null && v !== undefined && String(v).trim() !== ''
-          && k !== 'pageNo' && k !== 'pageSize' && k !== 'excelColumns' && k !== 'excelCondText');
+          && k !== 'pageNo' && k !== 'pageSize' && k !== 'excelColumns' && k !== 'excelCondText' && k !== 'sort');
       if (!entries.length) { return '(전체 조회)'; }
       const obj = {};
       entries.forEach(([k, v]) => { obj[k] = v; });
       return JSON.stringify(obj);
+    });
+
+    /* cfSortText — 정렬정보. 화면이 sort 파라미터를 안 보내면 서버 기본 정렬(대개 등록일시 최신순)이
+       그대로 적용된다 — 선택한 적 없어도 "무슨 순서로 받는지"는 항상 알 수 있어야 하므로 기본값도 표시한다. */
+    const cfSortText = computed(() => {
+      const s = props.params && props.params.sort;
+      return (s && String(s).trim()) ? String(s) : '(지정 안 함 — 서버 기본 정렬 적용)';
     });
 
     /* ##### [04] 내장 사용 함수 ################################################## */
@@ -236,7 +245,7 @@ window.BoExcelDownModal = {
     return {
       uiState, handleBtnAction, handleGoHistory,
       cfBusy, cfRunning, cfTotal, cfSyncMax, cfSplitRows, cfWaiting, cfSyncOk, cfEmpty, cfFileCount,
-      cfCondText, cfColumnText,
+      cfCondText, cfColumnText, cfSortText,
       fnNum, fnDateTime, fnExcelParams,
     };
   },
@@ -288,20 +297,31 @@ window.BoExcelDownModal = {
     <!-- ===== ■. 다운로드 정보 (화면명 / 조건값정보 / 헤더명) — 이 화면에서 실제로 저장·다운로드될
          내용을 실행 전에 확인시키고, sy_exceldown 이력에도 동일 문구로 남는다 ================== -->
     <div style="border:1px solid #eee;border-radius:8px;padding:10px 12px;margin-bottom:14px;">
-      <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px;">다운로드 정보</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-size:11px;font-weight:700;color:#888;">다운로드 정보</div>
+        <button type="button" class="btn btn_list btn-xs" @click="handleBtnAction('detail-toggle')">
+          {{ uiState.showDetail ? '조건 상세 접기 ▲' : '조건 상세 보기 ▼' }}
+        </button>
+      </div>
       <table style="width:100%;font-size:12px;color:#555;">
         <tr>
           <td style="width:68px;color:#999;padding:3px 0;vertical-align:top;">화면명</td>
           <td>{{ uiNm || '-' }}</td>
         </tr>
-        <tr>
-          <td style="color:#999;padding:3px 0;vertical-align:top;">조건값</td>
-          <td style="word-break:break-all;">{{ cfCondText }}</td>
-        </tr>
-        <tr>
-          <td style="color:#999;padding:3px 0;vertical-align:top;">헤더명</td>
-          <td style="word-break:break-all;">{{ cfColumnText }}</td>
-        </tr>
+        <template v-if="uiState.showDetail">
+          <tr>
+            <td style="color:#999;padding:3px 0;vertical-align:top;">정렬</td>
+            <td style="word-break:break-all;">{{ cfSortText }}</td>
+          </tr>
+          <tr>
+            <td style="color:#999;padding:3px 0;vertical-align:top;">조건값</td>
+            <td style="word-break:break-all;">{{ cfCondText }}</td>
+          </tr>
+          <tr>
+            <td style="color:#999;padding:3px 0;vertical-align:top;">헤더명</td>
+            <td style="word-break:break-all;">{{ cfColumnText }}</td>
+          </tr>
+        </template>
       </table>
     </div>
     <!-- ===== ■. 방식 선택 =================================================== -->

@@ -13,6 +13,6 @@ public class CmChattChangeStatusDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 30) private String statusCd;
+        @Size(max = 30) private String statusCd;  // 변경할 채팅방 상태 — CHATT_STATUS {WAITING:대기, ACTIVE:진행중, DONE:완료}
     }
 }

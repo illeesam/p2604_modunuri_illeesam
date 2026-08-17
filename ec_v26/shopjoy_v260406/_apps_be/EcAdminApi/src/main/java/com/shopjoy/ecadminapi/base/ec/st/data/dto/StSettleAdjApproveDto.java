@@ -14,8 +14,8 @@ public class StSettleAdjApproveDto {
     @Getter @Setter @NoArgsConstructor
     public static class Request {
         /** 승인/반려 상태 코드 (대기/승인/반려) */
-        @Size(max = 30) private String aprvStatusCd;
+        @Size(max = 30) private String aprvStatusCd;   // 승인상태 — APRV_STATUS_CD (대기/승인/반려)
         /** 승인/반려 사유 */
-        @Size(max = 500) private String aprvReason;
+        @Size(max = 500) private String aprvReason;    // 승인/반려 사유
     }
 }

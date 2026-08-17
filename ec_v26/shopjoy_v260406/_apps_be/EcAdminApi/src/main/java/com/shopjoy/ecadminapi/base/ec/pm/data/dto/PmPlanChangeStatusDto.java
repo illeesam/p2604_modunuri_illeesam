@@ -13,6 +13,6 @@ public class PmPlanChangeStatusDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 30) private String statusCd;
+        @Size(max = 30) private String statusCd;  // 변경할 기획전상태 — PLAN_STATUS_CD {DRAFT:임시저장, ACTIVE:진행중, ENDED:종료, INACTIVE:비활성}
     }
 }

@@ -12,6 +12,6 @@ public class OdCartUpdateQtyDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        private Integer qty;
+        private Integer qty;  // 변경할 장바구니 수량
     }
 }

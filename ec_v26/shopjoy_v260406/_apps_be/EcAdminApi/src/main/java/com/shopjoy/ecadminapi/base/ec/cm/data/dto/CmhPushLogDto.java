@@ -12,29 +12,29 @@ public class CmhPushLogDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String logId;
+        @Size(max = 21) private String siteId;  // 사이트ID 필터
+        @Size(max = 21) private String logId;  // 로그ID 필터
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String logId;
-        private String channelCd;
-        private String templateId;
-        private String memberId;
-        private String recvAddr;
-        private String pushLogTitle;
-        private String pushLogContent;
-        private String resultCd;
-        private String failReason;
-        private LocalDateTime sendDate;
-        private String refTypeCd;
-        private String refId;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String logId;  // 로그ID (YYMMDDhhmmss+rand4)
+        private String channelCd;  // 발송채널 — MSG_CHANNEL {EMAIL:이메일, SMS:SMS, KAKAO:알림톡, PUSH:푸시}
+        private String templateId;  // 템플릿ID (sy_template.template_id)
+        private String memberId;  // 대상 회원ID
+        private String recvAddr;  // 수신처 (이메일/전화번호/디바이스토큰)
+        private String pushLogTitle;  // 발송 제목
+        private String pushLogContent;  // 발송 내용
+        private String resultCd;  // 발송결과 — SEND_RESULT {SUCCESS:성공, FAILED:실패, PENDING:대기, FAIL:실패}
+        private String failReason;  // 실패 사유
+        private LocalDateTime sendDate;  // 발송일시
+        private String refTypeCd;  // 연관유형코드 (ORDER/CLAIM/EVENT 등)
+        private String refId;  // 연관ID
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
     }
 
 }

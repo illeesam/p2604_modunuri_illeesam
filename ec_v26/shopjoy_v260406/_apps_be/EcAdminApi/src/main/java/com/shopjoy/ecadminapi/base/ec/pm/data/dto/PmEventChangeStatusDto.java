@@ -13,6 +13,6 @@ public class PmEventChangeStatusDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 30) private String statusCd;
+        @Size(max = 30) private String statusCd;  // 변경할 이벤트상태 — EVENT_STATUS_CD {PENDING:대기, ACTIVE:진행중, ENDED:종료, INACTIVE:비활성}
     }
 }

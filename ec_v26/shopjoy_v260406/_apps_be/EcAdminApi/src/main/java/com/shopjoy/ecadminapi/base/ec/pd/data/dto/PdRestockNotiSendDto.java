@@ -15,6 +15,6 @@ public class PdRestockNotiSendDto {
     @Getter @Setter @NoArgsConstructor
     public static class Request {
         /** 발송 대상 알림 ID 목록 */
-        private List<String> ids;
+        private List<String> ids;  // 발송 대상 재입고알림ID 목록
     }
 }

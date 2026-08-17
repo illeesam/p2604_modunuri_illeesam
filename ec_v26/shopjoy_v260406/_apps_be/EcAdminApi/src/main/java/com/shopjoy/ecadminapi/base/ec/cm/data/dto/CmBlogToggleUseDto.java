@@ -13,6 +13,6 @@ public class CmBlogToggleUseDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 1) private String useYn;
+        @Size(max = 1) private String useYn;  // 변경할 공개여부 Y/N
     }
 }

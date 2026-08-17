@@ -12,16 +12,16 @@ public class CmBlogGoodDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String blogGoodId;
+        @Size(max = 21) private String blogGoodId;  // 좋아요ID 필터
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String blogGoodId;
-        private String blogId;
-        private String userId;
-        private LocalDateTime regDate;
-        private String regSiteId;
+        private String blogGoodId;  // 좋아요ID
+        private String blogId;  // 블로그ID (cm_blog.blog_id)
+        private String userId;  // 사용자ID (sy_member.user_id)
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
     }
 
 }

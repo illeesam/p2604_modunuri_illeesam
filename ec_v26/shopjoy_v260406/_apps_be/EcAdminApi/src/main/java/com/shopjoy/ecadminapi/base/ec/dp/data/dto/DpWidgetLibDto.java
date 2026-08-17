@@ -12,32 +12,32 @@ public class DpWidgetLibDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String pathId;
-        @Size(max = 1) private String useYn;
-        @Size(max = 21) private String widgetLibId;
-        @Size(max = 30) private String widgetTypeCd;
+        @Size(max = 21) private String siteId;  // 사이트ID 필터
+        @Size(max = 21) private String pathId;  // 표시경로ID 필터
+        @Size(max = 1) private String useYn;  // 사용여부 Y/N 필터
+        @Size(max = 21) private String widgetLibId;  // 위젯라이브러리ID 필터
+        @Size(max = 30) private String widgetTypeCd;  // 위젯유형 필터 — WIDGET_TYPE_CD {image_banner:이미지 배너, product_slider:상품 슬라이더, chart_pie:차트(Pie) 등}
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String widgetLibId;
-        private String widgetCode;
-        private String widgetNm;
-        private String widgetTypeCd;
-        private String widgetLibDesc;
-        private String pathId;
-        private String thumbnailUrl;
-        private String widgetContent;
-        private String widgetConfigJson;
-        private String isSystem;
-        private Integer sortOrd;
-        private String useYn;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String widgetLibId;  // 위젯라이브러리ID (YYMMDDhhmmss+rand4)
+        private String widgetCode;  // 위젯코드
+        private String widgetNm;  // 위젯명
+        private String widgetTypeCd;  // 위젯유형 — WIDGET_TYPE_CD {image_banner:이미지 배너, product_slider:상품 슬라이더, chart_pie:차트(Pie) 등}
+        private String widgetLibDesc;  // 위젯라이브러리설명
+        private String pathId;  // 점(.) 구분 표시경로
+        private String thumbnailUrl;  // 미리보기 썸네일URL
+        private String widgetContent;  // 위젯내용 (HTML 에디터, 3개 테이블 통일)
+        private String widgetConfigJson;  // 위젯설정 (JSON, 3개 테이블 통일)
+        private String isSystem;  // 시스템기본위젯 Y/N
+        private Integer sortOrd;  // 정렬순서
+        private String useYn;  // 사용여부 Y/N
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
     }
 
 }

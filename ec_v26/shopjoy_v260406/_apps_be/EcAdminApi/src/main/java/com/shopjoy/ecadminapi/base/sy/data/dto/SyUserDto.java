@@ -17,13 +17,13 @@ public class SyUserDto {
         // ── 고유필드 (도메인 전용 검색조건) ────────────────────────
 
         @Size(max = 21, message = "deptId 는 21자 이내여야 합니다.")
-        private String deptId;
+        private String deptId;  // 부서ID 검색값
 
         @Size(max = 20, message = "status 는 20자 이내여야 합니다.")
-        private String status;
+        private String status;  // 상태 검색값 — USER_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
 
         @Size(max = 100, message = "role 은 100자 이내여야 합니다.")
-        private String role;
+        private String role;  // 역할ID 검색값 (sy_role.role_id)
     }
 
     /** 단건/목록 항목 */
@@ -31,32 +31,32 @@ public class SyUserDto {
     public static class Item {
 
         // ── sy_user ──────────────────────────────────────────
-        private String userId;
-        private String loginId;
-        private String loginPwdHash;
-        private String userNm;
-        private String userEmail;
-        private String userPhone;
-        private String deptId;
-        private String roleId;
-        private String userStatusCd;
-        private LocalDateTime lastLogin;
-        private Integer loginFailCnt;
-        private String userMemo;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
-        private String authMethodCd;
-        private LocalDateTime lastLoginDate;
-        private String profileAttachId;
+        private String userId;  // 사용자ID (YYMMDDhhmmss+rand4)
+        private String loginId;  // 로그인 아이디
+        private String loginPwdHash;  // 비밀번호 (bcrypt)
+        private String userNm;  // 사용자명
+        private String userEmail;  // 이메일
+        private String userPhone;  // 연락처
+        private String deptId;  // 부서ID (sy_dept.dept_id)
+        private String roleId;  // 역할ID (sy_role.role_id)
+        private String userStatusCd;  // 상태 — USER_STATUS_CD {ACTIVE:활성, INACTIVE:비활성}
+        private LocalDateTime lastLogin;  // 최근 로그인
+        private Integer loginFailCnt;  // 로그인 실패 횟수
+        private String userMemo;  // 메모
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
+        private String authMethodCd;  // 인증방식 — AUTH_METHOD_CD {EMAIL:이메일, GOOGLE:구글, KAKAO:카카오, NAVER:네이버, MAIN:기본인증}
+        private LocalDateTime lastLoginDate;  // 마지막 로그인 일시
+        private String profileAttachId;  // 프로필 첨부아이디
 
         // ── JOIN ─────────────────────────────────────────────────────
-        private String deptNm;
-        private String roleNm;
-        private String userStatusCdNm;
-        private String authMethodCdNm;
+        private String deptNm;  // 부서명 (JOIN)
+        private String roleNm;  // 역할명 (JOIN)
+        private String userStatusCdNm;  // 상태 코드명 (JOIN)
+        private String authMethodCdNm;  // 인증방식 코드명 (JOIN)
     }
 
     /* 페이징 응답은 공통 타입을 쓴다 — BasePage<SyUserDto.Item>.

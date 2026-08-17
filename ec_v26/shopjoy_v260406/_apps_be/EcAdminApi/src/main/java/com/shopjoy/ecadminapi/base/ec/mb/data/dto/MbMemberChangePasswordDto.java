@@ -13,7 +13,7 @@ public class MbMemberChangePasswordDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 200) private String currentPassword;
-        @Size(max = 200) private String newPassword;
+        @Size(max = 200) private String currentPassword;   // 현재 비밀번호
+        @Size(max = 200) private String newPassword;       // 새 비밀번호
     }
 }

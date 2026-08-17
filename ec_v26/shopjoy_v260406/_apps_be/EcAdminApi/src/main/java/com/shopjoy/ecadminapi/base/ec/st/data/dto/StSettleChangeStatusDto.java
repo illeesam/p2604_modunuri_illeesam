@@ -13,6 +13,6 @@ public class StSettleChangeStatusDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 30) private String statusCd;
+        @Size(max = 30) private String statusCd;   // 변경할 정산상태 — SETTLE_STATUS_CD
     }
 }

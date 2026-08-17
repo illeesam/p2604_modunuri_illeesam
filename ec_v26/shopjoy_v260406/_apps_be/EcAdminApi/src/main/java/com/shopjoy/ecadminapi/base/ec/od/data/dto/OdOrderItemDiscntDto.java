@@ -13,25 +13,25 @@ public class OdOrderItemDiscntDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String orderItemDiscntId;
+        @Size(max = 21) private String siteId;  // 사이트ID 필터
+        @Size(max = 21) private String orderItemDiscntId;  // 주문상품할인ID 필터
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String orderItemDiscntId;
-        private String orderId;
-        private String orderItemId;
-        private String discntTypeCd;
-        private String couponId;
-        private String couponIssueId;
-        private BigDecimal discntRate;
-        private Long unitDiscntAmt;
-        private Long totalDiscntAmt;
-        private Integer orderQty;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
+        private String orderItemDiscntId;  // 주문상품할인ID (YYMMDDhhmmss+rand4)
+        private String orderId;  // 주문ID (od_order.order_id)
+        private String orderItemId;  // 주문상품ID (od_order_item.order_item_id)
+        private String discntTypeCd;  // 할인유형코드 — ORDER_ITEM_DISCNT_TYPE {ITEM_COUPON:상품쿠폰, ITEM_DISCNT:상품할인}
+        private String couponId;  // 쿠폰ID (pm_coupon.coupon_id — ITEM_COUPON인 경우)
+        private String couponIssueId;  // 쿠폰발급ID (pm_coupon_issue.coupon_issue_id — ITEM_COUPON인 경우)
+        private BigDecimal discntRate;  // 할인율 (% — 비율할인인 경우)
+        private Long unitDiscntAmt;  // 1개당 할인금액
+        private Long totalDiscntAmt;  // 전체 할인금액 (unit_discnt_amt × order_qty)
+        private Integer orderQty;  // 주문수량 스냅샷
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
     }
 
 }

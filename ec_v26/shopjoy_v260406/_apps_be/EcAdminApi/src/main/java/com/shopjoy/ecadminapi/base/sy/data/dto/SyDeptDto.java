@@ -15,10 +15,10 @@ public class SyDeptDto {
     public static class Request extends BaseRequest {
 
         // ── 고유필드 (도메인 전용 검색조건) ────────────────────────
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String parentDeptId;
-        @Size(max = 20) private String typeCd;
-        @Size(max = 1)  private String useYn;
+        @Size(max = 21) private String siteId;  // 사이트ID 필터
+        @Size(max = 21) private String parentDeptId;  // 상위부서ID 필터
+        @Size(max = 20) private String typeCd;  // 부서유형 필터 — DEPT_TYPE_CD {HQ:본사, DEV:개발팀, DEV_BACKEND:백엔드, DEV_FRONTEND:프론트엔드, MKT:마케팅팀, LOGIS:물류팀}
+        @Size(max = 1)  private String useYn;  // 사용여부 필터 Y/N
     }
 
     /** 단건/목록 항목 */
@@ -26,20 +26,20 @@ public class SyDeptDto {
     public static class Item {
 
         // ── sy_dept ──────────────────────────────────────────
-        private String deptId;
-        private String deptCode;
-        private String deptNm;
-        private String parentDeptId;
-        private String deptTypeCd;
-        private String managerId;
-        private Integer sortOrd;
-        private String useYn;
-        private String deptRemark;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String deptId;  // 부서ID (YYMMDDhhmmss+rand4)
+        private String deptCode;  // 부서코드
+        private String deptNm;  // 부서명
+        private String parentDeptId;  // 상위부서ID
+        private String deptTypeCd;  // 부서유형 — DEPT_TYPE_CD {HQ:본사, DEV:개발팀, DEV_BACKEND:백엔드, DEV_FRONTEND:프론트엔드, MKT:마케팅팀, LOGIS:물류팀}
+        private String managerId;  // 부서장 (sy_user.user_id)
+        private Integer sortOrd;  // 정렬순서
+        private String useYn;  // 사용여부 Y/N
+        private String deptRemark;  // 비고
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
 
         // ── JOIN ──────────────────────────────────────────────
     }

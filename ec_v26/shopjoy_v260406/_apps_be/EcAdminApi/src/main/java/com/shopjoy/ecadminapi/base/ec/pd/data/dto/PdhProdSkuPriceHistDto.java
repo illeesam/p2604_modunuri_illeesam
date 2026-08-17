@@ -12,23 +12,23 @@ public class PdhProdSkuPriceHistDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String histId;
+        @Size(max = 21) private String siteId;  // 사이트ID (검색 필터)
+        @Size(max = 21) private String histId;  // 이력ID (단건 조회 필터)
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String histId;
-        private String prodSkuId;
-        private String prodId;
-        private Long addPriceBefore;
-        private Long addPriceAfter;
-        private String chgReason;
-        private String chgBy;
-        private LocalDateTime chgDate;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
+        private String histId;  // 이력ID (YYMMDDhhmmss+rand4)
+        private String prodSkuId;  // SKU ID (pd_prod_sku.prod_sku_id)
+        private String prodId;  // 상품ID (pd_prod.prod_id)
+        private Long addPriceBefore;  // 변경 전 옵션 추가금액
+        private Long addPriceAfter;  // 변경 후 옵션 추가금액
+        private String chgReason;  // 변경사유
+        private String chgBy;  // 처리자 (sy_user.user_id)
+        private LocalDateTime chgDate;  // 처리일시
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
     }
 
 }

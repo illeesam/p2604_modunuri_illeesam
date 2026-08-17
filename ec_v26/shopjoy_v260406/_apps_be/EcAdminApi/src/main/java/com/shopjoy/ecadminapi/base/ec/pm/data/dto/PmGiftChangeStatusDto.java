@@ -13,6 +13,6 @@ public class PmGiftChangeStatusDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 30) private String statusCd;
+        @Size(max = 30) private String statusCd;  // 변경할 사은품상태 — GIFT_STATUS_CD {ACTIVE:활성, INACTIVE:비활성, ENDED:종료, SOLDOUT:품절}
     }
 }

@@ -13,27 +13,27 @@ public class StSettleConfigDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 1) private String useYn;
-        @Size(max = 21) private String settleConfigId;
+        @Size(max = 21) private String siteId;                // 사이트ID 필터
+        @Size(max = 1) private String useYn;                   // 사용여부 필터 Y/N
+        @Size(max = 21) private String settleConfigId;         // 정산기준ID 필터
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String settleConfigId;
-        private String vendorId;
-        private String categoryId;
-        private String settleCycleCd;
-        private Integer settleDay;
-        private BigDecimal commissionRate;
-        private Long minSettleAmt;
-        private String settleConfigRemark;
-        private String useYn;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String settleConfigId;             // 정산기준ID (YYMMDDhhmmss+rand4)
+        private String vendorId;                      // 업체ID (NULL=전체 기준)
+        private String categoryId;                     // 카테고리ID (NULL=전체 기준)
+        private String settleCycleCd;                    // 정산주기 — SETTLE_CYCLE_CD (DAILY/WEEKLY/MONTHLY)
+        private Integer settleDay;                         // 정산일 (월 N일, MONTHLY 시 사용)
+        private BigDecimal commissionRate;                   // 수수료율 (%)
+        private Long minSettleAmt;                             // 최소 정산금액
+        private String settleConfigRemark;                      // 비고
+        private String useYn;                                    // 사용여부 Y/N
+        private String regBy;                                     // 등록자
+        private LocalDateTime regDate;                             // 등록일시
+        private String regSiteId;                                  // 등록 사이트ID
+        private String updBy;                                        // 수정자
+        private LocalDateTime updDate;                               // 수정일시
     }
 
 }

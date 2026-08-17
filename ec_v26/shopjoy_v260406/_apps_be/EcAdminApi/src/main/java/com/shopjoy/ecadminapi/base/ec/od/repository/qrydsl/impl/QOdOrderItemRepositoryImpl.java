@@ -19,6 +19,7 @@ import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.QOdOrderItemRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdSku;
@@ -54,6 +55,11 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QPdProdOpt oi2  = new QPdProdOpt("oi2");
     private static final QVwSyCode        cdIs      = new QVwSyCode("cd_is");
     private static final QVwSyCode        cdDc      = new QVwSyCode("cd_dc");
+    // 목록/엑셀 표시용 조인(1:1 — fan-out 없음). WHERE 절 EXISTS 서브쿼리용 "_ex" 별칭과는 별개 인스턴스.
+    private static final QOdOrder         odOrderJoin  = new QOdOrder("od_order_join");
+    private static final QSyVendor        syVendorJoin = new QSyVendor("sy_vendor_join");
+    private static final QSyUser          syUserJoin   = new QSyUser("sy_user_join");
+    private static final QPdCategory      pdCategoryJoin = new QPdCategory("pd_category_join");
     // EXISTS 서브쿼리용 별칭 (baseSelColumnQuery 의 pdProd 와 충돌 방지)
     private static final QPdProd          pNmEx      = new QPdProd("p_nm_ex");
     private static final QPdProd          pBrandEx   = new QPdProd("p_brand_ex");
@@ -133,6 +139,10 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         oi2.prodOptNm.as("prodOptNm2"),
                         cdIs.codeLabel.as("orderItemStatusCdNm"),
                         cdDc.codeLabel.as("dlivCourierCdNm"),
+                        odOrderJoin.memberNm.as("memberNm"),         // 주문자명 (od_order 스냅샷)
+                        syVendorJoin.vendorNm.as("vendorNm"),        // 판매업체명 (pd_prod → sy_vendor)
+                        syUserJoin.userNm.as("mdUserNm"),            // 담당MD명 (pd_prod → sy_user)
+                        pdCategoryJoin.categoryNm.as("categoryNm"),  // 카테고리명 (pd_prod → pd_category)
                         // 정산 금액 (st_settle_item, order_item_id 기준 전 항목 합산 — SALE/CANCEL/RETURN 순 합계)
                         ExpressionUtils.as(JPAExpressions.select(stSettleItemEx.itemPrice.sum())
                                 .from(stSettleItemEx)
@@ -187,7 +197,11 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOpt2Id))
                 .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd)))
                 .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd)))
-                .leftJoin(pmGiftEx).on(pmGiftEx.giftId.eq(odOrderItem.giftId));
+                .leftJoin(pmGiftEx).on(pmGiftEx.giftId.eq(odOrderItem.giftId))
+                .leftJoin(odOrderJoin).on(odOrderJoin.orderId.eq(odOrderItem.orderId))
+                .leftJoin(syVendorJoin).on(syVendorJoin.vendorId.eq(pdProd.vendorId))
+                .leftJoin(syUserJoin).on(syUserJoin.userId.eq(pdProd.mdUserId))
+                .leftJoin(pdCategoryJoin).on(pdCategoryJoin.categoryId.eq(pdProd.categoryId));
     }
 
     /* 주문 아이템(상품) 키조회 */

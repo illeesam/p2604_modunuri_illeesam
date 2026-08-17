@@ -13,23 +13,23 @@ public class CmBlogTagDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String blogTagId;
+        @Size(max = 21) private String siteId;  // 사이트ID 필터
+        @Size(max = 21) private String blogTagId;  // 태그ID 필터
         @Size(max = 21) private String blogId;          // 상위 FK 필터
         private List<String> blogIds;                  // 상위 FK 다건 IN
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String blogTagId;
-        private String blogId;
-        private String tagNm;
-        private Integer sortOrd;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String blogTagId;  // 태그ID
+        private String blogId;  // 블로그ID
+        private String tagNm;  // 태그명
+        private Integer sortOrd;  // 정렬순서
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
     }
 
 }

@@ -12,38 +12,38 @@ public class SyBbsDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String bbsId;
-        @Size(max = 21) private String bbmId;
-        @Size(max = 21) private String pathId;
-        @Size(max = 20) private String status;
+        @Size(max = 21) private String siteId;  // 사이트ID 필터
+        @Size(max = 21) private String bbsId;  // 게시물ID 필터
+        @Size(max = 21) private String bbmId;  // 게시판ID 필터
+        @Size(max = 21) private String pathId;  // 표시경로ID 필터
+        @Size(max = 20) private String status;  // 상태 필터 — BBS_STATUS {ACTIVE:활성, HIDDEN:숨김, DELETED:삭제}
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
 
         // ── sy_bbs ──────────────────────────────────────────
-        private String bbsId;
-        private String bbmId;
-        private String parentBbsId;
-        private String memberId;
-        private String authorNm;
-        private String bbsTitle;
-        private String contentHtml;
-        private Integer viewCount;
-        private Integer likeCount;
-        private Integer commentCount;
-        private String isFixed;
-        private String bbsStatusCd;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
-        private String pathId;
+        private String bbsId;  // 게시물ID (YYMMDDhhmmss+rand4)
+        private String bbmId;  // 게시판ID
+        private String parentBbsId;  // 부모게시물ID (답글)
+        private String memberId;  // 작성자 회원ID
+        private String authorNm;  // 작성자명
+        private String bbsTitle;  // 제목
+        private String contentHtml;  // 내용 (HTML)
+        private Integer viewCount;  // 조회수
+        private Integer likeCount;  // 좋아요수
+        private Integer commentCount;  // 댓글수
+        private String isFixed;  // 상단고정 Y/N
+        private String bbsStatusCd;  // 상태 — BBS_STATUS {ACTIVE:활성, HIDDEN:숨김, DELETED:삭제}
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
+        private String pathId;  // 점(.) 구분 표시경로 (트리 빌드용)
 
         // ── JOIN ──────────────────────────────────────────────
-        private String bbmNm;
+        private String bbmNm;  // 게시판명
     }
 
 }

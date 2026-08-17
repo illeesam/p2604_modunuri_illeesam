@@ -20,9 +20,9 @@ public class PdCategoryUpdateProdsDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Row {
-        private String categoryProdId;
-        private String prodId;
-        private Integer sortOrd;
-        private String dispYn;
+        private String categoryProdId;  // 상품카테고리연결ID
+        private String prodId;          // 상품ID
+        private Integer sortOrd;        // 표시 순서
+        private String dispYn;          // 전시여부 Y/N
     }
 }

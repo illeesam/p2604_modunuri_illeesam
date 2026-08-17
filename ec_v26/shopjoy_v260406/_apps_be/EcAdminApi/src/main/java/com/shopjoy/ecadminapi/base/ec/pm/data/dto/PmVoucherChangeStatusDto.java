@@ -13,6 +13,6 @@ public class PmVoucherChangeStatusDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 30) private String statusCd;
+        @Size(max = 30) private String statusCd;  // 변경할 상품권상태 — VOUCHER_STATUS_CD {ACTIVE:활성, USED:사용완료, EXPIRED:만료, CANCELLED:취소, INACTIVE:비활성}
     }
 }

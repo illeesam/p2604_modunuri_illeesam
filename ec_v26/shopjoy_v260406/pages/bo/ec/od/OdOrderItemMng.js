@@ -461,7 +461,10 @@ window.OdOrderItemMng = {
         headerTip: '주문 접수 완료 · 무통장 입금대기 상태 (ORDERED / WAIT_DEPOSIT)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => (row.orderItemStatusCd === 'ORDERED' || row.orderItemStatusCd === 'WAIT_DEPOSIT') ? { bg: '#2563eb', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row) => openStatusPopover(row) },
+        onBadgeClick: (row) => openStatusPopover(row),
+        /* 진행상태 8칸은 화면 전용 아이콘 뱃지라 엑셀엔 그대로 못 실음(BoExcelDownModal 규칙) —
+           대표로 이 칸에 excelKeys 를 걸어 실제 텍스트 필드(orderItemStatusCdNm)로 1컬럼만 내보낸다. */
+        excelKeys: [{ key: 'orderItemStatusCdNm', label: '진행상태' }] },
       { key: '_stPaid',    label: '결제완료', colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
         headerTip: '결제 완료 상태 (PAID)',

@@ -12,31 +12,31 @@ public class StSettlePayDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String settlePayId;
-        @Size(max = 20) private String payStatusCd;
+        @Size(max = 21) private String siteId;                // 사이트ID 필터
+        @Size(max = 21) private String settlePayId;           // 정산지급ID 필터
+        @Size(max = 20) private String payStatusCd;           // 지급상태 필터 — SETTLE_PAY_STATUS (PENDING/COMPLT/FAILED)
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String settlePayId;
-        private String settleId;
-        private String vendorId;
-        private Long payAmt;
-        private String payMethodCd;
-        private String bankNm;
-        private String bankAccount;
-        private String bankHolder;
-        private String payStatusCd;
-        private String payStatusCdBefore;
-        private LocalDateTime payDate;
-        private String payBy;
-        private String settlePayMemo;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String settlePayId;              // 정산지급ID (YYMMDDhhmmss+rand4)
+        private String settleId;                   // 정산ID (st_settle.settle_id)
+        private String vendorId;                     // 업체ID (sy_vendor.vendor_id)
+        private Long payAmt;                           // 지급금액
+        private String payMethodCd;                      // 지급수단 — PAY_METHOD
+        private String bankNm;                             // 은행명
+        private String bankAccount;                          // 계좌번호
+        private String bankHolder;                            // 예금주
+        private String payStatusCd;                             // 지급상태 — SETTLE_PAY_STATUS (PENDING/COMPLT/FAILED)
+        private String payStatusCdBefore;                         // 변경 전 상태
+        private LocalDateTime payDate;                              // 실지급 일시
+        private String payBy;                                        // 지급처리자 (sy_user.user_id)
+        private String settlePayMemo;                                 // 메모
+        private String regBy;                                          // 등록자
+        private LocalDateTime regDate;                                  // 등록일시
+        private String regSiteId;                                       // 등록 사이트ID
+        private String updBy;                                            // 수정자
+        private LocalDateTime updDate;                                    // 수정일시
     }
 
 }

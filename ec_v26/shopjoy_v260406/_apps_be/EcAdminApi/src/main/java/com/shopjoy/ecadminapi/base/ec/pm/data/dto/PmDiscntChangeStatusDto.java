@@ -13,6 +13,6 @@ public class PmDiscntChangeStatusDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        @Size(max = 30) private String statusCd;
+        @Size(max = 30) private String statusCd;  // 변경할 할인상태 — DISCNT_STATUS_CD {ACTIVE:진행중, INACTIVE:비활성, EXPIRED:종료}
     }
 }

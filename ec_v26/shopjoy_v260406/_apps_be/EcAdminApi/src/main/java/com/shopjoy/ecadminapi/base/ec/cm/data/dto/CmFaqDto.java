@@ -15,10 +15,10 @@ public class CmFaqDto {
     public static class Request extends BaseRequest {
 
         // ── 고유필드 (도메인 전용 검색조건) ────────────────────────
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String faqId;
+        @Size(max = 21) private String siteId;  // 사이트ID 필터
+        @Size(max = 21) private String faqId;  // FAQ ID 필터
         @Size(max = 21) private String pathId;   // 선택 노드 (하위 트리 포함 조회)
-        @Size(max = 1)  private String useYn;
+        @Size(max = 1)  private String useYn;  // 노출여부 Y/N 필터
     }
 
     /** 단건/목록 항목 */
@@ -26,21 +26,21 @@ public class CmFaqDto {
     public static class Item {
 
         // ── cm_faq ────────────────────────────────────────────────
-        private String faqId;
-        private String pathId;
-        private String faqQuestion;
-        private String faqAnswer;
-        private Integer sortOrd;
-        private String useYn;
-        private Integer viewCount;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String faqId;  // FAQ ID
+        private String pathId;  // FAQ 분류 표시경로 (sy_path.path_id, biz_cd=cm_faq)
+        private String faqQuestion;  // 질문
+        private String faqAnswer;  // 답변(HTML)
+        private Integer sortOrd;  // 정렬순서
+        private String useYn;  // 노출여부 Y/N
+        private Integer viewCount;  // 조회수
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
 
         // ── JOIN ──────────────────────────────────────────────────
-        private String siteNm;
+        private String siteNm;  // 사이트명 (조인)
         private String pathLabel;   // sy_path.path_label (분류 표시명)
     }
 

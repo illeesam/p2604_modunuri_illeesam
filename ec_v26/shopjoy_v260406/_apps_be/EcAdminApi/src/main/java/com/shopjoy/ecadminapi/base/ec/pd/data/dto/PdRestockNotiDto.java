@@ -12,25 +12,25 @@ public class PdRestockNotiDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String restockNotiId;
-        @Size(max = 21) private String prodId;
-        @Size(max = 1)  private String notiYn;
+        @Size(max = 21) private String siteId;  // 사이트ID (검색 필터)
+        @Size(max = 21) private String restockNotiId;  // 재입고알림ID (단건 조회 필터)
+        @Size(max = 21) private String prodId;  // 상품ID 필터
+        @Size(max = 1)  private String notiYn;  // 알림발송여부 필터 Y/N
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String restockNotiId;
-        private String prodId;
-        private String prodSkuId;
-        private String memberId;
-        private String notiYn;
-        private LocalDateTime notiDate;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String restockNotiId;  // 재입고알림ID (YYMMDDhhmmss+rand4)
+        private String prodId;  // 상품ID (pd_prod.prod_id)
+        private String prodSkuId;  // SKUID (pd_prod_sku.prod_sku_id)
+        private String memberId;  // 회원ID (mb_member.member_id)
+        private String notiYn;  // 알림발송여부 Y/N
+        private LocalDateTime notiDate;  // 알림발송일시
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
     }
 
 }

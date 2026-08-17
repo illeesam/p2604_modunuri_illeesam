@@ -14,30 +14,30 @@ public class PmCacheDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String cacheId;
-        @Size(max = 21) private String memberId;
-        @Size(max = 20) private String cacheTypeCd;
+        @Size(max = 21) private String siteId;      // 사이트ID
+        @Size(max = 21) private String cacheId;      // 적립금ID 필터
+        @Size(max = 21) private String memberId;     // 회원ID 필터
+        @Size(max = 20) private String cacheTypeCd;  // 유형 — CACHE_TYPE_CD {EARN_ADMIN:관리자 지급, EARN_EVENT:이벤트 지급, USE_ORDER:주문 사용, REFUND:환불 복원, EXPIRE:소멸, ADMIN_ADJ:관리자조정, BONUS:보너스, CHARGE:충전 외 1개}
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String cacheId;
-        private String memberId;
-        private String memberNm;
-        private String cacheTypeCd;
-        private Long cacheAmt;
-        private Long balanceAmt;
-        private String refId;
-        private String cacheDesc;
-        private String procUserId;
-        private LocalDateTime cacheDate;
-        private LocalDate expireDate;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String cacheId;          // 적립금ID (YYMMDDhhmmss+rand4)
+        private String memberId;         // 회원ID
+        private String memberNm;         // 회원명
+        private String cacheTypeCd;      // 유형 — CACHE_TYPE_CD {EARN_ADMIN:관리자 지급, EARN_EVENT:이벤트 지급, USE_ORDER:주문 사용, REFUND:환불 복원, EXPIRE:소멸, ADMIN_ADJ:관리자조정, BONUS:보너스, CHARGE:충전 외 1개}
+        private Long cacheAmt;           // 금액 (양수:적립 / 음수:차감)
+        private Long balanceAmt;         // 처리후 잔액
+        private String refId;            // 참조ID (주문ID 등)
+        private String cacheDesc;        // 내역 설명
+        private String procUserId;       // 처리자 (관리자 직접 부여시)
+        private LocalDateTime cacheDate; // 처리일시
+        private LocalDate expireDate;    // 소멸예정일
+        private String regBy;            // 등록자
+        private LocalDateTime regDate;   // 등록일
+        private String regSiteId;        // 등록 사이트ID
+        private String updBy;            // 수정자
+        private LocalDateTime updDate;   // 수정일
     }
 
 

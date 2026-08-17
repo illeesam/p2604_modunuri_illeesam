@@ -15,10 +15,10 @@ public class SySiteDto {
     public static class Request extends BaseRequest {
 
         // ── 고유필드 (도메인 전용 검색조건) ────────────────────────
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String pathId;
-        @Size(max = 20) private String status;
-        @Size(max = 20) private String typeCd;
+        @Size(max = 21) private String siteId;  // 사이트ID 검색값
+        @Size(max = 21) private String pathId;  // 표시경로ID 검색값
+        @Size(max = 20) private String status;  // 상태 검색값 — SITE_STATUS_CD {ACTIVE:활성, MAINTENANCE:점검중, INACTIVE:비활성}
+        @Size(max = 20) private String typeCd;  // 사이트유형 검색값 — SITE_TYPE_CD {EC:이커머스, ADMIN:관리자, API:API}
     }
 
     /** 단건/목록 항목 */
@@ -26,32 +26,32 @@ public class SySiteDto {
     public static class Item {
 
         // ── sy_site ──────────────────────────────────────────
-        private String siteId;
-        private String siteNm;
-        private String siteCode;
-        private String siteTypeCd;
-        private String siteDomain;
-        private String logoUrl;
-        private String faviconUrl;
-        private String siteDesc;
-        private String siteEmail;
-        private String sitePhone;
-        private String siteZipCode;
-        private String siteAddress;
-        private String siteBusinessNo;
-        private String siteCeo;
-        private String siteStatusCd;
-        private String configJson;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
-        private String pathId;
+        private String siteId;  // 사이트ID (YYMMDDhhmmss+rand4)
+        private String siteNm;  // 사이트명
+        private String siteCode;  // 사이트코드
+        private String siteTypeCd;  // 사이트유형 — SITE_TYPE_CD {EC:이커머스, ADMIN:관리자, API:API}
+        private String siteDomain;  // 도메인
+        private String logoUrl;  // 로고URL
+        private String faviconUrl;  // 파비콘URL
+        private String siteDesc;  // 사이트설명
+        private String siteEmail;  // 대표이메일
+        private String sitePhone;  // 대표전화
+        private String siteZipCode;  // 우편번호
+        private String siteAddress;  // 주소
+        private String siteBusinessNo;  // 사업자번호
+        private String siteCeo;  // 대표자명
+        private String siteStatusCd;  // 상태 — SITE_STATUS_CD {ACTIVE:활성, MAINTENANCE:점검중, INACTIVE:비활성}
+        private String configJson;  // 확장설정 (JSON)
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
+        private String pathId;  // 점(.) 구분 표시경로 (트리 빌드용)
 
         // ── JOIN ──────────────────────────────────────────────
-        private String siteTypeCdNm;
-        private String siteStatusCdNm;
+        private String siteTypeCdNm;  // 사이트유형 코드명 (JOIN)
+        private String siteStatusCdNm;  // 상태 코드명 (JOIN)
     }
 
     /** 응답 (pageList + 페이징 메타 + 조회조건 echo) */

@@ -17,6 +17,6 @@ public class SyI18nSaveMsgsDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request {
-        private Map<String, String> msgs;
+        private Map<String, String> msgs;  // 언어코드→메시지 맵 (예: { "ko": "안녕하세요", "en": "Hello" })
     }
 }
