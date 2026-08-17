@@ -33,7 +33,11 @@ window.SyUserDtl = {
     const schema = yup.object({                    // 폼 검증 스키마
       loginId:  yup.string().required('로그인ID를 입력해주세요.'),
       userNm:   yup.string().required('이름을 입력해주세요.'),
-      userEmail: yup.string().required('이메일을 입력해주세요.'),
+      userEmail: yup.string().required('이메일을 입력해주세요.')
+        .matches(coUtil.REGEX_EMAIL, '올바른 이메일 형식이 아닙니다.'),
+      userPhone: yup.string().matches(coUtil.REGEX_PHONE, '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)'),
+      password: yup.string().matches(coUtil.REGEX_PASSWORD,
+        '비밀번호는 8자 이상이며 영문 대/소문자·숫자·특수문자를 모두 포함해야 합니다.'),
     });
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
@@ -137,10 +141,9 @@ window.SyUserDtl = {
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
-        return;
       }
-      if (cfIsNew.value && !form.password) { showToast('신규 등록 시 비밀번호는 필수입니다.', 'error'); return; }
+      if (cfIsNew.value && !form.password) { errors.password = '신규 등록 시 비밀번호는 필수입니다.'; }
+      if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
       try {
@@ -226,11 +229,14 @@ window.SyUserDtl = {
       { key: 'password',     label: '비밀번호', type: 'password',
         required: cfIsNew.value, placeholder: '비밀번호',
         visible: () => !cfDtlMode.value,
-        hint: cfIsNew.value ? '' : '변경 시에만 입력' },
+        hint: cfIsNew.value ? '' : '변경 시에만 입력',
+        validate: (v) => v && !coUtil.cofIsValidPassword(v) ? '8자 이상, 영문 대/소문자·숫자·특수문자를 모두 포함해야 합니다.' : null },
       { key: 'userNm',       label: '이름', type: 'text', required: true, placeholder: '이름' },
-      { key: 'userEmail',    label: '이메일', type: 'text', required: true, placeholder: '이메일' },
+      { key: 'userEmail',    label: '이메일', type: 'text', required: true, placeholder: '이메일',
+        validate: (v) => !coUtil.cofIsValidEmail(v) ? '올바른 이메일 형식이 아닙니다.' : null },
       // 3행: 연락처 / 부서 / 역할
-      { key: 'userPhone',    label: '연락처', type: 'text', placeholder: '010-0000-0000' },
+      { key: 'userPhone',    label: '연락처', type: 'text', placeholder: '010-0000-0000',
+        validate: (v) => !coUtil.cofIsValidPhone(v) ? '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)' : null },
       { key: 'deptNm',       label: '부서', type: 'slot', name: 'dept' },
       { key: 'roleId',       label: '역할', type: 'select', options: () => codes.user_roles },
       // 4행: 상태 (1) + (자연 빈칸 2)

@@ -236,7 +236,19 @@ const doSave = async () => {
 <div v-if="errors.field" class="field-error">{{ errors.field }}</div>
 ```
 
-주의: Yup shim 은 `.matches()` 미지원.
+Yup shim 은 `.matches(regex, msg)` 지원(2026-08-18). 이메일/전화/비밀번호 등 포맷 검증은
+정규식을 새로 만들지 말고 `coUtil.REGEX_EMAIL` / `REGEX_MOBILE` / `REGEX_PHONE` / `REGEX_PASSWORD`
+를 재사용한다:
+```js
+const schema = yup.object({
+  userEmail: yup.string().required('이메일을 입력해주세요.')
+    .matches(coUtil.REGEX_EMAIL, '올바른 이메일 형식이 아닙니다.'),
+  userPhone: yup.string().matches(coUtil.REGEX_PHONE, '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)'),
+});
+```
+yup 을 쓰지 않는 화면(수동 `errors.x = '메시지'` 가드)은 `coUtil.cofIsValidEmail(v)` /
+`cofIsValidMobile(v)` / `cofIsValidPhone(v)` / `cofIsValidPassword(v)` 를 직접 호출한다
+(값이 비어있으면 형식 오류로 보지 않음 — 필수 여부는 별도 체크).
 
 ---
 

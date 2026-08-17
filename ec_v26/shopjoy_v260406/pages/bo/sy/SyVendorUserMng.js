@@ -414,7 +414,10 @@ window.SyVendorUserMng = {
       Object.keys(errors).forEach(k => delete errors[k]);
       if (!formData.memberNm) { errors.memberNm = '이름을 입력해주세요.'; }
       if (!formData.vendorUserMobile) { errors.vendorUserMobile = '휴대전화를 입력해주세요.'; }
+      else if (!coUtil.cofIsValidMobile(formData.vendorUserMobile)) { errors.vendorUserMobile = '올바른 휴대전화 형식이 아닙니다. (예: 010-1234-5678)'; }
       if (!formData.vendorUserEmail) { errors.vendorUserEmail = '이메일을 입력해주세요.'; }
+      else if (!coUtil.cofIsValidEmail(formData.vendorUserEmail)) { errors.vendorUserEmail = '올바른 이메일 형식이 아닙니다.'; }
+      if (!coUtil.cofIsValidPhone(formData.vendorUserPhone)) { errors.vendorUserPhone = '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)'; }
       if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const isNewUser = uiState.formMode === 'new';
       const ok = await showConfirm(isNewUser?'등록':'저장', isNewUser?'등록하시겠습니까?':'저장하시겠습니까?');
@@ -688,9 +691,12 @@ window.SyVendorUserMng = {
       { key: 'memberNm',          label: '이름', type: 'text', required: true },
       { key: 'positionCd',        label: '직위', type: 'text' },
       { key: 'vendorUserDeptNm',  label: '부서', type: 'text' },
-      { key: 'vendorUserPhone',   label: '사무실 전화', type: 'text' },
-      { key: 'vendorUserMobile',  label: '휴대전화', type: 'text', required: true },
-      { key: 'vendorUserEmail',   label: '이메일', type: 'text', required: true },
+      { key: 'vendorUserPhone',   label: '사무실 전화', type: 'text',
+        validate: (v) => !coUtil.cofIsValidPhone(v) ? '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)' : null },
+      { key: 'vendorUserMobile',  label: '휴대전화', type: 'text', required: true,
+        validate: (v) => v && !coUtil.cofIsValidMobile(v) ? '올바른 휴대전화 형식이 아닙니다. (예: 010-1234-5678)' : null },
+      { key: 'vendorUserEmail',   label: '이메일', type: 'text', required: true,
+        validate: (v) => v && !coUtil.cofIsValidEmail(v) ? '올바른 이메일 형식이 아닙니다.' : null },
       { key: 'birthDate',         label: '생년월일', type: 'date' },
       { type: 'group', label: '권한 · 재직정보' },
       { key: 'isMain',            label: '대표 담당자', type: 'select', options: () => codes.BOOL_YN },

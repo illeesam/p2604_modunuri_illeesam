@@ -31,6 +31,8 @@ window.SyVendorDtl = {
     const schema = yup.object({                    // 폼 검증 스키마
       vendorNm: yup.string().required('업체명을 입력해주세요.'),
       vendorNo: yup.string().required('사업자등록번호를 입력해주세요.'),
+      vendorPhone: yup.string().matches(coUtil.REGEX_PHONE, '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)'),
+      vendorEmail: yup.string().matches(coUtil.REGEX_EMAIL, '올바른 이메일 형식이 아닙니다.'),
     });
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
@@ -171,8 +173,10 @@ window.SyVendorDtl = {
       { key: 'vendorNo',       label: '사업자등록번호', type: 'text', required: true, placeholder: '000-00-00000' },
       { key: 'ceoNm',          label: '대표자명', type: 'text' },
       // 3행: 전화번호 / 이메일 / 계약일
-      { key: 'vendorPhone',    label: '전화번호', type: 'text' },
-      { key: 'vendorEmail',    label: '이메일', type: 'text' },
+      { key: 'vendorPhone',    label: '전화번호', type: 'text',
+        validate: (v) => !coUtil.cofIsValidPhone(v) ? '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)' : null },
+      { key: 'vendorEmail',    label: '이메일', type: 'text',
+        validate: (v) => !coUtil.cofIsValidEmail(v) ? '올바른 이메일 형식이 아닙니다.' : null },
       { key: 'contractDate',   label: '계약일', type: 'date' },
       // 4행: 주소(2) + 상태(1)
       { key: '_addr',          label: '주소', type: 'slot', name: 'addr', colSpan: 2 },

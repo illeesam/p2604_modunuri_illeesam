@@ -38,6 +38,8 @@ window.SySiteDtl = {
       siteCode: yup.string().required('사이트코드를 입력해주세요.'),
       siteNm: yup.string().required('사이트명을 입력해주세요.'),
       siteDomain: yup.string().required('도메인을 입력해주세요.'),
+      siteEmail: yup.string().matches(coUtil.REGEX_EMAIL, '올바른 이메일 형식이 아닙니다.'),
+      sitePhone: yup.string().matches(coUtil.REGEX_PHONE, '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)'),
     });
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
@@ -200,8 +202,10 @@ window.SySiteDtl = {
       { key: 'siteDesc',       label: '사이트 설명', type: 'text', placeholder: '사이트 한줄 설명' },
       { type: 'group', label: '연락처 · 브랜딩' },
       // 4행: 대표이메일 / 대표전화 / 대표자명
-      { key: 'siteEmail',      label: '대표이메일', type: 'text', placeholder: 'help@shopjoy.com' },
-      { key: 'sitePhone',      label: '대표전화',   type: 'text', placeholder: '02-1234-5678' },
+      { key: 'siteEmail',      label: '대표이메일', type: 'text', placeholder: 'help@shopjoy.com',
+        validate: (v) => !coUtil.cofIsValidEmail(v) ? '올바른 이메일 형식이 아닙니다.' : null },
+      { key: 'sitePhone',      label: '대표전화',   type: 'text', placeholder: '02-1234-5678',
+        validate: (v) => !coUtil.cofIsValidPhone(v) ? '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)' : null },
       { key: 'siteCeo',        label: '대표자명',   type: 'text' },
       // 5행: 사업자등록번호 / 주소(2)
       { key: 'siteBusinessNo', label: '사업자등록번호', type: 'text', placeholder: '000-00-00000' },

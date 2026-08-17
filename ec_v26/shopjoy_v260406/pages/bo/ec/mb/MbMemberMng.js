@@ -240,7 +240,10 @@ window.MbMemberMng = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       if (!detailPanel.form.loginId) { errors.loginId = '로그인ID를 입력해주세요.'; }
+      else if (!coUtil.cofIsValidEmail(detailPanel.form.loginId)) { errors.loginId = '로그인ID는 이메일 형식이어야 합니다.'; }
       if (!detailPanel.form.memberNm) { errors.memberNm = '이름을 입력해주세요.'; }
+      if (!coUtil.cofIsValidEmail(detailPanel.form.memberEmail)) { errors.memberEmail = '올바른 이메일 형식이 아닙니다.'; }
+      if (!coUtil.cofIsValidMobile(detailPanel.form.memberPhone)) { errors.memberPhone = '올바른 휴대전화 형식이 아닙니다. (예: 010-1234-5678)'; }
       if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const isNewMember = detailPanel.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');

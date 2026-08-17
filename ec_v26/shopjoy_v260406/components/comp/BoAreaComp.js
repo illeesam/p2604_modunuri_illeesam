@@ -2496,8 +2496,18 @@ window.BoFormArea = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ BoFormArea : handleSelectAction -> ', cmd, param);
       if (cmd === 'field-change') {
-        // 입력값이 채워지면 해당 필드의 검증 오류 라벨을 즉시 지운다 (다음 저장 전까지 남아있지 않도록)
-        if (props.errors && props.errors[param.col.key] && props.form[param.col.key]) { delete props.errors[param.col.key]; }
+        /* 입력할 때마다 오류 라벨을 즉시 갱신한다.
+           col.validate(value, form) 가 있으면 그 결과로(형식검증 등 실시간 재판정),
+           없으면 값이 채워지기만 해도 지운다(단순 필수입력) — 다음 저장 전까지 남아있지 않도록. */
+        if (props.errors) {
+          const col = param.col, v = props.form[col.key];
+          if (col.validate) {
+            const msg = col.validate(v, props.form);
+            if (msg) { props.errors[col.key] = msg; } else if (props.errors[col.key]) { delete props.errors[col.key]; }
+          } else if (props.errors[col.key] && v) {
+            delete props.errors[col.key];
+          }
+        }
         if (param.col.onChange) return param.col.onChange(props.form[param.col.key], props.form, param.event);
       } else if (cmd === 'field-checkbox-change') {
         const col = param.col, e = param.event;

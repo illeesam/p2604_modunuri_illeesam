@@ -81,10 +81,13 @@ window.MbMemberDtl = {
     const columns = {};
     columns.baseForm = [
       { type: 'group', label: '기본정보' },
-      { key: 'loginId',        label: '로그인ID', type: 'text', required: true, placeholder: '로그인ID (이메일 형식)' },
-      { key: 'memberEmail',    label: '이메일',   type: 'text', placeholder: '수신용 이메일' },
+      { key: 'loginId',        label: '로그인ID', type: 'text', required: true, placeholder: '로그인ID (이메일 형식)',
+        validate: (v) => v && !coUtil.cofIsValidEmail(v) ? '로그인ID는 이메일 형식이어야 합니다.' : null },
+      { key: 'memberEmail',    label: '이메일',   type: 'text', placeholder: '수신용 이메일',
+        validate: (v) => !coUtil.cofIsValidEmail(v) ? '올바른 이메일 형식이 아닙니다.' : null },
       { key: 'memberNm',       label: '이름',      type: 'text', required: true, placeholder: '이름' },
-      { key: 'memberPhone',    label: '연락처',    type: 'text', placeholder: '010-0000-0000' },
+      { key: 'memberPhone',    label: '연락처',    type: 'text', placeholder: '010-0000-0000',
+        validate: (v) => !coUtil.cofIsValidMobile(v) ? '올바른 휴대전화 형식이 아닙니다. (예: 010-1234-5678)' : null },
       { type: 'group', label: '인증정보' },
       { key: 'gradeCd',        label: '등급',      type: 'select', options: () => codes.member_grades },
       { key: 'memberStatusCd', label: '상태',      type: 'select', options: () => codes.member_statuses },

@@ -42,6 +42,7 @@ window.OdDlivDtl = {
     const schema = yup.object({
       dlivId: yup.string().required('배송ID를 입력해주세요.'),
       orderId: yup.string().required('주문ID를 입력해주세요.'),
+      recvPhone: yup.string().matches(coUtil.REGEX_PHONE, '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)'),
     });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -325,7 +326,8 @@ window.OdDlivDtl = {
       { key: 'memberNm',     label: '회원명', type: 'slot', name: 'memberNm' },
       { key: 'recvNm',       label: '수령인', type: 'text' },
       { key: 'recvAddr',     label: '배송지 주소', type: 'text', placeholder: '주소 입력', colSpan: 2 },
-      { key: 'recvPhone',    label: '연락처', type: 'text', placeholder: '010-0000-0000' },
+      { key: 'recvPhone',    label: '연락처', type: 'text', placeholder: '010-0000-0000',
+        validate: (v) => !coUtil.cofIsValidPhone(v) ? '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)' : null },
       { key: 'dlivStatusCd', label: '상태', type: 'select', options: () => codes.dliv_statuses },
       { key: 'dlivMemo',     label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
     ];
