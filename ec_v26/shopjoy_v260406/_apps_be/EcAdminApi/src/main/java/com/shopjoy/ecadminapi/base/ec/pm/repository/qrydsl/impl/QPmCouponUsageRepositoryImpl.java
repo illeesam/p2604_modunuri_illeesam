@@ -75,6 +75,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId()),
+                    QdslUtil.strEq(pmCouponUsage.orderId, search.getOrderId()),
                     QdslUtil.strEq(pmCouponUsage.orderItemId, search.getOrderItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
@@ -101,6 +102,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmCouponUsage.couponUsageId, search.getCouponUsageId()),
+                QdslUtil.strEq(pmCouponUsage.orderId, search.getOrderId()),
                 QdslUtil.strEq(pmCouponUsage.orderItemId, search.getOrderItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())

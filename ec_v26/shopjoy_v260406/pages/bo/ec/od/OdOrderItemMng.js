@@ -65,6 +65,21 @@ window.OdOrderItemMng = {
     };
     const closePromoModal = () => { promoModal.show = false; };
 
+    /* 주문ID 그룹헤더 우측 [주문상세]/[프로모션상세] — 둘 다 새 창(window.open) 팝업으로 연다.
+     *   주문상세: bo.html 앱 셸을 새 창에 그대로 열어 기존 OdOrderDtl 페이지로 라우팅(클레임 탭 포함,
+     *   신규 화면 없이 기존 인프라 재사용). 프로모션상세: 주문 전체 항목의 프로모션 적용내역을
+     *   보여주는 전용 팝업 페이지(bo-od-order-promo-pop.html, 칸반 팝업과 동일한 독립 HTML 패턴). */
+    const openOrderDtlPop = (orderId) => {
+      if (!orderId) { return; }
+      const url = window.pageUrl('bo.html') + '#page=odOrderDtl&dtlId=' + encodeURIComponent(orderId);
+      window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+    };
+    const openOrderPromoPop = (orderId) => {
+      if (!orderId) { return; }
+      const url = window.pageUrl('bo-od-order-promo-pop.html') + '?orderId=' + encodeURIComponent(orderId);
+      window.open(url, '_blank', 'width=1200,height=860,scrollbars=yes,resizable=yes');
+    };
+
     const items = reactive([]);
     const listGridPager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [20, 50, 100, 200] });
     const uiState = reactive({ loading: false });
@@ -293,6 +308,9 @@ window.OdOrderItemMng = {
         _claimActive:     s.claimActive.total,
         _claimDone:       s.claimDone.total,
         _refund:          s.refund.count,
+        discntUsageNm:   amtDiscntUsage ? ('-' + amtDiscntUsage.toLocaleString() + '원') : '',
+        couponUsageNm:   amtCouponUsage ? ('-' + amtCouponUsage.toLocaleString() + '원') : '',
+        saveSchdAmt:     amtSaveSchd    ? ('+' + amtSaveSchd.toLocaleString())           : '',
         itemOrderAmt:       amtOrder,
         orgDiscountAmt:     amtDiscount,
         itemCancelAmt:      amtCancel,
@@ -304,7 +322,6 @@ window.OdOrderItemMng = {
         _settleShipFee:      amtDliv,
         _settleStatus:       '',
         settleDate:          '',
-        saveUsageAmt:        amtSaveUsage,
       };
     });
 
@@ -631,6 +648,7 @@ window.OdOrderItemMng = {
       fnErpVoucherBadge, fnErpVoucherLbl, fnErpVoucherTypeNm,
       inlineNavigate, fnCallbackModal,
       promoModal, openPromoModal, closePromoModal,
+      openOrderDtlPop, openOrderPromoPop,
     };
   },
   template: `
@@ -680,6 +698,10 @@ window.OdOrderItemMng = {
           <span style="font-size:12px;font-weight:700;color:#334155;font-family:monospace;">{{ row.orderId }}</span>
           <span style="font-size:12px;color:#555;">{{ row.memberNm || '-' }}</span>
           <span style="font-size:11px;color:#94a3b8;">{{ row.itemCount }}건</span>
+          <span style="display:flex;gap:4px;" @click.stop>
+            <button type="button" class="btn btn-secondary btn-xs" @click="openOrderDtlPop(row.orderId)">주문상세</button>
+            <button type="button" class="btn btn-secondary btn-xs" @click="openOrderPromoPop(row.orderId)">프로모션상세</button>
+          </span>
         </div>
       </template>
 

@@ -73,6 +73,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(pmDiscntUsage.discntUsageId, search.getDiscntUsageId()),
+                    QdslUtil.strEq(pmDiscntUsage.orderId, search.getOrderId()),
                     QdslUtil.strEq(pmDiscntUsage.orderItemId, search.getOrderItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
@@ -99,6 +100,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmDiscntUsage.discntUsageId, search.getDiscntUsageId()),
+                QdslUtil.strEq(pmDiscntUsage.orderId, search.getOrderId()),
                 QdslUtil.strEq(pmDiscntUsage.orderItemId, search.getOrderItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())

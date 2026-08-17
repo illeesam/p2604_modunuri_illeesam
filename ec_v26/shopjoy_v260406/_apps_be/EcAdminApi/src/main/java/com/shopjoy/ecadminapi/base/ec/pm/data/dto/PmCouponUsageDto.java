@@ -14,6 +14,7 @@ public class PmCouponUsageDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String couponUsageId;
+        @Size(max = 21) private String orderId;
         @Size(max = 21) private String orderItemId;
     }
 

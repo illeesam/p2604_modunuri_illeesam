@@ -81,6 +81,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     QdslUtil.strEq(pmSaveUsage.saveUsageId, search.getSaveUsageId()),
+                    QdslUtil.strEq(pmSaveUsage.orderId, search.getOrderId()),
                     QdslUtil.strEq(pmSaveUsage.orderItemId, search.getOrderItemId()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     andSearchValue(search.getSearchValue(), search.getSearchType())
@@ -107,6 +108,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = {
                 QdslUtil.strEq(pmSaveUsage.saveUsageId, search.getSaveUsageId()),
+                QdslUtil.strEq(pmSaveUsage.orderId, search.getOrderId()),
                 QdslUtil.strEq(pmSaveUsage.orderItemId, search.getOrderItemId()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 andSearchValue(search.getSearchValue(), search.getSearchType())
