@@ -371,11 +371,21 @@ window.SyPathMng = {
     const fnShowCancel = (r) => ['N', 'U', 'D'].includes(r._status);
     const fnShowDelete = (r) => r._status == null || r._status === 'U';
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = { ...searchParam };
+      if (uiState.selectedPathId != null) { p.parentPathId = uiState.selectedPathId; }
+      if (p.searchValue && !p.searchType) { p.searchType = 'pathLabel,pathRemark'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       uiState, searchParam, expanded, gridRows, baseGridPager, parentModal,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfParentTree,             // computed
       fnRowClass, getParentLabel, fnShowCancel, fnShowDelete, // 헬퍼
@@ -403,6 +413,7 @@ window.SyPathMng = {
     <!-- ===== ■.■. 그리드 =================================================== -->
     <bo-container title="경로 목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
+        <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
         <button class="btn btn_new" @click="handleBtnAction('paths-add')">
           + 행추가
         </button>
@@ -454,6 +465,9 @@ window.SyPathMng = {
         </template>
       </bo-grid>
       <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('paths-pager-setPage', n)" :on-size-change="() => handleSelectAction('paths-pager-sizeChange')" />
+      <bo-excel-down-modal :show="excelModal.show" domain="syPath" area-nm="표시경로"
+        :columns="columns.baseGrid" ui-nm="경로관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
     <!-- ===== □.□. 그리드 =================================================== -->
   </div>

@@ -265,11 +265,16 @@ window.PdQnaMng = {
       { key: 'regDate',  label: '등록일', sortKey: 'reg', fmt: (v) => (v || '').slice(0, 10) },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({ ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) });
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       qnas, uiState, cfDtlMode, baseGridPager, searchParam, form,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, // dispatch
       fnStatusBadge, fnAnswLabel, fnProdNm, fnMemNm,          // 헬퍼
     };
@@ -285,6 +290,9 @@ window.PdQnaMng = {
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <bo-container title="Q&amp;A 목록" :count-text="baseGridPager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare
       :columns="columns.baseGrid" :rows="qnas" row-key="qnaId" :selected-key="uiState.selectedId"
@@ -298,6 +306,9 @@ window.PdQnaMng = {
       </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="pdQna" area-nm="상품문의"
+      :columns="columns.baseGrid" ui-nm="상품Q&A관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (질문/답변 — 항상 표시, 미선택 시 안내) ==================== -->

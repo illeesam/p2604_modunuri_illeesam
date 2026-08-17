@@ -451,11 +451,26 @@ window.DpDispWidgetMng = {
       { key: 'widgetInfo', label: '위젯 정보', sortKey: 'reg' },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = {
+        ...getSortParam(),
+        ...coUtil.cofOmitEmpty({
+          ...searchParam,
+          searchValue: (searchParam.searchValue || '').trim(),
+        }),
+      };
+      if (p.searchValue && !p.searchType) { p.searchType = 'widgetNm,widgetDesc,tag'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       widgets, uiState, widgetCounts, codes, searchParam, applied, listGridPager, detailPanel,
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       cfWidgetTree, openTopNodes, allTotalCount,                                        // 위젯유형 트리
       handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
       handleOpenPreview,                                                              // 미리보기
@@ -562,6 +577,7 @@ window.DpDispWidgetMng = {
         <span v-if="applied.useYn" style="font-size:11px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
           상태: {{ applied.useYn === 'Y' ? '활성' : '비활성' }}
         </span>
+        <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
         <button @click="handleBtnAction('widgets-add')" class="btn btn_new" style="margin-left:auto;">
           + 신규등록
         </button>
@@ -657,6 +673,9 @@ window.DpDispWidgetMng = {
         </template>
       </bo-grid>
       <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('widgets-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgets-pager-sizeChange')" />
+      <bo-excel-down-modal :show="excelModal.show" domain="dpWidget" area-nm="전시위젯"
+        :columns="columns.listGrid" ui-nm="전시위젯관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
     <!-- ===== /우측 목록 ===================================================== -->
   </div>

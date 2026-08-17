@@ -71,6 +71,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     };
 
     const rows = reactive([]);
+    const excelModal = reactive({ show: false });   // 엑셀 다운로드 모달 표시 여부
 
     const searchParam = reactive({ searchType: '', searchValue: '', reconStatusCd: '', dateRangeType: 'reg_date', dateRange: '', dateRangeStart: '', dateRangeEnd: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
@@ -89,17 +90,25 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
+    /* buildListParams — 검색조건 빌드 (pageNo/pageSize 제외, 목록조회·엑셀다운로드 공용).
+       ⚠ reconTypeCd 가 StReconDto.Request 의 실제 필드명이다 — 이전에는 존재하지 않는
+          typeCd 로 보내 서버가 조용히 무시하고 전체 유형이 섞여 나왔다. */
+    const buildListParams = () => {
+      const params = { reconTypeCd: 'ORDER', ...coUtil.cofOmitEmpty(searchParam) };
+      // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+      if (params.searchValue && !params.searchType) {
+        params.searchType = 'refId,refNo';
+      }
+      return params;
+    };
+
+    /* buildExcelParams — 엑셀 다운로드 조건 (목록 조회와 동일한 필터 기준) */
+    const buildExcelParams = () => buildListParams();
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const params = {
-          pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, typeCd: 'ORDER',
-          ...coUtil.cofOmitEmpty(searchParam)
-        };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'refId,refNo';
-        }
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...buildListParams() };
         const res = await boApiSvc.stRecon.getPage(params, '주문-정산 대사', '목록조회');
         const data = res.data?.data;
         rows.splice(0, rows.length, ...(data?.pageList || data?.list || rows));
@@ -184,8 +193,8 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
 
     return {
       columns,
-      uiState, baseGridPager, rows, searchParam,       // 상태 / 데이터
-      handleBtnAction, handleSelectAction, // dispatch
+      uiState, baseGridPager, rows, searchParam, excelModal,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, buildExcelParams, // dispatch
     };
   },
   template: /* html */`
@@ -200,6 +209,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
   </bo-container>
   <!-- ===== ■. 목록 영역 ================================================= -->
   <bo-container title="목록" :count-text="baseGridPager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px;padding:8px 14px;background:#f8f9fb;border:1px solid #e5e7eb;border-radius:8px;font-size:12px;">
       <span v-for="c in columns.summaryForm" :key="c.key" style="color:#666;">
         {{ c.label }}: <span v-html="c.fmt()"></span>
@@ -210,6 +222,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       :columns="columns.baseGrid" :rows="rows" row-key="orderId" />
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('reconOrders-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconOrders-pager-sizeChange')" />
   </bo-container>
+  <bo-excel-down-modal :show="excelModal.show" domain="stRecon" area-nm="주문-정산 대사"
+    ui-nm="주문-정산 대사" :columns="columns.baseGrid" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

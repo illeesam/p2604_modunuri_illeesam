@@ -396,12 +396,17 @@ window.SyDeptMng = {
     /* openParentModal — 상위부서 선택 모달 열기 (handleSearchList 호출 X — gridRows 가 새로 갱신되면 targetRow 가 stale ref 됨) */
     const openParentModal = (row) => { parentModal.targetRow = row; parentModal.show = true; };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(
-      gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'deptId'},{label:'부서코드',key:'deptCode'},{label:'부서명',key:'deptNm'},{label:'상위ID',key:'parentDeptId'},{label:'유형',key:'deptTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'deptRemark'}],
-      '부서목록.csv'
-    );
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const { type, ...restParam } = searchParam;
+      return {
+        ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+        ...(type ? { typeCd: type } : {}),
+        ...(uiState.selectedTreeId != null ? { parentDeptId: uiState.selectedTreeId } : {}),
+      };
+    };
+    const exportExcel = () => { excelModal.show = true; };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -450,6 +455,7 @@ window.SyDeptMng = {
     return {
       columns,
       depts, uiState, searchParam, gridRows, expanded, parentModal,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfDeptCounts, // computed
     };
@@ -498,6 +504,9 @@ window.SyDeptMng = {
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위부서 선택 모달 ========================================= -->
       <bo-cm-popup-modal v-if="parentModal ? (parentModal.show) : false" popup-cmd="cmPopup-parent-dept" popup-code="dept" clearable :exclude-id="parentModal.targetRow?.deptId > 0 ? parentModal.targetRow.deptId : null" :on-callback="fnCallbackModal" />
+      <bo-excel-down-modal :show="excelModal.show" domain="dept" area-nm="부서"
+        :columns="columns.baseGrid" ui-nm="부서관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->

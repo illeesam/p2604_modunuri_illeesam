@@ -524,11 +524,27 @@ window.PdCategoryMng = {
       { key: 'status', label: '상태', type: 'select', options: () => codes.category_statuses, nullLabel: '전체' },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달). 이 화면은 <table> 을 직접 그려 columns.baseGrid 배열이
+       없으므로, 다운로드 헤더용 컬럼 정의를 별도로 둔다(화면에 보이는 필드 기준). */
+    const excelModal = reactive({ show: false });
+    const excelColumns = [
+      { key: 'categoryNm', label: '카테고리명' },
+      { key: 'parentCategoryNm', label: '상위카테고리' },
+      { key: 'sortOrd', label: '순서' },
+      { key: 'categoryDesc', label: '설명' },
+      { key: 'categoryStatusCdNm', label: '상태' },
+    ];
+    const buildExcelParams = () => ({
+      ...coUtil.cofOmitEmpty(searchParam),
+      ...(uiState.selectedCatId ? { parentCategoryId: uiState.selectedCatId } : {}),
+    });
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       codes, uiState, searchParam, gridRows, categoriesGridPager, catPickerModal, categories, // 상태 / 데이터
+      excelModal, excelColumns, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, fnCallbackModal,                           // dispatch (모든 이벤트 / 액션 라우팅)
       fnDepthColor, fnDepthBullet, parentNm, fnStatusClass, getRealIdx, fnCategoryDescCount, // 헬퍼
       focusedIdx, checkAll, dragoverRowIdx, // ref
@@ -569,6 +585,7 @@ window.PdCategoryMng = {
         </span>
       </template>
       <template #toolbar-actions>
+        <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
         <button class="btn btn_new" @click="handleBtnAction('categories-add')">
           + 행추가
         </button>
@@ -743,6 +760,9 @@ window.PdCategoryMng = {
   </table>
       <!-- ===== ■.■.■. 페이지네이션 ============================================== -->
       <bo-pager :pager="categoriesGridPager" :on-set-page="n => handleBtnAction('categories-pager-setPage', n)" :on-size-change="() => handleSelectAction('categories-pager-sizeChange')" />
+      <bo-excel-down-modal :show="excelModal.show" domain="pdCategory" area-nm="카테고리"
+        :columns="excelColumns" ui-nm="카테고리관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
   </div>
 <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->

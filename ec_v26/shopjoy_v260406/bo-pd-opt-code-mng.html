@@ -65,6 +65,7 @@
 <script src="components/comp/BaseComp.js"></script>
 <script src="components/comp/BoComp.js"></script>
 <script src="components/comp/BoAreaComp.js"></script>
+<script src="components/modals/BoExcelDownModal.js"></script>
 
 <!-- ── 팝업 컴포넌트 ── -->
 <script src="pages/bo/ec/pd/PdOptCodeMng.js"></script>
@@ -92,11 +93,26 @@
   if (window.BoTabBar)            app.component('BoTabBar',            window.BoTabBar);
   if (window.BoRowCancelDelete)   app.component('BoRowCancelDelete',   window.BoRowCancelDelete);
   if (window.BoPathTreeCard)      app.component('BoPathTreeCard',      window.BoPathTreeCard);
+  if (window.BoExcelDownModal)    app.component('BoExcelDownModal',    window.BoExcelDownModal);
 
   app.component('PdOptCodeMng', window.PdOptCodeMng);
 
-  // boApp 최소 mock (PdOptCodeMng 내부에서 자체 toast/confirm 구현)
+  // boApp 최소 mock — PdOptCodeMng 자체는 로컬 _toast/_confirm 을 쓰지만,
+  // BoExcelDownModal(공용 컴포넌트)은 window.boApp.showToast/showConfirm 을 직접 참조하므로
+  // 여기서 같은 #popup-toast 엘리먼트를 재사용해 채워준다.
   window.boApp = window.boApp || {};
+  window.boApp.showToast = window.boApp.showToast || function (msg, type, dur) {
+    const el = document.getElementById('popup-toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.className   = 'popup-toast ' + (type === 'error' ? 'toast-error' : 'toast-success');
+    el.style.display = 'block';
+    clearTimeout(el._tid);
+    if ((dur == null ? 3500 : dur) > 0) el._tid = setTimeout(() => { el.style.display = 'none'; }, dur == null ? 3500 : dur);
+  };
+  window.boApp.showConfirm = window.boApp.showConfirm || function (title, msg) {
+    return Promise.resolve(window.confirm(title + '\n\n' + msg));
+  };
 
   app.mount('#app');
 </script>

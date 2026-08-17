@@ -178,11 +178,16 @@ window.PdRestockNotiMng = {
       { key: 'regDate',  label: '신청일',  style: 'width:140px',  fmt: (v) => coUtil.cofYmd(v) || '-' },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({ ...coUtil.cofOmitEmpty(searchParam) });
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       restockNotis, uiState, searchParam, baseGridPager,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, // dispatch
       checkedCount, allChecked, // computed
       fnIsChecked,           // 헬퍼
@@ -197,6 +202,7 @@ window.PdRestockNotiMng = {
   <!-- ===== ■. 목록 영역 ===================================================== -->
   <bo-container title="재입고알림 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" @click="handleBtnAction('restockNotis-send')">
         📣 알림발송 ({{ checkedCount }}건)
       </button>
@@ -207,6 +213,9 @@ window.PdRestockNotiMng = {
       @toggle-check="id => handleSelectAction('restockNotis-rowToggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggleAll')">
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('restockNotis-pager-setPage', n)" :on-size-change="() => handleSelectAction('restockNotis-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="pdRestockNoti" area-nm="재입고알림"
+      :columns="columns.baseGrid" ui-nm="재입고알림관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
 </bo-page>
 `

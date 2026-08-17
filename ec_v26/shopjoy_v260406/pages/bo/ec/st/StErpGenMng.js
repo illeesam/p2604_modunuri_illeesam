@@ -91,6 +91,7 @@ window.StErpGenMng = {
     });
 
     const genHistories = reactive([]);
+    const excelModal = reactive({ show: false });   // 엑셀 다운로드 모달 표시 여부
 
     /* doGenerate — 실행 */
     const doGenerate = async () => {
@@ -155,13 +156,19 @@ window.StErpGenMng = {
     const settingForm = reactive({ slipType: slipType.value });
     watch(() => settingForm.slipType, (v) => { slipType.value = v; });
 
+    /* buildExcelParams — 엑셀 다운로드 조건.
+       StErpVoucherDto.Request 는 siteId/erpVoucherId/erpVoucherTypeCd/erpVoucherStatusCd 만
+       지원한다(targetMon 필터 없음) — 화면의 대상월 선택은 다운로드 조건에 반영되지 않는다. */
+    const buildExcelParams = () => ({});
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
-      targetMon, genHistories, settingForm,                          // 상태 / 데이터
+      targetMon, genHistories, settingForm, excelModal,                // 상태 / 데이터
       handleBtnAction, // dispatch
       cfPreviewRows, // computed
+      buildExcelParams,
     };
   },
   template: /* html */`
@@ -202,12 +209,18 @@ window.StErpGenMng = {
   <!-- ===== □. 생성 설정 =================================================== -->
   <!-- ===== ■. 생성 이력 =================================================== -->
   <bo-container title="전표생성 이력" :count-text="genHistories.length + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare
       :columns="columns.histGrid" :rows="genHistories" row-key="genId">
     </bo-grid>
   </bo-container>
   <!-- ===== □. 생성 이력 =================================================== -->
+  <bo-excel-down-modal :show="excelModal.show" domain="stErpVoucher" area-nm="ERP전표생성"
+    ui-nm="ERP전표생성" :columns="columns.histGrid" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

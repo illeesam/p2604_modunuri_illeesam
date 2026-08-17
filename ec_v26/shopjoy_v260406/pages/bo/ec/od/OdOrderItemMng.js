@@ -82,6 +82,11 @@ window.OdOrderItemMng = {
       window.open(url, '_blank', 'width=1200,height=860,scrollbars=yes,resizable=yes');
     };
 
+    /* excelModal — 엑셀 다운로드 (공용 모달). buildExcelParams 는 buildListParams (아래) 를 그대로 재사용 —
+       목록 조회와 다운로드 조건이 항상 같아야 해서, 위쪽으로 옮기지 않고 여기서 buildListParams 를 참조한다. */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => buildListParams();
+
     const items = reactive([]);
     const listGridPager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [20, 50, 100, 200] });
     const uiState = reactive({ loading: false });
@@ -329,29 +334,36 @@ window.OdOrderItemMng = {
 
     /* ##### [05] 조회 / 코드 로딩 ################################################## */
 
+    /* buildListParams — 검색조건 빌드. 목록 조회(handleSearchList)와 엑셀 다운로드(buildExcelParams)가
+       같은 조건을 쓰도록 한 곳에 모은다 — 둘이 갈리면 화면과 다운로드 결과가 어긋난다. */
+    const buildListParams = () => {
+      const params = {
+        ...(searchParam.memberId          && { memberId:          searchParam.memberId }),
+        ...(searchParam.memberNm          && { memberNm:          searchParam.memberNm }),
+        ...(searchParam.orderId           && { orderId:           searchParam.orderId }),
+        ...(searchParam.vendorId          && { vendorId:          searchParam.vendorId }),
+        ...(searchParam.vendorNm          && { vendorNm:          searchParam.vendorNm }),
+        ...(searchParam.brandId           && { brandId:           searchParam.brandId }),
+        ...(searchParam.brandNm           && { brandNm:           searchParam.brandNm }),
+        ...(searchParam.mdUserId          && { mdUserId:          searchParam.mdUserId }),
+        ...(searchParam.mdUserNm          && { mdUserNm:          searchParam.mdUserNm }),
+        ...(searchParam.dlivCourierCd         && { dlivCourierCd:         searchParam.dlivCourierCd }),
+        ...(() => { const s = searchParam.orderItemStatusCds ? searchParam.orderItemStatusCds.split(',').filter(Boolean) : []; return s.length ? { orderItemStatusCds: s } : {}; })(),
+        ...(searchParam.claimYn           && { claimYn:           searchParam.claimYn }),
+        ...(searchParam.searchType        && { searchType:        searchParam.searchType }),
+        ...(searchParam.searchValue       && { searchValue:       searchParam.searchValue }),
+        ...(searchParam.dateRangeType     && { dateRangeType:     searchParam.dateRangeType }),
+        ...(searchParam.dateRangeStart    && { dateRangeStart:    searchParam.dateRangeStart }),
+        ...(searchParam.dateRangeEnd      && { dateRangeEnd:      searchParam.dateRangeEnd }),
+      };
+      if (params.searchValue && !params.searchType) { params.searchType = 'prodNm,brandNm'; }
+      return params;
+    };
+
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
-        const params = { pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize,
-          ...(searchParam.memberId          && { memberId:          searchParam.memberId }),
-          ...(searchParam.memberNm          && { memberNm:          searchParam.memberNm }),
-          ...(searchParam.orderId           && { orderId:           searchParam.orderId }),
-          ...(searchParam.vendorId          && { vendorId:          searchParam.vendorId }),
-          ...(searchParam.vendorNm          && { vendorNm:          searchParam.vendorNm }),
-          ...(searchParam.brandId           && { brandId:           searchParam.brandId }),
-          ...(searchParam.brandNm           && { brandNm:           searchParam.brandNm }),
-          ...(searchParam.mdUserId          && { mdUserId:          searchParam.mdUserId }),
-          ...(searchParam.mdUserNm          && { mdUserNm:          searchParam.mdUserNm }),
-          ...(searchParam.dlivCourierCd         && { dlivCourierCd:         searchParam.dlivCourierCd }),
-          ...(() => { const s = searchParam.orderItemStatusCds ? searchParam.orderItemStatusCds.split(',').filter(Boolean) : []; return s.length ? { orderItemStatusCds: s } : {}; })(),
-          ...(searchParam.claimYn           && { claimYn:           searchParam.claimYn }),
-          ...(searchParam.searchType        && { searchType:        searchParam.searchType }),
-          ...(searchParam.searchValue       && { searchValue:       searchParam.searchValue }),
-          ...(searchParam.dateRangeType     && { dateRangeType:     searchParam.dateRangeType }),
-          ...(searchParam.dateRangeStart    && { dateRangeStart:    searchParam.dateRangeStart }),
-          ...(searchParam.dateRangeEnd      && { dateRangeEnd:      searchParam.dateRangeEnd }),
-        };
-        if (params.searchValue && !params.searchType) params.searchType = 'prodNm,brandNm';
+        const params = { pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize, ...buildListParams() };
         const res = await boApiSvc.odOrderItem.getPage(params, '주문항목관리', '조회');
         const d = res.data?.data || {};
         items.splice(0, items.length, ...(d.pageList || []));
@@ -651,6 +663,7 @@ window.OdOrderItemMng = {
       inlineNavigate, fnCallbackModal,
       promoModal, openPromoModal, closePromoModal,
       openOrderDtlPop, openOrderPromoPop,
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
     };
   },
   template: `
@@ -666,6 +679,9 @@ window.OdOrderItemMng = {
 
   <!-- ===== ■. 목록 =========================================================== -->
   <bo-container title="주문항목 목록" :count-text="'총 ' + listGridPager.pageTotalCount.toLocaleString() + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
     <bo-group-table
       :columns="columns.listGrid"
       :rows="cfDisplayRows"
@@ -788,6 +804,9 @@ window.OdOrderItemMng = {
     <bo-pager v-if="listGridPager.pageTotalCount > 0" :pager="listGridPager"
       :on-set-page="n => handleBtnAction('items-pager-setPage', n)"
       :on-size-change="() => handleSelectAction('items-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="odOrderItem" area-nm="주문항목"
+      :columns="columns.listGrid" ui-nm="주문항목관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
 
   <!-- ===== ■. 하단 상세 (항상 표시) =========================================== -->

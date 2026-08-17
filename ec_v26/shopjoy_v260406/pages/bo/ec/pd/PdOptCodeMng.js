@@ -341,16 +341,11 @@ window.PdOptCodeMng = {
       }
     };
 
-    const exportExcel = () => coUtil.cofExportCsv(
-      gridRows.value.filter(r => r._row_status !== 'D'),
-      [
-        { label: '코드값', key: 'codeValue' }, { label: '코드명', key: 'codeLabel' },
-        { label: '레벨', key: 'codeLevel' }, { label: '상위코드', key: 'parentCodeValue' },
-        { label: '순서', key: 'sortOrd' }, { label: '사용', key: 'useYn' },
-        { label: '스타일', key: 'codeOpt1' }, { label: '비고', key: 'codeRemark' },
-      ],
-      '상품옵션코드.csv'
-    );
+    /* excelModal — 엑셀 다운로드 (공용 모달). 이 화면은 sy_code(PROD_OPT_CATEGORY 그룹)를 다루므로
+       공통코드관리(SyCodeMng)와 같은 "code" 도메인을 그대로 재사용한다(별도 백엔드 등록 불필요). */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({ codeGrp: CODE_GRP, siteId: SITE_ID });
+    const exportExcel = () => { excelModal.show = true; };
 
     // 트리 노드 색상 헬퍼
     const fnLvColor = (l) => ({ 1: '#e8587a', 2: '#1677ff', 3: '#3ba87a' }[l] || '#999');
@@ -359,6 +354,7 @@ window.PdOptCodeMng = {
 
     return {
       sel, uiState, treeExpanded, allRows, gridRows, gridColumns,
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       level1Nodes, level2Of, level3Of, levelLabel, breadcrumb, childLevel,
       handleBtnAction, handleSelectAction, handleGridCellAction,
       deleteRow, cancelRow, fnLvColor,
@@ -527,6 +523,9 @@ window.PdOptCodeMng = {
             @delete="deleteRow(row)" />
         </template>
       </bo-grid-crud>
+      <bo-excel-down-modal :show="excelModal.show" domain="code" area-nm="상품옵션코드"
+        :columns="gridColumns" ui-nm="상품옵션코드관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </div>
 
   </div>

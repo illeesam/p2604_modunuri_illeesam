@@ -283,11 +283,21 @@ window.SyVendorInfoMng = {
       { key: 'freeCondAmt',  label: '무료조건', align: 'right', fmt: (v) => v != null ? Number(v).toLocaleString() + '원' : '-' },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달). 업체 마스터 그리드는 SyVendorMng 과 동일 데이터라
+       기존 "syVendor" 도메인을 그대로 재사용한다(백엔드 신규 등록 불필요). */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = { ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'vendorNm,corpNo,vendorId'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns, tabs,
       vendors, uiState, searchParam, baseGridPager,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       brands, discnts, dlivTmplts, tabLoading,        // 탭 영역 데이터
       brandPager, pricePager, dlivPager, // 탭별 페이저
       handleBtnAction, handleSelectAction, handleGridCellAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
@@ -303,6 +313,9 @@ window.SyVendorInfoMng = {
   <!-- ===== □. 1단: 조회 영역 =============================================== -->
   <!-- ===== ■. 2단: 업체목록 =============================================== -->
   <bo-container title="업체목록" :count-text="baseGridPager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
     <bo-grid bare
       :columns="columns.baseGrid" :rows="vendors" row-key="vendorId"
       :loading="uiState.loading" :row-style="fnRowStyle" :selected-key="uiState.selectedVendorId" row-actions
@@ -314,6 +327,9 @@ window.SyVendorInfoMng = {
       </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="syVendor" area-nm="업체"
+      :columns="columns.baseGrid" ui-nm="업체정보" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== □. 2단: 업체목록 =============================================== -->
   <!-- ===== ■. 3단: 탭 영역 (브랜드 | 가격정책 | 배송템플릿 | 부가서비스) ============ -->

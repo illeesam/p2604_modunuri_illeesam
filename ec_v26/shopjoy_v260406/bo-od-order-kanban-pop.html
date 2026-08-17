@@ -68,6 +68,12 @@
 <script src="lib/services/coApiSvc.js"></script>
 <script src="lib/services/boApiSvc.js"></script>
 
+<!-- ── 공통 컴포넌트 (조건란 [주문선택]/[클레임선택]/[주문항목선택] 이 공통팝업(BoCmPopupModal) 을 쓴다) ── -->
+<script src="components/comp/BaseComp.js"></script>
+<script src="components/comp/BoComp.js"></script>
+<script src="components/comp/BoAreaComp.js"></script>
+<script src="components/modals/BoCmPopupModal.js"></script>
+
 <!-- ── 화면 ── -->
 <script src="pages/co/ec/od/OdOrderKanban.js"></script>
 
@@ -142,6 +148,13 @@
   });
 
   app.component('OdOrderKanban', window.OdOrderKanban);
+  /* 조건란 선택 팝업(BoCmPopupModal) 및 그 템플릿이 쓰는 하위 컴포넌트들 — bo.html 과 동일 이름으로 등록 */
+  app.component('BoModal', window.BoModal);
+  app.component('BoSearchArea', window.BoSearchArea);
+  app.component('BoGrid', window.BoGrid);
+  app.component('BoPager', window.BoPager);
+  app.component('BoMultiCheckSelect', window.BoMultiCheckSelect);
+  app.component('BoCmPopupModal', window.BoCmPopupModal);
   app.mount('#app');
 </script>
 </body>

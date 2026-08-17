@@ -497,11 +497,22 @@ window.PdCategoryProdMng = {
       { key: 'prodStock', label: '재고',     style: 'width:60px;text-align:center', align: 'center', fmt: v => v != null ? v : '-' },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const { prodNm, ...restParam } = searchParam;
+      return {
+        ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+        ...(prodNm ? { prodNm: prodNm.trim() } : {}),
+      };
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       codes, uiState, categoryProds, cfVisibleCategoryProds, searchParam,                    // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       cfCatProdGridColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs, cfActiveTypeNm,     // computed / reactive(tabs)
@@ -552,6 +563,7 @@ window.PdCategoryProdMng = {
             </span>
           </span>
           <div style="display:flex;gap:8px">
+            <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
             <button class="btn btn-secondary btn-sm" :disabled="!cfSelectedCatId" @click="handleBtnAction('prodPickModal-open')">
               + 상품추가
             </button>
@@ -691,6 +703,9 @@ window.PdCategoryProdMng = {
     등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.
   </div>
 </div>
+      <bo-excel-down-modal :show="excelModal.show" domain="pdCategoryProd" area-nm="카테고리별상품"
+        :columns="cfCatProdGridColumns" ui-nm="카테고리상품관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
   </div>
 <!-- ===== □.□. 우측 상품 목록 ============================================== -->

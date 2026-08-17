@@ -639,13 +639,10 @@ window.SyCodeMng = {
       roots.map(build).forEach(node => walk(node, 0));
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(
-      uiState.gridRows.filter(r => r._row_status !== 'D'),
-      [{ label: 'ID', key: 'codeId' }, { label: '코드그룹', key: 'codeGrp' }, { label: '코드라벨', key: 'codeLabel' },
-       { label: '코드값', key: 'codeValue' }, { label: '순서', key: 'sortOrd' }, { label: '사용여부', key: 'useYn' }, { label: '비고', key: 'codeRemark' }],
-      '공통코드목록.csv'
-    );
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({ codeGrp: uiState.selectedGrp });
+    const exportExcel = () => { excelModal.show = true; };
 
     // 기본 검색
     const columns = {};
@@ -736,6 +733,7 @@ window.SyCodeMng = {
     return {
       columns,
       uiState, codeGrpCounts, searchParam, treeExpanded, flatTree,           // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       cfCodeGridColumns, // 컬럼 정의 (computed 캐싱)
       treeRowAccessor, treeRowKeyFn, // 컬럼 부속
       handleBtnAction, handleSelectAction, handleGridCellAction,                                      // dispatch (모든 이벤트 / 액션 라우팅)
@@ -840,6 +838,9 @@ window.SyCodeMng = {
           <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('codes-rowCancel', idx)" @delete="handleSelectAction('codes-rowDelete', idx)" />
         </template>
       </bo-grid-crud>
+      <bo-excel-down-modal :show="excelModal.show" domain="code" area-nm="공통코드"
+        :columns="cfCodeGridColumns" ui-nm="공통코드관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </div>
     <!-- ===== □.□. 일반 탭 ================================================== -->
     <!-- ===== ■.■. 트리 탭 (BoGridCrud 트리 모드) =============================== -->

@@ -112,21 +112,28 @@ window.StRawMng = {
 
     const rawGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const raws = reactive([]);
+    const excelModal = reactive({ show: false });   // 엑셀 다운로드 모달 표시 여부
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
+    /* buildListParams — 검색조건 빌드 (pageNo/pageSize 제외, 목록조회·엑셀다운로드 공용) */
+    const buildListParams = () => {
+      const params = Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'searchMoreOpen' && v !== '' && v !== null && v !== undefined));
+      // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+      if (params.searchValue && !params.searchType) {
+        params.searchType = 'rawId,srcId,vendorNm,prodNm,brandNm';
+      }
+      return params;
+    };
+
+    /* buildExcelParams — 엑셀 다운로드 조건 (목록 조회와 동일한 필터 기준) */
+    const buildExcelParams = () => buildListParams();
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
-        const params = {
-          pageNo: rawGridPager.pageNo, pageSize: rawGridPager.pageSize,
-          ...Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'searchMoreOpen' && v !== '' && v !== null && v !== undefined))
-        };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'rawId,srcId,vendorNm,prodNm,brandNm';
-        }
+        const params = { pageNo: rawGridPager.pageNo, pageSize: rawGridPager.pageSize, ...buildListParams() };
         const res = await boApiSvc.stSettleRaw.getPage(params, '정산데이터관리', '목록조회');
         const data = res.data?.data;
         raws.splice(0, raws.length, ...(data?.pageList || data?.list || []));
@@ -379,10 +386,10 @@ const raws = reactive([]);
   return {
       columns,
       searchParam,
-      rawGridPager, raws, cfSummary,
+      rawGridPager, raws, cfSummary, excelModal,
       handleBtnAction, handleSelectAction, toggleRow, isExpanded,
       fnRowDetail, fnRowDetailLoading,
-      doCollect, };
+      doCollect, buildExcelParams, };
   },
   template: /* html */`
 <bo-page title="정산수집원장"
@@ -418,6 +425,7 @@ const raws = reactive([]);
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="정산수집원장" :count-text="rawGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('raws-expand-all')">
         ▼ 전체펼치기
       </button>
@@ -443,6 +451,9 @@ const raws = reactive([]);
     </bo-grid>
     <bo-pager :pager="rawGridPager" :on-set-page="n => handleBtnAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
   </bo-container>
+  <bo-excel-down-modal :show="excelModal.show" domain="stSettleRaw" area-nm="정산수집원장"
+    ui-nm="정산수집원장" :columns="columns.rawGrid" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

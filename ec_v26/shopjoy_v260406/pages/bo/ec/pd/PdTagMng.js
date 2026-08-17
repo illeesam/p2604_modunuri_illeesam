@@ -190,11 +190,16 @@ window.PdTagMng = {
         edit: 'select', options: () => codes.use_yn },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({ ...coUtil.cofOmitEmpty(searchParam) });
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       uiState, searchParam, baseGridPager, gridRows,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, // dispatch
     };
   },
@@ -209,6 +214,7 @@ window.PdTagMng = {
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <bo-container title="태그 목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button class="btn btn_new" @click="handleBtnAction('tags-add')">
         + 행추가
       </button>
@@ -229,6 +235,9 @@ window.PdTagMng = {
     </bo-grid>
     <!-- 페이저는 그리드 밖(컨테이너 안)에 배치 -->
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="pdTag" area-nm="태그"
+      :columns="columns.baseGrid" ui-nm="태그관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
 </bo-page>

@@ -263,11 +263,20 @@ window.MbMemGradeMng = {
         edit: 'select', options: () => codes.use_yn },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = { ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'gradeNm,gradeCd'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       uiState, searchParam, grades,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
@@ -285,15 +294,20 @@ window.MbMemGradeMng = {
       :columns="columns.baseGrid" :rows="grades" row-key="memberGradeId"
       list-title="회원등급 목록" max-height="calc(100vh - 220px)"
       :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
+      :show-export="true"
       v-model:focusedIdx="uiState.focusedIdx"
       v-model:checkAll="uiState.checkAll"
       @add="handleBtnAction('grades-add')" @save="handleBtnAction('grades-save')"
       @delete-checked="handleBtnAction('grades-deleteChecked')" @cancel-checked="handleBtnAction('grades-cancelChecked')"
+      @export="excelModal.show = true"
       grid-id="grades-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #row-actions="{ row, idx }">
         <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('grades-rowCancel', idx)" @delete="handleSelectAction('grades-rowDelete', idx)" />
       </template>
     </bo-grid-crud>
+    <bo-excel-down-modal :show="excelModal.show" domain="mbMemGrade" area-nm="회원등급"
+      :columns="columns.baseGrid" ui-nm="회원등급관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== □. CRUD 그리드 ================================================ -->
 </bo-page>

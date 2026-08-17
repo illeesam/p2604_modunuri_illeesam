@@ -202,9 +202,14 @@ window.DpDispAreaMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({ ...baseGrid.sortParam(), ...coUtil.cofOmitEmpty(searchParam) });
+
     return {
       areas, uis, uiState, codes, searchParam, baseGrid, baseDetail,
       columns,
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,
       handleOpenPreview, inlineNavigate,
     };
@@ -219,6 +224,7 @@ window.DpDispAreaMng = {
   <!-- ===== ■. 목록 영역 ===================================================== -->
   <bo-container title="전시영역목록" :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button class="btn btn_new" @click="handleBtnAction('areas-add')">+ 신규</button>
     </template>
     <bo-grid bare :columns="columns.baseGrid" :rows="areas" :pager="baseGrid.pager" row-key="areaId" :selected-key="baseDetail.selectedId"
@@ -236,6 +242,9 @@ window.DpDispAreaMng = {
       </template>
     </bo-grid>
     <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleBtnAction('areas-pager-setPage', n)" :on-size-change="() => handleSelectAction('areas-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="dpArea" area-nm="전시영역"
+      :columns="columns.baseGrid" ui-nm="전시영역관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시) ============================ -->
   <dp-disp-area-dtl :key="baseDetail.panelKey + '_' + baseDetail.resetSeq" :navigate="inlineNavigate"

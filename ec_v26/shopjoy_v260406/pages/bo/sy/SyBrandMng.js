@@ -260,22 +260,19 @@ window.SyBrandMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(
-      gridRows.filter(r => r._row_status !== 'D'),
-      [
-        { label: 'ID',       key: 'brandId' },
-        { label: '표시경로',   key: 'pathId' },
-        { label: '브랜드코드', key: 'brandCode' },
-        { label: '브랜드명',  key: 'brandNm' },
-        { label: '영문명',    key: 'brandEnNm' },
-        { label: '로고URL',   key: 'logoUrl' },
-        { label: '순서',      key: 'sortOrd' },
-        { label: '사용여부',  key: 'useYn' },
-        { label: '비고',      key: 'brandRemark' },
-      ],
-      '브랜드목록.csv'
-    );
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const params = {
+        ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+        ...coUtil.cofOmitEmpty(searchParam),
+      };
+      if (params.searchValue && !params.searchType) {
+        params.searchType = 'brandCode,brandNm,brandEnNm';
+      }
+      return params;
+    };
+    const exportExcel = () => { excelModal.show = true; };
 
     // ★ onMounted
     /* initPage — 화면 로드 시퀀스.
@@ -331,6 +328,7 @@ window.SyBrandMng = {
     return {
       columns,
       brands, uiState, brandCounts, searchParam, gridRows,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,                            // dispatch (모든 이벤트 / 액션 라우팅)
       fnColTitle, // 헬퍼
     };
@@ -378,6 +376,9 @@ window.SyBrandMng = {
           <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('brands-rowCancel', idx)" @delete="handleSelectAction('brands-rowDelete', idx)" />
         </template>
       </bo-grid-crud>
+      <bo-excel-down-modal :show="excelModal.show" domain="brand" area-nm="브랜드"
+        :columns="columns.baseGrid" ui-nm="브랜드관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
   </div>
   <!-- ===== □.□. CRUD 그리드 ============================================== -->

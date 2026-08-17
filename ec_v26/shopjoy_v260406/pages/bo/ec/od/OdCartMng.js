@@ -277,11 +277,28 @@ window.OdCartMng = {
         fmt: (v) => fnDate(v), cellStyle: 'font-size:11px;color:#888;' },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = {
+        ...(searchParam.siteId    && { siteId:    searchParam.siteId }),
+        ...(searchParam.memberId  && { memberId:  searchParam.memberId }),
+        ...(searchParam.searchType && { searchType: searchParam.searchType }),
+        ...(searchParam.searchValue && { searchValue: searchParam.searchValue }),
+        ...(searchParam.dateRangeType    && { dateRangeType:    searchParam.dateRangeType }),
+        ...(searchParam.dateRangeStart   && { dateRangeStart:   searchParam.dateRangeStart }),
+        ...(searchParam.dateRangeEnd     && { dateRangeEnd:     searchParam.dateRangeEnd }),
+      };
+      if (p.searchValue && !p.searchType) { p.searchType = 'memberNm,memberId,prodNm'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       carts, listGridPager, searchParam, uiState, memberPick,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfAllChecked, // computed
       isChecked, fnGridRowStyle, // 헬퍼
@@ -298,6 +315,7 @@ window.OdCartMng = {
   <!-- ===== ■. 목록 ====================================================== -->
   <bo-container title="장바구니 목록" :count-text="'총 ' + listGridPager.pageTotalCount.toLocaleString() + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button v-if="uiState.selectedIds.length" class="btn btn-danger btn-sm" @click="handleBtnAction('carts-bulkDelete')">
         🗑 선택삭제 ({{ uiState.selectedIds.length }})
       </button>
@@ -321,6 +339,9 @@ window.OdCartMng = {
       </template>
     </bo-grid>
     <bo-pager v-if="listGridPager.pageTotalCount > 0" :pager="listGridPager" :on-set-page="n => handleBtnAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="odCart" area-nm="장바구니"
+      :columns="columns.listGrid" ui-nm="장바구니관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
   <bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="memberPick.open" :on-callback="fnCallbackModal" />

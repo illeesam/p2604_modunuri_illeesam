@@ -113,6 +113,7 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     boUtil.bofApplyDateRange(uiState, '이번달');
 
     const pays = reactive([]);
+    const excelModal = reactive({ show: false });   // 엑셀 다운로드 모달 표시 여부
 
   const searchParam = reactive({ searchType: '', searchValue: '', payStatusCd: '' });
     /* searchParamInit — [초기화] 기준값. initPage 끝에서 그때의 searchParam 을 복사해 둔다.
@@ -204,12 +205,15 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
       { key: '_pending', label: '지급대기',  fmt: () => `<b style="color:#3498db;">${fmtW(cfSummary.value.pending)}</b>` },
     ];
 
+    /* buildExcelParams — 엑셀 다운로드 조건 (목록 조회와 동일한 필터 기준) */
+    const buildExcelParams = () => coUtil.cofOmitEmpty(searchParam);
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
-      uiState, baseGridPager, pays, searchParam,
-      handleBtnAction, handleSelectAction,
+      uiState, baseGridPager, pays, searchParam, excelModal,
+      handleBtnAction, handleSelectAction, buildExcelParams,
     };
   },
   template: /* html */`
@@ -230,6 +234,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
   </bo-container>
   <!-- ===== ■. 목록 영역 ================================================= -->
   <bo-container title="목록" :count-text="baseGridPager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
     <bo-grid bare
       :columns="columns.baseGrid" :rows="pays" row-key="payId"
       :row-actions="true">
@@ -244,6 +251,9 @@ const uiState = reactive({ error: null, dateRange: '이번달', dateRangeStart: 
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('settlePays-pager-setPage', n)" :on-size-change="() => handleSelectAction('settlePays-pager-sizeChange')" />
   </bo-container>
+  <bo-excel-down-modal :show="excelModal.show" domain="stSettlePay" area-nm="정산지급관리"
+    ui-nm="정산지급관리" :columns="columns.baseGrid" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

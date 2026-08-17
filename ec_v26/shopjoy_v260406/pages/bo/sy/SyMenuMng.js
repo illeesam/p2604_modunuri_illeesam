@@ -326,12 +326,14 @@ window.SyMenuMng = {
     /* openParentModal — 상위메뉴 선택 모달 열기 */
     const openParentModal = async (row) => { parentModal.targetRow = row; await handleSearchList('DEFAULT'); parentModal.show = true; };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(
-      gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentMenuId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'menuRemark'}],
-      '메뉴목록.csv'
-    );
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({
+      ...Object.fromEntries(Object.entries(searchParam)
+        .filter(([k, v]) => v !== '' && v !== null && v !== undefined)),
+      ...(uiState.selectedTreeId != null ? { menuId: uiState.selectedTreeId } : {}),
+    });
+    const exportExcel = () => { excelModal.show = true; };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -380,6 +382,7 @@ window.SyMenuMng = {
     return {
       columns,
       menus, uiState, menuCounts, searchParam, gridRows, parentModal,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                               // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
@@ -417,6 +420,9 @@ window.SyMenuMng = {
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위메뉴 선택 모달 ========================================= -->
       <bo-cm-popup-modal v-if="parentModal ? (parentModal.show) : false" popup-cmd="cmPopup-parent-menu" popup-code="menu" clearable :exclude-id="parentModal.targetRow?.menuId > 0 ? parentModal.targetRow.menuId : null" :on-callback="fnCallbackModal" />
+      <bo-excel-down-modal :show="excelModal.show" domain="menu" area-nm="메뉴"
+        :columns="columns.baseGrid" ui-nm="메뉴관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
   </div>
 </bo-page>

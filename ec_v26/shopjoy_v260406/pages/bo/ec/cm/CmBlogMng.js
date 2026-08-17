@@ -494,11 +494,20 @@ window.CmBlogMng = {
       { key: 'sortOrd',    label: '정렬', edit: 'number', style: 'width:70px;', align: 'right' },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'blogTitle,blogAuthor'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       blogs, uiState, searchParam, baseGridPager, detailPanel, cfDtlMode, // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       attachRows, attachUi,                                          // 첨부 그리드 상태
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       fnGridRowClass, fnRowThumb, fnAttachPreview,         // 헬퍼
@@ -515,6 +524,7 @@ window.CmBlogMng = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="게시글 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button class="btn btn_new" @click="handleBtnAction('blogs-add')">
         + 신규
       </button>
@@ -543,6 +553,9 @@ window.CmBlogMng = {
       </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="cmBlog" area-nm="블로그"
+      :columns="columns.baseGrid" ui-nm="블로그관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시, active=false 면 안내문구) ===================== -->

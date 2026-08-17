@@ -356,18 +356,13 @@ window.SyBatchMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(
-      gridRows.filter(r => r._row_status !== 'D'),
-      [
-        { label: 'ID', key: 'batchId' }, { label: '배치명', key: 'batchNm' },
-        { label: '배치코드', key: 'batchCode' }, { label: 'Cron', key: 'cronExpr' },
-        { label: '최근실행', key: 'batchLastRun' }, { label: '실행횟수', key: 'batchRunCount' },
-        { label: '활성', key: 'batchStatusCd' }, { label: '실행상태', key: 'batchRunStatusCd' },
-        { label: '설명', key: 'batchDesc' },
-      ],
-      '배치목록.csv'
-    );
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({
+      ...coUtil.cofOmitEmpty(searchParam),
+      ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+    });
+    const exportExcel = () => { excelModal.show = true; };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = async () => {
@@ -469,6 +464,7 @@ window.SyBatchMng = {
     return {
       columns,
       batches, uiState, batchCounts, searchParam, gridRows, pathPickModal, cronModal, histReloadTrigger, histFilterBatchId,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfShowRunNow,          // computed / 헬퍼
       fnIsRecent24h, fnFmtLastRun, fnRunStatusLabel, fnRunStatusBadge,
@@ -524,6 +520,9 @@ window.SyBatchMng = {
       <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
         @apply="expr => handleSelectAction('cronModal-apply', expr)"
         @close="handleBtnAction('cronModal-close')" />
+      <bo-excel-down-modal :show="excelModal.show" domain="batch" area-nm="배치"
+        :columns="columns.baseGrid" ui-nm="배치스케줄관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
     <!-- ===== □.□. 경로 트리 ================================================= -->
   </div>

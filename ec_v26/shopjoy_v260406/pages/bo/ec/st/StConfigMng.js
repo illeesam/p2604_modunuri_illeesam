@@ -14,6 +14,7 @@ window.StConfigMng = {
     const uiState = reactive({ isNew: false, error: null, loading: false, selectedId: null, dtlMode: 'view' }); // dtlMode: 'view'|'edit' — 기본은 항상 view
     const cfDtlMode = computed(() => uiState.dtlMode === 'view');
     const configs = reactive([]);
+    const excelModal = reactive({ show: false });   // 엑셀 다운로드 모달 표시 여부
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -268,12 +269,15 @@ window.StConfigMng = {
       { key: 'settleConfigRemark', label: '비고', type: 'text', placeholder: '비고 입력', colSpan: 4 },
     ];
 
+    /* buildExcelParams — 엑셀 다운로드 조건 (목록 조회와 동일한 필터 기준) */
+    const buildExcelParams = () => ({});
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
-      uiState, cfDtlMode, configs, form, errors,
-      handleBtnAction, handleSelectAction, handleGridCellAction,
+      uiState, cfDtlMode, configs, form, errors, excelModal,
+      handleBtnAction, handleSelectAction, handleGridCellAction, buildExcelParams,
     };
   },
   template: /* html */`
@@ -283,6 +287,7 @@ window.StConfigMng = {
   <!-- ===== ■. 목록 영역 ================================================= -->
   <bo-container title="정산기준 목록" :count-text="'총 ' + configs.length + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button class="btn btn_new" @click="handleBtnAction('configs-add')">+ 기준 추가</button>
     </template>
     <bo-grid bare
@@ -314,6 +319,9 @@ window.StConfigMng = {
       @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')"
       @edit="handleBtnAction('form-edit')" @close="handleBtnAction('form-close')" />
   </bo-container>
+  <bo-excel-down-modal :show="excelModal.show" domain="stSettleConfig" area-nm="정산기준관리"
+    ui-nm="정산기준관리" :columns="columns.baseGrid" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

@@ -792,12 +792,18 @@ window.SyRoleMng = {
       return r ? r.roleNm : '';
     });
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(
-      gridRows.filter(r => r._row_status !== 'D'),
-      [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentRoleId'},{label:'유형',key:'roleTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'roleRemark'}],
-      '역할목록.csv'
-    );
+    /* excelModal — 엑셀 다운로드 (공용 모달). 진행중 안내/즉시·예약 선택/동시성 제한/이력 기록은
+       모달이 전부 처리하므로 화면은 열기 트리거 + 검색조건만 넘기면 된다. */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({
+      ...coUtil.cofOmitEmpty({
+        searchType: searchParam.searchType,
+        searchValue: searchParam.searchValue,
+        useYn: searchParam.useYn,
+      }),
+      ...(uiState.selectedPath != null ? { parentRoleId: uiState.selectedPath } : {}),
+    });
+    const exportExcel = () => { excelModal.show = true; };
 
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
@@ -858,6 +864,7 @@ window.SyRoleMng = {
       columns,
       uiState, codes, searchParam, gridRows, expanded, // 상태 / 데이터
       excelUploadModal, // 엑셀 업로드 모달
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked, // computed
       fnRoleUsersList, fnCallbackModal, // 함수 / 모달 콜백 dispatch
@@ -920,6 +927,9 @@ window.SyRoleMng = {
           </span>
         </template>
       </bo-grid-crud>
+      <bo-excel-down-modal :show="excelModal.show" domain="role" area-nm="역할"
+        :columns="columns.baseGrid" ui-nm="역할관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
   </div>
   <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->

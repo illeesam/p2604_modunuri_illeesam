@@ -60,6 +60,7 @@ window.StSettleCloseMng = {
 
     const settles = reactive([]);   // 정산마스터(st_settle) 전체
     const closes  = reactive([]);   // 정산마감 이력(st_settle_close)
+    const excelModal = reactive({ show: false });   // 엑셀 다운로드 모달 표시 여부
 
     /* cfCloseCandidates — 마감 대상: 정산확정(CONFIRMED) 상태이면서
        아직 마감이력이 CLOSED 로 남아있지 않은 정산건. */
@@ -189,13 +190,18 @@ window.StSettleCloseMng = {
       { key: 'closeDate',     label: '처리일시', fmt: (v) => coUtil.cofYmd(v) || '-' },
     ];
 
+    /* buildExcelParams — 엑셀 다운로드 조건.
+       StSettleCloseDto.Request 는 settleCloseId 만 지원해(상태 필터 없음) 서버로 넘길
+       조건이 없다 — 화면의 상태 필터(uiState.closeStatusFilter)는 로컬 전용이라 엑셀에는 반영되지 않는다. */
+    const buildExcelParams = () => ({});
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
-      uiState, codes,
+      uiState, codes, excelModal,
       handleBtnAction, handleSelectAction,
-      cfCloseCandidates, cfFilteredClose,
+      cfCloseCandidates, cfFilteredClose, buildExcelParams,
     };
   },
   template: /* html */`
@@ -224,6 +230,7 @@ window.StSettleCloseMng = {
   <!-- ===== ■. 목록 영역 ================================================= -->
   <bo-container title="정산마감 이력" :count-text="cfFilteredClose.length + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <select class="form-control" style="width:140px" v-model="uiState.closeStatusFilter" @change="handleBtnAction('closeStatusFilter-change')">
         <option value="">상태 전체</option>
         <option value="CLOSED">마감완료</option>
@@ -244,6 +251,9 @@ window.StSettleCloseMng = {
     </bo-grid>
   </bo-container>
   <!-- ===== □. 목록 영역 ================================================= -->
+  <bo-excel-down-modal :show="excelModal.show" domain="stSettleClose" area-nm="정산마감관리"
+    ui-nm="정산마감" :columns="columns.baseGrid" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

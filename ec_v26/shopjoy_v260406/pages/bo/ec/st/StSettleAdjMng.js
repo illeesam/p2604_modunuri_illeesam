@@ -152,6 +152,7 @@ window.StSettleAdjMng = {
     onMounted(initPage);
 
     const adjs = reactive([]);
+    const excelModal = reactive({ show: false });   // 엑셀 다운로드 모달 표시 여부
 
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
@@ -324,12 +325,15 @@ window.StSettleAdjMng = {
       { key: 'settleAdjMemo', label: '메모', type: 'textarea', colSpan: 3 },
     ];
 
+    /* buildExcelParams — 엑셀 다운로드 조건 (목록 조회와 동일한 필터 기준) */
+    const buildExcelParams = () => coUtil.cofOmitEmpty(searchParam);
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
-      uiState, cfDtlMode, baseGridPager, adjs, searchParam, form, errors,
-      handleBtnAction, handleSelectAction, handleGridCellAction,
+      uiState, cfDtlMode, baseGridPager, adjs, searchParam, form, errors, excelModal,
+      handleBtnAction, handleSelectAction, handleGridCellAction, buildExcelParams,
     };
   },
   template: /* html */`
@@ -343,6 +347,7 @@ window.StSettleAdjMng = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="정산조정 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button class="btn btn_new" @click="handleBtnAction('settleAdjs-add')">+ 조정 추가</button>
     </template>
     <bo-grid bare
@@ -377,6 +382,9 @@ window.StSettleAdjMng = {
       @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')"
       @edit="handleBtnAction('form-edit')" @close="handleBtnAction('form-close')" />
   </bo-container>
+  <bo-excel-down-modal :show="excelModal.show" domain="stSettleAdj" area-nm="정산조정관리"
+    ui-nm="정산조정" :columns="columns.baseGrid" :params="buildExcelParams()"
+    @close="excelModal.show = false" />
 </bo-page>
 `,
 };

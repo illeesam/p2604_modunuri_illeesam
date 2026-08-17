@@ -246,11 +246,16 @@ window.MbMemGroupMng = {
         edit: 'select', options: () => codes.USE_YN },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({ ...coUtil.cofOmitEmpty(searchParam) });
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       uiState, searchParam, groups,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
@@ -268,15 +273,20 @@ window.MbMemGroupMng = {
       :columns="columns.baseGrid" :rows="groups" row-key="memberGroupId"
       list-title="회원그룹 목록" max-height="calc(100vh - 220px)"
       :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
+      :show-export="true"
       v-model:focusedIdx="uiState.focusedIdx"
       v-model:checkAll="uiState.checkAll"
       @add="handleBtnAction('groups-add')" @save="handleBtnAction('groups-save')"
       @delete-checked="handleBtnAction('groups-deleteChecked')" @cancel-checked="handleBtnAction('groups-cancelChecked')"
+      @export="excelModal.show = true"
       grid-id="groups-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #row-actions="{ row, idx }">
         <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('groups-rowCancel', idx)" @delete="handleSelectAction('groups-rowDelete', idx)" />
       </template>
     </bo-grid-crud>
+    <bo-excel-down-modal :show="excelModal.show" domain="mbMemGroup" area-nm="회원그룹"
+      :columns="columns.baseGrid" ui-nm="회원그룹관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== □. CRUD 그리드 ================================================ -->
 </bo-page>

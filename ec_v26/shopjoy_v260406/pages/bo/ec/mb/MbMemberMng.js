@@ -372,11 +372,20 @@ window.MbMemberMng = {
       { key: 'totalPurchaseAmt', label: '총구매액', style: 'width:100px;text-align:right', align: 'right', fmt: (v) => coUtil.cofWon(v) },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = { ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'memberId,memberNm,loginId,memberEmail'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       members, uiState, searchParam, baseGridPager, detailPanel, histPanel,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       fnGridRowClass,                                                  // 헬퍼
       handleSave, handleDelete, closeDetail, switchToEdit, handleSearchList,            // Dtl 콜백 (자식 컴포넌트로 전달)
@@ -394,6 +403,7 @@ window.MbMemberMng = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="회원목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button class="btn btn_new" @click="handleBtnAction('members-add')">
         + 신규
       </button>
@@ -414,6 +424,9 @@ window.MbMemberMng = {
       </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="mbMember" area-nm="회원"
+      :columns="columns.baseGrid" ui-nm="회원관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================== -->

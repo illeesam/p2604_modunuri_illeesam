@@ -403,11 +403,16 @@ window.PdReviewMng = {
     /* fnProdReviewRowClass — 유틸 */
     const fnProdReviewRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({ ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) });
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       reviews, uiState, searchParam, listGridPager, codes, // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       prodReviews, prodReviewPager, statusModal, // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                              // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow, cfStatusModalRowTitle, cfStatusModalCurrentCd, // computed
@@ -426,6 +431,9 @@ window.PdReviewMng = {
   <!-- ===== □. 검색 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="상품리뷰 목록" :count-text="'총 ' + listGridPager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
     <bo-grid bare :columns="columns.listGrid" :rows="reviews" :pager="listGridPager" row-key="reviewId" :selected-key="selectedId"
       :sort-state="uiState"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-actions
@@ -438,6 +446,9 @@ window.PdReviewMng = {
       </template>
     </bo-grid>
     <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('reviews-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="pdReview" area-nm="리뷰"
+      :columns="columns.listGrid" ui-nm="상품리뷰관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->

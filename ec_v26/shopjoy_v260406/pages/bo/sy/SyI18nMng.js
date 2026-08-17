@@ -248,11 +248,22 @@ window.SyI18nMng = {
       placeholder: LANG_LABELS[lang] + ' 번역 입력',
     }));
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = { ...coUtil.cofOmitEmpty({ ...searchParam, searchValue: (searchParam.searchValue || '').trim() }) };
+      if (p.searchValue && !p.searchType) {
+        p.searchType = 'i18nKey,i18nDesc,i18nMsgKo,i18nMsgEn,i18nMsgCn,i18nMsgJa';
+      }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       uiState, cfDtlMode, searchParam, baseGridPager, i18ns, msgForm,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       msgFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction, handleGridCellAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedKey, // computed
@@ -267,6 +278,9 @@ window.SyI18nMng = {
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="다국어 키 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
     <bo-grid bare
       :columns="columns.baseGrid" :rows="i18ns" row-key="i18nKey" :selected-key="uiState.selectedKey"
       :row-style="fnRowStyle"
@@ -276,6 +290,9 @@ window.SyI18nMng = {
       </template>
     </bo-grid>
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="syI18n" area-nm="다국어"
+      :columns="columns.baseGrid" ui-nm="다국어관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== ■. 번역 편집 패널 (항상 표시) ====================================== -->
   <bo-container>

@@ -187,11 +187,16 @@ window.DpDispUiMng = {
       { key: 'regDate',      label: '등록일',   style: 'width:110px;', sortKey: 'reg', fmt: (v) => coUtil.cofYmd(v) || '-' },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => ({ ...baseGrid.sortParam(), ...coUtil.cofOmitEmpty(searchParam) });
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       uis, uiState, codes, searchParam, baseGrid, baseDetail,
       columns,
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,
       handleOpenPreview, inlineNavigate,
     };
@@ -206,6 +211,7 @@ window.DpDispUiMng = {
   <!-- ===== ■. 목록 영역 ===================================================== -->
   <bo-container title="전시UI목록" :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'">
     <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
       <button class="btn btn_new" @click="handleBtnAction('uis-add')">+ 신규</button>
     </template>
     <bo-grid bare :columns="columns.baseGrid" :rows="uis" :pager="baseGrid.pager" row-key="uiId" :selected-key="baseDetail.selectedId"
@@ -223,6 +229,9 @@ window.DpDispUiMng = {
       </template>
     </bo-grid>
     <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleBtnAction('uis-pager-setPage', n)" :on-size-change="() => handleSelectAction('uis-pager-sizeChange')" />
+    <bo-excel-down-modal :show="excelModal.show" domain="dpUi" area-nm="전시UI"
+      :columns="columns.baseGrid" ui-nm="전시UI관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시) ============================ -->
   <dp-disp-ui-dtl :key="baseDetail.panelKey + '_' + baseDetail.resetSeq" :navigate="inlineNavigate"

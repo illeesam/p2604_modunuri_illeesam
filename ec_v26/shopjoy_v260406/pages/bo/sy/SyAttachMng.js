@@ -218,11 +218,20 @@ window.SyAttachMng = {
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = { ...coUtil.cofOmitEmpty(searchParam) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'fileNm,attachMemo'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       attaches, uiState, searchParam, fileGridPager,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, fnFmtSize, fnRefTableNm,                    // computed / 헬퍼
     };
@@ -236,6 +245,9 @@ window.SyAttachMng = {
   </bo-container>
   <!-- ===== ■. 목록 영역 ===================================================== -->
   <bo-container title="첨부파일목록" :count-text="fileGridPager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
+    </template>
     <!-- ===== ■.■. 파일 그리드 (기본 20개 페이지 + 화면 높이에 따라 반응형으로 확장, 초과 시 내부 스크롤) ===== -->
     <div style="max-height:calc(100vh - 280px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <bo-grid
@@ -260,6 +272,9 @@ window.SyAttachMng = {
       <bo-pager :pager="fileGridPager" :on-set-page="n => handleBtnAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
+    <bo-excel-down-modal :show="excelModal.show" domain="syAttach" area-nm="첨부파일"
+      :columns="columns.fileGrid" ui-nm="첨부파일관리" :params="buildExcelParams()"
+      @close="excelModal.show = false" />
   </bo-container>
 </bo-page>
 `

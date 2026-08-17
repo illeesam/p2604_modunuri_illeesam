@@ -332,11 +332,27 @@ window.DpDispWidgetLibMng = {
         fmt:   v   => fnStatusLabel(v) },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = {
+        ...getSortParam(),
+        ...coUtil.cofOmitEmpty({
+          ...searchParam,
+          searchValue: (searchParam.searchValue || '').trim(),
+          pathId: uiState.selectedPath,
+        }),
+      };
+      if (p.searchValue && !p.searchType) { p.searchType = 'widgetNm,widgetLibDesc,tag'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       widgetLibs, uiState, widgetLibCounts, searchParam, applied, listGridPager, detailPanel,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       handleOpenPreview,                                                               // 미리보기
       cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter, // computed
@@ -400,6 +416,7 @@ window.DpDispWidgetLibMng = {
             상태: {{ applied.useYn === 'Y' ? '활성' : '비활성' }}
           </span>
         </div>
+        <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
         <button class="btn btn_new" @click="handleBtnAction('widgetLibs-add')">
           + 신규
         </button>
@@ -424,6 +441,9 @@ window.DpDispWidgetLibMng = {
         </template>
       </bo-grid>
       <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('widgetLibs-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgetLibs-pager-sizeChange')" />
+      <bo-excel-down-modal :show="excelModal.show" domain="dpWidgetLib" area-nm="위젯 라이브러리"
+        :columns="columns.listGrid" ui-nm="위젯라이브러리관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
   </div>
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 전체 폭) ============== -->

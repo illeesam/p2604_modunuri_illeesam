@@ -382,11 +382,20 @@ window.SyPropMng = {
       });
     };
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = { ...coUtil.cofOmitEmpty({ ...searchParam, siteId: cfSiteId.value, pathId: uiState.selectedPath }) };
+      if (p.searchValue && !p.searchType) { p.searchType = 'pathId,propKey,propValue,propLabel'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       uiState, propCounts, searchParam, propRows,       // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       sortState, onSort,                                // 정렬
       onScrollEnd,                                      // 무한 스크롤 (하단 도달 시 다음 100건)
       fnFmtProfile, profileFltDisplay, onProfileSelectChange, onProfileInputChange, // 프로파일
@@ -443,8 +452,10 @@ window.SyPropMng = {
         max-height="calc(100vh - 320px)"
         :total-count="uiState.total" @scroll-end="onScrollEnd"
         :sort-state="sortState" @sort="onSort"
+        :show-export="true"
         @add="handleBtnAction('props-add')" @save="handleBtnAction('props-save')"
         @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"
+        @export="excelModal.show = true"
         grid-id="props-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
         <template #row-actions="{ row }">
           <button v-if="['N','U'].includes(row._row_status)" class="btn btn_row_delete" @click.stop="handleSelectAction('props-rowDelete', row)">
@@ -455,6 +466,9 @@ window.SyPropMng = {
           </button>
         </template>
       </bo-grid-crud>
+      <bo-excel-down-modal :show="excelModal.show" domain="syProp" area-nm="프로퍼티"
+        :columns="columns.baseGrid" ui-nm="프로퍼티관리" :params="buildExcelParams()"
+        @close="excelModal.show = false" />
     </bo-container>
   </div>
   <!-- ===== □.□. 그리드 (BoGridCrud) ====================================== -->

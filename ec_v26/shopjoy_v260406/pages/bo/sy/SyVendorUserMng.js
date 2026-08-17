@@ -695,11 +695,27 @@ window.SyVendorUserMng = {
       { key: 'vendorUserRemark',  label: '비고', type: 'text', colSpan: 3 },
     ];
 
+    /* excelModal — 엑셀 다운로드 (공용 모달) */
+    const excelModal = reactive({ show: false });
+    const buildExcelParams = () => {
+      const p = {
+        vendorId: uiState.searchVendorId,
+        ...coUtil.cofOmitEmpty({
+          searchValue: (uiState.userSearchValue || '').trim(),
+          searchType:  uiState.userSearchType,
+          status:      uiState.userStatusFlt,
+        }),
+      };
+      if (p.searchValue && !p.searchType) { p.searchType = 'memberNm,vendorUserEmail,vendorUserMobile'; }
+      return p;
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       uiState, cfDtlMode, vendorUsers, vendors, vendorGridPager, userGridPager, formData, userRoles, roleTreeExpanded,    // 상태 / 데이터
+      excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                              // dispatch (모든 이벤트 / 액션 라우팅)
       cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList, cfMenuPermColumns,           // computed
       fnVendorRowStyle, fnUserRowStyle, fnPermBadgeColor, roleNmByCode,                                        // 헬퍼
@@ -743,6 +759,7 @@ window.SyVendorUserMng = {
       <!-- ===== ■.■.■. 사용자 목록 (항상 표시 — 업체 미선택 시 안내 empty-text) ======== -->
       <bo-container title="사용자목록" :count-text="vendorUsers.length + '건'">
         <template #toolbar-actions>
+          <button class="btn btn_excel" :disabled="uiState.searchVendorId == null" @click="excelModal.show = true">엑셀</button>
           <button class="btn btn_new" :disabled="uiState.searchVendorId == null" @click="handleBtnAction('vendorUsers-add')">
             + 신규등록
           </button>
@@ -758,6 +775,9 @@ window.SyVendorUserMng = {
           </template>
         </bo-grid>
         <bo-pager v-if="uiState.searchVendorId != null" :pager="userGridPager" :on-set-page="n => handleBtnAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
+        <bo-excel-down-modal :show="excelModal.show" domain="syVendorUser" area-nm="업체 사용자"
+          :columns="columns.userGrid" ui-nm="업체 사용자관리" :params="buildExcelParams()"
+          @close="excelModal.show = false" />
       </bo-container>
     </div>
     <!-- ===== □.□. 우: 사용자 검색 + 목록 =================================== -->
