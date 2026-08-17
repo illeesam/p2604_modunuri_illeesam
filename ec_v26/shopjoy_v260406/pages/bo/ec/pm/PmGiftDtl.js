@@ -436,12 +436,15 @@ window.PmGiftDtl = {
         :readonly="cfIsView" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
+          <div v-if="cfDtlMode" class="readonly-field-plain">
+            {{ form.vendorId ? cfSelectedVendorNm : '-' }}
+          </div>
+          <div v-else style="display:flex;gap:8px;align-items:center;">
+            <div class="form-control" style="background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:pointer;" @click="handleBtnAction('vendorModal-open')">
               <span style="padding:4px 10px;flex:1;">{{ cfSelectedVendorNm }}</span>
               <span style="padding:4px 10px;color:#999;font-size:12px;">▼</span>
             </div>
-            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+            <button v-if="form.vendorId" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
               style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
               x
             </button>

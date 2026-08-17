@@ -149,6 +149,9 @@ window.DpDispWidgetDtl = {
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
     const cfIsNew = computed(() => !props.dtlId);
 
+    /* fnWLabel — 위젯유형 라벨 조회 */
+    const fnWLabel = (t) => codes.disp_widget_types.find(w => w.codeValue === t)?.codeLabel || t || '-';
+
     /* makeForm — 생성 */
     const makeForm = () => ({
       widgetLibId: null, /* 백엔드 DTO 필드 (PK) */
@@ -732,14 +735,14 @@ window.DpDispWidgetDtl = {
       previewMode, libPickMode, libPickOpen, showComponentTooltip, // toRef
       jsonCopied, previewPaneWidth, // toRef
       PREVIEW_MODES, cfDispEnvMcsOptions,                // 상수
-      pathLabel, hasDispEnv, updateFileItem,                                         // 헬퍼 (template 직접 호출 유지)
+      pathLabel, fnWLabel, hasDispEnv, updateFileItem,                                         // 헬퍼 (template 직접 호출 유지)
     };
   },
   template: /* html */`
 <bo-container card-style="padding:0;">
   <!-- ===== ■. 헤더 (bo-container 표준 toolbar) ============================== -->
   <template #title>
-    {{ !active ? '위젯 상세' : (cfIsNew ? '위젯 신규등록' : '위젯 수정') }}
+    {{ !active ? '위젯 상세' : (cfIsNew ? '위젯 신규등록' : (cfDtlMode ? '위젯 상세' : '위젯 수정')) }}
     <span v-if="active ? (!cfIsNew) : false" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;margin-left:6px;">
       #{{ String(form.widgetLibId).padStart(4,'0') }}
     </span>
@@ -808,7 +811,7 @@ window.DpDispWidgetDtl = {
         </div>
       </div>
       <!-- ===== ■.■.■. 설정 ================================================== -->
-      <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+      <div class="bo-form-compact" style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
         <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
           설정
@@ -821,13 +824,16 @@ window.DpDispWidgetDtl = {
         <div style="margin-bottom:12px;">
           <bo-multi-check-select v-model="form.dispEnv" :options="cfDispEnvMcsOptions"
             separator="^" wrap empty-value="^NONE^" placeholder="전체 환경" all-label="전체 환경"
-            :disabled="cfDtlMode" min-width="280px" />
+            :plain="cfDtlMode" min-width="280px" />
         </div>
         <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
           표시경로
           <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로</span>
         </div>
-        <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'flex-end',gap:'6px',fontFamily:'monospace'}">
+        <div v-if="cfDtlMode" class="readonly-field-plain">
+          {{ pathLabel(form.pathId) || '-' }}
+        </div>
+        <div v-else :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'flex-end',gap:'6px',fontFamily:'monospace'}">
           <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
           <button v-if="form.pathId != null" type="button" title="선택 해제" @click="handleBtnAction('form-pathClear')"
             style="background:none;border:none;padding:0 2px 2px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
@@ -843,11 +849,11 @@ window.DpDispWidgetDtl = {
       </div>
       <!-- ===== /설정 ======================================================== -->
       <!-- ===== ■.■.■. 제목 ================================================== -->
-      <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
+      <div class="bo-form-compact" style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
         <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
           제목
-          <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+          <span v-if="!cfDtlMode" style="margin-left:auto;display:flex;align-items:center;gap:8px;">
             <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
             <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
               <input type="radio" v-model="form.titleYn" value="Y" />
@@ -859,21 +865,25 @@ window.DpDispWidgetDtl = {
             </label>
           </span>
         </div>
-        <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+        <div v-if="cfDtlMode" class="readonly-field-plain">
+          {{ form.titleYn === 'Y' ? (form.title || '-') : '미표시' }}
+        </div>
+        <div v-else-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
           <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
           <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
         </div>
       </div>
       <!-- ===== /제목 ======================================================== -->
       <!-- ===== ■.■.■. 내용 ================================================== -->
-      <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
+      <div class="bo-form-compact" style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
         <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
           <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;flex-shrink:0;"></span>
           내용
           <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
             <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">위젯유형</span>
-            <select v-model="form.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}"
-              style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
+            <span v-if="cfDtlMode" style="font-size:13px;font-weight:600;color:#374151;">{{ fnWLabel(form.widgetType) }}</span>
+            <select v-else v-model="form.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}"
+              style="margin:0;border-radius:5px;min-width:160px;">
               <option v-for="t in codes.disp_widget_types" :key="t?.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
             </select>
           </span>

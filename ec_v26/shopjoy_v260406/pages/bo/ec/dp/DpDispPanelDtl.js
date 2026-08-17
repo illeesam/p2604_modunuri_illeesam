@@ -1256,7 +1256,7 @@ window.DpDispPanelDtl = {
                 <base-html-editor v-else v-model="form.htmlDesc" height="280px" />
               </div>
               <!-- ===== /내용 ======================================================== -->
-              <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
+              <div class="form-actions" v-if="active">
                 <template v-if="cfDtlMode">
                   <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -1559,7 +1559,7 @@ window.DpDispPanelDtl = {
                 </div>
               </div>
               <!-- ===== /내용 영역 ===================================================== -->
-              <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
+              <div class="form-actions" v-if="active">
                 <template v-if="cfDtlMode">
                   <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -1756,7 +1756,7 @@ window.DpDispPanelDtl = {
             <div v-else style="margin-bottom:16px;">
               <base-html-editor v-model="form.htmlDesc" height="280px" />
             </div>
-            <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
+            <div class="form-actions" v-if="active">
               <template v-if="cfDtlMode">
                 <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
                 <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -1936,7 +1936,7 @@ window.DpDispPanelDtl = {
                   </tr>
                 </tbody>
               </table>
-              <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
+              <div class="form-actions" v-if="active">
                 <template v-if="cfDtlMode">
                   <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
