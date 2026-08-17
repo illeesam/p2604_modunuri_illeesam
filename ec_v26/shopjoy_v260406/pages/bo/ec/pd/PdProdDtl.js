@@ -31,6 +31,9 @@ window.PdProdDtl = {
     const codes = reactive([]);
     const grpCodes = reactive({ PRODUCT_STATUS: [], PROD_TYPE: [], PROD_PLAN_STATUS: [], OPT_STOCK_STATUS: [], STOCK_FILTER: [] });
 
+    /* fnProdTypeLabel — 상품유형 코드값 → 라벨 (영역 타이틀에 "옵션 상품수정" 식으로 붙일 때 사용) */
+    const fnProdTypeLabel = () => (grpCodes.PROD_TYPE.find(c => c.codeValue === form.prodTypeCd) || {}).codeLabel || '';
+
     /* 상품 fnLoadCodes */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -1880,7 +1883,7 @@ window.PdProdDtl = {
       contentSplitRef, onDividerMousedown,
       prodOptCategoryTypeCd, openHelp,
       safeFirst, safeFind, safeFilter,
-      grpCodes,
+      grpCodes, fnProdTypeLabel,
       fnMdRowStyle, fnRemainSkuRowStyle, fnDateTime,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
@@ -1896,7 +1899,7 @@ window.PdProdDtl = {
   },
   template: /* html */`
 <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-<bo-container :title="!active ? '상품 상세' : (cfIsNew ? '상품 등록' : (cfDtlMode ? '상품 상세' : '상품 수정'))"
+<bo-container :title="!active ? '상품 상세' : (cfIsNew ? (fnProdTypeLabel() ? fnProdTypeLabel() + ' 상품 등록' : '상품 등록') : (cfDtlMode ? (fnProdTypeLabel() ? fnProdTypeLabel() + ' 상품 상세' : '상품 상세') : (fnProdTypeLabel() ? fnProdTypeLabel() + ' 상품수정' : '상품 수정')))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.prodId)">
   <template #toolbar-actions>
     <button v-if="active ? (!cfIsNew) : false" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"

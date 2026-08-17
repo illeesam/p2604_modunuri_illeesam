@@ -449,6 +449,7 @@ window.PdProdMng = {
     columns.baseGrid = [
       { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+      { key: 'prodTypeCdNm', label: '상품유형', align: 'center', fmt: (v, p) => v || p.prodTypeCd || '-' },
       { key: 'cateNm',       label: '카테고리' },
       { key: 'listPrice',    label: '가격', fmt: (v) => (coUtil.cofWon(v)) },
       { key: 'prodStock',    label: '재고', fmt: (v) => (v + '개') },

@@ -2747,11 +2747,23 @@ window.BoGroupTable = {
     hoverBg:           { type: String,  default: '#dbeafe' },     // hover 배경색
     stripeBg:          { type: String,  default: '#f7f8fc' },     // 홀수행 배경색 — 표준 그리드(.bo-table 짝수행) 색과 동일
     colBorder:         { type: String,  default: '' },             // 열 구분선 (예: '1px solid #e2e8f0')
+    maxHeight:         { type: String,  default: '' },             // 지정 시 이 높이로 내부 스크롤 컨테이너 생성(세로+가로 한 컨테이너) — thead sticky 도 이 기준. 미지정 시 기존처럼 overflow-x만(세로는 bo-main 기준)
   },
   emits: ['cell-click'],
   setup(props, { emit }) {
     const { computed, ref } = Vue;
     const hoveredKey = ref(null);
+
+    /* cfWrapStyle — maxHeight 지정 시 세로+가로 한 컨테이너(단일 스크롤박스)로 통일.
+       미지정 시 기존 overflow-x:auto 유지 — 별도 래퍼 div로 감싸면 가로 스크롤바가 그 래퍼의
+       overflow-x:auto div(테이블 실제 높이 기준) 맨 아래로 밀려나 안 보이는 이중 스크롤 문제가 생긴다
+       (2026-08-18 실제 발생 — OdOrderItemMng). maxHeight 로 한 컨테이너에서 처리해야 스크롤바가
+       항상 화면에 보이는 위치(뷰포트 하단)에 고정된다.
+       ⚠ position:relative 를 여기 넣지 말 것 — thead th/td[pin=left] 의 position:sticky 가
+       가장 가까운 스크롤 조상을 기준으로 계산되는데, 이 wrap div 에 relative 를 얹으면 그 계산이
+       깨져 좌측 고정 컬럼이 가로 스크롤을 따라 같이 움직여버린다(2026-08-18 실제 발생). */
+    const cfWrapStyle = computed(() =>
+      props.maxHeight ? `max-height:${props.maxHeight};overflow:auto;` : 'overflow-x:auto;');
 
     /* 모든 컬럼이 leaf — colGroup 쉼표 계층으로 그룹 구분 */
     const cfLeafCols = computed(() => props.columns);
@@ -3021,10 +3033,10 @@ window.BoGroupTable = {
       });
     });
 
-    return { cfLeafCols, cfHeaderRows, cfPinLeftCount, fnTdStyle, fnRowStyle, onCellClick, handleBadgeClick, cfSummaryTdList, hoveredKey, onRowMouseEnter, onRowMouseLeave };
+    return { cfLeafCols, cfHeaderRows, cfPinLeftCount, fnTdStyle, fnRowStyle, onCellClick, handleBadgeClick, cfSummaryTdList, hoveredKey, onRowMouseEnter, onRowMouseLeave, cfWrapStyle };
   },
   template: `
-<div style="overflow-x:auto;">
+<div :style="cfWrapStyle">
   <table class="bo-table" :style="tableStyle || 'table-layout:fixed;width:100%;'">
     <colgroup>
       <col v-for="col in cfLeafCols" :key="col.key"

@@ -31,6 +31,8 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveUsage;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGift;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaim;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdClaimItem;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -77,6 +79,11 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QPmCouponUsage   pmCouponUsageEx = new QPmCouponUsage("pm_coupon_usage_ex");
     private static final QPmSaveUsage     pmSaveUsageEx   = new QPmSaveUsage("pm_save_usage_ex");
     private static final QPmGift          pmGiftEx        = new QPmGift("pm_gift_ex");
+    // 클레임유형/상태 표시용 (최근 1건 대표 표시) + 검색필터용(EXISTS) 별칭 — 서로 다른 인스턴스로 충돌 방지
+    private static final QOdClaimItem     claimItemDsp    = new QOdClaimItem("claim_item_dsp");
+    private static final QOdClaim         claimDsp        = new QOdClaim("claim_dsp");
+    private static final QOdClaimItem     claimItemFlt    = new QOdClaimItem("claim_item_flt");
+    private static final QOdClaim         claimFlt        = new QOdClaim("claim_flt");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odOrderItem.regDate,
         "upd_date", odOrderItem.updDate
     );
@@ -188,7 +195,16 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         ExpressionUtils.as(JPAExpressions.select(pmSaveUsageEx.useAmt.sum())
                                 .from(pmSaveUsageEx)
                                 .where(pmSaveUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "saveUsageAmt"),
-                        pmGiftEx.giftNm.as("giftNm")
+                        pmGiftEx.giftNm.as("giftNm"),
+                        // 클레임유형/상태 — 해당 항목의 최신 클레임 1건 대표 표시(od_claim_item→od_claim, regDate desc)
+                        ExpressionUtils.as(JPAExpressions.select(claimDsp.claimTypeCd)
+                                .from(claimItemDsp).join(claimDsp).on(claimDsp.claimId.eq(claimItemDsp.claimId))
+                                .where(claimItemDsp.orderItemId.eq(odOrderItem.orderItemId))
+                                .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimTypeCd"),
+                        ExpressionUtils.as(JPAExpressions.select(claimItemDsp.claimItemStatusCd)
+                                .from(claimItemDsp)
+                                .where(claimItemDsp.orderItemId.eq(odOrderItem.orderItemId))
+                                .orderBy(claimItemDsp.regDate.desc()).limit(1), "claimStatusCd")
                 ))
                 .from(odOrderItem)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId))
@@ -227,6 +243,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                     QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
                     QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()),
                     QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
+                    claimFilter(search.getClaimTypeCds(), search.getClaimStatusCds()),
                     QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
@@ -290,6 +307,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
                 QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()),
                 QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
+                claimFilter(search.getClaimTypeCds(), search.getClaimStatusCds()),
                 QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
@@ -351,6 +369,20 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
 
     /** *Nm 필드는 원장 테이블 EXISTS, 나머지는 스냅샷 LIKE. 필드별 모드는 FieldDef 로 개별 지정. */
+    /** 클레임유형(claimTypeCds)/클레임상세상태(claimStatusCds) 다중 필터 — EXISTS(od_claim_item → od_claim) */
+    private BooleanExpression claimFilter(List<String> claimTypeCds, List<String> claimStatusCds) {
+        boolean hasType   = claimTypeCds != null && !claimTypeCds.isEmpty();
+        boolean hasStatus = claimStatusCds != null && !claimStatusCds.isEmpty();
+        if (!hasType && !hasStatus) return null;
+        return JPAExpressions.selectOne()
+                .from(claimItemFlt)
+                .join(claimFlt).on(claimFlt.claimId.eq(claimItemFlt.claimId))
+                .where(claimItemFlt.orderItemId.eq(odOrderItem.orderItemId),
+                       hasType   ? claimFlt.claimTypeCd.in(claimTypeCds) : null,
+                       hasStatus ? claimItemFlt.claimItemStatusCd.in(claimStatusCds) : null)
+                .exists();
+    }
+
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("bundleGroupId",           odOrderItem.bundleGroupId),

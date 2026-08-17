@@ -209,6 +209,10 @@ window.SySiteDtl = {
       // 6행: 로고 URL / 파비콘 URL / (빈칸 1)
       { key: 'logoUrl',        label: '로고 URL',   type: 'text', placeholder: '/assets/img/logo.png' },
       { key: 'faviconUrl',     label: '파비콘 URL', type: 'text', placeholder: '/favicon.ico' },
+      { type: 'group', label: '정산 · 수수료' },
+      // 7행: 사이트 기본 플랫폼수수료율 (상품별 platform_fee_rate 미지정 시 이 값이 기본 적용)
+      { key: 'platformFeeRate', label: '기본 플랫폼수수료율(%)', type: 'number', min: 0, max: 100,
+        hint: '상품마다 개별 수수료율을 지정하지 않으면 이 사이트 기본값이 적용됩니다.' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

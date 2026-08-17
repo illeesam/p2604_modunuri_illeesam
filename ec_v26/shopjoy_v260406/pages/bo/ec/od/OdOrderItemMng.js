@@ -97,13 +97,13 @@ window.OdOrderItemMng = {
     const items = reactive([]);
     const listGridPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [20, 50, 100, 200] });
     const uiState = reactive({ loading: false });
-    const codes = reactive({ order_item_statuses: [], od_date_types: [], couriers: [] });
+    const codes = reactive({ order_item_statuses: [], od_date_types: [], couriers: [], claim_types: [], claim_statuses: [] });
 
     const searchParam = reactive({
       orderId: '', memberId: '', memberNm: '',
       vendorId: '', vendorNm: '', brandId: '', brandNm: '',
       mdUserId: '', mdUserNm: '', dlivCourierCd: '',
-      orderItemStatusCds: '', claimYn: '',
+      orderItemStatusCds: '', claimTypeCds: '', claimStatusCds: '',
       searchType: '', searchValue: '',
       dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '', _dateRange: '',
     });
@@ -339,7 +339,8 @@ window.OdOrderItemMng = {
         ...(searchParam.mdUserNm          && { mdUserNm:          searchParam.mdUserNm }),
         ...(searchParam.dlivCourierCd         && { dlivCourierCd:         searchParam.dlivCourierCd }),
         ...(() => { const s = searchParam.orderItemStatusCds ? searchParam.orderItemStatusCds.split(',').filter(Boolean) : []; return s.length ? { orderItemStatusCds: s } : {}; })(),
-        ...(searchParam.claimYn           && { claimYn:           searchParam.claimYn }),
+        ...(() => { const s = searchParam.claimTypeCds ? searchParam.claimTypeCds.split(',').filter(Boolean) : []; return s.length ? { claimTypeCds: s } : {}; })(),
+        ...(() => { const s = searchParam.claimStatusCds ? searchParam.claimStatusCds.split(',').filter(Boolean) : []; return s.length ? { claimStatusCds: s } : {}; })(),
         ...(searchParam.searchType        && { searchType:        searchParam.searchType }),
         ...(searchParam.searchValue       && { searchValue:       searchParam.searchValue }),
         ...(searchParam.dateRangeType     && { dateRangeType:     searchParam.dateRangeType }),
@@ -371,10 +372,12 @@ window.OdOrderItemMng = {
     const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
-        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS_CD', 'ORDER_ITEM_DATE_TYPE', 'COURIER'], { compNm: 'OdOrderItemMng' });
+        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS_CD', 'ORDER_ITEM_DATE_TYPE', 'COURIER', 'CLAIM_TYPE_CD', 'CLAIM_ITEM_STATUS_CD'], { compNm: 'OdOrderItemMng' });
         codes.order_item_statuses = codeStore.sgGetGrpCodes('ORDER_ITEM_STATUS_CD');
         codes.od_date_types       = codeStore.sgGetGrpCodes('ORDER_ITEM_DATE_TYPE');
         codes.couriers            = codeStore.sgGetGrpCodes('COURIER');
+        codes.claim_types         = codeStore.sgGetGrpCodes('CLAIM_TYPE_CD');
+        codes.claim_statuses      = codeStore.sgGetGrpCodes('CLAIM_ITEM_STATUS_CD');
       } catch (_) {}
     };
 
@@ -445,7 +448,7 @@ window.OdOrderItemMng = {
 
       /* ── 📊 진행상태 (od.01 상태표 order_item_status_cd 흐름: ORDERED→PAID→PREPARING→SHIPPING→DELIVERED→CONFIRMED, 종결 CANCELLED)
              뱃지 클릭 시 해당 행 주문 1건의 진행상태 칸반 팝오버(openStatusPopover) — 드래그로 실제 상태 변경 가능 ── */
-      { key: '_stOrdered', label: '주문완료', colGroup: '📊 진행상태',
+      { key: '_stOrdered', label: '주문완료', colGroup: '📊 주문항목진행상태',
         colGroupBg: '#fff8e1', colGroupColor: '#e65100', colGroupBorderColor: '#ffca28',
         thBg: '#fffde7', width: 50,
         headerTip: '주문 접수 완료 · 무통장 입금대기 상태 (ORDERED / WAIT_DEPOSIT)',
@@ -455,37 +458,37 @@ window.OdOrderItemMng = {
         /* 진행상태 8칸은 화면 전용 아이콘 뱃지라 엑셀엔 그대로 못 실음(BoExcelDownModal 규칙) —
            대표로 이 칸에 excelKeys 를 걸어 실제 텍스트 필드(orderItemStatusCdNm)로 1컬럼만 내보낸다. */
         excelKeys: [{ key: 'orderItemStatusCdNm', label: '진행상태' }] },
-      { key: '_stPaid',    label: '결제완료', colGroup: '📊 진행상태',
+      { key: '_stPaid',    label: '결제완료', colGroup: '📊 주문항목진행상태',
         thBg: '#fffde7', width: 44,
         headerTip: '결제 완료 상태 (PAID)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => row.orderItemStatusCd === 'PAID'      ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null,
         onBadgeClick: (row) => openStatusPopover(row) },
-      { key: '_stPrep',    label: '준비중',   colGroup: '📊 진행상태',
+      { key: '_stPrep',    label: '준비중',   colGroup: '📊 주문항목진행상태',
         thBg: '#fffde7', width: 44,
         headerTip: '상품 준비중 상태 (PREPARING)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => row.orderItemStatusCd === 'PREPARING' ? { bg: '#c2410c', color: '#fff', value: row.orderQty || 1 } : null,
         onBadgeClick: (row) => openStatusPopover(row) },
-      { key: '_stShip',    label: '배송중',   colGroup: '📊 진행상태',
+      { key: '_stShip',    label: '배송중',   colGroup: '📊 주문항목진행상태',
         thBg: '#fffde7', width: 44,
         headerTip: '배송 중 상태 (SHIPPING)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => row.orderItemStatusCd === 'SHIPPING'  ? { bg: '#1d4ed8', color: '#fff', value: row.orderQty || 1 } : null,
         onBadgeClick: (row) => openStatusPopover(row) },
-      { key: '_stDliv',    label: '배송완료', colGroup: '📊 진행상태',
+      { key: '_stDliv',    label: '배송완료', colGroup: '📊 주문항목진행상태',
         thBg: '#fffde7', width: 50,
         headerTip: '배송 완료 상태 (DELIVERED)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => STS_DELIVERED.includes(row.orderItemStatusCd) ? { bg: '#0f766e', color: '#fff', value: row.orderQty || 1 } : null,
         onBadgeClick: (row) => openStatusPopover(row) },
-      { key: '_stBuyConf', label: '구매확정', colGroup: '📊 진행상태',
+      { key: '_stBuyConf', label: '구매확정', colGroup: '📊 주문항목진행상태',
         thBg: '#fffde7', width: 50,
         headerTip: '구매확정 완료 상태 (CONFIRMED)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null,
         onBadgeClick: (row) => openStatusPopover(row) },
-      { key: '_stCancelled', label: '취소',   colGroup: '📊 진행상태',
+      { key: '_stCancelled', label: '취소',   colGroup: '📊 주문항목진행상태',
         thBg: '#fffde7', width: 44,
         headerTip: '주문 취소 상태 (CANCELLED)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
@@ -630,10 +633,12 @@ window.OdOrderItemMng = {
         onOpen: () => handleBtnAction('pick-md-open'),     onClear: () => handleBtnAction('pick-md-clear') },
       { key: 'dlivCourierCd', type: 'select', label: '배송사',
         options: () => codes.couriers, nullLabel: '배송사 전체' },
-      { key: 'orderItemStatusCds', type: 'multiCheck', label: '품목상태',
-        options: () => codes.order_item_statuses, placeholder: '상태 전체', allLabel: '전체 선택' },
-      { key: 'claimYn', type: 'select', label: '클레임',
-        options: [{ value: 'Y', label: '클레임 있음' }, { value: 'N', label: '클레임 없음' }], nullLabel: '전체' },
+      { key: 'orderItemStatusCds', type: 'multiCheck', label: '주문항목상태',
+        options: () => codes.order_item_statuses, placeholder: '주문항목상태 전체', allLabel: '전체 선택' },
+      { key: 'claimTypeCds', type: 'multiCheck', label: '클레임유형',
+        options: () => codes.claim_types, placeholder: '전체', allLabel: '전체 선택' },
+      { key: 'claimStatusCds', type: 'multiCheck', label: '클레임상세',
+        options: () => codes.claim_statuses, placeholder: '전체', allLabel: '전체 선택' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [{ value: 'prodNm', label: '상품명' }, { value: 'brandNm', label: '브랜드명' }],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '112px' },
@@ -675,12 +680,12 @@ window.OdOrderItemMng = {
     <template #toolbar-actions>
       <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
     </template>
-    <div style="max-height:calc(100vh - 360px);min-height:320px;overflow:auto;">
     <bo-group-table
       :columns="columns.listGrid"
       :rows="cfDisplayRows"
       row-key="orderItemId"
       :selected-key="detailPanel.selectedOrderItemId"
+      max-height="calc(100vh - 360px)"
       table-style="min-width:2200px;table-layout:fixed;width:100%;"
       :loading="uiState.loading"
       :summary-row="cfSummaryGridRow"
@@ -795,7 +800,6 @@ window.OdOrderItemMng = {
       </template>
 
     </bo-group-table>
-    </div>
     <bo-pager v-if="listGridPager.pageTotalCount > 0" :pager="listGridPager"
       :on-set-page="n => handleBtnAction('items-pager-setPage', n)"
       :on-size-change="() => handleSelectAction('items-pager-sizeChange')" />
