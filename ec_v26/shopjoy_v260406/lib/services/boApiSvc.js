@@ -483,6 +483,12 @@
     sendSns(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.post(  `/bo/ec/pm/voucher/${_id}/send-sns`, body, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── st: 배송수수료정책 ─────────────────────────────────────── */
+  boApiSvc.stDlivFeePolicy = {
+    getPage(params, uiNm, cmdNm, opt) { return global.boApi.get(   '/bo/ec/st/dliv-fee-policy/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
+    saveList(cmd, rows, uiNm, cmdNm)  { return global.boApi.post(  `/bo/ec/st/dliv-fee-policy/save-list/${cmd}`, rows, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── st: 정산설정 ───────────────────────────────────────────── */
   boApiSvc.stSettleConfig = {
     getPage(params, uiNm, cmdNm, opt)   { return global.boApi.get(   '/bo/ec/st/config/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },

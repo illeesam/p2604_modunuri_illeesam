@@ -1138,6 +1138,24 @@
     return statusCd === 'SHOW' ? '활성' : (statusCd === 'HIDE' ? '비활성' : (statusCd || ''));
   }
 
+  /* ====== 포맷 검증 헬퍼 (이메일/전화/비밀번호 등) ======
+   *   전부 "빈 값은 형식 오류로 보지 않는다" — 필수 여부는 각 화면의 required 체크가 별도로 담당하고,
+   *   여기는 값이 입력됐을 때 형식만 검증한다. yup 사용 화면은 .matches() 로도 동일 정규식 재사용 가능. */
+
+  /* cofRegexEmail — 이메일 정규식 (yup shim .email() 과 동일 패턴 재사용) */
+  const cofRegexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  /* cofRegexMobile — 국내 휴대전화 (010~019, 하이픈 선택) */
+  const cofRegexMobile = /^01[0-9]-?\d{3,4}-?\d{4}$/;
+  /* cofRegexPhone — 국내 일반전화(지역번호) + 휴대전화 공용 (연락처류 필드에서 폭넓게 허용) */
+  const cofRegexPhone = /^0\d{1,2}-?\d{3,4}-?\d{4}$/;
+  /* cofRegexPassword — sy.04.사용자.md 비밀번호 정책: 8자 이상 + 대/소문자·숫자·특수문자 각 1개 이상 */
+  const cofRegexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
+
+  function cofIsValidEmail(v) { return !v || cofRegexEmail.test(String(v).trim()); }
+  function cofIsValidMobile(v) { return !v || cofRegexMobile.test(String(v).trim()); }
+  function cofIsValidPhone(v) { return !v || cofRegexPhone.test(String(v).trim()); }
+  function cofIsValidPassword(v) { return !v || cofRegexPassword.test(String(v)); }
+
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
   global.coUtil.cofApiHdr = global.coUtil.cofApiHdr || cofApiHdr;
@@ -1210,4 +1228,13 @@
   global.coUtil.cofPanelStatusLabel = global.coUtil.cofPanelStatusLabel || cofPanelStatusLabel;
   // Mng 표준 캡슐 (상세패널)
   global.coUtil.cofDetail = global.coUtil.cofDetail || cofDetail;
+  // 포맷 검증 헬퍼 (이메일/전화/비밀번호)
+  global.coUtil.REGEX_EMAIL = global.coUtil.REGEX_EMAIL || cofRegexEmail;
+  global.coUtil.REGEX_MOBILE = global.coUtil.REGEX_MOBILE || cofRegexMobile;
+  global.coUtil.REGEX_PHONE = global.coUtil.REGEX_PHONE || cofRegexPhone;
+  global.coUtil.REGEX_PASSWORD = global.coUtil.REGEX_PASSWORD || cofRegexPassword;
+  global.coUtil.cofIsValidEmail = global.coUtil.cofIsValidEmail || cofIsValidEmail;
+  global.coUtil.cofIsValidMobile = global.coUtil.cofIsValidMobile || cofIsValidMobile;
+  global.coUtil.cofIsValidPhone = global.coUtil.cofIsValidPhone || cofIsValidPhone;
+  global.coUtil.cofIsValidPassword = global.coUtil.cofIsValidPassword || cofIsValidPassword;
 })(typeof window !== 'undefined' ? window : this);

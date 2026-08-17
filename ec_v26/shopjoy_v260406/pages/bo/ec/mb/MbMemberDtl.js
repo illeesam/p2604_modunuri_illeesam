@@ -5,6 +5,7 @@ window.MbMemberDtl = {
     navigate:      { type: Function, required: true },        // 페이지 이동
     dtlId:         { type: String, default: null },           // 수정 대상 ID
     detailModal:   { type: Object, default: () => ({}) },     // 부모 Mng 의 detailPanel 객체
+    errors:        { type: Object, default: () => ({}) },     // 부모 Mng 의 저장 검증 오류 (항목 아래 빨간 라벨)
     active:        { type: Boolean, default: true },          // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     handleSave:    { type: Function, default: () => {} },     // 저장 콜백
     handleDelete:  { type: Function, default: () => {} },     // 삭제 콜백
@@ -104,11 +105,11 @@ window.MbMemberDtl = {
   template: /* html */`
 <!-- ===== ■. 상세/수정 카드 (항상 표시) ====================================== -->
 <bo-container body-style="padding:12px;"
-  :title="!active ? '회원 상세' : (detailModal.isNew ? '신규 등록' : '회원 수정')"
+  :title="!active ? '회원 상세' : (detailModal.isNew ? '회원 등록' : '회원 수정')"
   :title-id="!active ? '' : (detailModal.isNew ? '' : (detailModal.form?.memberId || ''))">
   <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->
   <!-- detailModal 기본값이 {} 라 form 이 없을 수 있다 (부모 Mng 없이 단독 진입 등) → 빈 폼으로 렌더 -->
-  <bo-form-area plain-readonly :columns="columns.baseForm" :form="detailModal.form || {}" :errors="{}"
+  <bo-form-area plain-readonly :columns="columns.baseForm" :form="detailModal.form || {}" :errors="errors"
     :readonly="!active" :cols="3" compact :show-actions="false" />
   <!-- ===== □.■. 폼 영역 ================================================== -->
   <!-- ===== ■.■. 하단 액션 (Mng 인라인 상세 패널 표준 — 처리버튼은 하단 중앙 정렬) ============== -->

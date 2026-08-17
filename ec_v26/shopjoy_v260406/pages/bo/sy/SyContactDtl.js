@@ -113,6 +113,11 @@ window.SyContactDtl = {
       contactContent: yup.string().required('문의 내용을 입력해주세요.'),
     });
 
+    /* html 에디터(slot) 필드는 BoFormArea 의 field-change 를 타지 않아 값이 채워져도
+       오류 라벨이 자동으로 안 지워진다 — 여기서 직접 클리어 */
+    watch(() => form.contactContent, (v) => { if (errors.contactContent && v) { delete errors.contactContent; } });
+    watch(() => form.contactAnswer, (v) => { if (errors.contactAnswer && v) { delete errors.contactAnswer; } });
+
     const cfCurId       = computed(() => props.dtlId || form.contactId || null);
     const cfHasId       = computed(() => !!cfCurId.value);
     /* 첫 탭 = content. answer/history 탭은 ID 없으면 비활성. */
@@ -240,6 +245,12 @@ window.SyContactDtl = {
         showToast('먼저 문의 내용 탭에서 등록해주세요.', 'error');
         return;
       }
+      delete errors.contactAnswer;
+      if (!form.contactAnswer || !form.contactAnswer.trim()) {
+        errors.contactAnswer = '답변 내용을 입력해주세요.';
+        showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       const ok = await showConfirm('답변 저장', '답변을 저장하시겠습니까?');
       if (!ok) { return; }
       try {
@@ -272,7 +283,7 @@ window.SyContactDtl = {
     ];
     // answer 탭 영역
     columns.answerForm = [
-      { key: 'contactAnswer',    label: '답변 내용', type: 'slot', name: 'answerContent', colSpan: 3 },
+      { key: 'contactAnswer',    label: '답변 내용', type: 'slot', name: 'answerContent', colSpan: 3, required: true },
       { key: 'answerAttachFiles', label: '첨부파일', type: 'slot', name: 'answerAttach',  colSpan: 3,
         visible: () => !cfIsNew.value },
     ];
@@ -355,7 +366,7 @@ window.SyContactDtl = {
         <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.contactTitle }}</div>
         <div style="font-size:13px;color:#555;white-space:pre-line;">{{ form.contactContent }}</div>
       </div>
-      <bo-form-area plain-readonly :columns="columns.answerForm" :form="form" :errors="{}"
+      <bo-form-area plain-readonly :columns="columns.answerForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <template #answerContent>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
@@ -363,6 +374,7 @@ window.SyContactDtl = {
           </div>
           <div v-if="cfDtlMode" class="readonly-field-plain" style="min-height:180px;line-height:1.6;" v-html="form.contactAnswer || '-'"></div>
           <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
+          <span v-if="errors.contactAnswer" class="field-error">{{ errors.contactAnswer }}</span>
         </template>
         <template #answerAttach>
           <base-attach-grp ref="answerAttachRef" :ref-table-nm="answerRefTableNm" :ref-key-id="cfCurId"

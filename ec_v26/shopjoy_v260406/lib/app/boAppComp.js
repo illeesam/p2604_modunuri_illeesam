@@ -103,6 +103,7 @@ window.boRegisterComponents = function (app) {
     .component('PmVoucherDtl', window.PmVoucherDtl)
     /* ── pages/bo/ec/st/ — 정산관리 ── */
     .component('StConfigMng', window.StConfigMng)
+    .component('StDlivFeePolicyMng', window.StDlivFeePolicyMng)
     .component('StRawMng', window.StRawMng)
     .component('StSettleAdjMng', window.StSettleAdjMng)
     .component('StSettleEtcAdjMng', window.StSettleEtcAdjMng)
@@ -175,6 +176,7 @@ window.boRegisterComponents = function (app) {
     .component('BoPathTreeNode', window.BoPathTreeNode)
     .component('BoCategoryTree', window.BoCategoryTree)
     .component('BoMultiCheckSelect', window.BoMultiCheckSelect)
+    .component('BoComboMatrixSelect', window.BoComboMatrixSelect)
     .component('BoDateTimePicker', window.BoDateTimePicker)
     .component('BoPage', window.BoPage)
     .component('BoContainer', window.BoContainer)

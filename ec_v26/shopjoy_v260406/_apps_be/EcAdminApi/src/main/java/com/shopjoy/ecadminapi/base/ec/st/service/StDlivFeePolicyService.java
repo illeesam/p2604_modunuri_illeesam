@@ -66,6 +66,7 @@ public class StDlivFeePolicyService {
     @Transactional
     public StDlivFeePolicy create(StDlivFeePolicy body) {
         body.setDlivFeePolicyId(CmUtil.generateId("st_dliv_fee_policy"));
+        if (body.getSiteId() == null || body.getSiteId().isBlank()) { body.setSiteId(SecurityUtil.getSiteIdOrDefault()); }
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -117,6 +118,7 @@ public class StDlivFeePolicyService {
             return null;
         } else if ("I".equals(rowStatus)) {
             entity.setDlivFeePolicyId(CmUtil.generateId("st_dliv_fee_policy"));
+            if (entity.getSiteId() == null || entity.getSiteId().isBlank()) { entity.setSiteId(SecurityUtil.getSiteIdOrDefault()); }
             entity.setRegBy(authId); entity.setRegDate(now);
             entity.setUpdBy(authId); entity.setUpdDate(now);
             StDlivFeePolicy saved = stDlivFeePolicyRepository.save(entity);
@@ -169,6 +171,7 @@ public class StDlivFeePolicyService {
         List<StDlivFeePolicy> insertRows = rows.stream().filter(r -> "I".equals(r.getRowStatus())).toList();
         for (StDlivFeePolicy row : insertRows) {
             row.setDlivFeePolicyId(CmUtil.generateId("st_dliv_fee_policy"));
+            if (row.getSiteId() == null || row.getSiteId().isBlank()) { row.setSiteId(SecurityUtil.getSiteIdOrDefault()); }
             row.setRegBy(authId); row.setRegDate(now);
             row.setUpdBy(authId); row.setUpdDate(now);
             stDlivFeePolicyRepository.save(row);

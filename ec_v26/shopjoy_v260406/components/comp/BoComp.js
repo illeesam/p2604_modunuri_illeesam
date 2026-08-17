@@ -1090,6 +1090,132 @@ window.BoMultiCheckSelect = {
 `,
 };
 
+/* ── BoComboMatrixSelect — 행×열 매트릭스 체크 선택 (예: 클레임상세 = 상태×유형) ─────
+ * BoMultiCheckSelect 와 같은 트리거박스+팝오버 상호작용을 쓰되, 팝오버 내용만
+ * "행(rowOptions) × 열(colOptions)" 체크박스 표(grid)로 바꾼 변형.
+ * v-model 값은 "행값:열값" 토큰을 ','로 이은 문자열(예: "REQUESTED:CANCEL,IN_PICKUP:RETURN").
+ *
+ * props:
+ *   modelValue   — string. "row:col,row:col,..." (빈값=전체)
+ *   rowOptions   — [{value,label}] 행(세로) 목록
+ *   colOptions   — [{value,label}] 열(가로) 목록
+ *   cellValid    — (rowVal, colVal) => boolean. 해당 조합이 존재하지 않으면 체크박스 대신 빈칸(기본: 항상 true)
+ *   placeholder/allLabel/minWidth/disabled — BoMultiCheckSelect 와 동일 의미
+ * emits: update:modelValue */
+window.BoComboMatrixSelect = {
+  name: 'BoComboMatrixSelect',
+  props: {
+    modelValue:  { type: String,   default: '' },
+    rowOptions:  { type: Array,    required: true },
+    colOptions:  { type: Array,    required: true },
+    cellValid:   { type: Function, default: () => true },
+    placeholder: { type: String,   default: '전체' },
+    allLabel:    { type: String,   default: '전체' },
+    minWidth:    { type: String,   default: '160px' },
+    disabled:    { type: Boolean,  default: false },
+  },
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    const { ref, computed, onMounted, onBeforeUnmount } = Vue;
+    const open = ref(false);
+    const rootRef = ref(null);
+
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd) => {
+      if (cmd === 'matrix-toggle') { if (!props.disabled) { open.value = !open.value; } return; }
+      if (cmd === 'matrix-click-all') { return onClickAll(); }
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
+
+    /* handleSelectAction — 셀 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param) => {
+      if (cmd === 'matrix-click-cell') { return onClickCell(param); }
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    /* cfPairs — 유효한 (행,열) 전체 조합 목록(순서 고정) */
+    const cfPairs = computed(() => {
+      const out = [];
+      props.rowOptions.forEach(r => props.colOptions.forEach(c => {
+        if (props.cellValid(r.value, c.value)) { out.push(r.value + ':' + c.value); }
+      }));
+      return out;
+    });
+
+    const cfSelected = computed(() => {
+      const raw = (props.modelValue || '').toString().trim();
+      if (!raw) { return new Set(cfPairs.value); }   // 빈값 = 전체
+      return new Set(raw.split(',').map(s => s.trim()).filter(Boolean));
+    });
+
+    const cfIsAll = computed(() => cfPairs.value.length > 0 && cfPairs.value.every(p => cfSelected.value.has(p)));
+
+    const cfDisplay = computed(() => {
+      if (cfIsAll.value) { return props.placeholder; }
+      const n = cfSelected.value.size;
+      return n === 0 ? '- 선택없음 -' : `선택 ${n}건`;
+    });
+
+    const emitFromSet = (set) => {
+      if (set.size === 0) { emit('update:modelValue', '__NONE__'); return; }   // 전부 해제 표시용 sentinel
+      if (cfPairs.value.every(p => set.has(p))) { emit('update:modelValue', ''); return; }   // 전체 = 빈값
+      emit('update:modelValue', [...set].join(','));
+    };
+
+    /* onClickCell — 셀 하나 토글. 전체/미지정 상태에서 처음 클릭하면 그 셀 하나만 선택 */
+    const onClickCell = (pair) => {
+      const set = cfIsAll.value ? new Set([pair]) : new Set(cfSelected.value);
+      if (!cfIsAll.value) { if (set.has(pair)) { set.delete(pair); } else { set.add(pair); } }
+      emitFromSet(set);
+    };
+
+    const onClickAll = () => {
+      emit('update:modelValue', cfIsAll.value ? '__NONE__' : '');
+    };
+
+    const onDocClick = (e) => { if (rootRef.value && !rootRef.value.contains(e.target)) { open.value = false; } };
+    onMounted(() => document.addEventListener('mousedown', onDocClick));
+    onBeforeUnmount(() => document.removeEventListener('mousedown', onDocClick));
+
+    return { open, rootRef, cfPairs, cfSelected, cfIsAll, cfDisplay, handleBtnAction, handleSelectAction };
+  },
+  template: /* html */`
+<div ref="rootRef" style="position:relative;display:block;" :style="{minWidth}">
+  <div @click="handleBtnAction('matrix-toggle')"
+    :style="'border:1px solid #d4d4d8;border-radius:6px;padding:4px 28px 4px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:#333;position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
+    {{ cfDisplay }}
+    <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#888;font-size:10px;">▼</span>
+  </div>
+  <div v-if="open"
+    style="position:absolute;top:calc(100% + 4px);left:0;width:max-content;background:#fff;border:1px solid #d4d4d8;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:1000;padding:6px;">
+    <label style="display:flex;align-items:center;gap:7px;padding:4px 6px;font-size:12px;cursor:pointer;font-weight:700;border-bottom:1px solid #f0f0f0;margin-bottom:4px;">
+      <input type="checkbox" :checked="cfIsAll" @change="handleBtnAction('matrix-click-all')" style="width:14px;height:14px;margin:0;" />
+      <span>{{ allLabel }}</span>
+    </label>
+    <table style="border-collapse:collapse;font-size:12px;">
+      <thead>
+        <tr>
+          <th style="padding:3px 8px;"></th>
+          <th v-for="c in colOptions" :key="c.value" style="padding:3px 8px;font-weight:700;color:#555;white-space:nowrap;">{{ c.label }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="r in rowOptions" :key="r.value">
+          <td style="padding:3px 8px;white-space:nowrap;color:#555;">{{ r.label }}</td>
+          <td v-for="c in colOptions" :key="c.value" style="padding:3px 8px;text-align:center;">
+            <input v-if="cellValid(r.value, c.value)" type="checkbox"
+              :checked="cfSelected.has(r.value + ':' + c.value)"
+              @change="handleSelectAction('matrix-click-cell', r.value + ':' + c.value)"
+              style="width:14px;height:14px;margin:0;cursor:pointer;" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+`,
+};
+
 /* ── BoDateTimePicker — 일자 + 시분 선택 공통 컴포넌트 ─────────────────────
  * 일자(type=date) 와 시분(type=time) input 을 한 쌍으로 묶는다.
  * 두 가지 바인딩 모드를 지원한다.

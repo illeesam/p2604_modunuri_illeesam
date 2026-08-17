@@ -54,7 +54,7 @@ window.OdOrderItemDtl = {
     const claims  = reactive([]);  // 연관 클레임 목록
     const history = reactive([]);  // 상태변경이력
 
-    const codes = reactive({ order_item_statuses: [] });
+    const codes = reactive({ order_item_statuses: [], dliv_methods: [] });
 
     const cfIsNew     = computed(() => !props.dtlId);
     const cfReadonly  = computed(() => uiState.dtlMode === 'view');
@@ -108,6 +108,7 @@ window.OdOrderItemDtl = {
           claimYn: '', claimTypeCd: '', claimStatusCd: '',
           buyConfirmYn: '', settleYn: '', refundCompltYn: '',
           courierCd: '', courierNm: '', invoiceNo: '',
+          dlivMethodCd: '',
           regDate: '', updDate: '',
           normalPrice: null, unitPrice: null,
           orgUnitPrice: null, orgItemOrderAmt: null, orgDiscountAmt: null, orgShippingFee: null,
@@ -170,12 +171,13 @@ window.OdOrderItemDtl = {
     };
 
     const handleSave = async () => {
+      if (!baseForm.orderItemStatusCd) { showToast('품목상태는 필수 항목입니다.', 'error'); return; }
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       try {
-        await boApi.put(
-          `/bo/ec/od/order-item/${baseForm.orderItemId}/status`,
-          { orderItemStatusCd: baseForm.orderItemStatusCd },
+        await boApi.patch(
+          `/bo/ec/od/order-item/${baseForm.orderItemId}`,
+          { orderItemStatusCd: baseForm.orderItemStatusCd, dlivMethodCd: baseForm.dlivMethodCd || null },
           coUtil.apiHdr('주문항목상세', '저장'));
         showToast('저장되었습니다.', 'success');
         uiState.dtlMode = 'view';
@@ -188,9 +190,16 @@ window.OdOrderItemDtl = {
     const fnLoadCodes = async () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
-        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS_CD'], { compNm: 'OdOrderItemDtl' });
+        await codeStore.saLoadCodes(['ORDER_ITEM_STATUS_CD', 'DLIV_METHOD_CD'], { compNm: 'OdOrderItemDtl' });
         codes.order_item_statuses = codeStore.sgGetGrpCodes('ORDER_ITEM_STATUS_CD');
+        codes.dliv_methods        = codeStore.sgGetGrpCodes('DLIV_METHOD_CD');
       } catch (_) {}
+    };
+
+    /* fnDlivMethodLabel — 배송방법 코드값 → 라벨 (미지정 시 "상품 기본값 사용") */
+    const fnDlivMethodLabel = (v) => {
+      if (!v) return '상품 기본값 사용';
+      return (codes.dliv_methods.find(c => c.codeValue === v) || {}).codeLabel || v;
     };
 
     /* ##### [03] 탭 / 컬럼 정의 ##################################################### */
@@ -225,7 +234,7 @@ window.OdOrderItemDtl = {
       { key: 'itemCancelAmt',     label: '환불금액',     type: 'readonly', fmt: () => fnPrice(baseForm.itemCancelAmt) },
       { key: 'itemCompletedAmt',  label: '확정금액',     type: 'readonly', fmt: () => fnPrice(baseForm.itemCompletedAmt) },
       { type: 'group', label: '금액 · 상태정보' },
-      { key: 'orderItemStatusCd', label: '품목상태',
+      { key: 'orderItemStatusCd', label: '품목상태', required: true,
         type: cfReadonly.value ? 'readonly' : 'select',
         options: () => codes.order_item_statuses,
         fmt: () => baseForm.orderItemStatusCdNm || baseForm.orderItemStatusCd || '-' },
@@ -237,6 +246,11 @@ window.OdOrderItemDtl = {
       { key: 'refundCompltYn',    label: '환불완료',     type: 'readonly', fmt: () => fnYn(baseForm.refundCompltYn) },
       { key: 'courierNm',         label: '택배사',       type: 'readonly', fmt: () => baseForm.courierNm || baseForm.courierCd || '-' },
       { key: 'invoiceNo',         label: '운송장번호',   type: 'readonly', mono: true, fmt: () => baseForm.invoiceNo || '-' },
+      { key: 'dlivMethodCd',      label: '배송방법 override',
+        type: cfReadonly.value ? 'readonly' : 'select',
+        options: () => codes.dliv_methods, nullLabel: '상품 기본값 사용',
+        hint: '긴급 발송 등 이 항목만 다른 배송방법으로 바꿀 때만 지정',
+        fmt: () => fnDlivMethodLabel(baseForm.dlivMethodCd) },
       { key: 'updDate',           label: '수정일시',     type: 'readonly', fmt: () => fnDate(baseForm.updDate) },
       { type: 'group', label: '금액계산' },
       { key: 'normalPrice',          label: '정상가',       type: 'readonly', fmt: () => fnPrice(baseForm.normalPrice) },

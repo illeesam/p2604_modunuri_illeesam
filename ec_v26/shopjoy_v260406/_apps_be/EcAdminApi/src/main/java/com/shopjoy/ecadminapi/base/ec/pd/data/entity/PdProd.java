@@ -154,6 +154,10 @@ public class PdProd extends BaseEntity {
     @Column(name = "dliv_tmplt_id", length = 21)
     private String dlivTmpltId;
 
+    @Comment("배송방법 override (코드: DLIV_METHOD_CD) - NULL이면 배송템플릿(dliv_tmplt_id) 기본값 사용")
+    @Column(name = "dliv_method_cd", length = 30)
+    private String dlivMethodCd;
+
     @Comment("쿠폰 사용 가능 여부 Y/N")
     @Column(name = "coupon_use_yn", length = 1)
     private String couponUseYn;

@@ -103,7 +103,7 @@ window.OdOrderItemMng = {
       orderId: '', memberId: '', memberNm: '',
       vendorId: '', vendorNm: '', brandId: '', brandNm: '',
       mdUserId: '', mdUserNm: '', dlivCourierCd: '',
-      orderItemStatusCds: '', claimTypeCds: '', claimStatusCds: '',
+      orderItemStatusCds: '', claimCombos: '',
       searchType: '', searchValue: '',
       dateRangeType: 'reg_date', dateRangeStart: '', dateRangeEnd: '', _dateRange: '',
     });
@@ -209,7 +209,21 @@ window.OdOrderItemMng = {
     const STS_DELIVERED = ['DELIVERED', 'DLIV_COMPLT'];
     const STS_CONFIRMED = ['CONFIRMED', 'COMPLT', 'BUY_CONFIRMED'];
     const STS_CLM_DONE  = ['COMPLT', 'DONE', 'COMPLETE', 'REJECTED'];
-    const STS_CLM_TYPE  = { CANCEL: '취소', RETURN: '반품', EXCHANGE: '교환' };
+    /* fnClaimTypeLabel — 클레임유형 코드값 → 라벨. 공통코드(CLAIM_TYPE_CD, codes.claim_types)로 이미 로드해둔 걸
+       그대로 조회한다 — 별도 하드코딩 맵을 만들지 않는다("select는 공통코드에 등록" 정책, 2026-08-18). */
+    const fnClaimTypeLabel = (cd) => (codes.claim_types.find(c => c.codeValue === cd) || {}).codeLabel || cd;
+    /* CLAIM_ITEM_STATUS_CD 값별로 실제 발생 가능한 클레임유형(코드값) — 클레임상세 매트릭스 피커에서
+       해당 조합이 없는 칸은 체크박스 자체를 안 보여줄 때 쓴다.
+       IN_PICKUP(수거중)은 물건을 회수해야 하는 반품/교환에만, IN_TRANSIT(교환출고중)은 교환에만 발생한다. */
+    const CLAIM_STATUS_TYPE_CODES = {
+      REQUESTED: ['CANCEL', 'RETURN', 'EXCHANGE'], APPROVED: ['CANCEL', 'RETURN', 'EXCHANGE'], PROCESSING: ['CANCEL', 'RETURN', 'EXCHANGE'],
+      COMPLT: ['CANCEL', 'RETURN', 'EXCHANGE'], REJECTED: ['CANCEL', 'RETURN', 'EXCHANGE'], CANCELLED: ['CANCEL', 'RETURN', 'EXCHANGE'],
+      IN_PICKUP: ['RETURN', 'EXCHANGE'], IN_TRANSIT: ['EXCHANGE'],
+    };
+    const fnClaimCellValid = (statusCd, typeCd) => (CLAIM_STATUS_TYPE_CODES[statusCd] || []).includes(typeCd);
+    /* fnClaimStatusOpts / fnClaimTypeOpts — 매트릭스 피커 행(상태)/열(유형) 옵션. 공통코드 {codeValue,codeLabel} → {value,label} */
+    const fnClaimStatusOpts = () => codes.claim_statuses.map(c => ({ value: c.codeValue, label: c.codeLabel }));
+    const fnClaimTypeOpts   = () => codes.claim_types.map(c => ({ value: c.codeValue, label: c.codeLabel }));
 
     const fnStatusBadge = (cd) => {
       const m = { ORDERED:'badge-blue', WAIT_DEPOSIT:'badge-blue', PAID:'badge-green', PREPARING:'badge-orange', SHIPPING:'badge-purple', DELIVERED:'badge-blue', DLIV_COMPLT:'badge-blue', CONFIRMED:'badge-green', COMPLT:'badge-green', BUY_CONFIRMED:'badge-green', CANCELLED:'badge-red' };
@@ -339,8 +353,13 @@ window.OdOrderItemMng = {
         ...(searchParam.mdUserNm          && { mdUserNm:          searchParam.mdUserNm }),
         ...(searchParam.dlivCourierCd         && { dlivCourierCd:         searchParam.dlivCourierCd }),
         ...(() => { const s = searchParam.orderItemStatusCds ? searchParam.orderItemStatusCds.split(',').filter(Boolean) : []; return s.length ? { orderItemStatusCds: s } : {}; })(),
-        ...(() => { const s = searchParam.claimTypeCds ? searchParam.claimTypeCds.split(',').filter(Boolean) : []; return s.length ? { claimTypeCds: s } : {}; })(),
-        ...(() => { const s = searchParam.claimStatusCds ? searchParam.claimStatusCds.split(',').filter(Boolean) : []; return s.length ? { claimStatusCds: s } : {}; })(),
+        ...(() => {
+          const raw = searchParam.claimCombos;
+          if (!raw) { return {}; }                                    // 빈값 = 전체(필터 없음)
+          if (raw === '__NONE__') { return { claimCombos: ['__NONE__'] }; } // 전체선택 해제 = 아무 것도 매칭 안 함
+          const s = raw.split(',').filter(Boolean);
+          return s.length ? { claimCombos: s } : {};
+        })(),
         ...(searchParam.searchType        && { searchType:        searchParam.searchType }),
         ...(searchParam.searchValue       && { searchValue:       searchParam.searchValue }),
         ...(searchParam.dateRangeType     && { dateRangeType:     searchParam.dateRangeType }),
@@ -389,8 +408,8 @@ window.OdOrderItemMng = {
 
     const fnClmActiveStyle = (row) => (row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '')) ? 'color:#c07030;font-weight:700;' : 'color:#e0e0e0;';
     const fnClmDoneStyle   = (row) => (row.claimYn === 'Y' &&  STS_CLM_DONE.includes(row.claimStatusCd || '')) ? 'color:#757575;font-weight:700;' : 'color:#e0e0e0;';
-    const fnClmActiveText  = (row) => (row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '')) ? (STS_CLM_TYPE[row.claimTypeCd] || '진행') : '·';
-    const fnClmDoneText    = (row) => (row.claimYn === 'Y' &&  STS_CLM_DONE.includes(row.claimStatusCd || '')) ? (STS_CLM_TYPE[row.claimTypeCd] || '완료') : '·';
+    const fnClmActiveText  = (row) => (row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '')) ? (row.claimTypeCd ? fnClaimTypeLabel(row.claimTypeCd) : '진행') : '·';
+    const fnClmDoneText    = (row) => (row.claimYn === 'Y' &&  STS_CLM_DONE.includes(row.claimStatusCd || '')) ? (row.claimTypeCd ? fnClaimTypeLabel(row.claimTypeCd) : '완료') : '·';
 
     const fnSettleBadgeCls = (row) => row.settleYn === 'Y' ? 'badge-green' : row.settleYn === 'P' ? 'badge-blue' : 'badge-gray';
     const fnSettleBadgeLbl = (row) => row.settleYn === 'Y' ? '완료' : row.settleYn === 'P' ? '부분완료' : '대기';
@@ -632,16 +651,13 @@ window.OdOrderItemMng = {
         display: (p) => p.mdUserNm || p.mdUserId, placeholder: 'MD 선택',
         onOpen: () => handleBtnAction('pick-md-open'),     onClear: () => handleBtnAction('pick-md-clear') },
       { key: 'dlivCourierCd', type: 'select', label: '배송사',
-        options: () => codes.couriers, nullLabel: '배송사 전체' },
+        options: () => codes.couriers, nullLabel: '전체' },
       { key: 'orderItemStatusCds', type: 'multiCheck', label: '주문항목상태',
-        options: () => codes.order_item_statuses, placeholder: '주문항목상태 전체', allLabel: '전체 선택' },
-      { key: 'claimTypeCds', type: 'multiCheck', label: '클레임유형',
-        options: () => codes.claim_types, placeholder: '전체', allLabel: '전체 선택' },
-      { key: 'claimStatusCds', type: 'multiCheck', label: '클레임상세',
-        options: () => codes.claim_statuses, placeholder: '전체', allLabel: '전체 선택' },
+        options: () => codes.order_item_statuses, placeholder: '전체', allLabel: '전체 선택' },
+      { key: '_claimCombo', type: 'slot', name: 'claimCombo' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [{ value: 'prodNm', label: '상품명' }, { value: 'brandNm', label: '브랜드명' }],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '112px' },
+        placeholder: '전체', allLabel: '전체 선택', minWidth: '112px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '180px' },
       { key: '_dateRange', type: 'dateRange',
         typeKey: 'dateRangeType', startKey: 'dateRangeStart', endKey: 'dateRangeEnd',
@@ -656,6 +672,7 @@ window.OdOrderItemMng = {
       columns, items, listGridPager, searchParam, uiState, codes, detailPanel, picks,
       cfSummary, cfSummaryGridRow, cfDisplayRows, toggleGroup,
       handleBtnAction, handleSelectAction, handleRowClick, handleRowEdit,
+      fnClaimStatusOpts, fnClaimTypeOpts, fnClaimCellValid,
       fnSettleBadgeCls, fnSettleBadgeLbl, fnVoucherBadge, fnVoucherLbl,
       fnErpVoucherBadge, fnErpVoucherLbl, fnErpVoucherTypeNm,
       fnCallbackModal,
@@ -672,6 +689,14 @@ window.OdOrderItemMng = {
     <bo-search-area :loading="uiState.loading" :max-rows="2"
       :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
+      <template #claimCombo>
+        <div class="search-field">
+          <label class="search-label">클레임상세</label>
+          <bo-combo-matrix-select v-model="searchParam.claimCombos"
+            :row-options="fnClaimStatusOpts()" :col-options="fnClaimTypeOpts()"
+            :cell-valid="fnClaimCellValid" min-width="120px" />
+        </div>
+      </template>
     </bo-search-area>
   </bo-container>
 

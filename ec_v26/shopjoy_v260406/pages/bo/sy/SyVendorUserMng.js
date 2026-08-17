@@ -34,6 +34,7 @@ window.SyVendorUserMng = {
 
     /* -- 인라인 폼 (사용자 등록/수정) -- */
     const formData = reactive({});
+    const errors   = reactive({}); // 업체담당자 저장 검증 오류 (항목 아래 빨간 라벨)
     const userRoles = reactive([]);
     const roleTreeExpanded = reactive(new Set());
 
@@ -377,6 +378,7 @@ window.SyVendorUserMng = {
       userRoles.splice(0);
       uiState.formMode = 'new';  // 신규 입력 가능 → 저장/취소 노출
       uiState.dtlMode = 'edit';
+      Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* _loadDetailForm — 인라인 폼에 행 데이터 적재 (view/edit 공용) */
@@ -385,6 +387,7 @@ window.SyVendorUserMng = {
       uiState.formMode = 'edit';
       uiState.dtlMode = mode;
       loadUserRoles(u.vendorUserId);
+      Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* loadView — 보기모드로 인라인 폼 열기 (행 클릭) */
@@ -408,9 +411,11 @@ window.SyVendorUserMng = {
 
     /* handleSaveForm — 저장 */
     const handleSaveForm = async () => {
-      if (!formData.memberNm || !formData.vendorUserMobile || !formData.vendorUserEmail) {
-        showToast('이름/휴대전화/이메일은 필수입니다.', 'error'); return;
-      }
+      Object.keys(errors).forEach(k => delete errors[k]);
+      if (!formData.memberNm) { errors.memberNm = '이름을 입력해주세요.'; }
+      if (!formData.vendorUserMobile) { errors.vendorUserMobile = '휴대전화를 입력해주세요.'; }
+      if (!formData.vendorUserEmail) { errors.vendorUserEmail = '이메일을 입력해주세요.'; }
+      if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const isNewUser = uiState.formMode === 'new';
       const ok = await showConfirm(isNewUser?'등록':'저장', isNewUser?'등록하시겠습니까?':'저장하시겠습니까?');
       if (!ok) { return; }
@@ -716,11 +721,11 @@ window.SyVendorUserMng = {
 
     return {
       columns,
-      uiState, cfDtlMode, vendorUsers, vendors, vendorGridPager, userGridPager, formData, userRoles, roleTreeExpanded,    // 상태 / 데이터
+      uiState, cfDtlMode, vendorUsers, vendors, vendorGridPager, userGridPager, formData, errors, userRoles, roleTreeExpanded,    // 상태 / 데이터
       excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                              // dispatch (모든 이벤트 / 액션 라우팅)
       cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList, cfMenuPermColumns,           // computed
-      fnVendorRowStyle, fnUserRowStyle, fnPermBadgeColor, roleNmByCode,                                        // 헬퍼
+      fnVendorRowStyle, fnUserRowStyle, fnPermBadgeColor, roleNmByCode, fnVendorTypeCd, fnVendorTypeLabel,      // 헬퍼
       onRoleRootHover, onRoleChildHover, onRoleChildLeave,                                                     // 헬퍼
     };
   },
@@ -811,7 +816,7 @@ window.SyVendorUserMng = {
       <!-- ===== ■.■. 업체사용자 상세 폼 (항상 표시 — 미선택 시 빈 폼 구조 노출) =============== -->
       <div style="padding:16px;">
         <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-        <bo-form-area :columns="columns.baseVendorUserForm" :form="formData" :errors="{}"
+        <bo-form-area :columns="columns.baseVendorUserForm" :form="formData" :errors="errors"
           :cols="3" compact :show-actions="false" :readonly="cfDtlMode" plain-readonly />
       </div>
       <!-- ===== □.□. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->

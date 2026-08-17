@@ -103,7 +103,7 @@ grep -rn "대상파일.html" --include=*.js --include=*.html --include=*.md .
 | **vue-demi** | 0.14.10 | `assets/cdn/pkg/vue-demi/0.14.10/vue-demi.iife.js` | Vue3/Composition API 호환 레이어 |
 | **Pinia** | 2.1.7 | `assets/cdn/pkg/pinia/2.1.7/pinia.iife.js` | FO·BO 스토어 (`lib/stores/{fo,bo}/*`). disp-ui는 미사용 |
 | **axios** | 1.7.9 (공식) | `assets/cdn/pkg/axios/1.7.9/axios.min.js` | 공식 UMD. BO=`window.boApi` (lib/utils/boApiAxios.js) / FO=`window.foApi` (lib/utils/foApiAxios.js) 래퍼 |
-| **Yup** | 1.0.0 (local shim) | `assets/cdn/pkg/yup/1.0.0.shim/yup.js` | Yup v1.x 공식 UMD 미제공 → 로컬 shim 유지. `.matches()` 미지원 |
+| **Yup** | 1.0.0 (local shim) | `assets/cdn/pkg/yup/1.0.0.shim/yup.js` | Yup v1.x 공식 UMD 미제공 → 로컬 shim 유지. `.matches(regex, msg)` 지원(2026-08-18 추가) — 이메일/전화/비밀번호 등 포맷 검증은 `coUtil.REGEX_EMAIL`/`REGEX_MOBILE`/`REGEX_PHONE`/`REGEX_PASSWORD` 재사용 |
 | **Quill** | 2.0.2 | `assets/cdn/pkg/quill/2.0.2/quill.{js,snow.css}` | 관리자·일부 사용자 리치텍스트 에디터 |
 | **Kakao 우편번호** | v2 | `assets/cdn/pkg/postcode/2/postcode.v2.js` 또는 원본 CDN | 주소 검색 (원본 CDN 유지 권장) |
 | **marked** | 11.1.1 | `assets/cdn/pkg/marked/11.1.1/marked.min.js` | Markdown → HTML 파싱. DispX04Widget markdown 위젯에서 사용 |

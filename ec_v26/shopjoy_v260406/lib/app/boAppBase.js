@@ -2594,6 +2594,7 @@
             <pd-tag-mng  v-else-if="page==='pdTagMng'"  :navigate="navigate" />
             <!-- ── 정산 ── -->
             <st-config-mng  v-else-if="page==='stConfigMng'"  :navigate="navigate" />
+            <st-dliv-fee-policy-mng v-else-if="page==='stDlivFeePolicyMng'" :navigate="navigate" />
             <st-raw-mng  v-else-if="page==='stRawMng'"  :navigate="navigate" />
             <st-settle-adj-mng  v-else-if="page==='stSettleAdjMng'"  :navigate="navigate" />
             <st-settle-etc-adj-mng v-else-if="page==='stSettleEtcAdjMng'" :navigate="navigate" />

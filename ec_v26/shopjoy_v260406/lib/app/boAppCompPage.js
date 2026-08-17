@@ -49,6 +49,7 @@
     dpDispWidgetLibDtl: 'dp-disp-widget-lib-dtl',
     dpDispWidgetLibPreview: 'dp-disp-widget-lib-preview',
     stConfigMng: 'st-config-mng',
+    stDlivFeePolicyMng: 'st-dliv-fee-policy-mng',
     stRawMng: 'st-raw-mng',
     stSettleAdjMng: 'st-settle-adj-mng',
     stSettleEtcAdjMng: 'st-settle-etc-adj-mng',

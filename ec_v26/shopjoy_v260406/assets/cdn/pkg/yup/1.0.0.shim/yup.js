@@ -29,6 +29,12 @@ window.yup = (() => {
       this._rules.push((v, path) => (v && String(v).trim().length > n) ? { path, message: m } : null);
       return this;
     }
+    /* matches — 정규식 형식 검증 (빈 값은 통과, required() 와 별도 조합해서 사용) */
+    matches(regex, msg) {
+      const m = (msg && msg.message) || msg || '형식이 올바르지 않습니다.';
+      this._rules.push((v, path) => (v && !regex.test(String(v).trim())) ? { path, message: m } : null);
+      return this;
+    }
     nullable() { return this; }
     optional() { return this; }
     _validate(v, path) { return this._rules.map(r => r(v, path)).filter(Boolean); }

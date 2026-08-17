@@ -29,7 +29,7 @@ window.PdProdDtl = {
     const uiState = reactive({ isDraggingDivider: false, loading: false, mdModalOpen: false, error: null, topTab: window._pdProdDtlState.tab || 'info', tabMode2: window._pdProdDtlState.tabMode || 'tab', useOpt: true, prodOptCategoryTypeCd: '', dragOptGrpId: null, dragOptItemIdx: null, dragoverOptItemIdx: null, skuFilter1: '', skuFilter2: '', skuFilterStock: '', dragImgIdx: null, dragoverImgIdx: null, dragBlockIdx: null, dragoverBlockIdx: null, splitPct: 65, previewDevice: 'pc', prodPickerOpen: '', prodPickerSearch: '', dragRelIdx: null, dragoverRelIdx: null, dragCodeIdx: null, dragoverCodeIdx: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, mdSearchType: '', mdSearch: '', prodPickerSearchType: '', promoPicker: null, stockCodePickerOpen: false, stockCodePickerSku: null, stockCodePickerSearch: '', stockCodePickerList: [] });
     const tab = Vue.toRef(uiState, 'tab');
     const codes = reactive([]);
-    const grpCodes = reactive({ PRODUCT_STATUS: [], PROD_TYPE: [], PROD_PLAN_STATUS: [], OPT_STOCK_STATUS: [], STOCK_FILTER: [] });
+    const grpCodes = reactive({ PRODUCT_STATUS: [], PROD_TYPE: [], PROD_PLAN_STATUS: [], OPT_STOCK_STATUS: [], STOCK_FILTER: [], DLIV_METHOD: [] });
 
     /* fnProdTypeLabel — 상품유형 코드값 → 라벨 (영역 타이틀에 "옵션 상품수정" 식으로 붙일 때 사용) */
     const fnProdTypeLabel = () => (grpCodes.PROD_TYPE.find(c => c.codeValue === form.prodTypeCd) || {}).codeLabel || '';
@@ -320,7 +320,7 @@ window.PdProdDtl = {
       try {
         const codeStore = window.sfGetBoCodeStore();
         /* 필요한 코드그룹만 지연 로딩 — 캐시에 있으면 API 가 나가지 않는다 */
-        await codeStore.saLoadCodes(['PRODUCT_STATUS', 'PROD_TYPE_CD', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS', 'STOCK_FILTER'], {compNm: 'PdProdDtl'});
+        await codeStore.saLoadCodes(['PRODUCT_STATUS', 'PROD_TYPE_CD', 'PROD_PLAN_STATUS', 'OPT_STOCK_STATUS', 'STOCK_FILTER', 'DLIV_METHOD_CD'], {compNm: 'PdProdDtl'});
         if (!codeStore?.svCodes) { return; }
         codes.length = 0;
         codes.push(...codeStore.svCodes);
@@ -330,6 +330,7 @@ window.PdProdDtl = {
           grpCodes.PROD_PLAN_STATUS = codeStore.sgGetGrpCodes('PROD_PLAN_STATUS');
           grpCodes.OPT_STOCK_STATUS = codeStore.sgGetGrpCodes('OPT_STOCK_STATUS');
           grpCodes.STOCK_FILTER = codeStore.sgGetGrpCodes('STOCK_FILTER');
+          grpCodes.DLIV_METHOD = codeStore.sgGetGrpCodes('DLIV_METHOD_CD');
         }
       } catch (err) {
         console.error('[fnLoadCodes]', err);
@@ -578,7 +579,7 @@ window.PdProdDtl = {
       categoryId: '', brandId: '', brandNm: '', vendorId: '', vendorNm: '',
       mdUserId: '',
       prodTypeCd: 'OPTION', prodStatusCd: 'DRAFT', unsaleMsg: '',
-      dlivTmpltId: '',
+      dlivTmpltId: '', dlivMethodCd: '',
       listPrice: 0, salePrice: 0, purchasePrice: null, marginRate: null,
       platformFeeRate: null, platformFeeAmount: null,
       saleStartDate: '', saleEndDate: '',
@@ -1272,6 +1273,7 @@ window.PdProdDtl = {
           form.prodStatusCd   = p.prodStatusCd || 'DRAFT';
           form.unsaleMsg      = p.unsaleMsg || '';
           form.dlivTmpltId    = p.dlivTmpltId || '';
+          form.dlivMethodCd   = p.dlivMethodCd || '';
           form.listPrice      = p.listPrice || 0;
           form.salePrice      = p.salePrice || 0;
           form.purchasePrice  = p.purchasePrice || null;
@@ -1777,6 +1779,9 @@ window.PdProdDtl = {
       { key: 'dlivTmpltId',  label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt' },
       { key: 'prodStatusCd', label: '상태 (prod_status_cd)', type: 'select',
         options: () => grpCodes.PRODUCT_STATUS },
+      { key: 'dlivMethodCd', label: '배송방법 override (dliv_method_cd)', type: 'select',
+        options: () => grpCodes.DLIV_METHOD, nullLabel: '배송템플릿 기본값 사용',
+        hint: '긴급 발송 등 이 상품만 다른 배송방법을 써야 할 때만 지정 (수수료는 배송수수료정책에 따름)' },
       { type: 'group', label: '상세속성 · 판매기간' },
       // 4행: 미판매메시지 / 무게 / 사이즈
       { key: 'unsaleMsg',    label: '미판매메시지', type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',

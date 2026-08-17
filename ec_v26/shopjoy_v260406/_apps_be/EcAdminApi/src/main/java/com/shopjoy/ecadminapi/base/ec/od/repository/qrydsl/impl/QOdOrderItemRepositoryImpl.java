@@ -135,6 +135,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         odOrderItem.giftId,                   // 발급 사은품ID (pm_gift.gift_id)
                         odOrderItem.outboundShippingFee,     // 해당 항목의 배송료 (부분배송 시)
                         odOrderItem.dlivCourierCd,           // 해당 항목의 배송 택배사 — COURIER {CJ:CJ대한통운, LOGEN:로젠택배, POST:우체국택배, HANJIN:한진택배, LOTTE:롯데택배, KYOUNGDONG:경동택배, DIRECT:직배송}
+                        odOrderItem.dlivMethodCd,            // 배송방법 override — DLIV_METHOD_CD, NULL=상품 기본값
                         odOrderItem.dlivTrackingNo,          // 해당 항목의 배송 송장번호
                         odOrderItem.dlivShipDate,            // 해당 항목의 출고일시
                         odOrderItem.regBy, odOrderItem.regDate, odOrderItem.updBy, odOrderItem.updDate,
@@ -243,7 +244,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                     QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
                     QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()),
                     QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
-                    claimFilter(search.getClaimTypeCds(), search.getClaimStatusCds()),
+                    claimFilter(search.getClaimCombos()),
                     QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()),
                     QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                     (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
@@ -307,7 +308,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()),
                 QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()),
                 QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()),
-                claimFilter(search.getClaimTypeCds(), search.getClaimStatusCds()),
+                claimFilter(search.getClaimCombos()),
                 QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()),
                 QdslUtil.dateBetween(search.getDateRangeType(), search.getDateRangeStart(), search.getDateRangeEnd(), DATE_RANGE_FIELDS),
                 (StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
@@ -369,18 +370,28 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
 
     /** *Nm 필드는 원장 테이블 EXISTS, 나머지는 스냅샷 LIKE. 필드별 모드는 FieldDef 로 개별 지정. */
-    /** 클레임유형(claimTypeCds)/클레임상세상태(claimStatusCds) 다중 필터 — EXISTS(od_claim_item → od_claim) */
-    private BooleanExpression claimFilter(List<String> claimTypeCds, List<String> claimStatusCds) {
-        boolean hasType   = claimTypeCds != null && !claimTypeCds.isEmpty();
-        boolean hasStatus = claimStatusCds != null && !claimStatusCds.isEmpty();
-        if (!hasType && !hasStatus) return null;
-        return JPAExpressions.selectOne()
-                .from(claimItemFlt)
-                .join(claimFlt).on(claimFlt.claimId.eq(claimItemFlt.claimId))
-                .where(claimItemFlt.orderItemId.eq(odOrderItem.orderItemId),
-                       hasType   ? claimFlt.claimTypeCd.in(claimTypeCds) : null,
-                       hasStatus ? claimItemFlt.claimItemStatusCd.in(claimStatusCds) : null)
-                .exists();
+    /** 클레임상세 매트릭스 필터 — "CLAIM_ITEM_STATUS_CD:CLAIM_TYPE_CD" 조합 목록을 OR 로 묶어 EXISTS(od_claim_item → od_claim).
+     *  프론트 BoComboMatrixSelect 가 보내는 토큰. "__NONE__" 1건뿐이면(전체선택 해제) 항상 거짓 조건으로 0건 강제. */
+    private BooleanExpression claimFilter(List<String> claimCombos) {
+        if (claimCombos == null || claimCombos.isEmpty()) return null;
+        if (claimCombos.size() == 1 && "__NONE__".equals(claimCombos.get(0))) {
+            return odOrderItem.orderItemId.eq("__NEVER_MATCH__");
+        }
+        BooleanExpression combined = null;
+        for (String combo : claimCombos) {
+            String[] parts = combo.split(":", 2);
+            if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) continue;
+            String statusCd = parts[0], typeCd = parts[1];
+            BooleanExpression pairExists = JPAExpressions.selectOne()
+                    .from(claimItemFlt)
+                    .join(claimFlt).on(claimFlt.claimId.eq(claimItemFlt.claimId))
+                    .where(claimItemFlt.orderItemId.eq(odOrderItem.orderItemId),
+                           claimItemFlt.claimItemStatusCd.eq(statusCd),
+                           claimFlt.claimTypeCd.eq(typeCd))
+                    .exists();
+            combined = combined == null ? pairExists : combined.or(pairExists);
+        }
+        return combined;
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
@@ -446,6 +457,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         if (entity.getBuyConfirmDate()          != null) { update.set(odOrderItem.buyConfirmDate,          entity.getBuyConfirmDate());          hasAny = true; }
         if (entity.getSettleYn()                != null) { update.set(odOrderItem.settleYn,                entity.getSettleYn());                hasAny = true; }
         if (entity.getSettleDate()              != null) { update.set(odOrderItem.settleDate,              entity.getSettleDate());              hasAny = true; }
+        if (entity.getDlivMethodCd()             != null) { update.set(odOrderItem.dlivMethodCd,            entity.getDlivMethodCd());             hasAny = true; }
         if (entity.getUpdBy()                   != null) { update.set(odOrderItem.updBy,                   entity.getUpdBy());                   hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(odOrderItem.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));

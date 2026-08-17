@@ -179,6 +179,10 @@ public class OdOrderItem extends BaseEntity {
     @Column(name = "dliv_courier_cd", length = 30)
     private String dlivCourierCd;
 
+    @Comment("배송방법 override (코드: DLIV_METHOD_CD) - 긴급 발송 등 개별 주문항목 단위 변경. NULL이면 상품 기본값 사용")
+    @Column(name = "dliv_method_cd", length = 30)
+    private String dlivMethodCd;
+
     @Comment("해당 항목의 배송 송장번호")
     @Column(name = "dliv_tracking_no", length = 100)
     private String dlivTrackingNo;

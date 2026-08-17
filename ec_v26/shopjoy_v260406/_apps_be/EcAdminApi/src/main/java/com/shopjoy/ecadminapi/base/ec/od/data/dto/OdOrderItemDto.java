@@ -22,8 +22,7 @@ public class OdOrderItemDto {
         @Size(max = 30) private String orderItemStatusCd;  // 품목상태 단건 필터 (strEq)
         private List<String> orderItemStatusCds;           // 품목상태 다중 필터 (strIn, BO multiCheck)
         @Size(max = 1)  private String claimYn;            // 클레임여부 필터 Y/N
-        private List<String> claimTypeCds;                 // 클레임유형 다중 필터 — CLAIM_TYPE_CD (CANCEL/RETURN/EXCHANGE)
-        private List<String> claimStatusCds;                // 클레임상세상태 다중 필터 — CLAIM_ITEM_STATUS_CD
+        private List<String> claimCombos;                  // 클레임상세 매트릭스 필터 — "CLAIM_ITEM_STATUS_CD:CLAIM_TYPE_CD" 조합 목록. "__NONE__" 1건이면 전부 미매칭(0건) 강제
         @Size(max = 30) private String dlivCourierCd;       // 배송 택배사 필터 (strEq, 항목 자체 컬럼)
         @Size(max = 21)  private String memberId;            // 회원 ID 필터 (EXISTS eq via od_order)
         @Size(max = 200) private String memberNm;           // 회원명 필터 (EXISTS LIKE via mb_member)
@@ -109,6 +108,7 @@ public class OdOrderItemDto {
         private Long saveUsageCount;  // 적립금 사용 건수 (pm_save_usage 상관 서브쿼리)
         private Long saveUsageAmt;  // 적립금 사용금액 합계
         private String giftNm;  // 발급 사은품명 (pm_gift 조인)
+        private String dlivMethodCd;    // 배송방법 override — DLIV_METHOD_CD, NULL이면 상품 기본값 사용(긴급 발송 등 개별 항목 단위 변경)
         private String claimTypeCd;    // 클레임유형 — 최신 클레임 1건 대표 표시, CLAIM_TYPE_CD {CANCEL:취소, RETURN:반품, EXCHANGE:교환} (od_claim_item→od_claim 상관 서브쿼리)
         private String claimStatusCd;  // 클레임상세상태 — 최신 클레임항목 1건 대표 표시, CLAIM_ITEM_STATUS_CD {REQUESTED:신청, APPROVED:승인, IN_PICKUP:수거중, PROCESSING:처리중, IN_TRANSIT:교환출고중, COMPLT:완료, REJECTED:거부, CANCELLED:취소}
     }

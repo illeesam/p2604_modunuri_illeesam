@@ -1,5 +1,75 @@
 # codes Reactive 패턴 (uiState와 함께 통합 상태관리)
 
+## select / multiCheck 옵션 소스 정책 ⭐⭐ (2026-08-18 확정)
+
+**원칙: 화면의 모든 `<select>` / `type: 'multiCheck'` 옵션은 공통코드(`sy_code`)에 등록하고
+`codeStore.saLoadCodes([...])` → `codes.xxx = codeStore.sgGetGrpCodes('XXX_CD')` 로 불러와 쓴다.**
+값 목록을 화면 JS 안에 배열로 손으로 적어두지 않는다 — 값이 늘거나 라벨이 바뀔 때 공통코드관리
+화면 한 곳만 고치면 전 화면에 반영되게 하기 위함이다.
+
+```js
+// ❌ 금지 — 업무 상태/유형 값을 화면에 하드코딩
+options: [{ value: 'CANCEL', label: '취소' }, { value: 'RETURN', label: '반품' }]
+const STS_CLM_TYPE = { CANCEL: '취소', RETURN: '반품', EXCHANGE: '교환' };  // 뱃지 라벨용이라도 금지
+
+// ✅ 올바름 — 공통코드에서 로드
+await codeStore.saLoadCodes(['CLAIM_TYPE_CD'], { compNm: 'OdOrderItemMng' });
+codes.claim_types = codeStore.sgGetGrpCodes('CLAIM_TYPE_CD');
+// ...
+options: () => codes.claim_types
+```
+
+### 유일한 예외 — `검색대상`(searchType) 필드명 선택자
+
+검색영역의 `검색대상`(예: `{ key: 'searchType', type: 'multiCheck', options: [{ value: 'prodNm', label: '상품명' }, ...] }`)
+은 **업무 코드값이 아니라 "어느 DB/엔티티 필드를 LIKE 검색할지" 고르는 화면 구조 선택지**라 공통코드
+등록 대상이 아니다 — 화면마다 검색 가능한 필드 조합이 다르고, 그 값 자체가 코드가 아니라 필드명이기
+때문이다. 이 필드만 하드코딩 배열이 허용된다. 그 외 업무 상태/유형/구분 코드값은 예외 없이 공통코드.
+
+### 점검 방법
+
+```bash
+grep -n "options:\s*\[" pages/bo/**/*.js pages/fo/**/*.js
+```
+결과 중 `key: 'searchType'` 가 아닌 항목은 전부 공통코드 전환 대상.
+
+### 검색영역 select/multiCheck 첫 항목(전체/미지정) 라벨은 짧게 ⭐ (2026-08-18, 전 화면 공통)
+
+검색영역 select 의 `nullLabel` / multiCheck 의 `placeholder` — 즉 "아무 것도 고르지 않았을 때" 보여줄
+텍스트는 **`전체` / `선택` / `없음` 중 하나만 쓴다.** 필드명을 다시 붙인 부연문구(`"주문항목상태 전체"`,
+`"배송사 전체"`, `"검색대상 전체"`)는 금지 — 바로 왼쪽에 이미 필드 라벨이 붙어 있어 중복이다.
+
+```js
+// ❌ 금지
+{ key: 'dlivCourierCd', type: 'select', label: '배송사', nullLabel: '배송사 전체' }
+{ key: 'orderItemStatusCds', type: 'multiCheck', label: '주문항목상태', placeholder: '주문항목상태 전체' }
+
+// ✅ 올바름 — 라벨이 이미 왼쪽에 있으니 값 쪽은 짧게
+{ key: 'dlivCourierCd', type: 'select', label: '배송사', nullLabel: '전체' }
+{ key: 'orderItemStatusCds', type: 'multiCheck', label: '주문항목상태', placeholder: '전체' }
+```
+
+multiCheck 팝오버 안의 "전체 선택" 토글 행(`allLabel`)은 이 규칙 대상이 아니다(선택/해제 동작을 설명하는
+문구라 별개). 전 화면 소급 적용은 별도 작업으로 진행 — 우선 새로 작성/수정하는 화면부터 적용한다.
+
+### Dtl(상세등록/수정) 화면 필수입력 최소 1개 ⭐ (2026-08-18, 전 화면 공통)
+
+모든 상세 등록/수정 화면(`baseFormColumns` 등)은 **`required: true` 필드가 최소 1개 있어야 한다** —
+대표적으로 제목/명칭류. 저장 시 실제로 막아야 하므로 시각적 `*` 표시(컬럼 정의의 `required: true`)와
+**저장 검증(Yup 스키마 또는 `handleSave` 초입의 명시적 가드) 둘 다** 갖춰야 한다 — 표시만 하고
+막지 않으면 정책 위반.
+
+- 필수 필드는 **가급적 폼 앞단**(첫 그룹, 상단 몇 줄 안)에 배치한다 — 사용자가 뭘 먼저 채워야 하는지
+  바로 보이게 하기 위함.
+- **예외**: 편집 가능한 필드 자체가 화면 후반부에만 있는 구조(예: 상단이 전부 `type:'readonly'` 스냅샷
+  정보이고 편집 가능한 필드가 하단 한둘뿐인 화면)는 앞단 배치를 물리적으로 만족할 수 없다 — 이 경우는
+  예외로 두고 위치보다 "필수 검증 자체가 있는지"를 우선한다.
+- **예외**: 모든 필드가 `readonly`인 순수 이력/로그 조회 화면(저장 기능 없음)은 대상이 아니다.
+- **예외**: 화면의 존재 목적이 "기존 값을 선택적으로 비워도 되는 메타데이터 정정"인 경우(예: 고아
+  데이터 연결 해제) 억지로 필수를 걸지 않는다 — 정책 목적과 충돌하면 필수화하지 않는다.
+
+---
+
 ## 코드 지연 로딩 아키텍처 ⭐⭐ (2026-07-30 전환)
 
 **요약: 코드는 앱 부팅 때 전량 적재하지 않는다. 화면이 로드될 때 그 화면이 쓰는 코드그룹만 받아 스토어에 누적한다.**

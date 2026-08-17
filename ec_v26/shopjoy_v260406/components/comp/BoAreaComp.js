@@ -2496,12 +2496,15 @@ window.BoFormArea = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ BoFormArea : handleSelectAction -> ', cmd, param);
       if (cmd === 'field-change') {
+        // 입력값이 채워지면 해당 필드의 검증 오류 라벨을 즉시 지운다 (다음 저장 전까지 남아있지 않도록)
+        if (props.errors && props.errors[param.col.key] && props.form[param.col.key]) { delete props.errors[param.col.key]; }
         if (param.col.onChange) return param.col.onChange(props.form[param.col.key], props.form, param.event);
       } else if (cmd === 'field-checkbox-change') {
         const col = param.col, e = param.event;
         props.form[col.key] = e.target.checked
           ? (col.checkedValue != null ? col.checkedValue : 'Y')
           : (col.uncheckedValue != null ? col.uncheckedValue : 'N');
+        if (props.errors && props.errors[col.key] && props.form[col.key]) { delete props.errors[col.key]; }
       } else if (cmd === 'field-pathPick-open') {
         if (param.col.onOpen) return param.col.onOpen(props.form);
       } else if (cmd === 'field-pick-open') {

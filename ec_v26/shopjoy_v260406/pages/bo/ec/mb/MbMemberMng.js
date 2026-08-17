@@ -109,6 +109,7 @@ window.MbMemberMng = {
       active: false,                               // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
       form: _emptyForm()
     });
+    const errors = reactive({});   // 저장 검증 실패 시 항목 아래 빨간 라벨(field-error)로 표시
 
     /* ===== 이력 인라인 패널 =====
      *   상세와 달리 항상 표시하지 않는다 — 관리컬럼 [이력] 클릭 시에만 memberId 가 채워져 렌더된다.
@@ -208,6 +209,7 @@ window.MbMemberMng = {
     /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
     const openNew = () => {
       closeHist();
+      Object.keys(errors).forEach(k => delete errors[k]);
       Object.assign(detailPanel.form, _emptyForm(), { joinDate: new Date().toISOString().split('T')[0] });
       detailPanel.dtlId = '__new__';
       detailPanel.isNew = true;
@@ -220,6 +222,7 @@ window.MbMemberMng = {
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
     const resetDetailToNew = () => {
       closeHist();
+      Object.keys(errors).forEach(k => delete errors[k]);
       Object.assign(detailPanel.form, _emptyForm());
       detailPanel.show = true;
       detailPanel.dtlId = null;
@@ -235,8 +238,10 @@ window.MbMemberMng = {
 
     /* handleSave — 저장 */
     const handleSave = async () => {
-      if (!detailPanel.form.loginId) { showToast('로그인ID는 필수입니다.', 'error'); return; }
-      if (!detailPanel.form.memberNm) { showToast('이름은 필수입니다.', 'error'); return; }
+      Object.keys(errors).forEach(k => delete errors[k]);
+      if (!detailPanel.form.loginId) { errors.loginId = '로그인ID를 입력해주세요.'; }
+      if (!detailPanel.form.memberNm) { errors.memberNm = '이름을 입력해주세요.'; }
+      if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const isNewMember = detailPanel.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) { return; }
@@ -384,7 +389,7 @@ window.MbMemberMng = {
 
     return {
       columns,
-      members, uiState, searchParam, baseGridPager, detailPanel, histPanel,       // 상태 / 데이터
+      members, uiState, searchParam, baseGridPager, detailPanel, histPanel, errors,       // 상태 / 데이터
       excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       fnGridRowClass,                                                  // 헬퍼
@@ -430,7 +435,7 @@ window.MbMemberMng = {
   </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================== -->
-  <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"
+  <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active" :errors="errors"
     :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
     :switch-to-edit="switchToEdit"
     :reload-trigger="detailPanel.reloadTrigger"

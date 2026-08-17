@@ -95,6 +95,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.sameDayDlivYn,                  // 당일배송여부 — {Y: '예', N: '아니오'}
                         pdProd.soldOutYn,                      // 품절여부 — {Y: '예', N: '아니오'}
                         pdProd.dlivTmpltId,                 // 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
+                        pdProd.dlivMethodCd,                 // 배송방법 override — DLIV_METHOD_CD, NULL=배송템플릿 기본값
                         pdProd.couponUseYn,                    // 쿠폰 사용 가능 여부 — {Y: '예', N: '아니오'}
                         pdProd.saveUseYn,                      // 적립금 사용 가능 여부 — {Y: '예', N: '아니오'}
                         pdProd.discntUseYn,                    // 할인 적용 가능 여부 — {Y: '예', N: '아니오'}
@@ -168,6 +169,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         pdProd.sameDayDlivYn,                  // 당일배송여부 — {Y: '예', N: '아니오'}
                         pdProd.soldOutYn,                      // 품절여부 — {Y: '예', N: '아니오'}
                         pdProd.dlivTmpltId,                 // 배송템플릿ID
+                        pdProd.dlivMethodCd,                 // 배송방법 override — DLIV_METHOD_CD, NULL=배송템플릿 기본값
                         pdProd.couponUseYn,                    // 쿠폰 사용 가능 여부 — {Y: '예', N: '아니오'}
                         pdProd.saveUseYn,                      // 적립금 사용 가능 여부 — {Y: '예', N: '아니오'}
                         pdProd.discntUseYn,                    // 할인 적용 가능 여부 — {Y: '예', N: '아니오'}

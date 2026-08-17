@@ -96,6 +96,7 @@ window.SyI18nMng = {
     const LANG_LABELS = { ko:'한국어', en:'English', cn:'中文', ja:'日本語' };
 
     const msgForm = reactive({});              // 번역 입력 폼
+    const errors  = reactive({});              // 번역 입력 검증 오류 (항목 아래 빨간 라벨)
 
     const cfSelectedKey = computed(() => (i18ns||[]).find(k => k.i18nKey === uiState.selectedKey) || null);
 
@@ -142,6 +143,7 @@ window.SyI18nMng = {
       const msgs = {};
       LANGS.forEach(lang => { msgs[lang] = getLangMsg(key, lang); });
       Object.assign(msgForm, msgs);
+      Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* loadView — 보기모드로 번역 편집 패널 열기 (행 클릭) */
@@ -165,6 +167,12 @@ window.SyI18nMng = {
     /* saveMsgs — 번역 메시지 저장 */
     const saveMsgs = async () => {
       if (!cfSelectedKey.value) { return; }
+      Object.keys(errors).forEach(k => delete errors[k]);
+      if (!msgForm.ko || !msgForm.ko.trim()) {
+        errors.ko = '한국어(ko) 번역을 입력해주세요.';
+        if (showToast) { showToast('입력 내용을 확인해주세요.', 'error'); }
+        return;
+      }
       const ok = await showConfirm('저장', '번역 메시지를 저장하시겠습니까?');
       if (!ok) { return; }
       try {
@@ -246,6 +254,7 @@ window.SyI18nMng = {
       label: LANG_LABELS[lang] + ' (' + lang + ')',
       type: 'text',
       placeholder: LANG_LABELS[lang] + ' 번역 입력',
+      required: lang === 'ko', // 기준 언어(한국어)는 최소 1개 필수 입력
     }));
 
     /* excelModal — 엑셀 다운로드 (공용 모달) */
@@ -262,7 +271,7 @@ window.SyI18nMng = {
 
     return {
       columns,
-      uiState, cfDtlMode, searchParam, baseGridPager, i18ns, msgForm,       // 상태 / 데이터
+      uiState, cfDtlMode, searchParam, baseGridPager, i18ns, msgForm, errors, // 상태 / 데이터
       excelModal, buildExcelParams, // 엑셀 다운로드 모달
       msgFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction, handleGridCellAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
@@ -328,7 +337,7 @@ window.SyI18nMng = {
     <!-- ===== ■.■. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->
     <div style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area v-if="cfSelectedKey" :columns="msgFormColumns" :form="msgForm" :errors="{}"
+      <bo-form-area v-if="cfSelectedKey" :columns="msgFormColumns" :form="msgForm" :errors="errors"
         :cols="3" :show-actions="false" :readonly="cfDtlMode" plain-readonly />
       <div v-else style="text-align:center;color:#bbb;padding:28px 12px;font-size:13px;">
         목록에서 다국어 키를 선택하면 언어별 번역을 편집할 수 있습니다.

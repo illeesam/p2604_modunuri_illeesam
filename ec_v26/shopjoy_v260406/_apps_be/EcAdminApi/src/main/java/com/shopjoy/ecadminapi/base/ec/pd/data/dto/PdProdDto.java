@@ -65,6 +65,7 @@ public class PdProdDto {
         private String sameDayDlivYn;       // 당일배송여부 Y/N
         private String soldOutYn;           // 품절여부 Y/N
         private String dlivTmpltId;         // 배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)
+        private String dlivMethodCd;        // 배송방법 override — DLIV_METHOD_CD, NULL이면 배송템플릿 기본값 사용
         private String couponUseYn;         // 쿠폰 사용 가능 여부 Y/N
         private String saveUseYn;           // 적립금 사용 가능 여부 Y/N
         private String discntUseYn;         // 할인 적용 가능 여부 Y/N

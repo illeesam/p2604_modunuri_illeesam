@@ -129,6 +129,7 @@ window.CmBlogMng = {
     /* _initBlogForm — 빈(신규) 블로그 폼 기본값 */
     const _initBlogForm = () => ({ blogId: null, siteId: null, blogCateId: null, blogTypeCd: 'BLOG', blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
     const detailPanel = reactive({ show: true, active: false, isNew: false, dtlMode: 'view', dtlId: null, form: _initBlogForm() }); // 인라인 Dtl 패널 상태 (항상 표시, active=false 면 버튼 숨김). dtlMode: 'view'|'edit' — 기본은 항상 view
+    const errors = reactive({}); // 저장 검증 오류 (항목 아래 빨간 라벨)
     const cfDtlMode = computed(() => detailPanel.dtlMode === 'view');
 
     /* ===== 첨부 이미지(cm_blog_file) 관리 그리드 상태 ===== */
@@ -201,6 +202,7 @@ window.CmBlogMng = {
       detailPanel.dtlMode = 'view';
       attachRows.splice(0, attachRows.length);
       attachUi.focusedIdx = null; attachUi.checkAll = false;
+      Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* _loadAttachRows — row.files[] → 첨부 그리드 행(_row_status='N') 으로 적재 */
@@ -223,6 +225,7 @@ window.CmBlogMng = {
       detailPanel.dtlId = row.blogId; detailPanel.isNew = false; detailPanel.show = true; detailPanel.active = true;
       detailPanel.dtlMode = mode;
       _loadAttachRows(row.files);
+      Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* loadView — 보기모드로 인라인 패널 열기 (행 클릭 / 제목 링크) */
@@ -240,6 +243,7 @@ window.CmBlogMng = {
       detailPanel.dtlId = '__new__'; detailPanel.isNew = true; detailPanel.show = true; detailPanel.active = true;
       detailPanel.dtlMode = 'edit';
       _loadAttachRows([]);
+      Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
@@ -254,7 +258,8 @@ window.CmBlogMng = {
 
     /* handleSave — 저장 (블로그 본문 + 첨부 이미지 일괄) */
     const handleSave = async () => {
-      if (!detailPanel.form.blogTitle) { showToast('제목은 필수입니다.', 'error'); return; }
+      Object.keys(errors).forEach(k => delete errors[k]);
+      if (!detailPanel.form.blogTitle) { errors.blogTitle = '제목을 입력해주세요.'; showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const isNewPost = detailPanel.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) { return; }
@@ -506,7 +511,7 @@ window.CmBlogMng = {
 
     return {
       columns,
-      blogs, uiState, searchParam, baseGridPager, detailPanel, cfDtlMode, // 상태 / 데이터
+      blogs, uiState, searchParam, baseGridPager, detailPanel, errors, cfDtlMode, // 상태 / 데이터
       excelModal, buildExcelParams, // 엑셀 다운로드 모달
       attachRows, attachUi,                                          // 첨부 그리드 상태
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
@@ -576,7 +581,7 @@ window.CmBlogMng = {
       <!-- ===== ■.■. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
       <div v-else style="padding:12px">
         <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-        <bo-form-area :columns="columns.blogForm" :form="detailPanel.form" :errors="{}"
+        <bo-form-area :columns="columns.blogForm" :form="detailPanel.form" :errors="errors"
           :cols="3" compact :show-actions="false" :readonly="cfDtlMode" plain-readonly>
           <template #blogContent>
             <div v-if="cfDtlMode" class="readonly-field-plain" v-html="detailPanel.form.blogContent || '-'"></div>

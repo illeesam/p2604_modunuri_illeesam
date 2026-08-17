@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.bo.ec.od.service;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,10 @@ public class BoOdOrderItemService {
 
     public BasePage<OdOrderItemDto.Item> getPageData(OdOrderItemDto.Request req) {
         return odOrderItemService.getPageData(req);
+    }
+
+    @Transactional
+    public OdOrderItem updateSelective(OdOrderItem entity) {
+        return odOrderItemService.updateSelective(entity);
     }
 }
