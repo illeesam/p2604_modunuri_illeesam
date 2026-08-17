@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.data.BasePage;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -24,6 +25,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdSku;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleItem;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +60,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QSyVendor        syVendorEx = new QSyVendor("sy_vendor_ex");
     private static final QPdProd          pMdEx      = new QPdProd("p_md_ex");
     private static final QSyUser          syUserEx   = new QSyUser("sy_user_ex");
+    // 정산 금액 상관 서브쿼리용 별칭 (order_item_id 기준 SALE/CANCEL/RETURN 전 항목 합산)
+    private static final QStSettleItem    stSettleItemEx = new QStSettleItem("st_settle_item_ex");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odOrderItem.regDate,
         "upd_date", odOrderItem.updDate
     );
@@ -119,7 +123,17 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                         oi1.prodOptNm.as("prodOptNm1"),
                         oi2.prodOptNm.as("prodOptNm2"),
                         cdIs.codeLabel.as("orderItemStatusCdNm"),
-                        cdDc.codeLabel.as("dlivCourierCdNm")
+                        cdDc.codeLabel.as("dlivCourierCdNm"),
+                        // 정산 금액 (st_settle_item, order_item_id 기준 전 항목 합산 — SALE/CANCEL/RETURN 순 합계)
+                        ExpressionUtils.as(JPAExpressions.select(stSettleItemEx.itemPrice.sum())
+                                .from(stSettleItemEx)
+                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleSaleAmt"),
+                        ExpressionUtils.as(JPAExpressions.select(stSettleItemEx.commissionAmt.sum())
+                                .from(stSettleItemEx)
+                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleCommissionAmt"),
+                        ExpressionUtils.as(JPAExpressions.select(stSettleItemEx.settleItemAmt.sum())
+                                .from(stSettleItemEx)
+                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleVendorAmt")
                 ))
                 .from(odOrderItem)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId))

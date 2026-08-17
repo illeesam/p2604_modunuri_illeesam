@@ -2745,6 +2745,9 @@ window.BoGroupTable = {
       return m;
     });
 
+    /* 좌측 고정 컬럼 개수 — 그룹헤더 행(row._groupHeader)을 좌측고정/스크롤 두 구간으로 쪼갤 때 colspan 기준 */
+    const cfPinLeftCount = computed(() => props.columns.filter(c => c.pin === 'left').length);
+
     /* 좌측 고정(col.pin==='left') 컬럼의 누적 left offset(px) — 앞에서부터 누적 */
     const cfPinLeftOffset = computed(() => {
       const map = {};
@@ -2795,12 +2798,14 @@ window.BoGroupTable = {
         const off = cfPinLeftOffset.value[col.key] || 0;
         st += 'left:' + off + 'px;';
         if (selected) { if (off === 0) sh.push('inset 2px 0 0 #2563eb'); sh.push('inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb'); }
-        /* 스크롤 시에도 항상 보이도록 box-shadow 대신 실제 border 사용(인접 셀에 덮여 안 보이는 문제 방지) */
-        if (col.key === cfPinLeftLastKey.value) { st += 'border-right:2px solid #94a3b8;'; sh.push('3px 0 4px rgba(0,0,0,.08)'); }
+        /* 구분선은 border-right 대신 inset box-shadow — border는 position:sticky 셀에서 세로 스크롤 시
+           리페인트 과정에 사라지는 렌더링 버그가 있다. inset 은 셀 자기 자신의 페인트 레이어에 포함되어
+           스크롤 리페인트에 안전하고, 박스 바깥으로 번지지 않아 인접 셀에 덮여 안 보이는 문제도 없다. */
+        if (col.key === cfPinLeftLastKey.value) { sh.push('inset -2px 0 0 #94a3b8', '3px 0 4px rgba(0,0,0,.08)'); }
       } else {
         st += 'right:' + (cfPinRightOffset.value[col.key] || 0) + 'px;';
         if (selected) sh.push('inset -2px 0 0 #2563eb', 'inset 0 2px 0 #2563eb', 'inset 0 -2px 0 #2563eb');
-        if (col.key === cfPinRightFirstKey.value) { st += 'border-left:2px solid #94a3b8;'; sh.push('-3px 0 4px rgba(0,0,0,.08)'); }
+        if (col.key === cfPinRightFirstKey.value) { sh.push('inset 2px 0 0 #94a3b8', '-3px 0 4px rgba(0,0,0,.08)'); }
       }
       if (sh.length) st += 'box-shadow:' + sh.join(',') + ';';
       return st;
@@ -2832,7 +2837,7 @@ window.BoGroupTable = {
             /* Fixed — depth=0에서만 rowspan=totalRows로 한 번 추가 */
             if (depth === 0) {
               row.push({
-                key: col.key, label: col.label, rowspan: totalRows, colspan: 1,
+                key: col.key, label: col.label, rowspan: totalRows, colspan: 1, title: col.headerTip || '',
                 thStyle: 'text-align:center;vertical-align:middle;'
                   + (col.width ? 'width:' + col.width + 'px;' : '')
                   + (col.pin ? 'background:' + (col.thBg || '#f0f4f8') + ';' : '')
@@ -2882,7 +2887,7 @@ window.BoGroupTable = {
             const isLast  = i >= cols.length - 1 || (paths[i + 1] || []).join('^') !== path.join('^');
             const fallbackBg = fnLv(fc.colGroupBg, depth - 1);
             row.push({
-              key: col.key, label: col.label, rowspan: totalRows - depth, colspan: 1,
+              key: col.key, label: col.label, rowspan: totalRows - depth, colspan: 1, title: col.headerTip || '',
               thStyle: [
                 'text-align:center;vertical-align:middle;',
                 col.thBg    ? 'background:' + col.thBg + ';' : (fallbackBg ? 'background:' + fallbackBg + ';' : ''),
@@ -2950,6 +2955,9 @@ window.BoGroupTable = {
     };
 
     const onCellClick      = (row, idx) => emit('cell-click', { row, idx });
+    /* handleBadgeClick — iconBadge 셀 전용 클릭(col.onBadgeClick 이 있을 때만). 행 선택(onCellClick)과
+       분리된 별도 동작이므로 버블링 차단 — 행 클릭(cell-click)까지 같이 발동하지 않도록 함 */
+    const handleBadgeClick = (e, col, row) => { e.stopPropagation(); col.onBadgeClick(row, col, e); };
     const onRowMouseEnter  = (row)       => { hoveredKey.value = row[props.rowKey]; };
     const onRowMouseLeave  = ()          => { hoveredKey.value = null; };
 
@@ -2981,7 +2989,7 @@ window.BoGroupTable = {
       });
     });
 
-    return { cfLeafCols, cfHeaderRows, fnTdStyle, fnRowStyle, onCellClick, cfSummaryTdList, hoveredKey, onRowMouseEnter, onRowMouseLeave };
+    return { cfLeafCols, cfHeaderRows, cfPinLeftCount, fnTdStyle, fnRowStyle, onCellClick, handleBadgeClick, cfSummaryTdList, hoveredKey, onRowMouseEnter, onRowMouseLeave };
   },
   template: `
 <div style="overflow-x:auto;">
@@ -2994,8 +3002,8 @@ window.BoGroupTable = {
       <tr v-for="(hRow, rIdx) in cfHeaderRows" :key="rIdx"
         :style="rIdx === 0 ? 'background:#f0f4f8;font-size:11px;color:#555;' : 'background:#f8faff;font-size:10px;color:#444;'">
         <th v-for="th in hRow" :key="th.key"
-          :rowspan="th.rowspan" :colspan="th.colspan"
-          :style="th.thStyle">{{ th.label }}</th>
+          :rowspan="th.rowspan" :colspan="th.colspan" :title="th.title || ''"
+          :style="th.thStyle + (th.title ? 'cursor:help;' : '')">{{ th.label }}</th>
       </tr>
     </thead>
     <tbody>
@@ -3019,40 +3027,55 @@ window.BoGroupTable = {
             <span v-else-if="sc.type === 'text'">{{ sc.val }}</span>
           </td>
         </tr>
-        <!-- 데이터 행 -->
-        <tr v-for="(row, idx) in rows" :key="row[rowKey]"
-          :style="fnRowStyle(row, idx)"
-          @mouseenter="onRowMouseEnter(row)"
-          @mouseleave="onRowMouseLeave()"
-          @click="onCellClick(row, idx)">
-          <td v-for="(col, ci) in cfLeafCols" :key="col.key"
-            :title="col.titleFmt ? col.titleFmt(row) : ''"
-            :style="fnTdStyle(col, row, idx, ci)">
-            <slot v-if="col.slot" :name="'cell-' + col.key" :row="row" :idx="idx" />
-            <template v-else-if="col.iconBadge">
-              <span v-if="col.iconBadge(row)"
-                :style="'display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:10px;padding:0 4px;font-size:11px;font-weight:700;background:' + col.iconBadge(row).bg + ';color:' + col.iconBadge(row).color + ';'">
-                {{ col.iconBadge(row).value }}
-              </span>
-              <span v-else style="color:#d8d8d8;">-</span>
+        <!-- 데이터 행 — row._groupHeader:true 면 전체 폭 병합 행(#group-header 슬롯), 그 외는 일반 컬럼별 행 -->
+        <template v-for="(row, idx) in rows" :key="row[rowKey]">
+          <tr v-if="row._groupHeader" class="bo-group-header-row">
+            <!-- 좌측고정 컬럼이 일부 있으면 그 폭만큼 sticky 셀로 분리(가로 스크롤해도 그룹헤더 내용이 안 가려짐) -->
+            <template v-if="cfPinLeftCount > 0 ? (cfPinLeftCount < cfLeafCols.length) : false">
+              <td :colspan="cfPinLeftCount" style="padding:0;position:sticky;left:0;z-index:4;background:#eef2f9;box-shadow:inset -2px 0 0 #94a3b8;">
+                <slot name="group-header" :row="row" :idx="idx" />
+              </td>
+              <td :colspan="cfLeafCols.length - cfPinLeftCount" style="padding:0;background:#eef2f9;"></td>
             </template>
-            <template v-else-if="col.check">
-              <span :style="col.check(row) ? 'color:' + (col.checkColor || '#16a34a') + ';font-weight:700;font-size:15px;' : 'color:#e8e8e8;font-size:15px;'">
-                {{ col.check(row) ? '✓' : '·' }}
-              </span>
-            </template>
-            <template v-else-if="col.badge">
-              <span :class="'badge ' + col.badge(row)" style="font-size:10px;">
-                {{ col.badgeLabel ? col.badgeLabel(row) : (col.fmt ? col.fmt(row, idx) : (row[col.key] || '-')) }}
-              </span>
-            </template>
-            <template v-else>
-              <span :style="col.cellStyle ? col.cellStyle(row) : ''">
-                {{ col.fmt ? col.fmt(row, idx) : (row[col.key] != null ? row[col.key] : '-') }}
-              </span>
-            </template>
-          </td>
-        </tr>
+            <td v-else :colspan="cfLeafCols.length" style="padding:0;">
+              <slot name="group-header" :row="row" :idx="idx" />
+            </td>
+          </tr>
+          <tr v-else
+            :style="fnRowStyle(row, idx)"
+            @mouseenter="onRowMouseEnter(row)"
+            @mouseleave="onRowMouseLeave()"
+            @click="onCellClick(row, idx)">
+            <td v-for="(col, ci) in cfLeafCols" :key="col.key"
+              :title="col.titleFmt ? col.titleFmt(row) : ''"
+              :style="fnTdStyle(col, row, idx, ci)">
+              <slot v-if="col.slot" :name="'cell-' + col.key" :row="row" :idx="idx" />
+              <template v-else-if="col.iconBadge">
+                <span v-if="col.iconBadge(row)"
+                  :style="'display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:10px;padding:0 4px;font-size:11px;font-weight:700;background:' + col.iconBadge(row).bg + ';color:' + col.iconBadge(row).color + ';' + (col.onBadgeClick ? 'cursor:pointer;' : '')"
+                  @click="col.onBadgeClick ? handleBadgeClick($event, col, row) : null">
+                  {{ col.iconBadge(row).value }}
+                </span>
+                <span v-else style="color:#d8d8d8;">-</span>
+              </template>
+              <template v-else-if="col.check">
+                <span :style="col.check(row) ? 'color:' + (col.checkColor || '#16a34a') + ';font-weight:700;font-size:15px;' : 'color:#e8e8e8;font-size:15px;'">
+                  {{ col.check(row) ? '✓' : '·' }}
+                </span>
+              </template>
+              <template v-else-if="col.badge">
+                <span :class="'badge ' + col.badge(row)" style="font-size:10px;">
+                  {{ col.badgeLabel ? col.badgeLabel(row) : (col.fmt ? col.fmt(row, idx) : (row[col.key] || '-')) }}
+                </span>
+              </template>
+              <template v-else>
+                <span :style="col.cellStyle ? col.cellStyle(row) : ''">
+                  {{ col.fmt ? col.fmt(row, idx) : (row[col.key] != null ? row[col.key] : '-') }}
+                </span>
+              </template>
+            </td>
+          </tr>
+        </template>
         <!-- 합계행: bottom 위치 (default). border 대신 box-shadow — 위 top 위치와 동일 사유 -->
         <tr v-if="summaryRow ? summaryPos !== 'top' : false" class="bo-summary-row"
           :style="'background:' + summaryBg + ';box-shadow:inset 0 2.5px 0 0 ' + summaryBorderColor + ';'">

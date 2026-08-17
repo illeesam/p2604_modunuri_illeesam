@@ -89,6 +89,9 @@ public class OdOrderItemDto {
         private String prodOptNm2;
         private String orderItemStatusCdNm;
         private String dlivCourierCdNm;
+        private Long settleSaleAmt;
+        private Long settleCommissionAmt;
+        private Long settleVendorAmt;
     }
 
 

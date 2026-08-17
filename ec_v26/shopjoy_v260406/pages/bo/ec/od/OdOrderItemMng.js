@@ -10,8 +10,47 @@ window.OdOrderItemMng = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { reactive, computed, onMounted } = Vue;
-    const showToast = window.boApp?.showToast || props.showToast;
+    const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;
+    const showToast   = window.boApp?.showToast   || props.showToast;
+    const showConfirm = window.boApp?.showConfirm || props.showConfirm;
+
+    /* statusPopover — 진행상태/클레임 뱃지 클릭 시 클릭 행의 주문 1건에 대한 칸반 팝오버 (od-order-kanban 재사용)
+     *   전체화면 오버레이로 막지 않고 "바깥 클릭 감지"(document 리스너)로 닫는다 — 오버레이 방식은
+     *   다른 뱃지 클릭까지 가로채서 "다른 진행상태 클릭하면 팝오버가 닫히기만 함" 버그가 났었다.
+     *   뱃지 클릭 핸들러(handleBadgeClick, BoAreaComp.js)가 이미 stopPropagation 하므로, 뱃지를 눌러
+     *   바로 다른 주문으로 전환할 때는 이 바깥클릭 리스너가 아예 발동하지 않고 openStatusPopover 만 실행된다. */
+    const statusPopover = reactive({ show: false, orderId: null, orderItemId: null, top: 0, left: 0 });
+    const statusPopoverPanelRef = ref(null);
+    const openStatusPopover = (row, e) => {
+      /* position:fixed 패널이라 뷰포트 기준 좌표 그대로 사용(스크롤 오프셋 더하지 않음) */
+      const rect = e.currentTarget.getBoundingClientRect();
+      statusPopover.top = Math.min(rect.bottom + 6, window.innerHeight - 100);
+      statusPopover.left = Math.min(rect.left, window.innerWidth - 960);
+      statusPopover.orderId = row.orderId;
+      statusPopover.orderItemId = row.orderItemId;
+      statusPopover.show = true;
+    };
+    /* closeStatusPopover — 팝오버 닫기. 칸반 드래그로 실제 상태가 바뀌었을 수 있으므로 목록 재조회.
+     *   팝오버가 열려있는 동안의 강조(cfGridSelectedKey)는 statusPopover.orderItemId 기준이었는데,
+     *   닫히면서 show=false 가 되면 그 강조가 바로 detailPanel.selectedOrderItemId 로 넘어가야
+     *   재조회 후에도 "방금 다루던 행"이 계속 선택 상태로 남는다 — 그래서 여기서 넘겨준다. */
+    const closeStatusPopover = () => {
+      if (statusPopover.orderItemId) {
+        detailPanel.selectedOrderItemId = statusPopover.orderItemId;
+        detailPanel.selectedOrderId     = statusPopover.orderId;
+        detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
+      }
+      statusPopover.show = false;
+      handleSearchList();
+    };
+    /* onDocClickForPopover — 팝오버 바깥 클릭 시 닫기. 뱃지 클릭은 stopPropagation 되어 여기 도달하지 않음 */
+    const onDocClickForPopover = (e) => {
+      if (!statusPopover.show) { return; }
+      if (statusPopoverPanelRef.value && statusPopoverPanelRef.value.contains(e.target)) { return; }
+      closeStatusPopover();
+    };
+    onMounted(() => { document.addEventListener('click', onDocClickForPopover); });
+    onBeforeUnmount(() => { document.removeEventListener('click', onDocClickForPopover); });
 
     const items = reactive([]);
     const listGridPager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [20, 50, 100, 200] });
@@ -112,6 +151,37 @@ window.OdOrderItemMng = {
 
     const cfDetailKey = computed(() => `${detailPanel.selectedOrderItemId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
+    /* cfGridSelectedKey — 진행상태 팝오버가 열려있는 동안은 그 행(orderItemId 기준)을 우선 강조.
+       orderItemId 로 매칭하므로 목록이 재조회되어 items 배열이 통째로 교체돼도 강조가 유지된다. */
+    const cfGridSelectedKey = computed(() => statusPopover.show ? statusPopover.orderItemId : detailPanel.selectedOrderItemId);
+
+    /* ===== 주문ID별 트리 그룹핑 (기본 펼치기) ===== */
+    const groupCollapsed = reactive(new Set());   // 접힌 주문ID 집합 — 비어있으면 전부 펼침(기본)
+    const toggleGroup = (orderId) => {
+      if (groupCollapsed.has(orderId)) { groupCollapsed.delete(orderId); }
+      else { groupCollapsed.add(orderId); }
+    };
+    /* cfDisplayRows — items(현재 페이지) 를 주문ID 기준으로 묶어 그룹헤더 의사행을 끼워넣은 그리드 표시용 배열.
+       items 자체는 그대로 두고(합계 등 기존 로직 영향 없음) 화면 렌더용으로만 가공한다. */
+    const cfDisplayRows = computed(() => {
+      const groups = new Map();
+      for (const it of items) {
+        if (!groups.has(it.orderId)) { groups.set(it.orderId, []); }
+        groups.get(it.orderId).push(it);
+      }
+      const out = [];
+      let seq = 0;   // 접힘 여부와 무관하게 번호는 실제 항목 순서대로 증가(재펼침 시 번호 안 흔들림)
+      for (const [orderId, groupItems] of groups) {
+        const collapsed = groupCollapsed.has(orderId);
+        out.push({
+          _groupHeader: true, orderItemId: '_grp_' + orderId, orderId,
+          memberNm: groupItems[0].memberNm, itemCount: groupItems.length, collapsed,
+        });
+        for (const it of groupItems) { it._displayIdx = seq++; if (!collapsed) { out.push(it); } }
+      }
+      return out;
+    });
+
     /* ##### [04] 상수 및 헬퍼 함수 ################################################## */
 
     const STS_PROGRESS  = ['ORDERED', 'PAID', 'PREPARING', 'SHIPPING', 'WAIT_DEPOSIT'];
@@ -180,14 +250,19 @@ window.OdOrderItemMng = {
 
     const cfSummaryGridRow = computed(() => {
       if (!items.length) return null;
-      let amtOrder = 0, amtCancel = 0, amtComp = 0, amtDliv = 0, qtyOrder = 0, qtyCancel = 0;
+      let amtOrder = 0, amtDiscount = 0, amtCancel = 0, amtComp = 0, amtDliv = 0, qtyOrder = 0, qtyCancel = 0;
+      let amtSettleSale = 0, amtSettleCommission = 0, amtSettleVendor = 0;
       for (const r of items) {
-        qtyOrder  += Number(r.orderQty)         || 0;
-        qtyCancel += Number(r.cancelQty)        || 0;
-        amtOrder  += Number(r.itemOrderAmt)     || 0;
-        amtCancel += Number(r.itemCancelAmt)    || 0;
-        amtComp   += Number(r.itemCompletedAmt) || 0;
-        amtDliv   += Number(r.dlivAmt)          || 0;
+        qtyOrder    += Number(r.orderQty)         || 0;
+        qtyCancel   += Number(r.cancelQty)        || 0;
+        amtOrder    += Number(r.itemOrderAmt)     || 0;
+        amtDiscount += Number(r.orgDiscountAmt)   || 0;
+        amtCancel   += Number(r.itemCancelAmt)    || 0;
+        amtComp     += Number(r.itemCompletedAmt) || 0;
+        amtDliv     += Number(r.outboundShippingFee) || 0;
+        amtSettleSale       += Number(r.settleSaleAmt)       || 0;
+        amtSettleCommission += Number(r.settleCommissionAmt) || 0;
+        amtSettleVendor     += Number(r.settleVendorAmt)     || 0;
       }
       const s = cfSummary.value;
       return {
@@ -205,12 +280,17 @@ window.OdOrderItemMng = {
         _claimActive:     s.claimActive.total,
         _claimDone:       s.claimDone.total,
         _refund:          s.refund.count,
-        itemOrderAmt:     amtOrder,
-        itemCancelAmt:    amtCancel,
-        itemCompletedAmt: amtComp,
-        dlivAmt:          amtDliv,
-        _settleDliv:      '',
-        _settleOrder:     '',
+        itemOrderAmt:       amtOrder,
+        orgDiscountAmt:     amtDiscount,
+        itemCancelAmt:      amtCancel,
+        itemCompletedAmt:   amtComp,
+        outboundShippingFee: amtDliv,
+        settleSaleAmt:       amtSettleSale,
+        settleCommissionAmt: amtSettleCommission,
+        settleVendorAmt:     amtSettleVendor,
+        _settleShipFee:      amtDliv,
+        _settleStatus:       '',
+        settleDate:          '',
       };
     });
 
@@ -292,14 +372,23 @@ window.OdOrderItemMng = {
     columns.listGrid = [
       /* ── Fixed (헤더 전체 행 span) ─────────────────────────────────────── */
       { key: '_rowNum',     label: '번호',   width: 34,  slot: true, pin: 'left' },
-      { key: 'orderItemId', label: '항목ID', width: 104, pin: 'left',
-        titleFmt: (row) => row.orderItemId || '',
-        tdStyle:  ()    => 'text-align:center;font-family:monospace;font-size:10px;color:#777;',
-        fmt: (row) => row.orderItemId ? row.orderItemId.substring(0, 12) + '..' : '-' },
+      { key: 'orderItemId', label: '항목ID/주문ID', width: 108, pin: 'left', slot: true,
+        titleFmt: (row) => (row.orderItemId || '-') + ' / ' + (row.orderId || '-') },
       { key: 'memberNm',    label: '회원명', width: 84,  pin: 'left',
         tdStyle: () => 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 6px;text-align:left;',
         fmt: (row) => row.memberNm   || '-' },
-      { key: 'prodNm',      label: '상품명', width: 150, pin: 'left', slot: true },
+      { key: 'prodNm',      label: '상품명', width: 150, pin: 'left', slot: true,
+        tdStyle: () => 'overflow:hidden;' },
+      /* ── 📦 수량 (상품명 우측 고정) ────────────────────────────────────────── */
+      { key: 'orderQty',   label: '주문',   colGroup: '📦 수량', pin: 'left',
+        colGroupBg: '#e8f5e9', colGroupColor: '#2e7d32', colGroupBorderColor: '#a5d6a7',
+        thBg: '#daf5da', thColor: '#2e7d32', width: 42,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => ({ bg: '#16a34a', color: '#fff', value: row.orderQty || 1 }) },
+      { key: 'cancelQty',  label: '취소',   colGroup: '📦 수량', pin: 'left',
+        thBg: '#daf5da', thColor: '#c62828', width: 42,
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        iconBadge: (row) => row.cancelQty ? { bg: '#dc2626', color: '#fff', value: row.cancelQty } : null },
 
       /* ── 🧾 상품기본정보 ────────────────────────────────────────────────── */
       { key: 'categoryNm', label: '카테고리', colGroup: '🧾 상품기본정보',
@@ -318,76 +407,70 @@ window.OdOrderItemMng = {
       { key: 'mdUserNm',   label: 'MD',       colGroup: '🧾 상품기본정보',
         thBg: '#deeefb', width: 64, align: 'center',
         fmt: (row) => row.mdUserNm   || '-' },
-      { key: 'orderId',    label: '주문ID',   colGroup: '🧾 상품기본정보',
-        thBg: '#deeefb', width: 90,
-        titleFmt: (row) => row.orderId || '',
-        tdStyle:  (row) => 'text-align:center;font-family:monospace;font-size:10px;' + (detailPanel.selectedOrderId === row.orderId ? 'color:#e8587a;font-weight:700;' : 'color:#555;'),
-        fmt: (row) => row.orderId ? row.orderId.substring(0, 12) + '..' : '-' },
 
-      /* ── 📦 주문수량 ────────────────────────────────────────────────────── */
-      { key: 'orderQty',   label: '주문',   colGroup: '📦 주문수량',
-        colGroupBg: '#e8f5e9', colGroupColor: '#2e7d32', colGroupBorderColor: '#a5d6a7',
-        thBg: '#daf5da', thColor: '#2e7d32', width: 42,
-        tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => ({ bg: '#16a34a', color: '#fff', value: row.orderQty || 1 }) },
-      { key: 'cancelQty',  label: '취소',   colGroup: '📦 주문수량',
-        thBg: '#daf5da', thColor: '#c62828', width: 42,
-        tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => row.cancelQty ? { bg: '#dc2626', color: '#fff', value: row.cancelQty } : null },
-      { key: '_progress',  label: '진행중', colGroup: '📦 주문수량',
-        thBg: '#daf5da', thColor: '#6a1b9a', width: 42,
-        tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => STS_PROGRESS.includes(row.orderItemStatusCd) ? { bg: '#7c3aed', color: '#fff', value: row.orderQty || 1 } : null },
-      { key: '_qtyConf',   label: '확정',   colGroup: '📦 주문수량',
-        thBg: '#daf5da', thColor: '#1565c0', width: 42,
-        tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? { bg: '#1d4ed8', color: '#fff', value: row.orderQty || 1 } : null },
-
-      /* ── 📊 진행상태 (od.01 상태표 order_item_status_cd 흐름: ORDERED→PAID→PREPARING→SHIPPING→DELIVERED→CONFIRMED, 종결 CANCELLED) ── */
+      /* ── 📊 진행상태 (od.01 상태표 order_item_status_cd 흐름: ORDERED→PAID→PREPARING→SHIPPING→DELIVERED→CONFIRMED, 종결 CANCELLED)
+             뱃지 클릭 시 해당 행 주문 1건의 진행상태 칸반 팝오버(openStatusPopover) — 드래그로 실제 상태 변경 가능 ── */
       { key: '_stOrdered', label: '주문완료', colGroup: '📊 진행상태',
         colGroupBg: '#fff8e1', colGroupColor: '#e65100', colGroupBorderColor: '#ffca28',
         thBg: '#fffde7', width: 50,
+        headerTip: '주문 접수 완료 · 무통장 입금대기 상태 (ORDERED / WAIT_DEPOSIT)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => (row.orderItemStatusCd === 'ORDERED' || row.orderItemStatusCd === 'WAIT_DEPOSIT') ? { bg: '#2563eb', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => (row.orderItemStatusCd === 'ORDERED' || row.orderItemStatusCd === 'WAIT_DEPOSIT') ? { bg: '#2563eb', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
       { key: '_stPaid',    label: '결제완료', colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
+        headerTip: '결제 완료 상태 (PAID)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => row.orderItemStatusCd === 'PAID'      ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => row.orderItemStatusCd === 'PAID'      ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
       { key: '_stPrep',    label: '준비중',   colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
+        headerTip: '상품 준비중 상태 (PREPARING)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => row.orderItemStatusCd === 'PREPARING' ? { bg: '#c2410c', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => row.orderItemStatusCd === 'PREPARING' ? { bg: '#c2410c', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
       { key: '_stShip',    label: '배송중',   colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
+        headerTip: '배송 중 상태 (SHIPPING)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => row.orderItemStatusCd === 'SHIPPING'  ? { bg: '#1d4ed8', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => row.orderItemStatusCd === 'SHIPPING'  ? { bg: '#1d4ed8', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
       { key: '_stDliv',    label: '배송완료', colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 50,
+        headerTip: '배송 완료 상태 (DELIVERED)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => STS_DELIVERED.includes(row.orderItemStatusCd) ? { bg: '#0f766e', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => STS_DELIVERED.includes(row.orderItemStatusCd) ? { bg: '#0f766e', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
       { key: '_stBuyConf', label: '구매확정', colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 50,
+        headerTip: '구매확정 완료 상태 (CONFIRMED)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
       { key: '_stCancelled', label: '취소',   colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
+        headerTip: '주문 취소 상태 (CANCELLED)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => row.orderItemStatusCd === 'CANCELLED' ? { bg: '#dc2626', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => row.orderItemStatusCd === 'CANCELLED' ? { bg: '#dc2626', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
 
-      /* ── ⚠️ 클레임 ──────────────────────────────────────────────────────── */
+      /* ── ⚠️ 클레임 (뱃지 클릭 시 진행상태와 동일하게 해당 행 주문 1건 칸반 팝오버 — 클레임 보드도 함께 표시됨) ── */
       { key: '_claimActive', label: '클레임중',  colGroup: '⚠️ 클레임',
         colGroupBg: '#fce4ec', colGroupColor: '#c62828', colGroupBorderColor: '#f48fb1',
         thBg: '#fce4ec', width: 54,
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => (row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '')) ? { bg: '#c07030', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => (row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '')) ? { bg: '#c07030', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
       { key: '_claimDone',   label: '클레임완료', colGroup: '⚠️ 클레임',
         thBg: '#fce4ec', width: 54,
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => (row.claimYn === 'Y' && STS_CLM_DONE.includes(row.claimStatusCd || '')) ? { bg: '#757575', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => (row.claimYn === 'Y' && STS_CLM_DONE.includes(row.claimStatusCd || '')) ? { bg: '#757575', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
       { key: '_refund',      label: '환불완료',   colGroup: '⚠️ 클레임',
         thBg: '#fce4ec', width: 44,
         tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => row.refundCompltYn === 'Y' ? { bg: '#dc2626', color: '#fff', value: row.orderQty || 1 } : null },
+        iconBadge: (row) => row.refundCompltYn === 'Y' ? { bg: '#dc2626', color: '#fff', value: row.orderQty || 1 } : null,
+        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
 
       /* ── 💰 금액 ────────────────────────────────────────────────────────── */
       { key: 'itemOrderAmt',     label: '주문금액', colGroup: '💰 금액',
@@ -395,7 +478,11 @@ window.OdOrderItemMng = {
         thBg: '#daf5e9', thColor: '#1565c0', width: 80,
         tdStyle: ()    => 'text-align:right;padding-right:6px;font-size:11px;color:#1565c0;font-weight:600;',
         fmt: (row) => row.itemOrderAmt     ? Number(row.itemOrderAmt).toLocaleString()     : '-' },
-      { key: 'itemCancelAmt',    label: '환불금액', colGroup: '💰 금액',
+      { key: 'orgDiscountAmt',   label: '할인금액', colGroup: '💰 금액',
+        thBg: '#daf5e9', thColor: '#c2410c', width: 75,
+        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.orgDiscountAmt ? 'color:#c2410c;font-weight:600;' : 'color:#d8d8d8;'),
+        fmt: (row) => row.orgDiscountAmt ? Number(row.orgDiscountAmt).toLocaleString() : '-' },
+      { key: 'itemCancelAmt',    label: '취소금액', colGroup: '💰 금액',
         thBg: '#daf5e9', thColor: '#dc2626', width: 75,
         tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.itemCancelAmt    ? 'color:#dc2626;font-weight:600;' : 'color:#d8d8d8;'),
         fmt: (row) => row.itemCancelAmt    ? Number(row.itemCancelAmt).toLocaleString()    : '-' },
@@ -463,11 +550,12 @@ window.OdOrderItemMng = {
 
     return {
       columns, items, listGridPager, searchParam, uiState, codes, detailPanel, picks,
-      cfSummary, cfSummaryGridRow, cfDetailKey,
+      cfSummary, cfSummaryGridRow, cfDetailKey, cfGridSelectedKey, cfDisplayRows, toggleGroup,
       handleBtnAction, handleSelectAction, handleRowClick, handleRowEdit,
       fnSettleBadgeCls, fnSettleBadgeLbl, fnVoucherBadge, fnVoucherLbl,
       fnErpVoucherBadge, fnErpVoucherLbl, fnErpVoucherTypeNm,
       inlineNavigate, fnCallbackModal,
+      statusPopover, closeStatusPopover, showToast, showConfirm,
     };
   },
   template: `
@@ -485,9 +573,9 @@ window.OdOrderItemMng = {
   <bo-container title="주문항목 목록" :count-text="'총 ' + listGridPager.pageTotalCount.toLocaleString() + '건'">
     <bo-group-table
       :columns="columns.listGrid"
-      :rows="items"
+      :rows="cfDisplayRows"
       row-key="orderItemId"
-      :selected-key="detailPanel.selectedOrderItemId"
+      :selected-key="cfGridSelectedKey"
       table-style="min-width:2200px;table-layout:fixed;width:100%;"
       :loading="uiState.loading"
       :summary-row="cfSummaryGridRow"
@@ -499,14 +587,34 @@ window.OdOrderItemMng = {
       col-border="1px solid #e2e8f0"
       @cell-click="e => handleRowClick(e.row)">
 
-      <template #cell-_rowNum="{ idx }">
-        <span style="color:#999;font-size:11px;">{{ (listGridPager.pageNo - 1) * listGridPager.pageSize + idx + 1 }}</span>
+      <template #cell-_rowNum="{ row }">
+        <span style="color:#999;font-size:11px;">{{ (listGridPager.pageNo - 1) * listGridPager.pageSize + row._displayIdx + 1 }}</span>
+      </template>
+
+      <template #cell-orderItemId="{ row }">
+        <div style="text-align:center;line-height:1.35;">
+          <div style="font-family:monospace;font-size:10px;color:#777;">{{ row.orderItemId ? row.orderItemId.substring(0, 12) + '..' : '-' }}</div>
+          <div style="font-family:monospace;font-size:9px;" :style="detailPanel.selectedOrderId === row.orderId ? 'color:#e8587a;font-weight:700;' : 'color:#aaa;'">{{ row.orderId ? row.orderId.substring(0, 12) + '..' : '-' }}</div>
+        </div>
+      </template>
+
+      <template #group-header="{ row }">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#eef2f9;border-top:1px solid #dbe3ef;border-bottom:1px solid #dbe3ef;cursor:pointer;"
+          @click="toggleGroup(row.orderId)">
+          <span style="font-size:11px;color:#64748b;width:14px;display:inline-block;text-align:center;">{{ row.collapsed ? '▶' : '▼' }}</span>
+          <span style="font-size:12px;font-weight:700;color:#334155;font-family:monospace;">{{ row.orderId }}</span>
+          <span style="font-size:12px;color:#555;">{{ row.memberNm || '-' }}</span>
+          <span style="font-size:11px;color:#94a3b8;">{{ row.itemCount }}건</span>
+        </div>
       </template>
 
       <template #cell-prodNm="{ row }">
-        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;padding:0 6px;text-align:left;" :title="row.prodNm || ''">
-          {{ row.prodNm || '-' }}<span v-if="row.prodOptNm1" style="font-size:10px;color:#888;">[{{ row.prodOptNm1 }}{{ row.prodOptNm2 ? '/' + row.prodOptNm2 : '' }}]</span>
-        </span>
+        <div style="overflow:hidden;padding:0 6px;max-width:100%;">
+          <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;" :title="row.prodNm || ''">{{ row.prodNm || '-' }}</div>
+          <div v-if="row.prodOptNm1" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;font-size:10px;color:#888;">
+            [{{ row.prodOptNm1 }}{{ row.prodOptNm2 ? '/' + row.prodOptNm2 : '' }}]
+          </div>
+        </div>
       </template>
 
       <template #cell-_settleDliv="{ row }">
@@ -560,6 +668,17 @@ window.OdOrderItemMng = {
   <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="picks.vendor" :on-callback="fnCallbackModal" />
   <bo-cm-popup-modal popup-cmd="cmPopup-brand-pick"  popup-code="brand"  :show="picks.brand"  :on-callback="fnCallbackModal" />
   <bo-cm-popup-modal popup-cmd="cmPopup-md-pick"     popup-code="user"   :show="picks.md"     :on-callback="fnCallbackModal" />
+
+  <!-- ===== ■. 진행상태 뱃지 클릭 팝오버 (클릭 행의 주문 1건 칸반, 드래그로 실제 상태변경) ===== -->
+  <div v-if="statusPopover.show" ref="statusPopoverPanelRef"
+    style="position:fixed;z-index:1200;box-shadow:0 12px 36px rgba(0,0,0,.22);border-radius:12px;max-width:960px;width:calc(100vw - 32px);max-height:70vh;overflow:auto;"
+    :style="{ top: statusPopover.top + 'px', left: statusPopover.left + 'px' }">
+    <od-order-kanban v-if="statusPopover.orderId"
+      :key="statusPopover.orderId"
+      :order-id="statusPopover.orderId" :order-item-id="statusPopover.orderItemId"
+      mode="bo" as-modal :on-close="closeStatusPopover"
+      :show-toast="showToast" :show-confirm="showConfirm" />
+  </div>
 </bo-page>
 `
 };
