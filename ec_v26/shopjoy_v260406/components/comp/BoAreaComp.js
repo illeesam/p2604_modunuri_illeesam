@@ -2624,6 +2624,10 @@ window.BoFormArea = {
   </span>
 </div>
 <!-- pick (팝업 선택 박스) — col.onOpen(form) 으로 팝업 열기, col.nameKey 로 표시명 키 지정 -->
+<!-- readonly+plainReadonly 면 다른 필드와 동일하게 순수 라벨(readonly-field-plain)로 표시 -->
+<div v-if="col.type === 'pick' ? (readonly && plainReadonly) : false" class="readonly-field-plain">
+  {{ (col.display ? col.display(form) : (col.nameKey ? form[col.nameKey] : form[col.key])) || '-' }}
+</div>
 <div v-else-if="col.type === 'pick'" style="display:flex;align-items:center;gap:6px;">
   <input :value="col.display ? col.display(form) : (col.nameKey ? (form[col.nameKey] || '') : (form[col.key] || ''))"
     readonly :placeholder="col.placeholder || '선택'"
@@ -2632,7 +2636,7 @@ window.BoFormArea = {
     <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" title="선택"
       style="padding:0;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"
       @click="handleSelectAction('field-pick-open', { col })">🔍</button>
-    <button v-if="form[col.key]" type="button" title="선택 해제"
+    <button v-if="!readonly ? form[col.key] : false" type="button" title="선택 해제"
       style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;"
       @click="handleBtnAction('form-pick-clear', { col })">x</button>
   </span>

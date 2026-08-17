@@ -401,7 +401,10 @@ window.PmGiftDtl = {
       { key: 'startDate',    label: '시작일', type: 'date' },
       { key: 'endDate',      label: '종료일', type: 'date' },
       { key: 'giftDesc',     label: '비고', type: 'textarea', rows: 2, placeholder: '비고 입력' },
-      { key: 'vendorId',     label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'vendorId',     label: '판매업체', type: 'pick', placeholder: '업체 선택',
+        display: (f) => { const v = vendors.find(x => x.vendorId === f.vendorId); return v ? v.vendorNm : ''; },
+        onOpen: () => handleBtnAction('vendorModal-open'),
+        onClear: () => { form.chargeStaff = ''; } },
       { key: 'chargeStaff',  label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
@@ -418,7 +421,7 @@ window.PmGiftDtl = {
   },
   template: /* html */`
 <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-<bo-container :title="!active ? '사은품 상세' : (cfIsNew ? '사은품 등록' : '사은품 수정')"
+<bo-container :title="!active ? '사은품 상세' : (cfIsNew ? '사은품 등록' : (cfIsView ? '사은품 상세' : '사은품 수정'))"
   :title-id="coUtil.cofAnd(active, !cfIsNew) ? form.giftId : ''">
   <!-- ===== ■.■. 카드 헤더 (제목 = list-title) ============================== -->
   <!-- ===== ■.■. 탭바 ==================================================== -->
@@ -433,24 +436,7 @@ window.PmGiftDtl = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area plain-readonly :columns="columns.infoForm" :form="form" :errors="errors"
-        :readonly="cfIsView" :cols="3" compact :show-actions="false">
-        <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
-        <template #vendor>
-          <div v-if="cfDtlMode" class="readonly-field-plain">
-            {{ form.vendorId ? cfSelectedVendorNm : '-' }}
-          </div>
-          <div v-else style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" style="background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:pointer;" @click="handleBtnAction('vendorModal-open')">
-              <span style="padding:4px 10px;flex:1;">{{ cfSelectedVendorNm }}</span>
-              <span style="padding:4px 10px;color:#999;font-size:12px;">▼</span>
-            </div>
-            <button v-if="form.vendorId" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
-              style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
-              x
-            </button>
-          </div>
-        </template>
-      </bo-form-area>
+        :readonly="cfIsView" :cols="3" compact :show-actions="false" />
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="active ? (cfIsView) : false">

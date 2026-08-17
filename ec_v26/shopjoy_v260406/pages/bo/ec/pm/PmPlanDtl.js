@@ -380,7 +380,10 @@ window.PmPlanDtl = {
 
     // 판매업체/판매담당자
     columns.vendorForm = [
-      { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'vendorId',    label: '판매업체', type: 'pick', placeholder: '업체 선택',
+        display: (f) => { const v = vendors.find(x => x.vendorId === f.vendorId); return v ? v.vendorNm : ''; },
+        onOpen: () => handleBtnAction('vendorModal-open'),
+        onClear: () => { form.chargeStaff = ''; } },
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
@@ -444,21 +447,7 @@ window.PmPlanDtl = {
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area plain-readonly :columns="columns.vendorForm" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
-          <template #vendor>
-            <div v-if="cfDtlMode" class="readonly-field-plain">{{ form.vendorId ? cfSelectedVendorNm : '-' }}</div>
-            <div v-else style="display:flex;gap:8px;align-items:center;">
-              <div class="form-control" style="background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:pointer;" @click="handleBtnAction('vendorModal-open')">
-                <span style="padding:4px 10px;flex:1;">{{ cfSelectedVendorNm }}</span>
-                <span style="padding:4px 10px;color:#999;font-size:12px;">▼</span>
-              </div>
-              <button v-if="form.vendorId" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
-                style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
-                x
-              </button>
-            </div>
-          </template>
-        </bo-form-area>
+          :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
       </div>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <bo-cm-popup-modal popup-cmd="cmPopup-vendor-pick" popup-code="vendor" :show="showVendorModal" :on-callback="fnCallbackModal" />

@@ -1481,32 +1481,55 @@ window.DpDispPanelDtl = {
                   <div v-for="row in cfDisplayRows" :key="row?.key"
                     :style="{ gridColumn: (row.type==='textarea'||row.type==='code') ? '1 / -1' : 'auto' }">
                     <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">{{ row.label }}</div>
-                    <input v-if="row.type==='input'" class="form-control" v-model="cfActiveRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="cfDtlMode" />
-                    <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :readonly="cfDtlMode" />
-                    <select v-else-if="row.type==='select'" class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :disabled="cfDtlMode">
-                      <option v-for="o in row.options" :key="o?.v" :value="o.v">{{ o.l }}</option>
-                    </select>
-                    <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="cfActiveRow[row.key]" rows="3" style="margin:0;" :readonly="cfDtlMode"></textarea>
-                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="cfDtlMode"></textarea>
-                    <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
-                      <input type="color" v-model="cfActiveRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;padding:2px;" :disabled="cfDtlMode" />
-                      <input class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:140px;" :readonly="cfDtlMode" />
-                      <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:cfActiveRow[row.key]}"></span>
-                    </div>
-                    <div v-else-if="row.type==='event'">
-                      <div style="display:flex;gap:8px;align-items:center;">
-                        <input class="form-control" v-model="cfActiveRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="cfDtlMode" />
-                        <span v-if="cfActiveRow.eventId" class="ref-link" @click="handleBtnAction('refModal-open', {type:'event', id:Number(cfActiveRow.eventId)})">
-                          보기
+                    <!-- ===== 보기모드: 값 종류 불문 플레인 텍스트 ===== -->
+                    <div v-if="cfDtlMode" class="readonly-field-plain" :style="(row.type==='textarea'||row.type==='code') ? 'white-space:pre-wrap;' : ''">
+                      <template v-if="row.type==='select'">{{ (row.options.find(o => o.v === cfActiveRow[row.key]) || {}).l || '-' }}</template>
+                      <template v-else-if="row.type==='color'">
+                        <span style="display:inline-flex;align-items:center;gap:6px;">
+                          <span style="display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid #e8e8e8;vertical-align:middle;" :style="{background:cfActiveRow[row.key]}"></span>
+                          {{ cfActiveRow[row.key] || '-' }}
                         </span>
-                      </div>
-                      <div v-if="cfRelatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
-                        <b>{{ cfRelatedEvent.title }}</b>
-                        <span class="badge badge-green">{{ cfRelatedEvent.status }}</span>
-                        <span style="color:#888;">{{ cfRelatedEvent.startDate }} ~ {{ cfRelatedEvent.endDate }}</span>
-                      </div>
-                      <div v-else-if="cfActiveRow.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
+                      </template>
+                      <template v-else-if="row.type==='event'">
+                        {{ cfActiveRow.eventId || '-' }}
+                        <span v-if="cfActiveRow.eventId" class="ref-link" style="margin-left:6px;" @click="handleBtnAction('refModal-open', {type:'event', id:Number(cfActiveRow.eventId)})">보기</span>
+                        <div v-if="cfRelatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
+                          <b>{{ cfRelatedEvent.title }}</b>
+                          <span class="badge badge-green">{{ cfRelatedEvent.status }}</span>
+                          <span style="color:#888;">{{ cfRelatedEvent.startDate }} ~ {{ cfRelatedEvent.endDate }}</span>
+                        </div>
+                      </template>
+                      <template v-else>{{ cfActiveRow[row.key] || '-' }}</template>
                     </div>
+                    <!-- ===== 수정모드: 기존 입력 컨트롤 ===== -->
+                    <template v-else>
+                      <input v-if="row.type==='input'" class="form-control" v-model="cfActiveRow[row.key]" :placeholder="row.ph" style="margin:0;" />
+                      <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="cfActiveRow[row.key]" style="margin:0;max-width:200px;" />
+                      <select v-else-if="row.type==='select'" class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:200px;">
+                        <option v-for="o in row.options" :key="o?.v" :value="o.v">{{ o.l }}</option>
+                      </select>
+                      <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="cfActiveRow[row.key]" rows="3" style="margin:0;"></textarea>
+                      <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;"></textarea>
+                      <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
+                        <input type="color" v-model="cfActiveRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;padding:2px;" />
+                        <input class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:140px;" />
+                        <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:cfActiveRow[row.key]}"></span>
+                      </div>
+                      <div v-else-if="row.type==='event'">
+                        <div style="display:flex;gap:8px;align-items:center;">
+                          <input class="form-control" v-model="cfActiveRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" />
+                          <span v-if="cfActiveRow.eventId" class="ref-link" @click="handleBtnAction('refModal-open', {type:'event', id:Number(cfActiveRow.eventId)})">
+                            보기
+                          </span>
+                        </div>
+                        <div v-if="cfRelatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
+                          <b>{{ cfRelatedEvent.title }}</b>
+                          <span class="badge badge-green">{{ cfRelatedEvent.status }}</span>
+                          <span style="color:#888;">{{ cfRelatedEvent.startDate }} ~ {{ cfRelatedEvent.endDate }}</span>
+                        </div>
+                        <div v-else-if="cfActiveRow.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
+                      </div>
+                    </template>
                   </div>
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 조건부 미리보기 (전체 폭) ====================== -->
                   <div v-if="cfIsText ? (cfActiveRow.textContent) : false" style="grid-column:1 / -1;">
@@ -1535,26 +1558,32 @@ window.DpDispPanelDtl = {
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-items:start;margin-bottom:8px;">
                   <div>
                     <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">클릭 시 동작</div>
-                    <select class="form-control" v-model="cfActiveRow.clickAction" style="margin:0;max-width:220px;" :disabled="cfDtlMode">
+                    <div v-if="cfDtlMode" class="readonly-field-plain">
+                      {{ (codes.click_action_opts.find(o => o.value === cfActiveRow.clickAction) || {}).label || '-' }}
+                    </div>
+                    <select v-else class="form-control" v-model="cfActiveRow.clickAction" style="margin:0;max-width:220px;">
                       <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
                     </select>
                   </div>
                   <div v-if="cfActiveRow.clickAction !== 'none'">
                     <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">대상</div>
-                    <input class="form-control" v-model="cfActiveRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="cfDtlMode" />
-                    <div style="margin-top:6px;font-size:12px;color:#888;">
-                      <span v-if="cfActiveRow.clickAction==='navigate'">
-                        💡
-                        <code>/home</code>
-                        ,
-                        <code>/products</code>
-                        ,
-                        <code>/detail?pid=1</code>
-                        형식
-                      </span>
-                      <span v-if="cfActiveRow.clickAction==='event'">💡 <code>showCoupon</code> , <code>openEvent</code> 등 이벤트명</span>
-                      <span v-if="cfActiveRow.clickAction==='url'">💡 외부 URL (http:// 포함)</span>
-                    </div>
+                    <div v-if="cfDtlMode" class="readonly-field-plain">{{ cfActiveRow.clickTarget || '-' }}</div>
+                    <template v-else>
+                      <input class="form-control" v-model="cfActiveRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" />
+                      <div style="margin-top:6px;font-size:12px;color:#888;">
+                        <span v-if="cfActiveRow.clickAction==='navigate'">
+                          💡
+                          <code>/home</code>
+                          ,
+                          <code>/products</code>
+                          ,
+                          <code>/detail?pid=1</code>
+                          형식
+                        </span>
+                        <span v-if="cfActiveRow.clickAction==='event'">💡 <code>showCoupon</code> , <code>openEvent</code> 등 이벤트명</span>
+                        <span v-if="cfActiveRow.clickAction==='url'">💡 외부 URL (http:// 포함)</span>
+                      </div>
+                    </template>
                   </div>
                 </div>
               </div>
