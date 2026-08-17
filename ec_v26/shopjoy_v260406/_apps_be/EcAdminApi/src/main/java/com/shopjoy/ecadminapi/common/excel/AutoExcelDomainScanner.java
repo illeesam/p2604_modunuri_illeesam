@@ -2,18 +2,17 @@ package com.shopjoy.ecadminapi.common.excel;
 
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.common.data.BaseRequest;
-import jakarta.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Id;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Comment;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
@@ -24,8 +23,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -51,11 +48,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  *   <li><b>실제 Repository 빈 조회(getBean)는 그 도메인을 진짜 처음 쓸 때(엑셀 버튼을 실제로
  *       눌렀을 때)까지 미룬다</b> — {@link AutoDiscoveredExcelHandler} 참조. 스캔 단계에서는
  *       메서드 시그니처만 reflection 으로 확인하고 빈은 건드리지 않는다.</li>
- *   <li><b>앱 기동 완료({@link ApplicationReadyEvent}) 이후 백그라운드 스레드에서 실행</b> —
- *       "부팅 완료(요청을 받기 시작하는 시점)"를 지연시키지 않는다. 스캔 자체는 여전히 CPU를
- *       쓰지만(추정 수백ms~1~2초, 실측 필요), 이미 앱이 다른 요청을 받고 있는 도중에 돌아간다.
- *       그 창(window) 동안 자동탐색 대상 도메인은 아직 레지스트리에 없을 수 있다 — 명시
- *       등록 도메인은 {@code @PostConstruct} 시점에 이미 다 등록되어 있어 영향 없다.</li>
+ *   <li><b>컨텍스트 초기화(refresh) 중 {@code @PostConstruct} 로 동기 실행</b> — "구동완료" 로그가
+ *       찍히는 시점에는 이미 178개 도메인이 전부 등록 완료된 상태가 보장된다(자동탐색 대상이
+ *       아직 안 채워진 창(window)이 없음). 대가는 스캔 시간만큼(실측 ~300~400ms) 부팅시간이
+ *       늘어나는 것뿐이다.</li>
  *   <li><b>실패는 앱을 죽이지 않는다</b> — 사람이 검증한 명시적 등록과 달리 자동탐색은 추정이라,
  *       패턴에 안 맞는 리포지토리는 조용히 스킵(디버그 로그)하고 넘어간다.</li>
  * </ul>
@@ -75,6 +71,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @Component
+/*
+ * ⚠ @Lazy(false) 필수 — application-local.yml 의 spring.main.lazy-initialization: true(전역
+ * 빈 지연초기화, JPA 전용인 bootstrap-mode:lazy 와는 다른 설정) 아래에서는 아무도 이 빈을
+ * 의존하지 않으면(실제로 없음 — 자기 완결적 @PostConstruct 부작용 전용 빈) 컨테이너가
+ * 영원히 생성하지 않는다. 즉 @PostConstruct 가 예외 없이 "그냥 한 번도 안 불린다."
+ * 2026-08-17 실제로 이 버그로 자동탐색이 조용히 0건 동작한 것을 부팅 후 API 로 확인하고서야
+ * 발견했다(로그도 전혀 안 남아 원인 파악에 애먹음) — 로그·에러 없이 침묵하는 실패라 특히 주의.
+ */
+@Lazy(false)
 public class AutoExcelDomainScanner {
 
     /** 스캔 대상 루트 패키지 — base 아래 전 도메인(ec/*, sy/*) */
@@ -84,28 +89,28 @@ public class AutoExcelDomainScanner {
     private final ApplicationContext applicationContext;
     private final EntityManager entityManager;
 
-    /** 스캔 전용 단일 데몬 스레드 — 앱 종료를 막지 않고, 별도 스레드풀 설정(@EnableAsync) 없이 동작 */
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "excel-auto-discovery");
-        t.setDaemon(true);
-        return t;
-    });
-
     public AutoExcelDomainScanner(ExcelDomainRegistry registry, ApplicationContext applicationContext, EntityManager entityManager) {
         this.registry = registry;
         this.applicationContext = applicationContext;
         this.entityManager = entityManager;
     }
 
-    /** 앱이 이미 요청을 받기 시작한 뒤에 백그라운드로 스캔 — 부팅완료 시점을 지연시키지 않는다 */
-    @EventListener(ApplicationReadyEvent.class)
-    public void onReady() {
-        executor.submit(this::scanAndRegister);
-    }
-
-    @PreDestroy
-    void shutdown() {
-        executor.shutdownNow();
+    /**
+     * 컨텍스트 초기화(refresh) 도중, 즉 "구동완료" 로그가 찍히기 전에 동기적으로 스캔한다.
+     * {@link ExcelDomainRegistry} 는 이 빈의 생성자 의존성이라 Spring 이 이미 그 빈의
+     * {@code @PostConstruct}(명시 등록 50개 적재)까지 끝낸 뒤에 이 메서드를 호출한다는
+     * 것이 보장된다 — 순서가 뒤바뀔 걱정 없이 곧바로 {@code registerIfAbsent} 호출 가능.
+     *
+     * <p>2026-08-17: 애초엔 {@code ApplicationReadyEvent} 이후 백그라운드 스레드로 실행해
+     * "구동완료" 타이밍에 스캔 비용이 전혀 안 잡히게 했었으나, 부팅 완료 시점에 178개 도메인이
+     * 전부 등록 완료된 상태를 보장하고 싶다는 요구로 동기 방식으로 전환했다. 대가는 스캔
+     * 시간만큼(실측 ~300~400ms) 부팅시간이 늘어나는 것뿐 — {@code bootstrap-mode: lazy} 는
+     * 이 스캔이 Spring 빈을 전혀 건드리지 않아(순수 classpath reflection) 어느 방식이든
+     * 영향받지 않는다(클래스 상단 주석 참조).
+     */
+    @PostConstruct
+    void init() {
+        scanAndRegister();
     }
 
     private void scanAndRegister() {
