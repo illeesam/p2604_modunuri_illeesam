@@ -296,30 +296,60 @@ window.BoSearchArea = {
     const setFieldRef = (ci, el) => { if (el) fieldEls[ci] = el; else delete fieldEls[ci]; };
     const cfFieldVisible = (ci) => expanded.value || ci < measuredCutoff.value;
 
+    const searchActionsEl = Vue.ref(null);
+
     const measureRows = async () => {
       if (!props.maxRows || props.maxRows <= 0) { measuredCutoff.value = Infinity; return; }
       const wasExpanded = expanded.value;
-      expanded.value = true;           // 측정 동안은 전부 보이게(숨겨진 요소는 offsetTop 을 믿을 수 없음)
-      await Vue.nextTick();
       const cols = props.columns || [];
-      const tops = [];
-      for (let ci = 0; ci < cols.length; ci++) {
-        const el = fieldEls[ci];
-        if (el) tops.push({ ci, top: el.offsetTop });
-      }
-      let cutoffIdx = Infinity;
-      if (tops.length) {
+
+      /* onlyVisible=true 이면 현재 v-show 로 숨겨지지 않은 필드만 집계(display:none 요소는
+         offsetTop 이 0으로 나와 줄 계산이 깨지므로 반드시 걸러야 함) */
+      const computeRowTops = (onlyVisible) => {
+        const tops = [];
+        for (let ci = 0; ci < cols.length; ci++) {
+          const el = fieldEls[ci];
+          if (!el) continue;
+          if (onlyVisible && !cfFieldVisible(ci)) continue;
+          tops.push({ ci, top: el.offsetTop });
+        }
         const rowTops = [];
         for (const t of tops) {
           if (!rowTops.length || t.top - rowTops[rowTops.length - 1] > 4) rowTops.push(t.top);
         }
-        if (rowTops.length > props.maxRows) {
-          const cutoffTop = rowTops[props.maxRows];
-          const firstHidden = tops.find(t => t.top >= cutoffTop - 2);
-          if (firstHidden) cutoffIdx = firstHidden.ci;
-        }
+        return { tops, rowTops };
+      };
+
+      expanded.value = true;           // 측정 동안은 전부 보이게(숨겨진 요소는 offsetTop 을 믿을 수 없음)
+      await Vue.nextTick();
+      let { tops, rowTops } = computeRowTops(false);
+
+      let cutoffIdx = Infinity;
+      if (rowTops.length > props.maxRows) {
+        const cutoffTop = rowTops[props.maxRows];
+        const firstHidden = tops.find(t => t.top >= cutoffTop - 2);
+        if (firstHidden) cutoffIdx = firstHidden.ci;
       }
       measuredCutoff.value = cutoffIdx;
+      expanded.value = false;
+      await Vue.nextTick();
+
+      /* search-actions(초기화/조회/펼치기)가 maxRows 를 넘는 줄로 밀려나면, 노출된 필드를 뒤에서부터
+         하나씩 더 숨겨 그 줄에 여유를 만들어 actions 가 다시 maxRows 줄 안으로 올라오게 한다.
+         버튼 자체는 절대 숨기지 않는다 — 더 숨길 필드가 없으면 그대로 포기하고 자연스럽게 흐르게 둔다. */
+      for (let guard = 0; guard < cols.length + 1; guard++) {
+        ({ tops, rowTops } = computeRowTops(true));
+        if (!tops.length) break;
+        const actionsTop = searchActionsEl.value ? searchActionsEl.value.offsetTop : 0;
+        // actions 가 위치한 줄 번호(0-base) — 기존 필드 줄과 겹치면 그 줄, 아니면(필드 마지막 줄보다
+        // 아래) 새로 생긴 다음 줄로 간주. maxRows 안(0 ~ maxRows-1)이면 통과.
+        let actionsRowIdx = rowTops.findIndex(t => Math.abs(actionsTop - t) <= 4);
+        if (actionsRowIdx < 0) actionsRowIdx = rowTops.length;
+        if (actionsRowIdx <= props.maxRows - 1) break;
+        measuredCutoff.value = tops[tops.length - 1].ci;
+        await Vue.nextTick();
+      }
+
       expanded.value = wasExpanded;    // 측정 위해 잠깐 켰던 펼침 상태 원복
     };
 
@@ -353,7 +383,7 @@ window.BoSearchArea = {
       }
     });
 
-    return { U, normOpts, po, cfDisabled, handleBtnAction, handleSelectAction, rangePopoverKey, expanded, cfFieldVisible, setFieldRef, searchBarEl };
+    return { U, normOpts, po, cfDisabled, handleBtnAction, handleSelectAction, rangePopoverKey, expanded, cfFieldVisible, setFieldRef, searchBarEl, searchActionsEl };
   },
   template: /* html */`
 <div class="search-bar" :style="barStyle" ref="searchBarEl" @keyup.enter="handleBtnAction('search-emit')">
@@ -456,9 +486,10 @@ window.BoSearchArea = {
 <slot>
 </slot>
 <!-- search-actions 는 항상 노출(v-show 로 숨기지 않음) — 접힘 상태에서 남은 필드들과 같은
-     wrap 흐름을 공유하므로, 여유가 있으면 마지막 노출 줄 끝에 자연스럽게 붙고 없으면 다음 줄로 흐른다.
+     wrap 흐름을 공유한다. measureRows 가 이 버튼 줄이 maxRows 를 넘으면 필드를 하나씩 더 숨겨
+     maxRows 줄 안으로 끌어올린다(그래도 안 맞으면 자연스럽게 흐르게 포기).
      순서: 초기화 → 조회 → 펼치기/접기(아이콘). maxRows 미사용 화면은 펼치기 버튼 자체가 없다 -->
-<div v-if="showActions" class="search-actions">
+<div v-if="showActions" class="search-actions" ref="searchActionsEl">
   <slot name="actions-before">
   </slot>
   <button type="button" class="btn btn_reset" style="padding:0;width:26px;height:26px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;" :title="resetLabel" @click="handleBtnAction('search-reset')">🔄</button>
@@ -3032,10 +3063,10 @@ window.BoGroupTable = {
           <tr v-if="row._groupHeader" class="bo-group-header-row">
             <!-- 좌측고정 컬럼이 일부 있으면 그 폭만큼 sticky 셀로 분리(가로 스크롤해도 그룹헤더 내용이 안 가려짐) -->
             <template v-if="cfPinLeftCount > 0 ? (cfPinLeftCount < cfLeafCols.length) : false">
-              <td :colspan="cfPinLeftCount" style="padding:0;position:sticky;left:0;z-index:4;background:#eef2f9;box-shadow:inset -2px 0 0 #94a3b8;">
+              <td :colspan="cfPinLeftCount" style="padding:0;position:sticky;left:0;z-index:4;background:#dbe5f7;box-shadow:inset -2px 0 0 #94a3b8;">
                 <slot name="group-header" :row="row" :idx="idx" />
               </td>
-              <td :colspan="cfLeafCols.length - cfPinLeftCount" style="padding:0;background:#eef2f9;"></td>
+              <td :colspan="cfLeafCols.length - cfPinLeftCount" style="padding:0;background:#dbe5f7;"></td>
             </template>
             <td v-else :colspan="cfLeafCols.length" style="padding:0;">
               <slot name="group-header" :row="row" :idx="idx" />

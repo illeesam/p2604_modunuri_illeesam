@@ -168,11 +168,13 @@
    * @param {string} orderId   주문 ID (필수)
    * @param {string} [claimId] 강조할 클레임 ID
    * @param {Function} [showToast] 팝업 차단 시 안내용
+   * @param {string} [orderItemId] 강조할 주문항목 ID (주문항목관리 등 항목 단위 화면에서 사용)
    */
-  boUtil.bofOpenKanbanPopup = function (orderId, claimId, showToast) {
+  boUtil.bofOpenKanbanPopup = function (orderId, claimId, showToast, orderItemId) {
     if (!orderId) { return null; }
     let url = 'bo-od-order-kanban-pop.html?orderId=' + encodeURIComponent(orderId);
-    if (claimId) { url += '&claimId=' + encodeURIComponent(claimId); }
+    if (claimId)     { url += '&claimId=' + encodeURIComponent(claimId); }
+    if (orderItemId) { url += '&orderItemId=' + encodeURIComponent(orderItemId); }
     const win = window.open(window.pageUrl(url), 'odKanbanBoard',
       'width=1480,height=900,resizable=yes,scrollbars=yes');
     if (!win) {

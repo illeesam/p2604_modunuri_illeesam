@@ -10,47 +10,60 @@ window.OdOrderItemMng = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { reactive, computed, ref, onMounted, onBeforeUnmount } = Vue;
+    const { reactive, computed, onMounted, onBeforeUnmount } = Vue;
     const showToast   = window.boApp?.showToast   || props.showToast;
-    const showConfirm = window.boApp?.showConfirm || props.showConfirm;
 
-    /* statusPopover — 진행상태/클레임 뱃지 클릭 시 클릭 행의 주문 1건에 대한 칸반 팝오버 (od-order-kanban 재사용)
-     *   전체화면 오버레이로 막지 않고 "바깥 클릭 감지"(document 리스너)로 닫는다 — 오버레이 방식은
-     *   다른 뱃지 클릭까지 가로채서 "다른 진행상태 클릭하면 팝오버가 닫히기만 함" 버그가 났었다.
-     *   뱃지 클릭 핸들러(handleBadgeClick, BoAreaComp.js)가 이미 stopPropagation 하므로, 뱃지를 눌러
-     *   바로 다른 주문으로 전환할 때는 이 바깥클릭 리스너가 아예 발동하지 않고 openStatusPopover 만 실행된다. */
-    const statusPopover = reactive({ show: false, orderId: null, orderItemId: null, top: 0, left: 0 });
-    const statusPopoverPanelRef = ref(null);
-    const openStatusPopover = (row, e) => {
-      /* position:fixed 패널이라 뷰포트 기준 좌표 그대로 사용(스크롤 오프셋 더하지 않음) */
-      const rect = e.currentTarget.getBoundingClientRect();
-      statusPopover.top = Math.min(rect.bottom + 6, window.innerHeight - 100);
-      statusPopover.left = Math.min(rect.left, window.innerWidth - 960);
-      statusPopover.orderId = row.orderId;
-      statusPopover.orderItemId = row.orderItemId;
-      statusPopover.show = true;
+    /* 진행상태/클레임 뱃지 클릭 → 주문 칸반 보드를 별도 창(window.open)으로 연다.
+     *   최초엔 인라인 팝오버(문서 클릭 감지로 닫힘)로 만들었으나, od-order-kanban 내부가
+     *   <teleport to="body"> 를 쓰는 하위 모달을 갖고 있어 그 위 클릭이 팝오버 DOM 바깥으로 판정되어
+     *   "칸반 보드 안을 클릭해도 닫힘" 버그가 났다 — 별도 창이면 이 문제 자체가 생기지 않는다.
+     *   boUtil.bofOpenKanbanPopup 이 창 이름을 고정(odKanbanBoard)해 재사용하므로, 다른 뱃지를 눌러도
+     *   같은 창이 새 주문으로 바로 전환된다. 닫힘은 window.closed 폴링으로 감지해 목록을 재조회한다. */
+    let statusPopupWin = null;
+    let statusPopupTimer = null;
+    const openStatusPopover = (row) => {
+      statusPopupWin = window.boUtil.bofOpenKanbanPopup(row.orderId, null, showToast, row.orderItemId);
+      if (!statusPopupWin) { return; }
+      detailPanel.selectedOrderItemId = row.orderItemId;
+      detailPanel.selectedOrderId     = row.orderId;
+      detailPanel.openMode = 'view'; detailPanel.active = true;
+      if (statusPopupTimer) { clearInterval(statusPopupTimer); }
+      statusPopupTimer = setInterval(() => {
+        if (!statusPopupWin || statusPopupWin.closed) {
+          clearInterval(statusPopupTimer);
+          statusPopupTimer = null;
+          detailPanel.reloadTrigger++;
+          handleSearchList();
+        }
+      }, 600);
     };
-    /* closeStatusPopover — 팝오버 닫기. 칸반 드래그로 실제 상태가 바뀌었을 수 있으므로 목록 재조회.
-     *   팝오버가 열려있는 동안의 강조(cfGridSelectedKey)는 statusPopover.orderItemId 기준이었는데,
-     *   닫히면서 show=false 가 되면 그 강조가 바로 detailPanel.selectedOrderItemId 로 넘어가야
-     *   재조회 후에도 "방금 다루던 행"이 계속 선택 상태로 남는다 — 그래서 여기서 넘겨준다. */
-    const closeStatusPopover = () => {
-      if (statusPopover.orderItemId) {
-        detailPanel.selectedOrderItemId = statusPopover.orderItemId;
-        detailPanel.selectedOrderId     = statusPopover.orderId;
-        detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
+    onBeforeUnmount(() => { if (statusPopupTimer) { clearInterval(statusPopupTimer); } });
+
+    /* promoModal — 프로모션(할인/쿠폰/적립금/사은품) 열의 🔍 아이콘 클릭 시 열리는 상세 모달.
+     *   4종 아이콘 전부 같은 모달을 연다 — 종류별로 좁게 나누는 대신 한 번에 전체 적용내역 +
+     *   금액계산 정보를 보여주는 편이 실용적이라 판단(요청의 "프로모션 마지막 열" 상세와 동일 화면 재사용). */
+    const promoModal = reactive({ show: false, loading: false, row: null, discounts: [], coupons: [], saves: [] });
+    const openPromoModal = async (row) => {
+      promoModal.row = row;
+      promoModal.show = true;
+      promoModal.loading = true;
+      promoModal.discounts = []; promoModal.coupons = []; promoModal.saves = [];
+      try {
+        const [dRes, cRes, sRes] = await Promise.all([
+          boApiSvc.pmDiscntUsage.getPage({ orderItemId: row.orderItemId, pageSize: 50 }),
+          boApiSvc.pmCouponUsage.getPage({ orderItemId: row.orderItemId, pageSize: 50 }),
+          boApiSvc.pmSaveUsage.getPage({ orderItemId: row.orderItemId, pageSize: 50 }),
+        ]);
+        promoModal.discounts = dRes.data?.data?.pageList || [];
+        promoModal.coupons   = cRes.data?.data?.pageList || [];
+        promoModal.saves     = sRes.data?.data?.pageList || [];
+      } catch (err) {
+        showToast(err.response?.data?.message || '프로모션 정보 조회 중 오류가 발생했습니다.', 'error', 0);
+      } finally {
+        promoModal.loading = false;
       }
-      statusPopover.show = false;
-      handleSearchList();
     };
-    /* onDocClickForPopover — 팝오버 바깥 클릭 시 닫기. 뱃지 클릭은 stopPropagation 되어 여기 도달하지 않음 */
-    const onDocClickForPopover = (e) => {
-      if (!statusPopover.show) { return; }
-      if (statusPopoverPanelRef.value && statusPopoverPanelRef.value.contains(e.target)) { return; }
-      closeStatusPopover();
-    };
-    onMounted(() => { document.addEventListener('click', onDocClickForPopover); });
-    onBeforeUnmount(() => { document.removeEventListener('click', onDocClickForPopover); });
+    const closePromoModal = () => { promoModal.show = false; };
 
     const items = reactive([]);
     const listGridPager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [20, 50, 100, 200] });
@@ -151,10 +164,6 @@ window.OdOrderItemMng = {
 
     const cfDetailKey = computed(() => `${detailPanel.selectedOrderItemId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
-    /* cfGridSelectedKey — 진행상태 팝오버가 열려있는 동안은 그 행(orderItemId 기준)을 우선 강조.
-       orderItemId 로 매칭하므로 목록이 재조회되어 items 배열이 통째로 교체돼도 강조가 유지된다. */
-    const cfGridSelectedKey = computed(() => statusPopover.show ? statusPopover.orderItemId : detailPanel.selectedOrderItemId);
-
     /* ===== 주문ID별 트리 그룹핑 (기본 펼치기) ===== */
     const groupCollapsed = reactive(new Set());   // 접힌 주문ID 집합 — 비어있으면 전부 펼침(기본)
     const toggleGroup = (orderId) => {
@@ -251,7 +260,8 @@ window.OdOrderItemMng = {
     const cfSummaryGridRow = computed(() => {
       if (!items.length) return null;
       let amtOrder = 0, amtDiscount = 0, amtCancel = 0, amtComp = 0, amtDliv = 0, qtyOrder = 0, qtyCancel = 0;
-      let amtSettleSale = 0, amtSettleCommission = 0, amtSettleVendor = 0;
+      let amtSettleSale = 0, amtSettleCommission = 0, amtSettleVendor = 0, amtSaveSchd = 0;
+      let amtDiscntUsage = 0, amtCouponUsage = 0;
       for (const r of items) {
         qtyOrder    += Number(r.orderQty)         || 0;
         qtyCancel   += Number(r.cancelQty)        || 0;
@@ -263,6 +273,9 @@ window.OdOrderItemMng = {
         amtSettleSale       += Number(r.settleSaleAmt)       || 0;
         amtSettleCommission += Number(r.settleCommissionAmt) || 0;
         amtSettleVendor     += Number(r.settleVendorAmt)     || 0;
+        amtSaveSchd          += Number(r.saveSchdAmt)        || 0;
+        amtDiscntUsage       += Number(r.discntUsageAmt)     || 0;
+        amtCouponUsage       += Number(r.couponUsageAmt)     || 0;
       }
       const s = cfSummary.value;
       return {
@@ -291,6 +304,7 @@ window.OdOrderItemMng = {
         _settleShipFee:      amtDliv,
         _settleStatus:       '',
         settleDate:          '',
+        saveUsageAmt:        amtSaveUsage,
       };
     });
 
@@ -383,12 +397,12 @@ window.OdOrderItemMng = {
       { key: 'orderQty',   label: '주문',   colGroup: '📦 수량', pin: 'left',
         colGroupBg: '#e8f5e9', colGroupColor: '#2e7d32', colGroupBorderColor: '#a5d6a7',
         thBg: '#daf5da', thColor: '#2e7d32', width: 42,
-        tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => ({ bg: '#16a34a', color: '#fff', value: row.orderQty || 1 }) },
+        tdStyle: () => 'text-align:center;padding:1px 2px;font-size:11px;color:#2e7d32;',
+        fmt: (row) => row.orderQty || '' },
       { key: 'cancelQty',  label: '취소',   colGroup: '📦 수량', pin: 'left',
         thBg: '#daf5da', thColor: '#c62828', width: 42,
-        tdStyle: () => 'text-align:center;padding:1px 2px;',
-        iconBadge: (row) => row.cancelQty ? { bg: '#dc2626', color: '#fff', value: row.cancelQty } : null },
+        tdStyle: () => 'text-align:center;padding:1px 2px;font-size:11px;color:#c62828;',
+        fmt: (row) => row.cancelQty || '' },
 
       /* ── 🧾 상품기본정보 ────────────────────────────────────────────────── */
       { key: 'categoryNm', label: '카테고리', colGroup: '🧾 상품기본정보',
@@ -416,43 +430,43 @@ window.OdOrderItemMng = {
         headerTip: '주문 접수 완료 · 무통장 입금대기 상태 (ORDERED / WAIT_DEPOSIT)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => (row.orderItemStatusCd === 'ORDERED' || row.orderItemStatusCd === 'WAIT_DEPOSIT') ? { bg: '#2563eb', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
       { key: '_stPaid',    label: '결제완료', colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
         headerTip: '결제 완료 상태 (PAID)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => row.orderItemStatusCd === 'PAID'      ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
       { key: '_stPrep',    label: '준비중',   colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
         headerTip: '상품 준비중 상태 (PREPARING)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => row.orderItemStatusCd === 'PREPARING' ? { bg: '#c2410c', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
       { key: '_stShip',    label: '배송중',   colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
         headerTip: '배송 중 상태 (SHIPPING)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => row.orderItemStatusCd === 'SHIPPING'  ? { bg: '#1d4ed8', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
       { key: '_stDliv',    label: '배송완료', colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 50,
         headerTip: '배송 완료 상태 (DELIVERED)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => STS_DELIVERED.includes(row.orderItemStatusCd) ? { bg: '#0f766e', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
       { key: '_stBuyConf', label: '구매확정', colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 50,
         headerTip: '구매확정 완료 상태 (CONFIRMED)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => STS_CONFIRMED.includes(row.orderItemStatusCd) ? { bg: '#15803d', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
       { key: '_stCancelled', label: '취소',   colGroup: '📊 진행상태',
         thBg: '#fffde7', width: 44,
         headerTip: '주문 취소 상태 (CANCELLED)',
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => row.orderItemStatusCd === 'CANCELLED' ? { bg: '#dc2626', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
 
       /* ── ⚠️ 클레임 (뱃지 클릭 시 진행상태와 동일하게 해당 행 주문 1건 칸반 팝오버 — 클레임 보드도 함께 표시됨) ── */
       { key: '_claimActive', label: '클레임중',  colGroup: '⚠️ 클레임',
@@ -460,47 +474,108 @@ window.OdOrderItemMng = {
         thBg: '#fce4ec', width: 54,
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => (row.claimYn === 'Y' && !STS_CLM_DONE.includes(row.claimStatusCd || '')) ? { bg: '#c07030', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
       { key: '_claimDone',   label: '클레임완료', colGroup: '⚠️ 클레임',
         thBg: '#fce4ec', width: 54,
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => (row.claimYn === 'Y' && STS_CLM_DONE.includes(row.claimStatusCd || '')) ? { bg: '#757575', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
       { key: '_refund',      label: '환불완료',   colGroup: '⚠️ 클레임',
         thBg: '#fce4ec', width: 44,
         tdStyle: () => 'text-align:center;padding:1px 2px;',
         iconBadge: (row) => row.refundCompltYn === 'Y' ? { bg: '#dc2626', color: '#fff', value: row.orderQty || 1 } : null,
-        onBadgeClick: (row, col, e) => openStatusPopover(row, e) },
+        onBadgeClick: (row) => openStatusPopover(row) },
+
+      /* ── 🎁 프로모션 (pm_discnt_usage/pm_coupon_usage/pm_save_usage + pm_gift, order_item_id 상관)
+             할인/쿠폰: 1행 이름(🔍 아이콘 포함)+2행 금액. 적립금: 사용액이 아니라 구매확정 후 적립
+             예정액(save_schd_amt, 미래시점)이라 "(완료후) +N" 형식으로 별도 표기.
+             이름 우측 🔍 아이콘 클릭 시 openPromoModal — 적용내역 + 금액계산 정보를 한 모달에서 확인 ── */
+      { key: 'discntUsageNm', label: '할인', colGroup: '🎁 프로모션',
+        colGroupBg: '#fff3e0', colGroupColor: '#e65100', colGroupBorderColor: '#ffcc80',
+        thBg: '#fff8ee', thColor: '#e65100', width: 92,
+        headerTip: '적용된 할인(주문할인/상품할인) — pm_discnt_usage', slot: true },
+      { key: 'couponUsageNm', label: '쿠폰', colGroup: '🎁 프로모션',
+        thBg: '#fff8ee', thColor: '#e65100', width: 92,
+        headerTip: '적용된 쿠폰 — pm_coupon_usage', slot: true },
+      { key: 'saveSchdAmt', label: '적립금', colGroup: '🎁 프로모션',
+        thBg: '#fff8ee', thColor: '#e65100', width: 78,
+        headerTip: '구매확정 후 적립 예정 — od_order_item.save_schd_amt', slot: true },
+      { key: 'giftNm', label: '사은품', colGroup: '🎁 프로모션',
+        thBg: '#fff8ee', thColor: '#e65100', width: 92,
+        headerTip: '지급된 사은품 — pm_gift', slot: true },
 
       /* ── 💰 금액 ────────────────────────────────────────────────────────── */
       { key: 'itemOrderAmt',     label: '주문금액', colGroup: '💰 금액',
         colGroupBg: '#e8f5e9', colGroupColor: '#1b5e20', colGroupBorderColor: '#a5d6a7',
         thBg: '#daf5e9', thColor: '#1565c0', width: 80,
+        headerTip: '주문금액 = 판매단가 × 주문수량 (unit_price × order_qty)',
         tdStyle: ()    => 'text-align:right;padding-right:6px;font-size:11px;color:#1565c0;font-weight:600;',
+        titleFmt: () => '주문금액 = 판매단가 × 주문수량',
         fmt: (row) => row.itemOrderAmt     ? Number(row.itemOrderAmt).toLocaleString()     : '-' },
       { key: 'orgDiscountAmt',   label: '할인금액', colGroup: '💰 금액',
         thBg: '#daf5e9', thColor: '#c2410c', width: 75,
+        headerTip: '할인금액 = 주문 확정 시점 스냅샷 할인액 (org_discount_amt)',
         tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.orgDiscountAmt ? 'color:#c2410c;font-weight:600;' : 'color:#d8d8d8;'),
+        titleFmt: () => '할인금액 = 주문 확정 시점 할인 스냅샷',
         fmt: (row) => row.orgDiscountAmt ? Number(row.orgDiscountAmt).toLocaleString() : '-' },
       { key: 'itemCancelAmt',    label: '취소금액', colGroup: '💰 금액',
         thBg: '#daf5e9', thColor: '#dc2626', width: 75,
+        headerTip: '취소금액 = 클레임(취소/반품) 누적 취소액',
         tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.itemCancelAmt    ? 'color:#dc2626;font-weight:600;' : 'color:#d8d8d8;'),
+        titleFmt: () => '취소금액 = 클레임(취소/반품) 누적 취소액',
         fmt: (row) => row.itemCancelAmt    ? Number(row.itemCancelAmt).toLocaleString()    : '-' },
       { key: 'itemCompletedAmt', label: '확정금액', colGroup: '💰 금액',
         thBg: '#daf5e9', thColor: '#15803d', width: 75,
+        headerTip: '확정금액 = 주문금액 - 취소금액 (item_order_amt - item_cancel_amt)',
         tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.itemCompletedAmt ? 'color:#15803d;font-weight:600;' : 'color:#d8d8d8;'),
+        titleFmt: () => '확정금액 = 주문금액 - 취소금액',
         fmt: (row) => row.itemCompletedAmt ? Number(row.itemCompletedAmt).toLocaleString() : '-' },
-      { key: 'dlivAmt',          label: '배송비',   colGroup: '💰 금액',
+      { key: 'outboundShippingFee', label: '배송비', colGroup: '💰 금액',
         thBg: '#daf5e9', thColor: '#dc2626', width: 68,
-        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.dlivAmt ? 'color:#dc2626;font-weight:600;' : 'color:#d8d8d8;'),
-        fmt: (row) => row.dlivAmt ? Number(row.dlivAmt).toLocaleString() : '-' },
+        headerTip: '배송비 = 해당 항목의 출고 배송료 (부분배송 시 항목별 안분)',
+        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.outboundShippingFee ? 'color:#dc2626;font-weight:600;' : 'color:#d8d8d8;'),
+        titleFmt: () => '배송비 = 해당 항목의 출고 배송료',
+        fmt: (row) => row.outboundShippingFee ? Number(row.outboundShippingFee).toLocaleString() : '-' },
 
-      /* ── 🧾 정산 ────────────────────────────────────────────────────────── */
-      { key: '_settleDliv',  label: '배송비정산', colGroup: '🧾 정산',
+      /* ── 💵 정산금액 (st_settle_item 기준, 정산 처리 전 항목은 '-') ──────────────── */
+      { key: 'settleSaleAmt',       label: '판매금액', colGroup: '💵 정산금액',
         colGroupBg: '#f3e5f5', colGroupColor: '#6a1b9a', colGroupBorderColor: '#ce93d8',
-        thBg: '#ede7f6', thColor: '#6a1b9a', width: 64, slot: true },
-      { key: '_settleOrder', label: '주문정산',   colGroup: '🧾 정산',
-        thBg: '#ede7f6', thColor: '#6a1b9a', width: 64, slot: true },
+        thBg: '#ede7f6', thColor: '#1565c0', width: 76,
+        headerTip: '판매금액 = 정산 항목 판매가 합계 (st_settle_item.item_price)',
+        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.settleSaleAmt ? 'color:#1565c0;font-weight:600;' : 'color:#d8d8d8;'),
+        titleFmt: () => '판매금액 = 정산 항목 판매가 합계',
+        fmt: (row) => row.settleSaleAmt ? Number(row.settleSaleAmt).toLocaleString() : '-' },
+      { key: 'settleCommissionAmt', label: '플랫폼수수료', colGroup: '💵 정산금액',
+        thBg: '#ede7f6', thColor: '#c2410c', width: 80,
+        headerTip: '플랫폼수수료 = 판매금액 × 업체별 수수료율',
+        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.settleCommissionAmt ? 'color:#c2410c;font-weight:600;' : 'color:#d8d8d8;'),
+        titleFmt: () => '플랫폼수수료 = 판매금액 × 수수료율',
+        fmt: (row) => row.settleCommissionAmt ? Number(row.settleCommissionAmt).toLocaleString() : '-' },
+      { key: 'settleVendorAmt',     label: '판매자금액', colGroup: '💵 정산금액',
+        thBg: '#ede7f6', thColor: '#15803d', width: 76,
+        headerTip: '판매자금액 = 판매금액 - 플랫폼수수료 (업체 실지급액)',
+        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.settleVendorAmt ? 'color:#15803d;font-weight:600;' : 'color:#d8d8d8;'),
+        titleFmt: () => '판매자금액 = 판매금액 - 플랫폼수수료',
+        fmt: (row) => row.settleVendorAmt ? Number(row.settleVendorAmt).toLocaleString() : '-' },
+      { key: '_settleShipFee',      label: '배송비', colGroup: '💵 정산금액',
+        thBg: '#ede7f6', thColor: '#6a1b9a', width: 68,
+        headerTip: '배송비(정산) = 업체 정산 시 가산되는 출고 배송료 (금액 그룹의 배송비와 동일 값)',
+        tdStyle: (row) => 'text-align:right;padding-right:6px;font-size:11px;' + (row.outboundShippingFee ? 'color:#6a1b9a;font-weight:600;' : 'color:#d8d8d8;'),
+        titleFmt: () => '배송비(정산) = 정산 시 가산되는 출고 배송료',
+        fmt: (row) => row.outboundShippingFee ? Number(row.outboundShippingFee).toLocaleString() : '-' },
+
+      /* ── 📅 정산마감 (od_order_item.settle_yn/settle_date) ──────────────────────── */
+      { key: '_settleStatus', label: '정산상태', colGroup: '📅 정산마감',
+        colGroupBg: '#e0f2f1', colGroupColor: '#00695c', colGroupBorderColor: '#80cbc4',
+        thBg: '#e0f2f1', thColor: '#00695c', width: 62,
+        headerTip: '정산 마감 처리 여부 (od_order_item.settle_yn)',
+        tdStyle: () => 'text-align:center;padding:1px 2px;',
+        badge: (row) => fnSettleBadgeCls(row), badgeLabel: (row) => fnSettleBadgeLbl(row) },
+      { key: 'settleDate', label: '정산일', colGroup: '📅 정산마감',
+        thBg: '#e0f2f1', thColor: '#00695c', width: 78,
+        headerTip: '정산 마감 처리일시 (od_order_item.settle_date)',
+        tdStyle: () => 'text-align:center;padding:1px 2px;font-size:10px;color:#555;',
+        fmt: (row) => row.settleDate ? String(row.settleDate).substring(0, 10) : '-' },
 
       /* ── 📋 전표 ────────────────────────────────────────────────────────── */
       { key: '_vouchers', label: '발급 전표', colGroup: '📋 전표',
@@ -550,12 +625,12 @@ window.OdOrderItemMng = {
 
     return {
       columns, items, listGridPager, searchParam, uiState, codes, detailPanel, picks,
-      cfSummary, cfSummaryGridRow, cfDetailKey, cfGridSelectedKey, cfDisplayRows, toggleGroup,
+      cfSummary, cfSummaryGridRow, cfDetailKey, cfDisplayRows, toggleGroup,
       handleBtnAction, handleSelectAction, handleRowClick, handleRowEdit,
       fnSettleBadgeCls, fnSettleBadgeLbl, fnVoucherBadge, fnVoucherLbl,
       fnErpVoucherBadge, fnErpVoucherLbl, fnErpVoucherTypeNm,
       inlineNavigate, fnCallbackModal,
-      statusPopover, closeStatusPopover, showToast, showConfirm,
+      promoModal, openPromoModal, closePromoModal,
     };
   },
   template: `
@@ -575,7 +650,7 @@ window.OdOrderItemMng = {
       :columns="columns.listGrid"
       :rows="cfDisplayRows"
       row-key="orderItemId"
-      :selected-key="cfGridSelectedKey"
+      :selected-key="detailPanel.selectedOrderItemId"
       table-style="min-width:2200px;table-layout:fixed;width:100%;"
       :loading="uiState.loading"
       :summary-row="cfSummaryGridRow"
@@ -599,7 +674,7 @@ window.OdOrderItemMng = {
       </template>
 
       <template #group-header="{ row }">
-        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#eef2f9;border-top:1px solid #dbe3ef;border-bottom:1px solid #dbe3ef;cursor:pointer;"
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#dbe5f7;border-top:1px solid #bccdea;border-bottom:1px solid #bccdea;cursor:pointer;"
           @click="toggleGroup(row.orderId)">
           <span style="font-size:11px;color:#64748b;width:14px;display:inline-block;text-align:center;">{{ row.collapsed ? '▶' : '▼' }}</span>
           <span style="font-size:12px;font-weight:700;color:#334155;font-family:monospace;">{{ row.orderId }}</span>
@@ -617,14 +692,53 @@ window.OdOrderItemMng = {
         </div>
       </template>
 
-      <template #cell-_settleDliv="{ row }">
-        <span v-if="row.dlivAmt" :class="'badge ' + fnSettleBadgeCls(row)" style="font-size:10px;display:block;">{{ fnSettleBadgeLbl(row) }}</span>
-        <span v-else style="color:#d8d8d8;font-size:13px;">·</span>
+      <template #cell-discntUsageNm="{ row }">
+        <div v-if="row.discntUsageCount" style="padding:0 4px;overflow:hidden;line-height:1.3;">
+          <div style="display:flex;align-items:center;gap:2px;">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:#e65100;flex:1;"
+              :title="row.discntUsageNm || row.discntUsageTopId || ''">{{ row.discntUsageNm || row.discntUsageTopId || '-' }}</span>
+            <button type="button" title="적용된 할인 보기"
+              style="border:none;background:none;padding:0;margin-left:1px;font-size:8px;line-height:1;color:#999;cursor:pointer;flex-shrink:0;"
+              @click.stop="openPromoModal(row)">🔍</button>
+          </div>
+          <div style="font-size:9px;color:#c2410c;">{{ '-' + Number(row.discntUsageAmt || 0).toLocaleString() + '원' }}</div>
+        </div>
+        <span v-else style="color:#d8d8d8;font-size:13px;">-</span>
       </template>
 
-      <template #cell-_settleOrder="{ row }">
-        <span :class="'badge ' + fnSettleBadgeCls(row)" style="font-size:10px;display:block;margin-bottom:1px;">{{ fnSettleBadgeLbl(row) }}</span>
-        <div v-if="row.settleAmt" style="font-size:10px;color:#6a1b9a;font-weight:600;">{{ Number(row.settleAmt).toLocaleString() }}</div>
+      <template #cell-couponUsageNm="{ row }">
+        <div v-if="row.couponUsageCount" style="padding:0 4px;overflow:hidden;line-height:1.3;">
+          <div style="display:flex;align-items:center;gap:2px;">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:#e65100;flex:1;"
+              :title="row.couponUsageNm || row.couponUsageTopId || ''">{{ row.couponUsageNm || row.couponUsageTopId || '-' }}</span>
+            <button type="button" title="적용된 쿠폰 보기"
+              style="border:none;background:none;padding:0;margin-left:1px;font-size:8px;line-height:1;color:#999;cursor:pointer;flex-shrink:0;"
+              @click.stop="openPromoModal(row)">🔍</button>
+          </div>
+          <div style="font-size:9px;color:#c2410c;">{{ '-' + Number(row.couponUsageAmt || 0).toLocaleString() + '원' }}</div>
+        </div>
+        <span v-else style="color:#d8d8d8;font-size:13px;">-</span>
+      </template>
+
+      <template #cell-saveSchdAmt="{ row }">
+        <div v-if="row.saveSchdAmt" style="display:flex;align-items:center;justify-content:flex-end;gap:2px;padding:0 4px;overflow:hidden;">
+          <span style="font-size:9px;color:#6a1b9a;" title="구매확정 후 적립 예정 금액">{{ '(완료후) +' + Number(row.saveSchdAmt).toLocaleString() }}</span>
+          <button type="button" title="적립금 내역 보기"
+            style="border:none;background:none;padding:0;margin-left:1px;font-size:8px;line-height:1;color:#999;cursor:pointer;flex-shrink:0;"
+            @click.stop="openPromoModal(row)">🔍</button>
+        </div>
+        <span v-else style="color:#d8d8d8;font-size:13px;">-</span>
+      </template>
+
+      <template #cell-giftNm="{ row }">
+        <div v-if="row.giftId" style="display:flex;align-items:center;gap:2px;padding:0 4px;overflow:hidden;">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:#e65100;flex:1;"
+            :title="row.giftNm || row.giftId || ''">{{ row.giftNm || row.giftId || '-' }}</span>
+          <button type="button" title="지급된 사은품 보기"
+            style="border:none;background:none;padding:0;margin-left:1px;font-size:8px;line-height:1;color:#999;cursor:pointer;flex-shrink:0;"
+            @click.stop="openPromoModal(row)">🔍</button>
+        </div>
+        <span v-else style="color:#d8d8d8;font-size:13px;">-</span>
       </template>
 
       <template #cell-_vouchers="{ row }">
@@ -669,16 +783,96 @@ window.OdOrderItemMng = {
   <bo-cm-popup-modal popup-cmd="cmPopup-brand-pick"  popup-code="brand"  :show="picks.brand"  :on-callback="fnCallbackModal" />
   <bo-cm-popup-modal popup-cmd="cmPopup-md-pick"     popup-code="user"   :show="picks.md"     :on-callback="fnCallbackModal" />
 
-  <!-- ===== ■. 진행상태 뱃지 클릭 팝오버 (클릭 행의 주문 1건 칸반, 드래그로 실제 상태변경) ===== -->
-  <div v-if="statusPopover.show" ref="statusPopoverPanelRef"
-    style="position:fixed;z-index:1200;box-shadow:0 12px 36px rgba(0,0,0,.22);border-radius:12px;max-width:960px;width:calc(100vw - 32px);max-height:70vh;overflow:auto;"
-    :style="{ top: statusPopover.top + 'px', left: statusPopover.left + 'px' }">
-    <od-order-kanban v-if="statusPopover.orderId"
-      :key="statusPopover.orderId"
-      :order-id="statusPopover.orderId" :order-item-id="statusPopover.orderItemId"
-      mode="bo" as-modal :on-close="closeStatusPopover"
-      :show-toast="showToast" :show-confirm="showConfirm" />
-  </div>
+  <!-- ===== ■. 프로모션 상세 모달 (할인/쿠폰/적립금/사은품 🔍 아이콘 공용) ======================= -->
+  <bo-modal :show="promoModal.show" title="적용된 프로모션 상세" width="720px" @close="closePromoModal">
+    <div v-if="promoModal.row">
+      <div style="font-size:13px;color:#333;margin-bottom:10px;">
+        <b>{{ promoModal.row.prodNm || '-' }}</b>
+        <span style="color:#999;font-size:11px;margin-left:6px;">#{{ promoModal.row.orderItemId }}</span>
+      </div>
+
+      <div class="card" style="padding:10px 14px;margin-bottom:12px;background:#fafafa;">
+        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">금액계산</div>
+        <div style="display:flex;flex-direction:column;gap:3px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;">
+            <span>주문금액</span><span>{{ Number(promoModal.row.itemOrderAmt || 0).toLocaleString() }}원</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;color:#c2410c;">
+            <span>- 할인 적용액</span><span>{{ Number(promoModal.row.discntUsageAmt || 0).toLocaleString() }}원</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;color:#c2410c;">
+            <span>- 쿠폰 할인액</span><span>{{ Number(promoModal.row.couponUsageAmt || 0).toLocaleString() }}원</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;border-top:1px solid #e0e0e0;padding-top:4px;font-weight:700;color:#15803d;">
+            <span>= 확정금액</span><span>{{ Number(promoModal.row.itemCompletedAmt || 0).toLocaleString() }}원</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;color:#6a1b9a;margin-top:4px;">
+            <span>적립금 사용 (별도 결제수단, 상품금액 계산과 무관)</span><span>{{ Number(promoModal.row.saveUsageAmt || 0).toLocaleString() }}원</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="promoModal.loading" style="text-align:center;padding:20px;color:#999;">불러오는 중...</div>
+      <template v-else>
+        <div style="margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:#e65100;margin-bottom:4px;">할인 ({{ promoModal.discounts.length }}건)</div>
+          <table v-if="promoModal.discounts.length" class="admin-table" style="font-size:11px;">
+            <thead><tr><th>할인명</th><th>유형</th><th>값</th><th>할인금액</th><th>적용일시</th></tr></thead>
+            <tbody>
+              <tr v-for="d in promoModal.discounts" :key="d.discntUsageId">
+                <td>{{ d.discntNm || d.discntId }}</td>
+                <td style="text-align:center;">{{ d.discntTypeCd || '-' }}</td>
+                <td style="text-align:right;">{{ d.discntValue != null ? d.discntValue : '-' }}</td>
+                <td style="text-align:right;">{{ Number(d.discntAmt || 0).toLocaleString() }}원</td>
+                <td style="text-align:center;">{{ d.usedDate ? String(d.usedDate).substring(0, 16).replace('T', ' ') : '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else style="color:#bbb;font-size:11px;">적용된 할인 없음</div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:#e65100;margin-bottom:4px;">쿠폰 ({{ promoModal.coupons.length }}건)</div>
+          <table v-if="promoModal.coupons.length" class="admin-table" style="font-size:11px;">
+            <thead><tr><th>쿠폰명</th><th>코드</th><th>할인금액</th><th>사용일시</th></tr></thead>
+            <tbody>
+              <tr v-for="c in promoModal.coupons" :key="c.couponUsageId">
+                <td>{{ c.couponNm || c.couponId }}</td>
+                <td style="font-family:monospace;">{{ c.couponCode || '-' }}</td>
+                <td style="text-align:right;">{{ Number(c.discountAmt || 0).toLocaleString() }}원</td>
+                <td style="text-align:center;">{{ c.usedDate ? String(c.usedDate).substring(0, 16).replace('T', ' ') : '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else style="color:#bbb;font-size:11px;">적용된 쿠폰 없음</div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:#e65100;margin-bottom:4px;">적립금 사용 ({{ promoModal.saves.length }}건)</div>
+          <table v-if="promoModal.saves.length" class="admin-table" style="font-size:11px;">
+            <thead><tr><th>사용금액</th><th>사용 후 잔액</th><th>사용일시</th></tr></thead>
+            <tbody>
+              <tr v-for="s in promoModal.saves" :key="s.saveUsageId">
+                <td style="text-align:right;">{{ Number(s.useAmt || 0).toLocaleString() }}원</td>
+                <td style="text-align:right;">{{ Number(s.balanceAmt || 0).toLocaleString() }}원</td>
+                <td style="text-align:center;">{{ s.usedDate ? String(s.usedDate).substring(0, 16).replace('T', ' ') : '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-else style="color:#bbb;font-size:11px;">적립금 사용 내역 없음</div>
+        </div>
+
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#e65100;margin-bottom:4px;">사은품</div>
+          <div v-if="promoModal.row.giftId" style="font-size:12px;">
+            {{ promoModal.row.giftNm || promoModal.row.giftId }}
+            <span style="color:#999;font-size:10px;margin-left:6px;">#{{ promoModal.row.giftId }}</span>
+          </div>
+          <div v-else style="color:#bbb;font-size:11px;">지급된 사은품 없음</div>
+        </div>
+      </template>
+    </div>
+  </bo-modal>
 </bo-page>
 `
 };

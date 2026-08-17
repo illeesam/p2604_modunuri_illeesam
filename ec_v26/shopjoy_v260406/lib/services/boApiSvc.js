@@ -413,6 +413,11 @@
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/pm/discnt/items/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── pm: 할인사용내역 ───────────────────────────────────────── */
+  boApiSvc.pmDiscntUsage = {
+    getPage(params, uiNm, cmdNm, opt) { return global.boApi.get(   '/bo/ec/pm/discnt-usage/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
+  };
+
   /* ── pm: 이벤트 ─────────────────────────────────────────────── */
   boApiSvc.pmEvent = {
     getPage(params, uiNm, cmdNm, opt)   { return global.boApi.get(   '/bo/ec/pm/event/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
@@ -461,6 +466,11 @@
     getList(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/pm/save/items', { params, ...hdr(uiNm, cmdNm) }); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/pm/save/items', body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/pm/save/items/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── pm: 적립금사용내역 ─────────────────────────────────────── */
+  boApiSvc.pmSaveUsage = {
+    getPage(params, uiNm, cmdNm, opt) { return global.boApi.get(   '/bo/ec/pm/save-usage/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
   };
 
   /* ── pm: 바우처 ─────────────────────────────────────────────── */

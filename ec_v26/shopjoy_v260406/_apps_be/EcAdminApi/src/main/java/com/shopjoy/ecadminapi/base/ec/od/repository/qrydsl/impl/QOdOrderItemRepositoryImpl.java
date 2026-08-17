@@ -26,6 +26,10 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleItem;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmDiscntUsage;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmCouponUsage;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmSaveUsage;
+import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmGift;
 
 import com.shopjoy.ecadminapi.base.sy.data.entity.QVwSyCode;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +66,11 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QSyUser          syUserEx   = new QSyUser("sy_user_ex");
     // 정산 금액 상관 서브쿼리용 별칭 (order_item_id 기준 SALE/CANCEL/RETURN 전 항목 합산)
     private static final QStSettleItem    stSettleItemEx = new QStSettleItem("st_settle_item_ex");
+    // 프로모션 적용 내역 상관 서브쿼리용 별칭 (order_item_id 기준)
+    private static final QPmDiscntUsage   pmDiscntUsageEx = new QPmDiscntUsage("pm_discnt_usage_ex");
+    private static final QPmCouponUsage   pmCouponUsageEx = new QPmCouponUsage("pm_coupon_usage_ex");
+    private static final QPmSaveUsage     pmSaveUsageEx   = new QPmSaveUsage("pm_save_usage_ex");
+    private static final QPmGift          pmGiftEx        = new QPmGift("pm_gift_ex");
     private static final Map<String, DateTimePath<LocalDateTime>> DATE_RANGE_FIELDS = Map.of("reg_date", odOrderItem.regDate,
         "upd_date", odOrderItem.updDate
     );
@@ -133,7 +142,43 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                                 .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleCommissionAmt"),
                         ExpressionUtils.as(JPAExpressions.select(stSettleItemEx.settleItemAmt.sum())
                                 .from(stSettleItemEx)
-                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleVendorAmt")
+                                .where(stSettleItemEx.orderItemId.eq(odOrderItem.orderItemId)), "settleVendorAmt"),
+                        // 프로모션 적용 내역 (order_item_id 상관 서브쿼리 — 이름은 금액 큰 순 1건 대표 표시, 상세는 별도 API)
+                        ExpressionUtils.as(JPAExpressions.select(pmDiscntUsageEx.count())
+                                .from(pmDiscntUsageEx)
+                                .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "discntUsageCount"),
+                        ExpressionUtils.as(JPAExpressions.select(pmDiscntUsageEx.discntNm)
+                                .from(pmDiscntUsageEx)
+                                .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId))
+                                .orderBy(pmDiscntUsageEx.discntAmt.desc()).limit(1), "discntUsageNm"),
+                        ExpressionUtils.as(JPAExpressions.select(pmDiscntUsageEx.discntId)
+                                .from(pmDiscntUsageEx)
+                                .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId))
+                                .orderBy(pmDiscntUsageEx.discntAmt.desc()).limit(1), "discntUsageTopId"),
+                        ExpressionUtils.as(JPAExpressions.select(pmDiscntUsageEx.discntAmt.sum())
+                                .from(pmDiscntUsageEx)
+                                .where(pmDiscntUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "discntUsageAmt"),
+                        ExpressionUtils.as(JPAExpressions.select(pmCouponUsageEx.count())
+                                .from(pmCouponUsageEx)
+                                .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "couponUsageCount"),
+                        ExpressionUtils.as(JPAExpressions.select(pmCouponUsageEx.couponNm)
+                                .from(pmCouponUsageEx)
+                                .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId))
+                                .orderBy(pmCouponUsageEx.discountAmt.desc()).limit(1), "couponUsageNm"),
+                        ExpressionUtils.as(JPAExpressions.select(pmCouponUsageEx.couponId)
+                                .from(pmCouponUsageEx)
+                                .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId))
+                                .orderBy(pmCouponUsageEx.discountAmt.desc()).limit(1), "couponUsageTopId"),
+                        ExpressionUtils.as(JPAExpressions.select(pmCouponUsageEx.discountAmt.sum())
+                                .from(pmCouponUsageEx)
+                                .where(pmCouponUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "couponUsageAmt"),
+                        ExpressionUtils.as(JPAExpressions.select(pmSaveUsageEx.count())
+                                .from(pmSaveUsageEx)
+                                .where(pmSaveUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "saveUsageCount"),
+                        ExpressionUtils.as(JPAExpressions.select(pmSaveUsageEx.useAmt.sum())
+                                .from(pmSaveUsageEx)
+                                .where(pmSaveUsageEx.orderItemId.eq(odOrderItem.orderItemId)), "saveUsageAmt"),
+                        pmGiftEx.giftNm.as("giftNm")
                 ))
                 .from(odOrderItem)
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odOrderItem.prodId))
@@ -141,7 +186,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .leftJoin(oi1).on(oi1.prodOptId.eq(odOrderItem.prodOpt1Id))
                 .leftJoin(oi2).on(oi2.prodOptId.eq(odOrderItem.prodOpt2Id))
                 .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS_CD").and(cdIs.codeValue.eq(odOrderItem.orderItemStatusCd)))
-                .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd)));
+                .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(odOrderItem.dlivCourierCd)))
+                .leftJoin(pmGiftEx).on(pmGiftEx.giftId.eq(odOrderItem.giftId));
     }
 
     /* 주문 아이템(상품) 키조회 */

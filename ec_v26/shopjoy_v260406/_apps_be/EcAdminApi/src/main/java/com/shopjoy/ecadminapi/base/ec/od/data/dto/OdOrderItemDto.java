@@ -92,6 +92,17 @@ public class OdOrderItemDto {
         private Long settleSaleAmt;
         private Long settleCommissionAmt;
         private Long settleVendorAmt;
+        private Long discntUsageCount;
+        private String discntUsageNm;
+        private String discntUsageTopId;
+        private Long discntUsageAmt;
+        private Long couponUsageCount;
+        private String couponUsageNm;
+        private String couponUsageTopId;
+        private Long couponUsageAmt;
+        private Long saveUsageCount;
+        private Long saveUsageAmt;
+        private String giftNm;
     }
 
 
