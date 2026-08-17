@@ -563,6 +563,7 @@
   /* ── sy: 첨부파일 ───────────────────────────────────────────── */
   boApiSvc.syAttach = {
     getPage(params, uiNm, cmdNm, opt) { return global.boApi.get(   '/bo/sy/attach/page', { params, ...hdr(uiNm, cmdNm), ...(opt || {}) }); },
+    getById(_id, uiNm, cmdNm)         { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/attach/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 배치 ───────────────────────────────────────────────── */

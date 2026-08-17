@@ -81,6 +81,13 @@ window.OdOrderItemMng = {
       const url = window.pageUrl('bo-od-order-promo-pop.html') + '?orderId=' + encodeURIComponent(orderId);
       window.open(url, '_blank', 'width=1200,height=860,scrollbars=yes,resizable=yes');
     };
+    /* 주문항목 상세 — 여러 화면에서 재사용해야 해서 인라인 임베드 대신 별도 창(window.open)으로 뗐다.
+       bo.html 앱 셸을 새 창에 그대로 열어 odOrderItemDtl 페이지로 라우팅(inlineNavigate 없이 표준 navigate 그대로 사용). */
+    const openOrderItemDtlPop = (orderItemId) => {
+      if (!orderItemId) { return; }
+      const url = window.pageUrl('bo.html') + '#page=odOrderItemDtl&id=' + encodeURIComponent(orderItemId);
+      window.open(url, '_blank', 'width=1300,height=880,scrollbars=yes,resizable=yes');
+    };
 
     /* excelModal — 엑셀 다운로드 (공용 모달). buildExcelParams 는 buildListParams (아래) 를 그대로 재사용 —
        목록 조회와 다운로드 조건이 항상 같아야 해서, 위쪽으로 옮기지 않고 여기서 buildListParams 를 참조한다. */
@@ -88,7 +95,7 @@ window.OdOrderItemMng = {
     const buildExcelParams = () => buildListParams();
 
     const items = reactive([]);
-    const listGridPager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [20, 50, 100, 200] });
+    const listGridPager = reactive({ pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [20, 50, 100, 200] });
     const uiState = reactive({ loading: false });
     const codes = reactive({ order_item_statuses: [], od_date_types: [], couriers: [] });
 
@@ -158,17 +165,9 @@ window.OdOrderItemMng = {
       if (cmd === 'items-pager-sizeChange') { listGridPager.pageNo = 1; return handleSearchList(); }
     };
 
-    const handleRowClick = (row) => {
-      detailPanel.selectedOrderItemId = row.orderItemId;
-      detailPanel.selectedOrderId     = row.orderId;
-      detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
-    };
-
-    const handleRowEdit = (row) => {
-      detailPanel.selectedOrderItemId = row.orderItemId;
-      detailPanel.selectedOrderId     = row.orderId;
-      detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
-    };
+    /* 행 클릭 / [수정] — 인라인 패널이 팝업으로 대체되어 둘 다 새 창으로 상세를 연다 */
+    const handleRowClick = (row) => openOrderItemDtlPop(row.orderItemId);
+    const handleRowEdit  = (row) => openOrderItemDtlPop(row.orderItemId);
 
     /* ##### [03] 인라인 Dtl 헬퍼 #################################################### */
 
@@ -176,15 +175,6 @@ window.OdOrderItemMng = {
       detailPanel.selectedOrderItemId = null; detailPanel.selectedOrderId = null;
       detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.resetSeq++;
     };
-
-    const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'odOrderMng')       { if (opts.reload) handleSearchList(); resetDetailToNew(); return; }
-      if (pg === '__cancelEdit__')   { resetDetailToNew(); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
-      props.navigate(pg, opts);
-    };
-
-    const cfDetailKey = computed(() => `${detailPanel.selectedOrderItemId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* ===== 주문ID별 트리 그룹핑 (기본 펼치기) ===== */
     const groupCollapsed = reactive(new Set());   // 접힌 주문ID 집합 — 비어있으면 전부 펼침(기본)
@@ -659,11 +649,11 @@ window.OdOrderItemMng = {
 
     return {
       columns, items, listGridPager, searchParam, uiState, codes, detailPanel, picks,
-      cfSummary, cfSummaryGridRow, cfDetailKey, cfDisplayRows, toggleGroup,
+      cfSummary, cfSummaryGridRow, cfDisplayRows, toggleGroup,
       handleBtnAction, handleSelectAction, handleRowClick, handleRowEdit,
       fnSettleBadgeCls, fnSettleBadgeLbl, fnVoucherBadge, fnVoucherLbl,
       fnErpVoucherBadge, fnErpVoucherLbl, fnErpVoucherTypeNm,
-      inlineNavigate, fnCallbackModal,
+      fnCallbackModal,
       promoModal, openPromoModal, closePromoModal,
       openOrderDtlPop, openOrderPromoPop,
       excelModal, buildExcelParams, // 엑셀 다운로드 모달
@@ -685,6 +675,7 @@ window.OdOrderItemMng = {
     <template #toolbar-actions>
       <button class="btn btn_excel" @click="excelModal.show = true">엑셀</button>
     </template>
+    <div style="max-height:calc(100vh - 360px);min-height:320px;overflow:auto;">
     <bo-group-table
       :columns="columns.listGrid"
       :rows="cfDisplayRows"
@@ -804,6 +795,7 @@ window.OdOrderItemMng = {
       </template>
 
     </bo-group-table>
+    </div>
     <bo-pager v-if="listGridPager.pageTotalCount > 0" :pager="listGridPager"
       :on-set-page="n => handleBtnAction('items-pager-setPage', n)"
       :on-size-change="() => handleSelectAction('items-pager-sizeChange')" />
@@ -811,16 +803,6 @@ window.OdOrderItemMng = {
       :columns="columns.listGrid" ui-nm="주문항목관리" :params="buildExcelParams()"
       @close="excelModal.show = false" />
   </bo-container>
-
-  <!-- ===== ■. 하단 상세 (항상 표시) =========================================== -->
-  <od-order-item-dtl
-    :key="cfDetailKey"
-    :navigate="inlineNavigate"
-    :dtl-id="detailPanel.selectedOrderItemId"
-    :dtl-mode="detailPanel.openMode"
-    :active="detailPanel.active"
-    :reload-trigger="detailPanel.reloadTrigger"
-    />
 
   <!-- ===== ■. 선택 팝업 ======================================================= -->
   <bo-cm-popup-modal popup-cmd="cmPopup-member-pick" popup-code="member" :show="picks.member" :on-callback="fnCallbackModal" />

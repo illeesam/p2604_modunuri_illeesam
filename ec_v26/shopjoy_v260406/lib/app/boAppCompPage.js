@@ -23,6 +23,7 @@
     odOrderMng: 'od-order-mng',
     odOrderItemMng: 'od-order-item-mng',
     odOrderDtl: 'od-order-dtl',
+    odOrderItemDtl: 'od-order-item-dtl',
     odClaimMng: 'od-claim-mng',
     odClaimDtl: 'od-claim-dtl',
     odDlivMng: 'od-dliv-mng',

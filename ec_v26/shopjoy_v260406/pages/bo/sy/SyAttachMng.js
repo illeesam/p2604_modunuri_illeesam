@@ -29,6 +29,9 @@ window.SyAttachMng = {
     /* searchParamInit — [초기화] 기준값 (initPage 끝에서 스냅샷) */
     const searchParamInit = {};
 
+    /* 하단 상세 — 항상 표시, 미선택 시 안내 메시지(SyAttachDtl 내부에서 처리) */
+    const detailPanel = reactive({ selectedId: null, reloadTrigger: 0 });
+
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -62,9 +65,19 @@ window.SyAttachMng = {
       // 페이지 크기 변경
       } else if (cmd === 'attaches-pager-sizeChange') {
         return onSizeChange();
+      // 첨부파일 상세 진입 (번호란 클릭 / [수정] 버튼 공용)
+      } else if (cmd === 'attaches-rowOpen') {
+        detailPanel.selectedId = param.attachId;
+        detailPanel.reloadTrigger++;
+        return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 (번호란 클릭 → 상세 진입) */
+    const handleGridCellAction = (cmd, colKey, row) => {
+      if (cmd === 'attaches-cellClick' && colKey === '__no__') { return handleSelectAction('attaches-rowOpen', row); }
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
@@ -230,9 +243,9 @@ window.SyAttachMng = {
 
     return {
       columns,
-      attaches, uiState, searchParam, fileGridPager,       // 상태 / 데이터
+      attaches, uiState, searchParam, fileGridPager, detailPanel, // 상태 / 데이터
       excelModal, buildExcelParams, // 엑셀 다운로드 모달
-      handleBtnAction, handleSelectAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, fnFmtSize, fnRefTableNm,                    // computed / 헬퍼
     };
   },
@@ -255,11 +268,16 @@ window.SyAttachMng = {
         :columns="columns.fileGrid"
         :rows="attaches"
         row-key="attachId"
+        :selected-key="detailPanel.selectedId"
         :loading="uiState.loading"
         :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
-        row-actions>
+        row-actions
+        @cell-click="e => handleGridCellAction('attaches-cellClick', e.colKey, e.row)">
         <template #row-actions="{ row }">
           <div class="actions">
+            <button class="btn btn_row_edit" @click="handleSelectAction('attaches-rowOpen', row)">
+              수정
+            </button>
             <button class="btn btn_row_delete" @click="handleSelectAction('attaches-rowDelete', row)">
               삭제
             </button>
@@ -276,6 +294,9 @@ window.SyAttachMng = {
       :columns="columns.fileGrid" ui-nm="첨부파일관리" :params="buildExcelParams()"
       @close="excelModal.show = false" />
   </bo-container>
+  <!-- ===== ■. 하단 상세 (항상 표시) =========================================== -->
+  <sy-attach-dtl :key="detailPanel.selectedId + '_' + detailPanel.reloadTrigger"
+    :navigate="navigate" :dtl-id="detailPanel.selectedId" />
 </bo-page>
 `
 };

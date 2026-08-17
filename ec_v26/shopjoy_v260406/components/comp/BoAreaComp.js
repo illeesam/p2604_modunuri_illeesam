@@ -1502,7 +1502,8 @@ window.BoGridCrud = {
         <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경" :style="pinLeftStyle(0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
           ⠿
         </td>
-        <td v-if="cfShowNo" :style="'text-align:center;font-size:11px;color:#999;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">
+        <td v-if="cfShowNo" :style="'text-align:center;font-size:11px;color:#999;cursor:pointer;' + pinLeftStyle(cfShowDrag ? 28 : 0, 4, false, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'" title="보기"
+          @click.stop="handleSelectAction('grid-cell-click', { row: fnRow(item), col: { key: '__no__', link: true }, ci: -1, idx })">
           {{ idx + 1 }}
         </td>
         <td v-if="cfShowId" class="col-id-val" :style="pinLeftStyle(cfPinIdLeft, 4, true, fnRowSelected(fnRow(item))) + 'background:' + fnPinBg(item, idx) + ';'">

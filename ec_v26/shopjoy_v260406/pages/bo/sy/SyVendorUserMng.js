@@ -462,9 +462,11 @@ window.SyVendorUserMng = {
       }
     };
 
+    /* 업체유형 → 역할트리 루트코드. PARTNER/INTERNAL 은 대응 역할트리가 없어 매핑 없음(null) */
+    const VENDOR_TYPE_ROOT_MAP = { SALES:'SITE_MGR_ROOT', DELIVERY:'DLIV_ROOT', CS:'CS_ROOT', SITE:'SITE_OP_ROOT', PROG:'PROG_ROOT' };
     const cfFormAllowedRootCode = computed(() => {
       const vt = fnVendorTypeCd(formData.vendorId);
-      return vt==='SALES'?'SITE_MGR_ROOT': vt==='DELIVERY'?'DLIV_ROOT': null;
+      return VENDOR_TYPE_ROOT_MAP[vt] || null;
     });
     const cfFormRoleTree = computed(() => {
       const allowedRootCode = cfFormAllowedRootCode.value;
@@ -834,13 +836,14 @@ window.SyVendorUserMng = {
   <!-- ===== □. 인라인 폼 =================================================== -->
   <!-- ===== ■. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
   <bo-role-select-modal :show="uiState.roleModalOpen" title="🎭 역할 선택"
-    :confirm-disabled="!uiState.roleModalTemp" modal-name="role-select" :on-callback="fnCallbackModal">
+    :confirm-disabled="!uiState.roleModalTemp"
+    @close="handleBtnAction('roleModal-close')" @confirm="handleBtnAction('roleModal-confirm')">
     <!-- ===== □. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
     <!-- ===== ■. 영역 ====================================================== -->
     <template #header-extra>
       <span v-if="cfFormAllowedRootCode"
         :style="{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:'10px',background:'#fff',border:'1px solid #93c5fd',fontWeight:700,fontSize:'11px',color:cfFormAllowedRootCode==='SITE_MGR_ROOT'?'#16a34a':'#d97706'}">
-        {{ cfFormAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
+        {{ fnVendorTypeLabel(fnVendorTypeCd(formData.vendorId)) }}역할
       </span>
     </template>
     <!-- ===== □. 영역 ====================================================== -->

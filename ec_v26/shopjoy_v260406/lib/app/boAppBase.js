@@ -2499,6 +2499,7 @@
             <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <od-order-item-mng  v-else-if="page==='odOrderItemMng'"  :navigate="navigate" />
             <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <od-order-item-dtl  v-else-if="page==='odOrderItemDtl'"  :navigate="navigate" :dtl-id="dtlId" :active="true" />
             <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <od-claim-dtl  v-else-if="page==='odClaimDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <od-dliv-mng  v-else-if="page==='odDlivMng'"  :navigate="navigate" />

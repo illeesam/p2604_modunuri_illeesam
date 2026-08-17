@@ -133,6 +133,10 @@ window.SyCodeMng = {
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       if (cmd === 'codeGroups-cellChange') {
         return onGrpChange(row);
+      // 코드그룹 그리드 번호란 클릭 → [코드관리]와 동일하게 하단 코드목록 보기모드로 진입
+      } else if (cmd === 'codeGroups-cellClick') {
+        if (colKey === '__no__') { return openGrpSetting(row, e.event); }
+        return;
       } else if (cmd === 'codes-cellChange') {
         return onCellChange(row);
       } else {
@@ -767,7 +771,8 @@ window.SyCodeMng = {
       :show-add="false" :show-save="false"
       :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"
       @sort="key => handleBtnAction('codeGroups-sort', key)"
-      grid-id="codeGroups-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      grid-id="codeGroups-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
+      @cell-click="e => handleGridCellAction('codeGroups-cellClick', e.colKey, e.row, e)">
       <template #toolbar-actions>
         <button class="btn btn_new" @click="handleBtnAction('codeGroups-add')">
           + 행추가
@@ -803,7 +808,7 @@ window.SyCodeMng = {
   <!-- ===== □.□. CRUD 그리드 ============================================== -->
   <!-- ===== □. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
   <!-- ===== ■. 코드 목록 영역 (bo-container: 탭 + 그리드) ========================= -->
-  <bo-container>
+  <bo-container title="코드목록">
     <!-- ===== ■.■. 일반/트리 탭 (슬림) ====================================== -->
     <div style="display:flex;gap:8px;padding:0 12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
       <button @click="handleBtnAction('tab-change', '일반')"

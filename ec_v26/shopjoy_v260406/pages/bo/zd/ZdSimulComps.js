@@ -150,7 +150,7 @@
         style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;padding:3px 4px;height:26px;" />
       <button class="btn btn_preview" style="padding:3px 9px;font-size:12px;" @click="onRunOnce">회실행</button>
       <span style="width:1px;height:20px;background:#cbd5e1;display:inline-block;margin:0 2px;flex-shrink:0;"></span>
-      <button class="btn" style="padding:3px 9px;font-size:12px;background:#fdf4ff;border:1px solid #e9d5ff;color:#7c3aed;" @click="onPreview">🔍 미리보기</button>
+      <button class="btn" style="padding:3px 9px;font-size:12px;background:#fdf4ff;border:1px solid #e9d5ff;color:#7c3aed;" @click="onPreview">🔍 시뮬정보생성</button>
     </div>
   </div>
 

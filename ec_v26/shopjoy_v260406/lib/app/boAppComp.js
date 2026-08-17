@@ -158,6 +158,7 @@ window.boRegisterComponents = function (app) {
     .component('SyVendorInfoMng', window.SyVendorInfoMng)
     .component('SyVendorDtl', window.SyVendorDtl)
     .component('SyAttachMng', window.SyAttachMng)
+    .component('SyAttachDtl', window.SyAttachDtl)
     /* ── pages/bo/sy/ — 배치 ── */
     .component('SyBatchMng', window.SyBatchMng)
     .component('SyBatchDtl', window.SyBatchDtl)
