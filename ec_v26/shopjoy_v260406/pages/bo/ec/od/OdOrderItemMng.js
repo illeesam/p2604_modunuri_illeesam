@@ -296,23 +296,17 @@ window.OdOrderItemMng = {
         titleFmt: (row) => row.orderItemId || '',
         tdStyle:  ()    => 'text-align:center;font-family:monospace;font-size:10px;color:#777;',
         fmt: (row) => row.orderItemId ? row.orderItemId.substring(0, 12) + '..' : '-' },
-      { key: 'orderId',     label: '주문ID', width: 90, pin: 'left',
-        titleFmt: (row) => row.orderId || '',
-        tdStyle:  (row) => 'text-align:center;font-family:monospace;font-size:10px;' + (detailPanel.selectedOrderId === row.orderId ? 'color:#e8587a;font-weight:700;' : 'color:#555;'),
-        fmt: (row) => row.orderId ? row.orderId.substring(0, 12) + '..' : '-' },
-
-      /* ── 🧾 상품기본정보 ────────────────────────────────────────────────── */
-      { key: 'memberNm',   label: '회원명',   colGroup: '🧾 상품기본정보',
-        colGroupBg: '#e3f2fd', colGroupColor: '#1565c0', colGroupBorderColor: '#90caf9',
-        thBg: '#deeefb', width: 84,
+      { key: 'memberNm',    label: '회원명', width: 84,  pin: 'left',
         tdStyle: () => 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 6px;text-align:left;',
         fmt: (row) => row.memberNm   || '-' },
+      { key: 'prodNm',      label: '상품명', width: 150, pin: 'left', slot: true },
+
+      /* ── 🧾 상품기본정보 ────────────────────────────────────────────────── */
       { key: 'categoryNm', label: '카테고리', colGroup: '🧾 상품기본정보',
+        colGroupBg: '#e3f2fd', colGroupColor: '#1565c0', colGroupBorderColor: '#90caf9',
         thBg: '#deeefb', width: 84,
         tdStyle: () => 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 6px;font-size:11px;color:#666;text-align:left;',
         fmt: (row) => row.categoryNm || '-' },
-      { key: 'prodNm',     label: '상품명',   colGroup: '🧾 상품기본정보',
-        thBg: '#deeefb', width: 150, slot: true },
       { key: 'brandNm',    label: '브랜드',   colGroup: '🧾 상품기본정보',
         thBg: '#deeefb', width: 76,
         tdStyle: () => 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 6px;font-size:11px;text-align:left;',
@@ -324,6 +318,11 @@ window.OdOrderItemMng = {
       { key: 'mdUserNm',   label: 'MD',       colGroup: '🧾 상품기본정보',
         thBg: '#deeefb', width: 64, align: 'center',
         fmt: (row) => row.mdUserNm   || '-' },
+      { key: 'orderId',    label: '주문ID',   colGroup: '🧾 상품기본정보',
+        thBg: '#deeefb', width: 90,
+        titleFmt: (row) => row.orderId || '',
+        tdStyle:  (row) => 'text-align:center;font-family:monospace;font-size:10px;' + (detailPanel.selectedOrderId === row.orderId ? 'color:#e8587a;font-weight:700;' : 'color:#555;'),
+        fmt: (row) => row.orderId ? row.orderId.substring(0, 12) + '..' : '-' },
 
       /* ── 📦 주문수량 ────────────────────────────────────────────────────── */
       { key: 'orderQty',   label: '주문',   colGroup: '📦 주문수량',

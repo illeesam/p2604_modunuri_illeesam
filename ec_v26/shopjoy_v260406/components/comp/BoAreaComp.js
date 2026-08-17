@@ -2860,12 +2860,17 @@ window.BoGroupTable = {
             const bg = fnLv(fc.colGroupBg, depth);
             const cl = fnLv(fc.colGroupColor, depth);
             const bc = fnLv(fc.colGroupBorderColor, depth) ? '#94a3b8' : '';
+            /* colGroup 안에 pin:'left' 컬럼이 섞여 있으면(예: 그룹 첫 열들만 좌측 고정) 그룹 헤더도 함께 sticky —
+               런의 첫 컬럼(fc)이 pin 이면 좌측 오프셋은 fc 기준, 우측 경계선은 런의 마지막 컬럼이 pin 마지막 열일 때만 */
+            const lastInRun = cols[i + count - 1];
+            const pinSt = fc.pin ? fnPinStyle(fc, 5) + (lastInRun && lastInRun.key === cfPinLeftLastKey.value ? 'border-right:2px solid #94a3b8;' : '') : '';
             const s = [
               'text-align:center;vertical-align:middle;padding:4px;',
               depth > 0 ? 'font-size:10px;' : '',
               bg ? 'background:' + bg + ';' : '',
               cl ? 'color:'       + cl + ';' : '',
               bc ? 'border-left:2px solid ' + bc + ';border-right:2px solid ' + bc + ';' : '',
+              pinSt,
             ].join('');
             row.push({ key: '__g' + depth + '_' + i, label: path[depth], rowspan: 1, colspan: count, thStyle: s });
             i += count;
@@ -2885,6 +2890,7 @@ window.BoGroupTable = {
                 isFirst && bc ? 'border-left:2px solid '  + bc + ';' : '',
                 isLast  && bc ? 'border-right:2px solid ' + bc + ';' : '',
                 col.width   ? 'min-width:' + col.width + 'px;' : '',
+                fnPinStyle(col, 5),
               ].join(''),
             });
             i++;
