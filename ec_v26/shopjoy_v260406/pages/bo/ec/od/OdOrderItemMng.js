@@ -71,7 +71,9 @@ window.OdOrderItemMng = {
      *   보여주는 전용 팝업 페이지(bo-od-order-promo-pop.html, 칸반 팝업과 동일한 독립 HTML 패턴). */
     const openOrderDtlPop = (orderId) => {
       if (!orderId) { return; }
-      const url = window.pageUrl('bo.html') + '#page=odOrderDtl&dtlId=' + encodeURIComponent(orderId);
+      /* boAppBase.js 해시 라우터는 상세ID 파라미터로 'id' 만 읽는다('orderId'는 칸반 전용) —
+         dtlId= 로 넘기면 dtlId.value 가 계속 null 로 남아 cfIsNew=true(신규 등록 화면)로 빠진다. */
+      const url = window.pageUrl('bo.html') + '#page=odOrderDtl&id=' + encodeURIComponent(orderId);
       window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
     };
     const openOrderPromoPop = (orderId) => {
