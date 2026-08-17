@@ -2610,7 +2610,10 @@ window.BoFormArea = {
     <option v-if="col.nullable !== false ? (col.nullLabel) : false" value="">{{ col.nullLabel }}</option>
   <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
 </select>
-<!-- pathPick (표시경로 선택 박스) -->
+<!-- pathPick (표시경로 선택 박스) — readonly+plainReadonly 면 다른 필드와 동일하게 순수 라벨(readonly-field-plain)로 표시 -->
+<div v-if="col.type === 'pathPick' ? (readonly && plainReadonly) : false" class="readonly-field-plain">
+  {{ col.pathLabel ? (col.pathLabel(form[col.key]) || '-') : (form[col.key] != null ? '#' + form[col.key] : '-') }}
+</div>
 <div v-else-if="col.type === 'pathPick'" style="display:flex;align-items:center;gap:8px;">
   <div :style="{flex:1,padding:compact?'4px 10px':'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:readonly?'#f9fafb':'#fff',color:form[col.key]!=null?'#374151':'#9ca3af',minHeight:compact?'28px':'34px',display:'flex',alignItems:'center'}">
     {{ col.pathLabel ? col.pathLabel(form[col.key]) : (form[col.key] != null ? '#' + form[col.key] : '경로 선택...') }}

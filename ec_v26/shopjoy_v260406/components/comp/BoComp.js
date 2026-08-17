@@ -913,6 +913,7 @@ window.BoMultiCheckSelect = {
     separator:   { type: String,  default: ',' },     // 값 구분자(공개대상/전시환경은 '^')
     wrap:        { type: Boolean, default: false },    // true=값을 앞뒤 separator 로 감쌈(^A^B^ 형식). 폼 입력용
     emptyValue:  { type: String,  default: '' },       // 전부 해제 시 emit 값(예: '^NONE^'). 기본 ''
+    plain:       { type: Boolean, default: false },    // true=박스/드롭다운 없이 순수 라벨(readonly-field-plain)만 표시 (보기모드용)
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
@@ -1057,7 +1058,10 @@ window.BoMultiCheckSelect = {
     };
   },
   template: /* html */`
-<div ref="rootRef" class="multi-check-select" :style="'position:relative;display:block;min-width:'+minWidth">
+<div v-if="plain" class="readonly-field-plain">
+  {{ cfDisplay }}
+</div>
+<div v-else ref="rootRef" class="multi-check-select" :style="'position:relative;display:block;min-width:'+minWidth">
   <div @click="handleBtnAction('select-toggle')"
     :style="'border:1px solid #d4d4d8;border-radius:6px;padding:4px 28px 4px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:'+(noneMode?'#aaa':'#333')+';position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
     {{ cfDisplay }}
