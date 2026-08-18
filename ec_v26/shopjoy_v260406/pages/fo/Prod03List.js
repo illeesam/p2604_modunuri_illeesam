@@ -13,10 +13,18 @@ window.Prod03List = {
     const selectProd        = (p) => window.foApp.selectProd(p);
     const toggleLike        = (id) => window.foApp.toggleLike(id);
     const isLiked           = (id) => window.foApp.isLiked?.(id) ?? false;
+    const addToCart         = window.foApp.addToCart;                        // 장바구니 추가 (product-modal 전달용)
+    const compareList       = window.foApp.compareList;                      // 상품 비교함 (전역 반응형 배열)
+    const isCompared        = (id) => window.foApp.isCompared?.(id) ?? false;
+    const toggleCompare     = (p) => window.foApp.toggleCompare?.(p);
+    const clearCompare      = () => window.foApp.clearCompare?.();
+    const removeCompare     = (id) => toggleCompare({ prodId: id });
+    const likeShake         = coUtil.cofShakeCtl();                          // 좋아요 토글 흔들기 이펙트 (2초)
+    const compareShake      = coUtil.cofShakeCtl();                          // 비교함 토글 흔들기 이펙트 (2초)
 
     /* pager — FO 무한스크롤 페이저 (PC 페이지네이션 + 모바일 무한스크롤) */
     const pager = reactive({ pageType: 'INFINITE_SCROLL', pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [12, 24, 48], pageNums: [], pageList: [], pageCond: {} });
-    const uiState = reactive({ loading: false, error: null, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768, filterOpen: false });
+    const uiState = reactive({ loading: false, error: null, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768, filterOpen: false, quickViewProduct: null, cartModalMode: false, compareModalOpen: false });
 
 
     /* -- 상품 데이터 -- */
@@ -63,6 +71,25 @@ window.Prod03List = {
         if (pager.pageNo >= pager.pageTotalPage) { return; }
         pager.pageNo = pager.pageNo + 1; handleLoadProds();
         return;
+      // 빠른보기 모달: 장바구니 모드 열기
+      } else if (cmd === 'quickViewModal-openCart') {
+        uiState.quickViewProduct = param; uiState.cartModalMode = true;
+        return;
+      // 빠른보기 모달: 미리보기 모드 열기
+      } else if (cmd === 'quickViewModal-openView') {
+        uiState.quickViewProduct = param; uiState.cartModalMode = false;
+        return;
+      // 빠른보기 모달: 닫기
+      } else if (cmd === 'quickViewModal-close') {
+        uiState.quickViewProduct = null; uiState.cartModalMode = false;
+        return;
+      // 비교함 모달 열기/닫기
+      } else if (cmd === 'compareModal-open') {
+        uiState.compareModalOpen = true;
+        return;
+      } else if (cmd === 'compareModal-close') {
+        uiState.compareModalOpen = false;
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -85,7 +112,12 @@ window.Prod03List = {
         return selectProd(param);
       // 좋아요 토글
       } else if (cmd === 'prods-rowLike') {
+        likeShake.fire(param);
         return toggleLike(param);
+      // 비교함 토글
+      } else if (cmd === 'prods-rowCompare') {
+        compareShake.fire(param.prodId);
+        return toggleCompare(param);
       // 페이지 번호 클릭 (서버 재조회)
       } else if (cmd === 'pager-rowGo') {
         if (param === pager.pageNo) { return; }
@@ -281,6 +313,9 @@ window.Prod03List = {
       cfAllColors, cfAllSizes, cfAllCats, cfHasFilter, // computed
       fnCategoryLabel, isLiked, // 헬퍼 / 컬럼
       onSearch,              // FoSearchArea @search 직결용 + 폴백
+      selectProd, addToCart, // 모달 전달용
+      compareList, isCompared, clearCompare, removeCompare, // 비교함
+      likeShake, compareShake, // 흔들기 이펙트
     };
   },
   template: /* html */ `
@@ -513,7 +548,9 @@ window.Prod03List = {
   <div v-for="p in pager.pageList" :key="p.prodId"
       class="prod-card" style="cursor:pointer;" @click="handleSelectAction('prods-rowSelect', p)">
     <!-- ===== ■.■.■. 썸네일 ================================================= -->
-    <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;">
+    <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;"
+        @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
+        @mouseleave="$event.currentTarget.querySelector('.prod-hover').style.opacity='0'">
       <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
           @mouseenter="$event.target.style.transform='scale(1.05)'"
           @mouseleave="$event.target.style.transform=''"
@@ -531,10 +568,11 @@ window.Prod03List = {
           style="position:absolute;top:12px;right:12px;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:800;padding:3px 7px;border-radius:10px;">
         {{ Math.round((1-p.priceNum/p.originalPrice)*100) }}%
       </span>
-      <!-- ===== ■.■.■.■. 좋아요 버튼 ============================================ -->
+      <!-- ===== ■.■.■.■. 좋아요 (좋아요 상태면 항상 표시) ============================= -->
       <button @click.stop="handleSelectAction('prods-rowLike', p.prodId)"
-          style="position:absolute;bottom:10px;right:10px;width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;"
-          title="위시리스트">
+          :class="{ 'fo-shake': likeShake.isActive(p.prodId) }"
+          style="position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;"
+          class="prod-like" title="위시리스트">
         <svg width="16" height="16" viewBox="0 0 24 24"
             :fill="isLiked(p.prodId)?'#ef4444':'none'"
             :stroke="isLiked(p.prodId)?'#ef4444':'#555'"
@@ -543,6 +581,28 @@ window.Prod03List = {
           </path>
         </svg>
       </button>
+      <!-- ===== ■.■.■.■. 장바구니 + 비교 (hover 시에만) ========================= -->
+      <div class="prod-hover" style="opacity:0;transition:opacity .25s;position:absolute;right:12px;top:48px;display:flex;flex-direction:column;gap:6px;">
+        <button @click.stop="handleBtnAction('quickViewModal-openCart', p)" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2">
+            <circle cx="9" cy="21" r="1">
+            </circle>
+            <circle cx="20" cy="21" r="1">
+            </circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6">
+            </path>
+          </svg>
+        </button>
+        <button @click.stop="handleSelectAction('prods-rowCompare', p)"
+            :class="{ 'fo-shake': compareShake.isActive(p.prodId) }"
+            :style="isCompared(p.prodId) ? 'background:rgba(26,26,26,0.1);' : 'background:transparent;'"
+            style="width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;"
+            title="상품 비교함">
+          <span>
+            ⚖️
+          </span>
+        </button>
+      </div>
     </div>
     <div style="padding:16px;">
       <!-- ===== ■.■.■.■. 상품명 + 카테고리 ======================================== -->
@@ -646,7 +706,27 @@ window.Prod03List = {
 <div v-if="!uiState.loading ? (uiState.isMobile ? pager.pageNo < pager.pageTotalPage : false) : false" style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
 스크롤하면 더 불러옵니다…
 </div>
-</fo-page>
 <!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. 비교함 플로팅 버튼 ================================================ -->
+<button v-if="compareList.length" @click="handleBtnAction('compareModal-open')"
+    style="position:fixed;right:24px;bottom:24px;z-index:60;display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:30px;border:none;background:#1a1a1a;color:#fff;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,0.25);font-size:0.85rem;font-weight:700;">
+  <span>
+    ⚖️
+  </span>
+  <span>
+    비교함 {{ compareList.length }}
+  </span>
+</button>
+<!-- ===== □. 비교함 플로팅 버튼 ================================================ -->
+<!-- ===== ■. 빠른보기 / 비교 모달 ================================================ -->
+<product-modal :show="!!uiState.quickViewProduct" :product="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode"
+  :navigate="(page, opts) => { if(opts?.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }"
+  :toggle-like="toggleLike" :is-liked="isLiked" :add-to-cart="addToCart"
+  modal-name="quick-view" @close="handleBtnAction('quickViewModal-close')" />
+<compare-modal :show="uiState.compareModalOpen" :items="compareList"
+  :select-prod="selectProd" :remove-item="removeCompare" :clear-all="clearCompare"
+  @close="handleBtnAction('compareModal-close')" />
+<!-- ===== □. 빠른보기 / 비교 모달 ================================================ -->
+</fo-page>
 `,
 };

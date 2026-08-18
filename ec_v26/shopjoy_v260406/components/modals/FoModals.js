@@ -222,7 +222,7 @@ window.ProductModal = {
     navigate:      { type: Function, default: () => {} },       // 페이지 이동
     toggleLike:    { type: Function, default: () => {} },       // 찜 토글
     isLiked:       { type: Function, default: () => false },    // 찜 여부 확인
-    addToCart:     { type: Function, default: () => {} },       // 장바구니 추가
+    addToCart:     { type: Function, default: null },           // 장바구니 추가 (미전달 시 window.foApp.addToCart 로 폴백)
     cartMode:      { type: [Boolean, String], default: true },   // 카트 영역 표시 (v-if 진위값. Home 은 Boolean, 기본 표시)
     reloadTrigger: { type: Number,   default: 0 },              // 재조회 트리거,
     modalName:  { type: String,   default: '' },                       // 모달 식별자
@@ -240,6 +240,23 @@ window.ProductModal = {
     const selThumb  = ref(0);
     const toastMsg  = ref('');
     const toastShow = ref(false);
+    const likeShaking = ref(false);
+    const cartShaking = ref(false);
+
+    /* fnShake — 좋아요/장바구니 버튼 흔들기 이펙트 (2초) */
+    const fnShake = (stateRef) => {
+      stateRef.value = false;
+      requestAnimationFrame(() => {
+        stateRef.value = true;
+        setTimeout(() => { stateRef.value = false; }, 2000);
+      });
+    };
+
+    /* fnAddToCart — props.addToCart 우선, 미전달 시 window.foApp.addToCart 로 폴백 */
+    const fnAddToCart = (prod, color, size, q) => {
+      const fn = props.addToCart || window.foApp?.addToCart;
+      if (fn) fn(prod, color, size, q);
+    };
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -353,9 +370,10 @@ window.ProductModal = {
     /* 좋아요 토글 */
     const handleLike = () => {
       if (!props.product) return;
-      const wasLiked = props.isLiked && props.isLiked(props.product.productId);
-      props.toggleLike && props.toggleLike(props.product.productId);
+      const wasLiked = props.isLiked && props.isLiked(props.product.prodId);
+      props.toggleLike && props.toggleLike(props.product.prodId);
       handleFireToast(wasLiked ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
+      fnShake(likeShaking);
     };
 
     /* 옵션 에러 상태 */
@@ -383,11 +401,13 @@ window.ProductModal = {
       return true;
     };
 
-    /* 장바구니 추가 (검증 포함) */
+    /* 장바구니 추가 (검증 포함) — 실제 window.foApp.addToCart 호출 (이전에는 토스트만 띄우고 실제 담기 누락됨).
+       담기 성공 토스트는 addToCart 내부(전역 showToast)가 이미 띄우므로 여기서 중복 토스트하지 않는다. */
     const handleCart = () => {
       if (!handleValidate()) return false;
-      inCart.value = !inCart.value;
-      handleFireToast(inCart.value ? '장바구니에 추가했습니다.' : '장바구니에서 제거했습니다.');
+      fnAddToCart(props.product, selColor.value, selSize.value, qty.value);
+      inCart.value = true;
+      fnShake(cartShaking);
       return true;
     };
 
@@ -401,6 +421,7 @@ window.ProductModal = {
       uiState, codes, selColor, selSize, qty, inCart, selThumb,             // 상태
       cfThumbImgs, cfRating, cfStarStr,                                      // computed
       toastMsg, toastShow, errColor, errSize,                                // UI 상태
+      likeShaking, cartShaking,                                              // 흔들기 이펙트 상태
       handleBtnAction, handleSelectAction,                                   // dispatch
     };
   },
@@ -547,7 +568,7 @@ window.ProductModal = {
 <div style="margin-top:auto;">
   <!-- 장바구니 모드: 장바구니 추가 버튼만 -->
   <template v-if="cartMode">
-    <button @click="handleBtnAction('modal-cart-close')"
+    <button @click="handleBtnAction('modal-cart-close')" :class="{ 'fo-shake': cartShaking }"
             style="width:100%;padding:13px;font-size:0.9rem;font-weight:700;background:#1a1a1a;color:#fff;border:none;border-radius:2px;cursor:pointer;letter-spacing:0.3px;">
       🛒 장바구니 추가
     </button>
@@ -564,14 +585,14 @@ window.ProductModal = {
         바로구매
       </button>
       <!-- 좋아요 토글 -->
-      <button @click="handleBtnAction('modal-like')" :style="{ width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s', border: isLiked?.(product.productId) ? '1.5px solid #ef4444' : '1.5px solid #ddd', background: isLiked?.(product.productId) ? '#fff5f5' : '#fff', }">
-      <svg width="18" height="18" viewBox="0 0 24 24" :fill="isLiked?.(product.productId) ? '#ef4444' : 'none'" :stroke="isLiked?.(product.productId) ? '#ef4444' : '#999'" stroke-width="2">
+      <button @click="handleBtnAction('modal-like')" :class="{ 'fo-shake': likeShaking }" :style="{ width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s', border: isLiked?.(product.prodId) ? '1.5px solid #ef4444' : '1.5px solid #ddd', background: isLiked?.(product.prodId) ? '#fff5f5' : '#fff', }">
+      <svg width="18" height="18" viewBox="0 0 24 24" :fill="isLiked?.(product.prodId) ? '#ef4444' : 'none'" :stroke="isLiked?.(product.prodId) ? '#ef4444' : '#999'" stroke-width="2">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
       </path>
     </svg>
   </button>
   <!-- 장바구니 토글 -->
-  <button @click="handleBtnAction('modal-cart')"
+  <button @click="handleBtnAction('modal-cart')" :class="{ 'fo-shake': cartShaking }"
               :style="{
               width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer',
               display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s',
@@ -709,6 +730,147 @@ window.CustomerModal = {
     </button>
   </div>
 </div>
+</fo-modal>
+`,
+};
+
+/* ── 상품 비교 모달 ─────────────────────────────────────
+   Props: show (Boolean), items (Array<상품>), navigate (Function),
+          removeItem (Function: prodId=>void), clearAll (Function)
+   Emits: close
+   상품 목록/홈 카드의 "비교" 아이콘으로 담은 상품(최대 4개, window.foApp.compareList)을
+   나란히 놓고 이미지/가격/카테고리/색상/사이즈/설명을 비교하는 표.
+   ─────────────────────────────────────────────────── */
+window.CompareModal = {
+  name: 'CompareModal',
+  inheritAttrs: false,
+  props: {
+    show:          { type: Boolean,  default: false },          // 모달 표시 여부
+    items:         { type: Array,    default: () => ([]) },     // 비교 상품 목록
+    selectProd:    { type: Function, default: () => {} },       // 상품 선택 → 상세 이동
+    removeItem:    { type: Function, default: () => {} },       // 비교함에서 제거
+    clearAll:      { type: Function, default: () => {} },       // 비교함 비우기
+    modalName:  { type: String,   default: '' },                // 모달 식별자
+    onCallback: { type: Function, default: null },               // 통합 콜백
+  },
+  emits: ['close'],
+  setup(props, { emit }) {
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ CompareModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-close') {
+        emit('close');
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
+        return;
+      } else if (cmd === 'compare-clear') {
+        props.clearAll();
+        emit('close');
+        return;
+      } else if (cmd === 'compare-view') {
+        if (props.selectProd) props.selectProd(param);
+        emit('close');
+        return;
+      } else if (cmd === 'compare-remove') {
+        return props.removeItem(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* fnColorNames — opt1s(색상) 이름 나열 */
+    const fnColorNames = (p) => (p.opt1s || []).map(c => c.name).join(', ') || '-';
+    /* fnSizeNames — opt2s(사이즈) 나열 */
+    const fnSizeNames = (p) => (p.opt2s || []).join(', ') || '-';
+
+    return { handleBtnAction, fnColorNames, fnSizeNames };
+  },
+  template: /* html */ `
+<fo-modal :show="show" max-width="920px" max-height="88vh" box-pad="0" :z-index="400" @close="handleBtnAction('modal-close')">
+  <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;"
+    role="dialog" aria-modal="true">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.1rem;">
+          ⚖️
+        </span>
+        <span style="font-size:1rem;font-weight:800;color:var(--text-primary);">
+          상품 비교함
+        </span>
+        <span style="font-size:0.78rem;color:var(--text-muted);">
+          ({{ items.length }}/4)
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button v-if="items.length" type="button" @click="handleBtnAction('compare-clear')"
+            style="background:none;border:none;cursor:pointer;font-size:0.8rem;color:#ef4444;font-weight:600;">
+          전체 비우기
+        </button>
+        <button type="button" @click="handleBtnAction('modal-close')" aria-label="닫기" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);padding:4px;line-height:1;">
+          ✕
+        </button>
+      </div>
+    </div>
+    <!-- 비어있음 -->
+    <div v-if="!items.length" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);padding:40px;">
+      <span style="font-size:2.4rem;">
+        ⚖️
+      </span>
+      <span style="font-size:0.9rem;">
+        비교함이 비어 있습니다.
+      </span>
+      <span style="font-size:0.78rem;">
+        상품 카드의 ⚖️ 아이콘으로 최대 4개까지 담을 수 있어요.
+      </span>
+    </div>
+    <!-- 비교 표 -->
+    <div v-else style="flex:1;overflow:auto;padding:16px 20px;">
+      <div style="display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+        <div v-for="p in items" :key="p.prodId"
+            style="border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;position:relative;">
+          <button type="button" @click="handleBtnAction('compare-remove', p.prodId)"
+              title="비교함에서 제거"
+              style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(0,0,0,0.06);cursor:pointer;font-size:0.78rem;color:#666;line-height:1;">
+            ✕
+          </button>
+          <div style="height:130px;background:var(--bg-base);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
+          </div>
+          <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);line-height:1.35;min-height:2.6em;">
+            {{ p.prodNm }}
+          </div>
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <span style="font-size:0.92rem;font-weight:800;color:var(--blue);">
+              {{ p.price }}
+            </span>
+            <span v-if="p.originalPrice" style="font-size:0.72rem;color:var(--text-muted);text-decoration:line-through;">
+              {{ p.originalPrice.toLocaleString ? p.originalPrice.toLocaleString() + '원' : p.originalPrice }}
+            </span>
+          </div>
+          <div style="font-size:0.76rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:4px;border-top:1px dashed var(--border);padding-top:8px;">
+            <div>
+              <span style="color:var(--text-muted);">
+                색상
+              </span>
+              : {{ fnColorNames(p) }}
+            </div>
+            <div>
+              <span style="color:var(--text-muted);">
+                사이즈
+              </span>
+              : {{ fnSizeNames(p) }}
+            </div>
+          </div>
+          <p style="font-size:0.75rem;color:var(--text-secondary);line-height:1.5;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1;">
+            {{ p.desc }}
+          </p>
+          <button class="btn-outline" style="width:100%;padding:7px;font-size:0.78rem;" @click="handleBtnAction('compare-view', p)">
+            상세보기
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </fo-modal>
 `,
 };

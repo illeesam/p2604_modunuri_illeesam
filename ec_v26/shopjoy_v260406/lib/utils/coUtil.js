@@ -968,6 +968,23 @@
     return { start: start, set: set, stop: stop };
   }
 
+  /* cofShakeCtl — 좋아요/장바구니 등 토글 버튼 흔들기 이펙트 컨트롤러 (2초).
+   *   사용: const likeShake = coUtil.cofShakeCtl(); likeShake.fire(prodId);
+   *   템플릿: :class="{ 'fo-shake': likeShake.isActive(p.prodId) }" */
+  function cofShakeCtl(ms) {
+    var duration = ms || 2000;
+    var active = Vue.reactive(new Set());
+    var timers = {};
+    function fire(id) {
+      if (id == null) { return; }
+      active.add(id);
+      if (timers[id]) { clearTimeout(timers[id]); }
+      timers[id] = setTimeout(function () { active.delete(id); delete timers[id]; }, duration);
+    }
+    function isActive(id) { return active.has(id); }
+    return { active: active, fire: fire, isActive: isActive };
+  }
+
   /* cofMergeProdOpts — 백엔드 상품상세 응답(prod + opts + skus + images)을
    *   화면이 기대하는 단일 prod 형태(opt1s/opt2s/opt2sAll/opt2Prices/mainImage/images)로 머지.
    *   Prod*View.fnMergeProdOpts 통합 (Prod01 의 opt2sAll 포함 슈퍼셋 기준 — View02/03 도 호환).
@@ -1217,6 +1234,7 @@
   global.coUtil.cofCategoryLabel = global.coUtil.cofCategoryLabel || cofCategoryLabel;
   global.coUtil.cofToggleSet = global.coUtil.cofToggleSet || cofToggleSet;
   global.coUtil.cofBannerTimer = global.coUtil.cofBannerTimer || cofBannerTimer;
+  global.coUtil.cofShakeCtl = global.coUtil.cofShakeCtl || cofShakeCtl;
   global.coUtil.cofMergeProdOpts = global.coUtil.cofMergeProdOpts || cofMergeProdOpts;
   // 전시(Display) 공용 헬퍼
   global.coUtil.cofChartColors = global.coUtil.cofChartColors || cofChartColors;

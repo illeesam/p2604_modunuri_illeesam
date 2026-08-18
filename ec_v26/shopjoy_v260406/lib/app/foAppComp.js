@@ -62,6 +62,7 @@ window.foRegisterComponents = function (app) {
     .component('CustomerModal',        window.CustomerModal)
     .component('OrderDetailModal',     window.OrderDetailModal)
     .component('ProductModal',         window.ProductModal)
+    .component('CompareModal',         window.CompareModal)
     .component('FoAddrSearchModal',    window.FoAddrSearchModal)
     /* ── components/modals/CoExtHelpModal.js — 외부 연동 설정 도움말 (FO/BO 공용) ── */
     .component('CoExtHelpModal',       window.CoExtHelpModal || { template: '<div/>' });

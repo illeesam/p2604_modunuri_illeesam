@@ -377,6 +377,46 @@
     const isLiked = (prodId) => likes.has(prodId);
     const cfLikeCount = computed(() => likes.size);
 
+    /* ── Compare (상품 비교함) ──
+       ⛔ likes 와 동일하게 재할당 금지 — add()/splice() 로만 변경해야 reactive 추적 유지.
+       likes 는 ID(Set)만 저장하지만, 비교는 비교표에 이미지/가격 등을 바로 보여줘야 하므로
+       상품 객체 전체를 배열로 저장한다(페이지 전환으로 prods 목록이 바뀌어도 비교표 유지). */
+    const compareList = reactive([]);
+    const MAX_COMPARE = 4;
+    try {
+      const savedCompare = localStorage.getItem('modu-fo-pd-compare');
+      const cArr = savedCompare ? JSON.parse(savedCompare) : null;
+      if (Array.isArray(cArr)) cArr.forEach(v => compareList.push(v));
+    } catch (e) {}
+
+    /* saveCompare */
+    const saveCompare = () => { try { localStorage.setItem('modu-fo-pd-compare', JSON.stringify(compareList)); } catch (e) {} };
+
+    /* isCompared */
+    const isCompared = (prodId) => compareList.some(p => p.prodId === prodId);
+
+    /* toggleCompare — 담김: true, 뺌: true, 최대 초과로 실패: false */
+    const toggleCompare = (prod) => {
+      if (!prod || !prod.prodId) return false;
+      const idx = compareList.findIndex(p => p.prodId === prod.prodId);
+      if (idx >= 0) {
+        compareList.splice(idx, 1);
+        saveCompare();
+        return true;
+      }
+      if (compareList.length >= MAX_COMPARE) {
+        showToast(`상품 비교는 최대 ${MAX_COMPARE}개까지 가능합니다.`, 'error');
+        return false;
+      }
+      compareList.push(prod);
+      saveCompare();
+      return true;
+    };
+
+    /* clearCompare */
+    const clearCompare = () => { compareList.splice(0, compareList.length); saveCompare(); };
+    const cfCompareCount = computed(() => compareList.length);
+
     /* ── Cart ── */
     const cart = reactive([]);
 
@@ -681,6 +721,10 @@
       toggleLike,
       isLiked,
       selectProd,
+      get compareList()   { return compareList; },
+      toggleCompare,
+      isCompared,
+      clearCompare,
     };
     return {
       theme, toggleTheme,
@@ -693,6 +737,7 @@
       prods, selectedProd, selectProd,
       cart, cfCartCount, addToCart, removeFromCart, updateCartQty, clearCart,
       likes, toggleLike, isLiked, cfLikeCount,
+      compareList, toggleCompare, isCompared, clearCompare, cfCompareCount,
       instantOrder, cartIds, viewEditId,
       config: window.SITE_CONFIG,
       auth, uiState, onShowLogin, onLogout,

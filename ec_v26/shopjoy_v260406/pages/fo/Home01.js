@@ -14,6 +14,8 @@ window.Home01 = {
     const selectProd        = (p) => window.foApp.selectProd(p);
     const toggleLike        = (id) => window.foApp.toggleLike(id);
     const isLiked           = (id) => window.foApp.isLiked?.(id) ?? false;
+    const addToCart         = window.foApp.addToCart; // 장바구니 추가 (product-modal 전달용)
+    const likeShake         = coUtil.cofShakeCtl();    // 좋아요 토글 흔들기 이펙트 (2초)
 
     const uiState = reactive({ loading: false, error: null, cartModalMode: false, quickViewProduct: null, bannerIdx: 0});
 
@@ -74,6 +76,7 @@ window.Home01 = {
         return selectProd(param);
       // 좋아요 토글
       } else if (cmd === 'prods-rowLike') {
+        likeShake.fire(param);
         return toggleLike(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -142,8 +145,8 @@ window.Home01 = {
       uiState, banners, siteConfig,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       cfAllHomeProds, cfSaleProds,                         // computed
-      isLiked,                             // 헬퍼
-      selectProd, toggleLike, // 모달 전달용
+      isLiked, likeShake,                  // 헬퍼
+      selectProd, toggleLike, addToCart, // 모달 전달용
     };
   },
   template: /* html */ `
@@ -241,6 +244,7 @@ window.Home01 = {
           </span>
           <!-- ===== ■.■.■.■.■. 좋아요 (좋아요 상태면 항상 표시) ============================= -->
           <button @click.stop="handleSelectAction('prods-rowLike', p.prodId)"
+            :class="{ 'fo-shake': likeShake.isActive(p.prodId) }"
             :style="{ position:'absolute', right:'12px', top:'12px', width:'32px', height:'32px', borderRadius:'50%', border:'none', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }"
             class="prod-like" title="위시리스트">
             <svg width="16" height="16" viewBox="0 0 24 24" :fill="isLiked(p.prodId)?'#ef4444':'none'" :stroke="isLiked(p.prodId)?'#ef4444':'#555'" stroke-width="2">
@@ -437,7 +441,7 @@ window.Home01 = {
 </div>
 <!-- ===== □. ══ 블로그 포스트 ══ =========================================== -->
 <!-- ===== ■. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
-<product-modal :show="!!uiState.quickViewProduct" :product="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts?.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" modal-name="quick-view" :on-callback="fnCallbackModal" />
+<product-modal :show="!!uiState.quickViewProduct" :product="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts?.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" :add-to-cart="addToCart" modal-name="quick-view" :on-callback="fnCallbackModal" />
 </fo-page>
 <!-- ===== □. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
 `
