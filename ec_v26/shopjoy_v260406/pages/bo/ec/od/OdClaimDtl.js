@@ -606,7 +606,8 @@ window.OdClaimDtl = {
         <!-- ===== ■.■.■.■. 주문ID + 선택/초기화/보기 ===================================== -->
         <template #orderId>
           <div style="display:flex;gap:6px;align-items:center;">
-            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" style="flex:1;" />
+            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" style="flex:1;"
+              @input="form.orderId && errors.orderId ? delete errors.orderId : null" />
             <span v-if="!cfDtlMode" style="display:inline-flex;align-items:center;">
               <button class="btn btn-sm btn-secondary" style="padding:2px 7px;" @click="handleBtnAction('orderPickModal-open')" title="선택">🔍</button>
               <button v-if="form.orderId" type="button" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="handleBtnAction('orderId-clear')" title="초기화">x</button>

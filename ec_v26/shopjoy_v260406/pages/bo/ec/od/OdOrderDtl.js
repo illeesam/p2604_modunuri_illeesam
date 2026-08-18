@@ -833,7 +833,8 @@ window.OdOrderDtl = {
           </div>
           <template v-else>
             <div style="display:flex;gap:6px;align-items:center;">
-              <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :class="errors.memberId ? 'is-invalid' : ''" style="flex:1;min-width:0;" />
+              <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :class="errors.memberId ? 'is-invalid' : ''" style="flex:1;min-width:0;"
+                @input="form.memberId && errors.memberId ? delete errors.memberId : null" />
               <span style="display:inline-flex;align-items:center;flex-shrink:0;">
                 <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('memberModal-open')">🔍 회원선택</button>
                 <button v-if="form.memberId" type="button" title="선택 해제" style="background:none;border:none;padding:0 4px;color:#bbb;cursor:pointer;font-size:11px;line-height:1;" @click="form.memberId = ''; form.memberNm = '';">x</button>

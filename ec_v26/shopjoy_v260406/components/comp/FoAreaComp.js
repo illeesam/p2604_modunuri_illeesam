@@ -1417,8 +1417,8 @@ window.FoFormArea = {
     <!-- slot 탈출구 -->
     <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col">
     </slot>
-    <!-- 에러 메시지 (힌트는 라벨 우측에 표시) -->
-    <div v-if="errors[col.key]" class="form-error">
+    <!-- 에러 메시지 (힌트는 라벨 우측에 표시) — slot 은 자체 슬롯 내부에서 직접 렌더(중복 방지) -->
+    <div v-if="col.type !== 'slot' && errors[col.key]" class="form-error">
       {{ errors[col.key] }}
     </div>
   </div>

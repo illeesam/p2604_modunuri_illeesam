@@ -119,6 +119,9 @@ window.Contact = {
     };
     onMounted(initPage);
 
+    /* fnDescText — desc(HTML 에디터) 태그 제거 후 순수 텍스트 (검증/글자수 공용) */
+    const fnDescText = () => String(form.desc || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
     /* validate — 검증 */
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -126,11 +129,13 @@ window.Contact = {
       if (!form.name.trim() || form.name.trim().length < 2) { errors.name = '이름을 2자 이상 입력해주세요.'; ok = false; }
       if (!form.email.trim() || !coUtil.cofIsValidEmail(form.email)) { errors.email = '유효한 이메일을 입력해주세요.'; ok = false; }
       if (form.tel && !coUtil.cofIsValidPhone(form.tel)) { errors.tel = '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)'; ok = false; }
-      /* desc 는 HTML(에디터) — 태그 제거 후 순수 텍스트 길이로 검증 */
-      const descText = String(form.desc || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-      if (descText.length < 10) { errors.desc = '문의 내용을 최소 10자 이상 입력해주세요.'; ok = false; }
+      if (fnDescText().length < 10) { errors.desc = '문의 내용을 최소 10자 이상 입력해주세요.'; ok = false; }
       return ok;
     };
+
+    /* desc 는 slot(html 에디터)이라 FoFormArea 의 field-change 를 안 타서 값이 채워져도
+       오류 라벨이 자동으로 안 지워진다 — 여기서 직접 클리어 */
+    watch(() => form.desc, () => { if (errors.desc && fnDescText().length >= 10) { delete errors.desc; } });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 

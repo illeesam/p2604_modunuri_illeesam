@@ -36,6 +36,10 @@ window.SyTemplateDtl = {
       templateContent: yup.string().required('내용을 입력해주세요.'),
     });
 
+    /* content 는 slot(html 에디터/textarea 겸용)이라 BoFormArea 의 field-change 를 안 타서
+       값이 채워져도 오류 라벨이 자동으로 안 지워진다 — 여기서 직접 클리어 */
+    watch(() => form.templateContent, (v) => { if (errors.templateContent && v) { delete errors.templateContent; } });
+
     const cfIsNew         = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm        = computed(() => boUtil.bofGetSiteNm());
     const cfDtlMode       = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용

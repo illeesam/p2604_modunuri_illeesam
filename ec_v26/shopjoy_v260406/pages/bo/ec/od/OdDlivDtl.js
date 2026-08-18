@@ -413,7 +413,8 @@ window.OdDlivDtl = {
           </div>
           <template v-else>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :class="errors.orderId ? 'is-invalid' : ''" />
+              <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :class="errors.orderId ? 'is-invalid' : ''"
+                @input="form.orderId && errors.orderId ? delete errors.orderId : null" />
               <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">보기</span>
             </div>
             <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>

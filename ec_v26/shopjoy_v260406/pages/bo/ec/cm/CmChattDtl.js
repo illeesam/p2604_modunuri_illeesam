@@ -552,11 +552,13 @@ window.CmChattDtl = {
           <!-- ===== ■.■.■.■.■. 회원ID + 보기 ======================================= -->
           <template #memberId>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :class="errors.memberId ? 'is-invalid' : ''" />
+              <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :class="errors.memberId ? 'is-invalid' : ''"
+                @input="form.memberId && errors.memberId ? delete errors.memberId : null" />
               <span v-if="form.memberId" class="ref-link" @click="handleSelectAction('chat-ref', { type:'member', id: form.memberId })">
                 보기
               </span>
             </div>
+            <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
           </template>
         </bo-form-area>
         <div class="form-actions" v-if="!cfDtlMode">

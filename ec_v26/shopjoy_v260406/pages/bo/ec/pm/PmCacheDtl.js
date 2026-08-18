@@ -277,11 +277,13 @@ window.PmCacheDtl = {
       <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
       <template #memberId>
         <div style="display:flex;gap:8px;align-items:center;">
-          <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleBtnAction('form-memberChange')" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
+          <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleBtnAction('form-memberChange')" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''"
+            @input="form.memberId && errors.memberId ? delete errors.memberId : null" />
           <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
             보기
           </span>
         </div>
+        <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
       </template>
     </bo-form-area>
     <!-- ===== ■.■.■. 폼 액션 버튼 (보기모드: 수정/닫기) =============================== -->

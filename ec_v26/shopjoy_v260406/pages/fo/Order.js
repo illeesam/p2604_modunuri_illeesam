@@ -102,6 +102,7 @@ window.Order = {
         if (result == null) { return; }
         form.postcode = result.zonecode;
         form.address  = result.address;
+        clearErr('address');   // 주소는 readonly(모달로만 채움) — 여기서 오류 라벨을 지워야 한다
         return;
       } else {
         console.warn('[fnCallbackModal] unknown popCmd:', popCmd);

@@ -2689,8 +2689,8 @@ window.BoFormArea = {
 <!-- slot 탈출구 -->
 <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col" :readonly="readonly">
 </slot>
-<!-- 에러 메시지 (힌트는 라벨 우측에 표시) -->
-<span v-if="errors[col.key]" class="field-error">
+<!-- 에러 메시지 (힌트는 라벨 우측에 표시) — slot 은 자체 슬롯 내부에서 직접 렌더(중복 방지) -->
+<span v-if="col.type !== 'slot' && errors[col.key]" class="field-error">
   {{ errors[col.key] }}
 </span>
 </div>
