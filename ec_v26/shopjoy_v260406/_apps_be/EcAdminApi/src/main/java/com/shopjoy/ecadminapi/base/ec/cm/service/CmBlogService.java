@@ -1,5 +1,7 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
+import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 public class CmBlogService {
 
     private final CmBlogRepository cmBlogRepository;
+    private final SyAttachService syAttachService;
     private final CmBlogFileRepository cmBlogFileRepository;
 
     @PersistenceContext
@@ -103,6 +106,7 @@ public class CmBlogService {
     /* 게시물 등록 */
     @Transactional
     public CmBlog create(CmBlog body) {
+        CmUtil.requireText(body.getBlogTitle(), "블로그 제목", 100, this);
         body.setBlogId(CmUtil.generateId("cm_blog"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
@@ -110,6 +114,8 @@ public class CmBlogService {
         body.setUpdDate(LocalDateTime.now());
         CmBlog saved = cmBlogRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.CM_BLOG, saved.getBlogId());
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.CM_BLOG, saved.getBlogId()));
         em.flush();
         return saved;
     }
@@ -122,10 +128,13 @@ public class CmBlogService {
         CmUtil.requireId(id, "id", this);
         CmBlog entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "blogId^regBy^regDate");
+        CmUtil.requireText(entity.getBlogTitle(), "블로그 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.CM_BLOG, id);
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.CM_BLOG, id));
         em.flush();
         return saved;
     }

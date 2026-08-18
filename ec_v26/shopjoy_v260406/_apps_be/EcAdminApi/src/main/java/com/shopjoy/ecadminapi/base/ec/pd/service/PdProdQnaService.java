@@ -1,5 +1,7 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
+import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdQnaDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdQna;
@@ -24,6 +26,7 @@ import java.util.List;
 public class PdProdQnaService {
 
     private final PdProdQnaRepository pdProdQnaRepository;
+    private final SyAttachService syAttachService;
 
     @PersistenceContext
     private EntityManager em;
@@ -76,6 +79,7 @@ public class PdProdQnaService {
     /* 상품 문의 등록 */
     @Transactional
     public PdProdQna create(PdProdQna body) {
+        CmUtil.requireText(body.getProdQnaTitle(), "Q&A 제목", 100, this);
         body.setProdQnaId(CmUtil.generateId("pd_prod_qna"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
@@ -83,6 +87,10 @@ public class PdProdQnaService {
         body.setUpdDate(LocalDateTime.now());
         PdProdQna saved = pdProdQnaRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.PD_PROD_QNA, saved.getProdQnaId());
+        syAttachService.applyChanges(body.getAttach2Files(), SyAttachRefTableConst.PD_PROD_QNA_ANSWER, saved.getProdQnaId());
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.PD_PROD_QNA, saved.getProdQnaId()));
+        saved.setAttach2Files(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.PD_PROD_QNA_ANSWER, saved.getProdQnaId()));
         em.flush();
         return saved;
     }
@@ -95,10 +103,15 @@ public class PdProdQnaService {
         CmUtil.requireId(id, "id", this);
         PdProdQna entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "prodQnaId^regBy^regDate");
+        CmUtil.requireText(entity.getProdQnaTitle(), "Q&A 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdProdQna saved = pdProdQnaRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.PD_PROD_QNA, id);
+        syAttachService.applyChanges(body.getAttach2Files(), SyAttachRefTableConst.PD_PROD_QNA_ANSWER, id);
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.PD_PROD_QNA, id));
+        saved.setAttach2Files(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.PD_PROD_QNA_ANSWER, id));
         em.flush();
         return saved;
     }

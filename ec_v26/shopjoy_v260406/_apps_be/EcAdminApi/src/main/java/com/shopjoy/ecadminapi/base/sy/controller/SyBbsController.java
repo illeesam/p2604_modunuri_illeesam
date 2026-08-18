@@ -40,7 +40,7 @@ public class SyBbsController {
 
     /* 게시판 게시물 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyBbs>> create(@RequestBody SyBbs entity) {
+    public ResponseEntity<ApiResponse<SyBbs>> create(@Valid @RequestBody SyBbs entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

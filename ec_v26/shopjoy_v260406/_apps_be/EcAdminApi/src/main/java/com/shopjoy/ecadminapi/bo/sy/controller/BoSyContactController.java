@@ -43,7 +43,7 @@ public class BoSyContactController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyContact>> create(@RequestBody SyContact body) {
+    public ResponseEntity<ApiResponse<SyContact>> create(@Valid @RequestBody SyContact body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyContactService.create(body)));
     }
 

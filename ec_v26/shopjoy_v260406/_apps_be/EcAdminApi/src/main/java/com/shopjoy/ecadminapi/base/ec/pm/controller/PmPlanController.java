@@ -40,7 +40,7 @@ public class PmPlanController {
 
     /* 프로모션 플랜 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmPlan>> create(@RequestBody PmPlan entity) {
+    public ResponseEntity<ApiResponse<PmPlan>> create(@Valid @RequestBody PmPlan entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

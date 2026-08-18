@@ -78,6 +78,7 @@ public class SyContactService {
     /* 문의 등록 */
     @Transactional
     public SyContact create(SyContact body) {
+        CmUtil.requireText(body.getContactTitle(), "문의 제목", 100, this);
         body.setContactId(CmUtil.generateId("sy_contact"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
@@ -101,6 +102,7 @@ public class SyContactService {
         CmUtil.requireId(id, "id", this);
         SyContact entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "contactId^regBy^regDate");
+        CmUtil.requireText(entity.getContactTitle(), "문의 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyContact saved = syContactRepository.save(entity);

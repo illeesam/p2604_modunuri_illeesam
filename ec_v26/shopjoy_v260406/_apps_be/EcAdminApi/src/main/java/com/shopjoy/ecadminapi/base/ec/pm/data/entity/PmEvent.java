@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.base.ec.pm.data.entity;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -24,7 +26,6 @@ public class PmEvent extends BaseEntity {
     @Column(name = "event_id", length = 21, nullable = false)
     private String eventId;
 
-
     @Comment("이벤트명")
     @Column(name = "event_nm", length = 100, nullable = false)
     private String eventNm;
@@ -39,6 +40,8 @@ public class PmEvent extends BaseEntity {
 
     @Comment("이벤트 제목")
     @Column(name = "event_title", length = 200)
+    @NotBlank(message = "이벤트 제목을 입력해주세요.")
+    @Size(max = 100, message = "이벤트 제목은 100자 이내로 입력해주세요.")
     private String eventTitle;
 
     @Comment("이벤트 상세내용")

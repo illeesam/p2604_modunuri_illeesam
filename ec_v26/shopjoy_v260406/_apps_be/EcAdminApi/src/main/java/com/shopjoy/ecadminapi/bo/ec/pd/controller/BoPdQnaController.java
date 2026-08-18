@@ -51,7 +51,7 @@ public class BoPdQnaController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdProdQna>> create(@RequestBody PdProdQna body) {
+    public ResponseEntity<ApiResponse<PdProdQna>> create(@Valid @RequestBody PdProdQna body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boPdQnaService.create(body)));
     }
 

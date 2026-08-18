@@ -81,6 +81,35 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Entity 저장(flush) 시점에 Hibernate 가 던지는 Bean Validation 위반을 400 으로 변환한다.
+     *
+     * <p>컨트롤러에 {@code @Valid} 가 붙지 않은 경로(내부 서비스 저장 등)에서 Entity 의
+     * {@code @NotBlank}/{@code @Size} 가 걸리면 기본적으로 500 으로 나가버린다.
+     * 입력값 문제를 서버 오류로 보이게 하지 않도록 여기서 400 + 필드별 오류 맵으로 정규화한다.</p>
+     *
+     * @param ex  제약조건 위반 예외
+     * @param req 디버그 정보 추출용 현재 요청
+     * @return HTTP 400, body 의 {@code data} 에 필드별 오류 맵을 담은 오류 ApiResponse
+     */
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleConstraintViolation(
+            jakarta.validation.ConstraintViolationException ex, HttpServletRequest req) {
+        Map<String, String> errors = new HashMap<>();
+        StringBuilder msgBuilder = new StringBuilder();
+        for (jakarta.validation.ConstraintViolation<?> cv : ex.getConstraintViolations()) {
+            String field = cv.getPropertyPath() == null ? "" : cv.getPropertyPath().toString();
+            errors.put(field, cv.getMessage());
+            if (msgBuilder.length() > 0) msgBuilder.append(", ");
+            msgBuilder.append(cv.getMessage());
+        }
+        String message = msgBuilder.length() > 0 ? msgBuilder.toString() : "입력 내용을 확인해주세요.";
+        log.error("ConstraintViolationException [400]: {}", message, ex);
+        return ResponseEntity.badRequest()
+            .body(ApiResponse.error(400, message, errors)
+                .withDebug(buildStack(ex), buildUserInfo(req)));
+    }
+
+    /**
      * {@link CmAuthException} 을 예외 자신이 보유한 상태코드 그대로 오류 응답으로 변환한다.
      *
      * <p>기본 401(Unauthorized), 권한 부족 시 403 등. WARN 레벨로 메시지만 로깅한다.</p>

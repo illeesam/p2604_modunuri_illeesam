@@ -40,7 +40,7 @@ public class PmEventController {
 
     /* 이벤트 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmEvent>> create(@RequestBody PmEvent entity) {
+    public ResponseEntity<ApiResponse<PmEvent>> create(@Valid @RequestBody PmEvent entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

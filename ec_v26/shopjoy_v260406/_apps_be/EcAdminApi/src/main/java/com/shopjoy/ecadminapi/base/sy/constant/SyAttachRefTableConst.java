@@ -25,6 +25,15 @@ public class SyAttachRefTableConst {
     /** pd_prod_img 는 1행=첨부 1건(1:1) — ref_id=prod_img_id. 정방향(pd_prod_img.attach_id)도 같이 채운다(§10-B). */
     public static final String PD_PROD_IMG         = "pd_prod_img";
 
+    /** 블로그 본문 첨부 — ref_id=blog_id. (cm_blog_file 은 본문 이미지 전용이라 별개) */
+    public static final String CM_BLOG             = "cm_blog";
+    /** 상품평 첨부(사진 후기) — ref_id=review_id. */
+    public static final String PD_REVIEW           = "pd_review";
+    /** 상품문의도 sy_contact 와 동일하게 첨부 슬롯이 2개(질문/답변)라 논리 슬롯명을 쓴다 — 실제 테이블명 아님.
+     *  ref_id 는 둘 다 prod_qna_id 공용. */
+    public static final String PD_PROD_QNA         = "pd_prod_qna";
+    public static final String PD_PROD_QNA_ANSWER  = "pd_prod_qna_answer";
+
     /**
      * 값+라벨 목록 — {@code GET /co/cm/upload/ref/table-options} 로 프론트에 그대로 내려준다.
      * 프론트는 이 목록에서 {@code key} 로 자기 화면에 해당하는 항목을 찾아 {@code value} 를
@@ -38,7 +47,11 @@ public class SyAttachRefTableConst {
         new SyAttachRefTableOption("CONTACT_ANSWER",   SY_CONTACT_ANSWER,  "문의 답변"),
         new SyAttachRefTableOption("FAQ",               CM_FAQ,             "FAQ 답변"),
         new SyAttachRefTableOption("CHATT_MSG",        CM_CHATT_MSG,       "채팅 메시지"),
-        new SyAttachRefTableOption("PROD_IMG",         PD_PROD_IMG,        "상품 이미지")
+        new SyAttachRefTableOption("PROD_IMG",         PD_PROD_IMG,        "상품 이미지"),
+        new SyAttachRefTableOption("BLOG",              CM_BLOG,            "블로그"),
+        new SyAttachRefTableOption("REVIEW",            PD_REVIEW,          "상품평"),
+        new SyAttachRefTableOption("PROD_QNA",         PD_PROD_QNA,        "상품문의 질문"),
+        new SyAttachRefTableOption("PROD_QNA_ANSWER",  PD_PROD_QNA_ANSWER, "상품문의 답변")
     );
 
     private SyAttachRefTableConst() {}

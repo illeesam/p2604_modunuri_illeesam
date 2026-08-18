@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -27,9 +29,10 @@ public class SyNotice extends BaseEntity {
     @Column(name = "notice_id", length = 21, nullable = false)
     private String noticeId;
 
-
     @Comment("제목")
     @Column(name = "notice_title", length = 200, nullable = false)
+    @NotBlank(message = "공지 제목을 입력해주세요.")
+    @Size(max = 100, message = "공지 제목은 100자 이내로 입력해주세요.")
     private String noticeTitle;
 
     @Comment("공지유형 (코드: NOTICE_TYPE_CD)")

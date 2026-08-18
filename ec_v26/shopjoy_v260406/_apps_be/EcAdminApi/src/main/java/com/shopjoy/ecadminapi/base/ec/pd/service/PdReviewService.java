@@ -1,5 +1,7 @@
 package com.shopjoy.ecadminapi.base.ec.pd.service;
 
+import com.shopjoy.ecadminapi.base.sy.constant.SyAttachRefTableConst;
+import com.shopjoy.ecadminapi.base.sy.service.SyAttachService;
 import com.shopjoy.ecadminapi.common.data.BasePage;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
@@ -24,6 +26,7 @@ import java.util.List;
 public class PdReviewService {
 
     private final PdReviewRepository pdReviewRepository;
+    private final SyAttachService syAttachService;
 
     @PersistenceContext
     private EntityManager em;
@@ -76,6 +79,7 @@ public class PdReviewService {
     /* 상품 리뷰 등록 */
     @Transactional
     public PdReview create(PdReview body) {
+        CmUtil.requireText(body.getReviewTitle(), "리뷰 제목", 100, this);
         body.setReviewId(CmUtil.generateId("pd_review"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
@@ -83,6 +87,8 @@ public class PdReviewService {
         body.setUpdDate(LocalDateTime.now());
         PdReview saved = pdReviewRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.PD_REVIEW, saved.getReviewId());
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.PD_REVIEW, saved.getReviewId()));
         em.flush();
         return saved;
     }
@@ -95,10 +101,13 @@ public class PdReviewService {
         CmUtil.requireId(id, "id", this);
         PdReview entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "reviewId^regBy^regDate");
+        CmUtil.requireText(entity.getReviewTitle(), "리뷰 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PdReview saved = pdReviewRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+        syAttachService.applyChanges(body.getAttachFiles(), SyAttachRefTableConst.PD_REVIEW, id);
+        saved.setAttachFiles(syAttachService.getAttachFilesByRef(SyAttachRefTableConst.PD_REVIEW, id));
         em.flush();
         return saved;
     }

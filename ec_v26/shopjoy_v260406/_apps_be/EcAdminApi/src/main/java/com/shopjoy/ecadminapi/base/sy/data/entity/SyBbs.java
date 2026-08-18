@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -26,7 +28,6 @@ public class SyBbs extends BaseEntity {
     @Column(name = "bbs_id", length = 21, nullable = false)
     private String bbsId;
 
-
     @Comment("게시판ID")
     @Column(name = "bbm_id", length = 21, nullable = false)
     private String bbmId;
@@ -45,12 +46,13 @@ public class SyBbs extends BaseEntity {
 
     @Comment("제목")
     @Column(name = "bbs_title", length = 200, nullable = false)
+    @NotBlank(message = "게시글 제목을 입력해주세요.")
+    @Size(max = 100, message = "게시글 제목은 100자 이내로 입력해주세요.")
     private String bbsTitle;
 
     @Comment("내용 (HTML)")
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
-
 
     @Comment("조회수")
     @Column(name = "view_count")

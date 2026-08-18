@@ -1,15 +1,20 @@
 package com.shopjoy.ecadminapi.base.ec.pd.data.entity;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecadminapi.base.sy.data.dto.AttachFile;
 import org.hibernate.annotations.Comment;
 
 @Entity
@@ -25,7 +30,6 @@ public class PdReview extends BaseEntity {
     @Column(name = "review_id", length = 21, nullable = false)
     private String reviewId;
 
-
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
     private String prodId;
@@ -36,6 +40,8 @@ public class PdReview extends BaseEntity {
 
     @Comment("리뷰 제목")
     @Column(name = "review_title", length = 200, nullable = false)
+    @NotBlank(message = "리뷰 제목을 입력해주세요.")
+    @Size(max = 100, message = "리뷰 제목은 100자 이내로 입력해주세요.")
     private String reviewTitle;
 
     @Comment("리뷰 내용")
@@ -65,5 +71,11 @@ public class PdReview extends BaseEntity {
     @Comment("리뷰작성일")
     @Column(name = "review_date")
     private LocalDateTime reviewDate;
+
+    /** 첨부파일 목록 — DB 컬럼 아님({@literal @}Transient). 요청 시엔 attachId/rowStatus(I/D) 만 채워 보내고,
+     *  create()/update() 가 reviewId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한 뒤,
+     *  같은 필드를 SyAttachService.getAttachFilesByRef() 결과로 덮어써 응답에 되돌려준다. */
+    @Transient
+    private List<AttachFile> attachFiles;
 
 }

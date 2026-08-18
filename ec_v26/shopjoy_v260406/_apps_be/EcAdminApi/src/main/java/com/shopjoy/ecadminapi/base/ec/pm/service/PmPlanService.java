@@ -76,6 +76,7 @@ public class PmPlanService {
     /* 프로모션 플랜 등록 */
     @Transactional
     public PmPlan create(PmPlan body) {
+        CmUtil.requireText(body.getPlanTitle(), "기획전 제목", 100, this);
         body.setPlanId(CmUtil.generateId("pm_plan"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
@@ -95,6 +96,7 @@ public class PmPlanService {
         CmUtil.requireId(id, "id", this);
         PmPlan entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "planId^regBy^regDate");
+        CmUtil.requireText(entity.getPlanTitle(), "기획전 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmPlan saved = pmPlanRepository.save(entity);

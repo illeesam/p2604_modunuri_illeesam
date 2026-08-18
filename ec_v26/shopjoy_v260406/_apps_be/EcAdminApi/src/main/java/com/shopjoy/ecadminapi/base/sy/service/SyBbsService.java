@@ -78,6 +78,7 @@ public class SyBbsService {
     /* 게시판 게시물 등록 */
     @Transactional
     public SyBbs create(SyBbs body) {
+        CmUtil.requireText(body.getBbsTitle(), "게시글 제목", 100, this);
         body.setBbsId(CmUtil.generateId("sy_bbs"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
@@ -99,6 +100,7 @@ public class SyBbsService {
         CmUtil.requireId(id, "id", this);
         SyBbs entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "bbsId^regBy^regDate");
+        CmUtil.requireText(entity.getBbsTitle(), "게시글 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyBbs saved = syBbsRepository.save(entity);

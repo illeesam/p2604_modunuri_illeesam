@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -27,7 +29,6 @@ public class SyContact extends BaseEntity {
     @Column(name = "contact_id", length = 21, nullable = false)
     private String contactId;
 
-
     @Comment("회원ID")
     @Column(name = "member_id", length = 21)
     private String memberId;
@@ -42,6 +43,8 @@ public class SyContact extends BaseEntity {
 
     @Comment("제목")
     @Column(name = "contact_title", length = 200, nullable = false)
+    @NotBlank(message = "문의 제목을 입력해주세요.")
+    @Size(max = 100, message = "문의 제목은 100자 이내로 입력해주세요.")
     private String contactTitle;
 
     @Comment("문의내용")

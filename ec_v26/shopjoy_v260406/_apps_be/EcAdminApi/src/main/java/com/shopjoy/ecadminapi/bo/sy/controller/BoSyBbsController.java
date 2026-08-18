@@ -43,7 +43,7 @@ public class BoSyBbsController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyBbs>> create(@RequestBody SyBbs body) {
+    public ResponseEntity<ApiResponse<SyBbs>> create(@Valid @RequestBody SyBbs body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyBbsService.create(body)));
     }
 

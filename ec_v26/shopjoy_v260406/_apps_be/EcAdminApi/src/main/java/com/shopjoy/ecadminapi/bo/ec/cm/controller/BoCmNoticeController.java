@@ -43,7 +43,7 @@ public class BoCmNoticeController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyNotice>> create(@RequestBody SyNotice body) {
+    public ResponseEntity<ApiResponse<SyNotice>> create(@Valid @RequestBody SyNotice body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boCmNoticeService.create(body)));
     }
 

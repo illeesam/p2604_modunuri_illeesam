@@ -44,7 +44,7 @@ public class BoCmBlogController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmBlog>> create(@RequestBody CmBlog body) {
+    public ResponseEntity<ApiResponse<CmBlog>> create(@Valid @RequestBody CmBlog body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boCmBlogService.create(body)));
     }
 

@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.base.sy.data.entity;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -24,9 +26,10 @@ public class SyAlarm extends BaseEntity {
     @Column(name = "alarm_id", length = 21, nullable = false)
     private String alarmId;
 
-
     @Comment("알림제목")
     @Column(name = "alarm_title", length = 200, nullable = false)
+    @NotBlank(message = "알림 제목을 입력해주세요.")
+    @Size(max = 100, message = "알림 제목은 100자 이내로 입력해주세요.")
     private String alarmTitle;
 
     @Comment("알림유형 (코드: ALARM_TYPE_CD)")

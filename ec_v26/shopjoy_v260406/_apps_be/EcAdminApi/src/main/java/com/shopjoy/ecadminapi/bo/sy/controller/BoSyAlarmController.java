@@ -43,7 +43,7 @@ public class BoSyAlarmController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyAlarm>> create(@RequestBody SyAlarm body) {
+    public ResponseEntity<ApiResponse<SyAlarm>> create(@Valid @RequestBody SyAlarm body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyAlarmService.create(body)));
     }
 

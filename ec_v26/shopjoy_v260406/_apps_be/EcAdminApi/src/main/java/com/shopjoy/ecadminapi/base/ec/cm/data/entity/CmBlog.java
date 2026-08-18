@@ -1,13 +1,18 @@
 package com.shopjoy.ecadminapi.base.ec.cm.data.entity;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecadminapi.base.sy.data.dto.AttachFile;
 import org.hibernate.annotations.Comment;
 
 @Entity
@@ -23,7 +28,6 @@ public class CmBlog extends BaseEntity {
     @Column(name = "blog_id", length = 21, nullable = false)
     private String blogId;
 
-
     @Comment("블로그카테고리ID (cm_bltn_cate.blog_cate_id)")
     @Column(name = "blog_cate_id", length = 21)
     private String blogCateId;
@@ -34,6 +38,8 @@ public class CmBlog extends BaseEntity {
 
     @Comment("제목")
     @Column(name = "blog_title", length = 200, nullable = false)
+    @NotBlank(message = "블로그 제목을 입력해주세요.")
+    @Size(max = 100, message = "블로그 제목은 100자 이내로 입력해주세요.")
     private String blogTitle;
 
     @Comment("요약 (미리보기, 검색결과용)")
@@ -52,7 +58,6 @@ public class CmBlog extends BaseEntity {
     @Column(name = "prod_id", length = 21)
     private String prodId;
 
-
     @Comment("조회수")
     @Column(name = "view_count")
     private Integer viewCount;
@@ -64,5 +69,11 @@ public class CmBlog extends BaseEntity {
     @Comment("공지글 여부 Y/N (상단 고정)")
     @Column(name = "is_notice", length = 1)
     private String isNotice;
+
+    /** 첨부파일 목록 — DB 컬럼 아님({@literal @}Transient). 요청 시엔 attachId/rowStatus(I/D) 만 채워 보내고,
+     *  create()/update() 가 blogId 확정 직후 같은 트랜잭션에서 sy_attach 에 반영한 뒤,
+     *  같은 필드를 SyAttachService.getAttachFilesByRef() 결과로 덮어써 응답에 되돌려준다. */
+    @Transient
+    private List<AttachFile> attachFiles;
 
 }

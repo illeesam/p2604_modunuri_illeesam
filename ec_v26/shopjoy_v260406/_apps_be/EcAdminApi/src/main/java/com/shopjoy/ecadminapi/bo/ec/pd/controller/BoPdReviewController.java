@@ -52,7 +52,7 @@ public class BoPdReviewController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdReview>> create(@RequestBody PdReview body) {
+    public ResponseEntity<ApiResponse<PdReview>> create(@Valid @RequestBody PdReview body) {
         PdReview result = boPdReviewService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

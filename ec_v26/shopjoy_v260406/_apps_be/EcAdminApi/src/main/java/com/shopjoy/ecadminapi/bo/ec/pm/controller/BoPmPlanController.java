@@ -45,7 +45,7 @@ public class BoPmPlanController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmPlan>> create(@RequestBody PmPlan body) {
+    public ResponseEntity<ApiResponse<PmPlan>> create(@Valid @RequestBody PmPlan body) {
         PmPlan result = boPmPlanService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

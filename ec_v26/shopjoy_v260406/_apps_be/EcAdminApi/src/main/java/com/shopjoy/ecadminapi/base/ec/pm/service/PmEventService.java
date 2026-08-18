@@ -76,6 +76,7 @@ public class PmEventService {
     /* 이벤트 등록 */
     @Transactional
     public PmEvent create(PmEvent body) {
+        CmUtil.requireText(body.getEventTitle(), "이벤트 제목", 100, this);
         body.setEventId(CmUtil.generateId("pm_event"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
@@ -95,6 +96,7 @@ public class PmEventService {
         CmUtil.requireId(id, "id", this);
         PmEvent entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "eventId^regBy^regDate");
+        CmUtil.requireText(entity.getEventTitle(), "이벤트 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         PmEvent saved = pmEventRepository.save(entity);

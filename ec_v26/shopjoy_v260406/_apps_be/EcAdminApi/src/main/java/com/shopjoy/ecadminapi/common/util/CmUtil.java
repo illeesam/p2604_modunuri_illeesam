@@ -150,6 +150,32 @@ public class CmUtil {
     }
 
     /**
+     * Service 의 create/update 에서 필수 텍스트 항목(제목 등)의 입력 여부와 최대 길이를 검증.
+     *
+     * <p>호출 예: {@code CmUtil.requireText(entity.getNoticeTitle(), "제목", 100, this);}
+     *
+     * <p>update 에서는 {@code VoUtil.voCopy*} 로 기존 엔티티에 병합한 <b>직후</b>에 호출한다.
+     * 병합 후 값을 보므로 일부 필드만 보내는 부분 수정(PATCH 성 PUT)은 기존 값이 유지되어 통과하고,
+     * 사용자가 실제로 빈 값으로 지운 경우만 차단된다 — Bean Validation({@code @NotBlank})을
+     * 컨트롤러에 걸면 부분 수정까지 함께 막히므로 그 방식은 create 에만 쓴다.
+     *
+     * @param value   검증할 텍스트 값
+     * @param label   화면에 노출할 항목명(예: "제목") — 예외 메시지에 표시
+     * @param maxLen  최대 허용 길이(문자 수)
+     * @param svc     호출 Service 인스턴스(스택 추적용, {@code this} 전달)
+     * @throws CmBizException 값이 비었거나 maxLen 을 초과한 경우
+     */
+    public static void requireText(String value, String label, int maxLen, Object svc) {
+        if (value == null || value.isBlank()) {
+            throw new CmBizException(label + "을(를) 입력해주세요." + "::" + svcCallerInfo(svc));
+        }
+        if (value.length() > maxLen) {
+            throw new CmBizException(label + "은(는) " + maxLen + "자 이내로 입력해주세요."
+                    + " (현재 " + value.length() + "자)" + "::" + svcCallerInfo(svc));
+        }
+    }
+
+    /**
      * saveList 의 U/D row 들에 대해 ID 가 모두 채워졌는지 일괄 검증.
      *
      * <p>키가 비어 있는 row 가 하나라도 있으면 인덱스와 함께 예외 메시지를 구성한다.

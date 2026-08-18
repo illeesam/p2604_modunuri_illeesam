@@ -40,7 +40,7 @@ public class SyContactController {
 
     /* 문의 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyContact>> create(@RequestBody SyContact entity) {
+    public ResponseEntity<ApiResponse<SyContact>> create(@Valid @RequestBody SyContact entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -45,7 +45,7 @@ public class BoPmEventController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmEvent>> create(@RequestBody PmEvent body) {
+    public ResponseEntity<ApiResponse<PmEvent>> create(@Valid @RequestBody PmEvent body) {
         PmEvent result = boPmEventService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

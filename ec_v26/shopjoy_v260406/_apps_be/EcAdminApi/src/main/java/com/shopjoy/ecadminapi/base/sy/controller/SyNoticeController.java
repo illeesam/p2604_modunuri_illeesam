@@ -40,7 +40,7 @@ public class SyNoticeController {
 
     /* 공지사항 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyNotice>> create(@RequestBody SyNotice entity) {
+    public ResponseEntity<ApiResponse<SyNotice>> create(@Valid @RequestBody SyNotice entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

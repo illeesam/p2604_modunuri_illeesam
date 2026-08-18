@@ -49,7 +49,7 @@ public class SyAlarmController {
 
     /* 알람 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyAlarm>> create(@RequestBody SyAlarm entity) {
+    public ResponseEntity<ApiResponse<SyAlarm>> create(@Valid @RequestBody SyAlarm entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

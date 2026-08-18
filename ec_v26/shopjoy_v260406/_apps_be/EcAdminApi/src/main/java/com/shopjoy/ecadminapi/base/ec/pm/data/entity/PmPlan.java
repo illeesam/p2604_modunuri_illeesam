@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.base.ec.pm.data.entity;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -24,13 +26,14 @@ public class PmPlan extends BaseEntity {
     @Column(name = "plan_id", length = 21, nullable = false)
     private String planId;
 
-
     @Comment("기획전명 (내부용)")
     @Column(name = "plan_nm", length = 100, nullable = false)
     private String planNm;
 
     @Comment("기획전 타이틀 (노출용)")
     @Column(name = "plan_title", length = 200, nullable = false)
+    @NotBlank(message = "기획전 제목을 입력해주세요.")
+    @Size(max = 100, message = "기획전 제목은 100자 이내로 입력해주세요.")
     private String planTitle;
 
     @Comment("유형 (코드: PLAN_TYPE_CD — SEASON/BRAND/THEME/COLLAB)")

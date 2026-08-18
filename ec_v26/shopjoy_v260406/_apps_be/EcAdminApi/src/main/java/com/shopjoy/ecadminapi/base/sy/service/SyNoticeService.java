@@ -78,6 +78,7 @@ public class SyNoticeService {
     /* 공지사항 등록 */
     @Transactional
     public SyNotice create(SyNotice body) {
+        CmUtil.requireText(body.getNoticeTitle(), "공지 제목", 100, this);
         body.setNoticeId(CmUtil.generateId("sy_notice"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
@@ -99,6 +100,7 @@ public class SyNoticeService {
         CmUtil.requireId(id, "id", this);
         SyNotice entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "noticeId^regBy^regDate");
+        CmUtil.requireText(entity.getNoticeTitle(), "공지 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyNotice saved = syNoticeRepository.save(entity);

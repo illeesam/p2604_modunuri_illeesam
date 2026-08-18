@@ -75,6 +75,7 @@ public class SyAlarmService {
     /* 알람 등록 */
     @Transactional
     public SyAlarm create(SyAlarm body) {
+        CmUtil.requireText(body.getAlarmTitle(), "알림 제목", 100, this);
         body.setAlarmId(CmUtil.generateId("sy_alarm"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
@@ -94,6 +95,7 @@ public class SyAlarmService {
         CmUtil.requireId(id, "id", this);
         SyAlarm entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "alarmId^regBy^regDate");
+        CmUtil.requireText(entity.getAlarmTitle(), "알림 제목", 100, this);
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyAlarm saved = syAlarmRepository.save(entity);
