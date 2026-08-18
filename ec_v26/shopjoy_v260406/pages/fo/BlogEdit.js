@@ -104,8 +104,10 @@ window.BlogEdit = {
 
     /* handleSave — 저장 */
     const handleSave = () => {
-      if (!form.title.trim()) { showToast?.('제목을 입력해주세요.', 'error'); return; }
-      if (!form.body.trim()) { showToast?.('본문을 입력해주세요.', 'error'); return; }
+      Object.keys(errors).forEach(k => delete errors[k]);
+      if (!form.title.trim()) { errors.title = '제목을 입력해주세요.'; }
+      if (!form.body.trim()) { errors.body = '본문을 입력해주세요.'; }
+      if (Object.keys(errors).length) { showToast?.('입력 내용을 확인해주세요.', 'error'); return; }
       showToast?.(cfIsEdit.value ? '수정되었습니다.' : '등록되었습니다.', 'success');
       props.navigate('blog');
     };

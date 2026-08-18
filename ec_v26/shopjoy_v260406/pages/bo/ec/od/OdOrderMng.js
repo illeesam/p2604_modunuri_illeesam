@@ -60,6 +60,7 @@ window.OdOrderMng = {
       // 변경작업 모달 탭 전환
       } else if (cmd === 'actionsModal-tabChange') {
         uiState.bulkTab = param;
+        Object.keys(bulkErrors).forEach(k => delete bulkErrors[k]);
         return;
       // 변경작업 모달 저장
       } else if (cmd === 'actionsModal-apply') {
@@ -191,6 +192,7 @@ window.OdOrderMng = {
       apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
       reqTarget:'주문', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
     });
+    const bulkErrors = reactive({}); // 변경작업 모달 검증 오류 (항목 아래 빨간 라벨)
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });
@@ -417,6 +419,7 @@ window.OdOrderMng = {
       });
       onReqTargetChange();
       uiState.bulkOpen = true;
+      Object.keys(bulkErrors).forEach(k => delete bulkErrors[k]);
     };
     const cfBulkPreview = computed(() => {
       if (!uiState.bulkOpen) { return ''; }
@@ -450,8 +453,13 @@ window.OdOrderMng = {
         approval:   { field:'apprAction',   label:'결재처리',     path:'orders/bulk-approval' },
         approvalReq:{ field:'apprToUserId', label:'추가결재요청', path:'orders/bulk-approvalReq' },
       }[uiState.bulkTab];
+      Object.keys(bulkErrors).forEach(k => delete bulkErrors[k]);
       const val = bulkForm[cfg.field];
-      if (!val) { showToast(`${cfg.label} 입력값을 확인하세요.`, 'error'); return; }
+      if (!val) {
+        bulkErrors[cfg.field] = `${cfg.label}을(를) 선택해주세요.`;
+        showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
       const ok = await showConfirm(`일괄 ${cfg.label}`, `선택한 ${ids.length}건에 대해 ${cfg.label} 작업을 진행하시겠습니까?`);
       if (!ok) { return; }
       let rows = [];
@@ -562,7 +570,7 @@ window.OdOrderMng = {
     /* 회원선택 그리드 컬럼은 OdMemberPickModal 내장 */
 
     columns.apprContactForm = [
-      { key: 'apprToUserId', label: '추가결재자', type: 'select', colSpan: 2, nullLabel: '선택하세요',
+      { key: 'apprToUserId', label: '추가결재자', type: 'select', colSpan: 2, nullLabel: '선택하세요', required: true,
         options: () => members.map(m => ({ value: m.memberId, label: `${m.memberNm} (${m.memberId})` })),
         onChange: () => handleBtnAction('actionsModal-apprToChange') },
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
@@ -585,7 +593,7 @@ window.OdOrderMng = {
     ];
     // 결재처리구분/결재코멘트 (approval 탭)
     columns.bulkApprovalForm = [
-      { key: 'apprAction',  label: '결재처리 구분', type: 'select', nullLabel: '선택하세요',
+      { key: 'apprAction',  label: '결재처리 구분', type: 'select', nullLabel: '선택하세요', required: true,
         options: () => codes.approval_actions, colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'apprComment', label: '결재 코멘트', type: 'textarea', rows: 2,
@@ -597,7 +605,7 @@ window.OdOrderMng = {
     return {
       columns,
       excelModal, buildExcelParams,                                                                                    // 엑셀 다운로드
-      orders, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick,        // 상태 / 데이터
+      orders, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkErrors, bulkOpen, memberPick,        // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅) + 모달 통합 콜백
       cfDetailEditId, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview,                        // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                  // template 직접 참조
@@ -688,6 +696,7 @@ window.OdOrderMng = {
               {{ c.codeLabel }}
             </option>
           </select>
+          <span v-if="bulkErrors.status" class="field-error">{{ bulkErrors.status }}</span>
         </div>
         <div v-if="uiState.bulkTab==='payMethod'">
           <label class="form-label">
@@ -699,23 +708,24 @@ window.OdOrderMng = {
               {{ c.codeLabel }}
             </option>
           </select>
+          <span v-if="bulkErrors.payMethod" class="field-error">{{ bulkErrors.payMethod }}</span>
         </div>
         <!-- ===== ■.■.■.■. 결재처리 (BoFormArea 자동 렌더) =========================== -->
         <div v-if="uiState.bulkTab==='approval'">
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.bulkApprovalForm" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.bulkApprovalForm" :form="bulkForm" :errors="bulkErrors"
             :cols="2" :show-actions="false" />
         </div>
         <div v-if="uiState.bulkTab==='approvalReq'">
-          <bo-form-area :columns="columns.apprContactForm" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.apprContactForm" :form="bulkForm" :errors="bulkErrors"
             :cols="2" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 요청대상/요청대상명 (BoFormArea 자동 렌더) =================== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.apprTargetForm" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.apprTargetForm" :form="bulkForm" :errors="bulkErrors"
             :cols="2" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 요청금액/요청사유/전송템플릿 (BoFormArea 자동 렌더) ============== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.apprDetailForm" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.apprDetailForm" :form="bulkForm" :errors="bulkErrors"
             :cols="2" :show-actions="false">
             <template #tmplMsg>
               <textarea class="form-control" v-model="bulkForm.tmplMsg" rows="4" style="font-family:monospace;font-size:11.5px;"></textarea>

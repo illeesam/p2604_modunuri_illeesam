@@ -270,7 +270,7 @@ window.MyOrder = {
 
     /* -- 리뷰 -- */
     const reviews = reactive({});
-    const reviewModal = reactive({ show: false, orderId: '', itemIdx: 0, item: null, rating: 5, text: '', isEdit: false, files: [] });
+    const reviewModal = reactive({ show: false, orderId: '', itemIdx: 0, item: null, rating: 5, text: '', isEdit: false, files: [], errMsg: '' });
 
     /* onReviewFileChange — 이벤트 */
     const onReviewFileChange = (e) => {
@@ -290,11 +290,17 @@ window.MyOrder = {
       reviewModal.item = item; reviewModal.rating = existing ? existing.rating : 5;
       reviewModal.text = existing ? existing.text : ''; reviewModal.isEdit = !!existing;
       reviewModal.files = existing ? (existing.files || []) : [];
+      reviewModal.errMsg = '';
     };
 
     /* submitReview — 제출 */
     const submitReview = () => {
-      if (!reviewModal.text.trim()) { showToast('리뷰 내용을 입력해주세요.', 'error'); return; }
+      reviewModal.errMsg = '';
+      if (!reviewModal.text.trim() || reviewModal.text.trim().length < 10) {
+        reviewModal.errMsg = '리뷰 내용을 10자 이상 입력해주세요.';
+        showToast(reviewModal.errMsg, 'error');
+        return;
+      }
       const key = `${reviewModal.orderId}_${reviewModal.itemIdx}`;
       reviews[key] = { rating: reviewModal.rating, text: reviewModal.text, date: coUtil.cofToYmd(new Date()), files: reviewModal.files.map(f => f.name) };
       const order = orders.value.find(o => o.orderId === reviewModal.orderId);
@@ -859,8 +865,12 @@ window.MyOrder = {
         <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">
           리뷰 내용
         </div>
-        <textarea v-model="reviewModal.text" placeholder="상품에 대한 솔직한 리뷰를 작성해주세요. (10자 이상)"
-            style="width:100%;min-height:110px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.85rem;resize:vertical;outline:none;box-sizing:border-box;font-family:inherit;line-height:1.6;"></textarea>
+        <textarea v-model="reviewModal.text" @input="reviewModal.text.trim().length >= 10 ? reviewModal.errMsg = '' : null"
+            placeholder="상품에 대한 솔직한 리뷰를 작성해주세요. (10자 이상)"
+            :style="'width:100%;min-height:110px;padding:10px 12px;border:1.5px solid ' + (reviewModal.errMsg ? '#ef4444' : 'var(--border)') + ';border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.85rem;resize:vertical;outline:none;box-sizing:border-box;font-family:inherit;line-height:1.6;'"></textarea>
+          <div v-if="reviewModal.errMsg" style="color:#ef4444;font-size:0.78rem;margin-top:4px;">
+            {{ reviewModal.errMsg }}
+          </div>
           <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);margin-top:3px;">
             {{ reviewModal.text.length }}자
           </div>

@@ -244,7 +244,8 @@ window.Order = {
       let ok = true;
       if (!form.name.trim() || form.name.trim().length < 2) { errors.name = '이름을 2자 이상 입력해주세요.'; ok = false; }
       if (!form.tel.trim())    { errors.tel     = '연락처를 입력해주세요.'; ok = false; }
-      if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      else if (!coUtil.cofIsValidPhone(form.tel)) { errors.tel = '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)'; ok = false; }
+      if (!form.email.trim() || !coUtil.cofIsValidEmail(form.email))
                                { errors.email   = '유효한 이메일을 입력해주세요.'; ok = false; }
       if (!form.address.trim()){ errors.address = '배송 주소를 입력해주세요.'; ok = false; }
       return ok;
@@ -296,10 +297,12 @@ window.Order = {
     const columns = {};
     columns.baseForm = [
       { key: 'name',  label: '이름',   type: 'text', required: true, placeholder: '홍길동' },
-      { key: 'tel',   label: '연락처', type: 'tel',  required: true, placeholder: '010-1234-5678' },
+      { key: 'tel',   label: '연락처', type: 'tel',  required: true, placeholder: '010-1234-5678',
+        validate: (v) => v && !coUtil.cofIsValidPhone(v) ? '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)' : null },
       { type: 'rowBreak' },
       { key: 'email', label: '이메일', type: 'email', required: true, colSpan: 2,
-        placeholder: 'hello@example.com' },
+        placeholder: 'hello@example.com',
+        validate: (v) => v && !coUtil.cofIsValidEmail(v) ? '유효한 이메일을 입력해주세요.' : null },
       { type: 'rowBreak' },
       { key: 'address', label: '배송 주소', type: 'slot', name: 'address', colSpan: 2, required: true },
       { type: 'rowBreak' },

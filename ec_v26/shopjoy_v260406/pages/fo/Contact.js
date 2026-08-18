@@ -124,7 +124,8 @@ window.Contact = {
       Object.keys(errors).forEach(k => delete errors[k]);
       let ok = true;
       if (!form.name.trim() || form.name.trim().length < 2) { errors.name = '이름을 2자 이상 입력해주세요.'; ok = false; }
-      if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { errors.email = '유효한 이메일을 입력해주세요.'; ok = false; }
+      if (!form.email.trim() || !coUtil.cofIsValidEmail(form.email)) { errors.email = '유효한 이메일을 입력해주세요.'; ok = false; }
+      if (form.tel && !coUtil.cofIsValidPhone(form.tel)) { errors.tel = '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)'; ok = false; }
       /* desc 는 HTML(에디터) — 태그 제거 후 순수 텍스트 길이로 검증 */
       const descText = String(form.desc || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
       if (descText.length < 10) { errors.desc = '문의 내용을 최소 10자 이상 입력해주세요.'; ok = false; }
@@ -172,8 +173,10 @@ window.Contact = {
     const columns = {};
     columns.baseForm = [
       { key: 'name',        label: '이름',     type: 'text',  required: true, placeholder: '홍길동' },
-      { key: 'email',       label: '이메일',   type: 'email', required: true, placeholder: 'hello@example.com' },
-      { key: 'tel',         label: '연락처',   type: 'tel',   placeholder: '010-1234-5678' },
+      { key: 'email',       label: '이메일',   type: 'email', required: true, placeholder: 'hello@example.com',
+        validate: (v) => v && !coUtil.cofIsValidEmail(v) ? '유효한 이메일을 입력해주세요.' : null },
+      { key: 'tel',         label: '연락처',   type: 'tel',   placeholder: '010-1234-5678',
+        validate: (v) => !coUtil.cofIsValidPhone(v) ? '올바른 연락처 형식이 아닙니다. (예: 010-1234-5678)' : null },
       { key: 'orderNo',     label: '주문번호', type: 'slot', name: 'orderNoPick' },
       { type: 'rowBreak' },
       { key: 'inquiryType', label: '문의 유형', type: 'select', colSpan: 2,

@@ -340,6 +340,7 @@ window.DpDispPanelDtl = {
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
 
+    const errors = reactive({});   // 저장 검증 오류 (항목 아래 빨간 라벨)
     const form = reactive({
       dispId: null, dispCode: '', areaId: '', area: '', name: '', status: 'SHOW',
       layoutType: 'grid', gridCols: 1,
@@ -622,6 +623,7 @@ window.DpDispPanelDtl = {
         const p = n => String(n).padStart(2, '0');
         form.dispCode = `DP_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
       }
+      Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회 (픽Lib 은 참조 미리보기용 선로드)
@@ -646,7 +648,11 @@ window.DpDispPanelDtl = {
 
     /* handleSave — 저장 */
     const handleSave = async () => {
-      if (!form.name || !form.areaId || !form.dispCode) { showToast('필수 항목을 입력해주세요. (패널코드·패널명·소속 영역)', 'error'); return; }
+      Object.keys(errors).forEach(k => delete errors[k]);
+      if (!form.dispCode) { errors.dispCode = '패널코드를 입력해주세요.'; }
+      if (!form.name) { errors.name = '패널명을 입력해주세요.'; }
+      if (!form.areaId) { errors.areaId = '소속 영역을 선택해주세요.'; }
+      if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const isNewPanel = cfIsNew.value;
       const ok = await showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
@@ -1025,7 +1031,7 @@ window.DpDispPanelDtl = {
 
       modals,   // 모달 표시 상태 모음
       columns,
-      pathPickModal, form, rows, codes, preview, pickData,         // 상태 / 데이터
+      pathPickModal, form, errors, rows, codes, preview, pickData,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfIsNew, cfTabLabels, cfTabRowMap, cfActiveRowIdx, cfActiveRow, cfActiveTabLabel,         // computed
       cfDisplayRows, cfRelatedEvent, cfFileListItems, cfPreviewWidget, // computed
@@ -1140,11 +1146,11 @@ window.DpDispPanelDtl = {
                 </div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 패널코드/패널명/상태 (BoFormArea 자동 렌더) ============ -->
                 <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
-                <bo-form-area plain-readonly :columns="columns.basePanelForm" :form="form" :errors="{}"
+                <bo-form-area plain-readonly :columns="columns.basePanelForm" :form="form" :errors="errors"
                   :readonly="cfDtlMode" :cols="2" compact :show-actions="false" />
                 <!-- ===== ■.■.■.■.■.■.■.■. 표시경로 + 포함된 화면영역 (BoFormArea 자동 렌더) ======== -->
                 <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
-                <bo-form-area plain-readonly :columns="columns.pathAreaForm" :form="form" :errors="{}"
+                <bo-form-area plain-readonly :columns="columns.pathAreaForm" :form="form" :errors="errors"
                   :readonly="cfDtlMode" :cols="2" compact :show-actions="false">
                   <template #pathPick>
                     <div v-if="cfDtlMode" class="readonly-field-plain">
@@ -1729,7 +1735,7 @@ window.DpDispPanelDtl = {
           <div v-if="t.key === 'info'">
             <!-- ===== ■.■.■.■.■.■. 패널코드/패널명/표시경로/포함영역 (BoFormArea 자동 렌더) ========= -->
             <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
-            <bo-form-area plain-readonly :columns="columns.sectionInfoForm" :form="form" :errors="{}"
+            <bo-form-area plain-readonly :columns="columns.sectionInfoForm" :form="form" :errors="errors"
               :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
               <template #pathPick2>
                 <div v-if="cfDtlMode" class="readonly-field-plain">

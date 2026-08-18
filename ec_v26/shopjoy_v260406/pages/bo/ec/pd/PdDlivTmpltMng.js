@@ -20,6 +20,7 @@ window.PdDlivTmpltMng = {
       DLIV_METHOD: [], DLIV_PAY_TYPE: [], COURIER: [],
     });
     const form = reactive({});                    // 상세 폼 데이터
+    const errors = reactive({});                  // 저장 검증 오류 (항목 아래 빨간 라벨)
     const SORT_MAP = { nm: { asc: 'dlivTmpltNm asc', desc: 'dlivTmpltNm desc' } };
 
 
@@ -152,6 +153,7 @@ window.PdDlivTmpltMng = {
       uiState.selectedId = row.dlivTmpltId;
       uiState.isNew = false;
       uiState.dtlMode = mode;
+      Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* loadView — 보기모드로 인라인 패널 열기 (행 클릭 / 제목 링크) */
@@ -179,11 +181,15 @@ window.PdDlivTmpltMng = {
       uiState.selectedId = '__new__';
       uiState.isNew = true;
       uiState.dtlMode = 'edit';
+      Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* handleSave — 저장 */
     const handleSave = async () => {
-      if (!form.dlivTmpltNm) { showToast('템플릿명은 필수입니다.', 'error'); return; }
+      Object.keys(errors).forEach(k => delete errors[k]);
+      if (!form.dlivTmpltNm) { errors.dlivTmpltNm = '템플릿명을 입력해주세요.'; }
+      if (!coUtil.cofIsValidPhone(form.returnTelNo)) { errors.returnTelNo = '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)'; }
+      if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) { return; }
       const isNewTmplt = uiState.isNew;
@@ -302,7 +308,8 @@ window.PdDlivTmpltMng = {
         options: () => codes.COURIER },
       { key: 'returnAddrZip',    label: '반품지 우편번호', type: 'text' },
       /* 5행: 반품지 전화번호 + 기본배송지 + 사용여부 */
-      { key: 'returnTelNo',      label: '반품지 전화번호', type: 'text' },
+      { key: 'returnTelNo',      label: '반품지 전화번호', type: 'text',
+        validate: (v) => !coUtil.cofIsValidPhone(v) ? '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678)' : null },
       { key: 'baseDlivYn',       label: '기본 배송지', type: 'select', options: () => codes.USE_YN },
       { key: 'useYn',            label: '사용여부', type: 'select', options: () => codes.USE_YN },
       /* 6~7행: 반품지 주소/상세주소 (전체 폭) */
@@ -318,7 +325,7 @@ window.PdDlivTmpltMng = {
 
     return {
       columns,
-      uiState, cfDtlMode, searchParam, baseGridPager, dlivTmplts, form,       // 상태 / 데이터
+      uiState, cfDtlMode, searchParam, baseGridPager, dlivTmplts, form, errors,       // 상태 / 데이터
       excelModal, buildExcelParams, // 엑셀 다운로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, // dispatch
     };
@@ -373,7 +380,7 @@ window.PdDlivTmpltMng = {
     <!-- ===== ■.■. 상세 입력폼 (BoFormArea 자동 렌더) ======================== -->
     <div v-else style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.baseForm" :form="form" :errors="{}"
+      <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
         :cols="3" compact :show-actions="false" :readonly="cfDtlMode" plain-readonly />
       <!-- ===== ■.■.■. 하단 액션 — 보기모드=[수정][닫기] / 수정모드=[저장][삭제][취소] (.form-actions 중앙 정렬) ===== -->
       <div class="form-actions">

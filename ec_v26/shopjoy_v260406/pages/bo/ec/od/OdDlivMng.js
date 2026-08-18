@@ -59,6 +59,7 @@ window.OdDlivMng = {
       // 변경작업 모달 탭 전환
       } else if (cmd === 'actionsModal-tabChange') {
         uiState.bulkTab = param;
+        Object.keys(bulkErrors).forEach(k => delete bulkErrors[k]);
         return;
       // 변경작업 모달 저장
       } else if (cmd === 'actionsModal-apply') {
@@ -165,6 +166,7 @@ window.OdDlivMng = {
     const DEFAULT_TMPL = boConsts.APPROVAL_TMPL;
 
     /* 변경작업 모달 (actionsModal) */
+    const bulkErrors = reactive({}); // 변경작업 모달 검증 오류 (항목 아래 빨간 라벨)
     const bulkForm = reactive({
       status:'', courier:'', trackingNo:'', apprAction:'', apprComment:'',
       apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
@@ -366,6 +368,7 @@ window.OdDlivMng = {
       });
       onReqTargetChange();
       uiState.bulkOpen = true;
+      Object.keys(bulkErrors).forEach(k => delete bulkErrors[k]);
     };
     const cfBulkPreview = computed(() => {
       if (!uiState.bulkOpen) { return ''; }
@@ -398,8 +401,9 @@ window.OdDlivMng = {
     const saveBulk = async () => {
       const ids = Array.from(checked);
       if (!ids.length) { showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
+      Object.keys(bulkErrors).forEach(k => delete bulkErrors[k]);
       if (uiState.bulkTab === 'status') {
-        if (!bulkForm.status) { showToast('변경할 배송상태를 선택하세요.', 'error'); return; }
+        if (!bulkForm.status) { bulkErrors.status = '변경할 배송상태를 선택해주세요.'; showToast('입력 내용을 확인해주세요.', 'error'); return; }
         const ok = await showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
         if (!ok) { return; }
         window.safeArrayUtils.safeForEach(dlivs, d => { if (ids.includes(d.dlivId)) d.dlivStatusCd = bulkForm.status; });
@@ -414,7 +418,10 @@ window.OdDlivMng = {
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'courier') {
-        if (!bulkForm.courier && !bulkForm.trackingNo) { showToast('택배사 또는 운송장번호를 입력하세요.', 'error'); return; }
+        if (!bulkForm.courier && !bulkForm.trackingNo) {
+          bulkErrors.courier = '택배사 또는 운송장번호 중 하나는 입력해주세요.';
+          showToast('입력 내용을 확인해주세요.', 'error'); return;
+        }
         const ok = await showConfirm('일괄 택배정보 변경', `선택한 ${ids.length}건의 택배정보를 변경하시겠습니까?`);
         if (!ok) { return; }
         window.safeArrayUtils.safeForEach(dlivs, d => {
@@ -434,7 +441,7 @@ window.OdDlivMng = {
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approval') {
-        if (!bulkForm.apprAction) { showToast('결재처리 구분을 선택하세요.', 'error'); return; }
+        if (!bulkForm.apprAction) { bulkErrors.apprAction = '결재처리 구분을 선택해주세요.'; showToast('입력 내용을 확인해주세요.', 'error'); return; }
         const ok = await showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) { return; }
         window.safeArrayUtils.safeForEach(dlivs, d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
@@ -449,7 +456,7 @@ window.OdDlivMng = {
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approvalReq') {
-        if (!bulkForm.apprToUserId) { showToast('추가결재자(회원)를 선택하세요.', 'error'); return; }
+        if (!bulkForm.apprToUserId) { bulkErrors.apprToUserId = '추가결재자(회원)를 선택해주세요.'; showToast('입력 내용을 확인해주세요.', 'error'); return; }
         const ok = await showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
         if (!ok) { return; }
         window.safeArrayUtils.safeForEach(dlivs, d => { if (ids.includes(d.dlivId)) {
@@ -527,7 +534,7 @@ window.OdDlivMng = {
 
     // 결재 문의 폼
     columns.apprContactForm = [
-      { key: 'apprToUserId', label: '추가결재자', type: 'select', colSpan: 2, nullLabel: '선택하세요',
+      { key: 'apprToUserId', label: '추가결재자', type: 'select', colSpan: 2, nullLabel: '선택하세요', required: true,
         options: () => members.map(m => ({ value: m.memberId, label: `${m.memberNm} (${m.memberId})` })),
         onChange: () => handleBtnAction('actionsModal-apprToChange') },
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
@@ -564,7 +571,7 @@ window.OdDlivMng = {
     ];
     // 결재처리구분/결재코멘트 (approval 탭)
     columns.bulkApprovalForm = [
-      { key: 'apprAction',  label: '결재처리 구분', type: 'select', nullLabel: '선택하세요',
+      { key: 'apprAction',  label: '결재처리 구분', type: 'select', nullLabel: '선택하세요', required: true,
         options: () => codes.approval_actions, colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'apprComment', label: '결재 코멘트', type: 'textarea', rows: 2,
@@ -576,7 +583,7 @@ window.OdDlivMng = {
     return {
       columns,
       excelModal, buildExcelParams,                                                                                    // 엑셀 다운로드
-      dlivs, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick, // 상태 / 데이터
+      dlivs, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkErrors, bulkOpen, memberPick, // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfDetailEditId, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview,                        // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                 // template 직접 참조
@@ -667,29 +674,30 @@ window.OdDlivMng = {
               {{ c.codeLabel }}
             </option>
           </select>
+          <span v-if="bulkErrors.status" class="field-error">{{ bulkErrors.status }}</span>
         </div>
         <!-- ===== ■.■.■.■. 택배사/운송장번호 (BoFormArea 자동 렌더) ====================== -->
         <div v-if="uiState.bulkTab==='courier'">
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.bulkCourierForm" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.bulkCourierForm" :form="bulkForm" :errors="bulkErrors"
             :cols="2" :show-actions="false" />
         </div>
         <!-- ===== ■.■.■.■. 결재처리 (BoFormArea 자동 렌더) =========================== -->
         <div v-if="uiState.bulkTab==='approval'">
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.bulkApprovalForm" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.bulkApprovalForm" :form="bulkForm" :errors="bulkErrors"
             :cols="2" :show-actions="false" />
         </div>
         <div v-if="uiState.bulkTab==='approvalReq'">
-          <bo-form-area :columns="columns.apprContactForm" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.apprContactForm" :form="bulkForm" :errors="bulkErrors"
             :cols="2" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 요청대상/요청대상명 (BoFormArea 자동 렌더) =================== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.apprTargetForm" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.apprTargetForm" :form="bulkForm" :errors="bulkErrors"
             :cols="2" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 요청금액/요청사유/전송템플릿 (BoFormArea 자동 렌더) ============== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.apprDetailForm" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.apprDetailForm" :form="bulkForm" :errors="bulkErrors"
             :cols="2" :show-actions="false">
             <template #tmplMsg>
               <textarea class="form-control" v-model="bulkForm.tmplMsg" rows="4" style="font-family:monospace;font-size:11.5px;"></textarea>

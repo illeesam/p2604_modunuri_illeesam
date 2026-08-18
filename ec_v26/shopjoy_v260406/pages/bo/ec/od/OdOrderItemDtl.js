@@ -19,6 +19,7 @@ window.OdOrderItemDtl = {
     const showToast   = window.boApp?.showToast   || props.showToast;
     const showConfirm = window.boApp?.showConfirm  || props.showConfirm;
 
+    const errors = reactive({}); // 저장 검증 오류 (항목 아래 빨간 라벨)
     const baseForm = reactive({
       orderItemId: '', orderId: '',
       prodId: '', prodNm: '', prodOptNm1: '', prodOptNm2: '',
@@ -171,7 +172,9 @@ window.OdOrderItemDtl = {
     };
 
     const handleSave = async () => {
-      if (!baseForm.orderItemStatusCd) { showToast('품목상태는 필수 항목입니다.', 'error'); return; }
+      Object.keys(errors).forEach(k => delete errors[k]);
+      if (!baseForm.orderItemStatusCd) { errors.orderItemStatusCd = '품목상태를 선택해주세요.'; }
+      if (Object.keys(errors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
       try {
@@ -305,7 +308,7 @@ window.OdOrderItemDtl = {
     /* ##### [06] return ######################################################## */
 
     return {
-      baseForm, uiState, tabs, cfIsNew, cfReadonly, codes, claims, history,
+      baseForm, errors, uiState, tabs, cfIsNew, cfReadonly, codes, claims, history,
       baseFormColumns, claimGridColumns, historyGridColumns,
       handleBtnAction,
     };
@@ -333,7 +336,7 @@ window.OdOrderItemDtl = {
       <div v-show="uiState.tabMode !== 'tab' || uiState.activeTab === 'info'" class="card">
         <div v-if="uiState.tabMode !== 'tab'" class="dtl-tab-card-title">📋 기본정보</div>
         <div v-if="uiState.loading" style="padding:32px;text-align:center;color:#bbb;">조회 중...</div>
-        <bo-form-area v-else :columns="baseFormColumns" :form="baseForm" :errors="{}"
+        <bo-form-area v-else :columns="baseFormColumns" :form="baseForm" :errors="errors"
           :readonly="cfReadonly" :cols="3" compact plain-readonly :show-actions="false" />
       </div>
       <!-- ── 클레임 탭 ────────────────────────────────────────── -->

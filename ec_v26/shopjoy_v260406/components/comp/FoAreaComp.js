@@ -1331,9 +1331,15 @@ window.FoFormArea = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ FoFormArea : handleSelectAction -> ', cmd, param);
       if (cmd === 'field-change') {
-        /* errors 자동 제거 + col.onChange 콜백 */
-        const col = param.col;
-        if (col.clearErrOnInput !== false && props.errors[col.key] !== undefined) {
+        /* errors 갱신 + col.onChange 콜백.
+           col.validate(value, form) 가 있으면 그 결과로 실시간 재판정(형식검증 등),
+           없으면 기존처럼 입력이 들어오면 지운다(단순 필수입력). */
+        const col = param.col, v = props.form[col.key];
+        if (col.validate) {
+          const msg = col.validate(v, props.form);
+          if (msg) { props.errors[col.key] = msg; }
+          else if (props.errors[col.key] !== undefined) { delete props.errors[col.key]; }
+        } else if (col.clearErrOnInput !== false && props.errors[col.key] !== undefined) {
           delete props.errors[col.key];
         }
         if (col.onChange) return col.onChange(props.form[col.key], props.form, param.event);
