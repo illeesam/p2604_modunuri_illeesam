@@ -46,14 +46,14 @@ public class CmBlogReplyController {
 
     /* 게시물 댓글 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogReply>> save(@PathVariable("id") String id, @RequestBody CmBlogReply entity) {
+    public ResponseEntity<ApiResponse<CmBlogReply>> save(@PathVariable("id") String id, @Valid @RequestBody CmBlogReply entity) {
         entity.setBlogReplyId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 게시물 댓글 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogReply>> updateSelective(@PathVariable("id") String id, @RequestBody CmBlogReply entity) {
+    public ResponseEntity<ApiResponse<CmBlogReply>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody CmBlogReply entity) {
         entity.setBlogReplyId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class CmBlogReplyController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<CmBlogReply>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody CmBlogReply entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody CmBlogReply entity) {
         CmBlogReply result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class CmBlogReplyController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<CmBlogReply> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<CmBlogReply> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

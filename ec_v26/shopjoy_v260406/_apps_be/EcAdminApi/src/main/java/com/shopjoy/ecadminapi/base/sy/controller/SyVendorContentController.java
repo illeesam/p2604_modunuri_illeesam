@@ -46,14 +46,14 @@ public class SyVendorContentController {
 
     /* 업체 콘텐츠 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorContent>> save(@PathVariable("id") String id, @RequestBody SyVendorContent entity) {
+    public ResponseEntity<ApiResponse<SyVendorContent>> save(@PathVariable("id") String id, @Valid @RequestBody SyVendorContent entity) {
         entity.setVendorContentId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 업체 콘텐츠 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorContent>> updateSelective(@PathVariable("id") String id, @RequestBody SyVendorContent entity) {
+    public ResponseEntity<ApiResponse<SyVendorContent>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyVendorContent entity) {
         entity.setVendorContentId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyVendorContentController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyVendorContent>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyVendorContent entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyVendorContent entity) {
         SyVendorContent result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyVendorContentController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyVendorContent> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyVendorContent> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

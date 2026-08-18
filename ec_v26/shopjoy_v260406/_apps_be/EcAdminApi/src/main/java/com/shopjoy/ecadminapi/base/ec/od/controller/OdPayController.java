@@ -46,14 +46,14 @@ public class OdPayController {
 
     /* 결제 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdPay>> save(@PathVariable("id") String id, @RequestBody OdPay entity) {
+    public ResponseEntity<ApiResponse<OdPay>> save(@PathVariable("id") String id, @Valid @RequestBody OdPay entity) {
         entity.setPayId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 결제 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdPay>> updateSelective(@PathVariable("id") String id, @RequestBody OdPay entity) {
+    public ResponseEntity<ApiResponse<OdPay>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody OdPay entity) {
         entity.setPayId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class OdPayController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<OdPay>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody OdPay entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody OdPay entity) {
         OdPay result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class OdPayController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<OdPay> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<OdPay> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

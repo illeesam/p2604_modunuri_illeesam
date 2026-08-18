@@ -49,13 +49,13 @@ public class BoSyMenuController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyMenu>> update(@PathVariable("id") String id, @RequestBody SyMenu body) {
+    public ResponseEntity<ApiResponse<SyMenu>> update(@PathVariable("id") String id, @Valid @RequestBody SyMenu body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyMenuService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyMenu>> upsert(@PathVariable("id") String id, @RequestBody SyMenu body) {
+    public ResponseEntity<ApiResponse<SyMenu>> upsert(@PathVariable("id") String id, @Valid @RequestBody SyMenu body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyMenuService.update(id, body)));
     }
 
@@ -69,7 +69,7 @@ public class BoSyMenuController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyMenu> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyMenu> rows) {
         switch (cmd) {
             case "base" -> boSyMenuService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

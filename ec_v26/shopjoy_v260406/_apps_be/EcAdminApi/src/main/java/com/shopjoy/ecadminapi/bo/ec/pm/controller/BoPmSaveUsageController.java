@@ -50,14 +50,14 @@ public class BoPmSaveUsageController {
 
     /* 적립금 사용 이력 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSaveUsage>> save(@PathVariable("id") String id, @RequestBody PmSaveUsage entity) {
+    public ResponseEntity<ApiResponse<PmSaveUsage>> save(@PathVariable("id") String id, @Valid @RequestBody PmSaveUsage entity) {
         entity.setSaveUsageId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 적립금 사용 이력 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSaveUsage>> updateSelective(@PathVariable("id") String id, @RequestBody PmSaveUsage entity) {
+    public ResponseEntity<ApiResponse<PmSaveUsage>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PmSaveUsage entity) {
         entity.setSaveUsageId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }

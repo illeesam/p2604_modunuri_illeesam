@@ -50,13 +50,13 @@ public class BoSyVendorUserRoleController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorUserRole>> update(@PathVariable("id") String id, @RequestBody SyVendorUserRole body) {
+    public ResponseEntity<ApiResponse<SyVendorUserRole>> update(@PathVariable("id") String id, @Valid @RequestBody SyVendorUserRole body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserRoleService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorUserRole>> upsert(@PathVariable("id") String id, @RequestBody SyVendorUserRole body) {
+    public ResponseEntity<ApiResponse<SyVendorUserRole>> upsert(@PathVariable("id") String id, @Valid @RequestBody SyVendorUserRole body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyVendorUserRoleService.update(id, body)));
     }
 
@@ -70,7 +70,7 @@ public class BoSyVendorUserRoleController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyVendorUserRole> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyVendorUserRole> rows) {
         switch (cmd) {
             case "base" -> boSyVendorUserRoleService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

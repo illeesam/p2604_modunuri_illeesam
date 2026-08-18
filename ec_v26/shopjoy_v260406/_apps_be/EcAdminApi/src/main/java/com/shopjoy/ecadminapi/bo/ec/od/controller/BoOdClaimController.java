@@ -60,14 +60,14 @@ public class BoOdClaimController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdClaim>> update(@PathVariable("id") String id, @RequestBody OdClaim body) {
+    public ResponseEntity<ApiResponse<OdClaim>> update(@PathVariable("id") String id, @Valid @RequestBody OdClaim body) {
         OdClaim result = boOdClaimService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdClaim>> upsert(@PathVariable("id") String id, @RequestBody OdClaim body) {
+    public ResponseEntity<ApiResponse<OdClaim>> upsert(@PathVariable("id") String id, @Valid @RequestBody OdClaim body) {
         return ResponseEntity.ok(ApiResponse.ok(boOdClaimService.update(id, body)));
     }
 
@@ -99,7 +99,7 @@ public class BoOdClaimController {
     /** saveList -- 일괄 저장 (cmd 변형: status/type/approval/approvalReq 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<OdClaim> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<OdClaim> rows) {
         switch (cmd) {
             case "base" -> boOdClaimService.saveListBase(rows);
             case "status" -> boOdClaimService.saveListStatus(rows);

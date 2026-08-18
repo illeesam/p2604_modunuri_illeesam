@@ -46,14 +46,14 @@ public class SyBatchController {
 
     /* 배치 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBatch>> save(@PathVariable("id") String id, @RequestBody SyBatch entity) {
+    public ResponseEntity<ApiResponse<SyBatch>> save(@PathVariable("id") String id, @Valid @RequestBody SyBatch entity) {
         entity.setBatchId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 배치 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBatch>> updateSelective(@PathVariable("id") String id, @RequestBody SyBatch entity) {
+    public ResponseEntity<ApiResponse<SyBatch>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyBatch entity) {
         entity.setBatchId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyBatchController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyBatch>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyBatch entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyBatch entity) {
         SyBatch result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyBatchController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyBatch> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyBatch> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

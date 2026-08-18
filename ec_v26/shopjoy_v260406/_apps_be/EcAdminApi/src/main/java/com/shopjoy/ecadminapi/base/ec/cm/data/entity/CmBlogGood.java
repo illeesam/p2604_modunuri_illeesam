@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "cm_blog_good", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,15 +22,18 @@ public class CmBlogGood extends BaseEntity {
     @Id
     @Comment("좋아요ID")
     @Column(name = "blog_good_id", length = 21, nullable = false)
+    @Size(max = 21, message = "blogGoodId 는 21자 이내여야 합니다.")
     private String blogGoodId;
 
 
     @Comment("블로그ID (cm_bltn.)")
     @Column(name = "blog_id", length = 21, nullable = false)
+    @Size(max = 21, message = "blogId 는 21자 이내여야 합니다.")
     private String blogId;
 
     @Comment("사용자ID (sy_member.user_id)")
     @Column(name = "user_id", length = 21, nullable = false)
+    @Size(max = 21, message = "userId 는 21자 이내여야 합니다.")
     private String userId;
 
 }

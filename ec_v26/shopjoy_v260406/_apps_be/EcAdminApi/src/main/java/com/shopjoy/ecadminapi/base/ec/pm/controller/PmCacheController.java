@@ -46,14 +46,14 @@ public class PmCacheController {
 
     /* 캐시(충전금) 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCache>> save(@PathVariable("id") String id, @RequestBody PmCache entity) {
+    public ResponseEntity<ApiResponse<PmCache>> save(@PathVariable("id") String id, @Valid @RequestBody PmCache entity) {
         entity.setCacheId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 캐시(충전금) 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCache>> updateSelective(@PathVariable("id") String id, @RequestBody PmCache entity) {
+    public ResponseEntity<ApiResponse<PmCache>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PmCache entity) {
         entity.setCacheId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PmCacheController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PmCache>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PmCache entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PmCache entity) {
         PmCache result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PmCacheController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmCache> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmCache> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

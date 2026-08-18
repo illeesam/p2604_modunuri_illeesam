@@ -52,7 +52,7 @@ public class FoXsSampleController {
     /** update — 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ZzSample1>> update(
-            @PathVariable("id") String id, @RequestBody ZzSample1 entity) {
+            @PathVariable("id") String id, @Valid @RequestBody ZzSample1 entity) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(id, entity)));
     }
 

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /**
  * FO 채팅 API — /api/fo/my/chat
  * 인가: FO 로그인 회원 전용
@@ -55,7 +56,7 @@ public class FoCmChattController {
     /** 메시지 전송 */
     @PostMapping("/{id}/msg")
     public ResponseEntity<ApiResponse<CmChattMsg>> sendMsg(
-            @PathVariable("id") String id, @RequestBody CmChattMsgDto.SendRequest body) {
+            @PathVariable("id") String id, @Valid @RequestBody CmChattMsgDto.SendRequest body) {
         return ResponseEntity.status(201).body(ApiResponse.created(foCmChattService.sendMsg(id, body)));
     }
 }

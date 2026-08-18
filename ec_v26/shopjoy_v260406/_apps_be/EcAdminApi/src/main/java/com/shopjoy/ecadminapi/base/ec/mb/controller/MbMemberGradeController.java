@@ -46,14 +46,14 @@ public class MbMemberGradeController {
 
     /* 회원 등급 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGrade>> save(@PathVariable("id") String id, @RequestBody MbMemberGrade entity) {
+    public ResponseEntity<ApiResponse<MbMemberGrade>> save(@PathVariable("id") String id, @Valid @RequestBody MbMemberGrade entity) {
         entity.setMemberGradeId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 회원 등급 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGrade>> updateSelective(@PathVariable("id") String id, @RequestBody MbMemberGrade entity) {
+    public ResponseEntity<ApiResponse<MbMemberGrade>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody MbMemberGrade entity) {
         entity.setMemberGradeId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class MbMemberGradeController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<MbMemberGrade>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody MbMemberGrade entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody MbMemberGrade entity) {
         MbMemberGrade result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class MbMemberGradeController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<MbMemberGrade> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<MbMemberGrade> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

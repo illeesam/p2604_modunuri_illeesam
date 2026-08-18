@@ -52,7 +52,7 @@ public class ZzExmy3Controller {
             @PathVariable("exmy1Id") String exmy1Id,
             @PathVariable("exmy2Id") String exmy2Id,
             @PathVariable("exmy3Id") String exmy3Id,
-            @RequestBody ZzExmy3 entity) {
+            @Valid @RequestBody ZzExmy3 entity) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(exmy1Id, exmy2Id, exmy3Id, entity)));
     }
 
@@ -62,7 +62,7 @@ public class ZzExmy3Controller {
             @PathVariable("exmy1Id") String exmy1Id,
             @PathVariable("exmy2Id") String exmy2Id,
             @PathVariable("exmy3Id") String exmy3Id,
-            @RequestBody ZzExmy3 entity) {
+            @Valid @RequestBody ZzExmy3 entity) {
         entity.setExmy1Id(exmy1Id);
         entity.setExmy2Id(exmy2Id);
         entity.setExmy3Id(exmy3Id);

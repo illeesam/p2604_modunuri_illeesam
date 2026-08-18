@@ -46,14 +46,14 @@ public class MbMemberSnsController {
 
     /* SNS 연동 회원 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberSns>> save(@PathVariable("id") String id, @RequestBody MbMemberSns entity) {
+    public ResponseEntity<ApiResponse<MbMemberSns>> save(@PathVariable("id") String id, @Valid @RequestBody MbMemberSns entity) {
         entity.setMemberSnsId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* SNS 연동 회원 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberSns>> updateSelective(@PathVariable("id") String id, @RequestBody MbMemberSns entity) {
+    public ResponseEntity<ApiResponse<MbMemberSns>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody MbMemberSns entity) {
         entity.setMemberSnsId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class MbMemberSnsController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<MbMemberSns>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody MbMemberSns entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody MbMemberSns entity) {
         MbMemberSns result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class MbMemberSnsController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<MbMemberSns> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<MbMemberSns> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

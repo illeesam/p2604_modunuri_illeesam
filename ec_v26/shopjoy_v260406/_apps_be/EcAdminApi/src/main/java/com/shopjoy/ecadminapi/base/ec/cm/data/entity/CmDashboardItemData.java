@@ -9,6 +9,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "cm_dashboard_item_data", schema = "shopjoy_2604")
 @Getter @Setter
@@ -19,71 +20,88 @@ public class CmDashboardItemData extends BaseEntity {
     @Id
     @Comment("데이터ID")
     @Column(name = "dashboard_item_data_id", length = 21, nullable = false)
+    @Size(max = 21, message = "dashboardItemDataId 는 21자 이내여야 합니다.")
     private String dashboardItemDataId;
 
 
     @Comment("패널ID FK")
     @Column(name = "dashboard_item_id", length = 21, nullable = false)
+    @Size(max = 21, message = "dashboardItemId 는 21자 이내여야 합니다.")
     private String dashboardItemId;
 
     @Comment("화면명 역정규화")
     @Column(name = "ui_nm", length = 100, nullable = false)
+    @Size(max = 100, message = "uiNm 는 100자 이내여야 합니다.")
     private String uiNm;
 
     @Comment("패널키 역정규화")
     @Column(name = "item_key", length = 50, nullable = false)
+    @Size(max = 50, message = "itemKey 는 50자 이내여야 합니다.")
     private String itemKey;
 
     @Comment("집계일자 (YYYYMMDD)")
     @Column(name = "yyyymmdd", length = 8, nullable = false)
+    @Size(max = 8, message = "yyyymmdd 는 8자 이내여야 합니다.")
     private String yyyymmdd;
 
     @Comment("부서ID")
     @Column(name = "dept_id", length = 21)
+    @Size(max = 21, message = "deptId 는 21자 이내여야 합니다.")
     private String deptId;
 
     @Comment("사용자ID")
     @Column(name = "user_id", length = 21)
+    @Size(max = 21, message = "userId 는 21자 이내여야 합니다.")
     private String userId;
 
     @Comment("데이터 JSON")
     @Column(name = "data_json", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "dataJson 는 50000자 이내여야 합니다.")
     private String dataJson;
 
     @Comment("지표1명")
     @Column(name = "col1_nm", length = 100)
+    @Size(max = 100, message = "col1Nm 는 100자 이내여야 합니다.")
     private String col1Nm;
 
     @Comment("지표2명")
     @Column(name = "col2_nm", length = 100)
+    @Size(max = 100, message = "col2Nm 는 100자 이내여야 합니다.")
     private String col2Nm;
 
     @Comment("지표3명")
     @Column(name = "col3_nm", length = 100)
+    @Size(max = 100, message = "col3Nm 는 100자 이내여야 합니다.")
     private String col3Nm;
 
     @Comment("지표4명")
     @Column(name = "col4_nm", length = 100)
+    @Size(max = 100, message = "col4Nm 는 100자 이내여야 합니다.")
     private String col4Nm;
 
     @Comment("지표5명")
     @Column(name = "col5_nm", length = 100)
+    @Size(max = 100, message = "col5Nm 는 100자 이내여야 합니다.")
     private String col5Nm;
 
     @Comment("지표6명")
     @Column(name = "col6_nm", length = 100)
+    @Size(max = 100, message = "col6Nm 는 100자 이내여야 합니다.")
     private String col6Nm;
 
     @Comment("지표7명")
     @Column(name = "col7_nm", length = 100)
+    @Size(max = 100, message = "col7Nm 는 100자 이내여야 합니다.")
     private String col7Nm;
 
     @Comment("지표8명")
     @Column(name = "col8_nm", length = 100)
+    @Size(max = 100, message = "col8Nm 는 100자 이내여야 합니다.")
     private String col8Nm;
 
     @Comment("지표9명")
     @Column(name = "col9_nm", length = 100)
+    @Size(max = 100, message = "col9Nm 는 100자 이내여야 합니다.")
     private String col9Nm;
 
     @Comment("지표1값")

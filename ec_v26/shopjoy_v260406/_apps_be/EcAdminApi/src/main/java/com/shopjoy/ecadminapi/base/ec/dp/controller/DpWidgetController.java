@@ -46,14 +46,14 @@ public class DpWidgetController {
 
     /* 전시 위젯 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidget>> save(@PathVariable("id") String id, @RequestBody DpWidget entity) {
+    public ResponseEntity<ApiResponse<DpWidget>> save(@PathVariable("id") String id, @Valid @RequestBody DpWidget entity) {
         entity.setWidgetId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 전시 위젯 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidget>> updateSelective(@PathVariable("id") String id, @RequestBody DpWidget entity) {
+    public ResponseEntity<ApiResponse<DpWidget>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody DpWidget entity) {
         entity.setWidgetId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class DpWidgetController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<DpWidget>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody DpWidget entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody DpWidget entity) {
         DpWidget result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class DpWidgetController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<DpWidget> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<DpWidget> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

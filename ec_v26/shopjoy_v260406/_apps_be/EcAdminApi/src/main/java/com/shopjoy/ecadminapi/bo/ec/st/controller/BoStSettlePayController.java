@@ -47,13 +47,13 @@ public class BoStSettlePayController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettlePay>> update(@PathVariable("id") String id, @RequestBody StSettlePay body) {
+    public ResponseEntity<ApiResponse<StSettlePay>> update(@PathVariable("id") String id, @Valid @RequestBody StSettlePay body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettlePay>> upsert(@PathVariable("id") String id, @RequestBody StSettlePay body) {
+    public ResponseEntity<ApiResponse<StSettlePay>> upsert(@PathVariable("id") String id, @Valid @RequestBody StSettlePay body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettlePayService.update(id, body)));
     }
 

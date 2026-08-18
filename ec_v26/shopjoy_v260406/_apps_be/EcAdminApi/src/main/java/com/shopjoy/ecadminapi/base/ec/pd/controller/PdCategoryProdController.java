@@ -46,14 +46,14 @@ public class PdCategoryProdController {
 
     /* 카테고리-상품 매핑 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdCategoryProd>> save(@PathVariable("id") String id, @RequestBody PdCategoryProd entity) {
+    public ResponseEntity<ApiResponse<PdCategoryProd>> save(@PathVariable("id") String id, @Valid @RequestBody PdCategoryProd entity) {
         entity.setCategoryProdId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 카테고리-상품 매핑 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdCategoryProd>> updateSelective(@PathVariable("id") String id, @RequestBody PdCategoryProd entity) {
+    public ResponseEntity<ApiResponse<PdCategoryProd>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PdCategoryProd entity) {
         entity.setCategoryProdId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PdCategoryProdController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PdCategoryProd>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PdCategoryProd entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PdCategoryProd entity) {
         PdCategoryProd result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PdCategoryProdController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PdCategoryProd> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PdCategoryProd> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

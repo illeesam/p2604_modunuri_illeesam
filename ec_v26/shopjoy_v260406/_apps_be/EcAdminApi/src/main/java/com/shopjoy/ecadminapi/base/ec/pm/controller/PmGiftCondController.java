@@ -46,14 +46,14 @@ public class PmGiftCondController {
 
     /* 사은품 지급 조건 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmGiftCond>> save(@PathVariable("id") String id, @RequestBody PmGiftCond entity) {
+    public ResponseEntity<ApiResponse<PmGiftCond>> save(@PathVariable("id") String id, @Valid @RequestBody PmGiftCond entity) {
         entity.setGiftCondId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 사은품 지급 조건 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmGiftCond>> updateSelective(@PathVariable("id") String id, @RequestBody PmGiftCond entity) {
+    public ResponseEntity<ApiResponse<PmGiftCond>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PmGiftCond entity) {
         entity.setGiftCondId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PmGiftCondController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PmGiftCond>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PmGiftCond entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PmGiftCond entity) {
         PmGiftCond result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PmGiftCondController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmGiftCond> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmGiftCond> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

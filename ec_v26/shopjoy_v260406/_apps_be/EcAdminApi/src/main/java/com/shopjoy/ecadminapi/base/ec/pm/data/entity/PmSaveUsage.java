@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pm_save_usage", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,23 +23,28 @@ public class PmSaveUsage extends BaseEntity {
     @Id
     @Comment("적립사용ID (YYMMDDhhmmss+rand4)")
     @Column(name = "save_usage_id", length = 21, nullable = false)
+    @Size(max = 21, message = "saveUsageId 는 21자 이내여야 합니다.")
     private String saveUsageId;
 
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("주문ID (od_order.order_id)")
     @Column(name = "order_id", length = 21)
+    @Size(max = 21, message = "orderId 는 21자 이내여야 합니다.")
     private String orderId;
 
     @Comment("주문상품ID (od_order_item.order_item_id, 상품별 사용 시)")
     @Column(name = "order_item_id", length = 21)
+    @Size(max = 21, message = "orderItemId 는 21자 이내여야 합니다.")
     private String orderItemId;
 
     @Comment("상품ID (pd_prod.prod_id, 사용 상품)")
     @Column(name = "prod_id", length = 21)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("사용 적립금액")

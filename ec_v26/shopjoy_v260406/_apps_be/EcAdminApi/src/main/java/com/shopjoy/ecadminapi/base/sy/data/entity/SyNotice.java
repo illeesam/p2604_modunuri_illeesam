@@ -27,6 +27,7 @@ public class SyNotice extends BaseEntity {
     @Id
     @Comment("공지ID (YYMMDDhhmmss+rand4)")
     @Column(name = "notice_id", length = 21, nullable = false)
+    @Size(max = 21, message = "noticeId 는 21자 이내여야 합니다.")
     private String noticeId;
 
     @Comment("제목")
@@ -37,14 +38,17 @@ public class SyNotice extends BaseEntity {
 
     @Comment("공지유형 (코드: NOTICE_TYPE_CD)")
     @Column(name = "notice_type_cd", length = 30)
+    @Size(max = 30, message = "noticeTypeCd 는 30자 이내여야 합니다.")
     private String noticeTypeCd;
 
     @Comment("상단고정 Y/N")
     @Column(name = "is_fixed", length = 1)
+    @Size(max = 1, message = "isFixed 는 1자 이내여야 합니다.")
     private String isFixed;
 
     @Comment("내용 (HTML)")
     @Column(name = "content_html", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "contentHtml 는 50000자 이내여야 합니다.")
     private String contentHtml;
 
     @Comment("노출시작일")
@@ -57,6 +61,7 @@ public class SyNotice extends BaseEntity {
 
     @Comment("상태 (ACTIVE/INACTIVE)")
     @Column(name = "notice_status_cd", length = 20)
+    @Size(max = 20, message = "noticeStatusCd 는 20자 이내여야 합니다.")
     private String noticeStatusCd;
 
     @Comment("조회수")

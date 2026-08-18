@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "mb_device_token", schema = "shopjoy_2604")
 @Getter @Setter
@@ -20,23 +21,28 @@ public class MbDeviceToken extends BaseEntity {
 
     @Id
     @Column(name = "device_token_id", length = 21, nullable = false)
+    @Size(max = 21, message = "deviceTokenId 는 21자 이내여야 합니다.")
     private String deviceTokenId;
 
     @Comment("디바이스 토큰 키")
     @Column(name = "device_token", length = 200, nullable = false)
+    @Size(max = 100, message = "deviceToken 는 100자 이내여야 합니다.")
     private String deviceToken;
 
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("OS유형 ANDROID/IOS")
     @Column(name = "os_type_cd", length = 10)
+    @Size(max = 10, message = "osTypeCd 는 10자 이내여야 합니다.")
     private String osTypeCd;
 
     @Comment("혜택알림수신여부 Y/N")
     @Column(name = "benefit_noti_yn", length = 1)
+    @Size(max = 1, message = "benefitNotiYn 는 1자 이내여야 합니다.")
     private String benefitNotiYn;
 
     @Comment("알림리스트 읽음일시")

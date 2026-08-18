@@ -13,6 +13,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.AttachFile;
 
 import java.util.List;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "cm_faq", schema = "shopjoy_2604")
 @Getter @Setter
@@ -23,19 +24,23 @@ public class CmFaq extends BaseEntity {
     @Id
     @Comment("FAQ ID (YYMMDDhhmmss+rand4)")
     @Column(name = "faq_id", length = 21, nullable = false)
+    @Size(max = 21, message = "faqId 는 21자 이내여야 합니다.")
     private String faqId;
 
 
     @Comment("FAQ 분류 표시경로 (sy_path.path_id, biz_cd=cm_faq)")
     @Column(name = "path_id", length = 21)
+    @Size(max = 21, message = "pathId 는 21자 이내여야 합니다.")
     private String pathId;
 
     @Comment("질문")
     @Column(name = "faq_question", length = 500, nullable = false)
+    @Size(max = 100, message = "faqQuestion 는 100자 이내여야 합니다.")
     private String faqQuestion;
 
     @Comment("답변(HTML)")
     @Column(name = "faq_answer", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "faqAnswer 는 50000자 이내여야 합니다.")
     private String faqAnswer;
 
 
@@ -45,6 +50,7 @@ public class CmFaq extends BaseEntity {
 
     @Comment("노출여부 Y/N")
     @Column(name = "use_yn", length = 1)
+    @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
     @Comment("조회수")

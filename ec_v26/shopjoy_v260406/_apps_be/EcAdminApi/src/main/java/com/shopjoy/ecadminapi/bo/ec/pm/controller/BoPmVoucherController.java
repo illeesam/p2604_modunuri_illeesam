@@ -53,14 +53,14 @@ public class BoPmVoucherController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmVoucher>> update(@PathVariable("id") String id, @RequestBody PmVoucher body) {
+    public ResponseEntity<ApiResponse<PmVoucher>> update(@PathVariable("id") String id, @Valid @RequestBody PmVoucher body) {
         PmVoucher result = boPmVoucherService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmVoucher>> upsert(@PathVariable("id") String id, @RequestBody PmVoucher body) {
+    public ResponseEntity<ApiResponse<PmVoucher>> upsert(@PathVariable("id") String id, @Valid @RequestBody PmVoucher body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmVoucherService.update(id, body)));
     }
 
@@ -81,14 +81,14 @@ public class BoPmVoucherController {
     /** sendSns — 전송 */
     @PostMapping("/{id}/send-sns")
     public ResponseEntity<ApiResponse<Void>> sendSns(
-            @PathVariable("id") String id, @RequestBody PmVoucherSendSnsDto.Request req) {
+            @PathVariable("id") String id, @Valid @RequestBody PmVoucherSendSnsDto.Request req) {
         boPmVoucherService.sendSns(id, req);
         return ResponseEntity.ok(ApiResponse.ok(null, "발송되었습니다."));
     }
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmVoucher> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmVoucher> rows) {
         switch (cmd) {
             case "base" -> boPmVoucherService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

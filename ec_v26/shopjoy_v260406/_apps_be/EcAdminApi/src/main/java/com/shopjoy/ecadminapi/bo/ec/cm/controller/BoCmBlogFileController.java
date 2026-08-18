@@ -32,7 +32,7 @@ public class BoCmBlogFileController {
     /** saveList -- 일괄 저장 (추가/수정/삭제, cmd 변형: base) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<CmBlogFile> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<CmBlogFile> rows) {
         switch (cmd) {
             case "base" -> boCmBlogFileService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

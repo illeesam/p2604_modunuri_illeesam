@@ -52,14 +52,14 @@ public class BoPmPlanController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmPlan>> update(@PathVariable("id") String id, @RequestBody PmPlan body) {
+    public ResponseEntity<ApiResponse<PmPlan>> update(@PathVariable("id") String id, @Valid @RequestBody PmPlan body) {
         PmPlan result = boPmPlanService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmPlan>> upsert(@PathVariable("id") String id, @RequestBody PmPlan body) {
+    public ResponseEntity<ApiResponse<PmPlan>> upsert(@PathVariable("id") String id, @Valid @RequestBody PmPlan body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmPlanService.update(id, body)));
     }
 
@@ -79,7 +79,7 @@ public class BoPmPlanController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmPlan> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmPlan> rows) {
         switch (cmd) {
             case "base" -> boPmPlanService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

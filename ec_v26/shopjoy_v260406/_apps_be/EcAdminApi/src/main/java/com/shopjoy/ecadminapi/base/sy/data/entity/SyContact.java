@@ -27,18 +27,22 @@ public class SyContact extends BaseEntity {
     @Id
     @Comment("문의ID (YYMMDDhhmmss+rand4)")
     @Column(name = "contact_id", length = 21, nullable = false)
+    @Size(max = 21, message = "contactId 는 21자 이내여야 합니다.")
     private String contactId;
 
     @Comment("회원ID")
     @Column(name = "member_id", length = 21)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("문의자명")
     @Column(name = "member_nm", length = 50)
+    @Size(max = 50, message = "memberNm 는 50자 이내여야 합니다.")
     private String memberNm;
 
     @Comment("문의유형")
     @Column(name = "category_cd", length = 30)
+    @Size(max = 30, message = "categoryCd 는 30자 이내여야 합니다.")
     private String categoryCd;
 
     @Comment("제목")
@@ -49,18 +53,22 @@ public class SyContact extends BaseEntity {
 
     @Comment("문의내용")
     @Column(name = "contact_content", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "contactContent 는 50000자 이내여야 합니다.")
     private String contactContent;
 
     @Comment("처리상태 (코드: CONTACT_STATUS_CD)")
     @Column(name = "contact_status_cd", length = 20)
+    @Size(max = 20, message = "contactStatusCd 는 20자 이내여야 합니다.")
     private String contactStatusCd;
 
     @Comment("답변내용")
     @Column(name = "contact_answer", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "contactAnswer 는 50000자 이내여야 합니다.")
     private String contactAnswer;
 
     @Comment("답변자 (sy_user.user_id)")
     @Column(name = "answer_user_id", length = 21)
+    @Size(max = 21, message = "answerUserId 는 21자 이내여야 합니다.")
     private String answerUserId;
 
     @Comment("답변일시")

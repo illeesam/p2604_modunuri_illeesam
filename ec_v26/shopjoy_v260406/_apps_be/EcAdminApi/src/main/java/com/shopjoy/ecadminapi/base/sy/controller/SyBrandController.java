@@ -46,14 +46,14 @@ public class SyBrandController {
 
     /* 브랜드 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBrand>> save(@PathVariable("id") String id, @RequestBody SyBrand entity) {
+    public ResponseEntity<ApiResponse<SyBrand>> save(@PathVariable("id") String id, @Valid @RequestBody SyBrand entity) {
         entity.setBrandId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 브랜드 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBrand>> updateSelective(@PathVariable("id") String id, @RequestBody SyBrand entity) {
+    public ResponseEntity<ApiResponse<SyBrand>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyBrand entity) {
         entity.setBrandId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyBrandController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyBrand>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyBrand entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyBrand entity) {
         SyBrand result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyBrandController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyBrand> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyBrand> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

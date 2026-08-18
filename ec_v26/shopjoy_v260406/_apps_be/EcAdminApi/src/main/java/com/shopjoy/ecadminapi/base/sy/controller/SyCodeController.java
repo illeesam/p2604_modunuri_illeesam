@@ -46,14 +46,14 @@ public class SyCodeController {
 
     /* 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCode>> save(@PathVariable("id") String id, @RequestBody SyCode entity) {
+    public ResponseEntity<ApiResponse<SyCode>> save(@PathVariable("id") String id, @Valid @RequestBody SyCode entity) {
         entity.setCodeId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCode>> updateSelective(@PathVariable("id") String id, @RequestBody SyCode entity) {
+    public ResponseEntity<ApiResponse<SyCode>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyCode entity) {
         entity.setCodeId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyCodeController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyCode>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyCode entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyCode entity) {
         SyCode result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyCodeController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyCode> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyCode> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             case "order" -> service.saveListOrder(rows);

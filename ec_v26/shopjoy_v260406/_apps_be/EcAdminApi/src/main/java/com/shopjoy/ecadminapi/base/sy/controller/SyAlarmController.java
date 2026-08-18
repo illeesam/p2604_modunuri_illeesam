@@ -55,14 +55,14 @@ public class SyAlarmController {
 
     /* 알람 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAlarm>> save(@PathVariable("id") String id, @RequestBody SyAlarm entity) {
+    public ResponseEntity<ApiResponse<SyAlarm>> save(@PathVariable("id") String id, @Valid @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 알람 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAlarm>> updateSelective(@PathVariable("id") String id, @RequestBody SyAlarm entity) {
+    public ResponseEntity<ApiResponse<SyAlarm>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }

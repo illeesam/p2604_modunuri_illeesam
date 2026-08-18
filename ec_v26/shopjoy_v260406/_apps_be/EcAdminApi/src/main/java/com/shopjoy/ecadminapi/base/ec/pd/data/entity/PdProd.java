@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pd_prod", schema = "shopjoy_2604")
 @Getter @Setter
@@ -23,35 +24,43 @@ public class PdProd extends BaseEntity {
     @Id
     @Comment("상품ID (YYMMDDhhmmss+rand4)")
     @Column(name = "prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
 
     @Comment("카테고리ID")
     @Column(name = "category_id", length = 21)
+    @Size(max = 21, message = "categoryId 는 21자 이내여야 합니다.")
     private String categoryId;
 
     @Comment("브랜드ID")
     @Column(name = "brand_id", length = 21)
+    @Size(max = 21, message = "brandId 는 21자 이내여야 합니다.")
     private String brandId;
 
     @Comment("업체ID")
     @Column(name = "vendor_id", length = 21)
+    @Size(max = 21, message = "vendorId 는 21자 이내여야 합니다.")
     private String vendorId;
 
     @Comment("담당MD (sy_user.user_id) — 등록 시 본인 기본값, 변경 가능")
     @Column(name = "md_user_id", length = 21)
+    @Size(max = 21, message = "mdUserId 는 21자 이내여야 합니다.")
     private String mdUserId;
 
     @Comment("상품명")
     @Column(name = "prod_nm", length = 200, nullable = false)
+    @Size(max = 100, message = "prodNm 는 100자 이내여야 합니다.")
     private String prodNm;
 
     @Comment("상품유형 (코드: PROD_TYPE_CD — SINGLE/GROUP/SET)")
     @Column(name = "prod_type_cd", length = 20)
+    @Size(max = 20, message = "prodTypeCd 는 20자 이내여야 합니다.")
     private String prodTypeCd;
 
     @Comment("상품코드(SKU)")
     @Column(name = "prod_code", length = 50)
+    @Size(max = 50, message = "prodCode 는 50자 이내여야 합니다.")
     private String prodCode;
 
     @Comment("정가")
@@ -80,18 +89,22 @@ public class PdProd extends BaseEntity {
 
     @Comment("상태 (코드: PROD_STATUS_CD)")
     @Column(name = "prod_status_cd", length = 20)
+    @Size(max = 20, message = "prodStatusCd 는 20자 이내여야 합니다.")
     private String prodStatusCd;
 
     @Comment("변경 전 상품상태 (코드: PROD_STATUS_CD)")
     @Column(name = "prod_status_cd_before", length = 20)
+    @Size(max = 20, message = "prodStatusCdBefore 는 20자 이내여야 합니다.")
     private String prodStatusCdBefore;
 
     @Comment("썸네일URL")
     @Column(name = "thumbnail_url", length = 500)
+    @Size(max = 100, message = "thumbnailUrl 는 100자 이내여야 합니다.")
     private String thumbnailUrl;
 
     @Comment("상세설명 (HTML)")
     @Column(name = "content_html", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "contentHtml 는 50000자 이내여야 합니다.")
     private String contentHtml;
 
     @Comment("무게(kg)")
@@ -100,14 +113,17 @@ public class PdProd extends BaseEntity {
 
     @Comment("사이즈 (코드: SIZE_INFO_CD)")
     @Column(name = "size_info_cd", length = 100)
+    @Size(max = 100, message = "sizeInfoCd 는 100자 이내여야 합니다.")
     private String sizeInfoCd;
 
     @Comment("신상품여부 Y/N")
     @Column(name = "is_new", length = 1)
+    @Size(max = 1, message = "isNew 는 1자 이내여야 합니다.")
     private String isNew;
 
     @Comment("베스트여부 Y/N")
     @Column(name = "is_best", length = 1)
+    @Size(max = 1, message = "isBest 는 1자 이내여야 합니다.")
     private String isBest;
 
     @Comment("조회수")
@@ -140,38 +156,47 @@ public class PdProd extends BaseEntity {
 
     @Comment("성인상품 여부 Y/N")
     @Column(name = "adlt_yn", length = 1)
+    @Size(max = 1, message = "adltYn 는 1자 이내여야 합니다.")
     private String adltYn;
 
     @Comment("당일배송여부 Y/N")
     @Column(name = "same_day_dliv_yn", length = 1)
+    @Size(max = 1, message = "sameDayDlivYn 는 1자 이내여야 합니다.")
     private String sameDayDlivYn;
 
     @Comment("품절여부 Y/N")
     @Column(name = "sold_out_yn", length = 1)
+    @Size(max = 1, message = "soldOutYn 는 1자 이내여야 합니다.")
     private String soldOutYn;
 
     @Comment("배송템플릿ID (pd_dliv_tmplt.dliv_tmplt_id)")
     @Column(name = "dliv_tmplt_id", length = 21)
+    @Size(max = 21, message = "dlivTmpltId 는 21자 이내여야 합니다.")
     private String dlivTmpltId;
 
     @Comment("배송방법 override (코드: DLIV_METHOD_CD) - NULL이면 배송템플릿(dliv_tmplt_id) 기본값 사용")
     @Column(name = "dliv_method_cd", length = 30)
+    @Size(max = 30, message = "dlivMethodCd 는 30자 이내여야 합니다.")
     private String dlivMethodCd;
 
     @Comment("쿠폰 사용 가능 여부 Y/N")
     @Column(name = "coupon_use_yn", length = 1)
+    @Size(max = 1, message = "couponUseYn 는 1자 이내여야 합니다.")
     private String couponUseYn;
 
     @Comment("적립금 사용 가능 여부 Y/N")
     @Column(name = "save_use_yn", length = 1)
+    @Size(max = 1, message = "saveUseYn 는 1자 이내여야 합니다.")
     private String saveUseYn;
 
     @Comment("할인 적용 가능 여부 Y/N")
     @Column(name = "discnt_use_yn", length = 1)
+    @Size(max = 1, message = "discntUseYn 는 1자 이내여야 합니다.")
     private String discntUseYn;
 
     @Comment("홍보문구 (500자 이내)")
     @Column(name = "advrt_stmt", length = 500)
+    @Size(max = 100, message = "advrtStmt 는 100자 이내여야 합니다.")
     private String advrtStmt;
 
     @Comment("홍보문구 시작일시")
@@ -184,18 +209,22 @@ public class PdProd extends BaseEntity {
 
     @Comment("시뮬데이터여부 (Y/N)")
     @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    @Size(max = 1, message = "simulYn 는 1자 이내여야 합니다.")
     private String simulYn;
 
     @Comment("옵션 표준코드 (예: COLOR, SIZE — 공통코드 그룹 기준)")
     @Column(name = "prod_opt_std_cd", length = 20)
+    @Size(max = 20, message = "prodOptStdCd 는 20자 이내여야 합니다.")
     private String prodOptStdCd;
 
     @Comment("옵션유형1 분류코드 (예: COLOR)")
     @Column(name = "prod_opt_type1_cd", length = 20)
+    @Size(max = 20, message = "prodOptType1Cd 는 20자 이내여야 합니다.")
     private String prodOptType1Cd;
 
     @Comment("옵션유형2 분류코드 (예: SIZE)")
     @Column(name = "prod_opt_type2_cd", length = 20)
+    @Size(max = 20, message = "prodOptType2Cd 는 20자 이내여야 합니다.")
     private String prodOptType2Cd;
 
 }

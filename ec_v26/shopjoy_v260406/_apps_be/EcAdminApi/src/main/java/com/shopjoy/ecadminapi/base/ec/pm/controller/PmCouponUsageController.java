@@ -46,14 +46,14 @@ public class PmCouponUsageController {
 
     /* 쿠폰 사용 이력 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCouponUsage>> save(@PathVariable("id") String id, @RequestBody PmCouponUsage entity) {
+    public ResponseEntity<ApiResponse<PmCouponUsage>> save(@PathVariable("id") String id, @Valid @RequestBody PmCouponUsage entity) {
         entity.setCouponUsageId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 쿠폰 사용 이력 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCouponUsage>> updateSelective(@PathVariable("id") String id, @RequestBody PmCouponUsage entity) {
+    public ResponseEntity<ApiResponse<PmCouponUsage>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PmCouponUsage entity) {
         entity.setCouponUsageId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PmCouponUsageController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PmCouponUsage>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PmCouponUsage entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PmCouponUsage entity) {
         PmCouponUsage result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PmCouponUsageController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmCouponUsage> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmCouponUsage> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "od_refund", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,19 +23,23 @@ public class OdRefund extends BaseEntity {
     @Id
     @Comment("환불ID (YYMMDDhhmmss+rand4)")
     @Column(name = "refund_id", length = 21, nullable = false)
+    @Size(max = 21, message = "refundId 는 21자 이내여야 합니다.")
     private String refundId;
 
 
     @Comment("주문ID (od_order.order_id)")
     @Column(name = "order_id", length = 21, nullable = false)
+    @Size(max = 21, message = "orderId 는 21자 이내여야 합니다.")
     private String orderId;
 
     @Comment("클레임ID (od_claim.claim_id)")
     @Column(name = "claim_id", length = 21)
+    @Size(max = 21, message = "claimId 는 21자 이내여야 합니다.")
     private String claimId;
 
     @Comment("환불유형코드 (코드: REFUND_TYPE_CD — CANCEL/RETURN/PARTIAL/EXTRA)")
     @Column(name = "refund_type_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "refundTypeCd 는 20자 이내여야 합니다.")
     private String refundTypeCd;
 
     @Comment("환불 상품금액 (주문쿠폰 안분 차감 후 실환불 대상액)")
@@ -63,10 +68,12 @@ public class OdRefund extends BaseEntity {
 
     @Comment("환불상태 (코드: REFUND_STATUS_CD — PENDING/COMPLT/FAILED/PARTIAL)")
     @Column(name = "refund_status_cd", length = 20)
+    @Size(max = 20, message = "refundStatusCd 는 20자 이내여야 합니다.")
     private String refundStatusCd;
 
     @Comment("변경 전 환불상태 (코드: REFUND_STATUS_CD)")
     @Column(name = "refund_status_cd_before", length = 20)
+    @Size(max = 20, message = "refundStatusCdBefore 는 20자 이내여야 합니다.")
     private String refundStatusCdBefore;
 
     @Comment("환불 요청일시")
@@ -79,14 +86,17 @@ public class OdRefund extends BaseEntity {
 
     @Comment("귀책유형코드 (코드: FAULT_TYPE_CD — CUST/VENDOR/PLATFORM)")
     @Column(name = "fault_type_cd", length = 20)
+    @Size(max = 20, message = "faultTypeCd 는 20자 이내여야 합니다.")
     private String faultTypeCd;
 
     @Comment("환불 사유")
     @Column(name = "refund_reason", length = 500)
+    @Size(max = 100, message = "refundReason 는 100자 이내여야 합니다.")
     private String refundReason;
 
     @Comment("관리 메모")
     @Column(name = "memo", length = 300)
+    @Size(max = 100, message = "memo 는 100자 이내여야 합니다.")
     private String memo;
 
 }

@@ -26,22 +26,27 @@ public class SyBbs extends BaseEntity {
     @Id
     @Comment("게시물ID (YYMMDDhhmmss+rand4)")
     @Column(name = "bbs_id", length = 21, nullable = false)
+    @Size(max = 21, message = "bbsId 는 21자 이내여야 합니다.")
     private String bbsId;
 
     @Comment("게시판ID")
     @Column(name = "bbm_id", length = 21, nullable = false)
+    @Size(max = 21, message = "bbmId 는 21자 이내여야 합니다.")
     private String bbmId;
 
     @Comment("부모게시물ID (답글)")
     @Column(name = "parent_bbs_id", length = 21)
+    @Size(max = 21, message = "parentBbsId 는 21자 이내여야 합니다.")
     private String parentBbsId;
 
     @Comment("작성자 회원ID")
     @Column(name = "member_id", length = 21)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("작성자명")
     @Column(name = "author_nm", length = 50)
+    @Size(max = 50, message = "authorNm 는 50자 이내여야 합니다.")
     private String authorNm;
 
     @Comment("제목")
@@ -52,6 +57,7 @@ public class SyBbs extends BaseEntity {
 
     @Comment("내용 (HTML)")
     @Column(name = "content_html", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "contentHtml 는 50000자 이내여야 합니다.")
     private String contentHtml;
 
     @Comment("조회수")
@@ -68,14 +74,17 @@ public class SyBbs extends BaseEntity {
 
     @Comment("상단고정 Y/N")
     @Column(name = "is_fixed", length = 1)
+    @Size(max = 1, message = "isFixed 는 1자 이내여야 합니다.")
     private String isFixed;
 
     @Comment("상태 (ACTIVE/DELETED/HIDDEN)")
     @Column(name = "bbs_status_cd", length = 20)
+    @Size(max = 20, message = "bbsStatusCd 는 20자 이내여야 합니다.")
     private String bbsStatusCd;
 
     @Comment("점(.) 구분 표시경로 (트리 빌드용)")
     @Column(name = "path_id", length = 21)
+    @Size(max = 21, message = "pathId 는 21자 이내여야 합니다.")
     private String pathId;
 
     /** DB 컬럼 아님 — 첨부파일 목록. 요청 시엔 attachId/rowStatus(I/D) 만 채워 보내고,

@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "sy_role_menu", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,15 +22,18 @@ public class SyRoleMenu extends BaseEntity {
     @Id
     @Comment("역할메뉴ID")
     @Column(name = "role_menu_id", length = 21, nullable = false)
+    @Size(max = 21, message = "roleMenuId 는 21자 이내여야 합니다.")
     private String roleMenuId;
 
 
     @Comment("역할ID")
     @Column(name = "role_id", length = 21, nullable = false)
+    @Size(max = 21, message = "roleId 는 21자 이내여야 합니다.")
     private String roleId;
 
     @Comment("메뉴ID")
     @Column(name = "menu_id", length = 21, nullable = false)
+    @Size(max = 21, message = "menuId 는 21자 이내여야 합니다.")
     private String menuId;
 
     @Comment("권한레벨 (1:조회/2:수정/3:삭제)")

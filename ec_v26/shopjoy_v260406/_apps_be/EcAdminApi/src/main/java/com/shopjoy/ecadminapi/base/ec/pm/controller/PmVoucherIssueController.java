@@ -46,14 +46,14 @@ public class PmVoucherIssueController {
 
     /* 바우처(상품권) 발행 이력 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmVoucherIssue>> save(@PathVariable("id") String id, @RequestBody PmVoucherIssue entity) {
+    public ResponseEntity<ApiResponse<PmVoucherIssue>> save(@PathVariable("id") String id, @Valid @RequestBody PmVoucherIssue entity) {
         entity.setVoucherIssueId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 바우처(상품권) 발행 이력 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmVoucherIssue>> updateSelective(@PathVariable("id") String id, @RequestBody PmVoucherIssue entity) {
+    public ResponseEntity<ApiResponse<PmVoucherIssue>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PmVoucherIssue entity) {
         entity.setVoucherIssueId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PmVoucherIssueController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PmVoucherIssue>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PmVoucherIssue entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PmVoucherIssue entity) {
         PmVoucherIssue result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PmVoucherIssueController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmVoucherIssue> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmVoucherIssue> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

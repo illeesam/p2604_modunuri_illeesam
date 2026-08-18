@@ -46,14 +46,14 @@ public class SyCodeGrpController {
 
     /* 공통 코드 그룹 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeGrp>> save(@PathVariable("id") String id, @RequestBody SyCodeGrp entity) {
+    public ResponseEntity<ApiResponse<SyCodeGrp>> save(@PathVariable("id") String id, @Valid @RequestBody SyCodeGrp entity) {
         entity.setCodeGrpId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 공통 코드 그룹 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeGrp>> updateSelective(@PathVariable("id") String id, @RequestBody SyCodeGrp entity) {
+    public ResponseEntity<ApiResponse<SyCodeGrp>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyCodeGrp entity) {
         entity.setCodeGrpId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyCodeGrpController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyCodeGrp>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyCodeGrp entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyCodeGrp entity) {
         SyCodeGrp result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyCodeGrpController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyCodeGrp> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyCodeGrp> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

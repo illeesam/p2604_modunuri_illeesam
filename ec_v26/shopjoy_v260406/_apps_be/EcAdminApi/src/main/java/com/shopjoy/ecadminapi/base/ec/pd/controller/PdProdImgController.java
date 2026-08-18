@@ -46,14 +46,14 @@ public class PdProdImgController {
 
     /* 상품 이미지 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdImg>> save(@PathVariable("id") String id, @RequestBody PdProdImg entity) {
+    public ResponseEntity<ApiResponse<PdProdImg>> save(@PathVariable("id") String id, @Valid @RequestBody PdProdImg entity) {
         entity.setProdImgId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 상품 이미지 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdImg>> updateSelective(@PathVariable("id") String id, @RequestBody PdProdImg entity) {
+    public ResponseEntity<ApiResponse<PdProdImg>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PdProdImg entity) {
         entity.setProdImgId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PdProdImgController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PdProdImg>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PdProdImg entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PdProdImg entity) {
         PdProdImg result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PdProdImgController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PdProdImg> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PdProdImg> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

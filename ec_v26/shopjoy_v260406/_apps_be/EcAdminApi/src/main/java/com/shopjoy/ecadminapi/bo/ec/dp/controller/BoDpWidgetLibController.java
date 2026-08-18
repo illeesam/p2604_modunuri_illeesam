@@ -50,13 +50,13 @@ public class BoDpWidgetLibController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidgetLib>> update(@PathVariable("id") String id, @RequestBody DpWidgetLib body) {
+    public ResponseEntity<ApiResponse<DpWidgetLib>> update(@PathVariable("id") String id, @Valid @RequestBody DpWidgetLib body) {
         return ResponseEntity.ok(ApiResponse.ok(boDpWidgetLibService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpWidgetLib>> upsert(@PathVariable("id") String id, @RequestBody DpWidgetLib body) {
+    public ResponseEntity<ApiResponse<DpWidgetLib>> upsert(@PathVariable("id") String id, @Valid @RequestBody DpWidgetLib body) {
         return ResponseEntity.ok(ApiResponse.ok(boDpWidgetLibService.update(id, body)));
     }
 
@@ -70,7 +70,7 @@ public class BoDpWidgetLibController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<DpWidgetLib> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<DpWidgetLib> rows) {
         switch (cmd) {
             case "base" -> boDpWidgetLibService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

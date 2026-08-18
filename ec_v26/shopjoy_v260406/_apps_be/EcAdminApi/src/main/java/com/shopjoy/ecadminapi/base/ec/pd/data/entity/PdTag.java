@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pd_tag", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,15 +22,18 @@ public class PdTag extends BaseEntity {
     @Id
     @Comment("태그ID (YYMMDDhhmmss+rand4)")
     @Column(name = "tag_id", length = 21, nullable = false)
+    @Size(max = 21, message = "tagId 는 21자 이내여야 합니다.")
     private String tagId;
 
 
     @Comment("태그명")
     @Column(name = "tag_nm", length = 100, nullable = false)
+    @Size(max = 100, message = "tagNm 는 100자 이내여야 합니다.")
     private String tagNm;
 
     @Comment("태그설명")
     @Column(name = "tag_desc", length = 300)
+    @Size(max = 100, message = "tagDesc 는 100자 이내여야 합니다.")
     private String tagDesc;
 
     @Comment("사용 빈도")
@@ -42,6 +46,7 @@ public class PdTag extends BaseEntity {
 
     @Comment("사용여부 Y/N")
     @Column(name = "use_yn", length = 1)
+    @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
 }

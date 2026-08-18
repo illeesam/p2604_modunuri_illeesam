@@ -9,6 +9,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 /**
  * 사용자별 대시보드 좌측메뉴 트리.
  *
@@ -36,31 +37,38 @@ public class CmDashboardMenu extends BaseEntity {
     @Id
     @Comment("메뉴노드ID")
     @Column(name = "dashboard_menu_id", length = 21, nullable = false)
+    @Size(max = 21, message = "dashboardMenuId 는 21자 이내여야 합니다.")
     private String dashboardMenuId;
 
 
     @Comment("메뉴범위 (USER:사용자별 트리 / SYS:사이트 공통 트리)")
     @Column(name = "menu_scope_cd", length = 10, nullable = false)
+    @Size(max = 10, message = "menuScopeCd 는 10자 이내여야 합니다.")
     private String menuScopeCd;
 
     @Comment("메뉴 트리 소유자 (sy_user.user_id). SYS 범위는 NULL")
     @Column(name = "owner_user_id", length = 30)
+    @Size(max = 30, message = "ownerUserId 는 30자 이내여야 합니다.")
     private String ownerUserId;
 
     @Comment("상위 메뉴노드ID. NULL 이면 최상위")
     @Column(name = "parent_node_id", length = 21)
+    @Size(max = 21, message = "parentNodeId 는 21자 이내여야 합니다.")
     private String parentNodeId;
 
     @Comment("노드유형 (FOLDER:폴더 / ITEM:대시보드)")
     @Column(name = "node_type_cd", length = 10, nullable = false)
+    @Size(max = 10, message = "nodeTypeCd 는 10자 이내여야 합니다.")
     private String nodeTypeCd;
 
     @Comment("폴더 표시명 (ITEM 은 대시보드명을 따라감)")
     @Column(name = "node_nm", length = 100)
+    @Size(max = 100, message = "nodeNm 는 100자 이내여야 합니다.")
     private String nodeNm;
 
     @Comment("ITEM 이 가리키는 대시보드ID")
     @Column(name = "dashboard_id", length = 21)
+    @Size(max = 21, message = "dashboardId 는 21자 이내여야 합니다.")
     private String dashboardId;
 
     @Comment("같은 부모 안에서의 정렬순서")
@@ -69,9 +77,11 @@ public class CmDashboardMenu extends BaseEntity {
 
     @Comment("사용여부")
     @Column(name = "use_yn", length = 1)
+    @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
     @Comment("비고")
     @Column(name = "remark", length = 500)
+    @Size(max = 100, message = "remark 는 100자 이내여야 합니다.")
     private String remark;
 }

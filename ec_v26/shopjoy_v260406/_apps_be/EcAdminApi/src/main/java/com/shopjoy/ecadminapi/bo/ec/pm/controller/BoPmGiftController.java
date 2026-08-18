@@ -56,14 +56,14 @@ public class BoPmGiftController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmGift>> update(@PathVariable("id") String id, @RequestBody PmGift body) {
+    public ResponseEntity<ApiResponse<PmGift>> update(@PathVariable("id") String id, @Valid @RequestBody PmGift body) {
         PmGift result = boPmGiftService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmGift>> upsert(@PathVariable("id") String id, @RequestBody PmGift body) {
+    public ResponseEntity<ApiResponse<PmGift>> upsert(@PathVariable("id") String id, @Valid @RequestBody PmGift body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmGiftService.update(id, body)));
     }
 
@@ -83,7 +83,7 @@ public class BoPmGiftController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmGift> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmGift> rows) {
         switch (cmd) {
             case "base" -> boPmGiftService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

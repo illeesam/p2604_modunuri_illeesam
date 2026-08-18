@@ -46,14 +46,14 @@ public class OdDlivController {
 
     /* 배송 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdDliv>> save(@PathVariable("id") String id, @RequestBody OdDliv entity) {
+    public ResponseEntity<ApiResponse<OdDliv>> save(@PathVariable("id") String id, @Valid @RequestBody OdDliv entity) {
         entity.setDlivId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 배송 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdDliv>> updateSelective(@PathVariable("id") String id, @RequestBody OdDliv entity) {
+    public ResponseEntity<ApiResponse<OdDliv>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody OdDliv entity) {
         entity.setDlivId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class OdDlivController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<OdDliv>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody OdDliv entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody OdDliv entity) {
         OdDliv result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class OdDlivController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<OdDliv> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<OdDliv> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

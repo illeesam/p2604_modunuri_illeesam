@@ -49,13 +49,13 @@ public class BoSyI18nController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18n>> update(@PathVariable("id") String id, @RequestBody SyI18n body) {
+    public ResponseEntity<ApiResponse<SyI18n>> update(@PathVariable("id") String id, @Valid @RequestBody SyI18n body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18n>> upsert(@PathVariable("id") String id, @RequestBody SyI18n body) {
+    public ResponseEntity<ApiResponse<SyI18n>> upsert(@PathVariable("id") String id, @Valid @RequestBody SyI18n body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyI18nService.update(id, body)));
     }
 
@@ -69,7 +69,7 @@ public class BoSyI18nController {
     /** saveMsgs — 다국어 메시지 일괄 저장 */
     @PutMapping("/{id}/msgs")
     public ResponseEntity<ApiResponse<Void>> saveMsgs(
-            @PathVariable("id") String id, @RequestBody SyI18nSaveMsgsDto.Request req) {
+            @PathVariable("id") String id, @Valid @RequestBody SyI18nSaveMsgsDto.Request req) {
         if (req == null || req.getMsgs() == null) return ResponseEntity.ok(ApiResponse.ok(null));
         boSyI18nService.saveMsgs(id, req.getMsgs());
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));

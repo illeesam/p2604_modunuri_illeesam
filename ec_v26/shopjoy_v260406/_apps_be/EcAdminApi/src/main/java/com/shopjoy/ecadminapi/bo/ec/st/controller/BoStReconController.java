@@ -46,7 +46,7 @@ public class BoStReconController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StRecon>> update(@PathVariable("id") String id, @RequestBody StRecon body) {
+    public ResponseEntity<ApiResponse<StRecon>> update(@PathVariable("id") String id, @Valid @RequestBody StRecon body) {
         return ResponseEntity.ok(ApiResponse.ok(boStReconService.update(id, body)));
     }
 

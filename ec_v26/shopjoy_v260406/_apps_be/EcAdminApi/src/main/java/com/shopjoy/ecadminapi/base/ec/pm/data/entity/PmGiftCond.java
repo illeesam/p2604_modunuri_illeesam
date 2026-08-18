@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pm_gift_cond", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,15 +22,18 @@ public class PmGiftCond extends BaseEntity {
     @Id
     @Comment("사은품조건ID")
     @Column(name = "gift_cond_id", length = 21, nullable = false)
+    @Size(max = 21, message = "giftCondId 는 21자 이내여야 합니다.")
     private String giftCondId;
 
     @Comment("사은품ID (pm_gift.gift_id)")
     @Column(name = "gift_id", length = 21, nullable = false)
+    @Size(max = 21, message = "giftId 는 21자 이내여야 합니다.")
     private String giftId;
 
 
     @Comment("조건유형 (코드: COND_TYPE_CD)")
     @Column(name = "cond_type_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "condTypeCd 는 20자 이내여야 합니다.")
     private String condTypeCd;
 
     @Comment("최소주문금액 (ORDER_AMT 조건)")
@@ -38,10 +42,12 @@ public class PmGiftCond extends BaseEntity {
 
     @Comment("대상유형 (PRODUCT/CATEGORY/MEMBER_GRADE)")
     @Column(name = "target_type_cd", length = 20)
+    @Size(max = 20, message = "targetTypeCd 는 20자 이내여야 합니다.")
     private String targetTypeCd;
 
     @Comment("대상ID")
     @Column(name = "target_id", length = 21)
+    @Size(max = 21, message = "targetId 는 21자 이내여야 합니다.")
     private String targetId;
 
 }

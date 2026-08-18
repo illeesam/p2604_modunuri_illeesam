@@ -50,7 +50,7 @@ public class ZzExam2Controller {
     public ResponseEntity<ApiResponse<ZzExam2>> update(
             @PathVariable("exam1Id") String exam1Id,
             @PathVariable("exam2Id") String exam2Id,
-            @RequestBody ZzExam2 entity) {
+            @Valid @RequestBody ZzExam2 entity) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(exam1Id, exam2Id, entity)));
     }
 
@@ -59,7 +59,7 @@ public class ZzExam2Controller {
     public ResponseEntity<ApiResponse<Integer>> updateSelective(
             @PathVariable("exam1Id") String exam1Id,
             @PathVariable("exam2Id") String exam2Id,
-            @RequestBody ZzExam2 entity) {
+            @Valid @RequestBody ZzExam2 entity) {
         entity.setExam1Id(exam1Id);
         entity.setExam2Id(exam2Id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));

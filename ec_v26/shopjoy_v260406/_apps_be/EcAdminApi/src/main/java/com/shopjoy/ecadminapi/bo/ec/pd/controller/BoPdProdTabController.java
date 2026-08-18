@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /**
  * BO 상품 수정 탭별 조회 API
  *
@@ -207,7 +208,7 @@ public class BoPdProdTabController {
     @Transactional
     public ResponseEntity<ApiResponse<Void>> updateImages(
             @PathVariable("prodId") String prodId,
-            @RequestBody PdProdImgUpdateDto.Request req) {
+            @Valid @RequestBody PdProdImgUpdateDto.Request req) {
         List<PdProdImgUpdateDto.Row> rows = req != null && req.getImages() != null ? req.getImages() : List.of();
         LocalDateTime now = LocalDateTime.now();
 
@@ -283,7 +284,7 @@ public class BoPdProdTabController {
     @Transactional
     public ResponseEntity<ApiResponse<Void>> updateOpts(
             @PathVariable("prodId") String prodId,
-            @RequestBody PdProdOptUpdateDto.Request req) {
+            @Valid @RequestBody PdProdOptUpdateDto.Request req) {
         List<PdProdOptUpdateDto.OptType> groups = req != null && req.getOptTypes() != null ? req.getOptTypes() : List.of();
         String authId = SecurityUtil.getAuthUser().authId();
         String siteId = SecurityUtil.getSiteIdOrDefault();
@@ -390,7 +391,7 @@ public class BoPdProdTabController {
     @Transactional
     public ResponseEntity<ApiResponse<Void>> updateContents(
             @PathVariable("prodId") String prodId,
-            @RequestBody PdProdContentUpdateDto.Request req) {
+            @Valid @RequestBody PdProdContentUpdateDto.Request req) {
         List<PdProdContentUpdateDto.Block> blocks = req != null && req.getContentBlocks() != null ? req.getContentBlocks() : List.of();
         LocalDateTime now = LocalDateTime.now();
 

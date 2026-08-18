@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pm_save", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,19 +23,23 @@ public class PmSave extends BaseEntity {
     @Id
     @Comment("적립금ID (YYMMDDhhmmss+rand4)")
     @Column(name = "save_id", length = 21, nullable = false)
+    @Size(max = 21, message = "saveId 는 21자 이내여야 합니다.")
     private String saveId;
 
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("적립금유형 (코드: SAVE_TYPE_CD — EARN/USE/EXPIRE/CANCEL/ADMIN)")
     @Column(name = "save_type_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "saveTypeCd 는 20자 이내여야 합니다.")
     private String saveTypeCd;
 
     @Comment("적립용도 (코드: SAVE_PURPOSE_CD — PURCHASE/REVIEW/JOIN/BIRTHDAY/VIP/EVENT/ADMIN)")
     @Column(name = "save_purpose_cd", length = 20)
+    @Size(max = 20, message = "savePurposeCd 는 20자 이내여야 합니다.")
     private String savePurposeCd;
 
     @Comment("변동액 (양수:적립, 음수:차감)")
@@ -47,10 +52,12 @@ public class PmSave extends BaseEntity {
 
     @Comment("연관유형 (ORDER/EVENT/ADMIN 등)")
     @Column(name = "ref_type_cd", length = 30)
+    @Size(max = 30, message = "refTypeCd 는 30자 이내여야 합니다.")
     private String refTypeCd;
 
     @Comment("연관ID")
     @Column(name = "ref_id", length = 21)
+    @Size(max = 21, message = "refId 는 21자 이내여야 합니다.")
     private String refId;
 
     @Comment("소멸예정일")
@@ -59,10 +66,12 @@ public class PmSave extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "save_memo", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "saveMemo 는 50000자 이내여야 합니다.")
     private String saveMemo;
 
     @Comment("시뮬데이터여부 (Y/N)")
     @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    @Size(max = 1, message = "simulYn 는 1자 이내여야 합니다.")
     private String simulYn;
 
 }

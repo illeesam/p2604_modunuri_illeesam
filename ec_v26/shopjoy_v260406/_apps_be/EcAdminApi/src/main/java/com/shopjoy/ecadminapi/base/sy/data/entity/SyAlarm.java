@@ -24,6 +24,7 @@ public class SyAlarm extends BaseEntity {
     @Id
     @Comment("알림ID (YYMMDDhhmmss+rand4)")
     @Column(name = "alarm_id", length = 21, nullable = false)
+    @Size(max = 21, message = "alarmId 는 21자 이내여야 합니다.")
     private String alarmId;
 
     @Comment("알림제목")
@@ -34,26 +35,32 @@ public class SyAlarm extends BaseEntity {
 
     @Comment("알림유형 (코드: ALARM_TYPE_CD)")
     @Column(name = "alarm_type_cd", length = 30)
+    @Size(max = 30, message = "alarmTypeCd 는 30자 이내여야 합니다.")
     private String alarmTypeCd;
 
     @Comment("발송채널 (코드: ALARM_CHANNEL)")
     @Column(name = "channel_cd", length = 20)
+    @Size(max = 20, message = "channelCd 는 20자 이내여야 합니다.")
     private String channelCd;
 
     @Comment("대상유형 (코드: ALARM_TARGET_TYPE — ALL/GRADE/MEMBER)")
     @Column(name = "target_type_cd", length = 20)
+    @Size(max = 20, message = "targetTypeCd 는 20자 이내여야 합니다.")
     private String targetTypeCd;
 
     @Comment("대상ID (회원ID 또는 등급코드)")
     @Column(name = "target_id", length = 21)
+    @Size(max = 21, message = "targetId 는 21자 이내여야 합니다.")
     private String targetId;
 
     @Comment("템플릿ID")
     @Column(name = "template_id", length = 21)
+    @Size(max = 21, message = "templateId 는 21자 이내여야 합니다.")
     private String templateId;
 
     @Comment("발송내용")
     @Column(name = "alarm_msg", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "alarmMsg 는 50000자 이내여야 합니다.")
     private String alarmMsg;
 
     @Comment("발송예정일시")
@@ -62,6 +69,7 @@ public class SyAlarm extends BaseEntity {
 
     @Comment("발송상태 (PENDING/SENT/FAILED/CANCELLED)")
     @Column(name = "alarm_status_cd", length = 20)
+    @Size(max = 20, message = "alarmStatusCd 는 20자 이내여야 합니다.")
     private String alarmStatusCd;
 
     @Comment("발송성공수")
@@ -74,6 +82,7 @@ public class SyAlarm extends BaseEntity {
 
     @Comment("점(.) 구분 표시경로 (트리 빌드용)")
     @Column(name = "path_id", length = 21)
+    @Size(max = 21, message = "pathId 는 21자 이내여야 합니다.")
     private String pathId;
 
 }

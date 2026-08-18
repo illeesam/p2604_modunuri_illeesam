@@ -46,14 +46,14 @@ public class PmPlanController {
 
     /* 프로모션 플랜 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmPlan>> save(@PathVariable("id") String id, @RequestBody PmPlan entity) {
+    public ResponseEntity<ApiResponse<PmPlan>> save(@PathVariable("id") String id, @Valid @RequestBody PmPlan entity) {
         entity.setPlanId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 프로모션 플랜 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmPlan>> updateSelective(@PathVariable("id") String id, @RequestBody PmPlan entity) {
+    public ResponseEntity<ApiResponse<PmPlan>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PmPlan entity) {
         entity.setPlanId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PmPlanController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PmPlan>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PmPlan entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PmPlan entity) {
         PmPlan result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PmPlanController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmPlan> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmPlan> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "st_settle", schema = "shopjoy_2604")
 @Getter @Setter
@@ -23,15 +24,18 @@ public class StSettle extends BaseEntity {
     @Id
     @Comment("정산ID (YYMMDDhhmmss+rand4)")
     @Column(name = "settle_id", length = 21, nullable = false)
+    @Size(max = 21, message = "settleId 는 21자 이내여야 합니다.")
     private String settleId;
 
 
     @Comment("업체ID (sy_vendor.vendor_id)")
     @Column(name = "vendor_id", length = 21, nullable = false)
+    @Size(max = 21, message = "vendorId 는 21자 이내여야 합니다.")
     private String vendorId;
 
     @Comment("정산년월 (YYYYMM)")
     @Column(name = "settle_ym", length = 6, nullable = false)
+    @Size(max = 6, message = "settleYm 는 6자 이내여야 합니다.")
     private String settleYm;
 
     @Comment("정산 기준 시작일")
@@ -84,18 +88,22 @@ public class StSettle extends BaseEntity {
 
     @Comment("상태 (코드: SETTLE_STATUS_CD — DRAFT/CONFIRMED/CLOSED/PAID)")
     @Column(name = "settle_status_cd", length = 20)
+    @Size(max = 20, message = "settleStatusCd 는 20자 이내여야 합니다.")
     private String settleStatusCd;
 
     @Comment("변경 전 상태")
     @Column(name = "settle_status_cd_before", length = 20)
+    @Size(max = 20, message = "settleStatusCdBefore 는 20자 이내여야 합니다.")
     private String settleStatusCdBefore;
 
     @Comment("정산 메모")
     @Column(name = "settle_memo", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "settleMemo 는 50000자 이내여야 합니다.")
     private String settleMemo;
 
     @Comment("시뮬데이터여부 (Y/N)")
     @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    @Size(max = 1, message = "simulYn 는 1자 이내여야 합니다.")
     private String simulYn;
 
 }

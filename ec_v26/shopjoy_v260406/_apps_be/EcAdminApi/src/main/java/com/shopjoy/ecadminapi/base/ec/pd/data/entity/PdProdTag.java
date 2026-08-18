@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pd_prod_tag", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,15 +22,18 @@ public class PdProdTag extends BaseEntity {
     @Id
     @Comment("상품태그ID")
     @Column(name = "prod_tag_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodTagId 는 21자 이내여야 합니다.")
     private String prodTagId;
 
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("태그ID (pd_tag.)")
     @Column(name = "tag_id", length = 21, nullable = false)
+    @Size(max = 21, message = "tagId 는 21자 이내여야 합니다.")
     private String tagId;
 
 }

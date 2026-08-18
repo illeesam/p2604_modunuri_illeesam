@@ -46,14 +46,14 @@ public class PmSaveController {
 
     /* 적립금 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSave>> save(@PathVariable("id") String id, @RequestBody PmSave entity) {
+    public ResponseEntity<ApiResponse<PmSave>> save(@PathVariable("id") String id, @Valid @RequestBody PmSave entity) {
         entity.setSaveId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 적립금 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSave>> updateSelective(@PathVariable("id") String id, @RequestBody PmSave entity) {
+    public ResponseEntity<ApiResponse<PmSave>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PmSave entity) {
         entity.setSaveId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PmSaveController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PmSave>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PmSave entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PmSave entity) {
         PmSave result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PmSaveController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmSave> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmSave> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

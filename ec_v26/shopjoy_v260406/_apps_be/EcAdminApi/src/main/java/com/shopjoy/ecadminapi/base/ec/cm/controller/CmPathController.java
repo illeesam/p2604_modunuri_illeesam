@@ -45,14 +45,14 @@ public class CmPathController {
 
     /* 경로(메뉴/URL) 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmPath>> save(@PathVariable("id") String id, @RequestBody CmPath entity) {
+    public ResponseEntity<ApiResponse<CmPath>> save(@PathVariable("id") String id, @Valid @RequestBody CmPath entity) {
         entity.setBizCd(id);
         return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
     }
 
     /* 경로(메뉴/URL) 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmPath>> updateSelective(@PathVariable("id") String id, @RequestBody CmPath entity) {
+    public ResponseEntity<ApiResponse<CmPath>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody CmPath entity) {
         entity.setBizCd(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }

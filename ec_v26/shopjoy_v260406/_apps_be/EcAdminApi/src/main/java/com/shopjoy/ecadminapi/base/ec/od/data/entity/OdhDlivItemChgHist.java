@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "odh_dliv_item_chg_hist", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,39 +23,48 @@ public class OdhDlivItemChgHist extends BaseEntity {
     @Id
     @Comment("이력ID")
     @Column(name = "dliv_item_chg_hist_id", length = 21, nullable = false)
+    @Size(max = 21, message = "dlivItemChgHistId 는 21자 이내여야 합니다.")
     private String dlivItemChgHistId;
 
 
     @Comment("배송ID (od_dliv.)")
     @Column(name = "dliv_id", length = 21, nullable = false)
+    @Size(max = 21, message = "dlivId 는 21자 이내여야 합니다.")
     private String dlivId;
 
     @Comment("배송품목ID (od_dliv_item.)")
     @Column(name = "dliv_item_id", length = 21, nullable = false)
+    @Size(max = 21, message = "dlivItemId 는 21자 이내여야 합니다.")
     private String dlivItemId;
 
     @Comment("변경유형코드 (QTY/STATUS/CARRIER/TRACK_NO/RECV_INFO)")
     @Column(name = "chg_type_cd", length = 30, nullable = false)
+    @Size(max = 30, message = "chgTypeCd 는 30자 이내여야 합니다.")
     private String chgTypeCd;
 
     @Comment("변경 필드명")
     @Column(name = "chg_field", length = 50)
+    @Size(max = 50, message = "chgField 는 50자 이내여야 합니다.")
     private String chgField;
 
     @Comment("변경전값")
     @Column(name = "before_val", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "beforeVal 는 50000자 이내여야 합니다.")
     private String beforeVal;
 
     @Comment("변경후값")
     @Column(name = "after_val", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "afterVal 는 50000자 이내여야 합니다.")
     private String afterVal;
 
     @Comment("변경사유")
     @Column(name = "chg_reason", length = 300)
+    @Size(max = 100, message = "chgReason 는 100자 이내여야 합니다.")
     private String chgReason;
 
     @Comment("처리자 (sy_user.user_id)")
     @Column(name = "chg_user_id", length = 21)
+    @Size(max = 21, message = "chgUserId 는 21자 이내여야 합니다.")
     private String chgUserId;
 
     @Comment("처리일시")

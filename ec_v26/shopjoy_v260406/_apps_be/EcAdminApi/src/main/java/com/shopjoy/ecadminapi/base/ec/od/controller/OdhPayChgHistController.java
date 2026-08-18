@@ -46,14 +46,14 @@ public class OdhPayChgHistController {
 
     /* 결제 변경 이력 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhPayChgHist>> save(@PathVariable("id") String id, @RequestBody OdhPayChgHist entity) {
+    public ResponseEntity<ApiResponse<OdhPayChgHist>> save(@PathVariable("id") String id, @Valid @RequestBody OdhPayChgHist entity) {
         entity.setPayChgHistId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 결제 변경 이력 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhPayChgHist>> updateSelective(@PathVariable("id") String id, @RequestBody OdhPayChgHist entity) {
+    public ResponseEntity<ApiResponse<OdhPayChgHist>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody OdhPayChgHist entity) {
         entity.setPayChgHistId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class OdhPayChgHistController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<OdhPayChgHist>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody OdhPayChgHist entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody OdhPayChgHist entity) {
         OdhPayChgHist result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class OdhPayChgHistController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<OdhPayChgHist> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<OdhPayChgHist> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

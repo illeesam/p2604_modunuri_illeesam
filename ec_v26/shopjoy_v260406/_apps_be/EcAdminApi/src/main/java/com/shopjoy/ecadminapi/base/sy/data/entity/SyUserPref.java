@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "sy_user_pref", schema = "shopjoy_2604")
 @Getter @Setter
@@ -18,17 +19,21 @@ public class SyUserPref extends BaseEntity {
     @Id
     @Comment("사용자환경설정ID (PK)")
     @Column(name = "user_pref_id", length = 21, nullable = false)
+    @Size(max = 21, message = "userPrefId 는 21자 이내여야 합니다.")
     private String userPrefId;
 
     @Comment("관리자 사용자ID (sy_user.user_id)")
     @Column(name = "user_id", length = 21, nullable = false)
+    @Size(max = 21, message = "userId 는 21자 이내여야 합니다.")
     private String userId;
 
     @Comment("설정 키 (예: ui.left_menu_open)")
     @Column(name = "pref_key", length = 100, nullable = false)
+    @Size(max = 100, message = "prefKey 는 100자 이내여야 합니다.")
     private String prefKey;
 
     @Comment("설정 값 (예: true / false)")
     @Column(name = "pref_value", columnDefinition = "text")
+    @Size(max = 50000, message = "prefValue 는 50000자 이내여야 합니다.")
     private String prefValue;
 }

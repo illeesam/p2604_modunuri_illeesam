@@ -56,7 +56,7 @@ public class FoCmBlogController {
     /* 수정 */
     @PutMapping("/{blogId}")
     public ResponseEntity<ApiResponse<CmBlog>> update(
-            @PathVariable("blogId") String blogId, @RequestBody CmBlog entity) {
+            @PathVariable("blogId") String blogId, @Valid @RequestBody CmBlog entity) {
         return ResponseEntity.ok(ApiResponse.ok(foCmBlogService.update(blogId, entity)));
     }
 

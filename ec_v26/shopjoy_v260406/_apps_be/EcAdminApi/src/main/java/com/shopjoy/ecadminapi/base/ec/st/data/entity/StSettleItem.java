@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "st_settle_item", schema = "shopjoy_2604")
 @Getter @Setter
@@ -23,31 +24,38 @@ public class StSettleItem extends BaseEntity {
     @Id
     @Comment("정산항목ID")
     @Column(name = "settle_item_id", length = 21, nullable = false)
+    @Size(max = 21, message = "settleItemId 는 21자 이내여야 합니다.")
     private String settleItemId;
 
     @Comment("정산ID (st_settle.settle_id)")
     @Column(name = "settle_id", length = 21, nullable = false)
+    @Size(max = 21, message = "settleId 는 21자 이내여야 합니다.")
     private String settleId;
 
 
     @Comment("주문ID (od_order.order_id)")
     @Column(name = "order_id", length = 21, nullable = false)
+    @Size(max = 21, message = "orderId 는 21자 이내여야 합니다.")
     private String orderId;
 
     @Comment("주문항목ID (od_order_item.order_item_id)")
     @Column(name = "order_item_id", length = 21, nullable = false)
+    @Size(max = 21, message = "orderItemId 는 21자 이내여야 합니다.")
     private String orderItemId;
 
     @Comment("업체ID")
     @Column(name = "vendor_id", length = 21, nullable = false)
+    @Size(max = 21, message = "vendorId 는 21자 이내여야 합니다.")
     private String vendorId;
 
     @Comment("상품ID")
     @Column(name = "prod_id", length = 21)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("항목유형 (코드: SETTLE_ITEM_TYPE_CD — SALE/CANCEL/RETURN)")
     @Column(name = "settle_item_type_cd", length = 20)
+    @Size(max = 20, message = "settleItemTypeCd 는 20자 이내여야 합니다.")
     private String settleItemTypeCd;
 
     @Comment("주문일시")

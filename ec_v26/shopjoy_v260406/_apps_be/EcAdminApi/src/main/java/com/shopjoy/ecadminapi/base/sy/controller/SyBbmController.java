@@ -46,14 +46,14 @@ public class SyBbmController {
 
     /* 게시판 마스터 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBbm>> save(@PathVariable("id") String id, @RequestBody SyBbm entity) {
+    public ResponseEntity<ApiResponse<SyBbm>> save(@PathVariable("id") String id, @Valid @RequestBody SyBbm entity) {
         entity.setBbmId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 게시판 마스터 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBbm>> updateSelective(@PathVariable("id") String id, @RequestBody SyBbm entity) {
+    public ResponseEntity<ApiResponse<SyBbm>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyBbm entity) {
         entity.setBbmId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyBbmController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyBbm>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyBbm entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyBbm entity) {
         SyBbm result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyBbmController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyBbm> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyBbm> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "od_order_discnt", schema = "shopjoy_2604")
 @Getter @Setter
@@ -23,23 +24,28 @@ public class OdOrderDiscnt extends BaseEntity {
     @Id
     @Comment("주문할인ID (YYMMDDhhmmss+rand4)")
     @Column(name = "order_discnt_id", length = 21, nullable = false)
+    @Size(max = 21, message = "orderDiscntId 는 21자 이내여야 합니다.")
     private String orderDiscntId;
 
 
     @Comment("주문ID (od_order.order_id)")
     @Column(name = "order_id", length = 21, nullable = false)
+    @Size(max = 21, message = "orderId 는 21자 이내여야 합니다.")
     private String orderId;
 
     @Comment("할인유형코드 (코드: ORDER_DISCNT_TYPE — ORDER_COUPON/SAVE_USE/CACHE_USE/SHIP_DISCNT/PROMO_DISCNT)")
     @Column(name = "discnt_type_cd", length = 30, nullable = false)
+    @Size(max = 30, message = "discntTypeCd 는 30자 이내여야 합니다.")
     private String discntTypeCd;
 
     @Comment("쿠폰ID (pm_coupon.coupon_id — ORDER_COUPON인 경우)")
     @Column(name = "coupon_id", length = 21)
+    @Size(max = 21, message = "couponId 는 21자 이내여야 합니다.")
     private String couponId;
 
     @Comment("쿠폰발급ID (pm_coupon_issue.coupon_issue_id — ORDER_COUPON인 경우)")
     @Column(name = "coupon_issue_id", length = 21)
+    @Size(max = 21, message = "couponIssueId 는 21자 이내여야 합니다.")
     private String couponIssueId;
 
     @Comment("할인율 (% — 비율할인인 경우)")
@@ -56,6 +62,7 @@ public class OdOrderDiscnt extends BaseEntity {
 
     @Comment("복원여부 Y/N (환불 시 적립금·캐쉬 차감 복원 완료 여부)")
     @Column(name = "restore_yn", length = 1)
+    @Size(max = 1, message = "restoreYn 는 1자 이내여야 합니다.")
     private String restoreYn;
 
     @Comment("복원된 금액 (부분반품 시 부분복원 지원)")

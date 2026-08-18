@@ -65,14 +65,14 @@ public class BoOdOrderController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdOrder>> update(@PathVariable("id") String id, @RequestBody OdOrder body) {
+    public ResponseEntity<ApiResponse<OdOrder>> update(@PathVariable("id") String id, @Valid @RequestBody OdOrder body) {
         OdOrder result = boOdOrderService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdOrder>> upsert(@PathVariable("id") String id, @RequestBody OdOrder body) {
+    public ResponseEntity<ApiResponse<OdOrder>> upsert(@PathVariable("id") String id, @Valid @RequestBody OdOrder body) {
         return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.update(id, body)));
     }
 
@@ -97,7 +97,7 @@ public class BoOdOrderController {
     /** saveList -- 일괄 저장 (cmd 변형: status/payMethod/approval/approvalReq 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<OdOrder> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<OdOrder> rows) {
         switch (cmd) {
             case "base" -> boOdOrderService.saveListBase(rows);
             case "status" -> boOdOrderService.saveListStatus(rows);

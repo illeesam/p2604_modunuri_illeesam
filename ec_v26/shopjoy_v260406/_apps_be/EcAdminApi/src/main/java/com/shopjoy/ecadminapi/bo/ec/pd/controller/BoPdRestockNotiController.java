@@ -50,13 +50,13 @@ public class BoPdRestockNotiController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNoti>> update(@PathVariable("id") String id, @RequestBody PdRestockNoti body) {
+    public ResponseEntity<ApiResponse<PdRestockNoti>> update(@PathVariable("id") String id, @Valid @RequestBody PdRestockNoti body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdRestockNotiService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNoti>> upsert(@PathVariable("id") String id, @RequestBody PdRestockNoti body) {
+    public ResponseEntity<ApiResponse<PdRestockNoti>> upsert(@PathVariable("id") String id, @Valid @RequestBody PdRestockNoti body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdRestockNotiService.update(id, body)));
     }
 
@@ -76,7 +76,7 @@ public class BoPdRestockNotiController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PdRestockNoti> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PdRestockNoti> rows) {
         switch (cmd) {
             case "base" -> boPdRestockNotiService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

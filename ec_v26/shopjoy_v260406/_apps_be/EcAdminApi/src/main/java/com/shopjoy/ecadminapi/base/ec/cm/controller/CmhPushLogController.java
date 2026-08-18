@@ -46,14 +46,14 @@ public class CmhPushLogController {
 
     /* 푸시 발송 이력 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmhPushLog>> save(@PathVariable("id") String id, @RequestBody CmhPushLog entity) {
+    public ResponseEntity<ApiResponse<CmhPushLog>> save(@PathVariable("id") String id, @Valid @RequestBody CmhPushLog entity) {
         entity.setLogId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 푸시 발송 이력 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmhPushLog>> updateSelective(@PathVariable("id") String id, @RequestBody CmhPushLog entity) {
+    public ResponseEntity<ApiResponse<CmhPushLog>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody CmhPushLog entity) {
         entity.setLogId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class CmhPushLogController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<CmhPushLog>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody CmhPushLog entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody CmhPushLog entity) {
         CmhPushLog result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class CmhPushLogController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<CmhPushLog> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<CmhPushLog> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

@@ -46,14 +46,14 @@ public class PdProdBundleItemController {
 
     /* 묶음상품 구성 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdBundleItem>> save(@PathVariable("id") String id, @RequestBody PdProdBundleItem entity) {
+    public ResponseEntity<ApiResponse<PdProdBundleItem>> save(@PathVariable("id") String id, @Valid @RequestBody PdProdBundleItem entity) {
         entity.setProdBundleItemId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 묶음상품 구성 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdProdBundleItem>> updateSelective(@PathVariable("id") String id, @RequestBody PdProdBundleItem entity) {
+    public ResponseEntity<ApiResponse<PdProdBundleItem>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PdProdBundleItem entity) {
         entity.setProdBundleItemId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PdProdBundleItemController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PdProdBundleItem>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PdProdBundleItem entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PdProdBundleItem entity) {
         PdProdBundleItem result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PdProdBundleItemController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PdProdBundleItem> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PdProdBundleItem> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

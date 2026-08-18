@@ -54,14 +54,14 @@ public class BoPmSaveController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSavePolicy>> update(@PathVariable("id") String id, @RequestBody PmSavePolicy body) {
+    public ResponseEntity<ApiResponse<PmSavePolicy>> update(@PathVariable("id") String id, @Valid @RequestBody PmSavePolicy body) {
         PmSavePolicy result = boPmSaveService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmSavePolicy>> upsert(@PathVariable("id") String id, @RequestBody PmSavePolicy body) {
+    public ResponseEntity<ApiResponse<PmSavePolicy>> upsert(@PathVariable("id") String id, @Valid @RequestBody PmSavePolicy body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmSaveService.update(id, body)));
     }
 
@@ -75,7 +75,7 @@ public class BoPmSaveController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmSavePolicy> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmSavePolicy> rows) {
         switch (cmd) {
             case "base" -> boPmSaveService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

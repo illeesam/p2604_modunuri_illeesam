@@ -46,14 +46,14 @@ public class OdhDlivChgHistController {
 
     /* 배송 변경 이력 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhDlivChgHist>> save(@PathVariable("id") String id, @RequestBody OdhDlivChgHist entity) {
+    public ResponseEntity<ApiResponse<OdhDlivChgHist>> save(@PathVariable("id") String id, @Valid @RequestBody OdhDlivChgHist entity) {
         entity.setDlivChgHistId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 배송 변경 이력 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<OdhDlivChgHist>> updateSelective(@PathVariable("id") String id, @RequestBody OdhDlivChgHist entity) {
+    public ResponseEntity<ApiResponse<OdhDlivChgHist>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody OdhDlivChgHist entity) {
         entity.setDlivChgHistId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class OdhDlivChgHistController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<OdhDlivChgHist>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody OdhDlivChgHist entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody OdhDlivChgHist entity) {
         OdhDlivChgHist result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class OdhDlivChgHistController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<OdhDlivChgHist> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<OdhDlivChgHist> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

@@ -46,14 +46,14 @@ public class SyVendorUserRoleController {
 
     /* 업체 사용자 역할 연결 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorUserRole>> save(@PathVariable("id") String id, @RequestBody SyVendorUserRole entity) {
+    public ResponseEntity<ApiResponse<SyVendorUserRole>> save(@PathVariable("id") String id, @Valid @RequestBody SyVendorUserRole entity) {
         entity.setVendorUserRoleId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 업체 사용자 역할 연결 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVendorUserRole>> updateSelective(@PathVariable("id") String id, @RequestBody SyVendorUserRole entity) {
+    public ResponseEntity<ApiResponse<SyVendorUserRole>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyVendorUserRole entity) {
         entity.setVendorUserRoleId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyVendorUserRoleController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyVendorUserRole>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyVendorUserRole entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyVendorUserRole entity) {
         SyVendorUserRole result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyVendorUserRoleController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyVendorUserRole> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyVendorUserRole> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

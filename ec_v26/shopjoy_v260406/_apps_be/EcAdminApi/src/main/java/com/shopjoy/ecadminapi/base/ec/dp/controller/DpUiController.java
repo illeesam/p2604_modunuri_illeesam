@@ -46,14 +46,14 @@ public class DpUiController {
 
     /* 전시 UI 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpUi>> save(@PathVariable("id") String id, @RequestBody DpUi entity) {
+    public ResponseEntity<ApiResponse<DpUi>> save(@PathVariable("id") String id, @Valid @RequestBody DpUi entity) {
         entity.setUiId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 전시 UI 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpUi>> updateSelective(@PathVariable("id") String id, @RequestBody DpUi entity) {
+    public ResponseEntity<ApiResponse<DpUi>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody DpUi entity) {
         entity.setUiId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class DpUiController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<DpUi>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody DpUi entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody DpUi entity) {
         DpUi result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class DpUiController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<DpUi> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<DpUi> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

@@ -48,7 +48,7 @@ public class BoStDlivFeePolicyController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StDlivFeePolicy>> update(@PathVariable("id") String id, @RequestBody StDlivFeePolicy body) {
+    public ResponseEntity<ApiResponse<StDlivFeePolicy>> update(@PathVariable("id") String id, @Valid @RequestBody StDlivFeePolicy body) {
         return ResponseEntity.ok(ApiResponse.ok(boStDlivFeePolicyService.update(id, body)));
     }
 
@@ -62,7 +62,7 @@ public class BoStDlivFeePolicyController {
     /** saveList -- 일괄 저장 (cmd 변형) — CRUD 그리드 화면용 */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<StDlivFeePolicy> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<StDlivFeePolicy> rows) {
         switch (cmd) {
             case "base" -> boStDlivFeePolicyService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

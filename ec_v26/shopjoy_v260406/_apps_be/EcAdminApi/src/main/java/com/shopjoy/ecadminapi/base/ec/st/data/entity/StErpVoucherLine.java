@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "st_erp_voucher_line", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,11 +22,13 @@ public class StErpVoucherLine extends BaseEntity {
     @Id
     @Comment("전표라인ID (YYMMDDhhmmss+rand4)")
     @Column(name = "erp_voucher_line_id", length = 21, nullable = false)
+    @Size(max = 21, message = "erpVoucherLineId 는 21자 이내여야 합니다.")
     private String erpVoucherLineId;
 
 
     @Comment("ERP전표ID (st_erp_voucher.erp_voucher_id)")
     @Column(name = "erp_voucher_id", length = 21, nullable = false)
+    @Size(max = 21, message = "erpVoucherId 는 21자 이내여야 합니다.")
     private String erpVoucherId;
 
     @Comment("라인 순번 (전표 내 고유)")
@@ -34,18 +37,22 @@ public class StErpVoucherLine extends BaseEntity {
 
     @Comment("계정코드 (ERP 계정과목 코드)")
     @Column(name = "account_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "accountCd 는 20자 이내여야 합니다.")
     private String accountCd;
 
     @Comment("계정명 스냅샷")
     @Column(name = "account_nm", length = 100)
+    @Size(max = 100, message = "accountNm 는 100자 이내여야 합니다.")
     private String accountNm;
 
     @Comment("코스트센터 코드")
     @Column(name = "cost_center_cd", length = 20)
+    @Size(max = 20, message = "costCenterCd 는 20자 이내여야 합니다.")
     private String costCenterCd;
 
     @Comment("수익센터 코드")
     @Column(name = "profit_center_cd", length = 20)
+    @Size(max = 20, message = "profitCenterCd 는 20자 이내여야 합니다.")
     private String profitCenterCd;
 
     @Comment("차변 금액 (대변과 상호 배타적)")
@@ -58,14 +65,17 @@ public class StErpVoucherLine extends BaseEntity {
 
     @Comment("참조유형 (SETTLE/ORDER/CLAIM/PAY/ADJ)")
     @Column(name = "ref_type_cd", length = 20)
+    @Size(max = 20, message = "refTypeCd 는 20자 이내여야 합니다.")
     private String refTypeCd;
 
     @Comment("참조ID (settle_id / order_id / claim_id 등)")
     @Column(name = "ref_id", length = 21)
+    @Size(max = 21, message = "refId 는 21자 이내여야 합니다.")
     private String refId;
 
     @Comment("라인 적요")
     @Column(name = "line_memo", length = 300)
+    @Size(max = 100, message = "lineMemo 는 100자 이내여야 합니다.")
     private String lineMemo;
 
 }

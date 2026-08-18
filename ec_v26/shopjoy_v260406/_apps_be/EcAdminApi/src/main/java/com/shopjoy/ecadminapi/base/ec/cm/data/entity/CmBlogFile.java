@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "cm_blog_file", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,23 +22,28 @@ public class CmBlogFile extends BaseEntity {
     @Id
     @Comment("블로그이미지ID")
     @Column(name = "blog_file_id", length = 21, nullable = false)
+    @Size(max = 21, message = "blogFileId 는 21자 이내여야 합니다.")
     private String blogFileId;
 
 
     @Comment("블로그ID (cm_bltn.)")
     @Column(name = "blog_id", length = 21, nullable = false)
+    @Size(max = 21, message = "blogId 는 21자 이내여야 합니다.")
     private String blogId;
 
     @Comment("원본 이미지 URL")
     @Column(name = "img_url", length = 500, nullable = false)
+    @Size(max = 100, message = "imgUrl 는 100자 이내여야 합니다.")
     private String imgUrl;
 
     @Comment("썸네일 이미지 URL")
     @Column(name = "thumb_url", length = 500)
+    @Size(max = 100, message = "thumbUrl 는 100자 이내여야 합니다.")
     private String thumbUrl;
 
     @Comment("이미지 대체텍스트")
     @Column(name = "img_alt_text", length = 200)
+    @Size(max = 100, message = "imgAltText 는 100자 이내여야 합니다.")
     private String imgAltText;
 
     @Comment("정렬순서")

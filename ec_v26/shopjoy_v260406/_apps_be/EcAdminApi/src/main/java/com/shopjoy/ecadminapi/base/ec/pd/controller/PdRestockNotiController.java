@@ -46,14 +46,14 @@ public class PdRestockNotiController {
 
     /* 재입고 알림 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNoti>> save(@PathVariable("id") String id, @RequestBody PdRestockNoti entity) {
+    public ResponseEntity<ApiResponse<PdRestockNoti>> save(@PathVariable("id") String id, @Valid @RequestBody PdRestockNoti entity) {
         entity.setRestockNotiId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 재입고 알림 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdRestockNoti>> updateSelective(@PathVariable("id") String id, @RequestBody PdRestockNoti entity) {
+    public ResponseEntity<ApiResponse<PdRestockNoti>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PdRestockNoti entity) {
         entity.setRestockNotiId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PdRestockNotiController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PdRestockNoti>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PdRestockNoti entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PdRestockNoti entity) {
         PdRestockNoti result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PdRestockNotiController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PdRestockNoti> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PdRestockNoti> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

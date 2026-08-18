@@ -46,14 +46,14 @@ public class MbDeviceTokenController {
 
     /* 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbDeviceToken>> save(@PathVariable("id") String id, @RequestBody MbDeviceToken entity) {
+    public ResponseEntity<ApiResponse<MbDeviceToken>> save(@PathVariable("id") String id, @Valid @RequestBody MbDeviceToken entity) {
         entity.setDeviceTokenId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbDeviceToken>> updateSelective(@PathVariable("id") String id, @RequestBody MbDeviceToken entity) {
+    public ResponseEntity<ApiResponse<MbDeviceToken>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody MbDeviceToken entity) {
         entity.setDeviceTokenId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class MbDeviceTokenController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<MbDeviceToken>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody MbDeviceToken entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody MbDeviceToken entity) {
         MbDeviceToken result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class MbDeviceTokenController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<MbDeviceToken> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<MbDeviceToken> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

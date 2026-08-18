@@ -6,6 +6,7 @@ import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pm_save_prod", schema = "shopjoy_2604")
 @Getter @Setter
@@ -18,14 +19,17 @@ public class PmSaveProd {
     @Id
     @Comment("적립상품ID (PK)")
     @Column(name = "save_prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "saveProdId 는 21자 이내여야 합니다.")
     private String saveProdId;
 
     @Comment("적립금ID (pm_save.save_id)")
     @Column(name = "save_id", length = 21, nullable = false)
+    @Size(max = 21, message = "saveId 는 21자 이내여야 합니다.")
     private String saveId;
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("배치 생성일시")

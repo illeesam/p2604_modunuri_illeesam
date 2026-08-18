@@ -46,14 +46,14 @@ public class SyMenuController {
 
     /* 메뉴 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyMenu>> save(@PathVariable("id") String id, @RequestBody SyMenu entity) {
+    public ResponseEntity<ApiResponse<SyMenu>> save(@PathVariable("id") String id, @Valid @RequestBody SyMenu entity) {
         entity.setMenuId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 메뉴 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyMenu>> updateSelective(@PathVariable("id") String id, @RequestBody SyMenu entity) {
+    public ResponseEntity<ApiResponse<SyMenu>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyMenu entity) {
         entity.setMenuId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyMenuController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyMenu>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyMenu entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyMenu entity) {
         SyMenu result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyMenuController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyMenu> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyMenu> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

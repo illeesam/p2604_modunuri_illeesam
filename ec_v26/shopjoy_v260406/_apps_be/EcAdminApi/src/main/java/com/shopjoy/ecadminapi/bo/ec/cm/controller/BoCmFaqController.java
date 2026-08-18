@@ -55,13 +55,13 @@ public class BoCmFaqController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmFaq>> update(@PathVariable("id") String id, @RequestBody CmFaq body) {
+    public ResponseEntity<ApiResponse<CmFaq>> update(@PathVariable("id") String id, @Valid @RequestBody CmFaq body) {
         return ResponseEntity.ok(ApiResponse.ok(boCmFaqService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmFaq>> upsert(@PathVariable("id") String id, @RequestBody CmFaq body) {
+    public ResponseEntity<ApiResponse<CmFaq>> upsert(@PathVariable("id") String id, @Valid @RequestBody CmFaq body) {
         return ResponseEntity.ok(ApiResponse.ok(boCmFaqService.update(id, body)));
     }
 
@@ -75,7 +75,7 @@ public class BoCmFaqController {
     /** saveList — 일괄 저장 */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<CmFaq> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<CmFaq> rows) {
         switch (cmd) {
             case "base" -> boCmFaqService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

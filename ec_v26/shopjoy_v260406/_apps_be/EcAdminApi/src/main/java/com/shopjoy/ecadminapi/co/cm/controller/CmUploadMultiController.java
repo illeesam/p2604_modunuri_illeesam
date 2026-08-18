@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /// 파일 업로드 API (다중 파일 + 썸네일 + DB 저장)
 @RestController
 @RequestMapping("/api/co/cm/upload")
@@ -67,7 +68,7 @@ public class CmUploadMultiController {
     @PatchMapping("/attach/{attachId}/sort")
     public ResponseEntity<ApiResponse<Void>> updateAttachSort(
             @PathVariable("attachId") String attachId,
-            @RequestBody SyAttachSortDto.Request req) {
+            @Valid @RequestBody SyAttachSortDto.Request req) {
         if (req == null || req.getSortOrd() == null)
             throw new com.shopjoy.ecadminapi.common.exception.CmBizException("sortOrd 값이 필요합니다.");
         cmUploadService.updateAttachSort(attachId, req.getSortOrd());

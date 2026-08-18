@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pd_prod_plan", schema = "shopjoy_2604")
 @Getter @Setter
@@ -18,11 +19,13 @@ public class PdProdPlan extends BaseEntity {
     @Id
     @Comment("판매계획ID (YYMMDDhhmmss+rand4)")
     @Column(name = "prod_plan_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodPlanId 는 21자 이내여야 합니다.")
     private String prodPlanId;
 
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("시작일시")
@@ -35,6 +38,7 @@ public class PdProdPlan extends BaseEntity {
 
     @Comment("계획상태 (SCHEDULED/ACTIVE/ENDED/CANCELLED)")
     @Column(name = "plan_status_cd", length = 20)
+    @Size(max = 20, message = "planStatusCd 는 20자 이내여야 합니다.")
     private String planStatusCd;
 
     @Comment("정가 (원)")

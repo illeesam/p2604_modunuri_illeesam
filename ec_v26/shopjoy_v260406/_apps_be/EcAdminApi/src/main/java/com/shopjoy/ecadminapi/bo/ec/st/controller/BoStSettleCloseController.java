@@ -47,13 +47,13 @@ public class BoStSettleCloseController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleClose>> update(@PathVariable("id") String id, @RequestBody StSettleClose body) {
+    public ResponseEntity<ApiResponse<StSettleClose>> update(@PathVariable("id") String id, @Valid @RequestBody StSettleClose body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleCloseService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleClose>> upsert(@PathVariable("id") String id, @RequestBody StSettleClose body) {
+    public ResponseEntity<ApiResponse<StSettleClose>> upsert(@PathVariable("id") String id, @Valid @RequestBody StSettleClose body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleCloseService.update(id, body)));
     }
 

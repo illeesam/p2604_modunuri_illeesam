@@ -50,14 +50,14 @@ public class BoPmCacheController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCache>> update(@PathVariable("id") String id, @RequestBody PmCache body) {
+    public ResponseEntity<ApiResponse<PmCache>> update(@PathVariable("id") String id, @Valid @RequestBody PmCache body) {
         PmCache result = boPmCacheService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCache>> upsert(@PathVariable("id") String id, @RequestBody PmCache body) {
+    public ResponseEntity<ApiResponse<PmCache>> upsert(@PathVariable("id") String id, @Valid @RequestBody PmCache body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmCacheService.update(id, body)));
     }
 
@@ -70,7 +70,7 @@ public class BoPmCacheController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmCache> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmCache> rows) {
         switch (cmd) {
             case "base" -> boPmCacheService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

@@ -50,14 +50,14 @@ public class BoPmCouponUsageController {
 
     /* 쿠폰 사용 이력 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCouponUsage>> save(@PathVariable("id") String id, @RequestBody PmCouponUsage entity) {
+    public ResponseEntity<ApiResponse<PmCouponUsage>> save(@PathVariable("id") String id, @Valid @RequestBody PmCouponUsage entity) {
         entity.setCouponUsageId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 쿠폰 사용 이력 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmCouponUsage>> updateSelective(@PathVariable("id") String id, @RequestBody PmCouponUsage entity) {
+    public ResponseEntity<ApiResponse<PmCouponUsage>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PmCouponUsage entity) {
         entity.setCouponUsageId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }

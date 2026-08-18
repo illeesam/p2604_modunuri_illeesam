@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pd_prod_bundle_item", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,19 +23,23 @@ public class PdProdBundleItem extends BaseEntity {
     @Id
     @Comment("묶음구성ID (YYMMDDhhmmss+rand4)")
     @Column(name = "prod_bundle_item_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodBundleItemId 는 21자 이내여야 합니다.")
     private String prodBundleItemId;
 
 
     @Comment("묶음상품ID (pd_prod.prod_id, prod_type_cd=BUNDLE)")
     @Column(name = "bundle_prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "bundleProdId 는 21자 이내여야 합니다.")
     private String bundleProdId;
 
     @Comment("구성품 상품ID (pd_prod.prod_id) — 독립 판매 상품")
     @Column(name = "item_prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "itemProdId 는 21자 이내여야 합니다.")
     private String itemProdId;
 
     @Comment("구성품 SKU ID (pd_prod_sku.prod_sku_id, NULL=SKU 미지정)")
     @Column(name = "item_sku_id", length = 21)
+    @Size(max = 21, message = "itemSkuId 는 21자 이내여야 합니다.")
     private String itemSkuId;
 
     @Comment("구성 수량 (기본 1)")
@@ -51,6 +56,7 @@ public class PdProdBundleItem extends BaseEntity {
 
     @Comment("사용여부 Y/N")
     @Column(name = "use_yn", length = 1)
+    @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
 }

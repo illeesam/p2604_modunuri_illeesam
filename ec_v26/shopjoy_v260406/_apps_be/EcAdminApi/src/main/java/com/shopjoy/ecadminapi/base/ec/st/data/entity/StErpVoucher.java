@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "st_erp_voucher", schema = "shopjoy_2604")
 @Getter @Setter
@@ -23,31 +24,38 @@ public class StErpVoucher extends BaseEntity {
     @Id
     @Comment("ERP전표ID (YYMMDDhhmmss+rand4)")
     @Column(name = "erp_voucher_id", length = 21, nullable = false)
+    @Size(max = 21, message = "erpVoucherId 는 21자 이내여야 합니다.")
     private String erpVoucherId;
 
 
     @Comment("업체ID")
     @Column(name = "vendor_id", length = 21)
+    @Size(max = 21, message = "vendorId 는 21자 이내여야 합니다.")
     private String vendorId;
 
     @Comment("정산ID (st_settle.settle_id)")
     @Column(name = "settle_id", length = 21)
+    @Size(max = 21, message = "settleId 는 21자 이내여야 합니다.")
     private String settleId;
 
     @Comment("정산년월 (YYYYMM)")
     @Column(name = "settle_ym", length = 6)
+    @Size(max = 6, message = "settleYm 는 6자 이내여야 합니다.")
     private String settleYm;
 
     @Comment("전표유형 (코드: ERP_VOUCHER_TYPE_CD — SETTLE/RETURN/ADJ/PAY)")
     @Column(name = "erp_voucher_type_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "erpVoucherTypeCd 는 20자 이내여야 합니다.")
     private String erpVoucherTypeCd;
 
     @Comment("전표상태 (코드: ERP_VOUCHER_STATUS_CD — DRAFT/CONFIRMED/SENT/MATCHED/MISMATCH/ERROR)")
     @Column(name = "erp_voucher_status_cd", length = 20)
+    @Size(max = 20, message = "erpVoucherStatusCd 는 20자 이내여야 합니다.")
     private String erpVoucherStatusCd;
 
     @Comment("변경 전 전표상태")
     @Column(name = "erp_voucher_status_cd_before", length = 20)
+    @Size(max = 20, message = "erpVoucherStatusCdBefore 는 20자 이내여야 합니다.")
     private String erpVoucherStatusCdBefore;
 
     @Comment("전표 기준일자")
@@ -56,6 +64,7 @@ public class StErpVoucher extends BaseEntity {
 
     @Comment("전표 적요")
     @Column(name = "erp_voucher_desc", length = 500)
+    @Size(max = 100, message = "erpVoucherDesc 는 100자 이내여야 합니다.")
     private String erpVoucherDesc;
 
     @Comment("차변 합계 (대변과 일치해야 전표 확정 가능)")
@@ -72,10 +81,12 @@ public class StErpVoucher extends BaseEntity {
 
     @Comment("ERP 채번 전표번호 (전송 후 ERP에서 수신)")
     @Column(name = "erp_voucher_no", length = 50)
+    @Size(max = 50, message = "erpVoucherNo 는 50자 이내여야 합니다.")
     private String erpVoucherNo;
 
     @Comment("ERP 처리 응답 메시지")
     @Column(name = "erp_res_msg", length = 500)
+    @Size(max = 100, message = "erpResMsg 는 100자 이내여야 합니다.")
     private String erpResMsg;
 
 }

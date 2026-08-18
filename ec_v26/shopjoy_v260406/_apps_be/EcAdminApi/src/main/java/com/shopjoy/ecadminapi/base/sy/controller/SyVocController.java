@@ -46,14 +46,14 @@ public class SyVocController {
 
     /* 고객의 소리(VOC) 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVoc>> save(@PathVariable("id") String id, @RequestBody SyVoc entity) {
+    public ResponseEntity<ApiResponse<SyVoc>> save(@PathVariable("id") String id, @Valid @RequestBody SyVoc entity) {
         entity.setVocId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 고객의 소리(VOC) 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyVoc>> updateSelective(@PathVariable("id") String id, @RequestBody SyVoc entity) {
+    public ResponseEntity<ApiResponse<SyVoc>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyVoc entity) {
         entity.setVocId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyVocController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyVoc>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyVoc entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyVoc entity) {
         SyVoc result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyVocController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyVoc> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyVoc> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

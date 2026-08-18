@@ -45,9 +45,8 @@ public class FoOdCartController {
     @PatchMapping("/{cartId}")
     public ResponseEntity<ApiResponse<OdCart>> updateQty(
             @PathVariable("cartId") String cartId,
-            @RequestBody OdCartUpdateQtyDto.Request req) {
-        int qty = req != null && req.getQty() != null ? req.getQty() : 1;
-        OdCart result = foOdCartService.updateQty(cartId, qty);
+            @Valid @RequestBody OdCartUpdateQtyDto.Request req) {
+        OdCart result = foOdCartService.updateQty(cartId, req.getQty());
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "odh_claim_chg_hist", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,35 +23,43 @@ public class OdhClaimChgHist extends BaseEntity {
     @Id
     @Comment("이력ID")
     @Column(name = "claim_chg_hist_id", length = 21, nullable = false)
+    @Size(max = 21, message = "claimChgHistId 는 21자 이내여야 합니다.")
     private String claimChgHistId;
 
 
     @Comment("클레임ID (od_claim.)")
     @Column(name = "claim_id", length = 21, nullable = false)
+    @Size(max = 21, message = "claimId 는 21자 이내여야 합니다.")
     private String claimId;
 
     @Comment("변경유형코드 (CLAIM_TYPE/REASON/AMOUNT/APPROVAL/MEMO/REFUND)")
     @Column(name = "chg_type_cd", length = 30, nullable = false)
+    @Size(max = 30, message = "chgTypeCd 는 30자 이내여야 합니다.")
     private String chgTypeCd;
 
     @Comment("변경 필드명")
     @Column(name = "chg_field", length = 50)
+    @Size(max = 50, message = "chgField 는 50자 이내여야 합니다.")
     private String chgField;
 
     @Comment("변경전값")
     @Column(name = "before_val", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "beforeVal 는 50000자 이내여야 합니다.")
     private String beforeVal;
 
     @Comment("변경후값")
     @Column(name = "after_val", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "afterVal 는 50000자 이내여야 합니다.")
     private String afterVal;
 
     @Comment("변경사유")
     @Column(name = "chg_reason", length = 300)
+    @Size(max = 100, message = "chgReason 는 100자 이내여야 합니다.")
     private String chgReason;
 
     @Comment("처리자 (sy_user.user_id)")
     @Column(name = "chg_user_id", length = 21)
+    @Size(max = 21, message = "chgUserId 는 21자 이내여야 합니다.")
     private String chgUserId;
 
     @Comment("처리일시")

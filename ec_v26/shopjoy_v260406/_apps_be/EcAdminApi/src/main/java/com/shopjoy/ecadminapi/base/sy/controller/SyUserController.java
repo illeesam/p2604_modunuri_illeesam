@@ -53,7 +53,7 @@ public class SyUserController {
     /* ── 전체 수정 (JPA) ── */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyUser>> save(
-            @PathVariable("id") String id, @RequestBody SyUser entity) {
+            @PathVariable("id") String id, @Valid @RequestBody SyUser entity) {
         entity.setUserId(id);
         SyUser result = service.saveOneBase(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -62,7 +62,7 @@ public class SyUserController {
     /* ── 선택 필드 수정 (MyBatis selective) ── */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<SyUser>> updateSelective(
-            @PathVariable("id") String id, @RequestBody SyUser entity) {
+            @PathVariable("id") String id, @Valid @RequestBody SyUser entity) {
         entity.setUserId(id);
         SyUser result = service.updateSelective(entity);
         return ResponseEntity.ok(ApiResponse.ok(result));
@@ -78,7 +78,7 @@ public class SyUserController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyUser>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyUser entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyUser entity) {
         SyUser result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -89,7 +89,7 @@ public class SyUserController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyUser> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyUser> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

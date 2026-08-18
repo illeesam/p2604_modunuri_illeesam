@@ -46,14 +46,14 @@ public class PdReviewCommentController {
 
     /* 리뷰 댓글 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewComment>> save(@PathVariable("id") String id, @RequestBody PdReviewComment entity) {
+    public ResponseEntity<ApiResponse<PdReviewComment>> save(@PathVariable("id") String id, @Valid @RequestBody PdReviewComment entity) {
         entity.setReviewCommentId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 리뷰 댓글 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReviewComment>> updateSelective(@PathVariable("id") String id, @RequestBody PdReviewComment entity) {
+    public ResponseEntity<ApiResponse<PdReviewComment>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PdReviewComment entity) {
         entity.setReviewCommentId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PdReviewCommentController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PdReviewComment>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PdReviewComment entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PdReviewComment entity) {
         PdReviewComment result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PdReviewCommentController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PdReviewComment> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PdReviewComment> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

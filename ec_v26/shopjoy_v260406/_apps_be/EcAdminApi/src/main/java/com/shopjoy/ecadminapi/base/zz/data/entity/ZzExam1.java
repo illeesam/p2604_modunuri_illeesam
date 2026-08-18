@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "zz_exam1", schema = "shopjoy_2604")
 @Getter @Setter
@@ -18,20 +19,26 @@ public class ZzExam1 extends BaseEntity {
 
     @Id
     @Column(name = "exam1_id", length = 21, nullable = false)
+    @Size(max = 21, message = "exam1Id 는 21자 이내여야 합니다.")
     private String exam1Id;
 
     @Column(name = "col11", length = 200)
+    @Size(max = 100, message = "col11 는 100자 이내여야 합니다.")
     private String col11;
 
     @Column(name = "col12", length = 200)
+    @Size(max = 100, message = "col12 는 100자 이내여야 합니다.")
     private String col12;
 
     @Column(name = "col13", length = 200)
+    @Size(max = 100, message = "col13 는 100자 이내여야 합니다.")
     private String col13;
 
     @Column(name = "col14", length = 200)
+    @Size(max = 100, message = "col14 는 100자 이내여야 합니다.")
     private String col14;
 
     @Column(name = "col15", length = 200)
+    @Size(max = 100, message = "col15 는 100자 이내여야 합니다.")
     private String col15;
 }

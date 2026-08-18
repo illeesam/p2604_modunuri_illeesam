@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pm_discnt_usage", schema = "shopjoy_2604")
 @Getter @Setter
@@ -23,35 +24,43 @@ public class PmDiscntUsage extends BaseEntity {
     @Id
     @Comment("할인사용ID (YYMMDDhhmmss+rand4)")
     @Column(name = "discnt_usage_id", length = 21, nullable = false)
+    @Size(max = 21, message = "discntUsageId 는 21자 이내여야 합니다.")
     private String discntUsageId;
 
 
     @Comment("할인ID (pm_discnt.discnt_id)")
     @Column(name = "discnt_id", length = 21, nullable = false)
+    @Size(max = 21, message = "discntId 는 21자 이내여야 합니다.")
     private String discntId;
 
     @Comment("할인명 스냅샷")
     @Column(name = "discnt_nm", length = 100)
+    @Size(max = 100, message = "discntNm 는 100자 이내여야 합니다.")
     private String discntNm;
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("주문ID (od_order.order_id)")
     @Column(name = "order_id", length = 21)
+    @Size(max = 21, message = "orderId 는 21자 이내여야 합니다.")
     private String orderId;
 
     @Comment("주문상품ID (od_order_item.order_item_id, 상품별 할인 적용 시)")
     @Column(name = "order_item_id", length = 21)
+    @Size(max = 21, message = "orderItemId 는 21자 이내여야 합니다.")
     private String orderItemId;
 
     @Comment("상품ID (pd_prod.prod_id, 할인 적용 상품)")
     @Column(name = "prod_id", length = 21)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("할인유형 스냅샷 (RATE=정률 / FIXED=정액 / FREE_SHIP=무료배송)")
     @Column(name = "discnt_type_cd", length = 20)
+    @Size(max = 20, message = "discntTypeCd 는 20자 이내여야 합니다.")
     private String discntTypeCd;
 
     @Comment("할인값 스냅샷 (정률이면 % / 정액이면 원)")

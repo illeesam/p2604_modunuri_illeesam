@@ -49,7 +49,7 @@ public class BoCmChattController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmChatt>> update(@PathVariable("id") String id, @RequestBody CmChatt body) {
+    public ResponseEntity<ApiResponse<CmChatt>> update(@PathVariable("id") String id, @Valid @RequestBody CmChatt body) {
         return ResponseEntity.ok(ApiResponse.ok(boCmChattService.update(id, body)));
     }
 
@@ -76,7 +76,7 @@ public class BoCmChattController {
 
     @PostMapping("/{id}/msg")
     public ResponseEntity<ApiResponse<CmChattMsg>> sendMsg(
-            @PathVariable("id") String id, @RequestBody CmChattMsgDto.SendRequest body) {
+            @PathVariable("id") String id, @Valid @RequestBody CmChattMsgDto.SendRequest body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boCmChattService.sendMsg(id, body)));
     }
 

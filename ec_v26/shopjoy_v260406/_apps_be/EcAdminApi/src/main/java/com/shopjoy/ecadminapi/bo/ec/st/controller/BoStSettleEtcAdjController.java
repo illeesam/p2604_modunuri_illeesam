@@ -47,13 +47,13 @@ public class BoStSettleEtcAdjController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleEtcAdj>> update(@PathVariable("id") String id, @RequestBody StSettleEtcAdj body) {
+    public ResponseEntity<ApiResponse<StSettleEtcAdj>> update(@PathVariable("id") String id, @Valid @RequestBody StSettleEtcAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleEtcAdjService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleEtcAdj>> upsert(@PathVariable("id") String id, @RequestBody StSettleEtcAdj body) {
+    public ResponseEntity<ApiResponse<StSettleEtcAdj>> upsert(@PathVariable("id") String id, @Valid @RequestBody StSettleEtcAdj body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleEtcAdjService.update(id, body)));
     }
 

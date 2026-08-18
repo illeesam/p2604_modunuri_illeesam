@@ -46,14 +46,14 @@ public class SyI18nController {
 
     /* 다국어 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18n>> save(@PathVariable("id") String id, @RequestBody SyI18n entity) {
+    public ResponseEntity<ApiResponse<SyI18n>> save(@PathVariable("id") String id, @Valid @RequestBody SyI18n entity) {
         entity.setI18nId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 다국어 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyI18n>> updateSelective(@PathVariable("id") String id, @RequestBody SyI18n entity) {
+    public ResponseEntity<ApiResponse<SyI18n>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyI18n entity) {
         entity.setI18nId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyI18nController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyI18n>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyI18n entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyI18n entity) {
         SyI18n result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyI18nController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyI18n> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyI18n> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

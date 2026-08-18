@@ -12,6 +12,7 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 /**
  * 전 도메인 엔티티의 공통 상위 클래스 — 감사(audit) 컬럼 4종을 제공한다.
  *
@@ -74,6 +75,7 @@ public abstract class BaseEntity {
      */
     @Comment("등록자")
     @Column(name = "reg_by", length = 30)
+    @Size(max = 30, message = "regBy 는 30자 이내여야 합니다.")
     private String regBy;
 
     /**
@@ -91,6 +93,7 @@ public abstract class BaseEntity {
      */
     @Comment("등록 사이트ID (reg_by와 동일 시점에 SecurityUtil에서 자동 주입)")
     @Column(name = "reg_site_id", length = 21)
+    @Size(max = 21, message = "regSiteId 는 21자 이내여야 합니다.")
     private String regSiteId;
 
     /**
@@ -99,6 +102,7 @@ public abstract class BaseEntity {
      */
     @Comment("수정자")
     @Column(name = "upd_by", length = 30)
+    @Size(max = 30, message = "updBy 는 30자 이내여야 합니다.")
     private String updBy;
 
     /**

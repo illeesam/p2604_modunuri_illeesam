@@ -46,14 +46,14 @@ public class SyAttachController {
 
     /* 첨부파일 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAttach>> save(@PathVariable("id") String id, @RequestBody SyAttach entity) {
+    public ResponseEntity<ApiResponse<SyAttach>> save(@PathVariable("id") String id, @Valid @RequestBody SyAttach entity) {
         entity.setAttachId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 첨부파일 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyAttach>> updateSelective(@PathVariable("id") String id, @RequestBody SyAttach entity) {
+    public ResponseEntity<ApiResponse<SyAttach>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody SyAttach entity) {
         entity.setAttachId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class SyAttachController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyAttach>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody SyAttach entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody SyAttach entity) {
         SyAttach result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class SyAttachController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyAttach> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyAttach> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

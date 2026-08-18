@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "sy_batch", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,27 +23,33 @@ public class SyBatch extends BaseEntity {
     @Id
     @Comment("배치ID (YYMMDDhhmmss+rand4)")
     @Column(name = "batch_id", length = 21, nullable = false)
+    @Size(max = 21, message = "batchId 는 21자 이내여야 합니다.")
     private String batchId;
 
 
     @Comment("배치코드")
     @Column(name = "batch_code", length = 50, nullable = false)
+    @Size(max = 50, message = "batchCode 는 50자 이내여야 합니다.")
     private String batchCode;
 
     @Comment("배치명")
     @Column(name = "batch_nm", length = 100, nullable = false)
+    @Size(max = 100, message = "batchNm 는 100자 이내여야 합니다.")
     private String batchNm;
 
     @Comment("배치설명")
     @Column(name = "batch_desc", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "batchDesc 는 50000자 이내여야 합니다.")
     private String batchDesc;
 
     @Comment("Cron 표현식")
     @Column(name = "cron_expr", length = 100)
+    @Size(max = 100, message = "cronExpr 는 100자 이내여야 합니다.")
     private String cronExpr;
 
     @Comment("주기유형 (코드: BATCH_CYCLE_CD)")
     @Column(name = "batch_cycle_cd", length = 20)
+    @Size(max = 20, message = "batchCycleCd 는 20자 이내여야 합니다.")
     private String batchCycleCd;
 
     @Comment("최근실행일시")
@@ -59,10 +66,12 @@ public class SyBatch extends BaseEntity {
 
     @Comment("활성상태 (코드: BATCH_STATUS)")
     @Column(name = "batch_status_cd", length = 20)
+    @Size(max = 20, message = "batchStatusCd 는 20자 이내여야 합니다.")
     private String batchStatusCd;
 
     @Comment("실행상태 (IDLE/RUNNING/SUCCESS/FAILED)")
     @Column(name = "batch_run_status_cd", length = 20)
+    @Size(max = 20, message = "batchRunStatusCd 는 20자 이내여야 합니다.")
     private String batchRunStatusCd;
 
     @Comment("타임아웃(초)")
@@ -71,10 +80,12 @@ public class SyBatch extends BaseEntity {
 
     @Comment("메모")
     @Column(name = "batch_memo", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "batchMemo 는 50000자 이내여야 합니다.")
     private String batchMemo;
 
     @Comment("점(.) 구분 표시경로 (트리 빌드용)")
     @Column(name = "path_id", length = 21)
+    @Size(max = 21, message = "pathId 는 21자 이내여야 합니다.")
     private String pathId;
 
 }

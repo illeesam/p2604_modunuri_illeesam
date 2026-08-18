@@ -49,13 +49,13 @@ public class BoSyBbsController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBbs>> update(@PathVariable("id") String id, @RequestBody SyBbs body) {
+    public ResponseEntity<ApiResponse<SyBbs>> update(@PathVariable("id") String id, @Valid @RequestBody SyBbs body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyBbsService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyBbs>> upsert(@PathVariable("id") String id, @RequestBody SyBbs body) {
+    public ResponseEntity<ApiResponse<SyBbs>> upsert(@PathVariable("id") String id, @Valid @RequestBody SyBbs body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyBbsService.update(id, body)));
     }
 
@@ -69,7 +69,7 @@ public class BoSyBbsController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyBbs> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyBbs> rows) {
         switch (cmd) {
             case "base" -> boSyBbsService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

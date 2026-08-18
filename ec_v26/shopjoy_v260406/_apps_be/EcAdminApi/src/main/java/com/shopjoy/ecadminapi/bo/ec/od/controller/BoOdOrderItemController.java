@@ -47,7 +47,7 @@ public class BoOdOrderItemController {
     /* 선택적 수정 — orderItemStatusCd/dlivMethodCd 등 null 이 아닌 필드만 반영 */
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<OdOrderItem>> updateSelective(
-            @PathVariable("id") String id, @RequestBody OdOrderItem body) {
+            @PathVariable("id") String id, @Valid @RequestBody OdOrderItem body) {
         body.setOrderItemId(id);
         return ResponseEntity.ok(ApiResponse.ok(boOdOrderItemService.updateSelective(body)));
     }

@@ -98,7 +98,7 @@ public class BoCmPopupPickController {
 
     @PutMapping("/popup/{popupId}")
     public ResponseEntity<ApiResponse<CmPopup>> popupUpdate(
-            @PathVariable("popupId") String popupId, @RequestBody CmPopup body) {
+            @PathVariable("popupId") String popupId, @Valid @RequestBody CmPopup body) {
         CmPopup e = cmPopupRepository.findById(popupId)
             .orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않습니다: " + popupId));
         if (body.getPopupNm() != null)      e.setPopupNm(body.getPopupNm());

@@ -46,14 +46,14 @@ public class StReconController {
 
     /* 정산 대사(Reconciliation) 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StRecon>> save(@PathVariable("id") String id, @RequestBody StRecon entity) {
+    public ResponseEntity<ApiResponse<StRecon>> save(@PathVariable("id") String id, @Valid @RequestBody StRecon entity) {
         entity.setReconId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 정산 대사(Reconciliation) 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<StRecon>> updateSelective(@PathVariable("id") String id, @RequestBody StRecon entity) {
+    public ResponseEntity<ApiResponse<StRecon>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody StRecon entity) {
         entity.setReconId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class StReconController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<StRecon>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody StRecon entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody StRecon entity) {
         StRecon result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class StReconController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<StRecon> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<StRecon> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

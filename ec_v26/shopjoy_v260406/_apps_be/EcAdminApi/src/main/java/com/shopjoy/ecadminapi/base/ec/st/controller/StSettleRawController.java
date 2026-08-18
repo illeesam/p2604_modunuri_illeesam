@@ -46,14 +46,14 @@ public class StSettleRawController {
 
     /* 정산 원천 데이터 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleRaw>> save(@PathVariable("id") String id, @RequestBody StSettleRaw entity) {
+    public ResponseEntity<ApiResponse<StSettleRaw>> save(@PathVariable("id") String id, @Valid @RequestBody StSettleRaw entity) {
         entity.setSettleRawId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 정산 원천 데이터 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleRaw>> updateSelective(@PathVariable("id") String id, @RequestBody StSettleRaw entity) {
+    public ResponseEntity<ApiResponse<StSettleRaw>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody StSettleRaw entity) {
         entity.setSettleRawId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class StSettleRawController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<StSettleRaw>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody StSettleRaw entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody StSettleRaw entity) {
         StSettleRaw result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class StSettleRawController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<StSettleRaw> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<StSettleRaw> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

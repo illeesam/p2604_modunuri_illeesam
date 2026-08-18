@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "od_refund_method", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,19 +23,23 @@ public class OdRefundMethod extends BaseEntity {
     @Id
     @Comment("환불수단ID (YYMMDDhhmmss+rand4)")
     @Column(name = "refund_method_id", length = 21, nullable = false)
+    @Size(max = 21, message = "refundMethodId 는 21자 이내여야 합니다.")
     private String refundMethodId;
 
 
     @Comment("환불ID (od_refund.refund_id)")
     @Column(name = "refund_id", length = 21, nullable = false)
+    @Size(max = 21, message = "refundId 는 21자 이내여야 합니다.")
     private String refundId;
 
     @Comment("주문ID (od_order.order_id)")
     @Column(name = "order_id", length = 21, nullable = false)
+    @Size(max = 21, message = "orderId 는 21자 이내여야 합니다.")
     private String orderId;
 
     @Comment("결제수단코드 (코드: PAY_METHOD — BANK_TRANSFER/VBANK/TOSS/KAKAO/NAVER/MOBILE/CACHE/SAVE)")
     @Column(name = "pay_method_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "payMethodCd 는 20자 이내여야 합니다.")
     private String payMethodCd;
 
     @Comment("환불 우선순위 (1=카드·현금성 결제수단, 2=캐쉬, 3=적립금)")
@@ -51,10 +56,12 @@ public class OdRefundMethod extends BaseEntity {
 
     @Comment("수단별 환불상태 (코드: REFUND_STATUS_CD — PENDING/COMPLT/FAILED)")
     @Column(name = "refund_status_cd", length = 20)
+    @Size(max = 20, message = "refundStatusCd 는 20자 이내여야 합니다.")
     private String refundStatusCd;
 
     @Comment("변경 전 환불상태 (코드: REFUND_STATUS_CD)")
     @Column(name = "refund_status_cd_before", length = 20)
+    @Size(max = 20, message = "refundStatusCdBefore 는 20자 이내여야 합니다.")
     private String refundStatusCdBefore;
 
     @Comment("해당 수단 환불 완료일시")
@@ -63,14 +70,17 @@ public class OdRefundMethod extends BaseEntity {
 
     @Comment("원 결제 레코드ID (od_pay.pay_id)")
     @Column(name = "pay_id", length = 21)
+    @Size(max = 21, message = "payId 는 21자 이내여야 합니다.")
     private String payId;
 
     @Comment("PG 환불 거래ID")
     @Column(name = "pg_refund_id", length = 100)
+    @Size(max = 100, message = "pgRefundId 는 100자 이내여야 합니다.")
     private String pgRefundId;
 
     @Comment("PG 환불 응답 JSON")
     @Column(name = "pg_response", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "pgResponse 는 50000자 이내여야 합니다.")
     private String pgResponse;
 
 }

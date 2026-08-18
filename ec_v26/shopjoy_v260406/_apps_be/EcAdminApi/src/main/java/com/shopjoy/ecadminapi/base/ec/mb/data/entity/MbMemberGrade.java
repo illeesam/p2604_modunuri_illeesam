@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "mb_member_grade", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,15 +23,18 @@ public class MbMemberGrade extends BaseEntity {
     @Id
     @Comment("등급ID (YYMMDDhhmmss+rand4)")
     @Column(name = "member_grade_id", length = 21, nullable = false)
+    @Size(max = 21, message = "memberGradeId 는 21자 이내여야 합니다.")
     private String memberGradeId;
 
 
     @Comment("등급코드 (코드: MEMBER_GRADE)")
     @Column(name = "grade_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "gradeCd 는 20자 이내여야 합니다.")
     private String gradeCd;
 
     @Comment("등급명")
     @Column(name = "grade_nm", length = 50, nullable = false)
+    @Size(max = 50, message = "gradeNm 는 50자 이내여야 합니다.")
     private String gradeNm;
 
     @Comment("등급우선순위 (낮을수록 낮은 등급)")
@@ -47,6 +51,7 @@ public class MbMemberGrade extends BaseEntity {
 
     @Comment("사용여부 Y/N")
     @Column(name = "use_yn", length = 1)
+    @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
 }

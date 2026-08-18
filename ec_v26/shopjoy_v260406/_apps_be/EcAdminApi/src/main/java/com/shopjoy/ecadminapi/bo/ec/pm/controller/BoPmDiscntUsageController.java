@@ -50,14 +50,14 @@ public class BoPmDiscntUsageController {
 
     /* 할인 사용 이력 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmDiscntUsage>> save(@PathVariable("id") String id, @RequestBody PmDiscntUsage entity) {
+    public ResponseEntity<ApiResponse<PmDiscntUsage>> save(@PathVariable("id") String id, @Valid @RequestBody PmDiscntUsage entity) {
         entity.setDiscntUsageId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 할인 사용 이력 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmDiscntUsage>> updateSelective(@PathVariable("id") String id, @RequestBody PmDiscntUsage entity) {
+    public ResponseEntity<ApiResponse<PmDiscntUsage>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PmDiscntUsage entity) {
         entity.setDiscntUsageId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }

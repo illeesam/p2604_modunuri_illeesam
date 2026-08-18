@@ -52,7 +52,7 @@ public class ZzExam3Controller {
             @PathVariable("exam1Id") String exam1Id,
             @PathVariable("exam2Id") String exam2Id,
             @PathVariable("exam3Id") String exam3Id,
-            @RequestBody ZzExam3 entity) {
+            @Valid @RequestBody ZzExam3 entity) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(exam1Id, exam2Id, exam3Id, entity)));
     }
 
@@ -62,7 +62,7 @@ public class ZzExam3Controller {
             @PathVariable("exam1Id") String exam1Id,
             @PathVariable("exam2Id") String exam2Id,
             @PathVariable("exam3Id") String exam3Id,
-            @RequestBody ZzExam3 entity) {
+            @Valid @RequestBody ZzExam3 entity) {
         entity.setExam1Id(exam1Id);
         entity.setExam2Id(exam2Id);
         entity.setExam3Id(exam3Id);

@@ -46,14 +46,14 @@ public class CmBlogFileController {
 
     /* 게시물 첨부파일 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogFile>> save(@PathVariable("id") String id, @RequestBody CmBlogFile entity) {
+    public ResponseEntity<ApiResponse<CmBlogFile>> save(@PathVariable("id") String id, @Valid @RequestBody CmBlogFile entity) {
         entity.setBlogFileId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 게시물 첨부파일 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlogFile>> updateSelective(@PathVariable("id") String id, @RequestBody CmBlogFile entity) {
+    public ResponseEntity<ApiResponse<CmBlogFile>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody CmBlogFile entity) {
         entity.setBlogFileId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class CmBlogFileController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<CmBlogFile>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody CmBlogFile entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody CmBlogFile entity) {
         CmBlogFile result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class CmBlogFileController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<CmBlogFile> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<CmBlogFile> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

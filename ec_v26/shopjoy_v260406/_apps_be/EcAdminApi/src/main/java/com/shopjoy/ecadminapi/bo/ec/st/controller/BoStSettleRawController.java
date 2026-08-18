@@ -47,13 +47,13 @@ public class BoStSettleRawController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleRaw>> update(@PathVariable("id") String id, @RequestBody StSettleRaw body) {
+    public ResponseEntity<ApiResponse<StSettleRaw>> update(@PathVariable("id") String id, @Valid @RequestBody StSettleRaw body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleRawService.update(id, body)));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<StSettleRaw>> upsert(@PathVariable("id") String id, @RequestBody StSettleRaw body) {
+    public ResponseEntity<ApiResponse<StSettleRaw>> upsert(@PathVariable("id") String id, @Valid @RequestBody StSettleRaw body) {
         return ResponseEntity.ok(ApiResponse.ok(boStSettleRawService.update(id, body)));
     }
 

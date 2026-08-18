@@ -46,14 +46,14 @@ public class DpPanelItemController {
 
     /* 전시 패널 아이템 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpPanelItem>> save(@PathVariable("id") String id, @RequestBody DpPanelItem entity) {
+    public ResponseEntity<ApiResponse<DpPanelItem>> save(@PathVariable("id") String id, @Valid @RequestBody DpPanelItem entity) {
         entity.setPanelItemId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 전시 패널 아이템 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<DpPanelItem>> updateSelective(@PathVariable("id") String id, @RequestBody DpPanelItem entity) {
+    public ResponseEntity<ApiResponse<DpPanelItem>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody DpPanelItem entity) {
         entity.setPanelItemId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class DpPanelItemController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<DpPanelItem>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody DpPanelItem entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody DpPanelItem entity) {
         DpPanelItem result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class DpPanelItemController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<DpPanelItem> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<DpPanelItem> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

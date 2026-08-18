@@ -46,14 +46,14 @@ public class PdTagController {
 
     /* 태그 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdTag>> save(@PathVariable("id") String id, @RequestBody PdTag entity) {
+    public ResponseEntity<ApiResponse<PdTag>> save(@PathVariable("id") String id, @Valid @RequestBody PdTag entity) {
         entity.setTagId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 태그 수정 */
     @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdTag>> updateSelective(@PathVariable("id") String id, @RequestBody PdTag entity) {
+    public ResponseEntity<ApiResponse<PdTag>> updateSelective(@PathVariable("id") String id, @Valid @RequestBody PdTag entity) {
         entity.setTagId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }
@@ -68,7 +68,7 @@ public class PdTagController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PdTag>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody PdTag entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody PdTag entity) {
         PdTag result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -79,7 +79,7 @@ public class PdTagController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PdTag> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PdTag> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

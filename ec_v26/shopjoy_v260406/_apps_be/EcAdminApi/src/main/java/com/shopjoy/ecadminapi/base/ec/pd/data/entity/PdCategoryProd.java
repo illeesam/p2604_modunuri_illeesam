@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pd_category_prod", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,19 +23,23 @@ public class PdCategoryProd extends BaseEntity {
     @Id
     @Comment("상품카테고리연결ID (YYMMDDhhmmss+rand4)")
     @Column(name = "category_prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "categoryProdId 는 21자 이내여야 합니다.")
     private String categoryProdId;
 
 
     @Comment("카테고리ID (pd_category.category_id)")
     @Column(name = "category_id", length = 21, nullable = false)
+    @Size(max = 21, message = "categoryId 는 21자 이내여야 합니다.")
     private String categoryId;
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("진열유형 (NORMAL/HIGHLIGHT/RECOMMEND/MAIN/BANNER/HOT_DEAL)")
     @Column(name = "category_prod_type_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "categoryProdTypeCd 는 20자 이내여야 합니다.")
     private String categoryProdTypeCd;
 
     @Comment("표시 순서 (동일 타입 내, 낮을수록 우선 노출)")
@@ -42,10 +47,12 @@ public class PdCategoryProd extends BaseEntity {
     private Integer sortOrd;
 
     @Column(name = "emphasis_cd", length = 200)
+    @Size(max = 100, message = "emphasisCd 는 100자 이내여야 합니다.")
     private String emphasisCd;
 
     @Comment("전시여부 (Y=전시, N=비전시)")
     @Column(name = "disp_yn", length = 1, nullable = false)
+    @Size(max = 1, message = "dispYn 는 1자 이내여야 합니다.")
     private String dispYn;
 
     @Comment("전시시작일 (NULL=즉시)")

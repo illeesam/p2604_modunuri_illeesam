@@ -9,6 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pdh_prod_sku_price_hist", schema = "shopjoy_2604")
 @Getter @Setter
@@ -20,15 +21,18 @@ public class PdhProdSkuPriceHist {
     @Id
     @Comment("이력ID (YYMMDDhhmmss+rand4)")
     @Column(name = "hist_id", length = 21, nullable = false)
+    @Size(max = 21, message = "histId 는 21자 이내여야 합니다.")
     private String histId;
 
 
     @Comment("SKU ID (pd_prod_sku.prod_sku_id)")
     @Column(name = "prod_sku_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodSkuId 는 21자 이내여야 합니다.")
     private String prodSkuId;
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("변경 전 옵션 추가금액")
@@ -41,10 +45,12 @@ public class PdhProdSkuPriceHist {
 
     @Comment("변경사유")
     @Column(name = "chg_reason", length = 200)
+    @Size(max = 100, message = "chgReason 는 100자 이내여야 합니다.")
     private String chgReason;
 
     @Comment("처리자 (sy_user.user_id)")
     @Column(name = "chg_by", length = 20)
+    @Size(max = 20, message = "chgBy 는 20자 이내여야 합니다.")
     private String chgBy;
 
     @Comment("처리일시")
@@ -53,6 +59,7 @@ public class PdhProdSkuPriceHist {
 
     @Comment("등록자")
     @Column(name = "reg_by", length = 30)
+    @Size(max = 30, message = "regBy 는 30자 이내여야 합니다.")
     private String regBy;
 
     @Comment("등록일")

@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "dp_ui", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,27 +23,33 @@ public class DpUi extends BaseEntity {
     @Id
     @Comment("UIID (YYMMDDhhmmss+rand4)")
     @Column(name = "ui_id", length = 21, nullable = false)
+    @Size(max = 21, message = "uiId 는 21자 이내여야 합니다.")
     private String uiId;
 
 
     @Comment("UI코드 (예: MOBILE_MAIN, PC_MAIN)")
     @Column(name = "ui_cd", length = 50, nullable = false)
+    @Size(max = 50, message = "uiCd 는 50자 이내여야 합니다.")
     private String uiCd;
 
     @Comment("UI명")
     @Column(name = "ui_nm", length = 100, nullable = false)
+    @Size(max = 100, message = "uiNm 는 100자 이내여야 합니다.")
     private String uiNm;
 
     @Comment("UI설명")
     @Column(name = "ui_desc", length = 300)
+    @Size(max = 100, message = "uiDesc 는 100자 이내여야 합니다.")
     private String uiDesc;
 
     @Comment("디바이스유형 (코드: DEVICE_TYPE_CD)")
     @Column(name = "device_type_cd", length = 30)
+    @Size(max = 30, message = "deviceTypeCd 는 30자 이내여야 합니다.")
     private String deviceTypeCd;
 
     @Comment("페이지경로")
     @Column(name = "path_id", length = 21)
+    @Size(max = 21, message = "pathId 는 21자 이내여야 합니다.")
     private String pathId;
 
     @Comment("정렬순서")
@@ -51,6 +58,7 @@ public class DpUi extends BaseEntity {
 
     @Comment("사용여부 (Y/N)")
     @Column(name = "use_yn", length = 1)
+    @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
     @Comment("사용시작일")

@@ -41,13 +41,13 @@ public class BoMbCustInfoController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMember>> update(@PathVariable("id") String id, @RequestBody MbMember body) {
+    public ResponseEntity<ApiResponse<MbMember>> update(@PathVariable("id") String id, @Valid @RequestBody MbMember body) {
         return ResponseEntity.ok(ApiResponse.ok(boMbCustInfoService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMember>> upsert(@PathVariable("id") String id, @RequestBody MbMember body) {
+    public ResponseEntity<ApiResponse<MbMember>> upsert(@PathVariable("id") String id, @Valid @RequestBody MbMember body) {
         return ResponseEntity.ok(ApiResponse.ok(boMbCustInfoService.update(id, body)));
     }
 

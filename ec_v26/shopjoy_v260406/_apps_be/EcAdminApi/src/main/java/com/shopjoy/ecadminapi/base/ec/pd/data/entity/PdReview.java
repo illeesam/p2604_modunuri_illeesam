@@ -28,14 +28,17 @@ public class PdReview extends BaseEntity {
     @Id
     @Comment("리뷰ID (YYMMDDhhmmss+rand4)")
     @Column(name = "review_id", length = 21, nullable = false)
+    @Size(max = 21, message = "reviewId 는 21자 이내여야 합니다.")
     private String reviewId;
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21, nullable = false)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("리뷰 제목")
@@ -46,6 +49,7 @@ public class PdReview extends BaseEntity {
 
     @Comment("리뷰 내용")
     @Column(name = "review_content", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "reviewContent 는 50000자 이내여야 합니다.")
     private String reviewContent;
 
     @Comment("평점 (1.0~5.0)")
@@ -62,10 +66,12 @@ public class PdReview extends BaseEntity {
 
     @Comment("상태 (코드: REVIEW_STATUS_CD)")
     @Column(name = "review_status_cd", length = 20)
+    @Size(max = 20, message = "reviewStatusCd 는 20자 이내여야 합니다.")
     private String reviewStatusCd;
 
     @Comment("변경 전 리뷰상태 (코드: REVIEW_STATUS_CD)")
     @Column(name = "review_status_cd_before", length = 20)
+    @Size(max = 20, message = "reviewStatusCdBefore 는 20자 이내여야 합니다.")
     private String reviewStatusCdBefore;
 
     @Comment("리뷰작성일")

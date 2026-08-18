@@ -56,14 +56,14 @@ public class BoPmDiscntController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmDiscnt>> update(@PathVariable("id") String id, @RequestBody PmDiscnt body) {
+    public ResponseEntity<ApiResponse<PmDiscnt>> update(@PathVariable("id") String id, @Valid @RequestBody PmDiscnt body) {
         PmDiscnt result = boPmDiscntService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PmDiscnt>> upsert(@PathVariable("id") String id, @RequestBody PmDiscnt body) {
+    public ResponseEntity<ApiResponse<PmDiscnt>> upsert(@PathVariable("id") String id, @Valid @RequestBody PmDiscnt body) {
         return ResponseEntity.ok(ApiResponse.ok(boPmDiscntService.update(id, body)));
     }
 
@@ -83,7 +83,7 @@ public class BoPmDiscntController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PmDiscnt> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PmDiscnt> rows) {
         switch (cmd) {
             case "base" -> boPmDiscntService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

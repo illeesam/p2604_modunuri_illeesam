@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "od_claim", schema = "shopjoy_2604")
 @Getter @Setter
@@ -22,51 +23,63 @@ public class OdClaim extends BaseEntity {
     @Id
     @Comment("클레임ID (YYMMDDhhmmss+rand4)")
     @Column(name = "claim_id", length = 21, nullable = false)
+    @Size(max = 21, message = "claimId 는 21자 이내여야 합니다.")
     private String claimId;
 
 
     @Comment("주문ID")
     @Column(name = "order_id", length = 21, nullable = false)
+    @Size(max = 21, message = "orderId 는 21자 이내여야 합니다.")
     private String orderId;
 
     @Comment("회원ID")
     @Column(name = "member_id", length = 21)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("회원명")
     @Column(name = "member_nm", length = 50)
+    @Size(max = 50, message = "memberNm 는 50자 이내여야 합니다.")
     private String memberNm;
 
     @Comment("클레임유형 (코드: CLAIM_TYPE_CD)")
     @Column(name = "claim_type_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "claimTypeCd 는 20자 이내여야 합니다.")
     private String claimTypeCd;
 
     @Comment("클레임상태 (코드: CLAIM_STATUS_CD)")
     @Column(name = "claim_status_cd", length = 20)
+    @Size(max = 20, message = "claimStatusCd 는 20자 이내여야 합니다.")
     private String claimStatusCd;
 
     @Comment("변경 전 클레임상태 (코드: CLAIM_STATUS_CD)")
     @Column(name = "claim_status_cd_before", length = 20)
+    @Size(max = 20, message = "claimStatusCdBefore 는 20자 이내여야 합니다.")
     private String claimStatusCdBefore;
 
     @Comment("사유코드 (코드: REASON_CD/RETURN_REASON/EXCHANGE_REASON)")
     @Column(name = "reason_cd", length = 50)
+    @Size(max = 50, message = "reasonCd 는 50자 이내여야 합니다.")
     private String reasonCd;
 
     @Comment("사유 상세")
     @Column(name = "reason_detail", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "reasonDetail 는 50000자 이내여야 합니다.")
     private String reasonDetail;
 
     @Comment("대표 상품명")
     @Column(name = "prod_nm", length = 200)
+    @Size(max = 100, message = "prodNm 는 100자 이내여야 합니다.")
     private String prodNm;
 
     @Comment("고객귀책여부 (Y=고객귀책, N=판매자귀책)")
     @Column(name = "customer_fault_yn", length = 1)
+    @Size(max = 1, message = "customerFaultYn 는 1자 이내여야 합니다.")
     private String customerFaultYn;
 
     @Comment("클레임 철회여부 Y/N (신청 자체를 취소한 경우)")
     @Column(name = "claim_cancel_yn", length = 1)
+    @Size(max = 1, message = "claimCancelYn 는 1자 이내여야 합니다.")
     private String claimCancelYn;
 
     @Comment("클레임 철회일시")
@@ -75,14 +88,17 @@ public class OdClaim extends BaseEntity {
 
     @Comment("클레임 철회사유코드")
     @Column(name = "claim_cancel_reason_cd", length = 50)
+    @Size(max = 50, message = "claimCancelReasonCd 는 50자 이내여야 합니다.")
     private String claimCancelReasonCd;
 
     @Comment("클레임 철회사유상세")
     @Column(name = "claim_cancel_reason_detail", length = 300)
+    @Size(max = 100, message = "claimCancelReasonDetail 는 100자 이내여야 합니다.")
     private String claimCancelReasonDetail;
 
     @Comment("환불수단 (코드: REFUND_METHOD_CD)")
     @Column(name = "refund_method_cd", length = 20)
+    @Size(max = 20, message = "refundMethodCd 는 20자 이내여야 합니다.")
     private String refundMethodCd;
 
     @Comment("환불 합계금액 (상품금액+배송비-추가배송비-적립금복원)")
@@ -103,14 +119,17 @@ public class OdClaim extends BaseEntity {
 
     @Comment("환불 은행코드 (코드: BANK_CODE — 계좌이체 환불 시)")
     @Column(name = "refund_bank_cd", length = 20)
+    @Size(max = 20, message = "refundBankCd 는 20자 이내여야 합니다.")
     private String refundBankCd;
 
     @Comment("환불 계좌번호")
     @Column(name = "refund_account_no", length = 50)
+    @Size(max = 50, message = "refundAccountNo 는 50자 이내여야 합니다.")
     private String refundAccountNo;
 
     @Comment("환불 예금주명")
     @Column(name = "refund_account_nm", length = 50)
+    @Size(max = 50, message = "refundAccountNm 는 50자 이내여야 합니다.")
     private String refundAccountNm;
 
     @Comment("클레임 요청일시")
@@ -123,10 +142,12 @@ public class OdClaim extends BaseEntity {
 
     @Comment("처리자 (sy_user.user_id)")
     @Column(name = "proc_user_id", length = 21)
+    @Size(max = 21, message = "procUserId 는 21자 이내여야 합니다.")
     private String procUserId;
 
     @Comment("관리메모")
     @Column(name = "memo", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "memo 는 50000자 이내여야 합니다.")
     private String memo;
 
     @Comment("추가배송비 (교환=출고배송비, 반품/취소=무료배송 조건 파괴 시 추가)")
@@ -135,34 +156,42 @@ public class OdClaim extends BaseEntity {
 
     @Comment("추가배송비 청구방법코드")
     @Column(name = "add_shipping_fee_charge_cd", length = 20)
+    @Size(max = 20, message = "addShippingFeeChargeCd 는 20자 이내여야 합니다.")
     private String addShippingFeeChargeCd;
 
     @Comment("추가배송비 면제사유")
     @Column(name = "add_shipping_fee_reason", length = 300)
+    @Size(max = 100, message = "addShippingFeeReason 는 100자 이내여야 합니다.")
     private String addShippingFeeReason;
 
     @Comment("수거지 성명 (반품·교환 수거 주소)")
     @Column(name = "collect_nm", length = 50)
+    @Size(max = 50, message = "collectNm 는 50자 이내여야 합니다.")
     private String collectNm;
 
     @Comment("수거지 연락처")
     @Column(name = "collect_phone", length = 20)
+    @Size(max = 20, message = "collectPhone 는 20자 이내여야 합니다.")
     private String collectPhone;
 
     @Comment("수거지 우편번호")
     @Column(name = "collect_zip", length = 10)
+    @Size(max = 10, message = "collectZip 는 10자 이내여야 합니다.")
     private String collectZip;
 
     @Comment("수거지 기본주소")
     @Column(name = "collect_addr", length = 200)
+    @Size(max = 100, message = "collectAddr 는 100자 이내여야 합니다.")
     private String collectAddr;
 
     @Comment("수거지 상세주소")
     @Column(name = "collect_addr_detail", length = 200)
+    @Size(max = 100, message = "collectAddrDetail 는 100자 이내여야 합니다.")
     private String collectAddrDetail;
 
     @Comment("수거 요청사항")
     @Column(name = "collect_req_memo", length = 200)
+    @Size(max = 100, message = "collectReqMemo 는 100자 이내여야 합니다.")
     private String collectReqMemo;
 
     @Comment("수거 예정일시")
@@ -175,18 +204,22 @@ public class OdClaim extends BaseEntity {
 
     @Comment("수거 택배사 (코드: COURIER)")
     @Column(name = "return_courier_cd", length = 30)
+    @Size(max = 30, message = "returnCourierCd 는 30자 이내여야 합니다.")
     private String returnCourierCd;
 
     @Comment("수거 송장번호")
     @Column(name = "return_tracking_no", length = 100)
+    @Size(max = 100, message = "returnTrackingNo 는 100자 이내여야 합니다.")
     private String returnTrackingNo;
 
     @Comment("수거 상태 (코드: DLIV_STATUS)")
     @Column(name = "return_status_cd", length = 20)
+    @Size(max = 20, message = "returnStatusCd 는 20자 이내여야 합니다.")
     private String returnStatusCd;
 
     @Comment("변경 전 수거상태 (코드: DLIV_STATUS)")
     @Column(name = "return_status_cd_before", length = 20)
+    @Size(max = 20, message = "returnStatusCdBefore 는 20자 이내여야 합니다.")
     private String returnStatusCdBefore;
 
     @Comment("반입배송료")
@@ -195,38 +228,47 @@ public class OdClaim extends BaseEntity {
 
     @Comment("반입 택배사 (코드: COURIER)")
     @Column(name = "inbound_courier_cd", length = 30)
+    @Size(max = 30, message = "inboundCourierCd 는 30자 이내여야 합니다.")
     private String inboundCourierCd;
 
     @Comment("반입 송장번호")
     @Column(name = "inbound_tracking_no", length = 100)
+    @Size(max = 100, message = "inboundTrackingNo 는 100자 이내여야 합니다.")
     private String inboundTrackingNo;
 
     @Comment("반입 배송ID (od_dliv.)")
     @Column(name = "inbound_dliv_id", length = 21)
+    @Size(max = 21, message = "inboundDlivId 는 21자 이내여야 합니다.")
     private String inboundDlivId;
 
     @Comment("교환 수령자명 (원 주문 배송지와 다를 경우)")
     @Column(name = "exch_recv_nm", length = 50)
+    @Size(max = 50, message = "exchRecvNm 는 50자 이내여야 합니다.")
     private String exchRecvNm;
 
     @Comment("교환 수령자 연락처")
     @Column(name = "exch_recv_phone", length = 20)
+    @Size(max = 20, message = "exchRecvPhone 는 20자 이내여야 합니다.")
     private String exchRecvPhone;
 
     @Comment("교환 수령지 우편번호")
     @Column(name = "exch_recv_zip", length = 10)
+    @Size(max = 10, message = "exchRecvZip 는 10자 이내여야 합니다.")
     private String exchRecvZip;
 
     @Comment("교환 수령지 기본주소")
     @Column(name = "exch_recv_addr", length = 200)
+    @Size(max = 100, message = "exchRecvAddr 는 100자 이내여야 합니다.")
     private String exchRecvAddr;
 
     @Comment("교환 수령지 상세주소")
     @Column(name = "exch_recv_addr_detail", length = 200)
+    @Size(max = 100, message = "exchRecvAddrDetail 는 100자 이내여야 합니다.")
     private String exchRecvAddrDetail;
 
     @Comment("교환 배송 요청사항")
     @Column(name = "exch_recv_req_memo", length = 200)
+    @Size(max = 100, message = "exchRecvReqMemo 는 100자 이내여야 합니다.")
     private String exchRecvReqMemo;
 
     @Comment("교환상품 발송배송료")
@@ -235,14 +277,17 @@ public class OdClaim extends BaseEntity {
 
     @Comment("교환상품 발송 택배사 (코드: COURIER)")
     @Column(name = "exchange_courier_cd", length = 30)
+    @Size(max = 30, message = "exchangeCourierCd 는 30자 이내여야 합니다.")
     private String exchangeCourierCd;
 
     @Comment("교환상품 발송 송장번호")
     @Column(name = "exchange_tracking_no", length = 100)
+    @Size(max = 100, message = "exchangeTrackingNo 는 100자 이내여야 합니다.")
     private String exchangeTrackingNo;
 
     @Comment("교환상품 발송 배송ID (od_dliv.)")
     @Column(name = "outbound_dliv_id", length = 21)
+    @Size(max = 21, message = "outboundDlivId 는 21자 이내여야 합니다.")
     private String outboundDlivId;
 
     @Comment("총 배송료 (수거+반입+발송)")
@@ -251,6 +296,7 @@ public class OdClaim extends BaseEntity {
 
     @Comment("배송료 정산 완료 여부 Y/N")
     @Column(name = "shipping_fee_paid_yn", length = 1)
+    @Size(max = 1, message = "shippingFeePaidYn 는 1자 이내여야 합니다.")
     private String shippingFeePaidYn;
 
     @Comment("배송료 정산일시")
@@ -259,14 +305,17 @@ public class OdClaim extends BaseEntity {
 
     @Comment("배송료 비고")
     @Column(name = "shipping_fee_memo", length = 300)
+    @Size(max = 100, message = "shippingFeeMemo 는 100자 이내여야 합니다.")
     private String shippingFeeMemo;
 
     @Comment("결재상태 (코드: APPR_STATUS_CD)")
     @Column(name = "appr_status_cd", length = 20)
+    @Size(max = 20, message = "apprStatusCd 는 20자 이내여야 합니다.")
     private String apprStatusCd;
 
     @Comment("변경 전 결재상태 (코드: APPR_STATUS_CD)")
     @Column(name = "appr_status_cd_before", length = 20)
+    @Size(max = 20, message = "apprStatusCdBefore 는 20자 이내여야 합니다.")
     private String apprStatusCdBefore;
 
     @Comment("결재 요청금액")
@@ -275,18 +324,22 @@ public class OdClaim extends BaseEntity {
 
     @Comment("결재대상 구분 (코드: APPR_TARGET_CD)")
     @Column(name = "appr_target_cd", length = 30)
+    @Size(max = 30, message = "apprTargetCd 는 30자 이내여야 합니다.")
     private String apprTargetCd;
 
     @Comment("결재 대상명")
     @Column(name = "appr_target_nm", length = 200)
+    @Size(max = 100, message = "apprTargetNm 는 100자 이내여야 합니다.")
     private String apprTargetNm;
 
     @Comment("사유/메모")
     @Column(name = "appr_reason", length = 500)
+    @Size(max = 100, message = "apprReason 는 100자 이내여야 합니다.")
     private String apprReason;
 
     @Comment("결재 요청자 (sy_user.user_id)")
     @Column(name = "appr_req_user_id", length = 21)
+    @Size(max = 21, message = "apprReqUserId 는 21자 이내여야 합니다.")
     private String apprReqUserId;
 
     @Comment("결재 요청일시")
@@ -295,6 +348,7 @@ public class OdClaim extends BaseEntity {
 
     @Comment("결재자 (sy_user.user_id)")
     @Column(name = "appr_aprv_user_id", length = 21)
+    @Size(max = 21, message = "apprAprvUserId 는 21자 이내여야 합니다.")
     private String apprAprvUserId;
 
     @Comment("결재일시")
@@ -303,6 +357,7 @@ public class OdClaim extends BaseEntity {
 
     @Comment("시뮬데이터여부 (Y/N)")
     @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    @Size(max = 1, message = "simulYn 는 1자 이내여야 합니다.")
     private String simulYn;
 
 }

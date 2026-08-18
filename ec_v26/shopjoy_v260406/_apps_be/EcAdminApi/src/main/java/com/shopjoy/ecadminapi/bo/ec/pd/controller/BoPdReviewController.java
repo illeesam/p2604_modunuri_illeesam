@@ -59,14 +59,14 @@ public class BoPdReviewController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReview>> update(@PathVariable("id") String id, @RequestBody PdReview body) {
+    public ResponseEntity<ApiResponse<PdReview>> update(@PathVariable("id") String id, @Valid @RequestBody PdReview body) {
         PdReview result = boPdReviewService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdReview>> upsert(@PathVariable("id") String id, @RequestBody PdReview body) {
+    public ResponseEntity<ApiResponse<PdReview>> upsert(@PathVariable("id") String id, @Valid @RequestBody PdReview body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdReviewService.update(id, body)));
     }
 
@@ -86,7 +86,7 @@ public class BoPdReviewController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PdReview> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PdReview> rows) {
         switch (cmd) {
             case "base" -> boPdReviewService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

@@ -49,13 +49,13 @@ public class BoSyCodeGrpController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeGrp>> update(@PathVariable("id") String id, @RequestBody SyCodeGrp body) {
+    public ResponseEntity<ApiResponse<SyCodeGrp>> update(@PathVariable("id") String id, @Valid @RequestBody SyCodeGrp body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyCodeGrpService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCodeGrp>> upsert(@PathVariable("id") String id, @RequestBody SyCodeGrp body) {
+    public ResponseEntity<ApiResponse<SyCodeGrp>> upsert(@PathVariable("id") String id, @Valid @RequestBody SyCodeGrp body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyCodeGrpService.update(id, body)));
     }
 
@@ -69,7 +69,7 @@ public class BoSyCodeGrpController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyCodeGrp> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyCodeGrp> rows) {
         switch (cmd) {
             case "base" -> boSyCodeGrpService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

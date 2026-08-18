@@ -46,7 +46,7 @@ public class StDlivFeePolicyController {
 
     /* 배송수수료정책 저장 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StDlivFeePolicy>> save(@PathVariable("id") String id, @RequestBody StDlivFeePolicy entity) {
+    public ResponseEntity<ApiResponse<StDlivFeePolicy>> save(@PathVariable("id") String id, @Valid @RequestBody StDlivFeePolicy entity) {
         entity.setDlivFeePolicyId(id);
         return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
@@ -61,7 +61,7 @@ public class StDlivFeePolicyController {
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<StDlivFeePolicy>> saveOneCmd(
-            @PathVariable("cmd") String cmd, @RequestBody StDlivFeePolicy entity) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody StDlivFeePolicy entity) {
         StDlivFeePolicy result = switch (cmd) {
             case "base" -> service.saveOneBase(entity);
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
@@ -72,7 +72,7 @@ public class StDlivFeePolicyController {
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<StDlivFeePolicy> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<StDlivFeePolicy> rows) {
         switch (cmd) {
             case "base" -> service.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

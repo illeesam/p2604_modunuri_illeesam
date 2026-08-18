@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pm_coupon", schema = "shopjoy_2604")
 @Getter @Setter
@@ -23,19 +24,23 @@ public class PmCoupon extends BaseEntity {
     @Id
     @Comment("쿠폰ID (YYMMDDhhmmss+rand4)")
     @Column(name = "coupon_id", length = 21, nullable = false)
+    @Size(max = 21, message = "couponId 는 21자 이내여야 합니다.")
     private String couponId;
 
 
     @Comment("쿠폰코드")
     @Column(name = "coupon_cd", length = 50, nullable = false)
+    @Size(max = 50, message = "couponCd 는 50자 이내여야 합니다.")
     private String couponCd;
 
     @Comment("쿠폰명")
     @Column(name = "coupon_nm", length = 100, nullable = false)
+    @Size(max = 100, message = "couponNm 는 100자 이내여야 합니다.")
     private String couponNm;
 
     @Comment("쿠폰유형 (코드: COUPON_TYPE_CD — PROD_DISCNT/ORDER_DISCNT/SHIP_DISCNT/SHIP_FREE/JOIN_GIFT/VIP/CLAIM_COMP)")
     @Column(name = "coupon_type_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "couponTypeCd 는 20자 이내여야 합니다.")
     private String couponTypeCd;
 
     @Comment("할인률 (%)")
@@ -72,6 +77,7 @@ public class PmCoupon extends BaseEntity {
 
     @Comment("쿠폰설명")
     @Column(name = "coupon_desc", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "couponDesc 는 50000자 이내여야 합니다.")
     private String couponDesc;
 
     @Comment("유효기간 시작")
@@ -84,26 +90,32 @@ public class PmCoupon extends BaseEntity {
 
     @Comment("상태 (코드: COUPON_STATUS_CD)")
     @Column(name = "coupon_status_cd", length = 20)
+    @Size(max = 20, message = "couponStatusCd 는 20자 이내여야 합니다.")
     private String couponStatusCd;
 
     @Comment("변경 전 쿠폰상태 (코드: COUPON_STATUS_CD)")
     @Column(name = "coupon_status_cd_before", length = 20)
+    @Size(max = 20, message = "couponStatusCdBefore 는 20자 이내여야 합니다.")
     private String couponStatusCdBefore;
 
     @Comment("사용여부 Y/N")
     @Column(name = "use_yn", length = 1)
+    @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
     @Comment("적용대상 (코드: PROMO_TARGET_TYPE)")
     @Column(name = "target_type_cd", length = 20)
+    @Size(max = 20, message = "targetTypeCd 는 20자 이내여야 합니다.")
     private String targetTypeCd;
 
     @Comment("적용대상값")
     @Column(name = "target_value", length = 200)
+    @Size(max = 100, message = "targetValue 는 100자 이내여야 합니다.")
     private String targetValue;
 
     @Comment("적용 회원등급 코드 (NULL=전체, 코드: MEMBER_GRADE)")
     @Column(name = "mem_grade_cd", length = 20)
+    @Size(max = 20, message = "memGradeCd 는 20자 이내여야 합니다.")
     private String memGradeCd;
 
     @Comment("자사(사이트) 분담율 (%) — 기본 100%")
@@ -116,42 +128,52 @@ public class PmCoupon extends BaseEntity {
 
     @Comment("판매자 분담 비고")
     @Column(name = "seller_cdiv_remark", length = 300)
+    @Size(max = 100, message = "sellerCdivRemark 는 100자 이내여야 합니다.")
     private String sellerCdivRemark;
 
     @Comment("PC 채널 적용여부 Y/N")
     @Column(name = "dvc_pc_yn", length = 1)
+    @Size(max = 1, message = "dvcPcYn 는 1자 이내여야 합니다.")
     private String dvcPcYn;
 
     @Comment("모바일WEB 적용여부 Y/N")
     @Column(name = "dvc_mweb_yn", length = 1)
+    @Size(max = 1, message = "dvcMwebYn 는 1자 이내여야 합니다.")
     private String dvcMwebYn;
 
     @Comment("모바일APP 적용여부 Y/N")
     @Column(name = "dvc_mapp_yn", length = 1)
+    @Size(max = 1, message = "dvcMappYn 는 1자 이내여야 합니다.")
     private String dvcMappYn;
 
     @Comment("메모")
     @Column(name = "memo", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "memo 는 50000자 이내여야 합니다.")
     private String memo;
 
     @Comment("시뮬데이터여부 (Y/N)")
     @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    @Size(max = 1, message = "simulYn 는 1자 이내여야 합니다.")
     private String simulYn;
 
     @Comment("판매업체 (sy_vendor.vendor_id)")
     @Column(name = "vendor_id", length = 21)
+    @Size(max = 21, message = "vendorId 는 21자 이내여야 합니다.")
     private String vendorId;
 
     @Comment("판매담당자명 (업체 선택 시 자동 채움, 수정 가능)")
     @Column(name = "charge_staff", length = 50)
+    @Size(max = 50, message = "chargeStaff 는 50자 이내여야 합니다.")
     private String chargeStaff;
 
     @Comment("공개대상 (^코드^코드^ 형식, 예: ^PUBLIC^)")
     @Column(name = "visibility_targets", length = 200)
+    @Size(max = 100, message = "visibilityTargets 는 100자 이내여야 합니다.")
     private String visibilityTargets;
 
     @Comment("담당MD (sy_user.user_id)")
     @Column(name = "md_user_id", length = 21)
+    @Size(max = 21, message = "mdUserId 는 21자 이내여야 합니다.")
     private String mdUserId;
 
 }

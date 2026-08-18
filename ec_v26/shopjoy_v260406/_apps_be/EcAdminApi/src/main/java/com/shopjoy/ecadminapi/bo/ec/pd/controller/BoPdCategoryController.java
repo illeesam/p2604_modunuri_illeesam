@@ -59,14 +59,14 @@ public class BoPdCategoryController {
 
     /** update — 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdCategory>> update(@PathVariable("id") String id, @RequestBody PdCategory body) {
+    public ResponseEntity<ApiResponse<PdCategory>> update(@PathVariable("id") String id, @Valid @RequestBody PdCategory body) {
         PdCategory result = boPdCategoryService.update(id, body);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /** upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<PdCategory>> upsert(@PathVariable("id") String id, @RequestBody PdCategory body) {
+    public ResponseEntity<ApiResponse<PdCategory>> upsert(@PathVariable("id") String id, @Valid @RequestBody PdCategory body) {
         return ResponseEntity.ok(ApiResponse.ok(boPdCategoryService.update(id, body)));
     }
 
@@ -82,14 +82,14 @@ public class BoPdCategoryController {
     public ResponseEntity<ApiResponse<Void>> updateProds(
             @PathVariable("id") String id,
             @PathVariable("activeTypeCd") String activeTypeCd,
-            @RequestBody PdCategoryUpdateProdsDto.Request req) {
+            @Valid @RequestBody PdCategoryUpdateProdsDto.Request req) {
         boPdCategoryService.updateProds(id, activeTypeCd, req);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<PdCategory> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<PdCategory> rows) {
         switch (cmd) {
             case "base" -> boPdCategoryService.saveListBase(rows);
             case "order" -> boPdCategoryService.saveListOrder(rows);

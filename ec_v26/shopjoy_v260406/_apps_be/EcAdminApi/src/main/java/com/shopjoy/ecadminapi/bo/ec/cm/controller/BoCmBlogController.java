@@ -50,13 +50,13 @@ public class BoCmBlogController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlog>> update(@PathVariable("id") String id, @RequestBody CmBlog body) {
+    public ResponseEntity<ApiResponse<CmBlog>> update(@PathVariable("id") String id, @Valid @RequestBody CmBlog body) {
         return ResponseEntity.ok(ApiResponse.ok(boCmBlogService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmBlog>> upsert(@PathVariable("id") String id, @RequestBody CmBlog body) {
+    public ResponseEntity<ApiResponse<CmBlog>> upsert(@PathVariable("id") String id, @Valid @RequestBody CmBlog body) {
         return ResponseEntity.ok(ApiResponse.ok(boCmBlogService.update(id, body)));
     }
 
@@ -76,7 +76,7 @@ public class BoCmBlogController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<CmBlog> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<CmBlog> rows) {
         switch (cmd) {
             case "base" -> boCmBlogService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

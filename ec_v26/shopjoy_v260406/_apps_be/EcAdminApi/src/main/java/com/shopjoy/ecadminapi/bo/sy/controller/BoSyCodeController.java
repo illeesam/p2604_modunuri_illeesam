@@ -49,13 +49,13 @@ public class BoSyCodeController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCode>> update(@PathVariable("id") String id, @RequestBody SyCode body) {
+    public ResponseEntity<ApiResponse<SyCode>> update(@PathVariable("id") String id, @Valid @RequestBody SyCode body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<SyCode>> upsert(@PathVariable("id") String id, @RequestBody SyCode body) {
+    public ResponseEntity<ApiResponse<SyCode>> upsert(@PathVariable("id") String id, @Valid @RequestBody SyCode body) {
         return ResponseEntity.ok(ApiResponse.ok(boSyCodeService.update(id, body)));
     }
 
@@ -69,7 +69,7 @@ public class BoSyCodeController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<SyCode> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<SyCode> rows) {
         switch (cmd) {
             case "base" -> boSyCodeService.saveListBase(rows);
             case "order" -> boSyCodeService.saveListOrder(rows);

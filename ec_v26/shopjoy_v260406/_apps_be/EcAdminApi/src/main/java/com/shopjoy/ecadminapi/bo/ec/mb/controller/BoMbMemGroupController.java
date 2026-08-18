@@ -49,13 +49,13 @@ public class BoMbMemGroupController {
 
     /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGroup>> update(@PathVariable("id") String id, @RequestBody MbMemberGroup body) {
+    public ResponseEntity<ApiResponse<MbMemberGroup>> update(@PathVariable("id") String id, @Valid @RequestBody MbMemberGroup body) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemGroupService.update(id, body)));
     }
 
     /* upsert */
     @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<MbMemberGroup>> upsert(@PathVariable("id") String id, @RequestBody MbMemberGroup body) {
+    public ResponseEntity<ApiResponse<MbMemberGroup>> upsert(@PathVariable("id") String id, @Valid @RequestBody MbMemberGroup body) {
         return ResponseEntity.ok(ApiResponse.ok(boMbMemGroupService.update(id, body)));
     }
 
@@ -69,7 +69,7 @@ public class BoMbMemGroupController {
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<MbMemberGroup> rows) {
+            @PathVariable("cmd") String cmd, @Valid @RequestBody List<MbMemberGroup> rows) {
         switch (cmd) {
             case "base" -> boMbMemGroupService.saveListBase(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);

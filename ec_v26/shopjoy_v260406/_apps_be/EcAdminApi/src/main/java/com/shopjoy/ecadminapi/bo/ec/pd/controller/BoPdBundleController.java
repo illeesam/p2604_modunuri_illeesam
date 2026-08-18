@@ -37,7 +37,7 @@ public class BoPdBundleController {
 
     /** updateItems — 수정 */
     @PutMapping("/api/bo/ec/pd/prod-bundle/{id}/items")
-    public ResponseEntity<ApiResponse<Void>> updateItems(@PathVariable("id") String id, @RequestBody PdProdBundleSaveDto.UpdateItemsRequest req) {
+    public ResponseEntity<ApiResponse<Void>> updateItems(@PathVariable("id") String id, @Valid @RequestBody PdProdBundleSaveDto.UpdateItemsRequest req) {
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 

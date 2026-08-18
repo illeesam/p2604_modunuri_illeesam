@@ -145,7 +145,7 @@ public class BoCmDashboardController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CmDashboard>> update(
-            @PathVariable("id") String id, @RequestBody CmDashboard body) {
+            @PathVariable("id") String id, @Valid @RequestBody CmDashboard body) {
         CmDashboard entity = cmDashboardRepository.findById(id)
             .orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않습니다: " + id));
         checkOwner(entity);
@@ -199,7 +199,7 @@ public class BoCmDashboardController {
     @PostMapping("/item/save/{cmd}")
     public ResponseEntity<ApiResponse<CmDashboardItem>> itemSave(
             @PathVariable("cmd") String cmd,
-            @RequestBody CmDashboardItem body) {
+            @Valid @RequestBody CmDashboardItem body) {
         validateSrcItemRef(body);
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemService.save(cmd, body)));
     }
@@ -207,7 +207,7 @@ public class BoCmDashboardController {
     @PostMapping("/item/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> itemSaveList(
             @PathVariable("cmd") String cmd,
-            @RequestBody List<CmDashboardItem> rows) {
+            @Valid @RequestBody List<CmDashboardItem> rows) {
         rows.forEach(this::validateSrcItemRef);
         cmDashboardItemService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
@@ -282,7 +282,7 @@ public class BoCmDashboardController {
     public ResponseEntity<ApiResponse<Integer>> menuSave(
             @RequestParam(required = false) String siteId,
             @RequestParam(required = false) String scope,
-            @RequestBody List<CmDashboardMenu> nodes) {
+            @Valid @RequestBody List<CmDashboardMenu> nodes) {
         String sid = siteId == null ? SecurityUtil.getSiteId() : siteId;
         String scp = normScope(scope);
         String uid = SecurityUtil.getAuthUser().authId();

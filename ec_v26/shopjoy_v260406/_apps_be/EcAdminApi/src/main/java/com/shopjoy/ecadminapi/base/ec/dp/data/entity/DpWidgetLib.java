@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "dp_widget_lib", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,43 +22,53 @@ public class DpWidgetLib extends BaseEntity {
     @Id
     @Comment("위젯라이브러리ID (YYMMDDhhmmss+rand4)")
     @Column(name = "widget_lib_id", length = 21, nullable = false)
+    @Size(max = 21, message = "widgetLibId 는 21자 이내여야 합니다.")
     private String widgetLibId;
 
 
     @Comment("위젯코드")
     @Column(name = "widget_code", length = 50, nullable = false)
+    @Size(max = 50, message = "widgetCode 는 50자 이내여야 합니다.")
     private String widgetCode;
 
     @Comment("위젯명")
     @Column(name = "widget_nm", length = 100, nullable = false)
+    @Size(max = 100, message = "widgetNm 는 100자 이내여야 합니다.")
     private String widgetNm;
 
     @Comment("위젯유형 (코드: WIDGET_TYPE_CD — BANNER/PRODUCT/CATEGORY/HTML/SLIDER)")
     @Column(name = "widget_type_cd", length = 30, nullable = false)
+    @Size(max = 30, message = "widgetTypeCd 는 30자 이내여야 합니다.")
     private String widgetTypeCd;
 
     @Comment("위젯라이브러리설명")
     @Column(name = "widget_lib_desc", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "widgetLibDesc 는 50000자 이내여야 합니다.")
     private String widgetLibDesc;
 
     @Comment("점(.) 구분 표시경로")
     @Column(name = "path_id", length = 21)
+    @Size(max = 21, message = "pathId 는 21자 이내여야 합니다.")
     private String pathId;
 
     @Comment("미리보기 썸네일URL")
     @Column(name = "thumbnail_url", length = 500)
+    @Size(max = 100, message = "thumbnailUrl 는 100자 이내여야 합니다.")
     private String thumbnailUrl;
 
     @Comment("위젯내용 (HTML 에디터, 3개 테이블 통일)")
     @Column(name = "widget_content", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "widgetContent 는 50000자 이내여야 합니다.")
     private String widgetContent;
 
     @Comment("위젯설정 (JSON, 3개 테이블 통일)")
     @Column(name = "widget_config_json", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "widgetConfigJson 는 50000자 이내여야 합니다.")
     private String widgetConfigJson;
 
     @Comment("시스템기본위젯 Y/N")
     @Column(name = "is_system", length = 1)
+    @Size(max = 1, message = "isSystem 는 1자 이내여야 합니다.")
     private String isSystem;
 
     @Comment("정렬순서")
@@ -66,6 +77,7 @@ public class DpWidgetLib extends BaseEntity {
 
     @Comment("사용여부 Y/N")
     @Column(name = "use_yn", length = 1)
+    @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
 }

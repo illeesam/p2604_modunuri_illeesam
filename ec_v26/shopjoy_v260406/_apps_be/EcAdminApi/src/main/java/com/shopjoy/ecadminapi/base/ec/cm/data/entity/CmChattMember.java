@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "cm_chatt_member", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,23 +22,28 @@ public class CmChattMember extends BaseEntity {
     @Id
     @Comment("참여자ID (YYMMDDhhmmss+rand4)")
     @Column(name = "chatt_member_id", length = 21, nullable = false)
+    @Size(max = 21, message = "chattMemberId 는 21자 이내여야 합니다.")
     private String chattMemberId;
 
 
     @Comment("채팅방ID (cm_chatt.chatt_id)")
     @Column(name = "chatt_id", length = 21, nullable = false)
+    @Size(max = 21, message = "chattId 는 21자 이내여야 합니다.")
     private String chattId;
 
     @Comment("참여자유형 (MEMBER/ADMIN)")
     @Column(name = "member_type_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "memberTypeCd 는 20자 이내여야 합니다.")
     private String memberTypeCd;
 
     @Comment("참조ID (mb_member.member_id 또는 sy_user.user_id)")
     @Column(name = "ref_id", length = 21, nullable = false)
+    @Size(max = 21, message = "refId 는 21자 이내여야 합니다.")
     private String refId;
 
     @Comment("참여자명 (비정규화 캐시)")
     @Column(name = "ref_nm", length = 100)
+    @Size(max = 100, message = "refNm 는 100자 이내여야 합니다.")
     private String refNm;
 
     @Comment("미읽음 메시지 수")

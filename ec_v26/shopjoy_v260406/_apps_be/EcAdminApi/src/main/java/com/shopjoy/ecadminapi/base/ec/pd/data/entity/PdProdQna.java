@@ -27,26 +27,32 @@ public class PdProdQna extends BaseEntity {
     @Id
     @Comment("문의ID (YYMMDDhhmmss+rand4)")
     @Column(name = "prod_qna_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodQnaId 는 21자 이내여야 합니다.")
     private String prodQnaId;
 
     @Comment("상품ID (pd_prod.prod_id)")
     @Column(name = "prod_id", length = 21, nullable = false)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("SKUID (pd_prod_sku.prod_sku_id)")
     @Column(name = "prod_sku_id", length = 21)
+    @Size(max = 21, message = "prodSkuId 는 21자 이내여야 합니다.")
     private String prodSkuId;
 
     @Comment("회원ID (mb_member.member_id)")
     @Column(name = "member_id", length = 21)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("주문ID (od_order.order_id)")
     @Column(name = "order_id", length = 21)
+    @Size(max = 21, message = "orderId 는 21자 이내여야 합니다.")
     private String orderId;
 
     @Comment("문의유형코드 (코드: PROD_QNA_TYPE_CD)")
     @Column(name = "prod_qna_type_cd", length = 20)
+    @Size(max = 20, message = "prodQnaTypeCd 는 20자 이내여야 합니다.")
     private String prodQnaTypeCd;
 
     @Comment("문의제목")
@@ -57,18 +63,22 @@ public class PdProdQna extends BaseEntity {
 
     @Comment("문의내용")
     @Column(name = "prod_qna_content", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "prodQnaContent 는 50000자 이내여야 합니다.")
     private String prodQnaContent;
 
     @Comment("비밀글여부 Y/N")
     @Column(name = "scrt_yn", length = 1)
+    @Size(max = 1, message = "scrtYn 는 1자 이내여야 합니다.")
     private String scrtYn;
 
     @Comment("답변여부 Y/N")
     @Column(name = "answ_yn", length = 1)
+    @Size(max = 1, message = "answYn 는 1자 이내여야 합니다.")
     private String answYn;
 
     @Comment("답변내용")
     @Column(name = "answ_content", columnDefinition = "TEXT")
+    @Size(max = 50000, message = "answContent 는 50000자 이내여야 합니다.")
     private String answContent;
 
     @Comment("답변일시")
@@ -77,14 +87,17 @@ public class PdProdQna extends BaseEntity {
 
     @Comment("답변자ID (sy_user.user_id)")
     @Column(name = "answ_user_id", length = 21)
+    @Size(max = 21, message = "answUserId 는 21자 이내여야 합니다.")
     private String answUserId;
 
     @Comment("노출여부 Y/N")
     @Column(name = "disp_yn", length = 1)
+    @Size(max = 1, message = "dispYn 는 1자 이내여야 합니다.")
     private String dispYn;
 
     @Comment("사용여부 Y/N")
     @Column(name = "use_yn", length = 1)
+    @Size(max = 1, message = "useYn 는 1자 이내여야 합니다.")
     private String useYn;
 
     /** 질문 첨부파일 목록 — DB 컬럼 아님({@literal @}Transient). 요청 시엔 attachId/rowStatus(I/D) 만

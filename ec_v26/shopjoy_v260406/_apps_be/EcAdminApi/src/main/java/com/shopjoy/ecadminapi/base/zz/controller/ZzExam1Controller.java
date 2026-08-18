@@ -46,14 +46,14 @@ public class ZzExam1Controller {
     /** update — 수정 */
     @PutMapping("/{exam1Id}")
     public ResponseEntity<ApiResponse<ZzExam1>> update(
-            @PathVariable("exam1Id") String exam1Id, @RequestBody ZzExam1 entity) {
+            @PathVariable("exam1Id") String exam1Id, @Valid @RequestBody ZzExam1 entity) {
         return ResponseEntity.ok(ApiResponse.ok(service.update(exam1Id, entity)));
     }
 
     /** updateSelective — 부분 수정 */
     @PatchMapping("/{exam1Id}")
     public ResponseEntity<ApiResponse<Integer>> updateSelective(
-            @PathVariable("exam1Id") String exam1Id, @RequestBody ZzExam1 entity) {
+            @PathVariable("exam1Id") String exam1Id, @Valid @RequestBody ZzExam1 entity) {
         entity.setExam1Id(exam1Id);
         return ResponseEntity.ok(ApiResponse.ok(service.updateSelective(entity)));
     }

@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "pd_review_attach", schema = "shopjoy_2604")
 @Getter @Setter
@@ -21,23 +22,28 @@ public class PdReviewAttach extends BaseEntity {
     @Id
     @Comment("미디어ID")
     @Column(name = "review_attach_id", length = 21, nullable = false)
+    @Size(max = 21, message = "reviewAttachId 는 21자 이내여야 합니다.")
     private String reviewAttachId;
 
 
     @Comment("리뷰ID (pd_review.)")
     @Column(name = "review_id", length = 21, nullable = false)
+    @Size(max = 21, message = "reviewId 는 21자 이내여야 합니다.")
     private String reviewId;
 
     @Comment("첨부파일ID (sy_attach.attach_id) — url·파일명 여기서 조회")
     @Column(name = "attach_id", length = 21, nullable = false)
+    @Size(max = 21, message = "attachId 는 21자 이내여야 합니다.")
     private String attachId;
 
     @Comment("미디어유형 (코드: MEDIA_TYPE_CD)")
     @Column(name = "media_type_cd", length = 20)
+    @Size(max = 20, message = "mediaTypeCd 는 20자 이내여야 합니다.")
     private String mediaTypeCd;
 
     @Comment("동영상 썸네일URL (이미지는 sy_attach.url 사용)")
     @Column(name = "thumb_url", length = 500)
+    @Size(max = 100, message = "thumbUrl 는 100자 이내여야 합니다.")
     private String thumbUrl;
 
     @Comment("정렬순서")

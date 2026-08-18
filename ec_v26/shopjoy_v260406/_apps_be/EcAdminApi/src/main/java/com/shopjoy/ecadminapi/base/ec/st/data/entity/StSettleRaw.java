@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 
+import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "st_settle_raw", schema = "shopjoy_2604")
 @Getter @Setter
@@ -23,31 +24,38 @@ public class StSettleRaw extends BaseEntity {
     @Id
     @Comment("수집원장ID (YYMMDDhhmmss+rand4)")
     @Column(name = "settle_raw_id", length = 21, nullable = false)
+    @Size(max = 21, message = "settleRawId 는 21자 이내여야 합니다.")
     private String settleRawId;
 
 
     @Comment("수집유형 (코드: RAW_TYPE_CD — ORDER/CLAIM)")
     @Column(name = "raw_type_cd", length = 20, nullable = false)
+    @Size(max = 20, message = "rawTypeCd 는 20자 이내여야 합니다.")
     private String rawTypeCd;
 
     @Comment("수집상태 (코드: RAW_STATUS_CD)")
     @Column(name = "raw_status_cd", length = 20)
+    @Size(max = 20, message = "rawStatusCd 는 20자 이내여야 합니다.")
     private String rawStatusCd;
 
     @Comment("변경 전 수집상태")
     @Column(name = "raw_status_cd_before", length = 20)
+    @Size(max = 20, message = "rawStatusCdBefore 는 20자 이내여야 합니다.")
     private String rawStatusCdBefore;
 
     @Comment("주문ID (od_order.order_id)")
     @Column(name = "order_id", length = 21, nullable = false)
+    @Size(max = 21, message = "orderId 는 21자 이내여야 합니다.")
     private String orderId;
 
     @Comment("주문번호 스냅샷")
     @Column(name = "order_no", length = 30)
+    @Size(max = 30, message = "orderNo 는 30자 이내여야 합니다.")
     private String orderNo;
 
     @Comment("주문상품ID (od_order_item.order_item_id)")
     @Column(name = "order_item_id", length = 21, nullable = false)
+    @Size(max = 21, message = "orderItemId 는 21자 이내여야 합니다.")
     private String orderItemId;
 
     @Comment("주문일시 스냅샷")
@@ -56,78 +64,97 @@ public class StSettleRaw extends BaseEntity {
 
     @Comment("수집 시점 주문상태 스냅샷 (코드: ORDER_ITEM_STATUS_CD)")
     @Column(name = "order_item_status_cd", length = 20)
+    @Size(max = 20, message = "orderItemStatusCd 는 20자 이내여야 합니다.")
     private String orderItemStatusCd;
 
     @Comment("주문 회원ID 스냅샷 (mb_member.member_id)")
     @Column(name = "member_id", length = 21)
+    @Size(max = 21, message = "memberId 는 21자 이내여야 합니다.")
     private String memberId;
 
     @Comment("클레임ID (클레임 수집 시)")
     @Column(name = "claim_id", length = 21)
+    @Size(max = 21, message = "claimId 는 21자 이내여야 합니다.")
     private String claimId;
 
     @Comment("클레임상품ID (클레임 수집 시)")
     @Column(name = "claim_item_id", length = 21)
+    @Size(max = 21, message = "claimItemId 는 21자 이내여야 합니다.")
     private String claimItemId;
 
     @Comment("업체ID")
     @Column(name = "vendor_id", length = 21)
+    @Size(max = 21, message = "vendorId 는 21자 이내여야 합니다.")
     private String vendorId;
 
     @Comment("업체구분 (코드: VENDOR_TYPE_CD — SALE/DLIV/EXTERNAL)")
     @Column(name = "vendor_type_cd", length = 20)
+    @Size(max = 20, message = "vendorTypeCd 는 20자 이내여야 합니다.")
     private String vendorTypeCd;
 
     @Comment("상품ID")
     @Column(name = "prod_id", length = 21)
+    @Size(max = 21, message = "prodId 는 21자 이내여야 합니다.")
     private String prodId;
 
     @Comment("상품명 스냅샷")
     @Column(name = "prod_nm", length = 200)
+    @Size(max = 100, message = "prodNm 는 100자 이내여야 합니다.")
     private String prodNm;
 
     @Comment("브랜드ID 스냅샷 (sy_brand.brand_id)")
     @Column(name = "brand_id", length = 21)
+    @Size(max = 21, message = "brandId 는 21자 이내여야 합니다.")
     private String brandId;
 
     @Comment("브랜드명 스냅샷")
     @Column(name = "brand_nm", length = 100)
+    @Size(max = 100, message = "brandNm 는 100자 이내여야 합니다.")
     private String brandNm;
 
     @Comment("카테고리 1단계(대분류) ID 스냅샷 (pd_category.category_id)")
     @Column(name = "category_id_1", length = 21)
+    @Size(max = 21, message = "categoryId1 는 21자 이내여야 합니다.")
     private String categoryId1;
 
     @Comment("카테고리 2단계(중분류) ID 스냅샷 (pd_category.category_id)")
     @Column(name = "category_id_2", length = 21)
+    @Size(max = 21, message = "categoryId2 는 21자 이내여야 합니다.")
     private String categoryId2;
 
     @Comment("카테고리 3단계(소분류) ID 스냅샷 (pd_category.category_id)")
     @Column(name = "category_id_3", length = 21)
+    @Size(max = 21, message = "categoryId3 는 21자 이내여야 합니다.")
     private String categoryId3;
 
     @Comment("카테고리 4단계 ID 스냅샷 (pd_category.category_id)")
     @Column(name = "category_id_4", length = 21)
+    @Size(max = 21, message = "categoryId4 는 21자 이내여야 합니다.")
     private String categoryId4;
 
     @Comment("카테고리 5단계 ID 스냅샷 (pd_category.category_id)")
     @Column(name = "category_id_5", length = 21)
+    @Size(max = 21, message = "categoryId5 는 21자 이내여야 합니다.")
     private String categoryId5;
 
     @Comment("SKU ID 스냅샷 (pd_prod_sku.prod_sku_id)")
     @Column(name = "prod_sku_id", length = 21)
+    @Size(max = 21, message = "prodSkuId 는 21자 이내여야 합니다.")
     private String prodSkuId;
 
     @Comment("옵션1 값ID 스냅샷 (pd_prod_opt.opt_id)")
     @Column(name = "prod_opt1_id", length = 21)
+    @Size(max = 21, message = "prodOpt1Id 는 21자 이내여야 합니다.")
     private String prodOpt1Id;
 
     @Comment("옵션2 값ID 스냅샷 (pd_prod_opt.opt_id)")
     @Column(name = "prod_opt2_id", length = 21)
+    @Size(max = 21, message = "prodOpt2Id 는 21자 이내여야 합니다.")
     private String prodOpt2Id;
 
     @Comment("담당MD (sy_user.user_id)")
     @Column(name = "md_user_id", length = 21)
+    @Size(max = 21, message = "mdUserId 는 21자 이내여야 합니다.")
     private String mdUserId;
 
     @Comment("정상가 스냅샷 (할인 전 1ea 가격)")
@@ -160,26 +187,32 @@ public class StSettleRaw extends BaseEntity {
 
     @Comment("프로모션ID (pm_event.event_id)")
     @Column(name = "promo_id", length = 21)
+    @Size(max = 21, message = "promoId 는 21자 이내여야 합니다.")
     private String promoId;
 
     @Comment("쿠폰ID (pm_coupon.coupon_id)")
     @Column(name = "coupon_id", length = 21)
+    @Size(max = 21, message = "couponId 는 21자 이내여야 합니다.")
     private String couponId;
 
     @Comment("쿠폰발급ID (pm_coupon_issue.coupon_issue_id)")
     @Column(name = "coupon_issue_id", length = 21)
+    @Size(max = 21, message = "couponIssueId 는 21자 이내여야 합니다.")
     private String couponIssueId;
 
     @Comment("할인ID (pm_discnt.discnt_id)")
     @Column(name = "discnt_id", length = 21)
+    @Size(max = 21, message = "discntId 는 21자 이내여야 합니다.")
     private String discntId;
 
     @Comment("상품권ID (pm_voucher.voucher_id)")
     @Column(name = "voucher_id", length = 21)
+    @Size(max = 21, message = "voucherId 는 21자 이내여야 합니다.")
     private String voucherId;
 
     @Comment("상품권발급ID (pm_voucher_issue.voucher_issue_id)")
     @Column(name = "voucher_issue_id", length = 21)
+    @Size(max = 21, message = "voucherIssueId 는 21자 이내여야 합니다.")
     private String voucherIssueId;
 
     @Comment("상품권 사용금액")
@@ -200,6 +233,7 @@ public class StSettleRaw extends BaseEntity {
 
     @Comment("사은품ID (pm_gift.gift_id)")
     @Column(name = "gift_id", length = 21)
+    @Size(max = 21, message = "giftId 는 21자 이내여야 합니다.")
     private String giftId;
 
     @Comment("사은품 원가금액 (정산 차감 대상)")
@@ -208,10 +242,12 @@ public class StSettleRaw extends BaseEntity {
 
     @Comment("결제수단 (코드: PAY_METHOD)")
     @Column(name = "pay_method_cd", length = 20)
+    @Size(max = 20, message = "payMethodCd 는 20자 이내여야 합니다.")
     private String payMethodCd;
 
     @Comment("구매확정여부 Y/N")
     @Column(name = "buy_confirm_yn", length = 1)
+    @Size(max = 1, message = "buyConfirmYn 는 1자 이내여야 합니다.")
     private String buyConfirmYn;
 
     @Comment("구매확정일시")
@@ -240,14 +276,17 @@ public class StSettleRaw extends BaseEntity {
 
     @Comment("정산기간 (YYYY-MM)")
     @Column(name = "settle_period", length = 7)
+    @Size(max = 7, message = "settlePeriod 는 7자 이내여야 합니다.")
     private String settlePeriod;
 
     @Comment("정산집계ID (st_settle.settle_id, 집계 후 연결)")
     @Column(name = "settle_id", length = 21)
+    @Size(max = 21, message = "settleId 는 21자 이내여야 합니다.")
     private String settleId;
 
     @Comment("정산마감 완료 여부 Y/N")
     @Column(name = "close_yn", length = 1)
+    @Size(max = 1, message = "closeYn 는 1자 이내여야 합니다.")
     private String closeYn;
 
     @Comment("마감일시")
@@ -256,10 +295,12 @@ public class StSettleRaw extends BaseEntity {
 
     @Comment("정산마감ID (st_settle_close.settle_close_id)")
     @Column(name = "settle_close_id", length = 21)
+    @Size(max = 21, message = "settleCloseId 는 21자 이내여야 합니다.")
     private String settleCloseId;
 
     @Comment("ERP 전표ID (st_erp_voucher.erp_voucher_id)")
     @Column(name = "erp_voucher_id", length = 21)
+    @Size(max = 21, message = "erpVoucherId 는 21자 이내여야 합니다.")
     private String erpVoucherId;
 
     @Comment("ERP 전표 라인번호 (st_erp_voucher_line.line_no)")
@@ -268,6 +309,7 @@ public class StSettleRaw extends BaseEntity {
 
     @Comment("ERP 전송 여부 Y/N")
     @Column(name = "erp_send_yn", length = 1)
+    @Size(max = 1, message = "erpSendYn 는 1자 이내여야 합니다.")
     private String erpSendYn;
 
     @Comment("ERP 전송일시")
