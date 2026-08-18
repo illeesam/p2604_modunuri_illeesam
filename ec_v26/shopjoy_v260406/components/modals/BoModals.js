@@ -2824,7 +2824,7 @@ window.BoExcelUploadModal = {
     };
   },
   template: `
-<bo-modal :title="cfTitle" width="1100px" height="auto" max-height="95vh" body-pad="0" @close="$emit('close')">
+<bo-modal :show="true" :title="cfTitle" width="1100px" height="auto" max-height="95vh" body-pad="0" @close="$emit('close')">
   <!-- bodyPad=0 → BoModal body 의 padding 제거 → wrapper 가 body 영역을 정확히 100% 채움.
         wrapper 내부 padding 은 직접 관리. 모달 body 자체 스크롤은 절대 활성화되지 않도록
         모든 자식이 wrapper 안에서 flex 로 줄어들도록 구성. -->

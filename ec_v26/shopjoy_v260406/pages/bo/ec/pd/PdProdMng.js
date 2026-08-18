@@ -567,7 +567,7 @@ window.PdProdMng = {
   </div>
   <!-- ===== □. 하단 이력 ==================================================== -->
   <!-- ===== ■. 상품옵션코드관리 모달 (bo-pd-opt-code-mng.html iframe 인라인) ============== -->
-  <bo-modal v-if="modals.isOptCodeModal" title="⚙ 상품옵션코드관리" width="1100px" height="720px" body-pad="0"
+  <bo-modal v-if="modals.isOptCodeModal" :show="true" title="⚙ 상품옵션코드관리" width="1100px" height="720px" body-pad="0"
     @close="modals.isOptCodeModal = false">
     <template #header-extra>
       <span style="font-size:11px;color:#bbb;">{{ cfOptCodeMngUrl }}</span>

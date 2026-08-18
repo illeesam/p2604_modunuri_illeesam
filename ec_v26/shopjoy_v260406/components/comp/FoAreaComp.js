@@ -1114,7 +1114,11 @@ window.FoGridCrud = {
 window.FoModal = {
   name: 'FoModal',
   props: {
-    show:            { type: Boolean, default: true },
+    /* default: false ⭐ — Vue 는 :show="expr" 의 expr 이 undefined 로 평가되면 "prop 미전달"로
+       간주해 default 값을 대신 사용한다. 초기화 안 된 reactive 필드(예: uiState.xxxPopup)를
+       바인딩하면 값이 undefined 인 동안 default:true 로 떨어져 모달이 "묻지도 않았는데" 열려버린다
+       (Order.js 배송비 쿠폰 팝업 실사고, 2026-08-18). 기본은 닫힘이 안전하므로 false 로 둔다. */
+    show:            { type: Boolean, default: false },
     title:           { type: String,  default: '' },
     width:           { type: String,  default: '600px' },
     maxWidth:        { type: String,  default: '95vw' },
