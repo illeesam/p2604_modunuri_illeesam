@@ -40,7 +40,7 @@ public class PmEventBenefitController {
 
     /* 이벤트 혜택 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmEventBenefit>> create(@RequestBody PmEventBenefit entity) {
+    public ResponseEntity<ApiResponse<PmEventBenefit>> create(@Valid @RequestBody PmEventBenefit entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

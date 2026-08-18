@@ -40,7 +40,7 @@ public class PmCacheController {
 
     /* 캐시(충전금) 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmCache>> create(@RequestBody PmCache entity) {
+    public ResponseEntity<ApiResponse<PmCache>> create(@Valid @RequestBody PmCache entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

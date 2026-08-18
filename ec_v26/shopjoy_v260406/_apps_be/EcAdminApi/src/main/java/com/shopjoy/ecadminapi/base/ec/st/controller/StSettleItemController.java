@@ -40,7 +40,7 @@ public class StSettleItemController {
 
     /* 정산 항목 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StSettleItem>> create(@RequestBody StSettleItem entity) {
+    public ResponseEntity<ApiResponse<StSettleItem>> create(@Valid @RequestBody StSettleItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

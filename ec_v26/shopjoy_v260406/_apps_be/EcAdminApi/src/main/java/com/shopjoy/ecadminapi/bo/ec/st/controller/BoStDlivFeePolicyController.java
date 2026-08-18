@@ -42,7 +42,7 @@ public class BoStDlivFeePolicyController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StDlivFeePolicy>> create(@RequestBody StDlivFeePolicy body) {
+    public ResponseEntity<ApiResponse<StDlivFeePolicy>> create(@Valid @RequestBody StDlivFeePolicy body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStDlivFeePolicyService.create(body)));
     }
 

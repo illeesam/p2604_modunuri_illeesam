@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.validation.Valid;
 /**
  * 외부 연동 테스트 이력 API — /api/bo/sy/ext-test-log
  * ZdInfDashboard 테스트 결과를 기록하고 채널별 이력을 조회합니다.

@@ -87,7 +87,7 @@ public class BoCmPopupPickController {
     }
 
     @PostMapping("/popup")
-    public ResponseEntity<ApiResponse<CmPopup>> popupCreate(@RequestBody CmPopup body) {
+    public ResponseEntity<ApiResponse<CmPopup>> popupCreate(@Valid @RequestBody CmPopup body) {
         String authId = SecurityUtil.getAuthUser().authId();
         body.setPopupId(CmUtil.generateId("cm_popup"));
         body.setRegBy(authId); body.setRegDate(LocalDateTime.now());
@@ -140,7 +140,7 @@ public class BoCmPopupPickController {
     /* ── 팝업 항목 관리 ────────────────────────────────────────── */
 
     @PostMapping("/popup/item")
-    public ResponseEntity<ApiResponse<CmPopupItem>> itemSave(@RequestBody CmPopupItem body) {
+    public ResponseEntity<ApiResponse<CmPopupItem>> itemSave(@Valid @RequestBody CmPopupItem body) {
         /* 세션 자동값 검증 — 허용 속성만, 그리고 반드시 필수여야 한다.
            세션값인데 필수가 아니면 미로그인 시 조건이 조용히 빠져 전체 데이터가 노출된다. */
         String sv = body.getSessionCondField();

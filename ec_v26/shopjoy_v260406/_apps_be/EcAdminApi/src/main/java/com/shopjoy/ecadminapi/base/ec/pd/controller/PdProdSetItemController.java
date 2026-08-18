@@ -40,7 +40,7 @@ public class PdProdSetItemController {
 
     /* 세트상품 구성 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdProdSetItem>> create(@RequestBody PdProdSetItem entity) {
+    public ResponseEntity<ApiResponse<PdProdSetItem>> create(@Valid @RequestBody PdProdSetItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

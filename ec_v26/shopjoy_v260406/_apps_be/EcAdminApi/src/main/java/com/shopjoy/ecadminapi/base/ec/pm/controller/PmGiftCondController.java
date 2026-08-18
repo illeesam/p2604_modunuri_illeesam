@@ -40,7 +40,7 @@ public class PmGiftCondController {
 
     /* 사은품 지급 조건 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmGiftCond>> create(@RequestBody PmGiftCond entity) {
+    public ResponseEntity<ApiResponse<PmGiftCond>> create(@Valid @RequestBody PmGiftCond entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

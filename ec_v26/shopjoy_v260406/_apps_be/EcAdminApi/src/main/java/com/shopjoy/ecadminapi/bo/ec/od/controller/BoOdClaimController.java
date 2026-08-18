@@ -53,7 +53,7 @@ public class BoOdClaimController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdClaim>> create(@RequestBody OdClaim body) {
+    public ResponseEntity<ApiResponse<OdClaim>> create(@Valid @RequestBody OdClaim body) {
         OdClaim result = boOdClaimService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

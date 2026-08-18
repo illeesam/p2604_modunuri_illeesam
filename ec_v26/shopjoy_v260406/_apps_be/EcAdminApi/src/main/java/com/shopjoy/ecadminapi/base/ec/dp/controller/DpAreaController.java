@@ -40,7 +40,7 @@ public class DpAreaController {
 
     /* 전시 영역 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<DpArea>> create(@RequestBody DpArea entity) {
+    public ResponseEntity<ApiResponse<DpArea>> create(@Valid @RequestBody DpArea entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

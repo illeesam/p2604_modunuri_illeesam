@@ -44,7 +44,7 @@ public class BoDpUiController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<DpUi>> create(@RequestBody DpUi body) {
+    public ResponseEntity<ApiResponse<DpUi>> create(@Valid @RequestBody DpUi body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boDpUiService.create(body)));
     }
 

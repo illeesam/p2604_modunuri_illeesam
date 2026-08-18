@@ -43,7 +43,7 @@ public class BoSyPathController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyPath>> create(@RequestBody SyPath entity) {
+    public ResponseEntity<ApiResponse<SyPath>> create(@Valid @RequestBody SyPath entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyPathService.create(entity)));
     }
 

@@ -51,7 +51,7 @@ public class BoSyUserController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyUser>> create(@RequestBody SyUser body) {
+    public ResponseEntity<ApiResponse<SyUser>> create(@Valid @RequestBody SyUser body) {
         SyUser result = boSyUserService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

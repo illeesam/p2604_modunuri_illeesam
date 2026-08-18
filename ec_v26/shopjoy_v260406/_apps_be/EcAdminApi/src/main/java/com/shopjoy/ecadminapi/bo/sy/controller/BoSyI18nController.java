@@ -43,7 +43,7 @@ public class BoSyI18nController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyI18n>> create(@RequestBody SyI18n body) {
+    public ResponseEntity<ApiResponse<SyI18n>> create(@Valid @RequestBody SyI18n body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyI18nService.create(body)));
     }
 

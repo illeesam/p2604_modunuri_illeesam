@@ -40,7 +40,7 @@ public class PmCouponItemController {
 
     /* 쿠폰 대상 상품 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmCouponItem>> create(@RequestBody PmCouponItem entity) {
+    public ResponseEntity<ApiResponse<PmCouponItem>> create(@Valid @RequestBody PmCouponItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

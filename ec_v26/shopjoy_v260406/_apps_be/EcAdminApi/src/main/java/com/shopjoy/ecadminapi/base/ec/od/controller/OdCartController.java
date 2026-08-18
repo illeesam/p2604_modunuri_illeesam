@@ -40,7 +40,7 @@ public class OdCartController {
 
     /* 장바구니 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdCart>> create(@RequestBody OdCart entity) {
+    public ResponseEntity<ApiResponse<OdCart>> create(@Valid @RequestBody OdCart entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

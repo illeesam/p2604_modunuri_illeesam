@@ -58,7 +58,7 @@ public class BoOdOrderController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdOrder>> create(@RequestBody OdOrder body) {
+    public ResponseEntity<ApiResponse<OdOrder>> create(@Valid @RequestBody OdOrder body) {
         OdOrder result = boOdOrderService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

@@ -50,7 +50,7 @@ public class FoAuthController {
 
     /** join — 결합 */
     @PostMapping("/join")
-    public ResponseEntity<ApiResponse<FoJoinRes>> join(@RequestBody MbMember body) {
+    public ResponseEntity<ApiResponse<FoJoinRes>> join(@Valid @RequestBody MbMember body) {
         FoJoinRes result = authService.join(body, "FO");
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
@@ -90,7 +90,7 @@ public class FoAuthController {
     /** withdraw — 회원 탈퇴 (본인 인증 필요, SNS 연동 삭제 + 상태 WITHDRAWN + 토큰 무효화) */
     @PostMapping("/withdraw")
     public ResponseEntity<ApiResponse<Void>> withdraw(
-            @RequestBody(required = false) WithdrawReq request) {
+            @Valid @RequestBody(required = false) WithdrawReq request) {
         socialAuthService.withdraw(request, "FO");
         return ResponseEntity.ok(ApiResponse.ok(null, "탈퇴 처리되었습니다."));
     }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 /**
  * FO 고객 문의(Contact) API — 비회원/회원 모두 사용 가능
  * POST /api/fo/ec/cm/contact — 문의 접수
@@ -31,7 +32,7 @@ public class FoCmContactController {
 
     /** submit — 제출 (sy_contact 저장) */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyContact>> submit(@RequestBody CmContactSubmitDto.Request req) {
+    public ResponseEntity<ApiResponse<SyContact>> submit(@Valid @RequestBody CmContactSubmitDto.Request req) {
         SyContact result = foCmContactService.submit(req);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

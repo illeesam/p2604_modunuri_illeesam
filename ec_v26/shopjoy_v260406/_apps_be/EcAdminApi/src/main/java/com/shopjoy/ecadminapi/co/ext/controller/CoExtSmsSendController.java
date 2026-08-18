@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /**
  * 외부 연동 — SMS 발송  /api/co/ext/sms-send
  */

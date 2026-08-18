@@ -40,7 +40,7 @@ public class PmSaveIssueController {
 
     /* 적립금 지급 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmSaveIssue>> create(@RequestBody PmSaveIssue entity) {
+    public ResponseEntity<ApiResponse<PmSaveIssue>> create(@Valid @RequestBody PmSaveIssue entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -44,7 +44,7 @@ public class BoDpWidgetLibController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<DpWidgetLib>> create(@RequestBody DpWidgetLib body) {
+    public ResponseEntity<ApiResponse<DpWidgetLib>> create(@Valid @RequestBody DpWidgetLib body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boDpWidgetLibService.create(body)));
     }
 

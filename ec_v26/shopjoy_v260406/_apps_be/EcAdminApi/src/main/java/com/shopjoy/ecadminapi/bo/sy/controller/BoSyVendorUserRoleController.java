@@ -44,7 +44,7 @@ public class BoSyVendorUserRoleController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyVendorUserRole>> create(@RequestBody SyVendorUserRole body) {
+    public ResponseEntity<ApiResponse<SyVendorUserRole>> create(@Valid @RequestBody SyVendorUserRole body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyVendorUserRoleService.create(body)));
     }
 

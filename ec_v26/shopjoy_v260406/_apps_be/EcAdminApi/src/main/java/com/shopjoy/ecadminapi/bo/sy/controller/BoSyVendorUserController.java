@@ -44,7 +44,7 @@ public class BoSyVendorUserController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyVendorUser>> create(@RequestBody SyVendorUser body) {
+    public ResponseEntity<ApiResponse<SyVendorUser>> create(@Valid @RequestBody SyVendorUser body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyVendorUserService.create(body)));
     }
 

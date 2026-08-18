@@ -40,7 +40,7 @@ public class PdProdSkuController {
 
     /* 상품 SKU 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdProdSku>> create(@RequestBody PdProdSku entity) {
+    public ResponseEntity<ApiResponse<PdProdSku>> create(@Valid @RequestBody PdProdSku entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

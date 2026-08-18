@@ -44,7 +44,7 @@ public class BoCmChattController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CmChatt>> create(@RequestBody CmChatt body) {
+    public ResponseEntity<ApiResponse<CmChatt>> create(@Valid @RequestBody CmChatt body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boCmChattService.create(body)));
     }
 

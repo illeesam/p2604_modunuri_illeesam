@@ -44,7 +44,7 @@ public class BoPmDiscntUsageController {
 
     /* 할인 사용 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmDiscntUsage>> create(@RequestBody PmDiscntUsage entity) {
+    public ResponseEntity<ApiResponse<PmDiscntUsage>> create(@Valid @RequestBody PmDiscntUsage entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
@@ -71,7 +71,7 @@ public class BoPmDiscntUsageController {
 
     /* 할인 사용 이력 목록저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmDiscntUsage> rows) {
+    public ResponseEntity<ApiResponse<Void>> saveList(@Valid @RequestBody List<PmDiscntUsage> rows) {
         service.saveListBase(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }

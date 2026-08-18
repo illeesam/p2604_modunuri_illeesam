@@ -44,7 +44,7 @@ public class BoPdRestockNotiController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdRestockNoti>> create(@RequestBody PdRestockNoti body) {
+    public ResponseEntity<ApiResponse<PdRestockNoti>> create(@Valid @RequestBody PdRestockNoti body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boPdRestockNotiService.create(body)));
     }
 
@@ -69,7 +69,7 @@ public class BoPdRestockNotiController {
 
     /** send — 전송 */
     @PostMapping("/send")
-    public ResponseEntity<ApiResponse<Void>> send(@RequestBody PdRestockNotiSendDto.Request req) {
+    public ResponseEntity<ApiResponse<Void>> send(@Valid @RequestBody PdRestockNotiSendDto.Request req) {
         boPdRestockNotiService.send(req);
         return ResponseEntity.ok(ApiResponse.ok(null, "발송되었습니다."));
     }

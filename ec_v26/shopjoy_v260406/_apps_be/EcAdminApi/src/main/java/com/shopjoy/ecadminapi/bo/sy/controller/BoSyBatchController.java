@@ -43,7 +43,7 @@ public class BoSyBatchController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyBatch>> create(@RequestBody SyBatch body) {
+    public ResponseEntity<ApiResponse<SyBatch>> create(@Valid @RequestBody SyBatch body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyBatchService.create(body)));
     }
 

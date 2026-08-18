@@ -42,7 +42,7 @@ public class BoPdTagController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdTag>> create(@RequestBody PdTag body) {
+    public ResponseEntity<ApiResponse<PdTag>> create(@Valid @RequestBody PdTag body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boPdTagService.create(body)));
     }
 

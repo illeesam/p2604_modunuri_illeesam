@@ -49,7 +49,7 @@ public class BoPmDiscntController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmDiscnt>> create(@RequestBody PmDiscnt body) {
+    public ResponseEntity<ApiResponse<PmDiscnt>> create(@Valid @RequestBody PmDiscnt body) {
         PmDiscnt result = boPmDiscntService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
@@ -102,7 +102,7 @@ public class BoPmDiscntController {
 
     /** 할인 항목 등록 (상품을 할인에 연결) */
     @PostMapping("/items")
-    public ResponseEntity<ApiResponse<PmDiscntItem>> createItem(@RequestBody PmDiscntItem entity) {
+    public ResponseEntity<ApiResponse<PmDiscntItem>> createItem(@Valid @RequestBody PmDiscntItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(pmDiscntItemService.create(entity)));
     }
 

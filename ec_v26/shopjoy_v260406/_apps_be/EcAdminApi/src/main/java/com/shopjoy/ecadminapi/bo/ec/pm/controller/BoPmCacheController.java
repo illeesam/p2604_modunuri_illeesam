@@ -43,7 +43,7 @@ public class BoPmCacheController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmCache>> create(@RequestBody PmCache body) {
+    public ResponseEntity<ApiResponse<PmCache>> create(@Valid @RequestBody PmCache body) {
         PmCache result = boPmCacheService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

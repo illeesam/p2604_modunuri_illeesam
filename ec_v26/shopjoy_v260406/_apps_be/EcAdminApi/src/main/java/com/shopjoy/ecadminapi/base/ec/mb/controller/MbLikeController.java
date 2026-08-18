@@ -40,7 +40,7 @@ public class MbLikeController {
 
     /* 좋아요(찜) 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbLike>> create(@RequestBody MbLike entity) {
+    public ResponseEntity<ApiResponse<MbLike>> create(@Valid @RequestBody MbLike entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

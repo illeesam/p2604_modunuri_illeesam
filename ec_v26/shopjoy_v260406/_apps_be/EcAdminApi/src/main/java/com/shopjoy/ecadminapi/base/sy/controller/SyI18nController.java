@@ -40,7 +40,7 @@ public class SyI18nController {
 
     /* 다국어 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyI18n>> create(@RequestBody SyI18n entity) {
+    public ResponseEntity<ApiResponse<SyI18n>> create(@Valid @RequestBody SyI18n entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

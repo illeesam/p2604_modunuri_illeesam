@@ -52,7 +52,7 @@ public class BoPdCategoryController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdCategory>> create(@RequestBody PdCategory body) {
+    public ResponseEntity<ApiResponse<PdCategory>> create(@Valid @RequestBody PdCategory body) {
         PdCategory result = boPdCategoryService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

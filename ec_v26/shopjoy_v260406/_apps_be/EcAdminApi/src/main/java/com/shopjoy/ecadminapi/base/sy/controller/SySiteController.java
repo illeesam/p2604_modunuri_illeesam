@@ -41,7 +41,7 @@ public class SySiteController {
 
     /** create — 생성 (JPA) */
     @PostMapping
-    public ResponseEntity<ApiResponse<SySite>> create(@RequestBody SySite entity) {
+    public ResponseEntity<ApiResponse<SySite>> create(@Valid @RequestBody SySite entity) {
         SySite result = service.create(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

@@ -40,7 +40,7 @@ public class PdRestockNotiController {
 
     /* 재입고 알림 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdRestockNoti>> create(@RequestBody PdRestockNoti entity) {
+    public ResponseEntity<ApiResponse<PdRestockNoti>> create(@Valid @RequestBody PdRestockNoti entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -43,7 +43,7 @@ public class BoSyPropController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyProp>> create(@RequestBody SyProp body) {
+    public ResponseEntity<ApiResponse<SyProp>> create(@Valid @RequestBody SyProp body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyPropService.create(body)));
     }
 
@@ -68,7 +68,7 @@ public class BoSyPropController {
 
     /** bulk upsert — propKey 기준 (존재하면 UPDATE, 없으면 INSERT). 개발도구 테스트 화면에서 사용 */
     @PutMapping("/bulk")
-    public ResponseEntity<ApiResponse<Void>> bulk(@RequestBody List<SyProp> rows) {
+    public ResponseEntity<ApiResponse<Void>> bulk(@Valid @RequestBody List<SyProp> rows) {
         boSyPropService.bulkUpsert(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }

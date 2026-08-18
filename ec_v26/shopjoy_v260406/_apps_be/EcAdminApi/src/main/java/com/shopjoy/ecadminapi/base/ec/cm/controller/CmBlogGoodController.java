@@ -40,7 +40,7 @@ public class CmBlogGoodController {
 
     /* 게시물 좋아요 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmBlogGood>> create(@RequestBody CmBlogGood entity) {
+    public ResponseEntity<ApiResponse<CmBlogGood>> create(@Valid @RequestBody CmBlogGood entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

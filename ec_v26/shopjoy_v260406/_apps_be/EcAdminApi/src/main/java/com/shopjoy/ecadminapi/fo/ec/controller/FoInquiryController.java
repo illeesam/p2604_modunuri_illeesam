@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /**
  * FO 고객 문의(Inquiry) API (프론트엔드 경로 호환)
  * POST /api/fo/inquiry/create — 문의 생성
@@ -29,7 +30,7 @@ public class FoInquiryController {
 
     /** createInquiry — 생성 */
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> createInquiry(@RequestBody CmContactSubmitDto.Request req) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createInquiry(@Valid @RequestBody CmContactSubmitDto.Request req) {
         SyContact result = foCmContactService.submit(req);
         Map<String, Object> response = new HashMap<>();
         response.put("data", result);

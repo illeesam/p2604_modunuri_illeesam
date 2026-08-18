@@ -11,6 +11,7 @@ import org.springframework.web.client.RestClient;
 
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /**
  * 외부 연동 — 네이버 소셜 로그인 프로필 조회  /api/co/ext/sns-naver
  * CORS 문제로 프론트엔드에서 직접 네이버 API를 호출할 수 없어 백엔드 프록시 경유.

@@ -31,7 +31,7 @@ public class BoPdBundleController {
 
     /** create — 생성 */
     @PostMapping("/api/bo/ec/pd/prod-bundle")
-    public ResponseEntity<ApiResponse<PdProd>> create(@RequestBody PdProdBundleSaveDto.CreateRequest req) {
+    public ResponseEntity<ApiResponse<PdProd>> create(@Valid @RequestBody PdProdBundleSaveDto.CreateRequest req) {
         return ResponseEntity.status(201).body(ApiResponse.ok(null, "저장되었습니다."));
     }
 

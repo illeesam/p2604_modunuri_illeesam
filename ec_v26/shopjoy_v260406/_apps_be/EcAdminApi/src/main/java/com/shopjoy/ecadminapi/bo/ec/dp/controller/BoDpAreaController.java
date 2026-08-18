@@ -44,7 +44,7 @@ public class BoDpAreaController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<DpArea>> create(@RequestBody DpArea body) {
+    public ResponseEntity<ApiResponse<DpArea>> create(@Valid @RequestBody DpArea body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boDpAreaService.create(body)));
     }
 

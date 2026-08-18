@@ -40,7 +40,7 @@ public class MbhMemberTokenLogController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbhMemberTokenLog>> create(@RequestBody MbhMemberTokenLog entity) {
+    public ResponseEntity<ApiResponse<MbhMemberTokenLog>> create(@Valid @RequestBody MbhMemberTokenLog entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

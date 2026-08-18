@@ -40,7 +40,7 @@ public class PmSaveUsageController {
 
     /* 적립금 사용 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmSaveUsage>> create(@RequestBody PmSaveUsage entity) {
+    public ResponseEntity<ApiResponse<PmSaveUsage>> create(@Valid @RequestBody PmSaveUsage entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

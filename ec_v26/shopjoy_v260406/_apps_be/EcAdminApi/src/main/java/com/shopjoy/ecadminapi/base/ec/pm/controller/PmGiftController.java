@@ -40,7 +40,7 @@ public class PmGiftController {
 
     /* 사은품 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmGift>> create(@RequestBody PmGift entity) {
+    public ResponseEntity<ApiResponse<PmGift>> create(@Valid @RequestBody PmGift entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

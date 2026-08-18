@@ -13,6 +13,7 @@ import org.springframework.web.client.RestClient;
 
 import java.util.*;
 
+import jakarta.validation.Valid;
 /**
  * 외부 연동 — AI 챗봇 (OpenAI / Claude)  /api/co/ext/ai-chat
  */

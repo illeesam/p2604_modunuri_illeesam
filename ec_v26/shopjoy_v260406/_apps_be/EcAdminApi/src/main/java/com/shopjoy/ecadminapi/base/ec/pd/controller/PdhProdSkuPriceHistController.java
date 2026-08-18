@@ -42,7 +42,7 @@ public class PdhProdSkuPriceHistController {
 
     /* 상품 SKU 가격 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdhProdSkuPriceHist>> create(@RequestBody PdhProdSkuPriceHist entity) {
+    public ResponseEntity<ApiResponse<PdhProdSkuPriceHist>> create(@Valid @RequestBody PdhProdSkuPriceHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 }

@@ -43,7 +43,7 @@ public class BoSyRoleMenuController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyRoleMenu>> create(@RequestBody SyRoleMenu body) {
+    public ResponseEntity<ApiResponse<SyRoleMenu>> create(@Valid @RequestBody SyRoleMenu body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyRoleMenuService.create(body)));
     }
 

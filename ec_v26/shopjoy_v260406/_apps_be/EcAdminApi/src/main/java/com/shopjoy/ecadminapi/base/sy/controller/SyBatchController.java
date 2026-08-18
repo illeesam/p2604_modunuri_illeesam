@@ -40,7 +40,7 @@ public class SyBatchController {
 
     /* 배치 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyBatch>> create(@RequestBody SyBatch entity) {
+    public ResponseEntity<ApiResponse<SyBatch>> create(@Valid @RequestBody SyBatch entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

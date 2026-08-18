@@ -43,7 +43,7 @@ public class BoSyTemplateController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyTemplate>> create(@RequestBody SyTemplate body) {
+    public ResponseEntity<ApiResponse<SyTemplate>> create(@Valid @RequestBody SyTemplate body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyTemplateService.create(body)));
     }
 

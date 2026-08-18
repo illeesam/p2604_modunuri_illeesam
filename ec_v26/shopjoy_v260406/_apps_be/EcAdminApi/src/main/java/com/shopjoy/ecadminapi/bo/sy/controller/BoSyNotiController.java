@@ -68,7 +68,7 @@ public class BoSyNotiController {
 
     /** 발송 — 수신자(회원/사용자) 여러 명에게 같은 알림 적재 */
     @PostMapping("/send")
-    public ResponseEntity<ApiResponse<Integer>> send(@RequestBody SyNotiDto.SendReq req) {
+    public ResponseEntity<ApiResponse<Integer>> send(@Valid @RequestBody SyNotiDto.SendReq req) {
         List<SyNoti> rows = boSyNotiService.send(req);
         return ResponseEntity.status(201).body(ApiResponse.created(rows.size()));
     }
@@ -87,7 +87,7 @@ public class BoSyNotiController {
 
     /** create — 단건 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyNoti>> create(@RequestBody SyNoti body) {
+    public ResponseEntity<ApiResponse<SyNoti>> create(@Valid @RequestBody SyNoti body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyNotiService.create(body)));
     }
 

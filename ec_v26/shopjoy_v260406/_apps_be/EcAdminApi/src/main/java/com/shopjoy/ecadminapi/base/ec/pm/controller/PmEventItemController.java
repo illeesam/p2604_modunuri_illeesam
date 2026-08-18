@@ -40,7 +40,7 @@ public class PmEventItemController {
 
     /* 이벤트 대상 상품 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmEventItem>> create(@RequestBody PmEventItem entity) {
+    public ResponseEntity<ApiResponse<PmEventItem>> create(@Valid @RequestBody PmEventItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

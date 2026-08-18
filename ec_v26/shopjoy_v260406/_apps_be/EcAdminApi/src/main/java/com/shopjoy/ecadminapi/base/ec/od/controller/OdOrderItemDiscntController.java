@@ -40,7 +40,7 @@ public class OdOrderItemDiscntController {
 
     /* 주문 아이템 할인 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdOrderItemDiscnt>> create(@RequestBody OdOrderItemDiscnt entity) {
+    public ResponseEntity<ApiResponse<OdOrderItemDiscnt>> create(@Valid @RequestBody OdOrderItemDiscnt entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

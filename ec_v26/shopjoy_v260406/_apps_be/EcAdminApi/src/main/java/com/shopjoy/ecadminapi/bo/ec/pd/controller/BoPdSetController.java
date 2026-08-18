@@ -30,7 +30,7 @@ public class BoPdSetController {
 
     /** create — 생성 */
     @PostMapping("/api/bo/ec/pd/prod-set")
-    public ResponseEntity<ApiResponse<Void>> create(@RequestBody PdProdSetSaveDto.CreateRequest req) {
+    public ResponseEntity<ApiResponse<Void>> create(@Valid @RequestBody PdProdSetSaveDto.CreateRequest req) {
         return ResponseEntity.status(201).body(ApiResponse.ok(null, "저장되었습니다."));
     }
 

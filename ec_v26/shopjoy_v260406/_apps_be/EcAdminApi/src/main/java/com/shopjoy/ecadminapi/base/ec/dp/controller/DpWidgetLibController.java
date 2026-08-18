@@ -40,7 +40,7 @@ public class DpWidgetLibController {
 
     /* 전시 위젯 라이브러리 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<DpWidgetLib>> create(@RequestBody DpWidgetLib entity) {
+    public ResponseEntity<ApiResponse<DpWidgetLib>> create(@Valid @RequestBody DpWidgetLib entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

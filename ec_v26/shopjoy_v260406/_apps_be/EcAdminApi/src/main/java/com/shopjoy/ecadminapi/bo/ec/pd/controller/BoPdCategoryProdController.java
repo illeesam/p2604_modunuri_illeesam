@@ -30,7 +30,7 @@ public class BoPdCategoryProdController {
 
     /** saveProds — 저장 */
     @PutMapping
-    public ResponseEntity<ApiResponse<Void>> saveProds(@RequestBody PdCategoryProdSaveDto.Request req) {
+    public ResponseEntity<ApiResponse<Void>> saveProds(@Valid @RequestBody PdCategoryProdSaveDto.Request req) {
         boPdCategoryProdService.saveProds(req);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }

@@ -40,7 +40,7 @@ public class PdCategoryProdController {
 
     /* 카테고리-상품 매핑 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdCategoryProd>> create(@RequestBody PdCategoryProd entity) {
+    public ResponseEntity<ApiResponse<PdCategoryProd>> create(@Valid @RequestBody PdCategoryProd entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

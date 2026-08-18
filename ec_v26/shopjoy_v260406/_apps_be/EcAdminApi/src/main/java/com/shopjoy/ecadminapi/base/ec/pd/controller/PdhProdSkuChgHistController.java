@@ -42,7 +42,7 @@ public class PdhProdSkuChgHistController {
 
     /* 상품 SKU 변경 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdhProdSkuChgHist>> create(@RequestBody PdhProdSkuChgHist entity) {
+    public ResponseEntity<ApiResponse<PdhProdSkuChgHist>> create(@Valid @RequestBody PdhProdSkuChgHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 }

@@ -40,7 +40,7 @@ public class MbMemberSnsController {
 
     /* SNS 연동 회원 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbMemberSns>> create(@RequestBody MbMemberSns entity) {
+    public ResponseEntity<ApiResponse<MbMemberSns>> create(@Valid @RequestBody MbMemberSns entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

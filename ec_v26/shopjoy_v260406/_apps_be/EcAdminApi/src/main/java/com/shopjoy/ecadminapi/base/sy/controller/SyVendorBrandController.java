@@ -40,7 +40,7 @@ public class SyVendorBrandController {
 
     /* 업체별 브랜드 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyVendorBrand>> create(@RequestBody SyVendorBrand entity) {
+    public ResponseEntity<ApiResponse<SyVendorBrand>> create(@Valid @RequestBody SyVendorBrand entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

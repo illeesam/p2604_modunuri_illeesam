@@ -40,7 +40,7 @@ public class DpPanelController {
 
     /* 전시 패널 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<DpPanel>> create(@RequestBody DpPanel entity) {
+    public ResponseEntity<ApiResponse<DpPanel>> create(@Valid @RequestBody DpPanel entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -45,7 +45,7 @@ public class SyUserController {
 
     /* ── 등록 (JPA) ── */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyUser>> create(@RequestBody SyUser entity) {
+    public ResponseEntity<ApiResponse<SyUser>> create(@Valid @RequestBody SyUser entity) {
         SyUser result = service.create(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

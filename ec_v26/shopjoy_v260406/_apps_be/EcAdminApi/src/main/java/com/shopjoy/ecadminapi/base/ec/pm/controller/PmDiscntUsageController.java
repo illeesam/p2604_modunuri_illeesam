@@ -40,7 +40,7 @@ public class PmDiscntUsageController {
 
     /* 할인 사용 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmDiscntUsage>> create(@RequestBody PmDiscntUsage entity) {
+    public ResponseEntity<ApiResponse<PmDiscntUsage>> create(@Valid @RequestBody PmDiscntUsage entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

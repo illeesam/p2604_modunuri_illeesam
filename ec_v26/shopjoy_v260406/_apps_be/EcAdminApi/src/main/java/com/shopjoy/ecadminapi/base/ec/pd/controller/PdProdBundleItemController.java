@@ -40,7 +40,7 @@ public class PdProdBundleItemController {
 
     /* 묶음상품 구성 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdProdBundleItem>> create(@RequestBody PdProdBundleItem entity) {
+    public ResponseEntity<ApiResponse<PdProdBundleItem>> create(@Valid @RequestBody PdProdBundleItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

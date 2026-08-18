@@ -46,7 +46,7 @@ public class BoSyRoleController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyRole>> create(@RequestBody SyRole body) {
+    public ResponseEntity<ApiResponse<SyRole>> create(@Valid @RequestBody SyRole body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyRoleService.create(body)));
     }
 

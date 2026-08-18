@@ -41,7 +41,7 @@ public class BoStSettleCloseController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StSettleClose>> create(@RequestBody StSettleClose body) {
+    public ResponseEntity<ApiResponse<StSettleClose>> create(@Valid @RequestBody StSettleClose body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStSettleCloseService.create(body)));
     }
 

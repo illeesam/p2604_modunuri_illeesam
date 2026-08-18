@@ -40,7 +40,7 @@ public class SyRoleController {
 
     /* 역할(권한) 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyRole>> create(@RequestBody SyRole entity) {
+    public ResponseEntity<ApiResponse<SyRole>> create(@Valid @RequestBody SyRole entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -49,7 +49,7 @@ public class BoPmGiftController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmGift>> create(@RequestBody PmGift body) {
+    public ResponseEntity<ApiResponse<PmGift>> create(@Valid @RequestBody PmGift body) {
         PmGift result = boPmGiftService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
@@ -102,7 +102,7 @@ public class BoPmGiftController {
 
     /** 사은품 조건 등록 (상품을 사은품에 연결) */
     @PostMapping("/gift-cond")
-    public ResponseEntity<ApiResponse<PmGiftCond>> createGiftCond(@RequestBody PmGiftCond entity) {
+    public ResponseEntity<ApiResponse<PmGiftCond>> createGiftCond(@Valid @RequestBody PmGiftCond entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(pmGiftCondService.create(entity)));
     }
 

@@ -40,7 +40,7 @@ public class StSettlePayController {
 
     /* 정산 지급 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StSettlePay>> create(@RequestBody StSettlePay entity) {
+    public ResponseEntity<ApiResponse<StSettlePay>> create(@Valid @RequestBody StSettlePay entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

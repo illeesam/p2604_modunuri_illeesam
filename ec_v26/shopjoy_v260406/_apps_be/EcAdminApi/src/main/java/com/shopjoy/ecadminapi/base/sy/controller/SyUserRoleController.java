@@ -40,7 +40,7 @@ public class SyUserRoleController {
 
     /* 사용자별 역할 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyUserRole>> create(@RequestBody SyUserRole entity) {
+    public ResponseEntity<ApiResponse<SyUserRole>> create(@Valid @RequestBody SyUserRole entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

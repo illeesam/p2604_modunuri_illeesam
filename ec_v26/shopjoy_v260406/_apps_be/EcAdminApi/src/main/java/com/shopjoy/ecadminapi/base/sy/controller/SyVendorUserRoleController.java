@@ -40,7 +40,7 @@ public class SyVendorUserRoleController {
 
     /* 업체 사용자 역할 연결 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyVendorUserRole>> create(@RequestBody SyVendorUserRole entity) {
+    public ResponseEntity<ApiResponse<SyVendorUserRole>> create(@Valid @RequestBody SyVendorUserRole entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -40,7 +40,7 @@ public class StSettleRawController {
 
     /* 정산 원천 데이터 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StSettleRaw>> create(@RequestBody StSettleRaw entity) {
+    public ResponseEntity<ApiResponse<StSettleRaw>> create(@Valid @RequestBody StSettleRaw entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

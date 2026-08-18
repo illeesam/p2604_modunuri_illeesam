@@ -40,7 +40,7 @@ public class OdhDlivStatusHistController {
 
     /* 배송 상태 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdhDlivStatusHist>> create(@RequestBody OdhDlivStatusHist entity) {
+    public ResponseEntity<ApiResponse<OdhDlivStatusHist>> create(@Valid @RequestBody OdhDlivStatusHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

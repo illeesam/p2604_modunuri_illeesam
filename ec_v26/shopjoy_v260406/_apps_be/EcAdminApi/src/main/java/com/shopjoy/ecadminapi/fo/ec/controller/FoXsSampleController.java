@@ -45,7 +45,7 @@ public class FoXsSampleController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<ZzSample1>> create(@RequestBody ZzSample1 entity) {
+    public ResponseEntity<ApiResponse<ZzSample1>> create(@Valid @RequestBody ZzSample1 entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

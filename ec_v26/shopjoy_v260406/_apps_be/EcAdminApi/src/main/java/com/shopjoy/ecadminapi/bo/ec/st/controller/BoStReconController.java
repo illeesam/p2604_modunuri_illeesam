@@ -40,7 +40,7 @@ public class BoStReconController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StRecon>> create(@RequestBody StRecon body) {
+    public ResponseEntity<ApiResponse<StRecon>> create(@Valid @RequestBody StRecon body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStReconService.create(body)));
     }
 

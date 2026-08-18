@@ -40,7 +40,7 @@ public class OdRefundMethodController {
 
     /* 환불수단 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdRefundMethod>> create(@RequestBody OdRefundMethod entity) {
+    public ResponseEntity<ApiResponse<OdRefundMethod>> create(@Valid @RequestBody OdRefundMethod entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

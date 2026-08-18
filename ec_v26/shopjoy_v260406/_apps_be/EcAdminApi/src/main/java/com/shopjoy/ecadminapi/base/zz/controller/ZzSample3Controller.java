@@ -39,7 +39,7 @@ public class ZzSample3Controller {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<ZzSample3>> create(@RequestBody ZzSample3 entity) {
+    public ResponseEntity<ApiResponse<ZzSample3>> create(@Valid @RequestBody ZzSample3 entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -40,7 +40,7 @@ public class SyCodeController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyCode>> create(@RequestBody SyCode entity) {
+    public ResponseEntity<ApiResponse<SyCode>> create(@Valid @RequestBody SyCode entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

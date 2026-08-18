@@ -40,7 +40,7 @@ public class OdPayMethodController {
 
     /* 결제수단 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdPayMethod>> create(@RequestBody OdPayMethod entity) {
+    public ResponseEntity<ApiResponse<OdPayMethod>> create(@Valid @RequestBody OdPayMethod entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

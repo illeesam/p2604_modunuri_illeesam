@@ -51,7 +51,7 @@ public class BoSySiteController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SySite>> create(@RequestBody SySite body) {
+    public ResponseEntity<ApiResponse<SySite>> create(@Valid @RequestBody SySite body) {
         SySite result = boSySiteService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

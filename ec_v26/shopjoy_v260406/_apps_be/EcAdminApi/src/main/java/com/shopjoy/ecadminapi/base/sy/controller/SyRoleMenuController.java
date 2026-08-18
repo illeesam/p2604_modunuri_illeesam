@@ -40,7 +40,7 @@ public class SyRoleMenuController {
 
     /* 역할별 메뉴 권한 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyRoleMenu>> create(@RequestBody SyRoleMenu entity) {
+    public ResponseEntity<ApiResponse<SyRoleMenu>> create(@Valid @RequestBody SyRoleMenu entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

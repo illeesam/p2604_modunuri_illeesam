@@ -40,7 +40,7 @@ public class PdReviewCommentController {
 
     /* 리뷰 댓글 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdReviewComment>> create(@RequestBody PdReviewComment entity) {
+    public ResponseEntity<ApiResponse<PdReviewComment>> create(@Valid @RequestBody PdReviewComment entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

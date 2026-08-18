@@ -48,7 +48,7 @@ public class BoAuthController {
 
     /** join — 결합 */
     @PostMapping("/join")
-    public ResponseEntity<ApiResponse<BoJoinRes>> join(@RequestBody SyUser body) {
+    public ResponseEntity<ApiResponse<BoJoinRes>> join(@Valid @RequestBody SyUser body) {
         BoJoinRes result = authService.join(body, "BO");
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

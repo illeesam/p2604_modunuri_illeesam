@@ -40,7 +40,7 @@ public class CmhPushLogController {
 
     /* 푸시 발송 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmhPushLog>> create(@RequestBody CmhPushLog entity) {
+    public ResponseEntity<ApiResponse<CmhPushLog>> create(@Valid @RequestBody CmhPushLog entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

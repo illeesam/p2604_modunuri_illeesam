@@ -40,7 +40,7 @@ public class PdTagController {
 
     /* 태그 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdTag>> create(@RequestBody PdTag entity) {
+    public ResponseEntity<ApiResponse<PdTag>> create(@Valid @RequestBody PdTag entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -40,7 +40,7 @@ public class OdOrderItemController {
 
     /* 주문 아이템(상품) 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdOrderItem>> create(@RequestBody OdOrderItem entity) {
+    public ResponseEntity<ApiResponse<OdOrderItem>> create(@Valid @RequestBody OdOrderItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

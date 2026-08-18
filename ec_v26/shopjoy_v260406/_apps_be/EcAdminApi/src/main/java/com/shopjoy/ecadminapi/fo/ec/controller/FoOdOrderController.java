@@ -42,7 +42,7 @@ public class FoOdOrderController {
 
     /* placeOrder */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdOrder>> placeOrder(@RequestBody OdOrder entity) {
+    public ResponseEntity<ApiResponse<OdOrder>> placeOrder(@Valid @RequestBody OdOrder entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(foOdOrderService.placeOrder(entity)));
     }
 }

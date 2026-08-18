@@ -52,7 +52,7 @@ public class BoStErpController {
 
     /** gen */
     @PostMapping("/gen")
-    public ResponseEntity<ApiResponse<StErpVoucher>> gen(@RequestBody StErpVoucherGenDto.Request req) {
+    public ResponseEntity<ApiResponse<StErpVoucher>> gen(@Valid @RequestBody StErpVoucherGenDto.Request req) {
         StErpVoucher result = boStErpService.gen(req.getTargetMon(), req.getSlipType());
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

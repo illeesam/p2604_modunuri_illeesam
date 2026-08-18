@@ -52,7 +52,7 @@ public class BoOdDlivController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdDliv>> create(@RequestBody OdDliv body) {
+    public ResponseEntity<ApiResponse<OdDliv>> create(@Valid @RequestBody OdDliv body) {
         OdDliv result = boOdDlivService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

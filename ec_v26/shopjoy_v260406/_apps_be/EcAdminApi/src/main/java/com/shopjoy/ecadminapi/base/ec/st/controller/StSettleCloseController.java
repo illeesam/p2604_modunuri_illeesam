@@ -40,7 +40,7 @@ public class StSettleCloseController {
 
     /* 정산 마감 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StSettleClose>> create(@RequestBody StSettleClose entity) {
+    public ResponseEntity<ApiResponse<StSettleClose>> create(@Valid @RequestBody StSettleClose entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

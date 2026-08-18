@@ -40,7 +40,7 @@ public class CmBlogCateController {
 
     /* 게시판 카테고리 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmBlogCate>> create(@RequestBody CmBlogCate entity) {
+    public ResponseEntity<ApiResponse<CmBlogCate>> create(@Valid @RequestBody CmBlogCate entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

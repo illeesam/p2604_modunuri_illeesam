@@ -43,7 +43,7 @@ public class BoSyCodeGrpController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyCodeGrp>> create(@RequestBody SyCodeGrp body) {
+    public ResponseEntity<ApiResponse<SyCodeGrp>> create(@Valid @RequestBody SyCodeGrp body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyCodeGrpService.create(body)));
     }
 

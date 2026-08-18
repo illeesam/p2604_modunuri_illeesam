@@ -43,7 +43,7 @@ public class BoMbMemGroupController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbMemberGroup>> create(@RequestBody MbMemberGroup body) {
+    public ResponseEntity<ApiResponse<MbMemberGroup>> create(@Valid @RequestBody MbMemberGroup body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boMbMemGroupService.create(body)));
     }
 

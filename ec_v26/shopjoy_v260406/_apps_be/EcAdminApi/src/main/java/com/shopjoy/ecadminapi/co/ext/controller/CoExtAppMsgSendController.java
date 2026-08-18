@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import jakarta.validation.Valid;
 /**
  * 외부 연동 — 앱 메시지 통합 발송  /api/co/ext/app-msg-send
  * FCM/APNs/SMS/카카오/InApp 채널별 시뮬레이션 응답 반환.

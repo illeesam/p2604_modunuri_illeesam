@@ -41,7 +41,7 @@ public class BoStSettleConfigController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StSettleConfig>> create(@RequestBody StSettleConfig body) {
+    public ResponseEntity<ApiResponse<StSettleConfig>> create(@Valid @RequestBody StSettleConfig body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStSettleConfigService.create(body)));
     }
 

@@ -40,7 +40,7 @@ public class CmChattMsgController {
 
     /* 채팅 메시지 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmChattMsg>> create(@RequestBody CmChattMsg entity) {
+    public ResponseEntity<ApiResponse<CmChattMsg>> create(@Valid @RequestBody CmChattMsg entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

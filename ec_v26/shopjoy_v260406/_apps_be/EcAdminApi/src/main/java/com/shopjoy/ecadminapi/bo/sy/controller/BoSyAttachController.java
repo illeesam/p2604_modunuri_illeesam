@@ -43,7 +43,7 @@ public class BoSyAttachController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyAttach>> create(@RequestBody SyAttach body) {
+    public ResponseEntity<ApiResponse<SyAttach>> create(@Valid @RequestBody SyAttach body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyAttachService.create(body)));
     }
 

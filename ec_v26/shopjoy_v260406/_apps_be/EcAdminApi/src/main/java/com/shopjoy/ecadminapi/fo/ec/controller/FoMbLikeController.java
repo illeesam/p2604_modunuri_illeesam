@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 /**
  * FO 찜(Like) API — 현재 로그인 회원 전용
  * GET    /api/fo/ec/mb/like                               — 내 찜 목록
@@ -26,7 +27,7 @@ public class FoMbLikeController {
 
     /** myLikes */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<MbLikeDto.Item>>> myLikes(@jakarta.validation.Valid @ModelAttribute MbLikeDto.Request req) {
+    public ResponseEntity<ApiResponse<List<MbLikeDto.Item>>> myLikes(@Valid @ModelAttribute MbLikeDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMbLikeService.getMyLikes(req)));
     }
 

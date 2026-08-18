@@ -40,7 +40,7 @@ public class OdhClaimStatusHistController {
 
     /* 클레임 상태 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdhClaimStatusHist>> create(@RequestBody OdhClaimStatusHist entity) {
+    public ResponseEntity<ApiResponse<OdhClaimStatusHist>> create(@Valid @RequestBody OdhClaimStatusHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

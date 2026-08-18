@@ -46,7 +46,7 @@ public class BoPmVoucherController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmVoucher>> create(@RequestBody PmVoucher body) {
+    public ResponseEntity<ApiResponse<PmVoucher>> create(@Valid @RequestBody PmVoucher body) {
         PmVoucher result = boPmVoucherService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

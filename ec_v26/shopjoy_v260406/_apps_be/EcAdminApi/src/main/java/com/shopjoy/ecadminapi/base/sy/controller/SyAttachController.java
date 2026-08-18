@@ -40,7 +40,7 @@ public class SyAttachController {
 
     /* 첨부파일 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyAttach>> create(@RequestBody SyAttach entity) {
+    public ResponseEntity<ApiResponse<SyAttach>> create(@Valid @RequestBody SyAttach entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -44,7 +44,7 @@ public class BoPmCouponUsageController {
 
     /* 쿠폰 사용 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmCouponUsage>> create(@RequestBody PmCouponUsage entity) {
+    public ResponseEntity<ApiResponse<PmCouponUsage>> create(@Valid @RequestBody PmCouponUsage entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
@@ -71,7 +71,7 @@ public class BoPmCouponUsageController {
 
     /* 쿠폰 사용 이력 목록저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmCouponUsage> rows) {
+    public ResponseEntity<ApiResponse<Void>> saveList(@Valid @RequestBody List<PmCouponUsage> rows) {
         service.saveListBase(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }

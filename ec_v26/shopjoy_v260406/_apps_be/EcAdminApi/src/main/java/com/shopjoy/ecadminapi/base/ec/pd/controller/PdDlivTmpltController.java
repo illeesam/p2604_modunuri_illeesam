@@ -40,7 +40,7 @@ public class PdDlivTmpltController {
 
     /* 배송 템플릿 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdDlivTmplt>> create(@RequestBody PdDlivTmplt entity) {
+    public ResponseEntity<ApiResponse<PdDlivTmplt>> create(@Valid @RequestBody PdDlivTmplt entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

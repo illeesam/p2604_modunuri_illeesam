@@ -40,7 +40,7 @@ public class PdProdImgController {
 
     /* 상품 이미지 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdProdImg>> create(@RequestBody PdProdImg entity) {
+    public ResponseEntity<ApiResponse<PdProdImg>> create(@Valid @RequestBody PdProdImg entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

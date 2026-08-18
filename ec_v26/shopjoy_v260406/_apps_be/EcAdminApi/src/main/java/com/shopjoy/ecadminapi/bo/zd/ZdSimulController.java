@@ -78,6 +78,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /**
  * ZdSimulController — 시뮬레이터 전용 API
  *

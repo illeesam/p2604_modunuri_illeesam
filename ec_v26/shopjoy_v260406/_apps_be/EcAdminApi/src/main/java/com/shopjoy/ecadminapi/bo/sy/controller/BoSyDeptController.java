@@ -49,7 +49,7 @@ public class BoSyDeptController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyDept>> create(@RequestBody SyDept body) {
+    public ResponseEntity<ApiResponse<SyDept>> create(@Valid @RequestBody SyDept body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyDeptService.create(body)));
     }
 

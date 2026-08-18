@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /**
  * FO 주문 API (프론트엔드 경로 호환)
  * POST /api/fo/order/create  — 주문 생성
@@ -28,7 +29,7 @@ public class FoOrderController {
 
     /** createOrder — 생성 */
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> createOrder(@RequestBody OdOrder entity) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createOrder(@Valid @RequestBody OdOrder entity) {
         OdOrder created = foOdOrderService.placeOrder(entity);
         Map<String, Object> result = new HashMap<>();
         result.put("data", created);

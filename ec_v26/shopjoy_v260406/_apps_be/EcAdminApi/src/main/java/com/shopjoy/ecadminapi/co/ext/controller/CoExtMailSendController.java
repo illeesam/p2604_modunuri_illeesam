@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /**
  * 외부 연동 — 메일(SMTP) 발송  /api/co/ext/mail-send
  */

@@ -40,7 +40,7 @@ public class PmDiscntController {
 
     /* 할인 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmDiscnt>> create(@RequestBody PmDiscnt entity) {
+    public ResponseEntity<ApiResponse<PmDiscnt>> create(@Valid @RequestBody PmDiscnt entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

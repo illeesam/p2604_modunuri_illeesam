@@ -40,7 +40,7 @@ public class OdClaimItemController {
 
     /* 클레임 아이템 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdClaimItem>> create(@RequestBody OdClaimItem entity) {
+    public ResponseEntity<ApiResponse<OdClaimItem>> create(@Valid @RequestBody OdClaimItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

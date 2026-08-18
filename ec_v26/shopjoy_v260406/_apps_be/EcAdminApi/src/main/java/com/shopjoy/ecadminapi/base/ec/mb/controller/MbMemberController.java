@@ -40,7 +40,7 @@ public class MbMemberController {
 
     /* 회원 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbMember>> create(@RequestBody MbMember entity) {
+    public ResponseEntity<ApiResponse<MbMember>> create(@Valid @RequestBody MbMember entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

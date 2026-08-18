@@ -40,7 +40,7 @@ public class PdhProdViewLogController {
 
     /* 상품 조회 로그 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdhProdViewLog>> create(@RequestBody PdhProdViewLog entity) {
+    public ResponseEntity<ApiResponse<PdhProdViewLog>> create(@Valid @RequestBody PdhProdViewLog entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

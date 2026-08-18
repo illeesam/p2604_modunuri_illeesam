@@ -49,7 +49,7 @@ public class BoCmFaqController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmFaq>> create(@RequestBody CmFaq body) {
+    public ResponseEntity<ApiResponse<CmFaq>> create(@Valid @RequestBody CmFaq body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boCmFaqService.create(body)));
     }
 

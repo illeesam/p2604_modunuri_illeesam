@@ -40,7 +40,7 @@ public class CmBlogFileController {
 
     /* 게시물 첨부파일 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmBlogFile>> create(@RequestBody CmBlogFile entity) {
+    public ResponseEntity<ApiResponse<CmBlogFile>> create(@Valid @RequestBody CmBlogFile entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

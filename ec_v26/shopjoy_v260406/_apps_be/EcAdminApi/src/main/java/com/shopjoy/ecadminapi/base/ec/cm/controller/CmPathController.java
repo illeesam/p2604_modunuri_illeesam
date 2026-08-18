@@ -39,7 +39,7 @@ public class CmPathController {
 
     /* 경로(메뉴/URL) 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmPath>> create(@RequestBody CmPath entity) {
+    public ResponseEntity<ApiResponse<CmPath>> create(@Valid @RequestBody CmPath entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
@@ -66,7 +66,7 @@ public class CmPathController {
 
     /* 경로(메뉴/URL) 목록저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<CmPath> rows) {
+    public ResponseEntity<ApiResponse<Void>> saveList(@Valid @RequestBody List<CmPath> rows) {
         service.saveList(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }

@@ -49,7 +49,7 @@ public class BoPmCouponController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmCoupon>> create(@RequestBody PmCoupon body) {
+    public ResponseEntity<ApiResponse<PmCoupon>> create(@Valid @RequestBody PmCoupon body) {
         PmCoupon result = boPmCouponService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
@@ -102,7 +102,7 @@ public class BoPmCouponController {
 
     /** 쿠폰 항목 등록 (상품을 쿠폰에 연결) */
     @PostMapping("/items")
-    public ResponseEntity<ApiResponse<PmCouponItem>> createItem(@RequestBody PmCouponItem entity) {
+    public ResponseEntity<ApiResponse<PmCouponItem>> createItem(@Valid @RequestBody PmCouponItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(pmCouponItemService.create(entity)));
     }
 

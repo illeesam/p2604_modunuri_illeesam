@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 /**
  * FO 장바구니 API — 현재 로그인 회원 전용
  * GET    /api/fo/ec/od/cart         — 내 장바구니 조회
@@ -29,13 +30,13 @@ public class FoOdCartController {
 
     /** myCart */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<OdCartDto.Item>>> myCart(@jakarta.validation.Valid @ModelAttribute OdCartDto.Request req) {
+    public ResponseEntity<ApiResponse<List<OdCartDto.Item>>> myCart(@Valid @ModelAttribute OdCartDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foOdCartService.getMyCart(req)));
     }
 
     /** add — 추가 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdCart>> add(@RequestBody OdCart entity) {
+    public ResponseEntity<ApiResponse<OdCart>> add(@Valid @RequestBody OdCart entity) {
         OdCart result = foOdCartService.addToCart(entity);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

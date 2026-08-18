@@ -40,7 +40,7 @@ public class SyMenuController {
 
     /* 메뉴 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyMenu>> create(@RequestBody SyMenu entity) {
+    public ResponseEntity<ApiResponse<SyMenu>> create(@Valid @RequestBody SyMenu entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

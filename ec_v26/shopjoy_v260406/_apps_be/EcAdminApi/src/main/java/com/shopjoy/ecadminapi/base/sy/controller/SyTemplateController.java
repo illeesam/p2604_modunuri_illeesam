@@ -40,7 +40,7 @@ public class SyTemplateController {
 
     /* 템플릿 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyTemplate>> create(@RequestBody SyTemplate entity) {
+    public ResponseEntity<ApiResponse<SyTemplate>> create(@Valid @RequestBody SyTemplate entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

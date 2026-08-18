@@ -40,7 +40,7 @@ public class MbhMemberLoginLogController {
 
     /* 회원 로그인 로그 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbhMemberLoginLog>> create(@RequestBody MbhMemberLoginLog entity) {
+    public ResponseEntity<ApiResponse<MbhMemberLoginLog>> create(@Valid @RequestBody MbhMemberLoginLog entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

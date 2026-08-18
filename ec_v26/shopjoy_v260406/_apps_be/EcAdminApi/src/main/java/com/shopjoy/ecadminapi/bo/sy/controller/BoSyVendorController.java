@@ -43,7 +43,7 @@ public class BoSyVendorController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyVendor>> create(@RequestBody SyVendor body) {
+    public ResponseEntity<ApiResponse<SyVendor>> create(@Valid @RequestBody SyVendor body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyVendorService.create(body)));
     }
 

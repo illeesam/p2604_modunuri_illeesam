@@ -40,7 +40,7 @@ public class MbMemberRoleController {
 
     /* 회원 역할 연결 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbMemberRole>> create(@RequestBody MbMemberRole entity) {
+    public ResponseEntity<ApiResponse<MbMemberRole>> create(@Valid @RequestBody MbMemberRole entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

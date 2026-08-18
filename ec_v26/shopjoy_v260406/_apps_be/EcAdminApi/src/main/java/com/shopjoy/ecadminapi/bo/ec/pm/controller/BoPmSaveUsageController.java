@@ -44,7 +44,7 @@ public class BoPmSaveUsageController {
 
     /* 적립금 사용 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmSaveUsage>> create(@RequestBody PmSaveUsage entity) {
+    public ResponseEntity<ApiResponse<PmSaveUsage>> create(@Valid @RequestBody PmSaveUsage entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 
@@ -71,7 +71,7 @@ public class BoPmSaveUsageController {
 
     /* 적립금 사용 이력 목록저장 */
     @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmSaveUsage> rows) {
+    public ResponseEntity<ApiResponse<Void>> saveList(@Valid @RequestBody List<PmSaveUsage> rows) {
         service.saveListBase(rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }

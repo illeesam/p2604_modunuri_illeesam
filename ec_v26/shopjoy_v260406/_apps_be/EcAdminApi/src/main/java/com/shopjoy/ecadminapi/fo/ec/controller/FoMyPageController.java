@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
 /**
  * FO 마이페이지 API — 현재 로그인 회원 전용
  * GET  /api/fo/ec/my/info              — 내 정보
@@ -53,7 +54,7 @@ public class FoMyPageController {
 
     /** changePassword */
     @PostMapping("/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody MbMemberChangePasswordDto.Request req) {
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody MbMemberChangePasswordDto.Request req) {
         foMyPageService.changePassword(req.getCurrentPassword(), req.getNewPassword());
         return ResponseEntity.ok(ApiResponse.ok(null, "비밀번호가 변경되었습니다."));
     }
@@ -66,7 +67,7 @@ public class FoMyPageController {
 
     /** saveAddr — 저장 */
     @PostMapping("/addr")
-    public ResponseEntity<ApiResponse<MbMemberAddr>> saveAddr(@RequestBody MbMemberAddr body) {
+    public ResponseEntity<ApiResponse<MbMemberAddr>> saveAddr(@Valid @RequestBody MbMemberAddr body) {
         MbMemberAddr result = foMyPageService.saveAddr(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
@@ -80,25 +81,25 @@ public class FoMyPageController {
 
     /** getMyOrders — 조회 */
     @GetMapping("/order")
-    public ResponseEntity<ApiResponse<List<OdOrderDto.Item>>> getMyOrders(@jakarta.validation.Valid @ModelAttribute OdOrderDto.Request req) {
+    public ResponseEntity<ApiResponse<List<OdOrderDto.Item>>> getMyOrders(@Valid @ModelAttribute OdOrderDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyOrders(req)));
     }
 
     /** getMyClaims — 조회 */
     @GetMapping("/claim")
-    public ResponseEntity<ApiResponse<List<OdClaimDto.Item>>> getMyClaims(@jakarta.validation.Valid @ModelAttribute OdClaimDto.Request req) {
+    public ResponseEntity<ApiResponse<List<OdClaimDto.Item>>> getMyClaims(@Valid @ModelAttribute OdClaimDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyClaims(req)));
     }
 
     /** getMyCoupons — 조회 */
     @GetMapping("/coupon")
-    public ResponseEntity<ApiResponse<List<PmCouponDto.Item>>> getMyCoupons(@jakarta.validation.Valid @ModelAttribute PmCouponDto.Request req) {
+    public ResponseEntity<ApiResponse<List<PmCouponDto.Item>>> getMyCoupons(@Valid @ModelAttribute PmCouponDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCoupons(req)));
     }
 
     /** getMyCacheHistory — 조회 */
     @GetMapping("/cache")
-    public ResponseEntity<ApiResponse<List<PmCacheDto.Item>>> getMyCacheHistory(@jakarta.validation.Valid @ModelAttribute PmCacheDto.Request req) {
+    public ResponseEntity<ApiResponse<List<PmCacheDto.Item>>> getMyCacheHistory(@Valid @ModelAttribute PmCacheDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foMyPageService.getMyCacheHistory(req)));
     }
 }

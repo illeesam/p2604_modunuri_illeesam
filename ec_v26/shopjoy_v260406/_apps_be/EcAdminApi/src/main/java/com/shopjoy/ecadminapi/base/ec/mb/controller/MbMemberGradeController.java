@@ -40,7 +40,7 @@ public class MbMemberGradeController {
 
     /* 회원 등급 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbMemberGrade>> create(@RequestBody MbMemberGrade entity) {
+    public ResponseEntity<ApiResponse<MbMemberGrade>> create(@Valid @RequestBody MbMemberGrade entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

@@ -41,7 +41,7 @@ public class BoStSettlePayController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StSettlePay>> create(@RequestBody StSettlePay body) {
+    public ResponseEntity<ApiResponse<StSettlePay>> create(@Valid @RequestBody StSettlePay body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStSettlePayService.create(body)));
     }
 

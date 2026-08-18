@@ -40,7 +40,7 @@ public class PmVoucherController {
 
     /* 바우처(상품권) 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmVoucher>> create(@RequestBody PmVoucher entity) {
+    public ResponseEntity<ApiResponse<PmVoucher>> create(@Valid @RequestBody PmVoucher entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

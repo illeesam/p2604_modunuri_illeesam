@@ -41,7 +41,7 @@ public class ZzExmy2Controller {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<ZzExmy2>> create(@RequestBody ZzExmy2 entity) {
+    public ResponseEntity<ApiResponse<ZzExmy2>> create(@Valid @RequestBody ZzExmy2 entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

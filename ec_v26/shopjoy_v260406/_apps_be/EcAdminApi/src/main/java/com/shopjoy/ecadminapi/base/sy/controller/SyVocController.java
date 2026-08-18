@@ -40,7 +40,7 @@ public class SyVocController {
 
     /* 고객의 소리(VOC) 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyVoc>> create(@RequestBody SyVoc entity) {
+    public ResponseEntity<ApiResponse<SyVoc>> create(@Valid @RequestBody SyVoc entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

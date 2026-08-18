@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.validation.Valid;
 /**
  * 메시지 발송 API (BO/FO 공통, co 레이어).
  *
@@ -37,7 +38,7 @@ public class CmMsgSendController {
 
     /** mail — 메일 발송 */
     @PostMapping("/mail")
-    public ResponseEntity<ApiResponse<SendResultVo>> mail(@RequestBody MsgSendReq req) {
+    public ResponseEntity<ApiResponse<SendResultVo>> mail(@Valid @RequestBody MsgSendReq req) {
         SendResultVo r = cmMsgSendService.sendMailByTemplate(
             req.getSiteId(), req.getToAddr(), req.getTemplateCode(),
             req.getSubject(), req.getContent(), req.getRefTypeCd(), req.getRefId(), params(req));
@@ -46,7 +47,7 @@ public class CmMsgSendController {
 
     /** kakao — 카카오 알림톡 발송 */
     @PostMapping("/kakao")
-    public ResponseEntity<ApiResponse<SendResultVo>> kakao(@RequestBody MsgSendReq req) {
+    public ResponseEntity<ApiResponse<SendResultVo>> kakao(@Valid @RequestBody MsgSendReq req) {
         SendResultVo r = cmMsgSendService.sendKakaoByTemplate(
             req.getSiteId(), req.getRecvPhone(), req.getTemplateCode(),
             req.getContent(), req.getRefTypeCd(), req.getRefId(), params(req));
@@ -55,7 +56,7 @@ public class CmMsgSendController {
 
     /** sms — SMS 발송 */
     @PostMapping("/sms")
-    public ResponseEntity<ApiResponse<SendResultVo>> sms(@RequestBody MsgSendReq req) {
+    public ResponseEntity<ApiResponse<SendResultVo>> sms(@Valid @RequestBody MsgSendReq req) {
         SendResultVo r = cmMsgSendService.sendSmsByTemplate(
             req.getSiteId(), req.getRecvPhone(), req.getSenderPhone(), req.getSubject(),
             req.getTemplateCode(), req.getContent(), req.getRefTypeCd(), req.getRefId(), params(req));
@@ -64,7 +65,7 @@ public class CmMsgSendController {
 
     /** alarm — 시스템 알림 발송 */
     @PostMapping("/alarm")
-    public ResponseEntity<ApiResponse<SendResultVo>> alarm(@RequestBody MsgSendReq req) {
+    public ResponseEntity<ApiResponse<SendResultVo>> alarm(@Valid @RequestBody MsgSendReq req) {
         SendResultVo r = cmMsgSendService.sendSystemAlarm(
             req.getSiteId(), req.getSubject(), req.getContent(), req.getAlarmTypeCd(),
             req.getMemberId(), req.getSendTo(), req.getRefId(), params(req));

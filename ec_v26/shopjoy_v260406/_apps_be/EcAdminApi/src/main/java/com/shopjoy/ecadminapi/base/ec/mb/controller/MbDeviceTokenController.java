@@ -40,7 +40,7 @@ public class MbDeviceTokenController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbDeviceToken>> create(@RequestBody MbDeviceToken entity) {
+    public ResponseEntity<ApiResponse<MbDeviceToken>> create(@Valid @RequestBody MbDeviceToken entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

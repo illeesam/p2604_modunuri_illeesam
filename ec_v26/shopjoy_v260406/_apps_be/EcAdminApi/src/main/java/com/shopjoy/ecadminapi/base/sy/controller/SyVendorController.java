@@ -40,7 +40,7 @@ public class SyVendorController {
 
     /* 업체(판매자) 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyVendor>> create(@RequestBody SyVendor entity) {
+    public ResponseEntity<ApiResponse<SyVendor>> create(@Valid @RequestBody SyVendor entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

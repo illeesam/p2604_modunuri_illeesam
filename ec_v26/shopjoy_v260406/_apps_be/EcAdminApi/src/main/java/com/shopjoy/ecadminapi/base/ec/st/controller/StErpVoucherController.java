@@ -40,7 +40,7 @@ public class StErpVoucherController {
 
     /* ERP 전표 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StErpVoucher>> create(@RequestBody StErpVoucher entity) {
+    public ResponseEntity<ApiResponse<StErpVoucher>> create(@Valid @RequestBody StErpVoucher entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

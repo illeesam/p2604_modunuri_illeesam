@@ -46,7 +46,7 @@ public class SyDeptController {
 
     /** create — 생성 (JPA) */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyDept>> create(@RequestBody SyDept entity) {
+    public ResponseEntity<ApiResponse<SyDept>> create(@Valid @RequestBody SyDept entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

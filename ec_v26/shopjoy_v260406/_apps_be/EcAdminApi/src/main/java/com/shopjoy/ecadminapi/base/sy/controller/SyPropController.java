@@ -40,7 +40,7 @@ public class SyPropController {
 
     /* 시스템 속성 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyProp>> create(@RequestBody SyProp entity) {
+    public ResponseEntity<ApiResponse<SyProp>> create(@Valid @RequestBody SyProp entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

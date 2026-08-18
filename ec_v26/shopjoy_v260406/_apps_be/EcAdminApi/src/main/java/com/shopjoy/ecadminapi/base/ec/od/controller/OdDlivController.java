@@ -40,7 +40,7 @@ public class OdDlivController {
 
     /* 배송 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdDliv>> create(@RequestBody OdDliv entity) {
+    public ResponseEntity<ApiResponse<OdDliv>> create(@Valid @RequestBody OdDliv entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

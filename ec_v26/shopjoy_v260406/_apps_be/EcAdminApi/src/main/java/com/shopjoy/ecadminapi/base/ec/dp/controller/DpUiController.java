@@ -40,7 +40,7 @@ public class DpUiController {
 
     /* 전시 UI 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<DpUi>> create(@RequestBody DpUi entity) {
+    public ResponseEntity<ApiResponse<DpUi>> create(@Valid @RequestBody DpUi entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

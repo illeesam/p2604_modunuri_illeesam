@@ -43,7 +43,7 @@ public class BoStSettleAdjController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StSettleAdj>> create(@RequestBody StSettleAdj body) {
+    public ResponseEntity<ApiResponse<StSettleAdj>> create(@Valid @RequestBody StSettleAdj body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boStSettleAdjService.create(body)));
     }
 

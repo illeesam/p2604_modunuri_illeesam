@@ -44,7 +44,7 @@ public class BoDpPanelController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<DpPanel>> create(@RequestBody DpPanel body) {
+    public ResponseEntity<ApiResponse<DpPanel>> create(@Valid @RequestBody DpPanel body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boDpPanelService.create(body)));
     }
 

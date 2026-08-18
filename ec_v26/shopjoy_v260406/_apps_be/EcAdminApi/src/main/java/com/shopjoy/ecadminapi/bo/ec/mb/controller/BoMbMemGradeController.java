@@ -43,7 +43,7 @@ public class BoMbMemGradeController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<MbMemberGrade>> create(@RequestBody MbMemberGrade body) {
+    public ResponseEntity<ApiResponse<MbMemberGrade>> create(@Valid @RequestBody MbMemberGrade body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boMbMemGradeService.create(body)));
     }
 

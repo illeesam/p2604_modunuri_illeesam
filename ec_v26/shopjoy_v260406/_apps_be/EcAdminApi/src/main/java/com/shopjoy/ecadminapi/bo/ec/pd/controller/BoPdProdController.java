@@ -50,7 +50,7 @@ public class BoPdProdController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdProd>> create(@RequestBody PdProd body) {
+    public ResponseEntity<ApiResponse<PdProd>> create(@Valid @RequestBody PdProd body) {
         PdProd result = boPdProdService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }

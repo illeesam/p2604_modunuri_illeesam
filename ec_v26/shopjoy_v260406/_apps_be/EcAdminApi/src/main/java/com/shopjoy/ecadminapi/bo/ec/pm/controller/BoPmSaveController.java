@@ -47,7 +47,7 @@ public class BoPmSaveController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PmSavePolicy>> create(@RequestBody PmSavePolicy body) {
+    public ResponseEntity<ApiResponse<PmSavePolicy>> create(@Valid @RequestBody PmSavePolicy body) {
         PmSavePolicy result = boPmSaveService.create(body);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
@@ -94,7 +94,7 @@ public class BoPmSaveController {
 
     /** 적립금정책 항목 등록 (상품을 적립금정책에 연결) */
     @PostMapping("/items")
-    public ResponseEntity<ApiResponse<PmSaveItem>> createItem(@RequestBody PmSaveItem entity) {
+    public ResponseEntity<ApiResponse<PmSaveItem>> createItem(@Valid @RequestBody PmSaveItem entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(pmSaveItemService.create(entity)));
     }
 

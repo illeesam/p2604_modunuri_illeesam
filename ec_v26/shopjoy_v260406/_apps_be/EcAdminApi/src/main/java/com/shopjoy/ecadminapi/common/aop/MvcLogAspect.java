@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import org.aspectj.lang.annotation.Pointcut;
 /**
  * MVC 계층 호출 추적 로깅 AOP Aspect.
  *
@@ -105,31 +106,31 @@ public class MvcLogAspect {
     }
 
     /** Controller 계층 포인트컷: com.shopjoy 하위 이름이 {@code *Controller} 인 모든 public 메서드. */
-    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Controller.*(..))")
+    @Pointcut("execution(* com.shopjoy..*Controller.*(..))")
     private void controllerLayer() {}
 
     /** Client 계층 포인트컷: 이름이 {@code *Client} 인 외부 호출 클라이언트 메서드. */
-    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Client.*(..))")
+    @Pointcut("execution(* com.shopjoy..*Client.*(..))")
     private void clientLayer() {}
 
     /** Service 계층 포인트컷: 이름에 {@code Service} 가 포함된 클래스(ServiceImpl 등 변형 포함)의 메서드. */
-    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Service*.*(..))")
+    @Pointcut("execution(* com.shopjoy..*Service*.*(..))")
     private void serviceLayer() {}
 
     /** Repository 계층 포인트컷: 이름이 {@code *Repository} 인 JPA 리포지토리 메서드. */
-    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Repository.*(..))")
+    @Pointcut("execution(* com.shopjoy..*Repository.*(..))")
     private void repositoryLayer() {}
 
     /** Mapper 계층 포인트컷: 이름에 {@code Mapper} 가 포함된 클래스(MapperImpl 등 변형 포함). */
-    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Mapper*.*(..))")
+    @Pointcut("execution(* com.shopjoy..*Mapper*.*(..))")
     private void mapperLayer() {}
 
     /** Api 계층 포인트컷: 이름에 {@code Api} 가 포함된 클래스(ApiImpl 등 변형 포함). */
-    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Api*.*(..))")
+    @Pointcut("execution(* com.shopjoy..*Api*.*(..))")
     private void apiLayer() {}
 
     /** Store 계층 포인트컷: 이름에 {@code Store} 가 포함된 클래스(StoreImpl 등 변형 포함). */
-    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Store*.*(..))")
+    @Pointcut("execution(* com.shopjoy..*Store*.*(..))")
     private void storeLayer() {}
 
     /**

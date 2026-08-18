@@ -42,7 +42,7 @@ public class BoPdDlivTmpltController {
 
     /** create — 생성 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdDlivTmplt>> create(@RequestBody PdDlivTmplt body) {
+    public ResponseEntity<ApiResponse<PdDlivTmplt>> create(@Valid @RequestBody PdDlivTmplt body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boPdDlivTmpltService.create(body)));
     }
 

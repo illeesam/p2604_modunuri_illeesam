@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.validation.Valid;
 /**
  * 외부 연동 — FCM 푸시 알림  /api/co/ext/push-fcm-send
  * FCM 실발송 서비스 미구현 — 시뮬레이션 응답 반환.

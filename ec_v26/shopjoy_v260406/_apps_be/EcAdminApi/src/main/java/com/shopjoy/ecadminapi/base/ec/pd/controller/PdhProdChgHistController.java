@@ -40,7 +40,7 @@ public class PdhProdChgHistController {
 
     /* 상품 변경 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdhProdChgHist>> create(@RequestBody PdhProdChgHist entity) {
+    public ResponseEntity<ApiResponse<PdhProdChgHist>> create(@Valid @RequestBody PdhProdChgHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

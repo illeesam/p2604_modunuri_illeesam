@@ -40,7 +40,7 @@ public class StReconController {
 
     /* 정산 대사(Reconciliation) 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StRecon>> create(@RequestBody StRecon entity) {
+    public ResponseEntity<ApiResponse<StRecon>> create(@Valid @RequestBody StRecon entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

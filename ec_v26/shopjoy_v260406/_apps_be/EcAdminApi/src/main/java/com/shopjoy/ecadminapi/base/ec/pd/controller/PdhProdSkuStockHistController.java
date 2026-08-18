@@ -42,7 +42,7 @@ public class PdhProdSkuStockHistController {
 
     /* 상품 SKU 재고 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<PdhProdSkuStockHist>> create(@RequestBody PdhProdSkuStockHist entity) {
+    public ResponseEntity<ApiResponse<PdhProdSkuStockHist>> create(@Valid @RequestBody PdhProdSkuStockHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 }

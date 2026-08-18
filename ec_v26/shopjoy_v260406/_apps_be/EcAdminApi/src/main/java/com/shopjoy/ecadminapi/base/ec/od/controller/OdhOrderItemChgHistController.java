@@ -40,7 +40,7 @@ public class OdhOrderItemChgHistController {
 
     /* 주문 아이템 변경 이력 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<OdhOrderItemChgHist>> create(@RequestBody OdhOrderItemChgHist entity) {
+    public ResponseEntity<ApiResponse<OdhOrderItemChgHist>> create(@Valid @RequestBody OdhOrderItemChgHist entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

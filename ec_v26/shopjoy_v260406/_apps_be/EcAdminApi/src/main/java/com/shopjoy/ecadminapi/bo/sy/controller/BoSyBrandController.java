@@ -43,7 +43,7 @@ public class BoSyBrandController {
 
     /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<SyBrand>> create(@RequestBody SyBrand body) {
+    public ResponseEntity<ApiResponse<SyBrand>> create(@Valid @RequestBody SyBrand body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boSyBrandService.create(body)));
     }
 

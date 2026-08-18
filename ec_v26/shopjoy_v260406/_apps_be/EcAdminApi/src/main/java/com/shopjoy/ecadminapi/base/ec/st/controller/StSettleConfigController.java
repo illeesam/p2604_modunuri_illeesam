@@ -40,7 +40,7 @@ public class StSettleConfigController {
 
     /* 정산 설정 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StSettleConfig>> create(@RequestBody StSettleConfig entity) {
+    public ResponseEntity<ApiResponse<StSettleConfig>> create(@Valid @RequestBody StSettleConfig entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

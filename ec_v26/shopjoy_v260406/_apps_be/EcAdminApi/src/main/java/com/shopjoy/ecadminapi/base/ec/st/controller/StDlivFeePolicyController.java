@@ -40,7 +40,7 @@ public class StDlivFeePolicyController {
 
     /* 배송수수료정책 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<StDlivFeePolicy>> create(@RequestBody StDlivFeePolicy entity) {
+    public ResponseEntity<ApiResponse<StDlivFeePolicy>> create(@Valid @RequestBody StDlivFeePolicy entity) {
         return ResponseEntity.status(201).body(ApiResponse.created(service.create(entity)));
     }
 

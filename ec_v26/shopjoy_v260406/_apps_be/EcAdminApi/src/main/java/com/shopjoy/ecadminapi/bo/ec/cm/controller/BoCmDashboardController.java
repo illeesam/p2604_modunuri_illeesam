@@ -22,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
+import org.springframework.transaction.annotation.Transactional;
 @RestController
 @RequestMapping("/api/bo/ec/cm/dashboard")
 @RequiredArgsConstructor
@@ -132,7 +134,7 @@ public class BoCmDashboardController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CmDashboard>> create(@RequestBody CmDashboard body) {
+    public ResponseEntity<ApiResponse<CmDashboard>> create(@Valid @RequestBody CmDashboard body) {
         String authId = SecurityUtil.getAuthUser().authId();
         body.setDashboardId(CmUtil.generateId("cm_dashboard"));
         body.setRegBy(authId); body.setRegDate(LocalDateTime.now());
@@ -239,7 +241,7 @@ public class BoCmDashboardController {
 
     @PostMapping("/item-data/upsert")
     public ResponseEntity<ApiResponse<CmDashboardItemData>> itemDataUpsert(
-            @RequestBody CmDashboardItemData body) {
+            @Valid @RequestBody CmDashboardItemData body) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemDataService.upsert(body)));
     }
     /* ── 좌측메뉴 트리 ─────────────────────────────────────────
@@ -276,7 +278,7 @@ public class BoCmDashboardController {
      * USER 범위의 소유자는 서버가 세션에서 채우므로 남의 트리를 건드릴 수 없다.</p>
      */
     @PostMapping("/menu/save")
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public ResponseEntity<ApiResponse<Integer>> menuSave(
             @RequestParam(required = false) String siteId,
             @RequestParam(required = false) String scope,
