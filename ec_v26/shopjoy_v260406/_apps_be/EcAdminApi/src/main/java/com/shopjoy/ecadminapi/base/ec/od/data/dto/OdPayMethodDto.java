@@ -12,23 +12,23 @@ public class OdPayMethodDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String payMethodId;
+        @Size(max = 21) private String payMethodId;  // 결제수단ID (YYMMDDhhmmss+rand4)
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String payMethodId;
-        private String memberId;
-        private String payMethodTypeCd;
-        private String payMethodNm;
-        private String payMethodAlias;
-        private String payKeyNo;
-        private String mainMethodYn;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String payMethodId;  // 결제수단ID (YYMMDDhhmmss+rand4)
+        private String memberId;  // 회원ID (mb_member.member_id)
+        private String payMethodTypeCd;  // 결제수단유형코드 (코드: PAY_METHOD)
+        private String payMethodNm;  // 결제수단명 (카드사명, 은행명 등)
+        private String payMethodAlias;  // 별칭 (사용자 설정)
+        private String payKeyNo;  // 결제 게이트웨이 발급 키/토큰
+        private String mainMethodYn;  // 기본결제수단여부 Y/N
+        private String regBy;  // 등록자ID
+        private LocalDateTime regDate;  // 등록일시
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자ID
+        private LocalDateTime updDate;  // 수정일시
     }
 
 }

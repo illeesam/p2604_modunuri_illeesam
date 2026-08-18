@@ -12,24 +12,24 @@ public class PmSaveItemDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String saveItemId;
-        @Size(max = 21) private String saveId;
-        @Size(max = 21) private String targetId;
-        @Size(max = 20) private String targetTypeCd;
+        @Size(max = 21) private String siteId;  // 사이트ID
+        @Size(max = 21) private String saveItemId;  // PK: SAI+yyMMddHHmmss+rand4
+        @Size(max = 21) private String saveId;  // 적립금정책ID (pm_save_policy.save_policy_id)
+        @Size(max = 21) private String targetId;  // 대상 ID (상품·카테고리·브랜드 등)
+        @Size(max = 20) private String targetTypeCd;  // 대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String saveItemId;
-        private String saveId;
-        private String targetTypeCd;
-        private String targetId;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String siteNm;
-        private String targetTypeCdNm;
+        private String saveItemId;  // PK: SAI+yyMMddHHmmss+rand4
+        private String saveId;  // 적립금정책ID (pm_save_policy.save_policy_id)
+        private String targetTypeCd;  // 대상 유형 코드 (sy_code: SAVE_ITEM_TARGET)
+        private String targetId;  // 대상 ID (상품·카테고리·브랜드 등)
+        private String regBy;  // 등록자 ID
+        private LocalDateTime regDate;  // 등록일시
+        private String regSiteId;  // 등록 사이트ID
+        private String siteNm;  // 사이트명 (조인)
+        private String targetTypeCdNm;  // 대상유형명 (조인)
     }
 
 }

@@ -132,6 +132,7 @@
     settle: [
       { group: '기준정보' },
       { id: 'stConfigMng', label: '정산기준관리' },
+      { id: 'stDlivFeePolicyMng', label: '배송수수료정책' },
       { group: '수집원장' },
       { id: 'stRawMng', label: '정산수집원장' },
       { group: '정산작업' },

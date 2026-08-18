@@ -15,9 +15,9 @@ public class SyhAlarmSendHistDto {
     public static class Request extends BaseRequest {
 
         // ── 고유필드 (도메인 전용 검색조건) ────────────────────────
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String sendHistId;
-        @Size(max = 20) private String status;
+        @Size(max = 21) private String siteId;  // 사이트ID
+        @Size(max = 21) private String sendHistId;  // 발송이력ID
+        @Size(max = 20) private String status;  // 상태
     }
 
     /** 단건/목록 항목 */
@@ -25,20 +25,20 @@ public class SyhAlarmSendHistDto {
     public static class Item {
 
         // ── syh_alarm_send_hist ──────────────────────────────────────────
-        private String sendHistId;
-        private String alarmId;
-        private String memberId;
-        private String userId;
-        private String channel;
-        private String sendTo;
-        private LocalDateTime sendDate;
-        private String sendHistStatusCd;
-        private String errorMsg;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String sendHistId;  // 발송이력ID
+        private String alarmId;  // 알림ID
+        private String memberId;  // 수신자 회원ID
+        private String userId;  // 수신자 사용자ID (sy_user.user_id)
+        private String channel;  // 발송채널
+        private String sendTo;  // 수신처 (이메일/전화/토큰)
+        private LocalDateTime sendDate;  // 발송일시
+        private String sendHistStatusCd;  // 발송결과 (SENT/FAILED)
+        private String errorMsg;  // 오류메시지
+        private String regBy;  // 등록자 (sy_user.user_id, ec_member.member_id)
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자 (sy_user.user_id, ec_member.member_id)
+        private LocalDateTime updDate;  // 수정일
 
         // ── JOIN ──────────────────────────────────────────────────
     }

@@ -48,9 +48,6 @@ window.OdClaimHist = {
       // 클레임 항목 추가
       } else if (cmd === 'claimItems-add') {
         return addClaimItem();
-      // 처리정보 저장
-      } else if (cmd === 'processForm-save') {
-        return handleSaveProcess();
       // 주문 참조 모달 열기
       } else if (cmd === 'histList-orderRef') {
         return showRefModal('order', param);
@@ -116,9 +113,13 @@ window.OdClaimHist = {
        빈 상태로 첫 조회가 나가는 것을 막는다(순서가 코드에 드러나도록 한 곳에 모았다). */
     const initPage = async () => {
       await fnLoadCodes();
-      // NOTE: getClaim/getOrder/deliveries 는 외부 reactive (보조 데이터 소스)가 미연결 상태로 남아있어 그대로 유지
+      await handleLoadProcess();
+      // NOTE: claimItems / relatedOrder / relatedDliv 는 아직 서버 미연결 (보조 데이터 소스)
     };
     onMounted(initPage);
+
+    /* 상위 Dtl 에서 다른 클레임 행으로 전환되면 처리 정보 재조회 */
+    watch(() => props.claimId, handleLoadProcess);
 
     /* addClaimItem — 추가 */
     const addClaimItem = () => {
@@ -136,9 +137,25 @@ window.OdClaimHist = {
       if (idx !== -1) { claimItems.splice(idx, 1); }
     };
 
-    /* handleSaveProcess — 처리 저장 */
-    const handleSaveProcess = () => {
-      showToast('저장되었습니다.');
+    /* handleLoadProcess — 처리 정보(환불금액/환불방법/처리메모) 서버 조회.
+       이 값들의 편집·저장은 상위 OdClaimDtl 이 담당한다(같은 od_claim 컬럼) —
+       여기(이력 화면)는 조회 전용이라 저장 버튼을 두지 않는다. */
+    const handleLoadProcess = async () => {
+      if (!props.claimId) {
+        Object.assign(processForm, { refundAmount: 0, refundMethodCd: '', memo: '' });
+        return;
+      }
+      try {
+        const res = await boApiSvc.odClaim.getById(props.claimId, '클레임이력', '처리정보조회');
+        const d = res.data?.data || res.data || {};
+        Object.assign(processForm, {
+          refundAmount:   d.refundAmt ?? 0,
+          refundMethodCd: d.refundMethodCd || '',
+          memo:           d.memo || '',
+        });
+      } catch (err) {
+        console.error('[handleLoadProcess]', err);
+      }
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
@@ -313,13 +330,11 @@ window.OdClaimHist = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         ⚙ 처리 정보
       </div>
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.processForm" :form="processForm" :errors="{}"
+      <!-- ===== ■.■.■. 폼 영역 (조회 전용 — 편집/저장은 상위 클레임 상세에서) ============ -->
+      <bo-form-area plain-readonly readonly :columns="columns.processForm" :form="processForm" :errors="{}"
         :cols="3" :show-actions="false" />
-      <div class="form-actions">
-        <button class="btn btn_save" @click="handleBtnAction('processForm-save')">
-          저장
-        </button>
+      <div style="margin-top:10px;font-size:12px;color:#999;">
+        환불금액 · 환불방법 · 처리메모는 위쪽 [기본정보] 탭에서 수정할 수 있습니다.
       </div>
     </div>
     <!-- ===== □.□. 처리 정보 (BoFormArea 자동 렌더) ============================== -->

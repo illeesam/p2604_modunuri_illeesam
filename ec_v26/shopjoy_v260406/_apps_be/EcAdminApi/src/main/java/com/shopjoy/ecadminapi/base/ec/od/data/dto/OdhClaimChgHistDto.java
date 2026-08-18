@@ -12,26 +12,26 @@ public class OdhClaimChgHistDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String claimChgHistId;
+        @Size(max = 21) private String siteId;  // 사이트ID
+        @Size(max = 21) private String claimChgHistId;  // 이력ID
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String claimChgHistId;
-        private String claimId;
-        private String chgTypeCd;
-        private String chgField;
-        private String beforeVal;
-        private String afterVal;
-        private String chgReason;
-        private String chgUserId;
-        private LocalDateTime chgDate;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String claimChgHistId;  // 이력ID
+        private String claimId;  // 클레임ID (od_claim.)
+        private String chgTypeCd;  // 변경유형코드 (CLAIM_TYPE/REASON/AMOUNT/APPROVAL/MEMO/REFUND)
+        private String chgField;  // 변경 필드명
+        private String beforeVal;  // 변경전값
+        private String afterVal;  // 변경후값
+        private String chgReason;  // 변경사유
+        private String chgUserId;  // 처리자 (sy_user.user_id)
+        private LocalDateTime chgDate;  // 처리일시
+        private String regBy;  // 등록자
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자
+        private LocalDateTime updDate;  // 수정일
     }
 
 }

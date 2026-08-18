@@ -12,26 +12,26 @@ public class OdhOrderItemStatusHistDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
-        @Size(max = 21) private String siteId;
-        @Size(max = 21) private String orderItemStatusHistId;
+        @Size(max = 21) private String siteId;  // 사이트ID
+        @Size(max = 21) private String orderItemStatusHistId;  // 주문상품상태이력ID (YYMMDDhhmmss+rand4)
     }
 
     @Getter @Setter @NoArgsConstructor
     public static class Item {
-        private String orderItemStatusHistId;
-        private String orderItemId;
-        private String orderId;
-        private String orderItemStatusCdBefore;
-        private String orderItemStatusCd;
-        private String statusReason;
-        private String chgUserId;
-        private LocalDateTime chgDate;
-        private String memo;
-        private String regBy;
-        private LocalDateTime regDate;
-        private String regSiteId;
-        private String updBy;
-        private LocalDateTime updDate;
+        private String orderItemStatusHistId;  // 주문상품상태이력ID (YYMMDDhhmmss+rand4)
+        private String orderItemId;  // 주문상품ID (od_order_item.order_item_id)
+        private String orderId;  // 주문ID (od_order.order_id)
+        private String orderItemStatusCdBefore;  // 변경 전 주문상품상태 (코드: ORDER_ITEM_STATUS)
+        private String orderItemStatusCd;  // 변경 후 주문상품상태 (코드: ORDER_ITEM_STATUS)
+        private String statusReason;  // 상태 변경 사유
+        private String chgUserId;  // 변경 담당자 (sy_user.user_id, mb_member.member_id)
+        private LocalDateTime chgDate;  // 변경 일시
+        private String memo;  // 메모
+        private String regBy;  // 등록자 (sy_user.user_id, mb_member.member_id)
+        private LocalDateTime regDate;  // 등록일
+        private String regSiteId;  // 등록 사이트ID
+        private String updBy;  // 수정자 (sy_user.user_id, mb_member.member_id)
+        private LocalDateTime updDate;  // 수정일
     }
 
 }
