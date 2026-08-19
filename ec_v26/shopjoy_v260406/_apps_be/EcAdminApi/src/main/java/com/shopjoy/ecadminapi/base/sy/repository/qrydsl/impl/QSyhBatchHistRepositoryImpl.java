@@ -72,23 +72,17 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     public List<SyhBatchHistDto.Item> selectList(SyhBatchHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(QdslUtil.strEq(syhBatchHist.batchHistId, search.getBatchHistId()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(syhBatchHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(syhBatchHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhBatchHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhBatchHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres.toArray(BooleanExpression[]::new))
-        .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+        .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -108,37 +102,27 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syhBatchHist.batchHistId, search.getBatchHistId()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syhBatchHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syhBatchHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syhBatchHist.batchHistId, search.getBatchHistId()));
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhBatchHist.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syhBatchHist.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyhBatchHistDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhBatchHist.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyhBatchHistDto.Item> res = new BasePage<>();
@@ -146,7 +130,6 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("batchCode", syhBatchHist.batchCode),
@@ -192,7 +175,6 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         if (entity.getMessage()    != null) { update.set(syhBatchHist.message,    entity.getMessage());    hasAny = true; }
         if (entity.getDetail()     != null) { update.set(syhBatchHist.detail,     entity.getDetail());     hasAny = true; }
         if (entity.getUpdBy()      != null) { update.set(syhBatchHist.updBy,      entity.getUpdBy());      hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syhBatchHist.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

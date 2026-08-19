@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -83,15 +84,18 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     public List<PdCategoryDto.Item> selectList(PdCategoryDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()));
+        wheres.add(andParentCategoryIdIn(search));
+        wheres.add(QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
-                    andParentCategoryIdIn(search),
-                    QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -111,29 +115,28 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()),
-                andParentCategoryIdIn(search),
-                QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(pdCategory.categoryId, search.getCategoryId()));
+        wheres.add(andParentCategoryIdIn(search));
+        wheres.add(QdslUtil.strEq(pdCategory.categoryStatusCd, search.getStatus()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PdCategoryDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdCategory.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<PdCategoryDto.Item> res = new BasePage<>();
@@ -178,7 +181,6 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     }
 
     /* 상품 카테고리 수정 */
-
     @Override
     public int updateSelective(PdCategory entity) {
         if (entity.getCategoryId() == null) return 0;
@@ -193,7 +195,6 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         if (entity.getImgUrl()                 != null) { update.set(pdCategory.imgUrl,                 entity.getImgUrl());                 hasAny = true; }
         if (entity.getCategoryDesc()           != null) { update.set(pdCategory.categoryDesc,           entity.getCategoryDesc());           hasAny = true; }
         if (entity.getUpdBy()                  != null) { update.set(pdCategory.updBy,                  entity.getUpdBy());                  hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(pdCategory.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

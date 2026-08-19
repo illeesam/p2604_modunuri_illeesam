@@ -98,27 +98,21 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     @Override
     public List<SyVendorDto.Item> selectList(SyVendorDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(andPathIdIn(search));
         wheres.add(QdslUtil.strEq(syVendor.vendorId, search.getVendorId()));
         wheres.add(QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()));
         wheres.add(QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()));
         wheres.add(QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(syVendor.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(syVendor.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres.toArray(BooleanExpression[]::new))
-        .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+        .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -138,41 +132,31 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(andPathIdIn(search));
-        whereList.add(QdslUtil.strEq(syVendor.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()));
-        whereList.add(QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syVendor.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syVendor.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(andPathIdIn(search));
+        wheres.add(QdslUtil.strEq(syVendor.vendorId, search.getVendorId()));
+        wheres.add(QdslUtil.strEq(syVendor.vendorStatusCd, search.getStatus()));
+        wheres.add(QdslUtil.strEq(syVendor.vendorClassCd, search.getVendorClassCd()));
+        wheres.add(QdslUtil.strEq(syVendor.vendorTypeCd, search.getVendorTypeCd()));
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syVendor.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyVendorDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syVendor.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyVendorDto.Item> res = new BasePage<>();
@@ -262,7 +246,6 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         if (entity.getPathId()            != null) { update.set(syVendor.pathId,            entity.getPathId());            hasAny = true; }
         if (entity.getVendorRemark()      != null) { update.set(syVendor.vendorRemark,      entity.getVendorRemark());      hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(syVendor.updBy,             entity.getUpdBy());             hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syVendor.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

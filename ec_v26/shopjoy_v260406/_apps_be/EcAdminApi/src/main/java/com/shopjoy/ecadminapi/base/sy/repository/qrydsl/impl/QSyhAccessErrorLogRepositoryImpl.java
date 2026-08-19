@@ -24,6 +24,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -103,16 +104,15 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
 
     /* buildWheres — selectList/selectPageData 가 동일 조건을 공유하도록 추출 */
     private BooleanExpression[] buildWheres(SyhAccessErrorLogDto.Request search) {
-        return new BooleanExpression[] {
-                QdslUtil.strEq(syhAccessErrorLog.reqMethod, search.getMethod()),
-                andPathLike(search),
-                andUiNmLike(search),
-                QdslUtil.strEqTrim(syhAccessErrorLog.traceId, search.getTraceId()),
-                QdslUtil.strEq(syhAccessErrorLog.appTypeCd, search.getAppTypeCd()),
-                QdslUtil.dateBetween(syhAccessErrorLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syhAccessErrorLog.reqMethod, search.getMethod()));
+        wheres.add(andPathLike(search));
+        wheres.add(andUiNmLike(search));
+        wheres.add(QdslUtil.strEqTrim(syhAccessErrorLog.traceId, search.getTraceId()));
+        wheres.add(QdslUtil.strEq(syhAccessErrorLog.appTypeCd, search.getAppTypeCd()));
+        wheres.add(QdslUtil.dateBetween(syhAccessErrorLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        return wheres.toArray(BooleanExpression[]::new);
     }
 
     /* 목록조회 — 대량 export 청크용. COUNT 를 돌지 않아 selectPageData 보다 가볍다 */
@@ -141,18 +141,16 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
         BooleanExpression[] wheres = buildWheres(search);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyhAccessErrorLogDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyhAccessErrorLogDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhAccessErrorLog.count())

@@ -66,14 +66,16 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     /* 목록조회 */
     @Override
     public List<SyPathDto.Item> selectList(SyPathDto.Request search) {
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd()));
+        wheres.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()));
+        wheres.add(QdslUtil.strEq(syPath.useYn, search.getUseYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         JPAQuery<SyPathDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(syPath.bizCd, search.getBizCd()),
-                    QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()),
-                    QdslUtil.strEq(syPath.useYn, search.getUseYn()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                );
+                .where(wheres2);
         // default order: sort_ord ASC, path_id ASC
         query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -94,36 +96,33 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(syPath.bizCd, search.getBizCd()),
-                QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()),
-                QdslUtil.strEq(syPath.useYn, search.getUseYn()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syPath.bizCd, search.getBizCd()));
+        wheres.add(QdslUtil.strEq(syPath.parentPathId, search.getParentPathId()));
+        wheres.add(QdslUtil.strEq(syPath.useYn, search.getUseYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyPathDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         List<SyPathDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
+                .where(wheres2)
                 .orderBy(buildOrder().toArray(OrderSpecifier[]::new))
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syPath.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyPathDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("bizCd", syPath.bizCd),
@@ -148,7 +147,6 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     }
 
     /* 수정 */
-
     @Override
     public int updateSelective(SyPath entity) {
         if (entity.getPathId() == null) return 0;
@@ -163,7 +161,6 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         if (entity.getUseYn()        != null) { update.set(syPath.useYn,        entity.getUseYn());        hasAny = true; }
         if (entity.getPathRemark()   != null) { update.set(syPath.pathRemark,   entity.getPathRemark());   hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(syPath.updBy,        entity.getUpdBy());        hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syPath.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

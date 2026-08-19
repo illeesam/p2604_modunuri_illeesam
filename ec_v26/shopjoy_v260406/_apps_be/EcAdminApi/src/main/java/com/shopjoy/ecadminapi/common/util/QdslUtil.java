@@ -248,18 +248,16 @@ public class QdslUtil {
      * dateRangeStart/dateRangeEnd 중 하나라도 blank 면 조건 미적용(null 반환).
      *
      * <p>대상 컬럼이 2~3개뿐인 경우가 대부분이라, 매 Repository 마다 Map&lt;String, DateTimePath&gt; 상수를
-     * 선언해 조회하던 이전 방식 대신 {@code andDateRange(search)} 헬퍼 안에서 분기별로 대상 컬럼을
-     * <b>직접 명시</b>한다. 중간 변수(dateRangeField)에 담아 넘기지 않는다 — 어느 분기가 어느 컬럼을
-     * 쓰는지 그 자리에서 바로 보이게 하기 위함.
+     * 선언해 조회하던 이전 방식이나 별도 헬퍼 메서드/중간 변수(dateRangeField) 대신, 검색조건을 모으는
+     * {@code List<BooleanExpression> wheres} 에 분기마다 <b>3항 연산자로 한 줄씩</b> 바로 add 한다.
+     * dateRangeType 이 해당 키와 일치하지 않으면 그 줄은 null 이 add 되어(=조건 없음) 자동 무시되므로,
+     * if/else 블록 없이도 여러 키를 매끄럽게 표현할 수 있다 — 어느 키가 어느 컬럼을 쓰는지 한 줄에서 바로 보인다.
      *
      * <pre>
-     * private BooleanExpression andDateRange(XxxDto.Request search) {
-     *     if ("upd_date".equals(search.getDateRangeType())) {
-     *         return QdslUtil.dateBetween(xxx.updDate, search.getDateRangeStart(), search.getDateRangeEnd());
-     *     }
-     *     // reg_date (기본) — dateRangeType 미지정/미인식 시
-     *     return QdslUtil.dateBetween(xxx.regDate, search.getDateRangeStart(), search.getDateRangeEnd());
-     * }
+     * List&lt;BooleanExpression&gt; wheres = new ArrayList&lt;&gt;();
+     * ...
+     * wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(xxx.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+     * wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(xxx.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
      * </pre>
      */
     public static BooleanExpression dateBetween(DateTimePath<LocalDateTime> path, String dateRangeStart, String dateRangeEnd) {

@@ -104,10 +104,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     public List<PmGiftDto.Item> selectList(PmGiftDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
         wheres.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
@@ -119,19 +115,17 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         wheres.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
         wheres.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
         wheres.add(andMember(search));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add(andCurrentYnGift(search.getCurrentYn()));
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres.toArray(BooleanExpression[]::new))
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -151,49 +145,39 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
-        whereList.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
-        whereList.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
-        whereList.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
-        whereList.add(/* ⚠ prodId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(pmGift.giftId, search.getGiftId()));
+        wheres.add(QdslUtil.strEq(pmGift.giftTypeCd, search.getGiftTypeCd()));
+        wheres.add(QdslUtil.strEq(pmGift.giftStatusCd, search.getGiftStatusCd()));
+        wheres.add(QdslUtil.strEq(pmGift.useYn, search.getUseYn()));
+        wheres.add(/* ⚠ prodId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
                — 페이지 조회 모드에서만 상품 필터가 무시되던 기존 버그. 같이 정정. */
             QdslUtil.strEq(pmGift.prodId, search.getProdId()));
-        whereList.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
-        whereList.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
-        whereList.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
-        whereList.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
-        whereList.add(andMember(search));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add(andCurrentYnGift(search.getCurrentYn()));
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        wheres.add(QdslUtil.strEq(pdProd.vendorId, search.getVendorId()));
+        wheres.add(QdslUtil.strLike(syVendor.vendorNm, search.getVendorNm()));
+        wheres.add(QdslUtil.strEq(pdProd.mdUserId, search.getMdUserId()));
+        wheres.add(QdslUtil.strLike(syUser.userNm, search.getMdUserNm()));
+        wheres.add(andMember(search));
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmGift.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add(andCurrentYnGift(search.getCurrentYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmGiftDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmGift.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<PmGiftDto.Item> res = new BasePage<>();
@@ -285,7 +269,6 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         if (entity.getChargeStaff()        != null) { update.set(pmGift.chargeStaff,        entity.getChargeStaff());        hasAny = true; }
         if (entity.getVisibilityTargets()  != null) { update.set(pmGift.visibilityTargets,  entity.getVisibilityTargets());  hasAny = true; }
         if (entity.getUpdBy()              != null) { update.set(pmGift.updBy,              entity.getUpdBy());              hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(pmGift.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -88,16 +89,19 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     public List<SyhUserTokenLogDto.Item> selectList(SyhUserTokenLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()));
+        wheres.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()));
+        wheres.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()));
+        wheres.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()));
+        wheres.add(QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyhUserTokenLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()),
-                QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
-                QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
-                QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
-                QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        )
-        .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(wheres2)
+        .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -117,31 +121,30 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()),
-                QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()),
-                QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()),
-                QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()),
-                QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syhUserTokenLog.logId, search.getLogId()));
+        wheres.add(QdslUtil.strEq(syhUserTokenLog.userId, search.getUserId()));
+        wheres.add(QdslUtil.strEq(syhUserTokenLog.actionCd, search.getActionCd()));
+        wheres.add(QdslUtil.strEq(syhUserTokenLog.tokenTypeCd, search.getTokenTypeCd()));
+        wheres.add(QdslUtil.dateBetween(syhUserTokenLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyhUserTokenLogDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyhUserTokenLogDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhUserTokenLog.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyhUserTokenLogDto.Item> res = new BasePage<>();
@@ -149,7 +152,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("accessToken", syhUserTokenLog.accessToken),
@@ -204,7 +206,6 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         if (entity.getUiNm()           != null) { update.set(syhUserTokenLog.uiNm,           entity.getUiNm());           hasAny = true; }
         if (entity.getCmdNm()          != null) { update.set(syhUserTokenLog.cmdNm,          entity.getCmdNm());          hasAny = true; }
         if (entity.getUpdBy()          != null) { update.set(syhUserTokenLog.updBy,          entity.getUpdBy());          hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syhUserTokenLog.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

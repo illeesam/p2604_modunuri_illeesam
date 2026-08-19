@@ -112,10 +112,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     public List<OdDlivDto.Item> selectList(OdDlivDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(QdslUtil.strIn(odDliv.orderId, search.getOrderIds()));
         wheres.add(QdslUtil.strEq(odDliv.orderId, search.getOrderId()));
@@ -133,22 +129,18 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                              StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                 : null);
         wheres.add(QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("dliv_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(odDliv.dlivDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(odDliv.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // dliv_ship_date (기본)
-        }
+        wheres.add("dliv_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres.toArray(BooleanExpression[]::new))
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -168,63 +160,50 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(odDliv.orderId, search.getOrderIds()));
-        whereList.add(QdslUtil.strEq(odDliv.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(odDliv.dlivId, search.getDlivId()));
-        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strIn(odDliv.orderId, search.getOrderIds()));
+        wheres.add(QdslUtil.strEq(odDliv.orderId, search.getOrderId()));
+        wheres.add(QdslUtil.strEq(odDliv.dlivId, search.getDlivId()));
+        wheres.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                 ? JPAExpressions.selectOne().from(mbMemberEx)
                       .where(mbMemberEx.memberId.eq(odDliv.memberId),
                              QdslUtil.strEq(mbMemberEx.memberId, search.getMemberId()),
                              StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm())).exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+        wheres.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                 ? JPAExpressions.selectOne().from(syVendorEx)
                       .where(syVendorEx.vendorId.eq(odDliv.vendorId),
                              QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
                              StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm())).exists()
                 : null);
-        whereList.add(QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("dliv_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odDliv.dlivDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odDliv.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("dliv_ship_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        wheres.add(QdslUtil.strEq(odDliv.dlivStatusCd, search.getDlivStatusCd()));
+        wheres.add("dliv_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("dliv_ship_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odDliv.dlivShipDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdDlivDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odDliv.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<OdDlivDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("apprAprvUserId", odDliv.apprAprvUserId),
@@ -274,7 +253,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     }
 
     /* 배송 수정 */
-
     @Override
     public int updateSelective(OdDliv entity) {
         if (entity.getDlivId() == null) return 0;
@@ -290,7 +268,6 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         if (entity.getDlivDate()           != null) { update.set(odDliv.dlivDate,           entity.getDlivDate());           hasAny = true; }
         if (entity.getDlivMemo()           != null) { update.set(odDliv.dlivMemo,           entity.getDlivMemo());           hasAny = true; }
         if (entity.getUpdBy()              != null) { update.set(odDliv.updBy,              entity.getUpdBy());              hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(odDliv.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

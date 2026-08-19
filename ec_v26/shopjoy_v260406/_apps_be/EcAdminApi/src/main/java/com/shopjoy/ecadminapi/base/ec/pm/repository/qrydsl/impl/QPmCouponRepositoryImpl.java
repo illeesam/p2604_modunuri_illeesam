@@ -116,29 +116,23 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     public List<PmCouponDto.Item> selectList(PmCouponDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()));
         wheres.add(QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()));
         wheres.add(QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()));
         wheres.add(QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add(andProdVendorMd(search));
         wheres.add(andCurrentYnCoupon(search.getCurrentYn()));
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmCouponDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres.toArray(BooleanExpression[]::new))
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -158,42 +152,32 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()));
-        whereList.add(QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()));
-        whereList.add(QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()));
-        whereList.add(QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add(andProdVendorMd(search));
-        whereList.add(andCurrentYnCoupon(search.getCurrentYn()));
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strIn(pmCoupon.couponId, search.getCouponIds()));
+        wheres.add(QdslUtil.strEq(pmCoupon.couponId, search.getCouponId()));
+        wheres.add(QdslUtil.strEq(pmCoupon.useYn, search.getUseYn()));
+        wheres.add(QdslUtil.strEq(pmCoupon.couponStatusCd, search.getCouponStatusCd()));
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmCoupon.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add(andProdVendorMd(search));
+        wheres.add(andCurrentYnCoupon(search.getCurrentYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<PmCouponDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmCouponDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmCoupon.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<PmCouponDto.Item> res = new BasePage<>();
@@ -210,12 +194,15 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(couponProdEx)
             .where(couponProdEx.couponId.eq(pmCoupon.couponId));
 
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(couponProdEx.prodId, search.getProdId()));
+        wheres.add(StringUtils.hasText(search.getProdId()) ? null
+                : JPAExpressions.selectOne().from(pProdEx)
+                      .where(pProdEx.prodId.eq(couponProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         if (needProd) {
-            sub = sub.where(
-                QdslUtil.strEq(couponProdEx.prodId, search.getProdId()),
-                StringUtils.hasText(search.getProdId()) ? null
-                    : JPAExpressions.selectOne().from(pProdEx)
-                          .where(pProdEx.prodId.eq(couponProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
+            sub = sub.where(wheres2);
         }
         if (needVendor) {
             sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))
@@ -286,7 +273,6 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     }
 
     /* 쿠폰 수정 */
-
     @Override
     public int updateSelective(PmCoupon entity) {
         if (entity.getCouponId() == null) return 0;
@@ -307,7 +293,6 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         if (entity.getVisibilityTargets()    != null) { update.set(pmCoupon.visibilityTargets,    entity.getVisibilityTargets());    hasAny = true; }
         if (entity.getMdUserId()             != null) { update.set(pmCoupon.mdUserId,             entity.getMdUserId());             hasAny = true; }
         if (entity.getUpdBy()                != null) { update.set(pmCoupon.updBy,                entity.getUpdBy());                hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(pmCoupon.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

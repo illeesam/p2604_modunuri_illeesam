@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -75,16 +76,19 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     @Override
     public List<SyBbsDto.Item> selectList(SyBbsDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId()));
+        wheres.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId()));
+        wheres.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()));
+        wheres.add(andDateRangeBetween(search));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(syBbs.bbsId, search.getBbsId()),
-                    QdslUtil.strEq(syBbs.bbmId, search.getBbmId()),
-                    QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()),
-                    andDateRangeBetween(search),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -104,30 +108,29 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(syBbs.bbsId, search.getBbsId()),
-                QdslUtil.strEq(syBbs.bbmId, search.getBbmId()),
-                QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()),
-                andDateRangeBetween(search),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syBbs.bbsId, search.getBbsId()));
+        wheres.add(QdslUtil.strEq(syBbs.bbmId, search.getBbmId()));
+        wheres.add(QdslUtil.strEq(syBbs.bbsStatusCd, search.getStatus()));
+        wheres.add(andDateRangeBetween(search));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyBbsDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syBbs.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyBbsDto.Item> res = new BasePage<>();
@@ -182,7 +185,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     }
 
     /* 게시판 게시물 수정 */
-
     @Override
     public int updateSelective(SyBbs entity) {
         if (entity.getBbsId() == null) return 0;
@@ -202,7 +204,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         if (entity.getIsFixed()      != null) { update.set(syBbs.isFixed,      entity.getIsFixed());      hasAny = true; }
         if (entity.getBbsStatusCd()  != null) { update.set(syBbs.bbsStatusCd,  entity.getBbsStatusCd());  hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(syBbs.updBy,        entity.getUpdBy());        hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syBbs.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (entity.getPathId()       != null) { update.set(syBbs.pathId,       entity.getPathId());       hasAny = true; }
 

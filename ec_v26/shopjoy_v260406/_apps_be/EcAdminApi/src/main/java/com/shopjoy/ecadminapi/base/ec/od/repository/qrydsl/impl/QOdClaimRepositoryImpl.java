@@ -284,10 +284,6 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     public List<OdClaimDto.Item> selectList(OdClaimDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId()));
         wheres.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId()));
@@ -295,26 +291,20 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         wheres.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()));
         wheres.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()));
         wheres.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("proc_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("claim_cancel_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("collect_schd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(odClaim.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // request_date (기본)
-        }
+        wheres.add("proc_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("claim_cancel_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("collect_schd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdClaimDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres.toArray(BooleanExpression[]::new))
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -334,50 +324,36 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId()));
-        whereList.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId()));
-        whereList.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()));
-        whereList.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()));
-        whereList.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("proc_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("claim_cancel_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("collect_schd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odClaim.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("request_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(odClaim.claimId, search.getClaimId()));
+        wheres.add(QdslUtil.strEq(odClaim.orderId, search.getOrderId()));
+        wheres.add(QdslUtil.strEq(odClaim.memberId, search.getMemberId()));
+        wheres.add(QdslUtil.strEq(odClaim.claimStatusCd, search.getClaimStatusCd()));
+        wheres.add(QdslUtil.strIn(odClaim.claimStatusCd, search.getClaimStatusCds()));
+        wheres.add(QdslUtil.strEq(odClaim.claimTypeCd, search.getClaimTypeCd()));
+        wheres.add("proc_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.procDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("claim_cancel_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.claimCancelDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("collect_schd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.collectSchdDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("request_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odClaim.requestDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<OdClaimDto.Item> query = baseListQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdClaimDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odClaim.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<OdClaimDto.Item> res = new BasePage<>();
@@ -385,7 +361,6 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("addShippingFeeChargeCd", odClaim.addShippingFeeChargeCd),
@@ -481,7 +456,6 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         if (entity.getMemo()                != null) { update.set(odClaim.memo,                entity.getMemo());                hasAny = true; }
         if (entity.getApprStatusCd()        != null) { update.set(odClaim.apprStatusCd,        entity.getApprStatusCd());        hasAny = true; }
         if (entity.getUpdBy()               != null) { update.set(odClaim.updBy,               entity.getUpdBy());               hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(odClaim.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

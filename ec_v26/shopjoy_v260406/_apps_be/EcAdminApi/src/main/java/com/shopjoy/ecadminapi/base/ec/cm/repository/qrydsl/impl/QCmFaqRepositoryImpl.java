@@ -83,15 +83,18 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
     @Override
     public List<CmFaqDto.Item> selectList(CmFaqDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId()));
+        wheres.add(andPathTreeIn(search));
+        wheres.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
-                    andPathTreeIn(search),
-                    QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -109,26 +112,28 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmFaq.faqId, search.getFaqId()),
-                andPathTreeIn(search),
-                QdslUtil.strEq(cmFaq.useYn, search.getUseYn()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(cmFaq.faqId, search.getFaqId()));
+        wheres.add(andPathTreeIn(search));
+        wheres.add(QdslUtil.strEq(cmFaq.useYn, search.getUseYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         JPAQuery<CmFaqDto.Item> query = baseSelColumnQuery();
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<CmFaqDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(pageSize)
                 .fetch();
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(cmFaq.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<CmFaqDto.Item> res = new BasePage<>();
@@ -179,7 +184,6 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         if (entity.getUseYn()       != null) { update.set(cmFaq.useYn,       entity.getUseYn());       hasAny = true; }
         if (entity.getViewCount()   != null) { update.set(cmFaq.viewCount,   entity.getViewCount());   hasAny = true; }
         if (entity.getUpdBy()       != null) { update.set(cmFaq.updBy,       entity.getUpdBy());       hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(cmFaq.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

@@ -12,6 +12,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmPopupRepository;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** CmPopup QueryDSL Custom 구현체 */
@@ -40,23 +41,24 @@ public class QCmPopupRepositoryImpl implements QCmPopupRepository {
         int pageNo   = CmUtil.nvlInt(search.getPageNo(), 1);
         int pageSize = CmUtil.nvlInt(search.getPageSize(), 10);
 
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(cmPopup.useYn, search.getUseYn()),
-                andPopupPatternEq(search),
-                /* searchType 을 주지 않으면 SEARCH_FIELDS 전체 OR — 팝업명/코드/엔티티명 통합검색 */
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(cmPopup.useYn, search.getUseYn()));
+        wheres.add(andPopupPatternEq(search));
+        wheres.add(/* searchType 을 주지 않으면 SEARCH_FIELDS 전체 OR — 팝업명/코드/엔티티명 통합검색 */
+            andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         List<CmPopup> content = queryFactory.selectFrom(cmPopup)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
+                .where(wheres2)
                 .orderBy(buildOrder())
                 .offset((long) (pageNo - 1) * pageSize).limit(pageSize)
                 .fetch();
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = queryFactory.select(cmPopup.count()).from(cmPopup)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<CmPopup> res = new BasePage<>();

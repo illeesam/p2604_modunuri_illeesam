@@ -84,28 +84,22 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     public List<PmSaveDto.Item> selectList(PmSaveDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(QdslUtil.strIn(pmSave.saveId, search.getSaveIds()));
         wheres.add(QdslUtil.strEq(pmSave.saveId, search.getSaveId()));
         wheres.add(QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()));
         wheres.add(QdslUtil.strEq(pmSave.memberId, search.getMemberId()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(pmSave.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(pmSave.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSave.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSave.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add(andProdVendorMd(search));
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres.toArray(BooleanExpression[]::new))
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -125,43 +119,33 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(pmSave.saveId, search.getSaveIds()));
-        whereList.add(QdslUtil.strEq(pmSave.saveId, search.getSaveId()));
-        whereList.add(QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()));
-        whereList.add(/* ⚠ memberId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strIn(pmSave.saveId, search.getSaveIds()));
+        wheres.add(QdslUtil.strEq(pmSave.saveId, search.getSaveId()));
+        wheres.add(QdslUtil.strEq(pmSave.saveTypeCd, search.getSaveTypeCd()));
+        wheres.add(/* ⚠ memberId 가 selectList() 에는 있는데 여기(selectPageData)엔 빠져 있었다
                — 페이지 조회 모드에서만 회원 필터가 무시되던 기존 버그. 같이 정정. */
             QdslUtil.strEq(pmSave.memberId, search.getMemberId()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(pmSave.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(pmSave.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add(andProdVendorMd(search));
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSave.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pmSave.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add(andProdVendorMd(search));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PmSaveDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pmSave.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<PmSaveDto.Item> res = new BasePage<>();
@@ -179,12 +163,15 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         com.querydsl.jpa.JPQLQuery<Integer> sub = JPAExpressions.selectOne().from(saveProdEx)
             .where(saveProdEx.saveId.eq(pmSave.saveId));
 
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(saveProdEx.prodId, search.getProdId()));
+        wheres.add(StringUtils.hasText(search.getProdId()) ? null
+                : JPAExpressions.selectOne().from(pProdEx)
+                      .where(pProdEx.prodId.eq(saveProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         if (needProd) {
-            sub = sub.where(
-                QdslUtil.strEq(saveProdEx.prodId, search.getProdId()),
-                StringUtils.hasText(search.getProdId()) ? null
-                    : JPAExpressions.selectOne().from(pProdEx)
-                          .where(pProdEx.prodId.eq(saveProdEx.prodId), QdslUtil.strLike(pProdEx.prodNm, search.getProdNm())).exists());
+            sub = sub.where(wheres2);
         }
         if (needVendor) {
             sub = sub.where(JPAExpressions.selectOne().from(pProdEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pProdEx.vendorId))

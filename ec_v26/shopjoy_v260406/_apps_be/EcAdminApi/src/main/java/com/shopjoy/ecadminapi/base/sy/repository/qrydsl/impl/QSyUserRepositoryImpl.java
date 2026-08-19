@@ -112,28 +112,21 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     @Override
     public List<SyUserDto.Item> selectList(SyUserDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(andDeptIdIn(search));
         wheres.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus()));
         wheres.add(QdslUtil.strEq(syRole.roleNm, search.getRole()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(syUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("last_login_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(syUser.lastLoginDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(syUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("last_login_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.lastLoginDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres.toArray(BooleanExpression[]::new))
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -153,41 +146,30 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(andDeptIdIn(search));
-        whereList.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus()));
-        whereList.add(QdslUtil.strEq(syRole.roleNm, search.getRole()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("last_login_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syUser.lastLoginDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(andDeptIdIn(search));
+        wheres.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus()));
+        wheres.add(QdslUtil.strEq(syRole.roleNm, search.getRole()));
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("last_login_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.lastLoginDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         var query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyUserDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syUser.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyUserDto.Item> res = new BasePage<>();
@@ -197,29 +179,21 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /** 검색조건 기준 전체 카운트 (스트리밍 export 시 안전 상한 검증용) */
     @Override
     public long selectCount(SyUserDto.Request search) {
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(andDeptIdIn(search));
         wheres.add(QdslUtil.strEq(syUser.userStatusCd, search.getStatus()));
         wheres.add(QdslUtil.strEq(syRole.roleNm, search.getRole()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(syUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("last_login_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(syUser.lastLoginDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(syUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("last_login_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.lastLoginDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syUser.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = queryFactory.select(syUser.count())
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syUser)
                 /* andRoleEq 이 syRole 을 참조하므로 join 필요 (목록/페이징과 동일 필터 집합 유지) */
                 .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId))
-                .where(wheres.toArray(BooleanExpression[]::new))
+                .where(wheres2)
                 .fetchOne();
         return CmUtil.nvlLong(total);
     }
@@ -294,7 +268,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         if (entity.getLastLoginDate()   != null) update.set(syUser.lastLoginDate,   entity.getLastLoginDate());
         if (entity.getProfileAttachId() != null) update.set(syUser.profileAttachId, entity.getProfileAttachId());
 
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syUser.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         long affected = update

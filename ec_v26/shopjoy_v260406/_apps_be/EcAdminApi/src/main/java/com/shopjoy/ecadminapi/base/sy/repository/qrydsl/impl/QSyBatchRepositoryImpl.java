@@ -81,16 +81,19 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     @Override
     public List<SyBatchDto.Item> selectList(SyBatchDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(andPathIdIn(search));
+        wheres.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId()));
+        wheres.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()));
+        wheres.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyBatchDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    andPathIdIn(search),
-                    QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
-                    QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
-                    QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -110,30 +113,29 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                andPathIdIn(search),
-                QdslUtil.strEq(syBatch.batchId, search.getBatchId()),
-                QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()),
-                QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(andPathIdIn(search));
+        wheres.add(QdslUtil.strEq(syBatch.batchId, search.getBatchId()));
+        wheres.add(QdslUtil.strEq(syBatch.batchStatusCd, search.getStatus()));
+        wheres.add(QdslUtil.strEq(syBatch.batchRunStatusCd, search.getBatchRunStatusCd()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyBatchDto.Item> query = baseQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyBatchDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syBatch.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyBatchDto.Item> res = new BasePage<>();
@@ -198,7 +200,6 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         if (entity.getBatchTimeoutSec() != null) { update.set(syBatch.batchTimeoutSec, entity.getBatchTimeoutSec()); hasAny = true; }
         if (entity.getBatchMemo()       != null) { update.set(syBatch.batchMemo,       entity.getBatchMemo());       hasAny = true; }
         if (entity.getUpdBy()           != null) { update.set(syBatch.updBy,           entity.getUpdBy());           hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syBatch.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (entity.getPathId()          != null) { update.set(syBatch.pathId,          entity.getPathId());          hasAny = true; }
 

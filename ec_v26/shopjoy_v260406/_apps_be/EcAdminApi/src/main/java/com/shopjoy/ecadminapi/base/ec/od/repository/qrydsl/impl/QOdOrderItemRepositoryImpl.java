@@ -231,10 +231,6 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     public List<OdOrderItemDto.Item> selectList(OdOrderItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
         wheres.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()));
         wheres.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()));
@@ -244,12 +240,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         wheres.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()));
         wheres.add(claimFilter(search.getClaimCombos()));
         wheres.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
         wheres.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                 ? JPAExpressions.selectOne()
                       .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
@@ -284,10 +276,12 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 : null);
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres.toArray(BooleanExpression[]::new))
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -307,26 +301,18 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()));
-        whereList.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()));
-        whereList.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()));
-        whereList.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()));
-        whereList.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()));
-        whereList.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()));
-        whereList.add(claimFilter(search.getClaimCombos()));
-        whereList.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strIn(odOrderItem.orderId, search.getOrderIds()));
+        wheres.add(QdslUtil.strEq(odOrderItem.orderId, search.getOrderId()));
+        wheres.add(QdslUtil.strEq(odOrderItem.orderItemId, search.getOrderItemId()));
+        wheres.add(QdslUtil.strEq(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCd()));
+        wheres.add(QdslUtil.strIn(odOrderItem.orderItemStatusCd, search.getOrderItemStatusCds()));
+        wheres.add(QdslUtil.strEq(odOrderItem.claimYn, search.getClaimYn()));
+        wheres.add(claimFilter(search.getClaimCombos()));
+        wheres.add(QdslUtil.strEq(odOrderItem.dlivCourierCd, search.getDlivCourierCd()));
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(odOrderItem.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add((StringUtils.hasText(search.getMemberId()) || StringUtils.hasText(search.getMemberNm()))
                 ? JPAExpressions.selectOne()
                       .from(odOrderEx).join(mbMemberEx).on(mbMemberEx.memberId.eq(odOrderEx.memberId))
                       .where(odOrderEx.orderId.eq(odOrderItem.orderId),
@@ -334,7 +320,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMemberId()) ? null : QdslUtil.strLike(mbMemberEx.memberNm, search.getMemberNm()))
                       .exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
+        wheres.add((StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm()))
                 ? JPAExpressions.selectOne()
                       .from(pVendorEx).join(syVendorEx).on(syVendorEx.vendorId.eq(pVendorEx.vendorId))
                       .where(pVendorEx.prodId.eq(odOrderItem.prodId),
@@ -342,7 +328,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
                       .exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
+        wheres.add((StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm()))
                 ? JPAExpressions.selectOne()
                       .from(pMdEx).join(syUserEx).on(syUserEx.userId.eq(pMdEx.mdUserId))
                       .where(pMdEx.prodId.eq(odOrderItem.prodId),
@@ -350,7 +336,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
                       .exists()
                 : null);
-        whereList.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
+        wheres.add((StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm()))
                 ? JPAExpressions.selectOne()
                       .from(pBrandEx).join(sBrandEx).on(sBrandEx.brandId.eq(pBrandEx.brandId))
                       .where(pBrandEx.prodId.eq(odOrderItem.prodId),
@@ -358,25 +344,23 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                              StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(sBrandEx.brandNm, search.getBrandNm()))
                       .exists()
                 : null);
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<OdOrderItemDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odOrderItem.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<OdOrderItemDto.Item> res = new BasePage<>();
@@ -458,7 +442,6 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     }
 
     /* 주문 아이템(상품) 수정 */
-
     @Override
     public int updateSelective(OdOrderItem entity) {
         if (entity.getOrderItemId() == null) return 0;
@@ -474,7 +457,6 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         if (entity.getSettleDate()              != null) { update.set(odOrderItem.settleDate,              entity.getSettleDate());              hasAny = true; }
         if (entity.getDlivMethodCd()             != null) { update.set(odOrderItem.dlivMethodCd,            entity.getDlivMethodCd());             hasAny = true; }
         if (entity.getUpdBy()                   != null) { update.set(odOrderItem.updBy,                   entity.getUpdBy());                   hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(odOrderItem.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

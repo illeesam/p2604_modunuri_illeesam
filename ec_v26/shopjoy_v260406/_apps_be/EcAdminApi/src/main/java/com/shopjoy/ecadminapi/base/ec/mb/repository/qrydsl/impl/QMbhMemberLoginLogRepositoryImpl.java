@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -84,14 +85,17 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     @Override
     public List<MbhMemberLoginLogDto.Item> selectList(MbhMemberLoginLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()));
+        wheres.add(QdslUtil.dateBetween(mbhMemberLoginLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<MbhMemberLoginLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()),
-                    QdslUtil.dateBetween(mbhMemberLoginLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
@@ -110,35 +114,33 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()),
-                QdslUtil.dateBetween(mbhMemberLoginLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(mbhMemberLoginLog.logId, search.getLogId()));
+        wheres.add(QdslUtil.dateBetween(mbhMemberLoginLog.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<MbhMemberLoginLogDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<MbhMemberLoginLogDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbhMemberLoginLog.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<MbhMemberLoginLogDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "memberId,loginId" (Entity 필드명) */
-
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("accessToken", mbhMemberLoginLog.accessToken),
@@ -171,7 +173,6 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     }
 
     /* 회원 로그인 로그 수정 */
-
     @Override
     public int updateSelective(MbhMemberLoginLog entity) {
         if (entity.getLogId() == null) return 0;
@@ -195,7 +196,6 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         if (entity.getUiNm()            != null) { update.set(mbhMemberLoginLog.uiNm,            entity.getUiNm());            hasAny = true; }
         if (entity.getCmdNm()           != null) { update.set(mbhMemberLoginLog.cmdNm,           entity.getCmdNm());           hasAny = true; }
         if (entity.getUpdBy()           != null) { update.set(mbhMemberLoginLog.updBy,           entity.getUpdBy());           hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(mbhMemberLoginLog.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
         return (int) update.where(mbhMemberLoginLog.logId.eq(entity.getLogId())).execute();

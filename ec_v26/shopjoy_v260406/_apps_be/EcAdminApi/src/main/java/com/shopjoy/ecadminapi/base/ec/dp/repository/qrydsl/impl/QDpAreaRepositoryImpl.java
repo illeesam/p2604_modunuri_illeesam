@@ -72,18 +72,21 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     @Override
     public List<DpAreaDto.Item> selectList(DpAreaDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds()));
+        wheres.add(andPathIdIn(search));
+        wheres.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn()));
+        wheres.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId()));
+        wheres.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
+        wheres.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<DpAreaDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strIn(dpArea.uiId, search.getUiIds()),
-                    andPathIdIn(search),
-                    QdslUtil.strEq(dpArea.useYn, search.getUseYn()),
-                    QdslUtil.strEq(dpArea.areaId, search.getAreaId()),
-                    QdslUtil.strEq(dpArea.uiId, search.getUiId()),
-                    QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
@@ -101,30 +104,29 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strIn(dpArea.uiId, search.getUiIds()),
-                andPathIdIn(search),
-                QdslUtil.strEq(dpArea.useYn, search.getUseYn()),
-                QdslUtil.strEq(dpArea.areaId, search.getAreaId()),
-                QdslUtil.strEq(dpArea.uiId, search.getUiId()),
-                QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strIn(dpArea.uiId, search.getUiIds()));
+        wheres.add(andPathIdIn(search));
+        wheres.add(QdslUtil.strEq(dpArea.useYn, search.getUseYn()));
+        wheres.add(QdslUtil.strEq(dpArea.areaId, search.getAreaId()));
+        wheres.add(QdslUtil.strEq(dpArea.uiId, search.getUiId()));
+        wheres.add(QdslUtil.strEq(dpArea.areaTypeCd, search.getAreaTypeCd()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
         JPAQuery<DpAreaDto.Item> query = baseQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<DpAreaDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(dpArea.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
         BasePage<DpAreaDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
@@ -181,7 +183,6 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         if (entity.getUseStartDate() != null) { update.set(dpArea.useStartDate, entity.getUseStartDate()); hasAny = true; }
         if (entity.getUseEndDate()   != null) { update.set(dpArea.useEndDate,   entity.getUseEndDate());   hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(dpArea.updBy,        entity.getUpdBy());        hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(dpArea.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
         return (int) update.where(dpArea.areaId.eq(entity.getAreaId())).execute();

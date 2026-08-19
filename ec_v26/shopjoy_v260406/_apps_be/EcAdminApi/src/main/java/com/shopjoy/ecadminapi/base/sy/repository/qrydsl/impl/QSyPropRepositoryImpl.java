@@ -79,19 +79,22 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     @Override
     public List<SyPropDto.Item> selectList(SyPropDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(andPathIdIn(search));
+        wheres.add(QdslUtil.strEq(syProp.propKey, search.getPropKey()));
+        wheres.add(andPropKeysIn(search));
+        wheres.add(andPropKeyPrefixesStartsWith(search));
+        wheres.add(QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()));
+        wheres.add(QdslUtil.strEq(syProp.useYn, search.getUseYn()));
+        wheres.add(andPropProfileLike(search));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyPropDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    andPathIdIn(search),
-                    QdslUtil.strEq(syProp.propKey, search.getPropKey()),
-                    andPropKeysIn(search),
-                    andPropKeyPrefixesStartsWith(search),
-                    QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()),
-                    QdslUtil.strEq(syProp.useYn, search.getUseYn()),
-                    andPropProfileLike(search),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -111,33 +114,32 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                andPathIdIn(search),
-                QdslUtil.strEq(syProp.propKey, search.getPropKey()),
-                andPropKeysIn(search),
-                andPropKeyPrefixesStartsWith(search),
-                QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()),
-                QdslUtil.strEq(syProp.useYn, search.getUseYn()),
-                andPropProfileLike(search),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(andPathIdIn(search));
+        wheres.add(QdslUtil.strEq(syProp.propKey, search.getPropKey()));
+        wheres.add(andPropKeysIn(search));
+        wheres.add(andPropKeyPrefixesStartsWith(search));
+        wheres.add(QdslUtil.strEq(syProp.propTypeCd, search.getPropTypeCd()));
+        wheres.add(QdslUtil.strEq(syProp.useYn, search.getUseYn()));
+        wheres.add(andPropProfileLike(search));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyPropDto.Item> query = baseQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyPropDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syProp.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyPropDto.Item> res = new BasePage<>();
@@ -236,7 +238,6 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         if (entity.getPropRemark()   != null) { update.set(syProp.propRemark,   entity.getPropRemark());   hasAny = true; }
         if (entity.getPropProfile()  != null) { update.set(Expressions.stringPath(syProp, "propProfile"), entity.getPropProfile()); hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(syProp.updBy,        entity.getUpdBy());        hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syProp.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

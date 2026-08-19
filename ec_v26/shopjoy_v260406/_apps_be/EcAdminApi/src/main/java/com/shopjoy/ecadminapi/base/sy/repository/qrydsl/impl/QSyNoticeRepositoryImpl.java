@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -68,16 +69,19 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     @Override
     public List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()));
+        wheres.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()));
+        wheres.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()));
+        wheres.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()),
-                    QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()),
-                    QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()),
-                    QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -97,37 +101,35 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()),
-                QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()),
-                QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()),
-                QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syNotice.noticeId, search.getNoticeId()));
+        wheres.add(QdslUtil.strEq(syNotice.noticeStatusCd, search.getStatus()));
+        wheres.add(QdslUtil.strEq(syNotice.noticeTypeCd, search.getNoticeTypeCd()));
+        wheres.add(QdslUtil.strEq(syNotice.isFixed, search.getIsFixed()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyNoticeDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syNotice.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyNoticeDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("contentHtml", syNotice.contentHtml),
@@ -153,7 +155,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     }
 
     /* 공지사항 수정 */
-
     @Override
     public int updateSelective(SyNotice entity) {
         if (entity.getNoticeId() == null) return 0;
@@ -170,7 +171,6 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         if (entity.getNoticeStatusCd() != null) { update.set(syNotice.noticeStatusCd, entity.getNoticeStatusCd()); hasAny = true; }
         if (entity.getViewCount()      != null) { update.set(syNotice.viewCount,      entity.getViewCount());      hasAny = true; }
         if (entity.getUpdBy()          != null) { update.set(syNotice.updBy,          entity.getUpdBy());          hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syNotice.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

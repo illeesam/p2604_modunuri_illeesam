@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -65,16 +66,19 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     @Override
     public List<SyVocDto.Item> selectList(SyVocDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syVoc.vocId, search.getVocId()));
+        wheres.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()));
+        wheres.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()));
+        wheres.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyVocDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(syVoc.vocId, search.getVocId()),
-                    QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()),
-                    QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()),
-                    QdslUtil.strEq(syVoc.useYn, search.getUseYn()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -94,37 +98,35 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(syVoc.vocId, search.getVocId()),
-                QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()),
-                QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()),
-                QdslUtil.strEq(syVoc.useYn, search.getUseYn()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syVoc.vocId, search.getVocId()));
+        wheres.add(QdslUtil.strEq(syVoc.vocMasterCd, search.getVocMasterCd()));
+        wheres.add(QdslUtil.strEq(syVoc.vocDetailCd, search.getVocDetailCd()));
+        wheres.add(QdslUtil.strEq(syVoc.useYn, search.getUseYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyVocDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyVocDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syVoc.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyVocDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("useYn", syVoc.useYn),
@@ -150,7 +152,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     }
 
     /* 고객의 소리(VOC) 수정 */
-
     @Override
     public int updateSelective(SyVoc entity) {
         if (entity.getVocId() == null) return 0;
@@ -164,7 +165,6 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         if (entity.getVocContent()  != null) { update.set(syVoc.vocContent,  entity.getVocContent());  hasAny = true; }
         if (entity.getUseYn()       != null) { update.set(syVoc.useYn,       entity.getUseYn());       hasAny = true; }
         if (entity.getUpdBy()       != null) { update.set(syVoc.updBy,       entity.getUpdBy());       hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syVoc.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

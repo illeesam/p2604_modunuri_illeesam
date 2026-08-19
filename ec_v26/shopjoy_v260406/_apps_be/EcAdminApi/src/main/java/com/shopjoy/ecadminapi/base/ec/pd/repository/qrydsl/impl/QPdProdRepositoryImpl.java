@@ -206,10 +206,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     public List<PdProdDto.Item> selectList(PdProdDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
         List<BooleanExpression> wheres = new ArrayList<>();
 
         wheres.add(QdslUtil.strIn(pdProd.prodId, search.getProdIds()));
@@ -246,20 +242,18 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         wheres.add(QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()));
         wheres.add(QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()));
 
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            wheres.add(QdslUtil.dateBetween(pdProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else {
-            wheres.add(QdslUtil.dateBetween(pdProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));   // reg_date (기본)
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
 
         wheres.add(andCurrentYnProd(search.getCurrentYn()));
         wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<PdProdDto.Item> query = baseListQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(wheres.toArray(BooleanExpression[]::new))
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -280,18 +274,14 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add (selectList 와 동일 구성).
-           배열 초기화 { } 안에는 식(expression)만 올 수 있어 if 를 못 쓰지만,
-           리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시한다. */
-        List<BooleanExpression> whereList = new ArrayList<>();
+        List<BooleanExpression> wheres = new ArrayList<>();
 
-        whereList.add(QdslUtil.strIn(pdProd.prodId, search.getProdIds()));
-        whereList.add(QdslUtil.strEq(pdProd.prodId, search.getProdId()));
+        wheres.add(QdslUtil.strIn(pdProd.prodId, search.getProdIds()));
+        wheres.add(QdslUtil.strEq(pdProd.prodId, search.getProdId()));
 
         /* 브랜드 — brandId 가 있으면 ID 로, 없고 brandNm 만 있으면 브랜드명 LIKE 로 EXISTS */
         if (StringUtils.hasText(search.getBrandId()) || StringUtils.hasText(search.getBrandNm())) {
-            whereList.add(JPAExpressions.selectOne().from(syBrandEx)
+            wheres.add(JPAExpressions.selectOne().from(syBrandEx)
                     .where(syBrandEx.brandId.eq(pdProd.brandId),
                            QdslUtil.strEq(syBrandEx.brandId, search.getBrandId()),
                            StringUtils.hasText(search.getBrandId()) ? null : QdslUtil.strLike(syBrandEx.brandNm, search.getBrandNm()))
@@ -300,7 +290,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
         /* 업체 — vendorId 가 있으면 ID 로, 없고 vendorNm 만 있으면 업체명 LIKE 로 EXISTS */
         if (StringUtils.hasText(search.getVendorId()) || StringUtils.hasText(search.getVendorNm())) {
-            whereList.add(JPAExpressions.selectOne().from(syVendorEx)
+            wheres.add(JPAExpressions.selectOne().from(syVendorEx)
                     .where(syVendorEx.vendorId.eq(pdProd.vendorId),
                            QdslUtil.strEq(syVendorEx.vendorId, search.getVendorId()),
                            StringUtils.hasText(search.getVendorId()) ? null : QdslUtil.strLike(syVendorEx.vendorNm, search.getVendorNm()))
@@ -309,46 +299,40 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
         /* 담당MD — mdUserId 가 있으면 ID 로, 없고 mdUserNm 만 있으면 사용자명 LIKE 로 EXISTS */
         if (StringUtils.hasText(search.getMdUserId()) || StringUtils.hasText(search.getMdUserNm())) {
-            whereList.add(JPAExpressions.selectOne().from(syUserEx)
+            wheres.add(JPAExpressions.selectOne().from(syUserEx)
                     .where(syUserEx.userId.eq(pdProd.mdUserId),
                            QdslUtil.strEq(syUserEx.userId, search.getMdUserId()),
                            StringUtils.hasText(search.getMdUserId()) ? null : QdslUtil.strLike(syUserEx.userNm, search.getMdUserNm()))
                     .exists());
         }
 
-        whereList.add(QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()));
-        whereList.add(QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()));
-        whereList.add(QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()));
+        wheres.add(QdslUtil.strEq(pdProd.prodStatusCd, search.getProdStatusCd()));
+        wheres.add(QdslUtil.strIn(pdProd.prodStatusCd, search.getProdStatusCds()));
+        wheres.add(QdslUtil.strEq(pdProd.prodTypeCd, search.getProdTypeCd()));
 
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(pdProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(pdProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProd.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(pdProd.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
 
-        whereList.add(andCurrentYnProd(search.getCurrentYn()));
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        wheres.add(andCurrentYnProd(search.getCurrentYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
         /* list/count 가 동일 조건을 공유하도록 배열로 1회 변환 */
-        BooleanExpression[] wheres = whereList.toArray(BooleanExpression[]::new);
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<PdProdDto.Item> query = baseListQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<PdProdDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(pdProd.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<PdProdDto.Item> res = new BasePage<>();
@@ -433,7 +417,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         if (entity.getProdOptType1Cd()     != null) { update.set(pdProd.prodOptType1Cd,     entity.getProdOptType1Cd());     hasAny = true; }
         if (entity.getProdOptType2Cd()     != null) { update.set(pdProd.prodOptType2Cd,     entity.getProdOptType2Cd());     hasAny = true; }
         if (entity.getUpdBy()              != null) { update.set(pdProd.updBy,              entity.getUpdBy());              hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(pdProd.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

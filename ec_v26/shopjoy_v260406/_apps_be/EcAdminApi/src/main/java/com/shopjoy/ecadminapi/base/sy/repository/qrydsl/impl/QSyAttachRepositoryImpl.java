@@ -82,16 +82,19 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     @Override
     public List<SyAttachDto.Item> selectList(SyAttachDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId()));
+        wheres.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()));
+        wheres.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()));
+        wheres.add(QdslUtil.strEq(syAttach.refId, search.getRefId()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
-                    QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
-                    QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()),
-                    QdslUtil.strEq(syAttach.refId, search.getRefId()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -111,37 +114,35 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(syAttach.attachId, search.getAttachId()),
-                QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()),
-                QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()),
-                QdslUtil.strEq(syAttach.refId, search.getRefId()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syAttach.attachId, search.getAttachId()));
+        wheres.add(QdslUtil.strEq(syAttach.mimeTypeCd, search.getMimeTypeCd()));
+        wheres.add(QdslUtil.strEq(syAttach.refTableNm, search.getRefTableNm()));
+        wheres.add(QdslUtil.strEq(syAttach.refId, search.getRefId()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyAttachDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syAttach.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyAttachDto.Item> res = new BasePage<>();
         return res.setPageInfo(content, CmUtil.nvlLong(total), pageNo, pageSize, search);
     }
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
         return QdslUtil.searchValueFields(searchValue, searchType, List.of(
             QdslUtil.FieldDef.like("attachId", syAttach.attachId),
@@ -202,7 +203,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     }
 
     /* 첨부파일 수정 */
-
     @Override
     public int updateSelective(SyAttach entity) {
         if (entity.getAttachId() == null) return 0;
@@ -225,7 +225,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         if (entity.getSortOrd()      != null) { update.set(syAttach.sortOrd,      entity.getSortOrd());      hasAny = true; }
         if (entity.getAttachMemo()   != null) { update.set(syAttach.attachMemo,   entity.getAttachMemo());   hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(syAttach.updBy,        entity.getUpdBy());        hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syAttach.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

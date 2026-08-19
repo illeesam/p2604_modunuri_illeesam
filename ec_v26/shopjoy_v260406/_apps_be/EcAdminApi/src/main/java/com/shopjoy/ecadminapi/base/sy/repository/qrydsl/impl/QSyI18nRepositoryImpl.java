@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.shopjoy.ecadminapi.common.util.QdslUtil;
@@ -71,15 +72,18 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     @Override
     public List<SyI18nDto.Item> selectList(SyI18nDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId()));
+        wheres.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()));
+        wheres.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
-                .where(
-                    QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
-                    QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
-                    QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
-                    andSearchValue(search.getSearchValue(), search.getSearchType())
-                )
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .where(wheres2)
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -99,29 +103,28 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
-        BooleanExpression[] wheres = {
-                QdslUtil.strEq(syI18n.i18nId, search.getI18nId()),
-                QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()),
-                QdslUtil.strEq(syI18n.useYn, search.getUseYn()),
-                andSearchValue(search.getSearchValue(), search.getSearchType())
-        };
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syI18n.i18nId, search.getI18nId()));
+        wheres.add(QdslUtil.strEq(syI18n.i18nScopeCd, search.getI18nScopeCd()));
+        wheres.add(QdslUtil.strEq(syI18n.useYn, search.getUseYn()));
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
 
-        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
         JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + where + 정렬 + 페이징
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyI18nDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .where(wheres2)
+                .orderBy(orders)
                 .offset(offset).limit(limit)
                 .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        BooleanExpression[] wheres2 = wheres.toArray(BooleanExpression[]::new);
         Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syI18n.count())
-                .where(wheres)
+                .where(wheres2)
                 .fetchOne();
 
         BasePage<SyI18nDto.Item> res = new BasePage<>();
@@ -159,7 +162,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     }
 
     /* 다국어 수정 */
-
     @Override
     public int updateSelective(SyI18n entity) {
         if (entity.getI18nId() == null) return 0;
@@ -174,7 +176,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         if (entity.getSortOrd()      != null) { update.set(syI18n.sortOrd,      entity.getSortOrd());      hasAny = true; }
         if (entity.getUseYn()        != null) { update.set(syI18n.useYn,        entity.getUseYn());        hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(syI18n.updBy,        entity.getUpdBy());        hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syI18n.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;

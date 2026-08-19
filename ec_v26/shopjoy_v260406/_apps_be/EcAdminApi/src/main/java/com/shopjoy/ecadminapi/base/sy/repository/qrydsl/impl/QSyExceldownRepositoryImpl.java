@@ -99,10 +99,11 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
     public List<SyExceldownDto.Item> selectList(SyExceldownDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(QdslUtil.sortOf(search));
 
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         JPAQuery<SyExceldownDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(buildWhere(search))
-                .orderBy(orderList.toArray(OrderSpecifier[]::new));
+                .orderBy(orders);
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
@@ -123,10 +124,11 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
 
         JPAQuery<SyExceldownDto.Item> query = baseSelColumnQuery();
 
+        OrderSpecifier<?>[] orders = orderList.toArray(OrderSpecifier[]::new);
         List<SyExceldownDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(wheres)
-                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .orderBy(orders)
                 .offset(offset).limit(pageSize)
                 .fetch();
 
@@ -141,29 +143,19 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
     }
 
     private BooleanExpression[] buildWhere(SyExceldownDto.Request search) {
-        /* 검색조건 — 배열 초기화 { } 대신 리스트에 하나씩 add 한다.
-           .where(a, b, c) 인자 자리나 배열 초기화 { } 안에는 식(expression)만 올 수 있어
-           if 를 쓸 수 없지만, 리스트에 담으면 분기 조건을 if 로 그대로 풀어 쓸 수 있다.
-           null 을 add 해도 QueryDSL where 가 무시하므로 기존 "조건 없으면 null" 관례 그대로 유효. */
-        List<BooleanExpression> whereList = new ArrayList<>();
-        whereList.add(QdslUtil.strEq(syExceldown.regSiteId, search.getSiteId()));
-        whereList.add(QdslUtil.strEq(syExceldown.exceldownId, search.getExceldownId()));
-        whereList.add(QdslUtil.strEq(syExceldown.domainCd, search.getDomainCd()));
-        whereList.add(QdslUtil.strEq(syExceldown.runTypeCd, search.getRunTypeCd()));
-        whereList.add(QdslUtil.strEq(syExceldown.exceldownStatusCd, search.getExceldownStatusCd()));
-        whereList.add(QdslUtil.strEq(syExceldown.regBy, search.getRegBy()));
-        /* 기간검색 — dateRangeType 값에 따라 대상 컬럼을 직접 지정 */
-        if ("upd_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syExceldown.updDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("start_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syExceldown.startDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("end_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syExceldown.endDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        } else if ("reg_date".equals(search.getDateRangeType())) {
-            whereList.add(QdslUtil.dateBetween(syExceldown.regDate, search.getDateRangeStart(), search.getDateRangeEnd()));
-        }
-        whereList.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
-        return whereList.toArray(BooleanExpression[]::new);
+        List<BooleanExpression> wheres = new ArrayList<>();
+        wheres.add(QdslUtil.strEq(syExceldown.regSiteId, search.getSiteId()));
+        wheres.add(QdslUtil.strEq(syExceldown.exceldownId, search.getExceldownId()));
+        wheres.add(QdslUtil.strEq(syExceldown.domainCd, search.getDomainCd()));
+        wheres.add(QdslUtil.strEq(syExceldown.runTypeCd, search.getRunTypeCd()));
+        wheres.add(QdslUtil.strEq(syExceldown.exceldownStatusCd, search.getExceldownStatusCd()));
+        wheres.add(QdslUtil.strEq(syExceldown.regBy, search.getRegBy()));
+        wheres.add("upd_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.updDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("start_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.startDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("end_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.endDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add("reg_date".equals(search.getDateRangeType()) ? QdslUtil.dateBetween(syExceldown.regDate, search.getDateRangeStart(), search.getDateRangeEnd()) : null);
+        wheres.add(andSearchValue(search.getSearchValue(), search.getSearchType()));
+        return wheres.toArray(BooleanExpression[]::new);
     }
 
     private BooleanExpression andSearchValue(String searchValue, String searchType) {
@@ -230,7 +222,6 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
         if (entity.getCancelBy()          != null) { update.set(syExceldown.cancelBy,          entity.getCancelBy());          hasAny = true; }
         if (entity.getCancelDate()        != null) { update.set(syExceldown.cancelDate,        entity.getCancelDate());        hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(syExceldown.updBy,             entity.getUpdBy());             hasAny = true; }
-        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 — heartbeat 기준 시각 */
         update.set(syExceldown.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
@@ -240,7 +231,6 @@ public class QSyExceldownRepositoryImpl implements QSyExceldownRepository {
     }
 
     /* ── 큐/동시성 제어 ───────────────────────────────────────── */
-
     @Override
     public Optional<SyExceldownDto.Item> selectRunning(String siteId) {
         SyExceldownDto.Item dto = baseSelColumnQuery()
